@@ -4,17 +4,16 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 using System.Globalization;
-using System.Windows.Forms;
 
 namespace P3D_Scenario_Generator
 {
 	public class ScenarioFXML
     {
-        static internal void GenerateFXMLfile(RunwayStruct runway, string saveLocationPath, string aircraftTitle)
+        static internal void GenerateFXMLfile(Runway runway, Params parameters)
 		{
 			SimBaseDocument simBaseDocument = ReadSourceFXML();
-			EditSourceFXML(runway, simBaseDocument, saveLocationPath, aircraftTitle);
-			WriteSourceFXML(simBaseDocument, saveLocationPath);
+			EditSourceFXML(runway, simBaseDocument, parameters);
+			WriteSourceFXML(simBaseDocument, parameters);
         }
 
 		static private SimBaseDocument ReadSourceFXML()
@@ -25,7 +24,7 @@ namespace P3D_Scenario_Generator
             return (SimBaseDocument)serializer.Deserialize(reader);
 		}
 
-		static private void EditSourceFXML(RunwayStruct runway, SimBaseDocument simBaseDocument, string saveLocationPath, string aircraftTitle)
+		static private void EditSourceFXML(Runway runway, SimBaseDocument simBaseDocument, Params parameters)
 		{
 			FlightSections fs = new FlightSections();
 			fs = simBaseDocument.FlightSections;
@@ -33,7 +32,7 @@ namespace P3D_Scenario_Generator
 			// Main section
 			int sectionIndex = fs.Section.FindIndex(s => s.Name == "Main");
 			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Title");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Path.GetFileNameWithoutExtension(saveLocationPath)}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Path.GetFileNameWithoutExtension(parameters.saveLocation)}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Description");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Constants.appTitle} - Circuit";
 
@@ -61,7 +60,7 @@ namespace P3D_Scenario_Generator
 			// Sim.0 section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "Sim.0");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Sim");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{aircraftTitle}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{parameters.selectedAircraft}";
 
             // Simvars.0 section
             sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
@@ -114,17 +113,19 @@ namespace P3D_Scenario_Generator
 			return sCoordLine;
 		}
 
-		static private void WriteSourceFXML(SimBaseDocument simBaseDocument, string saveLocationPath)
+		static private void WriteSourceFXML(SimBaseDocument simBaseDocument, Params parameters)
         {
 			XmlSerializer xmlSerializer = new XmlSerializer(simBaseDocument.GetType());
 
-            using StreamWriter writer = new StreamWriter(saveLocationPath);
+            using StreamWriter writer = new StreamWriter(parameters.saveLocation);
             xmlSerializer.Serialize(writer, simBaseDocument);
         }
 
 	}
 
-	[XmlRoot(ElementName = "Property")]
+    #region Simbase.Document class definitions
+
+    [XmlRoot(ElementName = "Property")]
 	public class Property
 	{
 
@@ -179,4 +180,6 @@ namespace P3D_Scenario_Generator
 		[XmlText]
 		public string Text { get; set; }
 	}
+
+    #endregion
 }

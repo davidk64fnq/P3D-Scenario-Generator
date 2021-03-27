@@ -1,6 +1,5 @@
-﻿using Microsoft.Win32;
-using System;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 
 namespace P3D_Scenario_Generator
@@ -16,42 +15,19 @@ namespace P3D_Scenario_Generator
             ListBoxScenarioType.DataSource = Constants.scenarios;
         }
 
-        private void ButtonGenerateScenario_Click(object sender, EventArgs e)
-        {
-            RunwayStruct runway = new RunwayStruct();
-            RunwaysXML.SetRunway(TextBoxSelectedRunway.Text, ref runway);
-            if (ValidateForm() == false)
-            {
-                return;
-            }
-            ScenarioFXML.GenerateFXMLfile(runway, textBoxSaveLocation.Text, listBoxAircraft.Items[listBoxAircraft.SelectedIndex].ToString());
-        }
+        #region General Tab
 
-        private Boolean ValidateForm()
+        #region Runway selection
+
+        private void ListBoxRunways_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (textBoxSaveLocation.Text == "")
-            {
-                buttonSaveLocation.PerformClick();
-                if (textBoxSaveLocation.Text == "")
-                {
-                    return false;
-                }
-            }
-            if (listBoxAircraft.Items.Count == 0)
-            {
-                buttonAircraft.PerformClick();
-                if (listBoxAircraft.Items.Count == 0)
-                {
-                    return false;
-                }
-            }
-            return true;
+            TextBoxSelectedRunway.Text = ListBoxRunways.SelectedItem.ToString();
         }
 
         private void TextBoxSearchRunway_TextChanged(object sender, EventArgs e)
         {
             int searchIndex = ListBoxRunways.FindString(TextBoxSearchRunway.Text);
-            if (searchIndex >= 0)
+            if (searchIndex != ListBox.NoMatches)
             {
                 ListBoxRunways.SelectedIndex = searchIndex;
             }
@@ -62,6 +38,51 @@ namespace P3D_Scenario_Generator
             Random random = new Random();
             ListBoxRunways.SelectedIndex = random.Next(0, ListBoxRunways.Items.Count);
         }
+
+        #endregion
+
+        #region Scenario selection
+
+        private void ListBoxScenarioType_Click(object sender, EventArgs e)
+        {
+            TextBoxSelectedScenario.Text = ListBoxScenarioType.SelectedItem.ToString();
+        }
+
+        private void ListBoxScenarioType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TextBoxSelectedScenario.Text = ListBoxScenarioType.SelectedItem.ToString();
+        }
+
+        private void ButtonGenerateScenario_Click(object sender, EventArgs e)
+        {
+            Params parameters = new Params();
+            if (ValidateParams(ref parameters) == false)
+            {
+                return;
+            }
+            Runway runway = new Runway();
+            RunwaysXML.SetRunway(ref runway, parameters);
+            ScenarioFXML.GenerateFXMLfile(runway, parameters);
+            ScenarioHTML.GenerateOverview(runway, parameters);
+        }
+
+        #endregion
+
+        #region Aircraft selection
+
+        private void ButtonAircraft_Click(object sender, EventArgs e)
+        {
+            List<string> uiVariations = Aircraft.GetUIvariations(); 
+            if (uiVariations.Count > 0)
+            {
+                listBoxAircraft.DataSource = uiVariations;
+                listBoxAircraft.SelectedIndex = 0;
+            }
+        }
+
+        #endregion
+
+        #region Save location selection
 
         private void ButtonSaveLocation_Click(object sender, EventArgs e)
         {
@@ -80,53 +101,41 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private void ButtonAircraft_Click(object sender, EventArgs e)
+        #endregion
+
+        #region Form validation
+
+        private Boolean ValidateParams(ref Params parameters)
         {
-            RegistryKey key = Registry.LocalMachine.OpenSubKey("Software\\Lockheed Martin\\Prepar3D v5");
-            OpenFileDialog openFileDialog1 = new OpenFileDialog
+            string errorMsg = "";
+            parameters.saveLocation = textBoxSaveLocation.Text;
+            if (parameters.saveLocation == "")
             {
-                Title = "Aircraft configuration file location",
-                DefaultExt = "cfg",
-                Filter = "CFG files (*.cfg)|*.cfg|All files (*.*)|*.*",
-                FilterIndex = 1,
-                InitialDirectory = $"{key.GetValue("SetupPath")}SimObjects\\Airplanes",
-                RestoreDirectory = false
-            };
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                errorMsg += "\n\tSelect a save location";
+            }
+            if (listBoxAircraft.Items.Count == 0)
             {
-                // Check whether user has selected AI aircraft
-                if (Directory.GetDirectories($"{Path.GetDirectoryName(openFileDialog1.FileName)}", "panel*").Length == 0){
-                    MessageBox.Show("It's an AI aircraft!");
-                    return;
-                }
-                string aircraftCFG = File.ReadAllText(openFileDialog1.FileName);
-                using StringReader reader = new StringReader(aircraftCFG);
-                string currentLine;
-                listBoxAircraft.Items.Clear();
-                while ((currentLine = reader.ReadLine()) != null)
-                {
-                    if (currentLine.StartsWith("title="))
-                    {
-                        listBoxAircraft.Items.Add(currentLine[6..^0]);
-                    }
-                }
-                listBoxAircraft.SelectedIndex = 0;
+                errorMsg += "\n\tSelect an aircraft";
+            }
+            else
+            {
+                parameters.selectedAircraft = listBoxAircraft.Items[listBoxAircraft.SelectedIndex].ToString();
+            }
+            parameters.selectedRunway = TextBoxSelectedRunway.Text;
+            parameters.selectedScenario = TextBoxSelectedScenario.Text;
+            if (errorMsg != "")
+            {
+                MessageBox.Show($"Please attend to the following:\n{errorMsg}", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
-        private void ListBoxScenarioType_Click(object sender, EventArgs e)
-        {
-            TextBoxSelectedScenario.Text = ListBoxScenarioType.SelectedItem.ToString();
-        }
+        #endregion
 
-        private void ListBoxRunways_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            TextBoxSelectedRunway.Text = ListBoxRunways.SelectedItem.ToString();
-        }
-
-        private void ListBoxScenarioType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            TextBoxSelectedScenario.Text = ListBoxScenarioType.SelectedItem.ToString();
-        }
+        #endregion
     }
 }

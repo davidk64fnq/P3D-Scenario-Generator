@@ -1,7 +1,16 @@
 ﻿
 namespace P3D_Scenario_Generator
 {
-    public struct RunwayStruct
+    public struct Params
+    {
+        // General tab
+        public string selectedRunway;
+        public string saveLocation;
+        public string selectedAircraft;
+        public string selectedScenario;
+    }
+
+    public struct Runway
     {
         public string icaoId;
         public string icaoName;
@@ -14,11 +23,12 @@ namespace P3D_Scenario_Generator
         public double magVar;
         public string id;
         public int len;
-        public double hdg;  // magnetic (add for true)
+        public double hdg;  // magnetic (add magVar for true)
         public string def;  // surface
         public double lat;  // threshold latitude
         public double lon;  // threshold longitude
     }
+
     public enum Season
     {
         Spring = 1,
@@ -27,14 +37,9 @@ namespace P3D_Scenario_Generator
         Winter = 4
     };
 
-    public enum ScenarioTypes
-    {
-        Circuit
-    };
-
     public class Constants
     {
         public static string appTitle = "P3D Scenario Generator";
-        public static string[] scenarios = { "Circuit" };
+        public static string[] scenarios = { "Circuit", "Photos" };
     }
 }

@@ -32,10 +32,10 @@ namespace P3D_Scenario_Generator
             return icaoIDs;
         }
 
-        static public void SetRunway(string selectedRunway, ref RunwayStruct runway)
+        static public void SetRunway(ref Runway runway, Params parameters)
         {
             XmlReader reader = XmlReader.Create(xmlFilename);
-            string[] words = selectedRunway.Split("\t");
+            string[] words = parameters.selectedRunway.Split("\t");
             runway.icaoId = words[0];
 
             Boolean runwaySet = false;
