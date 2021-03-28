@@ -8,6 +8,13 @@ namespace P3D_Scenario_Generator
         public string saveLocation;
         public string selectedAircraft;
         public string selectedScenario;
+
+        // Circuit tab
+        public double baseLeg;
+        public double finalLeg;
+        public double height;
+        public double speed;
+        public double upwindLeg;
     }
 
     public struct Runway
@@ -22,7 +29,7 @@ namespace P3D_Scenario_Generator
         public double altitude;
         public double magVar;
         public string id;
-        public int len;
+        public int len;     // feet
         public double hdg;  // magnetic (add magVar for true)
         public string def;  // surface
         public double lat;  // threshold latitude
@@ -41,5 +48,6 @@ namespace P3D_Scenario_Generator
     {
         public static string appTitle = "P3D Scenario Generator";
         public static string[] scenarios = { "Circuit", "Photos" };
+        public static double feetInKnot = 6076.12;
     }
 }

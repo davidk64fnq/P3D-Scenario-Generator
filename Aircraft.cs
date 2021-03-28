@@ -1,19 +1,20 @@
 ﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 
 namespace P3D_Scenario_Generator
 {
-    public static class Aircraft
+    public class Aircraft
     {
-        private static string path;
-        private static string cruiseSpeed;
-        private static List<string> imagePath = new List<string>();
+        internal string path;
+        internal double cruiseSpeed;
+        internal List<string[]> uiVariations = new List<string[]>();
 
-        internal static List<string> GetUIvariations()
+        internal List<string> GetUIvariations()
         {
-            List<string> uiVariations = new List<string>();
+            List<string> uiName = new List<string>();
 
             RegistryKey key = Registry.LocalMachine.OpenSubKey("Software\\Lockheed Martin\\Prepar3D v5");
             OpenFileDialog openFileDialog1 = new OpenFileDialog
@@ -31,33 +32,49 @@ namespace P3D_Scenario_Generator
                 if (Directory.GetDirectories($"{Path.GetDirectoryName(openFileDialog1.FileName)}", "panel*").Length == 0)
                 {
                     MessageBox.Show("This is an AI aircraft", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return uiVariations;
+                    return uiName;
                 }
                 path = openFileDialog1.FileName;
                 string aircraftCFG = File.ReadAllText(path);
                 using StringReader reader = new StringReader(aircraftCFG);
                 string currentLine;
-                imagePath.Clear();
+                uiVariations.Clear();
+                int index = 0;
                 while ((currentLine = reader.ReadLine()) != null)
                 {
                     if (currentLine.StartsWith("title="))
                     {
-                        uiVariations.Add(currentLine[6..^0]);
+                        uiName.Add(currentLine[6..^0]);
+                        string[] newUIvariation = { $"{currentLine[6..^0]}", "" };
+                        uiVariations.Add(newUIvariation);
                     }
                     else if (currentLine.StartsWith("texture="))
                     {
-                        imagePath.Add($"{Path.GetDirectoryName(openFileDialog1.FileName)}\\Texture.{currentLine[8..^0]}\\thumbnail.jpg");
+                        uiVariations[index][1] = $"{Path.GetDirectoryName(openFileDialog1.FileName)}\\Texture.{currentLine[8..^0]}\\thumbnail.jpg";
+                        index++;
                     }
                     else if (currentLine.StartsWith("cruise_speed"))
                     {
                         string[] words1 = currentLine.Split("= ");
                         string[] words2 = words1[1].Split(null);
-                        cruiseSpeed = words2[0];
+                        cruiseSpeed = Convert.ToDouble(words2[0]);
                     }
                 }
-                return uiVariations;
+                return uiName;
             }
-            return uiVariations;
+            return uiName;
+        }
+
+        internal string GetImagename(string selectedAircraft)
+        {
+            for (int index = 0; index < uiVariations.Count; index++)
+            {
+                if (uiVariations[index][0] == selectedAircraft)
+                {
+                    return uiVariations[index][1];
+                }
+            }
+            return "";
         }
     }
 }
