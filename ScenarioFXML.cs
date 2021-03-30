@@ -26,7 +26,7 @@ namespace P3D_Scenario_Generator
 
 		static private void EditSourceFXML(Runway runway, SimBaseDocument simBaseDocument, Params parameters)
 		{
-			FlightSections fs = new FlightSections();
+			FlightSections fs;
 			fs = simBaseDocument.FlightSections;
 
 			// Main section

@@ -1,0 +1,760 @@
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Xml.Serialization;
+
+namespace P3D_Scenario_Generator
+{
+    public class ScenarioXML
+    {
+        static internal void GenerateXMLfile(Runway runway, Params parameters)
+		{
+			SimBaseDocumentXML simBaseDocumentXML = ReadSourceXML();
+			EditSourceXML(runway, simBaseDocumentXML, parameters);
+			WriteSourceXML(simBaseDocumentXML, parameters);
+		}
+
+		static private SimBaseDocumentXML ReadSourceXML()
+		{
+			XmlSerializer serializer = new XmlSerializer(typeof(SimBaseDocumentXML));
+			string xml = File.ReadAllText("source.xml");
+			using StringReader reader = new StringReader(xml);
+			return (SimBaseDocumentXML)serializer.Deserialize(reader);
+		}
+
+		static private void EditSourceXML(Runway runway, SimBaseDocumentXML simBaseDocumentXML, Params parameters)
+		{
+			SetScenarioMetadata(runway, simBaseDocumentXML, parameters);
+		}
+
+		static private void SetScenarioMetadata(Runway runway, SimBaseDocumentXML simBaseDocumentXML, Params parameters)
+        {
+			SimMissionUIScenarioMetadata md;
+			md = simBaseDocumentXML.WorldBaseFlight.SimMissionUIScenarioMetadata;
+			md.SkillLevel = ScenarioHTML.GetDifficulty();
+			md.LocationDescr = $"{runway.icaoName} ({runway.icaoId}) {runway.city}, {runway.country}";
+			md.DifficultyLevel = 1;
+			md.EstimatedTime = ScenarioHTML.GetDuration();
+			md.UncompletedImage = "images\\ImgM_i.bmp";
+			md.CompletedImage = "images\\ImgM_c.bmp";
+			md.ExitMissionImage = "images\\exitMission.bmp";
+			md.MissionBrief = "Overview.htm";
+			md.AbbreviatedMissionBrief = $"{Path.GetFileNameWithoutExtension(parameters.saveLocation)}.htm";
+			md.SuccessMessage = $"Success! You completed the \"{parameters.selectedScenario}\" scenario objectives.";
+			md.FailureMessage = $"Better luck next time! You failed to complete the \"{parameters.selectedScenario}\" scenario objectives.";
+			md.UserCrashMessage = $"Yikes! You crashed and therefore failed the \"{parameters.selectedScenario}\" scenario objectives.";
+        }
+
+		static private void WriteSourceXML(SimBaseDocumentXML simBaseDocumentXML, Params parameters)
+		{
+			XmlSerializer xmlSerializer = new XmlSerializer(simBaseDocumentXML.GetType());
+
+			using StreamWriter writer = new StreamWriter(parameters.saveLocation.Replace("fxml", "xml"));
+			xmlSerializer.Serialize(writer, simBaseDocumentXML);
+		}
+	}
+
+	#region Simbase.Document class definitions
+
+	[XmlRoot(ElementName = "ObjectReference")]
+	public class ObjectReference
+	{
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+	}
+
+	[XmlRoot(ElementName = "ObjectReferenceList")]
+	public class ObjectReferenceList
+	{
+
+		[XmlElement(ElementName = "ObjectReference")]
+		public List<ObjectReference> ObjectReference { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.ObjectActivationAction")]
+	public class SimMissionObjectActivationAction
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "ObjectReferenceList")]
+		public ObjectReferenceList ObjectReferenceList { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlElement(ElementName = "NewObjectState")]
+		public string NewObjectState { get; set; }
+
+	}
+
+	[XmlRoot(ElementName = "SimMission.PointOfInterestActivationAction")]
+	public class SimMissionPointOfInterestActivationAction
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "ObjectReferenceList")]
+		public ObjectReferenceList ObjectReferenceList { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlElement(ElementName = "NewObjectState")]
+		public string NewObjectState { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.DialogAction")]
+	public class SimMissionDialogAction
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "Text")]
+		public string Text { get; set; }
+
+		[XmlElement(ElementName = "DelaySeconds")]
+		public double DelaySeconds { get; set; }
+
+		[XmlElement(ElementName = "SoundType")]
+		public string SoundType { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.OneShotSoundAction")]
+	public class SimMissionOneShotSoundAction
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "SoundFileName")]
+		public string SoundFileName { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+	}
+
+	[XmlRoot(ElementName = "Goals")]
+	public class Goals
+	{
+
+		[XmlElement(ElementName = "ObjectReference")]
+		public ObjectReference ObjectReference { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.GoalResolutionAction")]
+	public class SimMissionGoalResolutionAction
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "Goals")]
+		public Goals Goals { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+	}
+
+	[XmlRoot(ElementName = "AttachedWorldPosition")]
+	public class AttachedWorldPosition
+	{
+
+		[XmlElement(ElementName = "WorldPosition")]
+		public string WorldPosition { get; set; }
+
+		[XmlElement(ElementName = "AltitudeIsAGL")]
+		public string AltitudeIsAGL { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.RectangleArea")]
+	public class SimMissionRectangleArea
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "Orientation")]
+		public string Orientation { get; set; }
+
+		[XmlElement(ElementName = "Length")]
+		public double Length { get; set; }
+
+		[XmlElement(ElementName = "Width")]
+		public double Width { get; set; }
+
+		[XmlElement(ElementName = "Height")]
+		public double Height { get; set; }
+
+		[XmlElement(ElementName = "AttachedWorldPosition")]
+		public AttachedWorldPosition AttachedWorldPosition { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlElement(ElementName = "AttachedWorldObject")]
+		public AttachedWorldObject AttachedWorldObject { get; set; }
+	}
+
+	[XmlRoot(ElementName = "AttachedWorldObject")]
+	public class AttachedWorldObject
+	{
+
+		[XmlElement(ElementName = "ObjectReference")]
+		public ObjectReference ObjectReference { get; set; }
+
+		[XmlElement(ElementName = "OffsetXYZ")]
+		public string OffsetXYZ { get; set; }
+	}
+
+	[XmlRoot(ElementName = "Actions")]
+	public class Actions
+	{
+
+		[XmlElement(ElementName = "ObjectReference")]
+		public List<ObjectReference> ObjectReference { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.AreaLandingTrigger")]
+	public class SimMissionAreaLandingTrigger
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "LandingType")]
+		public string LandingType { get; set; }
+
+		[XmlElement(ElementName = "Activated")]
+		public string Activated { get; set; }
+
+		[XmlElement(ElementName = "Actions")]
+		public Actions Actions { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlElement(ElementName = "Areas")]
+		public Areas Areas { get; set; }
+	}
+
+	[XmlRoot(ElementName = "Areas")]
+	public class Areas
+	{
+
+		[XmlElement(ElementName = "ObjectReference")]
+		public ObjectReference ObjectReference { get; set; }
+	}
+
+	[XmlRoot(ElementName = "Property")]
+	public class PropertyXML
+	{
+
+		[XmlElement(ElementName = "Name")]
+		public string Name { get; set; }
+
+		[XmlElement(ElementName = "Units")]
+		public string Units { get; set; }
+
+		[XmlElement(ElementName = "ObjectReference")]
+		public ObjectReference ObjectReference { get; set; }
+	}
+
+	[XmlRoot(ElementName = "LHS")]
+	public class LHS
+	{
+
+		[XmlElement(ElementName = "Property")]
+		public PropertyXML PropertyXML { get; set; }
+	}
+
+	[XmlRoot(ElementName = "Constant")]
+	public class Constant
+	{
+
+		[XmlElement(ElementName = "Double")]
+		public double Double { get; set; }
+	}
+
+	[XmlRoot(ElementName = "RHS")]
+	public class RHS
+	{
+
+		[XmlElement(ElementName = "Constant")]
+		public Constant Constant { get; set; }
+	}
+
+	[XmlRoot(ElementName = "GreaterOrEqual")]
+	public class GreaterOrEqual
+	{
+
+		[XmlElement(ElementName = "LHS")]
+		public LHS LHS { get; set; }
+
+		[XmlElement(ElementName = "RHS")]
+		public RHS RHS { get; set; }
+	}
+
+	[XmlRoot(ElementName = "And")]
+	public class And
+	{
+
+		[XmlElement(ElementName = "GreaterOrEqual")]
+		public GreaterOrEqual GreaterOrEqual { get; set; }
+
+		[XmlElement(ElementName = "GreaterThan")]
+		public GreaterThan GreaterThan { get; set; }
+	}
+
+	[XmlRoot(ElementName = "Condition")]
+	public class Condition
+	{
+
+		[XmlElement(ElementName = "And")]
+		public And And { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.PropertyTrigger")]
+	public class SimMissionPropertyTrigger
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "Activated")]
+		public string Activated { get; set; }
+
+		[XmlElement(ElementName = "Actions")]
+		public Actions Actions { get; set; }
+
+		[XmlElement(ElementName = "Condition")]
+		public Condition Condition { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+	}
+
+	[XmlRoot(ElementName = "GreaterThan")]
+	public class GreaterThan
+	{
+
+		[XmlElement(ElementName = "LHS")]
+		public LHS LHS { get; set; }
+
+		[XmlElement(ElementName = "RHS")]
+		public RHS RHS { get; set; }
+	}
+
+	[XmlRoot(ElementName = "OnEnterActions")]
+	public class OnEnterActions
+	{
+
+		[XmlElement(ElementName = "ObjectReference")]
+		public List<ObjectReference> ObjectReference { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.ProximityTrigger")]
+	public class SimMissionProximityTrigger
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "Areas")]
+		public Areas Areas { get; set; }
+
+		[XmlElement(ElementName = "OnEnterActions")]
+		public OnEnterActions OnEnterActions { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlElement(ElementName = "Activated")]
+		public string Activated { get; set; }
+
+		[XmlElement(ElementName = "OnExitActions")]
+		public OnExitActions OnExitActions { get; set; }
+	}
+
+	[XmlRoot(ElementName = "OnExitActions")]
+	public class OnExitActions
+	{
+
+		[XmlElement(ElementName = "ObjectReference")]
+		public List<ObjectReference> ObjectReference { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.TimerTrigger")]
+	public class SimMissionTimerTrigger
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "StopTime")]
+		public double StopTime { get; set; }
+
+		[XmlElement(ElementName = "OnScreenTimer")]
+		public string OnScreenTimer { get; set; }
+
+		[XmlElement(ElementName = "Activated")]
+		public string Activated { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlElement(ElementName = "Actions")]
+		public Actions Actions { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SceneryObjects.LibraryObject")]
+	public class SceneryObjectsLibraryObject
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "MDLGuid")]
+		public string MDLGuid { get; set; }
+
+		[XmlElement(ElementName = "WorldPosition")]
+		public string WorldPosition { get; set; }
+
+		[XmlElement(ElementName = "Orientation")]
+		public string Orientation { get; set; }
+
+		[XmlElement(ElementName = "AltitudeIsAGL")]
+		public string AltitudeIsAGL { get; set; }
+
+		[XmlElement(ElementName = "Scale")]
+		public double Scale { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlElement(ElementName = "Activated")]
+		public string Activated { get; set; }
+	}
+
+	[XmlRoot(ElementName = "GroundVehicleAI")]
+	public class GroundVehicleAI
+	{
+
+		[XmlElement(ElementName = "GroundCruiseSpeed")]
+		public double GroundCruiseSpeed { get; set; }
+
+		[XmlElement(ElementName = "GroundTurnSpeed")]
+		public double GroundTurnSpeed { get; set; }
+
+		[XmlElement(ElementName = "GroundTurnTime")]
+		public double GroundTurnTime { get; set; }
+
+		[XmlElement(ElementName = "YieldToUser")]
+		public string YieldToUser { get; set; }
+
+		[XmlElement(ElementName = "WaypointListReference")]
+		public string WaypointListReference { get; set; }
+
+		[XmlElement(ElementName = "Unit_Mode")]
+		public string UnitMode { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimContain.Container")]
+	public class SimContainContainer
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "WorldPosition")]
+		public string WorldPosition { get; set; }
+
+		[XmlElement(ElementName = "Orientation")]
+		public string Orientation { get; set; }
+
+		[XmlElement(ElementName = "ContainerTitle")]
+		public string ContainerTitle { get; set; }
+
+		[XmlElement(ElementName = "ContainerID")]
+		public int ContainerID { get; set; }
+
+		[XmlElement(ElementName = "IdentificationNumber")]
+		public int IdentificationNumber { get; set; }
+
+		[XmlElement(ElementName = "IsOnGround")]
+		public string IsOnGround { get; set; }
+
+		[XmlElement(ElementName = "AIType")]
+		public string AIType { get; set; }
+
+		[XmlElement(ElementName = "GroundVehicleAI")]
+		public GroundVehicleAI GroundVehicleAI { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.PointOfInterest")]
+	public class SimMissionPointOfInterest
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "TargetName")]
+		public string TargetName { get; set; }
+
+		[XmlElement(ElementName = "CurrentSelection")]
+		public string CurrentSelection { get; set; }
+
+		[XmlElement(ElementName = "AttachedWorldObject")]
+		public AttachedWorldObject AttachedWorldObject { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlElement(ElementName = "Activated")]
+		public string Activated { get; set; }
+
+		[XmlElement(ElementName = "CycleOrder")]
+		public int CycleOrder { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.RealismOverrides")]
+	public class SimMissionRealismOverrides
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "FlyingTips")]
+		public string FlyingTips { get; set; }
+
+		[XmlElement(ElementName = "CrashBehavior")]
+		public string CrashBehavior { get; set; }
+
+		[XmlElement(ElementName = "ATCMenuDisabled")]
+		public string ATCMenuDisabled { get; set; }
+
+		[XmlElement(ElementName = "FlightRealism")]
+		public string FlightRealism { get; set; }
+
+		[XmlElement(ElementName = "WorldRealism")]
+		public string WorldRealism { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMissionUI.ScenarioMetadata")]
+	public class SimMissionUIScenarioMetadata
+	{
+		[XmlElement(ElementName = "SkillLevel")]
+		public string SkillLevel { get; set; }
+
+		[XmlElement(ElementName = "LocationDescr")]
+		public string LocationDescr { get; set; }
+
+		[XmlElement(ElementName = "DifficultyLevel")]
+		public int DifficultyLevel { get; set; }
+
+		[XmlElement(ElementName = "EstimatedTime")]
+		public int EstimatedTime { get; set; }
+
+		[XmlElement(ElementName = "UncompletedImage")]
+		public string UncompletedImage { get; set; }	
+
+		[XmlElement(ElementName = "CompletedImage")]
+		public string CompletedImage { get; set; }
+
+		[XmlElement(ElementName = "ExitMissionImage")]
+		public string ExitMissionImage { get; set; }
+
+		[XmlElement(ElementName = "MissionBrief")]
+		public string MissionBrief { get; set; }
+
+		[XmlElement(ElementName = "AbbreviatedMissionBrief")]
+		public string AbbreviatedMissionBrief { get; set; }
+
+		[XmlElement(ElementName = "SuccessMessage")]
+		public string SuccessMessage { get; set; }
+
+		[XmlElement(ElementName = "FailureMessage")]
+		public string FailureMessage { get; set; }
+
+		[XmlElement(ElementName = "UserCrashMessage")]
+		public string UserCrashMessage { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.Goal")]
+	public class SimMissionGoal
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "Text")]
+		public string Text { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.DisabledTrafficAirports")]
+	public class SimMissionDisabledTrafficAirports
+	{
+
+		[XmlElement(ElementName = "AirportIdent")]
+		public string AirportIdent { get; set; }
+	}
+
+	[XmlRoot(ElementName = "WorldBase.Flight")]
+	public class WorldBaseFlight
+	{
+
+		[XmlElement(ElementName = "SimMission.ObjectActivationAction")]
+		public List<SimMissionObjectActivationAction> SimMissionObjectActivationAction { get; set; }
+
+		[XmlElement(ElementName = "SimMission.PointOfInterestActivationAction")]
+		public List<SimMissionPointOfInterestActivationAction> SimMissionPointOfInterestActivationAction { get; set; }
+
+		[XmlElement(ElementName = "SimMission.DialogAction")]
+		public List<SimMissionDialogAction> SimMissionDialogAction { get; set; }
+
+		[XmlElement(ElementName = "SimMission.OneShotSoundAction")]
+		public List<SimMissionOneShotSoundAction> SimMissionOneShotSoundAction { get; set; }
+
+		[XmlElement(ElementName = "SimMission.GoalResolutionAction")]
+		public SimMissionGoalResolutionAction SimMissionGoalResolutionAction { get; set; }
+
+		[XmlElement(ElementName = "SimMission.RectangleArea")]
+		public List<SimMissionRectangleArea> SimMissionRectangleArea { get; set; }
+
+		[XmlElement(ElementName = "SimMission.AreaLandingTrigger")]
+		public List<SimMissionAreaLandingTrigger> SimMissionAreaLandingTrigger { get; set; }
+
+		[XmlElement(ElementName = "SimMission.PropertyTrigger")]
+		public List<SimMissionPropertyTrigger> SimMissionPropertyTrigger { get; set; }
+
+		[XmlElement(ElementName = "SimMission.ProximityTrigger")]
+		public List<SimMissionProximityTrigger> SimMissionProximityTrigger { get; set; }
+
+		[XmlElement(ElementName = "SimMission.TimerTrigger")]
+		public List<SimMissionTimerTrigger> SimMissionTimerTrigger { get; set; }
+
+		[XmlElement(ElementName = "SceneryObjects.LibraryObject")]
+		public List<SceneryObjectsLibraryObject> SceneryObjectsLibraryObject { get; set; }
+
+		[XmlElement(ElementName = "SimContain.Container")]
+		public List<SimContainContainer> SimContainContainer { get; set; }
+
+		[XmlElement(ElementName = "SimMission.PointOfInterest")]
+		public List<SimMissionPointOfInterest> SimMissionPointOfInterest { get; set; }
+
+		[XmlElement(ElementName = "SimMission.RealismOverrides")]
+		public SimMissionRealismOverrides SimMissionRealismOverrides { get; set; }
+
+		[XmlElement(ElementName = "SimMissionUI.ScenarioMetadata")]
+		public SimMissionUIScenarioMetadata SimMissionUIScenarioMetadata { get; set; }
+
+		[XmlElement(ElementName = "SimMission.Goal")]
+		public SimMissionGoal SimMissionGoal { get; set; }
+
+		[XmlElement(ElementName = "SimMission.DisabledTrafficAirports")]
+		public SimMissionDisabledTrafficAirports SimMissionDisabledTrafficAirports { get; set; }
+	}
+
+	[XmlRoot(ElementName = "Waypoint")]
+	public class Waypoint
+	{
+
+		[XmlElement(ElementName = "AltitudeIsAGL")]
+		public string AltitudeIsAGL { get; set; }
+
+		[XmlElement(ElementName = "WorldPosition")]
+		public string WorldPosition { get; set; }
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "WaypointID")]
+		public int WaypointID { get; set; }
+
+		[XmlElement(ElementName = "Orientation")]
+		public string Orientation { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlElement(ElementName = "SpeedKnots")]
+		public double SpeedKnots { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimContain.WaypointList")]
+	public class SimContainWaypointList
+	{
+
+		[XmlElement(ElementName = "WrapWaypoints")]
+		public string WrapWaypoints { get; set; }
+
+		[XmlElement(ElementName = "CurrentWaypoint")]
+		public int CurrentWaypoint { get; set; }
+
+		[XmlElement(ElementName = "BackupToFirst")]
+		public string BackupToFirst { get; set; }
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "Waypoint")]
+		public List<Waypoint> Waypoint { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+	}
+
+	[XmlRoot(ElementName = "WorldBase.Waypoints")]
+	public class WorldBaseWaypoints
+	{
+
+		[XmlElement(ElementName = "SimContain.WaypointList")]
+		public List<SimContainWaypointList> SimContainWaypointList { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimBase.Document")]
+	public class SimBaseDocumentXML
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "Title")]
+		public string Title { get; set; }
+
+		[XmlElement(ElementName = "WorldBase.Flight")]
+		public WorldBaseFlight WorldBaseFlight { get; set; }
+
+		[XmlElement(ElementName = "MissionBuilder.MissionBuilder")]
+		public object MissionBuilderMissionBuilder { get; set; }
+
+		[XmlElement(ElementName = "WorldBase.AreasOfInterest")]
+		public object WorldBaseAreasOfInterest { get; set; }
+
+		[XmlElement(ElementName = "WorldBase.Waypoints")]
+		public WorldBaseWaypoints WorldBaseWaypoints { get; set; }
+
+		[XmlAttribute(AttributeName = "Type")]
+		public string Type { get; set; }
+
+		[XmlAttribute(AttributeName = "version")]
+		public double Version { get; set; }
+	}
+
+	#endregion
+}

@@ -66,6 +66,7 @@ namespace P3D_Scenario_Generator
             RunwaysXML.SetRunway(ref runway, parameters);
             ScenarioFXML.GenerateFXMLfile(runway, parameters);
             ScenarioHTML.GenerateOverview(runway, parameters, aircraft);
+            ScenarioXML.GenerateXMLfile(runway, parameters);
         }
 
         #endregion
