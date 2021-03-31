@@ -1,22 +1,6 @@
 ﻿
 namespace P3D_Scenario_Generator
 {
-    public struct Params
-    {
-        // General tab
-        public string selectedRunway;
-        public string saveLocation;
-        public string selectedAircraft;
-        public string selectedScenario;
-
-        // Circuit tab
-        public double baseLeg;
-        public double finalLeg;
-        public double height;
-        public double speed;
-        public double upwindLeg;
-    }
-
     public struct Runway
     {
         public string icaoId;
@@ -36,16 +20,20 @@ namespace P3D_Scenario_Generator
         public double lon;  // threshold longitude
     }
 
-    public struct Gate
+    public struct Params
     {
-        public string instanceID;
-        public string descr;
-        public string mdlGUID;
-        public string worldPosition;
-        public string orientation;
-        public string altitudeIsAGL;
-        public string scale;
-        public string activated;
+        // General tab
+        public string selectedRunway;
+        public string saveLocation;
+        public string selectedAircraft;
+        public string selectedScenario;
+
+        // Circuit tab
+        public double baseLeg;
+        public double finalLeg;
+        public double height;
+        public double speed;
+        public double upwindLeg;
     }
 
     public enum Season
@@ -67,6 +55,7 @@ namespace P3D_Scenario_Generator
         public static string appTitle = "P3D Scenario Generator";
         public static string[] scenarios = { "Circuit", "Photos" };
         public static double feetInKnot = 6076.12;
+        public static double radiusEarth = 20902230.971129; // Radius of earth at equator in feet
         public static string scenCircuit = "Circuit";
     }
 }

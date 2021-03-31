@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
@@ -21,14 +22,51 @@ namespace P3D_Scenario_Generator
 			soundType = s4;
 			instanceID = s5;
 		}
-    }
+	}
 
-    public class ScenarioXML
+	public struct Gate
+	{
+		public double lat;
+		public double lon;
+
+		public Gate(double d1, double d2)
+		{
+			lat = d1;
+			lon = d2;
+		}
+	}
+
+	public struct LibraryObject
+	{
+		public string instanceID;
+		public string descr;
+		public string mdlGUID;
+		public string worldPosition;
+		public string orientation;
+		public string altitudeIsAGL;
+		public string scale;
+		public string activated;
+
+		public LibraryObject(string s1, string s2, string s3, string s4, string s5, string s6, string s7, string s8)
+		{
+			instanceID = s1;
+			descr = s2;
+			mdlGUID = s3;
+			worldPosition = s4;
+			orientation = s5;
+			altitudeIsAGL = s6;
+			scale = s7;
+			activated = s8;
+		}
+	}
+
+	public class ScenarioXML
     {
-		static readonly List<Gate> gates = new List<Gate>();
+		static private List<Gate> gates;
         static internal void GenerateXMLfile(Runway runway, Params parameters)
 		{
 			SimBaseDocumentXML simBaseDocumentXML = ReadSourceXML();
+			gates = GateCalcs.SetGateCoords(runway, parameters);
 			EditSourceXML(runway, simBaseDocumentXML, parameters);
 			WriteSourceXML(simBaseDocumentXML, parameters);
 		}
@@ -77,9 +115,40 @@ namespace P3D_Scenario_Generator
 		}
 
 		static private void SetLibraryObject(Runway runway, SimBaseDocumentXML simBaseDocumentXML, Params parameters)
+		{
+			List<LibraryObject> libraryObjects = new List<LibraryObject>();
+			switch (parameters.selectedScenario)
+			{
+				case nameof(ScenarioTypes.Circuit):
+					libraryObjects.Add(new LibraryObject(GetGUID(), "GEN_game_1_blue", "{6079F842-015B-4017-A391-7C0F23BCBCD1}", SetWorldPosition(gates[0], parameters), $"0.0,0.0,{string.Format("{0:0.0}", runway.hdg)}", "True", "1", "True"));
+					libraryObjects.Add(new LibraryObject(GetGUID(), "GEN_game_2_blue", "{3D49D581-9163-4A7A-B957-3CB7B7D4BAF4}", SetWorldPosition(gates[1], parameters), $"0.0,0.0,{string.Format("{0:0.0}", runway.hdg + 90)}", "True", "1", "False"));
+					break;
+				default:
+					break;
+			}
+			List<SceneryObjectsLibraryObject> loList = simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject;
+			loList.Clear();
+			for (int index = 0; index < libraryObjects.Count; index++)
+			{
+				SceneryObjectsLibraryObject lo = new SceneryObjectsLibraryObject
+				{
+					InstanceId = libraryObjects[index].instanceID,
+					Descr = libraryObjects[index].descr,
+					MDLGuid = libraryObjects[index].mdlGUID,
+					WorldPosition = libraryObjects[index].worldPosition,
+					Orientation = libraryObjects[index].orientation,
+					AltitudeIsAGL = libraryObjects[index].altitudeIsAGL,
+					Scale = libraryObjects[index].scale,
+					Activated = libraryObjects[index].activated
+				};
+				loList.Add(lo);
+			}
+		}
+
+		static private string SetWorldPosition(Gate gate, Params parameters)
         {
-			GateCalcs.SetGatePositions(runway, parameters, gates);
-        }
+			return $"{ScenarioFXML.FormatCoordXML(gate.lat, "N", "S")},{ScenarioFXML.FormatCoordXML(gate.lon, "E", "W")},+{parameters.height}";
+		}
 
 		static private void SetScenarioMetadata(Runway runway, SimBaseDocumentXML simBaseDocumentXML, Params parameters)
         {
@@ -496,7 +565,7 @@ namespace P3D_Scenario_Generator
 		public string AltitudeIsAGL { get; set; }
 
 		[XmlElement(ElementName = "Scale")]
-		public double Scale { get; set; }
+		public string Scale { get; set; }
 
 		[XmlAttribute(AttributeName = "InstanceId")]
 		public string InstanceId { get; set; }

@@ -84,7 +84,7 @@ namespace P3D_Scenario_Generator
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
 		}
 
-		static string FormatCoordXML(double dCoord, string sPosDir, string sNegDir)
+		static public string FormatCoordXML(double dCoord, string sPosDir, string sNegDir)
         {
 			double dDecimalPart, dMinutes, dSeconds, dLocalCoord;
 			string sCoordLine = "";

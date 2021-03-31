@@ -40,7 +40,7 @@ namespace P3D_Scenario_Generator
             string overviewHTML = SetOverviewHTML(overview);
             File.WriteAllText($"{Path.GetDirectoryName(parameters.saveLocation)}\\Overview.htm", overviewHTML);
 
-            MissionBrief missionBrief = SetMissionBriefStruct(runway, parameters, overview);
+            MissionBrief missionBrief = SetMissionBriefStruct(parameters, overview);
             string missionBriefHTML = SetMissionBriefHTML(missionBrief);
             File.WriteAllText($"{Path.GetDirectoryName(parameters.saveLocation)}\\{Path.GetFileNameWithoutExtension(parameters.saveLocation)}.htm", missionBriefHTML);
 
@@ -82,7 +82,7 @@ namespace P3D_Scenario_Generator
             return overview;
         }
 
-        static private MissionBrief SetMissionBriefStruct(Runway runway, Params parameters, Overview overview)
+        static private MissionBrief SetMissionBriefStruct(Params parameters, Overview overview)
         {
             MissionBrief missionBrief = new MissionBrief();
 
