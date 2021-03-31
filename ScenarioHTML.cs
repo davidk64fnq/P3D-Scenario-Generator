@@ -62,7 +62,7 @@ namespace P3D_Scenario_Generator
                     double duration = ((parameters.finalLeg + (runway.len / Constants.feetInKnot) + parameters.upwindLeg) * 2 + (parameters.baseLeg * 2)) / parameters.speed * 60;
                     overview.pDuration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.h2Aircraft = $"{parameters.selectedAircraft}";
-                    overview.pBriefing = $"In this sceanrio you'll test your skills flying a {parameters.selectedAircraft}";
+                    overview.pBriefing = $"In this scenario you'll test your skills flying a {parameters.selectedAircraft}";
                     overview.pBriefing += " by doing that most fundamental of tasks, flying a circuit! ";
                     overview.pBriefing += "You'll take off, fly through eight gates as you complete a circuit, ";
                     overview.pBriefing += "and land back on the runway. The scenario begins on runway ";
@@ -88,7 +88,7 @@ namespace P3D_Scenario_Generator
 
             switch (parameters.selectedScenario)
             {
-                case "Circuit":
+                case nameof(ScenarioTypes.Circuit):
                     missionBrief.title = overview.title;
                     missionBrief.h1 = overview.title;
                     missionBrief.h2Location = overview.h2Location;
@@ -98,8 +98,6 @@ namespace P3D_Scenario_Generator
                     missionBrief.pBriefing = overview.pBriefing;
                     missionBrief.liObjective = overview.liObjective;
                     missionBrief.h2Tips = overview.liTips;
-                    break;
-                case "Photos":
                     break;
                 default:
                     break;
@@ -204,6 +202,16 @@ namespace P3D_Scenario_Generator
         static public string GetDifficulty()
         {
             return overview.pDifficulty;
+        }
+
+        static public string GetBriefing()
+        {
+            return overview.pBriefing;
+        }
+
+        static public string GetTips()
+        {
+            return overview.liTips;
         }
     }
 }

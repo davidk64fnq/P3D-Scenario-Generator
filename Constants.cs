@@ -36,6 +36,18 @@ namespace P3D_Scenario_Generator
         public double lon;  // threshold longitude
     }
 
+    public struct Gate
+    {
+        public string instanceID;
+        public string descr;
+        public string mdlGUID;
+        public string worldPosition;
+        public string orientation;
+        public string altitudeIsAGL;
+        public string scale;
+        public string activated;
+    }
+
     public enum Season
     {
         Spring = 1,
@@ -44,10 +56,17 @@ namespace P3D_Scenario_Generator
         Winter = 4
     };
 
+    public enum ScenarioTypes
+    {
+        Circuit,
+        Photos
+    };
+
     public class Constants
     {
         public static string appTitle = "P3D Scenario Generator";
         public static string[] scenarios = { "Circuit", "Photos" };
         public static double feetInKnot = 6076.12;
+        public static string scenCircuit = "Circuit";
     }
 }

@@ -1,11 +1,31 @@
-﻿using System.Collections.Generic;
+﻿
+using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator
 {
+	public struct DialogAction
+    {
+		public string descr;
+		public string text;
+		public string delaySeconds;
+		public string soundType;
+		public string instanceID;
+
+		public DialogAction(string s1, string s2, string s3, string s4, string s5)
+		{
+			descr = s1;
+			text = s2;
+			delaySeconds = s3;
+			soundType = s4;
+			instanceID = s5;
+		}
+    }
+
     public class ScenarioXML
     {
+		static readonly List<Gate> gates = new List<Gate>();
         static internal void GenerateXMLfile(Runway runway, Params parameters)
 		{
 			SimBaseDocumentXML simBaseDocumentXML = ReadSourceXML();
@@ -23,13 +43,49 @@ namespace P3D_Scenario_Generator
 
 		static private void EditSourceXML(Runway runway, SimBaseDocumentXML simBaseDocumentXML, Params parameters)
 		{
+			SetDialogAction(simBaseDocumentXML, parameters);
+			SetLibraryObject(runway, simBaseDocumentXML, parameters);
 			SetScenarioMetadata(runway, simBaseDocumentXML, parameters);
 		}
+
+		static private void SetDialogAction(SimBaseDocumentXML simBaseDocumentXML, Params parameters)
+        {
+			List<DialogAction> dialogActions = new List<DialogAction>();
+			switch (parameters.selectedScenario)
+            {
+				case nameof(ScenarioTypes.Circuit):
+                    dialogActions.Add(new DialogAction("Dialog_Intro1", ScenarioHTML.GetBriefing(), "2", "Text-To-Speech", GetGUID()));
+					dialogActions.Add(new DialogAction("Dialog_Intro2", ScenarioHTML.GetTips(), "2", "Text-To-Speech", GetGUID()));
+					break;
+				default:
+					break;
+			}
+			List<SimMissionDialogAction> daList = simBaseDocumentXML.WorldBaseFlight.SimMissionDialogAction;
+			daList.Clear();
+			for (int index = 0; index < dialogActions.Count; index++)
+            {
+                SimMissionDialogAction da = new SimMissionDialogAction
+                {
+                    Descr = dialogActions[index].descr,
+                    Text = dialogActions[index].text,
+                    DelaySeconds = dialogActions[index].delaySeconds,
+                    SoundType = dialogActions[index].soundType,
+                    InstanceId = dialogActions[index].instanceID
+                };
+				daList.Add(da);
+            }
+		}
+
+		static private void SetLibraryObject(Runway runway, SimBaseDocumentXML simBaseDocumentXML, Params parameters)
+        {
+			GateCalcs.SetGatePositions(runway, parameters, gates);
+        }
 
 		static private void SetScenarioMetadata(Runway runway, SimBaseDocumentXML simBaseDocumentXML, Params parameters)
         {
 			SimMissionUIScenarioMetadata md;
 			md = simBaseDocumentXML.WorldBaseFlight.SimMissionUIScenarioMetadata;
+			md.InstanceId = GetGUID();
 			md.SkillLevel = ScenarioHTML.GetDifficulty();
 			md.LocationDescr = $"{runway.icaoName} ({runway.icaoId}) {runway.city}, {runway.country}";
 			md.DifficultyLevel = 1;
@@ -44,6 +100,13 @@ namespace P3D_Scenario_Generator
 			md.UserCrashMessage = $"Yikes! You crashed and therefore failed the \"{parameters.selectedScenario}\" scenario objectives.";
         }
 
+        static private string GetGUID()
+        {
+			System.Guid guid = System.Guid.NewGuid();
+			string guidUpper = guid.ToString().ToUpper();
+			return $"{{{guidUpper}}}";
+		}
+
 		static private void WriteSourceXML(SimBaseDocumentXML simBaseDocumentXML, Params parameters)
 		{
 			XmlSerializer xmlSerializer = new XmlSerializer(simBaseDocumentXML.GetType());
@@ -53,9 +116,9 @@ namespace P3D_Scenario_Generator
 		}
 	}
 
-	#region Simbase.Document class definitions
+    #region Simbase.Document class definitions
 
-	[XmlRoot(ElementName = "ObjectReference")]
+    [XmlRoot(ElementName = "ObjectReference")]
 	public class ObjectReference
 	{
 
@@ -117,7 +180,7 @@ namespace P3D_Scenario_Generator
 		public string Text { get; set; }
 
 		[XmlElement(ElementName = "DelaySeconds")]
-		public double DelaySeconds { get; set; }
+		public string DelaySeconds { get; set; }
 
 		[XmlElement(ElementName = "SoundType")]
 		public string SoundType { get; set; }
