@@ -82,6 +82,11 @@ namespace P3D_Scenario_Generator
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "+0";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "SimOnGround");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
+
+			// ObjectFile section
+			sectionIndex = fs.Section.FindIndex(s => s.Name == "ObjectFile");
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "File");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Path.GetFileNameWithoutExtension(parameters.saveLocation)}";
 		}
 
 		static public string FormatCoordXML(double dCoord, string sPosDir, string sNegDir)

@@ -1,5 +1,5 @@
 ﻿
-using System;
+
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
@@ -60,6 +60,30 @@ namespace P3D_Scenario_Generator
 		}
 	}
 
+	public struct RectangleArea
+	{
+		public string instanceID;
+		public string descr;
+		public string orientation;
+		public string length;
+		public string width;
+		public string height;
+		public string worldPosition;
+		public string altitudeIsAGL;
+
+		public RectangleArea(string s1, string s2, string s3, string s4, string s5, string s6, string s7, string s8)
+		{
+			instanceID = s1;
+			descr = s2;
+			orientation = s3;
+			length = s4;
+			width = s5;
+			height = s6;
+			worldPosition = s7;
+			altitudeIsAGL = s8;
+		}
+	}
+
 	public class ScenarioXML
     {
 		static private List<Gate> gates;
@@ -81,9 +105,23 @@ namespace P3D_Scenario_Generator
 
 		static private void EditSourceXML(Runway runway, SimBaseDocumentXML simBaseDocumentXML, Params parameters)
 		{
+			SetOneShotSoundAction(simBaseDocumentXML);
 			SetDialogAction(simBaseDocumentXML, parameters);
 			SetLibraryObject(runway, simBaseDocumentXML, parameters);
+			SetRectangleArea(runway, simBaseDocumentXML, parameters);
+			SetObjectActivationAction(simBaseDocumentXML, parameters);
 			SetScenarioMetadata(runway, simBaseDocumentXML, parameters);
+			SetRealismOverrides(simBaseDocumentXML);
+			SetDisabledTrafficAirports(runway, simBaseDocumentXML);
+			ClearUnusedObjects(simBaseDocumentXML);
+		}
+
+		static private void SetOneShotSoundAction(SimBaseDocumentXML simBaseDocumentXML)
+		{
+            _ = new List<SimMissionOneShotSoundAction>();
+            List<SimMissionOneShotSoundAction> saList = simBaseDocumentXML.WorldBaseFlight.SimMissionOneShotSoundAction;
+            saList.Clear();
+			saList.Add(new SimMissionOneShotSoundAction("OneShot_Hoop_SFX", "ThruHoop.wav", GetGUID()));
 		}
 
 		static private void SetDialogAction(SimBaseDocumentXML simBaseDocumentXML, Params parameters)
@@ -120,8 +158,7 @@ namespace P3D_Scenario_Generator
 			switch (parameters.selectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					libraryObjects.Add(new LibraryObject(GetGUID(), "GEN_game_1_blue", "{6079F842-015B-4017-A391-7C0F23BCBCD1}", SetWorldPosition(gates[0], parameters), $"0.0,0.0,{string.Format("{0:0.0}", runway.hdg)}", "True", "1", "True"));
-					libraryObjects.Add(new LibraryObject(GetGUID(), "GEN_game_2_blue", "{3D49D581-9163-4A7A-B957-3CB7B7D4BAF4}", SetWorldPosition(gates[1], parameters), $"0.0,0.0,{string.Format("{0:0.0}", runway.hdg + 90)}", "True", "1", "False"));
+					SetGateLibraryObjects(runway, parameters, libraryObjects, Constants.circuitHeadingAdj);
 					break;
 				default:
 					break;
@@ -145,9 +182,128 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
-		static private string SetWorldPosition(Gate gate, Params parameters)
+		static private void SetRectangleArea(Runway runway, SimBaseDocumentXML simBaseDocumentXML, Params parameters)
+		{
+			List<RectangleArea> rectangleAreas = new List<RectangleArea>();
+			switch (parameters.selectedScenario)
+			{
+				case nameof(ScenarioTypes.Circuit):
+					SetGateRectangleAreas(runway, parameters, rectangleAreas, Constants.circuitHeadingAdj);
+					break;
+				default:
+					break;
+			}
+			List<SimMissionRectangleArea> raList = simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea;
+			raList.Clear();
+			for (int index = 0; index < rectangleAreas.Count; index++)
+			{
+				SimMissionRectangleArea ra = new SimMissionRectangleArea
+				{
+					InstanceId = rectangleAreas[index].instanceID,
+					Descr = rectangleAreas[index].descr,
+					Orientation = rectangleAreas[index].orientation,
+					Length = rectangleAreas[index].length,
+					Width = rectangleAreas[index].width,
+					Height = rectangleAreas[index].height
+				};
+				AttachedWorldPosition wp = new AttachedWorldPosition
+				{
+					WorldPosition = rectangleAreas[index].worldPosition,
+					AltitudeIsAGL = rectangleAreas[index].altitudeIsAGL
+				};
+				ra.AttachedWorldPosition = wp;
+				raList.Add(ra);
+			}
+		}
+
+		static private void SetGateLibraryObjects(Runway runway, Params parameters, List<LibraryObject> libraryObjects, double[] headingAdj)
+		{
+            for (int index = 0; index < gates.Count; index++)
+            {
+				// Number objects
+				string descr = Constants.genGameNumBlueDesc.Replace("X", (index + 1).ToString());
+				string mdlGUID = Constants.genGameNumBlueMDLguid[index];
+				string orientation = $"0.0,0.0,{string.Format("{0:0.0}", (runway.hdg + runway.magVar + headingAdj[index]) % 360)}";
+				double vOffset = Constants.genGameNumBlueVertOffset;
+				libraryObjects.Add(new LibraryObject(GetGUID(), descr, mdlGUID, SetWorldPosition(gates[index], parameters, vOffset), orientation, "True", "1", "False"));
+
+				// Hoop active objects
+				descr = Constants.genGameHoopNumActiveDesc.Replace("X", (index + 1).ToString());
+				mdlGUID = Constants.genGameHoopNumActiveMDLguid;
+				vOffset = Constants.genGameHoopNumActiveVertOffset;
+				libraryObjects.Add(new LibraryObject(GetGUID(), descr, mdlGUID, SetWorldPosition(gates[index], parameters, vOffset), orientation, "True", "1", "False"));
+
+				// Hoop inactive objects
+				descr = Constants.genGameHoopNumInactiveDesc.Replace("X", (index + 1).ToString());
+				mdlGUID = Constants.genGameHoopNumInactiveMDLguid;
+				vOffset = Constants.genGameHoopNumInactiveVertOffset;
+				libraryObjects.Add(new LibraryObject(GetGUID(), descr, mdlGUID, SetWorldPosition(gates[index], parameters, vOffset), orientation, "True", "1", "False"));
+			}
+		}
+
+		static private void SetGateRectangleAreas(Runway runway, Params parameters, List<RectangleArea> rectangleAreas, double[] headingAdj)
+		{
+			for (int index = 0; index < gates.Count; index++)
+			{
+				string descr = $"Area_Hoop_0{index + 1}";
+				string orientation = $"0.0,0.0,{string.Format("{0:0.0}", (runway.hdg + runway.magVar + headingAdj[index]) % 360)}";
+				double vOffset = Constants.genGameHoopNumActiveVertOffset;
+				rectangleAreas.Add(new RectangleArea(GetGUID(), descr, orientation, "100.0", "25.0", "100.0", SetWorldPosition(gates[index], parameters, vOffset), "True"));
+			}
+		}
+
+		static private string SetWorldPosition(Gate gate, Params parameters, double vertOffset)
         {
-			return $"{ScenarioFXML.FormatCoordXML(gate.lat, "N", "S")},{ScenarioFXML.FormatCoordXML(gate.lon, "E", "W")},+{parameters.height}";
+			return $"{ScenarioFXML.FormatCoordXML(gate.lat, "N", "S")},{ScenarioFXML.FormatCoordXML(gate.lon, "E", "W")},+{parameters.height + vertOffset}";
+		}
+
+		static private void SetObjectActivationAction(SimBaseDocumentXML simBaseDocumentXML, Params parameters)
+		{
+			List<SimMissionObjectActivationAction> oaaList = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction;
+			oaaList.Clear();
+
+			switch (parameters.selectedScenario)
+			{
+				case nameof(ScenarioTypes.Circuit):
+					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameNumBlueDesc, oaaList, "Activate_Number_0", "True");
+					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameNumBlueDesc, oaaList, "Deactivate_Number_0", "False");
+					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameHoopNumActiveDesc, oaaList, "Activate_Hoop_Active_0", "True");
+					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameHoopNumActiveDesc, oaaList, "Deactivate_Hoop_Active_0", "False");
+					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameHoopNumInactiveDesc, oaaList, "Activate_Hoop_Inactive_0", "True");
+					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameHoopNumInactiveDesc, oaaList, "Deactivate_Hoop_Inactive_0", "False");
+					break;
+				default:
+					break;
+			}
+        }
+
+		static private void SetGateObjectActivations(SimBaseDocumentXML simBaseDocumentXML, Params parameters, string objectName, List<SimMissionObjectActivationAction> oaaList, string descr, string newObjectState)
+		{
+			for (int index = 0; index < gates.Count; index++)
+            {
+				string search = objectName.Replace("X", (index + 1).ToString());
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject.FindIndex(lo => lo.Descr == search);
+				ObjectReference or = new ObjectReference
+				{
+					InstanceId = simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject[idIndex].InstanceId
+				};
+                List<ObjectReference> orList = new List<ObjectReference>
+                {
+                    or
+                };
+                ObjectReferenceList orl = new ObjectReferenceList
+                {
+                    ObjectReference = orList
+                };
+                SimMissionObjectActivationAction oaa = new SimMissionObjectActivationAction
+				{
+					InstanceId = GetGUID(),
+					Descr = $"{descr}{index + 1}",
+					NewObjectState = newObjectState
+				};
+				oaa.ObjectReferenceList = orl;
+				oaaList.Add(oaa);
+			}
 		}
 
 		static private void SetScenarioMetadata(Runway runway, SimBaseDocumentXML simBaseDocumentXML, Params parameters)
@@ -159,17 +315,49 @@ namespace P3D_Scenario_Generator
 			md.LocationDescr = $"{runway.icaoName} ({runway.icaoId}) {runway.city}, {runway.country}";
 			md.DifficultyLevel = 1;
 			md.EstimatedTime = ScenarioHTML.GetDuration();
-			md.UncompletedImage = "images\\ImgM_i.bmp";
-			md.CompletedImage = "images\\ImgM_c.bmp";
+			md.UncompletedImage = "images\\imgM_i.bmp";
+			md.CompletedImage = "images\\imgM_c.bmp";
 			md.ExitMissionImage = "images\\exitMission.bmp";
 			md.MissionBrief = "Overview.htm";
 			md.AbbreviatedMissionBrief = $"{Path.GetFileNameWithoutExtension(parameters.saveLocation)}.htm";
 			md.SuccessMessage = $"Success! You completed the \"{parameters.selectedScenario}\" scenario objectives.";
 			md.FailureMessage = $"Better luck next time! You failed to complete the \"{parameters.selectedScenario}\" scenario objectives.";
 			md.UserCrashMessage = $"Yikes! You crashed and therefore failed the \"{parameters.selectedScenario}\" scenario objectives.";
-        }
+		}
 
-        static private string GetGUID()
+		static private void SetRealismOverrides(SimBaseDocumentXML simBaseDocumentXML)
+		{
+			SimMissionRealismOverrides ro;
+			ro = simBaseDocumentXML.WorldBaseFlight.SimMissionRealismOverrides;
+			ro.Descr = "RealismOverrides";
+			ro.UserTips = "Disable";
+			ro.CrashBehavior = "EndFlight";
+			ro.ATCMenuDisabled = "True";
+			ro.FlightRealism = "Enforced";
+			ro.WorldRealism = "Enforced";
+			ro.AircraftLabels = "Disabled";
+			ro.AvatarNoCollision = "Disabled";
+		}
+
+		static private void SetDisabledTrafficAirports(Runway runway, SimBaseDocumentXML simBaseDocumentXML)
+		{
+			SimMissionDisabledTrafficAirports ta;
+			ta = simBaseDocumentXML.WorldBaseFlight.SimMissionDisabledTrafficAirports;
+			ta.AirportIdent = $"{runway.icaoId}";
+		}
+
+		static private void ClearUnusedObjects(SimBaseDocumentXML simBaseDocumentXML)
+        {
+			simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction.Clear();
+			simBaseDocumentXML.WorldBaseFlight.SimMissionPropertyTrigger.Clear();
+			simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.Clear();
+			simBaseDocumentXML.WorldBaseFlight.SimContainContainer.Clear();
+			simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest.Clear();
+			simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger.Clear();
+			simBaseDocumentXML.WorldBaseWaypoints.SimContainWaypointList.Clear();
+		}
+
+		static private string GetGUID()
         {
 			System.Guid guid = System.Guid.NewGuid();
 			string guidUpper = guid.ToString().ToUpper();
@@ -261,6 +449,15 @@ namespace P3D_Scenario_Generator
 	[XmlRoot(ElementName = "SimMission.OneShotSoundAction")]
 	public class SimMissionOneShotSoundAction
 	{
+        public SimMissionOneShotSoundAction(string v1, string v2, string v3)
+        {
+			Descr = v1;
+			SoundFileName = v2;
+			InstanceId = v3;
+		}
+		public SimMissionOneShotSoundAction()
+		{
+		}
 
 		[XmlElement(ElementName = "Descr")]
 		public string Descr { get; set; }
@@ -270,7 +467,7 @@ namespace P3D_Scenario_Generator
 
 		[XmlAttribute(AttributeName = "InstanceId")]
 		public string InstanceId { get; set; }
-	}
+    }
 
 	[XmlRoot(ElementName = "Goals")]
 	public class Goals
@@ -316,13 +513,13 @@ namespace P3D_Scenario_Generator
 		public string Orientation { get; set; }
 
 		[XmlElement(ElementName = "Length")]
-		public double Length { get; set; }
+		public string Length { get; set; }
 
 		[XmlElement(ElementName = "Width")]
-		public double Width { get; set; }
+		public string Width { get; set; }
 
 		[XmlElement(ElementName = "Height")]
-		public double Height { get; set; }
+		public string Height { get; set; }
 
 		[XmlElement(ElementName = "AttachedWorldPosition")]
 		public AttachedWorldPosition AttachedWorldPosition { get; set; }
@@ -665,8 +862,8 @@ namespace P3D_Scenario_Generator
 		[XmlElement(ElementName = "Descr")]
 		public string Descr { get; set; }
 
-		[XmlElement(ElementName = "FlyingTips")]
-		public string FlyingTips { get; set; }
+		[XmlElement(ElementName = "UserTips")]
+		public string UserTips { get; set; }
 
 		[XmlElement(ElementName = "CrashBehavior")]
 		public string CrashBehavior { get; set; }
@@ -679,6 +876,15 @@ namespace P3D_Scenario_Generator
 
 		[XmlElement(ElementName = "WorldRealism")]
 		public string WorldRealism { get; set; }
+
+		[XmlElement(ElementName = "UnlimitedFuel")]
+		public string UnlimitedFuel { get; set; }
+
+		[XmlElement(ElementName = "AircraftLabels")]
+		public string AircraftLabels { get; set; }
+
+		[XmlElement(ElementName = "AvatarNoCollision")]
+		public string AvatarNoCollision { get; set; }
 	}
 
 	[XmlRoot(ElementName = "SimMissionUI.ScenarioMetadata")]
