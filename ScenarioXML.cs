@@ -115,6 +115,13 @@ namespace P3D_Scenario_Generator
 			SetGoal(simBaseDocumentXML);
 			SetGoalResolutionAction(simBaseDocumentXML);
 			SetAirportLandingTrigger(runway, simBaseDocumentXML);
+			SetTimerTrigger(simBaseDocumentXML);
+			SetProximityTrigger(simBaseDocumentXML);
+			SetTriggerActivationAction(simBaseDocumentXML, parameters);
+			SetTimerTriggerFirstGate(simBaseDocumentXML);
+			SetAirportLandingTriggerActivation(simBaseDocumentXML);
+			SetLastGateLandingTrigger(simBaseDocumentXML);
+			SetProximityTriggerActivation(simBaseDocumentXML);
 			SetDisabledTrafficAirports(runway, simBaseDocumentXML);
 			ClearUnusedObjects(simBaseDocumentXML);
 		}
@@ -124,7 +131,7 @@ namespace P3D_Scenario_Generator
             _ = new List<SimMissionOneShotSoundAction>();
             List<SimMissionOneShotSoundAction> saList = simBaseDocumentXML.WorldBaseFlight.SimMissionOneShotSoundAction;
             saList.Clear();
-			saList.Add(new SimMissionOneShotSoundAction("OneShot_Hoop_SFX", "ThruHoop.wav", GetGUID()));
+			saList.Add(new SimMissionOneShotSoundAction("OneShot_Hoop_Sound_01", "ThruHoop.wav", GetGUID()));
 		}
 
 		static private void SetDialogAction(SimBaseDocumentXML simBaseDocumentXML, Params parameters)
@@ -133,8 +140,8 @@ namespace P3D_Scenario_Generator
 			switch (parameters.selectedScenario)
             {
 				case nameof(ScenarioTypes.Circuit):
-                    dialogActions.Add(new DialogAction("Dialog_Intro1", ScenarioHTML.GetBriefing(), "2", "Text-To-Speech", GetGUID()));
-					dialogActions.Add(new DialogAction("Dialog_Intro2", ScenarioHTML.GetTips(), "2", "Text-To-Speech", GetGUID()));
+                    dialogActions.Add(new DialogAction("Dialog_Intro_01", ScenarioHTML.GetBriefing(), "2", "Text-To-Speech", GetGUID()));
+					dialogActions.Add(new DialogAction("Dialog_Intro_02", ScenarioHTML.GetTips(), "2", "Text-To-Speech", GetGUID()));
 					break;
 				default:
 					break;
@@ -185,6 +192,31 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
+		static private void SetGateLibraryObjects(Runway runway, Params parameters, List<LibraryObject> libraryObjects, double[] headingAdj)
+		{
+            for (int index = 0; index < gates.Count; index++)
+            {
+				// Number objects
+				string descr = Constants.genGameNumBlueDesc.Replace("X", (index + 1).ToString());
+				string mdlGUID = Constants.genGameNumBlueMDLguid[index];
+				string orientation = $"0.0,0.0,{string.Format("{0:0.0}", (runway.hdg + runway.magVar + headingAdj[index]) % 360)}";
+				double vOffset = Constants.genGameNumBlueVertOffset;
+				libraryObjects.Add(new LibraryObject(GetGUID(), descr, mdlGUID, SetWorldPosition(gates[index], parameters, vOffset), orientation, "True", "1", "True"));
+
+				// Hoop active objects
+				descr = Constants.genGameHoopNumActiveDesc.Replace("X", (index + 1).ToString());
+				mdlGUID = Constants.genGameHoopNumActiveMDLguid;
+				vOffset = Constants.genGameHoopNumActiveVertOffset;
+				libraryObjects.Add(new LibraryObject(GetGUID(), descr, mdlGUID, SetWorldPosition(gates[index], parameters, vOffset), orientation, "True", "1", "False"));
+
+				// Hoop inactive objects
+				descr = Constants.genGameHoopNumInactiveDesc.Replace("X", (index + 1).ToString());
+				mdlGUID = Constants.genGameHoopNumInactiveMDLguid;
+				vOffset = Constants.genGameHoopNumInactiveVertOffset;
+				libraryObjects.Add(new LibraryObject(GetGUID(), descr, mdlGUID, SetWorldPosition(gates[index], parameters, vOffset), orientation, "True", "1", "True"));
+			}
+		}
+
 		static private void SetRectangleArea(Runway runway, SimBaseDocumentXML simBaseDocumentXML, Params parameters)
 		{
 			List<RectangleArea> rectangleAreas = new List<RectangleArea>();
@@ -219,81 +251,6 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
-		static private void SetAirportLandingTrigger(Runway runway, SimBaseDocumentXML simBaseDocumentXML)
-        {
-            RunwayFilter rf = new RunwayFilter
-            {
-                RunwayNumber = runway.id
-            };
-			List<ObjectReference> orList = new List<ObjectReference>();
-			SetObjectActivationReference(simBaseDocumentXML, "Deactivate_Number_0X", 8, orList);
-			SetObjectActivationReference(simBaseDocumentXML, "Deactivate_Hoop_Active_0X", 8, orList);
-			SetObjectActivationReference(simBaseDocumentXML, "Deactivate_Hoop_Inactive_0X", 8, orList);
-			SetGoalResolutionReference(simBaseDocumentXML, "Resolve_Goal_X", 1, orList);
-			Actions a = new Actions
-			{
-				ObjectReference = orList
-			};
-			SimMissionAirportLandingTrigger alt = new SimMissionAirportLandingTrigger
-			{
-				InstanceId = GetGUID(),
-				Descr = "Airport_Landing_Trigger_01",
-				Activated = "False",
-				AirportIdent = runway.icaoId,
-                RunwayFilter = rf,
-				Actions = a
-            };
-            List<SimMissionAirportLandingTrigger> altList = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger;
-			altList.Add(alt);
-        }
-
-		static private void SetObjectActivationReference(SimBaseDocumentXML simBaseDocumentXML, string objectName, int index, List<ObjectReference> orList)
-        {
-			string search = objectName.Replace("X", index.ToString());
-			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(oaa => oaa.Descr == search);
-			ObjectReference or = new ObjectReference
-			{
-				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId
-			};
-			orList.Add(or);
-		}
-
-		static private void SetGoalResolutionReference(SimBaseDocumentXML simBaseDocumentXML, string objectName, int index, List<ObjectReference> orList)
-		{
-			string search = objectName.Replace("X", index.ToString());
-			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction.FindIndex(gra => gra.Descr == search);
-			ObjectReference or = new ObjectReference
-			{
-				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction[idIndex].InstanceId
-			};
-			orList.Add(or);
-		}
-
-		static private void SetGateLibraryObjects(Runway runway, Params parameters, List<LibraryObject> libraryObjects, double[] headingAdj)
-		{
-            for (int index = 0; index < gates.Count; index++)
-            {
-				// Number objects
-				string descr = Constants.genGameNumBlueDesc.Replace("X", (index + 1).ToString());
-				string mdlGUID = Constants.genGameNumBlueMDLguid[index];
-				string orientation = $"0.0,0.0,{string.Format("{0:0.0}", (runway.hdg + runway.magVar + headingAdj[index]) % 360)}";
-				double vOffset = Constants.genGameNumBlueVertOffset;
-				libraryObjects.Add(new LibraryObject(GetGUID(), descr, mdlGUID, SetWorldPosition(gates[index], parameters, vOffset), orientation, "True", "1", "False"));
-
-				// Hoop active objects
-				descr = Constants.genGameHoopNumActiveDesc.Replace("X", (index + 1).ToString());
-				mdlGUID = Constants.genGameHoopNumActiveMDLguid;
-				vOffset = Constants.genGameHoopNumActiveVertOffset;
-				libraryObjects.Add(new LibraryObject(GetGUID(), descr, mdlGUID, SetWorldPosition(gates[index], parameters, vOffset), orientation, "True", "1", "False"));
-
-				// Hoop inactive objects
-				descr = Constants.genGameHoopNumInactiveDesc.Replace("X", (index + 1).ToString());
-				mdlGUID = Constants.genGameHoopNumInactiveMDLguid;
-				vOffset = Constants.genGameHoopNumInactiveVertOffset;
-				libraryObjects.Add(new LibraryObject(GetGUID(), descr, mdlGUID, SetWorldPosition(gates[index], parameters, vOffset), orientation, "True", "1", "False"));
-			}
-		}
-
 		static private void SetGateRectangleAreas(Runway runway, Params parameters, List<RectangleArea> rectangleAreas, double[] headingAdj)
 		{
 			for (int index = 0; index < gates.Count; index++)
@@ -318,8 +275,8 @@ namespace P3D_Scenario_Generator
 			switch (parameters.selectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameNumBlueDesc, oaaList, "Activate_Number_0", "True");
-					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameNumBlueDesc, oaaList, "Deactivate_Number_0", "False");
+			//		SetGateObjectActivations(simBaseDocumentXML, Constants.genGameNumBlueDesc, oaaList, "Activate_Number_0", "True");
+			//		SetGateObjectActivations(simBaseDocumentXML, Constants.genGameNumBlueDesc, oaaList, "Deactivate_Number_0", "False");
 					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameHoopNumActiveDesc, oaaList, "Activate_Hoop_Active_0", "True");
 					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameHoopNumActiveDesc, oaaList, "Deactivate_Hoop_Active_0", "False");
 					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameHoopNumInactiveDesc, oaaList, "Activate_Hoop_Inactive_0", "True");
@@ -383,13 +340,14 @@ namespace P3D_Scenario_Generator
 			SimMissionRealismOverrides ro;
 			ro = simBaseDocumentXML.WorldBaseFlight.SimMissionRealismOverrides;
 			ro.Descr = "RealismOverrides";
-			ro.UserTips = "Disable";
-			ro.CrashBehavior = "EndFlight";
-			ro.ATCMenuDisabled = "True";
-			ro.FlightRealism = "Enforced";
-			ro.WorldRealism = "Enforced";
-			ro.AircraftLabels = "Disabled";
-			ro.AvatarNoCollision = "Disabled";
+			ro.UserTips = "UserSpecified";
+			ro.CrashBehavior = "UserSpecified";
+			ro.ATCMenuDisabled = "False";
+			ro.FlightRealism = "UserSpecified";
+			ro.WorldRealism = "UserSpecified";
+			ro.AircraftLabels = "UserSpecified";
+			ro.AvatarNoCollision = "UserSpecified";
+			ro.UnlimitedFuel = "UserSpecified";
 		}
 
 		static private void SetGoal(SimBaseDocumentXML simBaseDocumentXML)
@@ -432,6 +390,263 @@ namespace P3D_Scenario_Generator
 			graList.Add(gra);
 		}
 
+		static private void SetAirportLandingTrigger(Runway runway, SimBaseDocumentXML simBaseDocumentXML)
+		{
+			RunwayFilter rf = new RunwayFilter
+			{
+				RunwayNumber = runway.id
+			};
+			List<ObjectReference> orList = new List<ObjectReference>();
+			SetGoalResolutionReference(simBaseDocumentXML, "Resolve_Goal_X", 1, orList);
+			Actions a = new Actions
+			{
+				ObjectReference = orList
+			};
+			SimMissionAirportLandingTrigger alt = new SimMissionAirportLandingTrigger
+			{
+				InstanceId = GetGUID(),
+				Descr = "Airport_Landing_Trigger_01",
+				Activated = "False",
+				AirportIdent = runway.icaoId,
+				RunwayFilter = rf,
+				Actions = a
+			};
+			List<SimMissionAirportLandingTrigger> altList = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger;
+			altList.Add(alt);
+		}
+
+		static private void SetTimerTrigger(SimBaseDocumentXML simBaseDocumentXML)
+		{
+			List<ObjectReference> orList = new List<ObjectReference>();
+			SetObjectActivationReference(simBaseDocumentXML, "Activate_Hoop_Active_0X", 1, orList);
+			SetObjectActivationReference(simBaseDocumentXML, "Deactivate_Hoop_Inactive_0X", 1, orList);
+			SetDialogReference(simBaseDocumentXML, "Dialog_Intro_0X", 1, orList);
+			SetDialogReference(simBaseDocumentXML, "Dialog_Intro_0X", 2, orList);
+			Actions a = new Actions
+			{
+				ObjectReference = orList
+			};
+			SimMissionTimerTrigger tt = new SimMissionTimerTrigger
+			{
+				InstanceId = GetGUID(),
+				Descr = "Timer_Trigger_01",
+				StopTime = 1.0,
+				Activated = "True",
+				Actions = a
+			};
+			List<SimMissionTimerTrigger> ttList = simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger;
+			ttList.Clear();
+			ttList.Add(tt);
+		}
+
+		static private void SetProximityTrigger(SimBaseDocumentXML simBaseDocumentXML)
+		{
+			List<SimMissionProximityTrigger> ptList = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger;
+			ptList.Clear();
+			for (int index = 0; index < gates.Count; index++)
+            {
+				List<ObjectReference> orAreaList = new List<ObjectReference>();
+				SetRectangleAreaReference(simBaseDocumentXML, "Area_Hoop_0X", index + 1, orAreaList);
+				Areas a = new Areas
+				{
+					ObjectReference = orAreaList
+				};
+				List<ObjectReference> orActionList = new List<ObjectReference>();
+				SetObjectActivationReference(simBaseDocumentXML, "Activate_Hoop_Inactive_0X", index + 1, orActionList);
+				SetObjectActivationReference(simBaseDocumentXML, "Deactivate_Hoop_Active_0X", index + 1, orActionList);
+				if (index + 1 < gates.Count)
+                {
+					SetObjectActivationReference(simBaseDocumentXML, "Activate_Hoop_Active_0X", index + 2, orActionList);
+					SetObjectActivationReference(simBaseDocumentXML, "Deactivate_Hoop_Inactive_0X", index + 2, orActionList);
+				}
+				SetSoundAction(simBaseDocumentXML, "OneShot_Hoop_Sound_0X", 1, orActionList);
+				OnEnterActions oea = new OnEnterActions
+				{
+					ObjectReference = orActionList
+				};
+				SimMissionProximityTrigger pt = new SimMissionProximityTrigger
+				{
+					InstanceId = GetGUID(),
+					Descr = $"Proximity_Trigger_0{index + 1}",
+					Activated = "False",
+					Areas = a,
+					OnEnterActions = oea
+				};
+				ptList.Add(pt);
+			}
+		}
+
+		static private void SetTriggerActivationAction(SimBaseDocumentXML simBaseDocumentXML, Params parameters)
+		{
+			List<SimMissionObjectActivationAction> oaaList = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction;
+
+			switch (parameters.selectedScenario)
+			{
+				case nameof(ScenarioTypes.Circuit):
+					SetGateTriggerActivations(simBaseDocumentXML, $"Proximity_Trigger_0X", oaaList, "Activate_Proximity_Trigger_0", "True");
+					SetGateTriggerActivations(simBaseDocumentXML, $"Proximity_Trigger_0X", oaaList, "Deactivate_Proximity_Trigger_0", "False");
+					break;
+				default:
+					break;
+			}
+		}
+
+		static private void SetTimerTriggerFirstGate(SimBaseDocumentXML simBaseDocumentXML)
+        {
+			string search = "Activate_Proximity_Trigger_01";
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(pt => pt.Descr == search);
+            ObjectReference or = new ObjectReference
+            {
+                InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId
+            };
+			search = "Timer_Trigger_01";
+			idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.FindIndex(tt => tt.Descr == search);
+			simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions.ObjectReference.Add(or);
+		}
+
+		static private void SetAirportLandingTriggerActivation(SimBaseDocumentXML simBaseDocumentXML)
+		{
+			string search = "Airport_Landing_Trigger_01";
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.FindIndex(alt => alt.Descr == search);
+			ObjectReference or = new ObjectReference
+			{
+				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].InstanceId
+			};
+			List<ObjectReference> orList = new List<ObjectReference>
+				{
+					or
+				};
+			ObjectReferenceList orl = new ObjectReferenceList
+			{
+				ObjectReference = orList
+			};
+			SimMissionObjectActivationAction oaa = new SimMissionObjectActivationAction
+			{
+				InstanceId = GetGUID(),
+				Descr = "Activate_Airport_Landing_Trigger_01",
+				NewObjectState = "True"
+			};
+			oaa.ObjectReferenceList = orl;
+			simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.Add(oaa);
+		}
+
+		static private void SetLastGateLandingTrigger(SimBaseDocumentXML simBaseDocumentXML)
+		{
+			string search = "Activate_Airport_Landing_Trigger_01";
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(oa => oa.Descr == search);
+			ObjectReference or = new ObjectReference
+			{
+				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId
+			};
+			search = $"Proximity_Trigger_0{gates.Count}";
+			idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
+			simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(or);
+		}
+
+		static private void SetGateTriggerActivations(SimBaseDocumentXML simBaseDocumentXML, string objectName, List<SimMissionObjectActivationAction> oaaList, string descr, string newObjectState)
+		{
+			for (int index = 0; index < gates.Count; index++)
+			{
+				string search = objectName.Replace("X", (index + 1).ToString());
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(lo => lo.Descr == search);
+				ObjectReference or = new ObjectReference
+				{
+					InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].InstanceId
+				};
+				List<ObjectReference> orList = new List<ObjectReference>
+				{
+					or
+				};
+				ObjectReferenceList orl = new ObjectReferenceList
+				{
+					ObjectReference = orList
+				};
+				SimMissionObjectActivationAction oaa = new SimMissionObjectActivationAction
+				{
+					InstanceId = GetGUID(),
+					Descr = $"{descr}{index + 1}",
+					NewObjectState = newObjectState
+				};
+				oaa.ObjectReferenceList = orl;
+				oaaList.Add(oaa);
+			}
+		}
+
+		static private void SetProximityTriggerActivation(SimBaseDocumentXML simBaseDocumentXML)
+		{
+			for (int index = 0; index < gates.Count; index++)
+			{
+				List<ObjectReference> orActionList = new List<ObjectReference>();
+				SetObjectActivationReference(simBaseDocumentXML, "Deactivate_Proximity_Trigger_0X", index + 1, orActionList);
+				if (index + 1 < gates.Count)
+				{
+					SetObjectActivationReference(simBaseDocumentXML, "Activate_Proximity_Trigger_0X", index + 2, orActionList);
+				}
+				string search = $"Proximity_Trigger_0X".Replace("X", (index + 1).ToString());
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
+				simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(orActionList[0]);
+				if (index + 1 < gates.Count)
+                {
+					simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(orActionList[1]);
+                }
+			}
+		}
+
+		static private void SetSoundAction(SimBaseDocumentXML simBaseDocumentXML, string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionOneShotSoundAction.FindIndex(sa => sa.Descr == search);
+			ObjectReference or = new ObjectReference
+			{
+				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionOneShotSoundAction[idIndex].InstanceId
+			};
+			orList.Add(or);
+		}
+
+		static private void SetRectangleAreaReference(SimBaseDocumentXML simBaseDocumentXML, string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.FindIndex(oaa => oaa.Descr == search);
+			ObjectReference or = new ObjectReference
+			{
+				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea[idIndex].InstanceId
+			};
+			orList.Add(or);
+		}
+
+		static private void SetObjectActivationReference(SimBaseDocumentXML simBaseDocumentXML, string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(oaa => oaa.Descr == search);
+			ObjectReference or = new ObjectReference
+			{
+				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId
+			};
+			orList.Add(or);
+		}
+
+		static private void SetGoalResolutionReference(SimBaseDocumentXML simBaseDocumentXML, string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction.FindIndex(gra => gra.Descr == search);
+			ObjectReference or = new ObjectReference
+			{
+				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction[idIndex].InstanceId
+			};
+			orList.Add(or);
+		}
+
+		static private void SetDialogReference(SimBaseDocumentXML simBaseDocumentXML, string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionDialogAction.FindIndex(da => da.Descr == search);
+			ObjectReference or = new ObjectReference
+			{
+				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionDialogAction[idIndex].InstanceId
+			};
+			orList.Add(or);
+		}
+
 		static private void SetDisabledTrafficAirports(Runway runway, SimBaseDocumentXML simBaseDocumentXML)
 		{
 			SimMissionDisabledTrafficAirports ta;
@@ -443,7 +658,6 @@ namespace P3D_Scenario_Generator
         {
 			simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction.Clear();
 			simBaseDocumentXML.WorldBaseFlight.SimMissionPropertyTrigger.Clear();
-			simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.Clear();
 			simBaseDocumentXML.WorldBaseFlight.SimContainContainer.Clear();
 			simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest.Clear();
 			simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger.Clear();
@@ -710,7 +924,7 @@ namespace P3D_Scenario_Generator
 	{
 
 		[XmlElement(ElementName = "ObjectReference")]
-		public ObjectReference ObjectReference { get; set; }
+		public List<ObjectReference> ObjectReference { get; set; }
 	}
 
 	[XmlRoot(ElementName = "Property")]

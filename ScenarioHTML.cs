@@ -69,7 +69,7 @@ namespace P3D_Scenario_Generator
                     overview.pBriefing += $"{runway.id} at {runway.icaoName} ({runway.icaoId}) in ";
                     overview.pBriefing += $"{runway.city}, {runway.country}.";
                     overview.liObjective = "Take off and fly through the eight gates before landing on the same runway.";
-                    overview.liTips = "Each pair of gates marks the start and finish of a standard rate turn of 90 degrees. ";
+                    overview.liTips = "Each pair of gates marks the start and finish of a standard rate left turn of 90 degrees. ";
                     overview.liTips += "The gates are all the same altitude so you'll want to be established in ";
                     overview.liTips += "level flight before you reach the first gate.";
                     break;
@@ -191,6 +191,13 @@ namespace P3D_Scenario_Generator
             // Copy style files
             File.Copy("style_kneeboard.css", $"{Path.GetDirectoryName(parameters.saveLocation)}\\style_kneeboard.css", true);
             File.Copy("style_load_flight.css", $"{Path.GetDirectoryName(parameters.saveLocation)}\\style_load_flight.css", true);
+
+            // Copy sound files
+            if (!Directory.Exists($"{Path.GetDirectoryName(parameters.saveLocation)}\\sound"))
+            {
+                Directory.CreateDirectory($"{Path.GetDirectoryName(parameters.saveLocation)}\\sound");
+            }
+            File.Copy("ThruHoop.wav", $"{Path.GetDirectoryName(parameters.saveLocation)}\\sound\\ThruHoop.wav", true);
         }
 
         static public int GetDuration()

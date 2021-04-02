@@ -29,14 +29,14 @@ namespace P3D_Scenario_Generator
             switch (parameters.selectedScenario)
             {
                 case nameof(ScenarioTypes.Circuit):
-                    legParams.Add(new LegParams(runway.hdg, runway.len + (parameters.upwindLeg * Constants.feetInKnot)));
-                    legParams.Add(new LegParams((runway.hdg - 45 + 360) % 360, turnDistance));
-                    legParams.Add(new LegParams((runway.hdg - 90 + 360) % 360, parameters.baseLeg * Constants.feetInKnot));
-                    legParams.Add(new LegParams((runway.hdg - 135 + 360) % 360, turnDistance));
-                    legParams.Add(new LegParams((runway.hdg - 180 + 360) % 360, (parameters.finalLeg * Constants.feetInKnot) + runway.len + (parameters.upwindLeg * Constants.feetInKnot)));
-                    legParams.Add(new LegParams((runway.hdg - 225 + 360) % 360, turnDistance));
-                    legParams.Add(new LegParams((runway.hdg - 270 + 360) % 360, parameters.baseLeg * Constants.feetInKnot));
-                    legParams.Add(new LegParams((runway.hdg - 315 + 360) % 360, turnDistance));
+                    legParams.Add(new LegParams((runway.hdg + runway.magVar + 360) % 360, runway.len + (parameters.upwindLeg * Constants.feetInKnot)));
+                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 45 + 360) % 360, turnDistance));
+                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 90 + 360) % 360, parameters.baseLeg * Constants.feetInKnot));
+                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 135 + 360) % 360, turnDistance));
+                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 180 + 360) % 360, (parameters.finalLeg * Constants.feetInKnot) + runway.len + (parameters.upwindLeg * Constants.feetInKnot)));
+                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 225 + 360) % 360, turnDistance));
+                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 270 + 360) % 360, parameters.baseLeg * Constants.feetInKnot));
+                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 315 + 360) % 360, turnDistance));
                     break;
                 default:
                     break;
