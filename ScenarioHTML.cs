@@ -213,5 +213,10 @@ namespace P3D_Scenario_Generator
         {
             return overview.liTips;
         }
+
+        static public string GetObjective()
+        {
+            return overview.liObjective;
+        }
     }
 }

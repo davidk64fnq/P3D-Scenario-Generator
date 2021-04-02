@@ -112,6 +112,9 @@ namespace P3D_Scenario_Generator
 			SetObjectActivationAction(simBaseDocumentXML, parameters);
 			SetScenarioMetadata(runway, simBaseDocumentXML, parameters);
 			SetRealismOverrides(simBaseDocumentXML);
+			SetGoal(simBaseDocumentXML);
+			SetGoalResolutionAction(simBaseDocumentXML);
+			SetAirportLandingTrigger(runway, simBaseDocumentXML);
 			SetDisabledTrafficAirports(runway, simBaseDocumentXML);
 			ClearUnusedObjects(simBaseDocumentXML);
 		}
@@ -216,6 +219,56 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
+		static private void SetAirportLandingTrigger(Runway runway, SimBaseDocumentXML simBaseDocumentXML)
+        {
+            RunwayFilter rf = new RunwayFilter
+            {
+                RunwayNumber = runway.id
+            };
+			List<ObjectReference> orList = new List<ObjectReference>();
+			SetObjectActivationReference(simBaseDocumentXML, "Deactivate_Number_0X", 8, orList);
+			SetObjectActivationReference(simBaseDocumentXML, "Deactivate_Hoop_Active_0X", 8, orList);
+			SetObjectActivationReference(simBaseDocumentXML, "Deactivate_Hoop_Inactive_0X", 8, orList);
+			SetGoalResolutionReference(simBaseDocumentXML, "Resolve_Goal_X", 1, orList);
+			Actions a = new Actions
+			{
+				ObjectReference = orList
+			};
+			SimMissionAirportLandingTrigger alt = new SimMissionAirportLandingTrigger
+			{
+				InstanceId = GetGUID(),
+				Descr = "Airport_Landing_Trigger_01",
+				Activated = "False",
+				AirportIdent = runway.icaoId,
+                RunwayFilter = rf,
+				Actions = a
+            };
+            List<SimMissionAirportLandingTrigger> altList = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger;
+			altList.Add(alt);
+        }
+
+		static private void SetObjectActivationReference(SimBaseDocumentXML simBaseDocumentXML, string objectName, int index, List<ObjectReference> orList)
+        {
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(oaa => oaa.Descr == search);
+			ObjectReference or = new ObjectReference
+			{
+				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId
+			};
+			orList.Add(or);
+		}
+
+		static private void SetGoalResolutionReference(SimBaseDocumentXML simBaseDocumentXML, string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction.FindIndex(gra => gra.Descr == search);
+			ObjectReference or = new ObjectReference
+			{
+				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction[idIndex].InstanceId
+			};
+			orList.Add(or);
+		}
+
 		static private void SetGateLibraryObjects(Runway runway, Params parameters, List<LibraryObject> libraryObjects, double[] headingAdj)
 		{
             for (int index = 0; index < gates.Count; index++)
@@ -265,19 +318,19 @@ namespace P3D_Scenario_Generator
 			switch (parameters.selectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameNumBlueDesc, oaaList, "Activate_Number_0", "True");
-					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameNumBlueDesc, oaaList, "Deactivate_Number_0", "False");
-					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameHoopNumActiveDesc, oaaList, "Activate_Hoop_Active_0", "True");
-					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameHoopNumActiveDesc, oaaList, "Deactivate_Hoop_Active_0", "False");
-					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameHoopNumInactiveDesc, oaaList, "Activate_Hoop_Inactive_0", "True");
-					SetGateObjectActivations(simBaseDocumentXML, parameters, Constants.genGameHoopNumInactiveDesc, oaaList, "Deactivate_Hoop_Inactive_0", "False");
+					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameNumBlueDesc, oaaList, "Activate_Number_0", "True");
+					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameNumBlueDesc, oaaList, "Deactivate_Number_0", "False");
+					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameHoopNumActiveDesc, oaaList, "Activate_Hoop_Active_0", "True");
+					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameHoopNumActiveDesc, oaaList, "Deactivate_Hoop_Active_0", "False");
+					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameHoopNumInactiveDesc, oaaList, "Activate_Hoop_Inactive_0", "True");
+					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameHoopNumInactiveDesc, oaaList, "Deactivate_Hoop_Inactive_0", "False");
 					break;
 				default:
 					break;
 			}
         }
 
-		static private void SetGateObjectActivations(SimBaseDocumentXML simBaseDocumentXML, Params parameters, string objectName, List<SimMissionObjectActivationAction> oaaList, string descr, string newObjectState)
+		static private void SetGateObjectActivations(SimBaseDocumentXML simBaseDocumentXML, string objectName, List<SimMissionObjectActivationAction> oaaList, string descr, string newObjectState)
 		{
 			for (int index = 0; index < gates.Count; index++)
             {
@@ -337,6 +390,46 @@ namespace P3D_Scenario_Generator
 			ro.WorldRealism = "Enforced";
 			ro.AircraftLabels = "Disabled";
 			ro.AvatarNoCollision = "Disabled";
+		}
+
+		static private void SetGoal(SimBaseDocumentXML simBaseDocumentXML)
+		{
+            SimMissionGoal g = new SimMissionGoal
+            {
+                Descr = "Goal_1",
+                Text = ScenarioHTML.GetObjective(),
+                InstanceId = GetGUID()
+            };
+			List<SimMissionGoal> gList = simBaseDocumentXML.WorldBaseFlight.SimMissionGoal;
+			gList.Clear();
+			gList.Add(g);
+        }
+
+		static private void SetGoalResolutionAction(SimBaseDocumentXML simBaseDocumentXML)
+		{
+			string search = "Goal_1";
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionGoal.FindIndex(g => g.Descr == search);
+			ObjectReference or = new ObjectReference
+			{
+				InstanceId = simBaseDocumentXML.WorldBaseFlight.SimMissionGoal[idIndex].InstanceId
+			};
+            List<ObjectReference> orList = new List<ObjectReference>
+            {
+                or
+            };
+            Goals g = new Goals
+            {
+                ObjectReference = orList
+            };
+			SimMissionGoalResolutionAction gra = new SimMissionGoalResolutionAction
+			{
+				Descr = "Resolve_Goal_1",
+				InstanceId = GetGUID(),
+                Goals = g
+            };
+            List<SimMissionGoalResolutionAction> graList = simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction;
+			graList.Clear();
+			graList.Add(gra);
 		}
 
 		static private void SetDisabledTrafficAirports(Runway runway, SimBaseDocumentXML simBaseDocumentXML)
@@ -474,7 +567,7 @@ namespace P3D_Scenario_Generator
 	{
 
 		[XmlElement(ElementName = "ObjectReference")]
-		public ObjectReference ObjectReference { get; set; }
+		public List<ObjectReference> ObjectReference { get; set; }
 	}
 
 	[XmlRoot(ElementName = "SimMission.GoalResolutionAction")]
@@ -571,6 +664,45 @@ namespace P3D_Scenario_Generator
 
 		[XmlElement(ElementName = "Areas")]
 		public Areas Areas { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.AirportLandingTrigger")]
+	public class SimMissionAirportLandingTrigger
+	{
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "LandingType")]
+		public string LandingType { get; set; }
+
+		[XmlElement(ElementName = "Activated")]
+		public string Activated { get; set; }
+
+		[XmlElement(ElementName = "Actions")]
+		public Actions Actions { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlElement(ElementName = "AirportIdent")]
+		public string AirportIdent { get; set; }
+
+		[XmlElement(ElementName = "RunwayFilter")]
+		public RunwayFilter RunwayFilter { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.RunwayFilter")]
+	public class RunwayFilter
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "RunwayNumber")]
+		public string RunwayNumber { get; set; }
+
+		[XmlElement(ElementName = "RunwayDesignator")]
+		public string RunwayDesignator { get; set; }
 	}
 
 	[XmlRoot(ElementName = "Areas")]
@@ -969,13 +1101,16 @@ namespace P3D_Scenario_Generator
 		public List<SimMissionOneShotSoundAction> SimMissionOneShotSoundAction { get; set; }
 
 		[XmlElement(ElementName = "SimMission.GoalResolutionAction")]
-		public SimMissionGoalResolutionAction SimMissionGoalResolutionAction { get; set; }
+		public List<SimMissionGoalResolutionAction> SimMissionGoalResolutionAction { get; set; }
 
 		[XmlElement(ElementName = "SimMission.RectangleArea")]
 		public List<SimMissionRectangleArea> SimMissionRectangleArea { get; set; }
 
 		[XmlElement(ElementName = "SimMission.AreaLandingTrigger")]
 		public List<SimMissionAreaLandingTrigger> SimMissionAreaLandingTrigger { get; set; }
+
+		[XmlElement(ElementName = "SimMission.AirportLandingTrigger")]
+		public List<SimMissionAirportLandingTrigger> SimMissionAirportLandingTrigger { get; set; }
 
 		[XmlElement(ElementName = "SimMission.PropertyTrigger")]
 		public List<SimMissionPropertyTrigger> SimMissionPropertyTrigger { get; set; }
@@ -1002,7 +1137,7 @@ namespace P3D_Scenario_Generator
 		public SimMissionUIScenarioMetadata SimMissionUIScenarioMetadata { get; set; }
 
 		[XmlElement(ElementName = "SimMission.Goal")]
-		public SimMissionGoal SimMissionGoal { get; set; }
+		public List<SimMissionGoal> SimMissionGoal { get; set; }
 
 		[XmlElement(ElementName = "SimMission.DisabledTrafficAirports")]
 		public SimMissionDisabledTrafficAirports SimMissionDisabledTrafficAirports { get; set; }
