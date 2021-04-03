@@ -275,8 +275,6 @@ namespace P3D_Scenario_Generator
 			switch (parameters.selectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-			//		SetGateObjectActivations(simBaseDocumentXML, Constants.genGameNumBlueDesc, oaaList, "Activate_Number_0", "True");
-			//		SetGateObjectActivations(simBaseDocumentXML, Constants.genGameNumBlueDesc, oaaList, "Deactivate_Number_0", "False");
 					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameHoopNumActiveDesc, oaaList, "Activate_Hoop_Active_0", "True");
 					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameHoopNumActiveDesc, oaaList, "Deactivate_Hoop_Active_0", "False");
 					SetGateObjectActivations(simBaseDocumentXML, Constants.genGameHoopNumInactiveDesc, oaaList, "Activate_Hoop_Inactive_0", "True");
@@ -382,6 +380,7 @@ namespace P3D_Scenario_Generator
 			SimMissionGoalResolutionAction gra = new SimMissionGoalResolutionAction
 			{
 				Descr = "Resolve_Goal_1",
+				GoalResolution = "Completed",
 				InstanceId = GetGUID(),
                 Goals = g
             };
@@ -787,6 +786,9 @@ namespace P3D_Scenario_Generator
 	[XmlRoot(ElementName = "SimMission.GoalResolutionAction")]
 	public class SimMissionGoalResolutionAction
 	{
+
+		[XmlElement(ElementName = "GoalResolution")]
+		public string GoalResolution { get; set; }
 
 		[XmlElement(ElementName = "Descr")]
 		public string Descr { get; set; }
