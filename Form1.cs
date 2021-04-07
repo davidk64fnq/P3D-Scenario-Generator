@@ -6,14 +6,12 @@ namespace P3D_Scenario_Generator
 {
     public partial class Form : System.Windows.Forms.Form
     {
-        readonly Aircraft aircraft = new Aircraft();
-
         public Form()
         {
             InitializeComponent();
 
             // Populate ICAO listbox
-            ListBoxRunways.DataSource = RunwaysXML.GetICAOids();
+            ListBoxRunways.DataSource = Runway.GetICAOids();
             ListBoxScenarioType.DataSource = Constants.scenarios;
         }
 
@@ -57,16 +55,14 @@ namespace P3D_Scenario_Generator
 
         private void ButtonGenerateScenario_Click(object sender, EventArgs e)
         {
-            Params parameters = new Params();
-            if (ValidateParams(ref parameters) == false)
+            if (Parameters.SetParams() == false)
             {
                 return;
             }
-            Runway runway = new Runway();
-            RunwaysXML.SetRunway(ref runway, parameters);
-            ScenarioFXML.GenerateFXMLfile(runway, parameters);
-            ScenarioHTML.GenerateOverview(runway, parameters, aircraft);
-            ScenarioXML.GenerateXMLfile(runway, parameters);
+            Runway.SetRunway();
+            ScenarioFXML.GenerateFXMLfile();
+            ScenarioHTML.GenerateOverview();
+            ScenarioXML.GenerateXMLfile();
         }
 
         #endregion
@@ -75,7 +71,7 @@ namespace P3D_Scenario_Generator
 
         private void ButtonAircraft_Click(object sender, EventArgs e)
         {
-            List<string> uiVariations = aircraft.GetUIvariations(); 
+            List<string> uiVariations = Aircraft.GetUIvariations(); 
             if (uiVariations.Count > 0)
             {
                 ListBoxAircraft.DataSource = uiVariations;
@@ -107,48 +103,6 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
-        #region Form validation
-
-        private Boolean ValidateParams(ref Params parameters)
-        {
-            // General tab
-            string errorMsg = "";
-            parameters.saveLocation = textBoxSaveLocation.Text;
-            if (parameters.saveLocation == "")
-            {
-                errorMsg += "\n\tSelect a save location";
-            }
-            if (ListBoxAircraft.Items.Count == 0)
-            {
-                errorMsg += "\n\tSelect an aircraft";
-            }
-            else
-            {
-                parameters.selectedAircraft = ListBoxAircraft.Items[ListBoxAircraft.SelectedIndex].ToString();
-            }
-            parameters.selectedRunway = TextBoxSelectedRunway.Text;
-            parameters.selectedScenario = TextBoxSelectedScenario.Text;
-
-            // Circuit tab
-            parameters.baseLeg = Convert.ToDouble(TextBoxCircuitBase.Text);
-            parameters.finalLeg = Convert.ToDouble(TextBoxCircuitFinal.Text);
-            parameters.height = Convert.ToDouble(TextBoxCircuitHeight.Text);
-            parameters.speed = Convert.ToDouble(TextBoxCircuitSpeed.Text);
-            parameters.upwindLeg = Convert.ToDouble(TextBoxCircuitUpwind.Text);
-
-            if (errorMsg != "")
-            {
-                MessageBox.Show($"Please attend to the following:\n{errorMsg}", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-    }
-
-        #endregion
-
         #endregion
 
         #region Circuit Tab
@@ -166,14 +120,14 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", aircraft.cruiseSpeed);
+                TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed);
                 TextBoxCircuitHeight.Text = "1000";
                 // Upwind distance (miles) approx by speed (knots) * number of minutes / 60 (assume 2 minutes to climb 1000ft at 500ft/min plus 30 seconds to prepare for gate 1)
-                TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", aircraft.cruiseSpeed * 2.5 / 60);
+                TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 2.5 / 60);
                 // Base distance (miles) approx by speed (knots) * number of minutes / 60 (assume 30 seconds to prepare for next gate after completing turn)
-                TextBoxCircuitBase.Text = string.Format("{0:0.0}", aircraft.cruiseSpeed * 0.5 / 60);
+                TextBoxCircuitBase.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 0.5 / 60);
                 // Final distance (miles) approx by speed (knots) * number of minutes / 60 (assume 2 minutes to descend 1000ft at 500ft/min plus 30 seconds wriggle room)
-                TextBoxCircuitFinal.Text = string.Format("{0:0.0}", aircraft.cruiseSpeed * 2.5 / 60);
+                TextBoxCircuitFinal.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 2.5 / 60);
             }
         }
 

@@ -6,13 +6,13 @@ using System.Windows.Forms;
 
 namespace P3D_Scenario_Generator
 {
-    public class Aircraft
+    internal class Aircraft
     {
-        internal string path;
-        internal double cruiseSpeed;
-        internal List<string[]> uiVariations = new List<string[]>();
+        static internal string Path { get; private set; }
+        static internal double CruiseSpeed { get; private set; }
+        static internal List<string[]> uiVariations = new List<string[]>();
 
-        internal List<string> GetUIvariations()
+        static internal List<string> GetUIvariations()
         {
             List<string> uiName = new List<string>();
 
@@ -29,13 +29,13 @@ namespace P3D_Scenario_Generator
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 // Check whether user has selected AI aircraft
-                if (Directory.GetDirectories($"{Path.GetDirectoryName(openFileDialog1.FileName)}", "panel*").Length == 0)
+                if (Directory.GetDirectories($"{System.IO.Path.GetDirectoryName(openFileDialog1.FileName)}", "panel*").Length == 0)
                 {
                     MessageBox.Show("This is an AI aircraft", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return uiName;
                 }
-                path = openFileDialog1.FileName;
-                string aircraftCFG = File.ReadAllText(path);
+                Path = openFileDialog1.FileName;
+                string aircraftCFG = File.ReadAllText(Path);
                 using StringReader reader = new StringReader(aircraftCFG);
                 string currentLine;
                 uiVariations.Clear();
@@ -50,14 +50,14 @@ namespace P3D_Scenario_Generator
                     }
                     else if (currentLine.StartsWith("texture="))
                     {
-                        uiVariations[index][1] = $"{Path.GetDirectoryName(openFileDialog1.FileName)}\\Texture.{currentLine[8..^0]}\\thumbnail.jpg";
+                        uiVariations[index][1] = $"{System.IO.Path.GetDirectoryName(openFileDialog1.FileName)}\\Texture.{currentLine[8..^0]}\\thumbnail.jpg";
                         index++;
                     }
                     else if (currentLine.StartsWith("cruise_speed"))
                     {
                         string[] words1 = currentLine.Split("= ");
                         string[] words2 = words1[1].Split(null);
-                        cruiseSpeed = Convert.ToDouble(words2[0]);
+                        CruiseSpeed = Convert.ToDouble(words2[0]);
                     }
                 }
                 return uiName;
@@ -65,7 +65,7 @@ namespace P3D_Scenario_Generator
             return uiName;
         }
 
-        internal string GetImagename(string selectedAircraft)
+        static internal string GetImagename(string selectedAircraft)
         {
             for (int index = 0; index < uiVariations.Count; index++)
             {

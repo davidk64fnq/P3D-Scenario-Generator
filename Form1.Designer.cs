@@ -389,33 +389,33 @@ namespace P3D_Scenario_Generator
 
         private System.Windows.Forms.TabControl TabControl;
         private System.Windows.Forms.TabPage TabPageGeneral;
-        private System.Windows.Forms.ListBox ListBoxRunways;
         private System.Windows.Forms.TabPage TabPageCircuit;
-        private System.Windows.Forms.TextBox TextBoxSelectedRunway;
         private System.Windows.Forms.TextBox TextBoxSearchRunway;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button ButtonRandRunway;
         private System.Windows.Forms.Button ButtonGenerateScenario;
         private System.Windows.Forms.PictureBox PictureBoxCircuit;
-        private System.Windows.Forms.TextBox TextBoxSelectedScenario;
-        private System.Windows.Forms.ListBox ListBoxScenarioType;
-        private System.Windows.Forms.TextBox TextBoxCircuitUpwind;
-        private System.Windows.Forms.TextBox TextBoxCircuitSpeed;
-        private System.Windows.Forms.TextBox TextBoxCircuitHeight;
-        private System.Windows.Forms.TextBox TextBoxCircuitFinal;
-        private System.Windows.Forms.TextBox TextBoxCircuitBase;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button buttonSaveLocation;
-        private System.Windows.Forms.TextBox textBoxSaveLocation;
         private System.Windows.Forms.Button buttonAircraft;
-        private System.Windows.Forms.ListBox ListBoxAircraft;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Button ButtonCircuitDefault;
+        internal System.Windows.Forms.TextBox textBoxSaveLocation;
+        internal System.Windows.Forms.ListBox ListBoxRunways;
+        internal System.Windows.Forms.TextBox TextBoxSelectedRunway;
+        internal System.Windows.Forms.TextBox TextBoxSelectedScenario;
+        internal System.Windows.Forms.ListBox ListBoxScenarioType;
+        internal System.Windows.Forms.TextBox TextBoxCircuitUpwind;
+        internal System.Windows.Forms.TextBox TextBoxCircuitSpeed;
+        internal System.Windows.Forms.TextBox TextBoxCircuitHeight;
+        internal System.Windows.Forms.TextBox TextBoxCircuitFinal;
+        internal System.Windows.Forms.TextBox TextBoxCircuitBase;
+        internal System.Windows.Forms.ListBox ListBoxAircraft;
     }
 }
 

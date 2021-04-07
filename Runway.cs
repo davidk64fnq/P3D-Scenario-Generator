@@ -4,10 +4,26 @@ using System.Xml;
 
 namespace P3D_Scenario_Generator
 {
-    internal class RunwaysXML
+    internal class Runway
     {
 
         private static readonly string xmlFilename = "runways.xml";
+
+        internal static string IcaoId { get; private set; }
+        internal static string IcaoName { get; private set; }
+        internal static string Country { get; private set; }
+        internal static string State { get; private set; }
+        internal static string City { get; private set; }
+        internal static double AirportLon { get; private set; }
+        internal static double AirportLat { get; private set; }
+        internal static double Altitude { get; private set; }
+        internal static double MagVar { get; private set; }
+        internal static string Id { get; private set; }
+        internal static int Len { get; private set; }     // feet
+        internal static double Hdg { get; private set; }  // magnetic (add magVar for true)
+        internal static string Def { get; private set; }  // surface
+        internal static double Lat { get; private set; }  // threshold latitude
+        internal static double Lon { get; private set; }  // threshold longitude
 
         static public List<string> GetICAOids()
         {
@@ -32,33 +48,32 @@ namespace P3D_Scenario_Generator
             return icaoIDs;
         }
 
-        static public void SetRunway(ref Runway runway, Params parameters)
+        static public void SetRunway()
         {
             XmlReader reader = XmlReader.Create(xmlFilename);
-            string[] words = parameters.selectedRunway.Split("\t");
-            runway.icaoId = words[0];
+            string[] words = Parameters.SelectedRunway.Split("\t");
+            IcaoId = words[0];
 
             Boolean runwaySet = false;
             while (reader.ReadToFollowing("ICAO") && runwaySet == false)
             {
                 // Check we have located selected airport
-                if (reader.MoveToAttribute("id") && reader.Value == runway.icaoId)
+                if (reader.MoveToAttribute("id") && reader.Value == IcaoId)
                 {
                     reader.ReadToFollowing("ICAOName");
-                    runway.icaoName = reader.ReadElementContentAsString();
+                    IcaoName = reader.ReadElementContentAsString();
                     reader.ReadToFollowing("Country");
-                    runway.country = reader.ReadElementContentAsString();
-                    //runway.state = reader.ReadElementContentAsString();
+                    Country = reader.ReadElementContentAsString();
                     reader.ReadToFollowing("City");
-                    runway.city = reader.ReadElementContentAsString();
+                    City = reader.ReadElementContentAsString();
                     reader.ReadToFollowing("Longitude");
-                    runway.airportLon = reader.ReadElementContentAsDouble();
+                    AirportLon = reader.ReadElementContentAsDouble();
                     reader.ReadToFollowing("Latitude");
-                    runway.airportLat = reader.ReadElementContentAsDouble();
+                    AirportLat = reader.ReadElementContentAsDouble();
                     reader.ReadToFollowing("Altitude");
-                    runway.altitude = reader.ReadElementContentAsDouble();
+                    Altitude = reader.ReadElementContentAsDouble();
                     reader.ReadToFollowing("MagVar");
-                    runway.magVar = reader.ReadElementContentAsDouble();
+                    MagVar = reader.ReadElementContentAsDouble();
 
                     // Check we have located selected runway
                     do
@@ -66,17 +81,17 @@ namespace P3D_Scenario_Generator
                         reader.Read();
                     }
                     while (!(reader.Name == "Runway" && reader.MoveToAttribute("id") && $"({reader.Value})" == words[1]));
-                    runway.id = reader.Value;
+                    Id = reader.Value;
                     reader.ReadToFollowing("Len");
-                    runway.len = reader.ReadElementContentAsInt();
+                    Len = reader.ReadElementContentAsInt();
                     reader.ReadToFollowing("Hdg");
-                    runway.hdg = reader.ReadElementContentAsDouble();
+                    Hdg = reader.ReadElementContentAsDouble();
                     reader.ReadToFollowing("Def");
-                    runway.def = reader.ReadElementContentAsString();
+                    Def = reader.ReadElementContentAsString();
                     reader.ReadToFollowing("Lat");
-                    runway.lat = reader.ReadElementContentAsDouble();
+                    Lat = reader.ReadElementContentAsDouble();
                     reader.ReadToFollowing("Lon");
-                    runway.lon = reader.ReadElementContentAsDouble();
+                    Lon = reader.ReadElementContentAsDouble();
 
                     runwaySet = true;
                 }

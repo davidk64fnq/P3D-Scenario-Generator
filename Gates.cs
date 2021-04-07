@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace P3D_Scenario_Generator
 {
@@ -15,35 +14,47 @@ namespace P3D_Scenario_Generator
             distance = d2;
         }
     }
-
-    internal class GateCalcs
+    public struct Gate
     {
-        static public List<Gate> SetGateCoords(Runway runway, Params parameters)
-        {
-            List<Gate> gates = new List<Gate>();
+        public double lat;
+        public double lon;
 
+        public Gate(double d1, double d2)
+        {
+            lat = d1;
+            lon = d2;
+        }
+    }
+
+    internal class Gates
+    {
+        private static readonly List<Gate> gates;
+        internal static int GateCount { get; private set; }
+
+        internal static void SetGates()
+        {
             // Turn radius approx speed/180, then use pythagorus to get turn distance
-            double turnDistance = parameters.speed * Constants.feetInKnot / 180 / Math.Sin(45 * Math.PI / 180);
+            double turnDistance = Parameters.Speed * Constants.feetInKnot / 180 / Math.Sin(45 * Math.PI / 180);
 
             List<LegParams> legParams = new List<LegParams>();
-            switch (parameters.selectedScenario)
+            switch (Parameters.SelectedScenario)
             {
                 case nameof(ScenarioTypes.Circuit):
-                    legParams.Add(new LegParams((runway.hdg + runway.magVar + 360) % 360, runway.len + (parameters.upwindLeg * Constants.feetInKnot)));
-                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 45 + 360) % 360, turnDistance));
-                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 90 + 360) % 360, parameters.baseLeg * Constants.feetInKnot));
-                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 135 + 360) % 360, turnDistance));
-                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 180 + 360) % 360, (parameters.finalLeg * Constants.feetInKnot) + runway.len + (parameters.upwindLeg * Constants.feetInKnot)));
-                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 225 + 360) % 360, turnDistance));
-                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 270 + 360) % 360, parameters.baseLeg * Constants.feetInKnot));
-                    legParams.Add(new LegParams((runway.hdg + runway.magVar - 315 + 360) % 360, turnDistance));
+                    legParams.Add(new LegParams((Runway.Hdg + Runway.MagVar + 360) % 360, Runway.Len + (Parameters.UpwindLeg * Constants.feetInKnot)));
+                    legParams.Add(new LegParams((Runway.Hdg + Runway.MagVar - 45 + 360) % 360, turnDistance));
+                    legParams.Add(new LegParams((Runway.Hdg + Runway.MagVar - 90 + 360) % 360, Parameters.BaseLeg * Constants.feetInKnot));
+                    legParams.Add(new LegParams((Runway.Hdg + Runway.MagVar - 135 + 360) % 360, turnDistance));
+                    legParams.Add(new LegParams((Runway.Hdg + Runway.MagVar - 180 + 360) % 360, (Parameters.FinalLeg * Constants.feetInKnot) + Runway.Len + (Parameters.UpwindLeg * Constants.feetInKnot)));
+                    legParams.Add(new LegParams((Runway.Hdg + Runway.MagVar - 225 + 360) % 360, turnDistance));
+                    legParams.Add(new LegParams((Runway.Hdg + Runway.MagVar - 270 + 360) % 360, Parameters.BaseLeg * Constants.feetInKnot));
+                    legParams.Add(new LegParams((Runway.Hdg + Runway.MagVar - 315 + 360) % 360, turnDistance));
                     break;
                 default:
                     break;
             }
 
-            double dStartLat = runway.lat;
-            double dStartLon = runway.lon;
+            double dStartLat = Runway.Lat;
+            double dStartLon = Runway.Lon;
             double dFinishLat = 0;
             double dFinishLon = 0;
             for (int index = 0; index < legParams.Count; index++)
@@ -53,8 +64,7 @@ namespace P3D_Scenario_Generator
                 dStartLat = dFinishLat;
                 dStartLon = dFinishLon;
             }
-
-            return gates;
+            GateCount = legParams.Count;
         }
 
         static private void AdjCoords(double dStartLat, double dStartLon, double dHeading, double dDist, ref double dFinishLat, ref double dFinishLon)
@@ -72,6 +82,11 @@ namespace P3D_Scenario_Generator
             // Convert back to degrees
             dFinishLat = dLat2 * (180 / Math.PI);
             dFinishLon = dLon2 * (180 / Math.PI);
+        }
+
+        static internal Gate GetGate(int index)
+        {
+            return gates[index];
         }
     }
 }

@@ -9,11 +9,11 @@ namespace P3D_Scenario_Generator
 {
 	public class ScenarioFXML
     {
-        static internal void GenerateFXMLfile(Runway runway, Params parameters)
+        static internal void GenerateFXMLfile()
 		{
 			SimBaseDocument simBaseDocument = ReadSourceFXML();
-			EditSourceFXML(runway, simBaseDocument, parameters);
-			WriteSourceFXML(simBaseDocument, parameters);
+			EditSourceFXML(simBaseDocument);
+			WriteSourceFXML(simBaseDocument);
         }
 
 		static private SimBaseDocument ReadSourceFXML()
@@ -24,7 +24,7 @@ namespace P3D_Scenario_Generator
             return (SimBaseDocument)serializer.Deserialize(reader);
 		}
 
-		static private void EditSourceFXML(Runway runway, SimBaseDocument simBaseDocument, Params parameters)
+		static private void EditSourceFXML(SimBaseDocument simBaseDocument)
 		{
 			FlightSections fs;
 			fs = simBaseDocument.FlightSections;
@@ -32,7 +32,7 @@ namespace P3D_Scenario_Generator
 			// Main section
 			int sectionIndex = fs.Section.FindIndex(s => s.Name == "Main");
 			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Title");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Path.GetFileNameWithoutExtension(parameters.saveLocation)}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Description");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Constants.appTitle} - Circuit";
 
@@ -60,23 +60,23 @@ namespace P3D_Scenario_Generator
 			// Sim.0 section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "Sim.0");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Sim");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{parameters.selectedAircraft}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.SelectedAircraft}";
 
             // Simvars.0 section
             sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
 			// Convert format of runway heading from magnetic North nearest degree to plus/minus 180 degrees true North
-			double convertHdg = runway.hdg + runway.magVar;
+			double convertHdg = Runway.Hdg + Runway.MagVar;
 			if (convertHdg > 180)
             {
 				convertHdg -= 360;
             }
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{convertHdg}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
-			string formattedLatitude = FormatCoordXML(runway.lat, "N", "S");
+			string formattedLatitude = FormatCoordXML(Runway.Lat, "N", "S");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
-			string formattedLongitude = FormatCoordXML(runway.lon, "E", "W");
+			string formattedLongitude = FormatCoordXML(Runway.Lon, "E", "W");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "+0";
@@ -86,7 +86,7 @@ namespace P3D_Scenario_Generator
 			// ObjectFile section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "ObjectFile");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "File");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Path.GetFileNameWithoutExtension(parameters.saveLocation)}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}";
 		}
 
 		static public string FormatCoordXML(double dCoord, string sPosDir, string sNegDir)
@@ -118,11 +118,11 @@ namespace P3D_Scenario_Generator
 			return sCoordLine;
 		}
 
-		static private void WriteSourceFXML(SimBaseDocument simBaseDocument, Params parameters)
+		static private void WriteSourceFXML(SimBaseDocument simBaseDocument)
         {
 			XmlSerializer xmlSerializer = new XmlSerializer(simBaseDocument.GetType());
 
-            using StreamWriter writer = new StreamWriter(parameters.saveLocation);
+            using StreamWriter writer = new StreamWriter(Parameters.SaveLocation);
             xmlSerializer.Serialize(writer, simBaseDocument);
         }
 
