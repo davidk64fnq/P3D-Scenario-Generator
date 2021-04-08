@@ -446,7 +446,7 @@ namespace P3D_Scenario_Generator
 				mdlGUID = Constants.genGameHoopNumActiveMDLguid;
 				vOffset = Constants.genGameHoopNumActiveVertOffset;
 				worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
-				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, "True", "1", GetGUID(), "True"));
+				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, "True", "1", GetGUID(), "False"));
 
 				// Hoop inactive objects
 				descr = Constants.genGameHoopNumInactiveDesc.Replace("X", (index + 1).ToString());
