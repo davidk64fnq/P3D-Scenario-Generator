@@ -202,8 +202,15 @@ namespace P3D_Scenario_Generator
 
         static internal int GetDuration()
         {
-            string[] words = overview.pDuration.Split(" ");
-            return Convert.ToInt32(words[0]);
+            if (overview.pDuration != null)
+            {
+                string[] words = overview.pDuration.Split(" ");
+                return Convert.ToInt32(words[0]);
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         static internal string GetDifficulty()
@@ -224,6 +231,11 @@ namespace P3D_Scenario_Generator
         static internal string GetObjective()
         {
             return overview.liObjective;
+        }
+
+        static internal string GetTitle()
+        {
+            return overview.title;
         }
     }
 }

@@ -28,7 +28,7 @@ namespace P3D_Scenario_Generator
 
     internal class Gates
     {
-        private static readonly List<Gate> gates;
+        private static readonly List<Gate> gates = new List<Gate>();
         internal static int GateCount { get; private set; }
 
         internal static void SetGates()
