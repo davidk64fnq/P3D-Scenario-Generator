@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace P3D_Scenario_Generator
@@ -193,5 +195,30 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
+        private void ButtonHelp_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var data = File.ReadAllBytes(@".\P3D Scenario Generator.pdf");
+                PdfiumViewer.PdfDocument doc;
+                using Stream stream = new MemoryStream(data);
+                doc = PdfiumViewer.PdfDocument.Load(stream);
+                var viewer = new PdfiumViewer.PdfViewer
+                {
+                    Document = doc
+                };
+                var form = new System.Windows.Forms.Form
+                {
+                    Size = new Size(600, 800)
+                };
+                viewer.Dock = System.Windows.Forms.DockStyle.Fill;
+                form.Controls.Add(viewer);
+                form.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
     }
 }

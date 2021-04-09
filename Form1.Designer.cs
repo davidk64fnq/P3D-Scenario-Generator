@@ -62,6 +62,7 @@ namespace P3D_Scenario_Generator
             this.PictureBoxCircuit = new System.Windows.Forms.PictureBox();
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.ButtonHelp = new System.Windows.Forms.Button();
             this.TabControl.SuspendLayout();
             this.TabPageGeneral.SuspendLayout();
             this.TabPageCircuit.SuspendLayout();
@@ -296,6 +297,7 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitUpwind.Name = "TextBoxCircuitUpwind";
             this.TextBoxCircuitUpwind.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitUpwind.TabIndex = 5;
+            this.TextBoxCircuitUpwind.Text = "0";
             this.TextBoxCircuitUpwind.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitUpwind, "Distance between runway and gate 1 in miles");
             this.TextBoxCircuitUpwind.TextChanged += new System.EventHandler(this.TextBoxCircuitUpwind_TextChanged);
@@ -306,6 +308,7 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitSpeed.Name = "TextBoxCircuitSpeed";
             this.TextBoxCircuitSpeed.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitSpeed.TabIndex = 4;
+            this.TextBoxCircuitSpeed.Text = "0";
             this.TextBoxCircuitSpeed.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitSpeed, "Cruise speed between gates 1 and 8 in knots");
             this.TextBoxCircuitSpeed.TextChanged += new System.EventHandler(this.TextBoxCircuitSpeed_TextChanged);
@@ -316,6 +319,7 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitHeight.Name = "TextBoxCircuitHeight";
             this.TextBoxCircuitHeight.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitHeight.TabIndex = 3;
+            this.TextBoxCircuitHeight.Text = "0";
             this.TextBoxCircuitHeight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitHeight, "Height of circuit above runway in feet");
             this.TextBoxCircuitHeight.TextChanged += new System.EventHandler(this.TextBoxCircuitHeight_TextChanged);
@@ -326,6 +330,7 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitFinal.Name = "TextBoxCircuitFinal";
             this.TextBoxCircuitFinal.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitFinal.TabIndex = 2;
+            this.TextBoxCircuitFinal.Text = "0";
             this.TextBoxCircuitFinal.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitFinal, "Distance between gate 8 and runway in miles");
             this.TextBoxCircuitFinal.TextChanged += new System.EventHandler(this.TextBoxCircuitFinal_TextChanged);
@@ -336,6 +341,7 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitBase.Name = "TextBoxCircuitBase";
             this.TextBoxCircuitBase.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitBase.TabIndex = 1;
+            this.TextBoxCircuitBase.Text = "0";
             this.TextBoxCircuitBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitBase, "Distance between gates 2 and 3 (6 and 7) in miles");
             this.TextBoxCircuitBase.TextChanged += new System.EventHandler(this.TextBoxCircuitBase_TextChanged);
@@ -361,13 +367,26 @@ namespace P3D_Scenario_Generator
             this.ButtonGenerateScenario.UseVisualStyleBackColor = true;
             this.ButtonGenerateScenario.Click += new System.EventHandler(this.ButtonGenerateScenario_Click);
             // 
+            // ButtonHelp
+            // 
+            this.ButtonHelp.Location = new System.Drawing.Point(752, 550);
+            this.ButtonHelp.Name = "ButtonHelp";
+            this.ButtonHelp.Size = new System.Drawing.Size(75, 23);
+            this.ButtonHelp.TabIndex = 2;
+            this.ButtonHelp.Text = "Help";
+            this.ButtonHelp.UseVisualStyleBackColor = true;
+            this.ButtonHelp.Click += new System.EventHandler(this.ButtonHelp_Click);
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(844, 606);
+            this.Controls.Add(this.ButtonHelp);
             this.Controls.Add(this.ButtonGenerateScenario);
             this.Controls.Add(this.TabControl);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "Form";
             this.Text = "P3D Scenario Generator";
             this.TabControl.ResumeLayout(false);
@@ -416,6 +435,7 @@ namespace P3D_Scenario_Generator
         internal System.Windows.Forms.TextBox TextBoxCircuitFinal;
         internal System.Windows.Forms.TextBox TextBoxCircuitBase;
         internal System.Windows.Forms.ListBox ListBoxAircraft;
+        private System.Windows.Forms.Button ButtonHelp;
     }
 }
 

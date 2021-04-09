@@ -92,7 +92,15 @@ namespace P3D_Scenario_Generator
 
 		static private void SetDisabledTrafficAirports()
 		{
-			SimMissionDisabledTrafficAirports ta = new SimMissionDisabledTrafficAirports($"{Runway.IcaoId}");
+			SimMissionDisabledTrafficAirports ta = new SimMissionDisabledTrafficAirports();
+			switch (Parameters.SelectedScenario)
+			{
+				case nameof(ScenarioTypes.Circuit):
+					ta.AirportIdent = $"{Runway.IcaoId}";
+					break;
+				default:
+					break;
+			}
 			simBaseDocumentXML.WorldBaseFlight.SimMissionDisabledTrafficAirports = ta;
 		}
 
@@ -126,7 +134,7 @@ namespace P3D_Scenario_Generator
 
 		static private void SetOneShotSoundAction()
 		{
-            List<SimMissionOneShotSoundAction> saList = new List<SimMissionOneShotSoundAction>();
+			List<SimMissionOneShotSoundAction> saList = new List<SimMissionOneShotSoundAction>();
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
@@ -247,23 +255,28 @@ namespace P3D_Scenario_Generator
 		// Requires 2nd pass SetGoalResolutionAction()
 		static private void SetAirportLandingTrigger()
 		{
-			RunwayFilter rf = new RunwayFilter("Runway_Filter_01", Runway.Id, "None");
-			List<ObjectReference> orList = new List<ObjectReference>();
-			SetGoalResolutionReference("Resolve_Goal_0X", 1, orList);
-			Actions a = new Actions(orList);
-			SimMissionAirportLandingTrigger alt = new SimMissionAirportLandingTrigger
+			List<SimMissionAirportLandingTrigger> altList = new List<SimMissionAirportLandingTrigger>();
+			switch (Parameters.SelectedScenario)
 			{
-				InstanceId = GetGUID(),
-				Descr = "Airport_Landing_Trigger_01",
-				Activated = "False",
-				AirportIdent = Runway.IcaoId,
-				RunwayFilter = rf,
-				Actions = a
-			};
-			List<SimMissionAirportLandingTrigger> altList = new List<SimMissionAirportLandingTrigger>
-			{
-				alt
-			};
+				case nameof(ScenarioTypes.Circuit):
+					RunwayFilter rf = new RunwayFilter("Runway_Filter_01", Runway.Id, "None");
+					List<ObjectReference> orList = new List<ObjectReference>();
+					SetGoalResolutionReference("Resolve_Goal_0X", 1, orList);
+					Actions a = new Actions(orList);
+					SimMissionAirportLandingTrigger alt = new SimMissionAirportLandingTrigger
+					{
+						InstanceId = GetGUID(),
+						Descr = "Airport_Landing_Trigger_01",
+						Activated = "False",
+						AirportIdent = Runway.IcaoId,
+						RunwayFilter = rf,
+						Actions = a
+					};
+					altList.Add(alt);
+					break;
+				default:
+					break;
+			}
 			simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger = altList;
 		}
 
@@ -271,30 +284,37 @@ namespace P3D_Scenario_Generator
 		static private void SetProximityTrigger()
 		{
 			List<SimMissionProximityTrigger> ptList = new List<SimMissionProximityTrigger>();
-			for (int index = 0; index < Gates.GateCount; index++)
+			switch (Parameters.SelectedScenario)
 			{
-				List<ObjectReference> orAreaList = new List<ObjectReference>();
-				SetRectangleAreaReference("Area_Hoop_0X", index + 1, orAreaList);
-				Areas a = new Areas(orAreaList);
-				List<ObjectReference> orActionList = new List<ObjectReference>();
-				SetObjectActivationReference("Activate_Hoop_Inactive_0X", index + 1, orActionList);
-				SetObjectActivationReference("Deactivate_Hoop_Active_0X", index + 1, orActionList);
-				if (index + 1 < Gates.GateCount)
-				{
-					SetObjectActivationReference("Activate_Hoop_Active_0X", index + 2, orActionList);
-					SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", index + 2, orActionList);
-				}
-				SetSoundAction("OneShotSound_ThruHoop_0X", 1, orActionList);
-				OnEnterActions oea = new OnEnterActions(orActionList);
-				SimMissionProximityTrigger pt = new SimMissionProximityTrigger
-				{
-					InstanceId = GetGUID(),
-					Descr = $"Proximity_Trigger_0{index + 1}",
-					Activated = "False",
-					Areas = a,
-					OnEnterActions = oea
-				};
-				ptList.Add(pt);
+				case nameof(ScenarioTypes.Circuit):
+					for (int index = 0; index < Gates.GateCount; index++)
+					{
+						List<ObjectReference> orAreaList = new List<ObjectReference>();
+						SetRectangleAreaReference("Area_Hoop_0X", index + 1, orAreaList);
+						Areas a = new Areas(orAreaList);
+						List<ObjectReference> orActionList = new List<ObjectReference>();
+						SetObjectActivationReference("Activate_Hoop_Inactive_0X", index + 1, orActionList);
+						SetObjectActivationReference("Deactivate_Hoop_Active_0X", index + 1, orActionList);
+						if (index + 1 < Gates.GateCount)
+						{
+							SetObjectActivationReference("Activate_Hoop_Active_0X", index + 2, orActionList);
+							SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", index + 2, orActionList);
+						}
+						SetSoundAction("OneShotSound_ThruHoop_0X", 1, orActionList);
+						OnEnterActions oea = new OnEnterActions(orActionList);
+						SimMissionProximityTrigger pt = new SimMissionProximityTrigger
+						{
+							InstanceId = GetGUID(),
+							Descr = $"Proximity_Trigger_0{index + 1}",
+							Activated = "False",
+							Areas = a,
+							OnEnterActions = oea
+						};
+						ptList.Add(pt);
+					}
+					break;
+				default:
+					break;
 			}
 			simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger = ptList;
 		}
@@ -302,23 +322,28 @@ namespace P3D_Scenario_Generator
 		// Requires 2nd pass SetObjectActivationAction()
 		static private void SetTimerTrigger()
 		{
-			List<ObjectReference> orList = new List<ObjectReference>();
-			SetObjectActivationReference("Activate_Hoop_Active_0X", 1, orList);
-			SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", 1, orList);
-			SetDialogReference("Dialog_Intro_0X", 1, orList);
-			SetDialogReference("Dialog_Intro_0X", 2, orList);
-			SimMissionTimerTrigger tt = new SimMissionTimerTrigger
+			List<SimMissionTimerTrigger> ttList = new List<SimMissionTimerTrigger>();
+			switch (Parameters.SelectedScenario)
 			{
-				InstanceId = GetGUID(),
-				Descr = "Timer_Trigger_01",
-				StopTime = 1.0,
-				Activated = "True",
-				Actions = new Actions(orList)
-			};
-			List<SimMissionTimerTrigger> ttList = new List<SimMissionTimerTrigger>
-			{
-				tt
-			};
+				case nameof(ScenarioTypes.Circuit):
+					List<ObjectReference> orList = new List<ObjectReference>();
+					SetObjectActivationReference("Activate_Hoop_Active_0X", 1, orList);
+					SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", 1, orList);
+					SetDialogReference("Dialog_Intro_0X", 1, orList);
+					SetDialogReference("Dialog_Intro_0X", 2, orList);
+					SimMissionTimerTrigger tt = new SimMissionTimerTrigger
+					{
+						InstanceId = GetGUID(),
+						Descr = "Timer_Trigger_01",
+						StopTime = 1.0,
+						Activated = "True",
+						Actions = new Actions(orList)
+					}; 
+					ttList.Add(tt);
+					break;
+				default:
+					break;
+			}
 			simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger = ttList;
 		}
 
@@ -329,21 +354,28 @@ namespace P3D_Scenario_Generator
 		// Requires 3rd pass SetAirportLandingTrigger()
 		static private void SetAirportLandingTriggerActivation()
 		{
-			string search = "Airport_Landing_Trigger_01";
-			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.FindIndex(alt => alt.Descr == search);
-			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].InstanceId);
-			List<ObjectReference> orList = new List<ObjectReference>
+			switch (Parameters.SelectedScenario)
 			{
-				or
-			};
-			SimMissionObjectActivationAction oaa = new SimMissionObjectActivationAction
-			{
-				InstanceId = GetGUID(),
-				Descr = "Activate_Airport_Landing_Trigger_01",
-				NewObjectState = "True",
-				ObjectReferenceList = new ObjectReferenceList(orList)
-			};
-			simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.Add(oaa);
+				case nameof(ScenarioTypes.Circuit):
+					string search = "Airport_Landing_Trigger_01";
+					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.FindIndex(alt => alt.Descr == search);
+					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].InstanceId);
+					List<ObjectReference> orList = new List<ObjectReference>
+					{
+						or
+					};
+					SimMissionObjectActivationAction oaa = new SimMissionObjectActivationAction
+					{
+						InstanceId = GetGUID(),
+						Descr = "Activate_Airport_Landing_Trigger_01",
+						NewObjectState = "True",
+						ObjectReferenceList = new ObjectReferenceList(orList)
+					};
+					simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.Add(oaa);
+					break;
+				default:
+					break;
+			}
 		}
 
 		// Requires 3rd pass SetProximityTrigger()
@@ -369,44 +401,65 @@ namespace P3D_Scenario_Generator
 		// Requires 4th pass SetAirportLandingTriggerActivation()
 		static private void SetLastGateLandingTrigger()
 		{
-			string search = "Activate_Airport_Landing_Trigger_01";
-			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(oa => oa.Descr == search);
-			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
-			search = $"Proximity_Trigger_0{Gates.GateCount}";
-			idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
-			simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(or);
+			switch (Parameters.SelectedScenario)
+			{
+				case nameof(ScenarioTypes.Circuit):
+					string search = "Activate_Airport_Landing_Trigger_01";
+					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(oa => oa.Descr == search);
+					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
+					search = $"Proximity_Trigger_0{Gates.GateCount}";
+					idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
+					simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(or);
+					break;
+				default:
+					break;
+			}
 		}
 
 		// Requires 4th pass SetProximityTriggerActivationAction()
 		static private void SetProximityTriggerOnEnterAction()
 		{
-			for (int index = 0; index < Gates.GateCount; index++)
+			switch (Parameters.SelectedScenario)
 			{
-				List<ObjectReference> orActionList = new List<ObjectReference>();
-				SetObjectActivationReference("Deactivate_Proximity_Trigger_0X", index + 1, orActionList);
-				if (index + 1 < Gates.GateCount)
-				{
-					SetObjectActivationReference("Activate_Proximity_Trigger_0X", index + 2, orActionList);
-				}
-				string search = $"Proximity_Trigger_0X".Replace("X", (index + 1).ToString());
-				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
-				simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(orActionList[0]);
-				if (index + 1 < Gates.GateCount)
-				{
-					simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(orActionList[1]);
-				}
+				case nameof(ScenarioTypes.Circuit):
+					for (int index = 0; index < Gates.GateCount; index++)
+					{
+						List<ObjectReference> orActionList = new List<ObjectReference>();
+						SetObjectActivationReference("Deactivate_Proximity_Trigger_0X", index + 1, orActionList);
+						if (index + 1 < Gates.GateCount)
+						{
+							SetObjectActivationReference("Activate_Proximity_Trigger_0X", index + 2, orActionList);
+						}
+						string search = $"Proximity_Trigger_0X".Replace("X", (index + 1).ToString());
+						int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
+						simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(orActionList[0]);
+						if (index + 1 < Gates.GateCount)
+						{
+							simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(orActionList[1]);
+						}
+					}
+					break;
+				default:
+					break;
 			}
 		}
 
 		// Requires 4th pass SetProximityTriggerActivationAction()
 		static private void SetTimerTriggerFirstGate()
 		{
-			string search = "Activate_Proximity_Trigger_01";
-			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(pt => pt.Descr == search);
-			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
-			search = "Timer_Trigger_01";
-			idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.FindIndex(tt => tt.Descr == search);
-			simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions.ObjectReference.Add(or);
+			switch (Parameters.SelectedScenario)
+			{
+				case nameof(ScenarioTypes.Circuit):
+					string search = "Activate_Proximity_Trigger_01";
+					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(pt => pt.Descr == search);
+					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
+					search = "Timer_Trigger_01";
+					idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.FindIndex(tt => tt.Descr == search);
+					simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions.ObjectReference.Add(or);
+					break;
+				default:
+					break;
+			}
 		}
 
 		#endregion
