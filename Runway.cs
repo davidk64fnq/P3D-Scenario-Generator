@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Xml;
 
 namespace P3D_Scenario_Generator
@@ -29,7 +31,8 @@ namespace P3D_Scenario_Generator
         {
             List<string> icaoIDs = new List<string>();
 
-            XmlReader reader = XmlReader.Create(xmlFilename);
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{xmlFilename}");
+            XmlReader reader = XmlReader.Create(stream);
             while (reader.ReadToFollowing("ICAO") && reader.NodeType == XmlNodeType.Element)
             {
                 reader.MoveToAttribute("id");
@@ -44,17 +47,19 @@ namespace P3D_Scenario_Generator
                 }
                 while (reader.Name != "ICAO");
             }
+            stream.Dispose();
 
             return icaoIDs;
         }
 
         static public void SetRunway()
         {
-            XmlReader reader = XmlReader.Create(xmlFilename);
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{xmlFilename}");
+            XmlReader reader = XmlReader.Create(stream);
             string[] words = Parameters.SelectedRunway.Split("\t");
             IcaoId = words[0];
 
-            Boolean runwaySet = false;
+            bool runwaySet = false;
             while (reader.ReadToFollowing("ICAO") && runwaySet == false)
             {
                 // Check we have located selected airport
@@ -96,6 +101,7 @@ namespace P3D_Scenario_Generator
                     runwaySet = true;
                 }
             }
+            stream.Dispose();
         }
     }
 }

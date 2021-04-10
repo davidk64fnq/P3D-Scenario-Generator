@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Net;
+using System.Reflection;
 
 namespace P3D_Scenario_Generator
 {
@@ -110,7 +111,11 @@ namespace P3D_Scenario_Generator
         {
             string overviewHTML;
 
-            overviewHTML = File.ReadAllText("OverviewSource.htm");
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.OverviewSource.htm");
+            StreamReader reader = new StreamReader(stream);
+            overviewHTML = reader.ReadToEnd();
+            stream.Dispose();
+            //    overviewHTML = File.ReadAllText("OverviewSource.htm");
             overviewHTML = overviewHTML.Replace("overviewParams.title", $"{overview.title}");
             overviewHTML = overviewHTML.Replace("overviewParams.h1", $"{overview.h1}");
             overviewHTML = overviewHTML.Replace("overviewParams.h2Location", $"{overview.h2Location}");
@@ -128,7 +133,11 @@ namespace P3D_Scenario_Generator
         {
             string missionBriefHTML;
 
-            missionBriefHTML = File.ReadAllText("MissionBriefSource.htm");
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.MissionBriefSource.htm");
+            StreamReader reader = new StreamReader(stream);
+            missionBriefHTML = reader.ReadToEnd();
+            stream.Dispose();
+            //    missionBriefHTML = File.ReadAllText("MissionBriefSource.htm");
             missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.title", $"{missionBrief.title}");
             missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.h1", $"{missionBrief.h1}");
             missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.h2Location", $"{missionBrief.h2Location}");
@@ -178,7 +187,9 @@ namespace P3D_Scenario_Generator
                 using Image image = Image.FromFile(imageDest);
                 using (Graphics graphic = Graphics.FromImage(image))
                 {
-                    using Image imageIcon = Image.FromFile($"{urlIcon[index]}");
+                    Stream iconStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{urlIcon[index]}");
+                    using Image imageIcon = Image.FromStream(iconStream);
+                    iconStream.Dispose();
                     graphic.DrawImage(imageIcon, 20, 20);
                 }
                 image.Save($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlIconAdded[index]}");
@@ -189,15 +200,31 @@ namespace P3D_Scenario_Generator
             }
 
             // Copy style files
-            File.Copy("style_kneeboard.css", $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\style_kneeboard.css", true);
-            File.Copy("style_load_flight.css", $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\style_load_flight.css", true);
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.style_kneeboard.css"); 
+            using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\style_kneeboard.css", FileMode.Create))
+            {
+                stream.CopyTo(outputFileStream);
+            }
+            stream.Dispose();
+
+            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.style_load_flight.css");
+            using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\style_load_flight.css", FileMode.Create))
+            {
+                stream.CopyTo(outputFileStream);
+            }
+            stream.Dispose();
 
             // Copy sound files
             if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound"))
             {
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound");
             }
-            File.Copy("ThruHoop.wav", $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound\\ThruHoop.wav", true);
+            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.ThruHoop.wav");
+            using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound\\ThruHoop.wav", FileMode.Create))
+            {
+                stream.CopyTo(outputFileStream);
+            }
+            stream.Dispose();
         }
 
         static internal int GetDuration()

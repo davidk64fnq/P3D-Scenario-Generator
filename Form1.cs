@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace P3D_Scenario_Generator
@@ -15,6 +16,9 @@ namespace P3D_Scenario_Generator
             // Populate ICAO listbox
             ListBoxRunways.DataSource = Runway.GetICAOids();
             ListBoxScenarioType.DataSource = Constants.scenarios;
+
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.circuitTab.jpg");
+            PictureBoxCircuit.Image = new Bitmap(stream);
         }
 
         #region General Tab
@@ -197,11 +201,12 @@ namespace P3D_Scenario_Generator
 
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
+            string pdfFilename = "P3D Scenario Generator.pdf";
+
             try
             {
-                var data = File.ReadAllBytes(@".\P3D Scenario Generator.pdf");
                 PdfiumViewer.PdfDocument doc;
-                using Stream stream = new MemoryStream(data);
+                using Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{pdfFilename}");
                 doc = PdfiumViewer.PdfDocument.Load(stream);
                 var viewer = new PdfiumViewer.PdfViewer
                 {
@@ -214,6 +219,7 @@ namespace P3D_Scenario_Generator
                 viewer.Dock = System.Windows.Forms.DockStyle.Fill;
                 form.Controls.Add(viewer);
                 form.ShowDialog();
+                stream.Dispose();
             }
             catch (Exception ex)
             {

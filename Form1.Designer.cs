@@ -32,7 +32,6 @@ namespace P3D_Scenario_Generator
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form));
             this.TabControl = new System.Windows.Forms.TabControl();
             this.TabPageGeneral = new System.Windows.Forms.TabPage();
             this.ListBoxAircraft = new System.Windows.Forms.ListBox();
@@ -348,8 +347,6 @@ namespace P3D_Scenario_Generator
             // 
             // PictureBoxCircuit
             // 
-            this.PictureBoxCircuit.Image = ((System.Drawing.Image)(resources.GetObject("PictureBoxCircuit.Image")));
-            this.PictureBoxCircuit.InitialImage = ((System.Drawing.Image)(resources.GetObject("PictureBoxCircuit.InitialImage")));
             this.PictureBoxCircuit.Location = new System.Drawing.Point(15, 15);
             this.PictureBoxCircuit.Name = "PictureBoxCircuit";
             this.PictureBoxCircuit.Size = new System.Drawing.Size(783, 325);

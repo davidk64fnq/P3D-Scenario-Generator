@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<SimBase.Document Type="FlightFile" Version="1.0" id="">
+    <Descr>AceXML Document</Descr>
+    <Filename>Source.fxml</Filename>
+    <Flight.Sections>
+        <Section Name="Main">
+            <Property Name="Title" Value="" />
+            <Property Name="Description" Value="" />
+        </Section>
+        <Section Name="Options">
+            <Property Name="Sound" Value="True" />
+            <Property Name="Pause" Value="False" />
+        </Section>
+        <Section Name="DateTimeSeason">
+            <Property Name="Season" Value="Fall" />
+            <Property Name="Year" Value="2011" />
+            <Property Name="Day" Value="265" />
+            <Property Name="Hours" Value="18" />
+            <Property Name="Minutes" Value="25" />
+        </Section>
+        <Section Name="Sim.0">
+            <Property Name="Sim" Value="" />
+        </Section>
+        <Section Name="SimVars.0">
+            <Property Name="Latitude" Value="" />
+            <Property Name="Longitude" Value="" />
+            <Property Name="Altitude" Value="+0.0" />
+            <Property Name="Heading" Value="" />
+            <Property Name="SimOnGround" Value="True" />
+        </Section>
+        <Section Name="ObjectFile">
+            <Property Name="File" Value="" />
+        </Section>
+    </Flight.Sections>
+</SimBase.Document>

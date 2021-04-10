@@ -5,7 +5,38 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>P3D_Scenario_Generator</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="circuitTab.jpg" />
+    <None Remove="exit-icon.png" />
+    <None Remove="failure-icon.png" />
+    <None Remove="MissionBriefSource.htm" />
+    <None Remove="OverviewSource.htm" />
+    <None Remove="P3D Scenario Generator.pdf" />
+    <None Remove="runways.xml" />
+    <None Remove="source.fxml" />
+    <None Remove="style_kneeboard.css" />
+    <None Remove="style_load_flight.css" />
+    <None Remove="success-icon.png" />
+    <None Remove="ThruHoop.wav" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="circuitTab.jpg" />
+    <EmbeddedResource Include="exit-icon.png" />
+    <EmbeddedResource Include="failure-icon.png" />
+    <EmbeddedResource Include="MissionBriefSource.htm" />
+    <EmbeddedResource Include="OverviewSource.htm" />
+    <EmbeddedResource Include="P3D Scenario Generator.pdf" />
+    <EmbeddedResource Include="runways.xml" />
+    <EmbeddedResource Include="source.fxml" />
+    <EmbeddedResource Include="style_kneeboard.css" />
+    <EmbeddedResource Include="style_load_flight.css" />
+    <EmbeddedResource Include="success-icon.png" />
+    <EmbeddedResource Include="ThruHoop.wav" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="PdfiumViewer.Native.x86_64.v8-xfa" Version="2018.4.8.256" />

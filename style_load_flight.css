@@ -1,0 +1,190 @@
+BODY
+{
+    background-color: rgb(65, 64, 66);
+    font-size: 8pt;
+    font-family: Segoe UI;
+    font-weight: bold;
+    margin: 0pt;
+    padding: 0pt;
+}
+
+#Header
+{
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
+    width: 100%;
+    height: 135px;
+    border-spacing: 0;
+    border-collapse: collapse;
+    border: 0;
+}
+
+.HeaderBanner
+{
+    width: 100%;
+    height: 135px;
+    padding: 0px;
+    border: 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
+    clear: both;
+}
+
+.Heading
+{
+    width: 100%;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    clear: both;
+    padding-bottom: 0px;
+    padding-top: 20px;
+}
+
+.Section
+{
+    width: 99%;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    clear: both;
+    border-top: 1px solid orange;
+    padding-bottom: 15px;
+    padding-top: 15px;   
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+.SubSectionForImages
+{
+    padding-top: 20px;
+    padding-left: 0px;
+    padding-right: 0px;
+    text-align: center;
+    vertical-align: center;
+    float: center;
+    width: 250px;
+}
+
+.SubSectionImage
+{
+    height: 150px;
+    width: 250px;
+    border: 1px solid white;
+}
+
+.DifficultySection
+{
+	padding-top: 20px;
+	padding-left: 15px;
+	padding-right: 10px;
+	text-align: center;
+	vertical-align: center;
+	float: left;
+	width: 110px;
+}
+
+.DurationSection
+{
+	padding-top: 20px;
+	padding-left: 10px;
+	padding-right: 15px;
+	text-align: center;
+	vertical-align: center;
+	float: left;
+	width: 110px;
+}
+
+.Objectives
+{
+    text-align: center;
+    vertical-align: center;
+    width: 40%;
+    float: left;
+    padding-bottom: 10px;
+}
+
+.Tips
+{
+   
+    text-align: center;
+    vertical-align: center;
+    width: 40%;
+    float: right;
+    padding-bottom: 10px;
+}
+
+.SectionContainer table 
+{
+    border: none;
+    vertical-align: top;
+    border-collapse: collapse;
+    padding: 0px;
+    border-spacing: 0;
+}
+
+.SectionContainer td
+{
+    border-collapse: collapse;
+	border: none;
+    padding: 0px;
+    text-align: left;
+    vertical-align: top;
+    border-spacing: 0;
+}
+
+p, ul, ol
+{
+    color: #FFFFFF;
+    font-size: medium;
+    font-weight: bold;
+}
+
+ul, ol
+{
+	text-align: left;
+}
+
+
+h1
+{
+    color: #FFFFFF;
+    font-size: x-large;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+
+h2
+{
+    color: #FFFFFF;
+    font-size: large;
+    font-weight: bold;
+    text-align: center;
+    word-break: normal;  
+}
+
+table
+{
+    vertical-align: top;
+    border-collapse: collapse;
+}
+
+th
+{
+    border-collapse: collapse;
+    border: 1px solid orange;
+    background: #FFFFFF;
+    text-align: left;
+}
+
+td
+{
+    border-collapse: collapse;
+    border: 1px solid orange;
+    padding: 3px;
+    text-align: left;
+	color: white;
+}

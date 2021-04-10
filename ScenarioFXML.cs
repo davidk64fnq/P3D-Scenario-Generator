@@ -4,12 +4,15 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 using System.Globalization;
+using System.Reflection;
 
 namespace P3D_Scenario_Generator
 {
 	public class ScenarioFXML
-    {
-        static internal void GenerateFXMLfile()
+	{
+		private static readonly string fxmlFilename = "source.fxml";
+
+		static internal void GenerateFXMLfile()
 		{
 			SimBaseDocument simBaseDocument = ReadSourceFXML();
 			EditSourceFXML(simBaseDocument);
@@ -19,9 +22,10 @@ namespace P3D_Scenario_Generator
 		static private SimBaseDocument ReadSourceFXML()
         {
 			XmlSerializer serializer = new XmlSerializer(typeof(SimBaseDocument));
-			string xml = File.ReadAllText("source.fxml");
-            using StringReader reader = new StringReader(xml);
-            return (SimBaseDocument)serializer.Deserialize(reader);
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{fxmlFilename}");
+			SimBaseDocument simBaseDocument = (SimBaseDocument)serializer.Deserialize(stream);
+			stream.Dispose();
+			return simBaseDocument;
 		}
 
 		static private void EditSourceFXML(SimBaseDocument simBaseDocument)
