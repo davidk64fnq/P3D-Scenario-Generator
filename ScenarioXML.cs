@@ -259,7 +259,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					RunwayFilter rf = new RunwayFilter("Runway_Filter_01", Runway.Id, "None");
+					RunwayFilter rf = new RunwayFilter("Runway_Filter_01", Runway.Number, Runway.Designator);
 					List<ObjectReference> orList = new List<ObjectReference>();
 					SetGoalResolutionReference("Resolve_Goal_0X", 1, orList);
 					Actions a = new Actions(orList);
