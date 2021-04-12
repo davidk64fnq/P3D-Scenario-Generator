@@ -8,7 +8,6 @@ namespace P3D_Scenario_Generator
 {
     internal class Runway
     {
-
         private static readonly string xmlFilename = "runways.xml";
         private static readonly List<string[]> quadrantStringLookup = new List<string[]>();
 
@@ -33,9 +32,19 @@ namespace P3D_Scenario_Generator
         static public List<string> GetICAOids()
         {
             List<string> icaoIDs = new List<string>();
+            Stream stream;
+            XmlReader reader;
 
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{xmlFilename}");
-            XmlReader reader = XmlReader.Create(stream);
+            if (File.Exists(xmlFilename))
+            {
+                stream = new MemoryStream(File.ReadAllBytes(xmlFilename));
+                reader = XmlReader.Create(stream);
+            }
+            else
+            {
+                stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{xmlFilename}");
+                reader = XmlReader.Create(stream);
+            }
             while (reader.ReadToFollowing("ICAO") && reader.NodeType == XmlNodeType.Element)
             {
                 reader.MoveToAttribute("id");
@@ -57,8 +66,18 @@ namespace P3D_Scenario_Generator
 
         static public void SetRunway()
         {
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{xmlFilename}");
-            XmlReader reader = XmlReader.Create(stream);
+            Stream stream;
+            XmlReader reader;
+            if (File.Exists(xmlFilename))
+            {
+                stream = new MemoryStream(File.ReadAllBytes(xmlFilename));
+                reader = XmlReader.Create(stream);
+            }
+            else
+            {
+                stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{xmlFilename}");
+                reader = XmlReader.Create(stream);
+            }
             string[] words = Parameters.SelectedRunway.Split("\t");
             IcaoId = words[0];
             quadrantStringLookup.Add(new string[] { "37", "North" });

@@ -65,10 +65,14 @@ namespace P3D_Scenario_Generator
             {
                 return;
             }
+            string message = $"Creating scenario files in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - will confirm when complete";
+            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
             Runway.SetRunway();
             ScenarioFXML.GenerateFXMLfile();
             ScenarioHTML.GenerateOverview();
             ScenarioXML.GenerateXMLfile();
+            message = $"Scenario files created in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - enjoy your flight!";
+            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         #endregion
@@ -83,27 +87,6 @@ namespace P3D_Scenario_Generator
                 ListBoxAircraft.DataSource = uiVariations;
                 ListBoxAircraft.SelectedIndex = 0;
                 SetDefaultCircuitParams();
-            }
-        }
-
-        #endregion
-
-        #region Save location selection
-
-        private void ButtonSaveLocation_Click(object sender, EventArgs e)
-        {
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog
-            {
-                Title = "Scenario files save location",
-                DefaultExt = "fxml",
-                Filter = "FXML files (*.fxml)|*.fxml|All files (*.*)|*.*",
-                FilterIndex = 1,
-                InitialDirectory = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\Documents\\Prepar3D v5 Files",
-                RestoreDirectory = false
-            };
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                textBoxSaveLocation.Text = saveFileDialog1.FileName;
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace P3D_Scenario_Generator
@@ -20,14 +21,13 @@ namespace P3D_Scenario_Generator
         internal static double Speed { get; private set; }
         internal static double UpwindLeg { get; private set; }
 
-        static internal Boolean SetParams()
+        static internal bool SetParams()
         {
             // General tab
             string errorMsg = "";
-            SaveLocation = form.textBoxSaveLocation.Text;
-            if (SaveLocation == "")
+            if (!ValidateScenarioTitle())
             {
-                errorMsg += "\n\tSelect a save location";
+                return false;
             }
             if (form.ListBoxAircraft.Items.Count == 0)
             {
@@ -54,8 +54,38 @@ namespace P3D_Scenario_Generator
             }
             else
             {
+                string saveFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\Documents\\Prepar3D v5 Files\\{form.TextBoxScenarioTitle.Text}";
+                SaveLocation = saveFolder + $"\\{form.TextBoxScenarioTitle.Text}.fxml";
+                Directory.CreateDirectory(saveFolder);
                 return true;
             }
+        }
+
+        static private bool ValidateScenarioTitle()
+        {
+            string saveFolder;
+            if (IsValidFilename(form.TextBoxScenarioTitle.Text))
+            {
+                saveFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\Documents\\Prepar3D v5 Files\\{form.TextBoxScenarioTitle.Text}";
+                if (Directory.Exists(saveFolder))
+                {
+                    string message = $"A scenario with the same title already exists. Either delete the folder \"{saveFolder}\" (you'll need to shut down Prepar3D first if it's running) or choose a different scenario title.";
+                    MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+            else
+            {
+                MessageBox.Show($"Invalid scenario title", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            return true;
+        }
+
+        static private bool IsValidFilename(string fileName)
+        {
+            return !string.IsNullOrEmpty(fileName) &&
+              fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
         }
     }
 }

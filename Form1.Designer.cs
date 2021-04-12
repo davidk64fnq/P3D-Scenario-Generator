@@ -34,10 +34,10 @@ namespace P3D_Scenario_Generator
             this.components = new System.ComponentModel.Container();
             this.TabControl = new System.Windows.Forms.TabControl();
             this.TabPageGeneral = new System.Windows.Forms.TabPage();
+            this.label8 = new System.Windows.Forms.Label();
+            this.TextBoxScenarioTitle = new System.Windows.Forms.TextBox();
             this.ListBoxAircraft = new System.Windows.Forms.ListBox();
             this.buttonAircraft = new System.Windows.Forms.Button();
-            this.buttonSaveLocation = new System.Windows.Forms.Button();
-            this.textBoxSaveLocation = new System.Windows.Forms.TextBox();
             this.TextBoxSelectedScenario = new System.Windows.Forms.TextBox();
             this.ListBoxScenarioType = new System.Windows.Forms.ListBox();
             this.ButtonRandRunway = new System.Windows.Forms.Button();
@@ -81,10 +81,10 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageGeneral
             // 
+            this.TabPageGeneral.Controls.Add(this.label8);
+            this.TabPageGeneral.Controls.Add(this.TextBoxScenarioTitle);
             this.TabPageGeneral.Controls.Add(this.ListBoxAircraft);
             this.TabPageGeneral.Controls.Add(this.buttonAircraft);
-            this.TabPageGeneral.Controls.Add(this.buttonSaveLocation);
-            this.TabPageGeneral.Controls.Add(this.textBoxSaveLocation);
             this.TabPageGeneral.Controls.Add(this.TextBoxSelectedScenario);
             this.TabPageGeneral.Controls.Add(this.ListBoxScenarioType);
             this.TabPageGeneral.Controls.Add(this.ButtonRandRunway);
@@ -101,6 +101,22 @@ namespace P3D_Scenario_Generator
             this.TabPageGeneral.Text = "General";
             this.TabPageGeneral.UseVisualStyleBackColor = true;
             // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(10, 423);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(77, 15);
+            this.label8.TabIndex = 14;
+            this.label8.Text = "Scenario Title";
+            // 
+            // TextBoxScenarioTitle
+            // 
+            this.TextBoxScenarioTitle.Location = new System.Drawing.Point(112, 416);
+            this.TextBoxScenarioTitle.Name = "TextBoxScenarioTitle";
+            this.TextBoxScenarioTitle.Size = new System.Drawing.Size(206, 23);
+            this.TextBoxScenarioTitle.TabIndex = 13;
+            // 
             // ListBoxAircraft
             // 
             this.ListBoxAircraft.FormattingEnabled = true;
@@ -116,29 +132,11 @@ namespace P3D_Scenario_Generator
             this.buttonAircraft.Name = "buttonAircraft";
             this.buttonAircraft.Size = new System.Drawing.Size(120, 23);
             this.buttonAircraft.TabIndex = 11;
-            this.buttonAircraft.Text = "Aircraft";
-            this.toolTip1.SetToolTip(this.buttonAircraft, "Select the \".cfg\" file for your aircraft and then the variation from the list abo" +
-        "ve");
+            this.buttonAircraft.Text = "aircraft.cfg";
+            this.toolTip1.SetToolTip(this.buttonAircraft, "Select the \"aircraft.cfg\" file for your aircraft and then the variation from the " +
+        "list above");
             this.buttonAircraft.UseVisualStyleBackColor = true;
             this.buttonAircraft.Click += new System.EventHandler(this.ButtonAircraft_Click);
-            // 
-            // buttonSaveLocation
-            // 
-            this.buttonSaveLocation.Location = new System.Drawing.Point(16, 422);
-            this.buttonSaveLocation.Name = "buttonSaveLocation";
-            this.buttonSaveLocation.Size = new System.Drawing.Size(119, 23);
-            this.buttonSaveLocation.TabIndex = 10;
-            this.buttonSaveLocation.Text = "Save Location";
-            this.buttonSaveLocation.UseVisualStyleBackColor = true;
-            this.buttonSaveLocation.Click += new System.EventHandler(this.ButtonSaveLocation_Click);
-            // 
-            // textBoxSaveLocation
-            // 
-            this.textBoxSaveLocation.Enabled = false;
-            this.textBoxSaveLocation.Location = new System.Drawing.Point(169, 422);
-            this.textBoxSaveLocation.Name = "textBoxSaveLocation";
-            this.textBoxSaveLocation.Size = new System.Drawing.Size(625, 23);
-            this.textBoxSaveLocation.TabIndex = 9;
             // 
             // TextBoxSelectedScenario
             // 
@@ -417,11 +415,9 @@ namespace P3D_Scenario_Generator
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button buttonSaveLocation;
         private System.Windows.Forms.Button buttonAircraft;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Button ButtonCircuitDefault;
-        internal System.Windows.Forms.TextBox textBoxSaveLocation;
         internal System.Windows.Forms.ListBox ListBoxRunways;
         internal System.Windows.Forms.TextBox TextBoxSelectedRunway;
         internal System.Windows.Forms.TextBox TextBoxSelectedScenario;
@@ -433,6 +429,8 @@ namespace P3D_Scenario_Generator
         internal System.Windows.Forms.TextBox TextBoxCircuitBase;
         internal System.Windows.Forms.ListBox ListBoxAircraft;
         private System.Windows.Forms.Button ButtonHelp;
+        private System.Windows.Forms.Label label8;
+        internal System.Windows.Forms.TextBox TextBoxScenarioTitle;
     }
 }
 

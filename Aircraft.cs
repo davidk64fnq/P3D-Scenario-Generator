@@ -28,6 +28,12 @@ namespace P3D_Scenario_Generator
             };
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
+                // Check user has selected a file "aircraft.cfg"
+                if (!System.IO.Path.GetFileName(openFileDialog1.FileName).Equals("aircraft.cfg"))
+                {
+                    MessageBox.Show("Please select an \"aircraft.cfg\" file.", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return uiName;
+                }
                 // Check whether user has selected AI aircraft
                 if (Directory.GetDirectories($"{System.IO.Path.GetDirectoryName(openFileDialog1.FileName)}", "panel*").Length == 0)
                 {
@@ -42,22 +48,23 @@ namespace P3D_Scenario_Generator
                 int index = 0;
                 while ((currentLine = reader.ReadLine()) != null)
                 {
+                    currentLine = currentLine.Trim();
                     if (currentLine.StartsWith("title="))
                     {
-                        uiName.Add(currentLine[6..^0]);
-                        string[] newUIvariation = { $"{currentLine[6..^0]}", "" };
+                        uiName.Add(currentLine[6..^0].Trim());
+                        string[] newUIvariation = { $"{currentLine[6..^0].Trim()}", "" };
                         uiVariations.Add(newUIvariation);
                     }
                     else if (currentLine.StartsWith("texture="))
                     {
-                        uiVariations[index][1] = $"{System.IO.Path.GetDirectoryName(openFileDialog1.FileName)}\\Texture.{currentLine[8..^0]}\\thumbnail.jpg";
+                        uiVariations[index][1] = $"{System.IO.Path.GetDirectoryName(openFileDialog1.FileName)}\\Texture.{currentLine[8..^0].Trim()}\\thumbnail.jpg";
                         index++;
                     }
                     else if (currentLine.StartsWith("cruise_speed"))
                     {
-                        string[] words1 = currentLine.Split("= ");
-                        string[] words2 = words1[1].Split(null);
-                        CruiseSpeed = Convert.ToDouble(words2[0]);
+                        string[] words1 = currentLine.Split("=");
+                        string[] words2 = words1[1].Trim().Split(null);
+                        CruiseSpeed = Convert.ToDouble(words2[0].Trim());
                     }
                 }
                 return uiName;
