@@ -197,7 +197,7 @@ namespace P3D_Scenario_Generator
                 };
                 var form = new System.Windows.Forms.Form
                 {
-                    Size = new Size(600, 800)
+                    Size = new Size(750, 800)
                 };
                 viewer.Dock = System.Windows.Forms.DockStyle.Fill;
                 form.Controls.Add(viewer);

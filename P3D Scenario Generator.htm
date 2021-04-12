@@ -14,17 +14,17 @@ xmlns="http://www.w3.org/TR/REC-html40">
  <o:DocumentProperties>
   <o:Author>David Kilpatrick</o:Author>
   <o:LastAuthor>David Kilpatrick</o:LastAuthor>
-  <o:Revision>7</o:Revision>
-  <o:TotalTime>503</o:TotalTime>
+  <o:Revision>8</o:Revision>
+  <o:TotalTime>524</o:TotalTime>
   <o:LastPrinted>2021-04-12T10:47:00Z</o:LastPrinted>
   <o:Created>2021-04-09T08:02:00Z</o:Created>
-  <o:LastSaved>2021-04-12T10:47:00Z</o:LastSaved>
+  <o:LastSaved>2021-04-12T21:48:00Z</o:LastSaved>
   <o:Pages>1</o:Pages>
-  <o:Words>536</o:Words>
-  <o:Characters>3060</o:Characters>
+  <o:Words>542</o:Words>
+  <o:Characters>3096</o:Characters>
   <o:Lines>25</o:Lines>
   <o:Paragraphs>7</o:Paragraphs>
-  <o:CharactersWithSpaces>3589</o:CharactersWithSpaces>
+  <o:CharactersWithSpaces>3631</o:CharactersWithSpaces>
   <o:Version>14.00</o:Version>
  </o:DocumentProperties>
  <o:OfficeDocumentSettings>
@@ -699,15 +699,19 @@ mso-border-bottom-themecolor:accent1;padding:0cm 0cm 4.0pt 0cm'>
 
 <p class=MsoNormal>Using SimDirector to create scenarios requires an investment
 of time and energy to familiarise yourself with the tool. It's not for the
-feint hearted! This application hides that complexity at the expense of
-restricting you to a set of predefined scenario types. You choose the scenario
-type, a location, an aircraft and scenario specific parameters. The program
-creates equivalent output files to that which would be produced had you created
-the scenario using SimDirector. In Prepar3D you load the created scenario just
-as you would a saved flight and start flying. To fly another instance of that
-scenario type, say at a different location or in a different aircraft, just
-come back to this application and generate a new set of files with the modified
-parameters.</p>
+feint hearted! This application hides that complexity at the expense of restricting
+you to a set of predefined scenario types. You choose the scenario type, a
+location, an aircraft and scenario specific parameters. The program creates
+equivalent output files to that which would be produced had you created the
+scenario using SimDirector. In Prepar3D you load the created scenario just as
+you would a saved flight and start flying.</p>
+
+<p class=MsoNormal>To fly another instance of that scenario type, say at a
+different location or with different scenario specific parameters, return to
+this application and generate a new set of files with the modified parameters. Note
+that Prepar3D allows you to change the time, weather, or aircraft once you have
+loaded the scenario (that is you are actually in the plane on the runway) without
+“breaking” the scenario.</p>
 
 <h1>Runway</h1>
 
@@ -715,24 +719,21 @@ parameters.</p>
 ship with Prepar3D V5.1. It has been generated using the freeware
 &quot;MakeRunways&quot; program version 5.11 by Pete Dowson. The list is
 alphabetical showing airport ICAO and runway id in parentheses. If you choose a
-random runway beware of the possibility that the generated circuit may include
-gates embedded in hills or mountains if the airport happens to be in a hilly
-location! The search box looks for a matching airport ICAO starting from the
-first character; it doesn't find strings within the ICAO. The program doesn't
-display location information for the selected airport in order to preserve the
-element of surprise where a random strip is chosen.</p>
+random runway the generated circuit may include gates embedded in terrain if
+the airport happens to be in a hilly location! The program doesn't display
+location information for the selected airport in order to preserve the element
+of surprise where a random strip is chosen.</p>
 
-<p class=MsoNormal>The runway data is derived from a file produced by the “MakeRunways”
-program named “runways.xml”. If you want to be able to select non-default
-Prepar3D V5.1 airports you can download a copy of “MakeRunways” and use it to
-create a copy of “runways.xml” that reflects the airports installed on your PC.
-Place the “runways.xml” file in the same directory as the P3D Scenario
-Generator program files and it will be used in preference to the default “runways.xml”
-list.</p>
+<p class=MsoNormal>The runway data is derived from a file produced by the
+“MakeRunways” program named “runways.xml”. To select add-on Prepar3D V5.1
+airports download a copy of “MakeRunways” and generate a copy of “runways.xml”
+that reflects the airports installed on your PC. Place the “runways.xml” file
+in the same directory as the P3D Scenario Generator program files and it will
+be used in preference to the default “runways.xml” list.</p>
 
 <h1>Scenario</h1>
 
-<p class=MsoNormal>The following scenario type is currently implemented:</p>
+<p class=MsoNormal>The following scenario type is implemented:</p>
 
 <h2>Circuit</h2>
 
@@ -740,13 +741,14 @@ list.</p>
 pairs of gates mark the start and finish of four successive ninety degree turns
 from the initial runway heading. The gate positions for each turn are based on
 the nominated speed divided by 180. So a plane with a cruise speed of 90 knots
-is assigned a turn radius of 0.5 miles. All the gates are placed at the same
-height relative to the ground. This scenario commences on the runway threshold
-and requires the pilot to take off, achieve the circuit height, and fly through
-the eight gates in sequence before landing on the same runway and coming to a
-complete stop to end the scenario. The circuit tab allows you to customise the
-location of the four turns, the height and planned cruising speed. The default
-button resets the values based on the “[Reference Speeds] <span class=SpellE>cruise_speed</span>”
+is assigned a turn radius of 0.5 miles. The distance between gate pairs is set
+on the circuit tab. All the gates are placed at the same height relative to the
+ground. This scenario commences on the runway threshold and requires the pilot
+to take off, achieve the circuit height, and fly through the eight gates in
+sequence before landing on the same runway and coming to a complete stop to end
+the scenario. The circuit tab allows you to customise the location of the four
+turns, the height and planned cruising speed. The default button resets the
+values based on the “[Reference Speeds] <span class=SpellE>cruise_speed</span>”
 value from the selected “<span class=SpellE>aircraft.cfg</span>” file.</p>
 
 <h2>Photos</h2>
