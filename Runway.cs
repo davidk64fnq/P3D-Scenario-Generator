@@ -165,7 +165,7 @@ namespace P3D_Scenario_Generator
             int.TryParse(runwayId, out int number);
             if (number <= 36)
             {
-                Number = runwayId;
+                Number = runwayId.TrimStart('0');
             } 
             else if (number <= 52)
             {

@@ -66,13 +66,13 @@ namespace P3D_Scenario_Generator
                 return;
             }
             string message = $"Creating scenario files in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - will confirm when complete";
-            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
             Runway.SetRunway();
             ScenarioFXML.GenerateFXMLfile();
             ScenarioHTML.GenerateOverview();
             ScenarioXML.GenerateXMLfile();
             message = $"Scenario files created in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - enjoy your flight!";
-            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         #endregion

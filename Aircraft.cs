@@ -29,7 +29,7 @@ namespace P3D_Scenario_Generator
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 // Check user has selected a file "aircraft.cfg"
-                if (!System.IO.Path.GetFileName(openFileDialog1.FileName).Equals("aircraft.cfg"))
+                if (!System.IO.Path.GetFileName(openFileDialog1.FileName).Equals("aircraft.cfg", StringComparison.OrdinalIgnoreCase))
                 {
                     MessageBox.Show("Please select an \"aircraft.cfg\" file.", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return uiName;
