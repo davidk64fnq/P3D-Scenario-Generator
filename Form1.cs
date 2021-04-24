@@ -19,6 +19,7 @@ namespace P3D_Scenario_Generator
 
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.circuitTab.jpg");
             PictureBoxCircuit.Image = new Bitmap(stream);
+
         }
 
         #region General Tab
@@ -110,13 +111,15 @@ namespace P3D_Scenario_Generator
             else
             {
                 TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed);
-                TextBoxCircuitHeight.Text = "1000";
-                // Upwind distance (miles) approx by speed (knots) * number of minutes / 60 (assume 2 minutes to climb 1000ft at 500ft/min plus 30 seconds to prepare for gate 1)
-                TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 2.5 / 60);
+                TextBoxCircuitHeightDown.Text = "1000";
+                TextBoxCircuitHeightUpwind.Text = "800";
+                TextBoxCircuitHeightBase.Text = "800";
+                // Upwind distance (miles) approx by speed (knots) * number of minutes / 60 (assume 1.25 minutes to climb 1000ft at 800ft/min)
+                TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 1.25 / 60);
                 // Base distance (miles) approx by speed (knots) * number of minutes / 60 (assume 30 seconds to prepare for next gate after completing turn)
                 TextBoxCircuitBase.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 0.5 / 60);
-                // Final distance (miles) approx by speed (knots) * number of minutes / 60 (assume 2 minutes to descend 1000ft at 500ft/min plus 30 seconds wriggle room)
-                TextBoxCircuitFinal.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 2.5 / 60);
+                // Final distance (miles) approx by speed (knots) * number of minutes / 60 (assume 1.25 minutes to descend 1000ft at 800ft/min)
+                TextBoxCircuitFinal.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 1.25 / 60);
             }
         }
 
@@ -138,9 +141,13 @@ namespace P3D_Scenario_Generator
 
         private void TextBoxCircuitHeight_TextChanged(object sender, EventArgs e)
         {
-            if (!ValidateCircuitParam(TextBoxCircuitHeight.Text))
+            if (!ValidateCircuitParam(TextBoxCircuitHeightDown.Text))
             {
-                TextBoxCircuitHeight.Text = "0";
+                TextBoxCircuitHeightDown.Text = "0";
+            }
+            if ((Convert.ToDouble(TextBoxCircuitHeightUpwind.Text) >= Convert.ToDouble(TextBoxCircuitHeightDown.Text)) || (Convert.ToDouble(TextBoxCircuitHeightBase.Text) >= Convert.ToDouble(TextBoxCircuitHeightDown.Text)))
+            {
+                MessageBox.Show($"Gates 2 and 7 must not be higher than the downwind leg height", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -186,6 +193,10 @@ namespace P3D_Scenario_Generator
         {
             string pdfFilename = "P3D Scenario Generator.pdf";
 
+
+            Help.ShowHelp(this, "P3D Scenario Generator Help\\P3D Scenario Generator.chm", "introduction.htm");
+
+            /*
             try
             {
                 PdfiumViewer.PdfDocument doc;
@@ -208,6 +219,7 @@ namespace P3D_Scenario_Generator
             {
                 MessageBox.Show(ex.Message);
             }
+            */
         }
     }
 }

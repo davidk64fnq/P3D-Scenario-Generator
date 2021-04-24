@@ -17,7 +17,9 @@ namespace P3D_Scenario_Generator
         // Circuit tab
         internal static double BaseLeg { get; private set; }
         internal static double FinalLeg { get; private set; }
-        internal static double Height { get; private set; }
+        internal static double HeightUpwind { get; private set; }
+        internal static double HeightDown { get; private set; }
+        internal static double HeightBase { get; private set; }
         internal static double Speed { get; private set; }
         internal static double UpwindLeg { get; private set; }
 
@@ -43,7 +45,9 @@ namespace P3D_Scenario_Generator
             // Circuit tab
             BaseLeg = Convert.ToDouble(form.TextBoxCircuitBase.Text);
             FinalLeg = Convert.ToDouble(form.TextBoxCircuitFinal.Text);
-            Height = Convert.ToDouble(form.TextBoxCircuitHeight.Text);
+            HeightUpwind = Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text);
+            HeightDown = Convert.ToDouble(form.TextBoxCircuitHeightDown.Text);
+            HeightBase = Convert.ToDouble(form.TextBoxCircuitHeightBase.Text);
             Speed = Convert.ToDouble(form.TextBoxCircuitSpeed.Text);
             UpwindLeg = Convert.ToDouble(form.TextBoxCircuitUpwind.Text);
 

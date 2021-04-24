@@ -606,7 +606,7 @@ namespace P3D_Scenario_Generator
 
 		static private string SetWorldPosition(Gate gate, double vertOffset)
 		{
-			return $"{ScenarioFXML.FormatCoordXML(gate.lat, "N", "S")},{ScenarioFXML.FormatCoordXML(gate.lon, "E", "W")},+{Parameters.Height + vertOffset}";
+			return $"{ScenarioFXML.FormatCoordXML(gate.lat, "N", "S")},{ScenarioFXML.FormatCoordXML(gate.lon, "E", "W")},+{gate.amsl + vertOffset}";
 		}
 
 		#endregion
