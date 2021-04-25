@@ -318,7 +318,7 @@ namespace P3D_Scenario_Generator
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(87, 15);
             this.label9.TabIndex = 15;
-            this.label9.Text = "Height (Gate 7)";
+            this.label9.Text = "Height (Gate 8)";
             // 
             // TextBoxCircuitBase
             // 
@@ -407,7 +407,7 @@ namespace P3D_Scenario_Generator
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(87, 15);
             this.label10.TabIndex = 16;
-            this.label10.Text = "Height (Gate 2)";
+            this.label10.Text = "Height (Gate 1)";
             // 
             // TextBoxCircuitHeightBase
             // 

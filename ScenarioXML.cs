@@ -33,6 +33,7 @@ namespace P3D_Scenario_Generator
 			SetThirdPassObjects();
 			SetFourthPassObjects();
 			SetFifthPassObjects();
+			SetSixthPassObjects();
 		}
 
 		static private void SetFirstPassObects()
@@ -51,26 +52,32 @@ namespace P3D_Scenario_Generator
 		{
 			SetGoalResolutionAction();
 			SetObjectActivationAction();
-			SetProximityTrigger();
+			SetPointOfInterest();
 		}
 
 		static private void SetThirdPassObjects()
         {
 			SetAirportLandingTrigger();
+			SetPointOfInterestActivationAction();
 			SetTimerTrigger();
 		}
 
 		static private void SetFourthPassObjects()
         {
 			SetAirportLandingTriggerActivation();
-			SetProximityTriggerActivationAction();
+			SetProximityTrigger();
 		}
 
 		static private void SetFifthPassObjects()
         {
 			SetLastGateLandingTrigger();
-			SetProximityTriggerOnEnterAction();
+			SetProximityTriggerActivationAction();
 			SetTimerTriggerFirstGate();
+        }
+
+		static private void SetSixthPassObjects()
+        {
+			SetProximityTriggerOnEnterAction();
         }
 
 		#region First pass object creation
@@ -248,6 +255,21 @@ namespace P3D_Scenario_Generator
 			simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction = oaaList;
 		}
 
+		// Requires 1st pass SetLibraryObject()
+		static private void SetPointOfInterest()
+		{
+			List<SimMissionPointOfInterest> poiList = new List<SimMissionPointOfInterest>();
+			switch (Parameters.SelectedScenario)
+			{
+				case nameof(ScenarioTypes.Circuit):
+					SetPointOfInterestObjects(poiList);
+					break;
+				default:
+					break;
+			}
+			simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest = poiList;
+		}
+
 		#endregion
 
 		#region Third pass object creation/editing
@@ -280,43 +302,21 @@ namespace P3D_Scenario_Generator
 			simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger = altList;
 		}
 
-		// Requires 2nd pass SetObjectActivationAction()
-		static private void SetProximityTrigger()
+		// Requires 2nd pass SetPointOfInterest()
+		static private void SetPointOfInterestActivationAction()
 		{
-			List<SimMissionProximityTrigger> ptList = new List<SimMissionProximityTrigger>();
+			List<SimMissionPointOfInterestActivationAction> paaList = new List<SimMissionPointOfInterestActivationAction>();
+
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					for (int index = 0; index < Gates.GateCount; index++)
-					{
-						List<ObjectReference> orAreaList = new List<ObjectReference>();
-						SetRectangleAreaReference("Area_Hoop_0X", index + 1, orAreaList);
-						Areas a = new Areas(orAreaList);
-						List<ObjectReference> orActionList = new List<ObjectReference>();
-						SetObjectActivationReference("Activate_Hoop_Inactive_0X", index + 1, orActionList);
-						SetObjectActivationReference("Deactivate_Hoop_Active_0X", index + 1, orActionList);
-						if (index + 1 < Gates.GateCount)
-						{
-							SetObjectActivationReference("Activate_Hoop_Active_0X", index + 2, orActionList);
-							SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", index + 2, orActionList);
-						}
-						SetSoundAction("OneShotSound_ThruHoop_0X", 1, orActionList);
-						OnEnterActions oea = new OnEnterActions(orActionList);
-						SimMissionProximityTrigger pt = new SimMissionProximityTrigger
-						{
-							InstanceId = GetGUID(),
-							Descr = $"Proximity_Trigger_0{index + 1}",
-							Activated = "False",
-							Areas = a,
-							OnEnterActions = oea
-						};
-						ptList.Add(pt);
-					}
+					SetPOIactivationActions(paaList, $"Activate_POI_Gate_0X", "True");
+					SetPOIactivationActions(paaList, $"DeActivate_POI_Gate_0X", "False");
 					break;
 				default:
 					break;
 			}
-			simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger = ptList;
+			simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction = paaList;
 		}
 
 		// Requires 2nd pass SetObjectActivationAction()
@@ -329,6 +329,7 @@ namespace P3D_Scenario_Generator
 					List<ObjectReference> orList = new List<ObjectReference>();
 					SetObjectActivationReference("Activate_Hoop_Active_0X", 1, orList);
 					SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", 1, orList);
+					SetPOIactivationActionReference("Activate_POI_Gate_0X", 1, orList);
 					SetDialogReference("Dialog_Intro_0X", 1, orList);
 					SetDialogReference("Dialog_Intro_0X", 2, orList);
 					SimMissionTimerTrigger tt = new SimMissionTimerTrigger
@@ -378,20 +379,45 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
-		// Requires 3rd pass SetProximityTrigger()
-		static private void SetProximityTriggerActivationAction()
+		// Requires 3rd pass SetPointOfInterestActivationAction()
+		static private void SetProximityTrigger()
 		{
-			List<SimMissionObjectActivationAction> oaaList = new List<SimMissionObjectActivationAction>();
+			List<SimMissionProximityTrigger> ptList = new List<SimMissionProximityTrigger>();
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					SetGateTriggerActivations($"Proximity_Trigger_0X", oaaList, "Activate_Proximity_Trigger_0", "True");
-					SetGateTriggerActivations($"Proximity_Trigger_0X", oaaList, "Deactivate_Proximity_Trigger_0", "False");
+					for (int index = 0; index < Gates.GateCount; index++)
+					{
+						List<ObjectReference> orAreaList = new List<ObjectReference>();
+						SetRectangleAreaReference("Area_Hoop_0X", index + 1, orAreaList);
+						Areas a = new Areas(orAreaList);
+						List<ObjectReference> orActionList = new List<ObjectReference>();
+						SetObjectActivationReference("Activate_Hoop_Inactive_0X", index + 1, orActionList);
+						SetObjectActivationReference("Deactivate_Hoop_Active_0X", index + 1, orActionList);
+						SetPOIactivationActionReference("DeActivate_POI_Gate_0X", index + 1, orActionList);
+						if (index + 1 < Gates.GateCount)
+						{
+							SetObjectActivationReference("Activate_Hoop_Active_0X", index + 2, orActionList);
+							SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", index + 2, orActionList);
+							SetPOIactivationActionReference("Activate_POI_Gate_0X", index + 2, orActionList);
+						}
+						SetSoundAction("OneShotSound_ThruHoop_0X", 1, orActionList);
+						OnEnterActions oea = new OnEnterActions(orActionList);
+						SimMissionProximityTrigger pt = new SimMissionProximityTrigger
+						{
+							InstanceId = GetGUID(),
+							Descr = $"Proximity_Trigger_0{index + 1}",
+							Activated = "False",
+							Areas = a,
+							OnEnterActions = oea
+						};
+						ptList.Add(pt);
+					}
 					break;
 				default:
 					break;
 			}
-			simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.AddRange(oaaList);
+			simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger = ptList;
 		}
 
 		#endregion
@@ -416,7 +442,45 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
+		// Requires 4th pass SetProximityTrigger()
+		static private void SetProximityTriggerActivationAction()
+		{
+			List<SimMissionObjectActivationAction> oaaList = new List<SimMissionObjectActivationAction>();
+			switch (Parameters.SelectedScenario)
+			{
+				case nameof(ScenarioTypes.Circuit):
+					SetGateTriggerActivations($"Proximity_Trigger_0X", oaaList, "Activate_Proximity_Trigger_0", "True");
+					SetGateTriggerActivations($"Proximity_Trigger_0X", oaaList, "Deactivate_Proximity_Trigger_0", "False");
+					break;
+				default:
+					break;
+			}
+			simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.AddRange(oaaList);
+		}
+
 		// Requires 4th pass SetProximityTriggerActivationAction()
+		static private void SetTimerTriggerFirstGate()
+		{
+			switch (Parameters.SelectedScenario)
+			{
+				case nameof(ScenarioTypes.Circuit):
+					string search = "Activate_Proximity_Trigger_01";
+					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(pt => pt.Descr == search);
+					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
+					search = "Timer_Trigger_01";
+					idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.FindIndex(tt => tt.Descr == search);
+					simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions.ObjectReference.Add(or);
+					break;
+				default:
+					break;
+			}
+		}
+
+		#endregion
+
+		#region Sixth pass object creation/editing
+
+		// Requires 5th pass SetProximityTriggerActivationAction()
 		static private void SetProximityTriggerOnEnterAction()
 		{
 			switch (Parameters.SelectedScenario)
@@ -438,24 +502,6 @@ namespace P3D_Scenario_Generator
 							simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(orActionList[1]);
 						}
 					}
-					break;
-				default:
-					break;
-			}
-		}
-
-		// Requires 4th pass SetProximityTriggerActivationAction()
-		static private void SetTimerTriggerFirstGate()
-		{
-			switch (Parameters.SelectedScenario)
-			{
-				case nameof(ScenarioTypes.Circuit):
-					string search = "Activate_Proximity_Trigger_01";
-					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(pt => pt.Descr == search);
-					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
-					search = "Timer_Trigger_01";
-					idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.FindIndex(tt => tt.Descr == search);
-					simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions.ObjectReference.Add(or);
 					break;
 				default:
 					break;
@@ -492,21 +538,21 @@ namespace P3D_Scenario_Generator
 				string mdlGUID = Constants.genGameNumBlueMDLguid[index];
 				double vOffset = Constants.genGameNumBlueVertOffset;
 				string worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
-				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, "True", "1", GetGUID(), "True"));
+				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, Constants.heightAMSL, "1", GetGUID(), "True"));
 
 				// Hoop active objects
 				descr = Constants.genGameHoopNumActiveDesc.Replace("X", (index + 1).ToString());
 				mdlGUID = Constants.genGameHoopNumActiveMDLguid;
 				vOffset = Constants.genGameHoopNumActiveVertOffset;
 				worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
-				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, "True", "1", GetGUID(), "False"));
+				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, Constants.heightAMSL, "1", GetGUID(), "False"));
 
 				// Hoop inactive objects
 				descr = Constants.genGameHoopNumInactiveDesc.Replace("X", (index + 1).ToString());
 				mdlGUID = Constants.genGameHoopNumInactiveMDLguid;
 				vOffset = Constants.genGameHoopNumInactiveVertOffset;
 				worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
-				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, "True", "1", GetGUID(), "True"));
+				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, Constants.heightAMSL, "1", GetGUID(), "True"));
 			}
 		}
 
@@ -539,7 +585,7 @@ namespace P3D_Scenario_Generator
 				string orientation = SetOrientation(headingAdj[index]);
 				double vOffset = Constants.genGameHoopNumActiveVertOffset;
 				string worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
-				AttachedWorldPosition wp = new AttachedWorldPosition(worldPosition, "True");
+				AttachedWorldPosition wp = new AttachedWorldPosition(worldPosition, Constants.heightAMSL);
 				raList.Add(new SimMissionRectangleArea(descr, orientation, "100.0", "25.0", "100.0", wp, GetGUID()));
 			}
 		}
@@ -586,6 +632,56 @@ namespace P3D_Scenario_Generator
 		static private string SetOrientation(double headingAdj)
 		{
 			return $"0.0,0.0,{string.Format("{0:0.0}", (Runway.Hdg + Runway.MagVar + headingAdj) % 360)}";
+		}
+
+		static private void SetPOIactivationActions(List<SimMissionPointOfInterestActivationAction> paaList, string descr, string newObjectState)
+        {
+			for (int index = 0; index < Gates.GateCount; index++)
+			{
+				string search = $"POI_Gate_0{index + 1}";
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest.FindIndex(poi => poi.Descr == search);
+				List<ObjectReference> orList = new List<ObjectReference>
+				{
+					new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest[idIndex].InstanceId)
+				};
+				SimMissionPointOfInterestActivationAction paa = new SimMissionPointOfInterestActivationAction
+				{
+					InstanceId = GetGUID(),
+					Descr = descr.Replace("X", (index + 1).ToString()),
+					NewObjectState = newObjectState,
+					ObjectReferenceList = new ObjectReferenceList(orList)
+				};
+				paaList.Add(paa);
+			}
+        }
+
+		static private void SetPOIactivationActionReference(string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction.FindIndex(paa => paa.Descr == search);
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction[idIndex].InstanceId);
+			orList.Add(or);
+		}
+
+		static private void SetPointOfInterestObjects(List<SimMissionPointOfInterest> poiList)
+		{
+			for (int index = 0; index < Gates.GateCount; index++)
+			{
+				string search = Constants.genGameNumBlueDesc.Replace("X", (index + 1).ToString());
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject.FindIndex(lo => lo.Descr == search);
+				ObjectReference or = new ObjectReference
+				{
+					InstanceId = simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject[idIndex].InstanceId
+				};
+				AttachedWorldObject awo = new AttachedWorldObject
+				{
+					ObjectReference = or,
+					OffsetXYZ = "0, 80, 0, 0"
+				};
+				string descr = $"POI_Gate_0{index + 1}";
+				string targetName = $"Gate {index + 1}";
+				poiList.Add(new SimMissionPointOfInterest(descr, targetName, "False", awo, GetGUID(), "False", index + 1));
+            }
 		}
 
 		static private void SetRectangleAreaReference(string objectName, int index, List<ObjectReference> orList)
@@ -1133,6 +1229,7 @@ namespace P3D_Scenario_Generator
 			InstanceId = v7;
 			Activated = v8;
 		}
+
 		public SceneryObjectsLibraryObject()
 		{
 		}
@@ -1223,6 +1320,20 @@ namespace P3D_Scenario_Generator
 	[XmlRoot(ElementName = "SimMission.PointOfInterest")]
 	public class SimMissionPointOfInterest
 	{
+		public SimMissionPointOfInterest(string v1, string v2, string v3, AttachedWorldObject v4, string v5, string v6, int v7)
+		{
+			Descr = v1;
+			TargetName = v2;
+			CurrentSelection = v3;
+			AttachedWorldObject = v4;
+			InstanceId = v5;
+			Activated = v6;
+			CycleOrder = v7;
+		}
+
+		public SimMissionPointOfInterest()
+		{
+		}
 
 		[XmlElement(ElementName = "Descr")]
 		public string Descr { get; set; }

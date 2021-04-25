@@ -22,6 +22,7 @@ namespace P3D_Scenario_Generator
         public static double feetInKnot = 6076.12;
         public static double radiusEarth = 20902230.971129; // Radius of earth at equator in feet
         public static string scenCircuit = "Circuit";
+        public static string heightAMSL = "False";
 
         public static string[] genGameNumBlueMDLguid =
         {

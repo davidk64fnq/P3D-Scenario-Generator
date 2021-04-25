@@ -145,9 +145,9 @@ namespace P3D_Scenario_Generator
             {
                 TextBoxCircuitHeightDown.Text = "0";
             }
-            if ((Convert.ToDouble(TextBoxCircuitHeightUpwind.Text) >= Convert.ToDouble(TextBoxCircuitHeightDown.Text)) || (Convert.ToDouble(TextBoxCircuitHeightBase.Text) >= Convert.ToDouble(TextBoxCircuitHeightDown.Text)))
+            if ((Convert.ToDouble(TextBoxCircuitHeightDown.Text) < Convert.ToDouble(TextBoxCircuitHeightUpwind.Text)) || (Convert.ToDouble(TextBoxCircuitHeightDown.Text) < Convert.ToDouble(TextBoxCircuitHeightBase.Text)))
             {
-                MessageBox.Show($"Gates 2 and 7 must not be higher than the downwind leg height", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Program expects gates 1/2 and 7/8 to be lower than the downwind leg height, strange results may occur", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -191,35 +191,7 @@ namespace P3D_Scenario_Generator
 
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
-            string pdfFilename = "P3D Scenario Generator.pdf";
-
-
             Help.ShowHelp(this, "P3D Scenario Generator Help\\P3D Scenario Generator.chm", "introduction.htm");
-
-            /*
-            try
-            {
-                PdfiumViewer.PdfDocument doc;
-                using Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{pdfFilename}");
-                doc = PdfiumViewer.PdfDocument.Load(stream);
-                var viewer = new PdfiumViewer.PdfViewer
-                {
-                    Document = doc
-                };
-                var form = new System.Windows.Forms.Form
-                {
-                    Size = new Size(750, 800)
-                };
-                viewer.Dock = System.Windows.Forms.DockStyle.Fill;
-                form.Controls.Add(viewer);
-                form.ShowDialog();
-                stream.Dispose();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            */
         }
     }
 }

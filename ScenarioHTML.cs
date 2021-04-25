@@ -71,8 +71,6 @@ namespace P3D_Scenario_Generator
                     overview.pBriefing += $"{Runway.City}, {Runway.Country}.";
                     overview.liObjective = "Take off and fly through the eight gates before landing on the same runway.";
                     overview.liTips = "Each pair of gates marks the start and finish of a standard rate left turn of 90 degrees. ";
-                    overview.liTips += "The gates are all the same altitude so you'll want to be established in ";
-                    overview.liTips += "level flight before you reach the first gate.";
                     break;
                 case "Photos":
                     break;
