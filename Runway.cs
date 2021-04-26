@@ -29,22 +29,11 @@ namespace P3D_Scenario_Generator
         internal static double Lat { get; private set; }  // threshold latitude
         internal static double Lon { get; private set; }  // threshold longitude
 
-        static public List<string> GetICAOids()
+        static internal List<string> GetICAOids()
         {
             List<string> icaoIDs = new List<string>();
-            Stream stream;
-            XmlReader reader;
-
-            if (File.Exists(xmlFilename))
-            {
-                stream = new MemoryStream(File.ReadAllBytes(xmlFilename));
-                reader = XmlReader.Create(stream);
-            }
-            else
-            {
-                stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{xmlFilename}");
-                reader = XmlReader.Create(stream);
-            }
+            Stream stream = GetRunwayXMLstream();
+            XmlReader reader = XmlReader.Create(stream);
             while (reader.ReadToFollowing("ICAO") && reader.NodeType == XmlNodeType.Element)
             {
                 reader.MoveToAttribute("id");
@@ -64,22 +53,57 @@ namespace P3D_Scenario_Generator
             return icaoIDs;
         }
 
-        static public void SetRunway()
+        static internal string GetNearestAirport(double latitude, double longitude)
+        {
+            string icao = "";
+            double curLongitude;
+            double curLatitude;
+            double minDifference = 9999;
+            Stream stream = GetRunwayXMLstream();
+            XmlReader reader = XmlReader.Create(stream);
+            while (reader.ReadToFollowing("ICAO") && reader.NodeType == XmlNodeType.Element)
+            {
+                reader.MoveToAttribute("id");
+                string currentAirport = reader.Value;
+                do
+                {
+                    reader.Read();
+                }
+                while (!(reader.Name == "Runway" && reader.MoveToAttribute("id")));
+                currentAirport += $"\t({reader.Value})";
+                reader.ReadToFollowing("Lat");
+                curLatitude = reader.ReadElementContentAsDouble();
+                reader.ReadToFollowing("Lon");
+                curLongitude = reader.ReadElementContentAsDouble();
+                double difference = Math.Abs(latitude - curLatitude) + Math.Abs(longitude - curLongitude);
+                if (difference < minDifference)
+                {
+                    minDifference = difference;
+                    icao = currentAirport;
+                }
+            }
+            stream.Dispose();
+
+            return icao;
+        }
+
+        static private Stream GetRunwayXMLstream()
         {
             Stream stream;
-            XmlReader reader;
+
             if (File.Exists(xmlFilename))
             {
                 stream = new MemoryStream(File.ReadAllBytes(xmlFilename));
-                reader = XmlReader.Create(stream);
             }
             else
             {
                 stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{xmlFilename}");
-                reader = XmlReader.Create(stream);
             }
-            string[] words = Parameters.SelectedRunway.Split("\t");
-            IcaoId = words[0];
+            return stream;
+        }
+
+        static private void SetQuadrantStrings()
+        {
             quadrantStringLookup.Add(new string[] { "37", "North" });
             quadrantStringLookup.Add(new string[] { "38", "East" });
             quadrantStringLookup.Add(new string[] { "39", "NorthWest" });
@@ -96,6 +120,15 @@ namespace P3D_Scenario_Generator
             quadrantStringLookup.Add(new string[] { "50", "East" });
             quadrantStringLookup.Add(new string[] { "51", "SouthEast" });
             quadrantStringLookup.Add(new string[] { "52", "NorthEast" });
+        }
+
+        static internal void SetRunway()
+        {
+            Stream stream = GetRunwayXMLstream();
+            XmlReader reader = XmlReader.Create(stream);
+            string[] words = Parameters.SelectedRunway.Split("\t");
+            IcaoId = words[0];
+            SetQuadrantStrings();
 
             bool runwaySet = false;
             while (reader.ReadToFollowing("ICAO") && runwaySet == false)

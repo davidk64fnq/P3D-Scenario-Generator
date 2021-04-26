@@ -15,7 +15,7 @@ namespace P3D_Scenario_Generator
 
             // Populate ICAO listbox
             ListBoxRunways.DataSource = Runway.GetICAOids();
-            ListBoxScenarioType.DataSource = Constants.scenarios;
+            ListBoxScenarioType.DataSource = Constants.scenarioNames;
 
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.circuitTab.jpg");
             PictureBoxCircuit.Image = new Bitmap(stream);
@@ -58,6 +58,18 @@ namespace P3D_Scenario_Generator
         private void ListBoxScenarioType_SelectedIndexChanged(object sender, EventArgs e)
         {
             TextBoxSelectedScenario.Text = ListBoxScenarioType.SelectedItem.ToString();
+            if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour])
+            {
+                ListBoxRunways.Enabled = false;
+                TextBoxSearchRunway.Enabled = false;
+                ButtonRandRunway.Enabled = false;
+            }
+            else
+            {
+                ListBoxRunways.Enabled = true;
+                TextBoxSearchRunway.Enabled = true;
+                ButtonRandRunway.Enabled = true;
+            }
         }
 
         private void ButtonGenerateScenario_Click(object sender, EventArgs e)
@@ -68,6 +80,10 @@ namespace P3D_Scenario_Generator
             }
             string message = $"Creating scenario files in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - will confirm when complete";
             MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour])
+            {
+                PhotoTour.SetRandomPhotoTour();
+            }
             Runway.SetRunway();
             ScenarioFXML.GenerateFXMLfile();
             ScenarioHTML.GenerateOverview();
@@ -112,8 +128,8 @@ namespace P3D_Scenario_Generator
             {
                 TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed);
                 TextBoxCircuitHeightDown.Text = "1000";
-                TextBoxCircuitHeightUpwind.Text = "800";
-                TextBoxCircuitHeightBase.Text = "800";
+                TextBoxCircuitHeightUpwind.Text = "500";
+                TextBoxCircuitHeightBase.Text = "500";
                 // Upwind distance (miles) approx by speed (knots) * number of minutes / 60 (assume 1.25 minutes to climb 1000ft at 800ft/min)
                 TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 1.25 / 60);
                 // Base distance (miles) approx by speed (knots) * number of minutes / 60 (assume 30 seconds to prepare for next gate after completing turn)
@@ -191,7 +207,7 @@ namespace P3D_Scenario_Generator
 
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
-            Help.ShowHelp(this, "P3D Scenario Generator Help\\P3D Scenario Generator.chm", "introduction.htm");
+            Help.ShowHelp(this, "P3D Scenario Generator.chm", "introduction.htm");
         }
     }
 }

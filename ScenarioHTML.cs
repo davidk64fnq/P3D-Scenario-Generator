@@ -72,7 +72,24 @@ namespace P3D_Scenario_Generator
                     overview.liObjective = "Take off and fly through the eight gates before landing on the same runway.";
                     overview.liTips = "Each pair of gates marks the start and finish of a standard rate left turn of 90 degrees. ";
                     break;
-                case "Photos":
+                case "Photo Tour":
+                    overview.title = "Photo Tour";
+                    overview.h1 = "Photo Tour";
+                    overview.h2Location = $"{Runway.IcaoName} ({Runway.IcaoId}) {Runway.City}, {Runway.Country}";
+                    overview.pDifficulty = "Beginner";
+                    // Duration (minutes) approximately sum of leg distances (miles) * speed (knots) * 60 minutes
+            //        duration = ((Parameters.FinalLeg + (Runway.Len / Constants.feetInKnot) + Parameters.UpwindLeg) * 2 + (Parameters.BaseLeg * 2)) / Parameters.Speed * 60;
+                    duration = 999;
+                    overview.pDuration = $"{string.Format("{0:0}", duration)} minutes";
+                    overview.h2Aircraft = $"{Parameters.SelectedAircraft}";
+                    overview.pBriefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
+                    overview.pBriefing += " as you navigate from one photo location to the next using dead reckoning. ";
+                    overview.pBriefing += "You'll take off, fly to a series of photo locations, ";
+                    overview.pBriefing += "and land at another airport. The scenario begins on runway ";
+                    overview.pBriefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
+                    overview.pBriefing += $"{Runway.City}, {Runway.Country}.";
+                    overview.liObjective = "Take off and visit a series of photo locations following dead reckoning instructions before finishing the flight with a landing.";
+                    overview.liTips = "Look after the pennies and the pounds will look after themselves.";
                     break;
                 default:
                     break;
@@ -88,6 +105,7 @@ namespace P3D_Scenario_Generator
             switch (Parameters.SelectedScenario)
             {
                 case nameof(ScenarioTypes.Circuit):
+                case nameof(ScenarioTypes.PhotoTour):
                     missionBrief.title = overview.title;
                     missionBrief.h1 = overview.title;
                     missionBrief.h2Location = overview.h2Location;
@@ -113,7 +131,6 @@ namespace P3D_Scenario_Generator
             StreamReader reader = new StreamReader(stream);
             overviewHTML = reader.ReadToEnd();
             stream.Dispose();
-            //    overviewHTML = File.ReadAllText("OverviewSource.htm");
             overviewHTML = overviewHTML.Replace("overviewParams.title", $"{overview.title}");
             overviewHTML = overviewHTML.Replace("overviewParams.h1", $"{overview.h1}");
             overviewHTML = overviewHTML.Replace("overviewParams.h2Location", $"{overview.h2Location}");
@@ -135,7 +152,6 @@ namespace P3D_Scenario_Generator
             StreamReader reader = new StreamReader(stream);
             missionBriefHTML = reader.ReadToEnd();
             stream.Dispose();
-            //    missionBriefHTML = File.ReadAllText("MissionBriefSource.htm");
             missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.title", $"{missionBrief.title}");
             missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.h1", $"{missionBrief.h1}");
             missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.h2Location", $"{missionBrief.h2Location}");
@@ -162,8 +178,8 @@ namespace P3D_Scenario_Generator
             if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
             { 
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
-            } 
-
+            }
+            
             // Download Bing images
             using WebClient client = new WebClient();
             string url;
@@ -212,17 +228,20 @@ namespace P3D_Scenario_Generator
             }
             stream.Dispose();
 
-            // Copy sound files
-            if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound"))
+            if (Parameters.SelectedScenario == Constants.scenarioNames[(int)ScenarioTypes.Circuit])
             {
-                Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound");
+                // Copy sound files
+                if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound"))
+                {
+                    Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound");
+                }
+                stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.ThruHoop.wav");
+                using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound\\ThruHoop.wav", FileMode.Create))
+                {
+                    stream.CopyTo(outputFileStream);
+                }
+                stream.Dispose();
             }
-            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.ThruHoop.wav");
-            using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound\\ThruHoop.wav", FileMode.Create))
-            {
-                stream.CopyTo(outputFileStream);
-            }
-            stream.Dispose();
         }
 
         static internal int GetDuration()

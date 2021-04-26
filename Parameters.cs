@@ -9,7 +9,7 @@ namespace P3D_Scenario_Generator
         private static readonly Form form = (Form)Application.OpenForms[0];
 
         // General tab
-        internal static string SelectedRunway { get; private set; }
+        internal static string SelectedRunway { get; set; }
         internal static string SaveLocation { get; private set; }
         internal static string SelectedAircraft { get; private set; }
         internal static string SelectedScenario { get; private set; }
