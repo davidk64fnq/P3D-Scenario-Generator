@@ -23,6 +23,15 @@ namespace P3D_Scenario_Generator
         internal static double Speed { get; private set; }
         internal static double UpwindLeg { get; private set; }
 
+        // Photo Tour
+        internal static double MaxLegDist { get; private set; }
+
+        static private bool IsValidFilename(string fileName)
+        {
+            return !string.IsNullOrEmpty(fileName) &&
+              fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
+        }
+
         static internal bool SetParams()
         {
             // General tab
@@ -40,16 +49,27 @@ namespace P3D_Scenario_Generator
                 SelectedAircraft = form.ListBoxAircraft.Items[form.ListBoxAircraft.SelectedIndex].ToString();
             }
             SelectedRunway = form.TextBoxSelectedRunway.Text;
-            SelectedScenario = form.TextBoxSelectedScenario.Text;
+            int index = Array.FindIndex(Constants.scenarioNames, s => s == form.TextBoxSelectedScenario.Text);
+            SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
 
             // Circuit tab
-            BaseLeg = Convert.ToDouble(form.TextBoxCircuitBase.Text);
-            FinalLeg = Convert.ToDouble(form.TextBoxCircuitFinal.Text);
-            HeightUpwind = Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text);
-            HeightDown = Convert.ToDouble(form.TextBoxCircuitHeightDown.Text);
-            HeightBase = Convert.ToDouble(form.TextBoxCircuitHeightBase.Text);
-            Speed = Convert.ToDouble(form.TextBoxCircuitSpeed.Text);
-            UpwindLeg = Convert.ToDouble(form.TextBoxCircuitUpwind.Text);
+            if (SelectedScenario == nameof(ScenarioTypes.Circuit))
+            {
+                BaseLeg = Convert.ToDouble(form.TextBoxCircuitBase.Text);
+                FinalLeg = Convert.ToDouble(form.TextBoxCircuitFinal.Text);
+                ValidateTextBoxCircuitHeights();
+                HeightUpwind = Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text);
+                HeightDown = Convert.ToDouble(form.TextBoxCircuitHeightDown.Text);
+                HeightBase = Convert.ToDouble(form.TextBoxCircuitHeightBase.Text);
+                Speed = Convert.ToDouble(form.TextBoxCircuitSpeed.Text);
+                UpwindLeg = Convert.ToDouble(form.TextBoxCircuitUpwind.Text);
+            }
+
+            // Photo Tour
+            if (SelectedScenario == nameof(ScenarioTypes.PhotoTour))
+            {
+                MaxLegDist = Convert.ToDouble(form.TextBoxPhotoMaxLeg.Text);
+            }
 
             if (errorMsg != "")
             {
@@ -63,6 +83,7 @@ namespace P3D_Scenario_Generator
                 Directory.CreateDirectory(saveFolder);
                 return true;
             }
+
         }
 
         static private bool ValidateScenarioTitle()
@@ -86,10 +107,12 @@ namespace P3D_Scenario_Generator
             return true;
         }
 
-        static private bool IsValidFilename(string fileName)
+        static private void ValidateTextBoxCircuitHeights()
         {
-            return !string.IsNullOrEmpty(fileName) &&
-              fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
+            if ((Convert.ToDouble(form.TextBoxCircuitHeightDown.Text) < Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text)) || (Convert.ToDouble(form.TextBoxCircuitHeightDown.Text) < Convert.ToDouble(form.TextBoxCircuitHeightBase.Text)))
+            {
+                MessageBox.Show($"Program expects gates 1/2 and 7/8 to be lower than the downwind leg height, strange results may occur", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
     }
 }

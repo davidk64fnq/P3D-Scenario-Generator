@@ -10,16 +10,17 @@ namespace P3D_Scenario_Generator
     {
         internal struct Overview
         {
-            internal string title;
-            internal string h1;
-            internal string h2Location;
-            internal string pDifficulty;
-            internal string pDuration;
-            internal string h2Aircraft;
-            internal string pBriefing;
-            internal string liObjective;
-            internal string liTips;
+            internal string Title { get; set; }
+            internal string Heading1 { get; set; }
+            internal string Location { get; set; }
+            internal string Difficulty { get; set; }
+            internal string Duration { get; set; }
+            internal string Aircraft { get; set; }
+            internal string Briefing { get; set; }
+            internal string Objective { get; set; }
+            internal string Tips { get; set; }
         }
+       
         internal struct MissionBrief
         {
             internal string title;
@@ -33,9 +34,9 @@ namespace P3D_Scenario_Generator
             internal string h2Tips;
         }
 
-        private static Overview overview;
+        internal static Overview overview;
 
-        static internal void GenerateOverview()
+        static internal void GenerateHTMLfiles()
         {
             overview = SetOverviewStruct();
             string overviewHTML = SetOverviewHTML(overview);
@@ -54,42 +55,42 @@ namespace P3D_Scenario_Generator
 
             switch (Parameters.SelectedScenario)
             {
-                case "Circuit":
-                    overview.title = "Circuit Practise";
-                    overview.h1 = "Circuit Practise";
-                    overview.h2Location = $"{Runway.IcaoName} ({Runway.IcaoId}) {Runway.City}, {Runway.Country}";
-                    overview.pDifficulty = "Beginner";
+                case nameof(ScenarioTypes.Circuit):
+                    overview.Title = "Circuit Practise";
+                    overview.Heading1 = "Circuit Practise";
+                    overview.Location = $"{Runway.IcaoName} ({Runway.IcaoId}) {Runway.City}, {Runway.Country}";
+                    overview.Difficulty = "Beginner";
                     // Duration (minutes) approximately sum of leg distances (miles) * speed (knots) * 60 minutes
                     double duration = ((Parameters.FinalLeg + (Runway.Len / Constants.feetInKnot) + Parameters.UpwindLeg) * 2 + (Parameters.BaseLeg * 2)) / Parameters.Speed * 60;
-                    overview.pDuration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.h2Aircraft = $"{Parameters.SelectedAircraft}";
-                    overview.pBriefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
-                    overview.pBriefing += " by doing that most fundamental of tasks, flying a circuit! ";
-                    overview.pBriefing += "You'll take off, fly through eight gates as you complete a circuit, ";
-                    overview.pBriefing += "and land back on the runway. The scenario begins on runway ";
-                    overview.pBriefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
-                    overview.pBriefing += $"{Runway.City}, {Runway.Country}.";
-                    overview.liObjective = "Take off and fly through the eight gates before landing on the same runway.";
-                    overview.liTips = "Each pair of gates marks the start and finish of a standard rate left turn of 90 degrees. ";
+                    overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
+                    overview.Aircraft = $"{Parameters.SelectedAircraft}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
+                    overview.Briefing += " by doing that most fundamental of tasks, flying a circuit! ";
+                    overview.Briefing += "You'll take off, fly through eight gates as you complete a circuit, ";
+                    overview.Briefing += "and land back on the runway. The scenario begins on runway ";
+                    overview.Briefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
+                    overview.Briefing += $"{Runway.City}, {Runway.Country}.";
+                    overview.Objective = "Take off and fly through the eight gates before landing on the same runway.";
+                    overview.Tips = "Each pair of gates marks the start and finish of a standard rate left turn of 90 degrees. ";
                     break;
-                case "Photo Tour":
-                    overview.title = "Photo Tour";
-                    overview.h1 = "Photo Tour";
-                    overview.h2Location = $"{Runway.IcaoName} ({Runway.IcaoId}) {Runway.City}, {Runway.Country}";
-                    overview.pDifficulty = "Beginner";
+                case nameof(ScenarioTypes.PhotoTour):
+                    overview.Title = "Photo Tour";
+                    overview.Heading1 = "Photo Tour";
+                    overview.Location = $"{Runway.IcaoName} ({Runway.IcaoId}) {Runway.City}, {Runway.Country}";
+                    overview.Difficulty = "Beginner";
                     // Duration (minutes) approximately sum of leg distances (miles) * speed (knots) * 60 minutes
             //        duration = ((Parameters.FinalLeg + (Runway.Len / Constants.feetInKnot) + Parameters.UpwindLeg) * 2 + (Parameters.BaseLeg * 2)) / Parameters.Speed * 60;
                     duration = 999;
-                    overview.pDuration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.h2Aircraft = $"{Parameters.SelectedAircraft}";
-                    overview.pBriefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
-                    overview.pBriefing += " as you navigate from one photo location to the next using dead reckoning. ";
-                    overview.pBriefing += "You'll take off, fly to a series of photo locations, ";
-                    overview.pBriefing += "and land at another airport. The scenario begins on runway ";
-                    overview.pBriefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
-                    overview.pBriefing += $"{Runway.City}, {Runway.Country}.";
-                    overview.liObjective = "Take off and visit a series of photo locations following dead reckoning instructions before finishing the flight with a landing.";
-                    overview.liTips = "Look after the pennies and the pounds will look after themselves.";
+                    overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
+                    overview.Aircraft = $"{Parameters.SelectedAircraft}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
+                    overview.Briefing += " as you navigate from one photo location to the next using dead reckoning. ";
+                    overview.Briefing += "You'll take off, fly to a series of photo locations, ";
+                    overview.Briefing += "and land at another airport. The scenario begins on runway ";
+                    overview.Briefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
+                    overview.Briefing += $"{Runway.City}, {Runway.Country}.";
+                    overview.Objective = "Take off and visit a series of photo locations following dead reckoning instructions before finishing the flight with a landing.";
+                    overview.Tips = "Look after the pennies and the pounds will look after themselves.";
                     break;
                 default:
                     break;
@@ -106,15 +107,15 @@ namespace P3D_Scenario_Generator
             {
                 case nameof(ScenarioTypes.Circuit):
                 case nameof(ScenarioTypes.PhotoTour):
-                    missionBrief.title = overview.title;
-                    missionBrief.h1 = overview.title;
-                    missionBrief.h2Location = overview.h2Location;
-                    missionBrief.h2Difficulty = overview.pDifficulty;
-                    missionBrief.h2Duration = overview.pDuration;
-                    missionBrief.h2Aircraft = overview.h2Aircraft;
-                    missionBrief.pBriefing = overview.pBriefing;
-                    missionBrief.liObjective = overview.liObjective;
-                    missionBrief.h2Tips = overview.liTips;
+                    missionBrief.title = overview.Title;
+                    missionBrief.h1 = overview.Title;
+                    missionBrief.h2Location = overview.Location;
+                    missionBrief.h2Difficulty = overview.Difficulty;
+                    missionBrief.h2Duration = overview.Duration;
+                    missionBrief.h2Aircraft = overview.Aircraft;
+                    missionBrief.pBriefing = overview.Briefing;
+                    missionBrief.liObjective = overview.Objective;
+                    missionBrief.h2Tips = overview.Tips;
                     break;
                 default:
                     break;
@@ -131,15 +132,15 @@ namespace P3D_Scenario_Generator
             StreamReader reader = new StreamReader(stream);
             overviewHTML = reader.ReadToEnd();
             stream.Dispose();
-            overviewHTML = overviewHTML.Replace("overviewParams.title", $"{overview.title}");
-            overviewHTML = overviewHTML.Replace("overviewParams.h1", $"{overview.h1}");
-            overviewHTML = overviewHTML.Replace("overviewParams.h2Location", $"{overview.h2Location}");
-            overviewHTML = overviewHTML.Replace("overviewParams.pDifficulty", $"{overview.pDifficulty}");
-            overviewHTML = overviewHTML.Replace("overviewParams.pDuration", $"{overview.pDuration}");
-            overviewHTML = overviewHTML.Replace("overviewParams.h2Aircraft", $"{overview.h2Aircraft}");
-            overviewHTML = overviewHTML.Replace("overviewParams.pBriefing", $"{overview.pBriefing}");
-            overviewHTML = overviewHTML.Replace("overviewParams.liObjective", $"{overview.liObjective}");
-            overviewHTML = overviewHTML.Replace("overviewParams.liTips", $"{overview.liTips}");
+            overviewHTML = overviewHTML.Replace("overviewParams.title", $"{overview.Title}");
+            overviewHTML = overviewHTML.Replace("overviewParams.h1", $"{overview.Heading1}");
+            overviewHTML = overviewHTML.Replace("overviewParams.h2Location", $"{overview.Location}");
+            overviewHTML = overviewHTML.Replace("overviewParams.pDifficulty", $"{overview.Difficulty}");
+            overviewHTML = overviewHTML.Replace("overviewParams.pDuration", $"{overview.Duration}");
+            overviewHTML = overviewHTML.Replace("overviewParams.h2Aircraft", $"{overview.Aircraft}");
+            overviewHTML = overviewHTML.Replace("overviewParams.pBriefing", $"{overview.Briefing}");
+            overviewHTML = overviewHTML.Replace("overviewParams.liObjective", $"{overview.Objective}");
+            overviewHTML = overviewHTML.Replace("overviewParams.liTips", $"{overview.Tips}");
 
             return overviewHTML;
         }
@@ -246,9 +247,9 @@ namespace P3D_Scenario_Generator
 
         static internal int GetDuration()
         {
-            if (overview.pDuration != null)
+            if (overview.Duration != null)
             {
-                string[] words = overview.pDuration.Split(" ");
+                string[] words = overview.Duration.Split(" ");
                 return Convert.ToInt32(words[0]);
             }
             else
@@ -257,29 +258,5 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        static internal string GetDifficulty()
-        {
-            return overview.pDifficulty;
-        }
-
-        static internal string GetBriefing()
-        {
-            return overview.pBriefing;
-        }
-
-        static internal string GetTips()
-        {
-            return overview.liTips;
-        }
-
-        static internal string GetObjective()
-        {
-            return overview.liObjective;
-        }
-
-        static internal string GetTitle()
-        {
-            return overview.title;
-        }
     }
 }

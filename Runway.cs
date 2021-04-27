@@ -34,56 +34,69 @@ namespace P3D_Scenario_Generator
             List<string> icaoIDs = new List<string>();
             Stream stream = GetRunwayXMLstream();
             XmlReader reader = XmlReader.Create(stream);
-            while (reader.ReadToFollowing("ICAO") && reader.NodeType == XmlNodeType.Element)
+            while (reader.Read())
             {
-                reader.MoveToAttribute("id");
-                string currentAirport = reader.Value;
-                do
+                if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.Element)
                 {
-                    reader.Read();
-                    if (reader.Name == "Runway" && reader.MoveToAttribute("id"))
+                    string currentAirport = reader.GetAttribute("id");
+                    while (reader.Read())
                     {
-                        icaoIDs.Add($"{currentAirport}\t({reader.Value})");
+                        if (reader.Name == "Runway" && reader.NodeType == XmlNodeType.Element)
+                        {
+                            icaoIDs.Add($"{currentAirport}\t({reader.GetAttribute("id")})");
+                        }
+                        if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.EndElement)
+                        {
+                            break;
+                        }
                     }
                 }
-                while (reader.Name != "ICAO");
             }
             stream.Dispose();
 
             return icaoIDs;
         }
 
-        static internal string GetNearestAirport(double latitude, double longitude)
+        static internal string GetNearestAirport(double latitude, double longitude, ref double distance)
         {
             string icao = "";
             double curLongitude;
             double curLatitude;
             double minDifference = 9999;
+            double difference;
             Stream stream = GetRunwayXMLstream();
             XmlReader reader = XmlReader.Create(stream);
-            while (reader.ReadToFollowing("ICAO") && reader.NodeType == XmlNodeType.Element)
+            while (reader.Read())
             {
-                reader.MoveToAttribute("id");
-                string currentAirport = reader.Value;
-                do
+                if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.Element)
                 {
-                    reader.Read();
-                }
-                while (!(reader.Name == "Runway" && reader.MoveToAttribute("id")));
-                currentAirport += $"\t({reader.Value})";
-                reader.ReadToFollowing("Lat");
-                curLatitude = reader.ReadElementContentAsDouble();
-                reader.ReadToFollowing("Lon");
-                curLongitude = reader.ReadElementContentAsDouble();
-                double difference = Math.Abs(latitude - curLatitude) + Math.Abs(longitude - curLongitude);
-                if (difference < minDifference)
-                {
-                    minDifference = difference;
-                    icao = currentAirport;
+                    string currentAirport = reader.GetAttribute("id");
+                    while (reader.Read())
+                    {
+                        if (reader.Name == "Runway" && reader.NodeType == XmlNodeType.Element)
+                        {
+                            currentAirport += $"\t({reader.GetAttribute("id")})";
+                            reader.ReadToFollowing("Lat");
+                            curLatitude = reader.ReadElementContentAsDouble();
+                            reader.ReadToFollowing("Lon");
+                            curLongitude = reader.ReadElementContentAsDouble();
+                            difference = MathRoutines.CalcDistance(curLatitude, curLongitude, latitude, longitude);
+                            if (difference < minDifference)
+                            {
+                                minDifference = difference;
+                                icao = currentAirport;
+                            }
+                        }
+                        if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.EndElement)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
             stream.Dispose();
 
+            distance = minDifference;
             return icao;
         }
 

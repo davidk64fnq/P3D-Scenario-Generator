@@ -19,7 +19,6 @@ namespace P3D_Scenario_Generator
 
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.circuitTab.jpg");
             PictureBoxCircuit.Image = new Bitmap(stream);
-
         }
 
         #region General Tab
@@ -50,11 +49,6 @@ namespace P3D_Scenario_Generator
 
         #region Scenario selection
 
-        private void ListBoxScenarioType_Click(object sender, EventArgs e)
-        {
-            TextBoxSelectedScenario.Text = ListBoxScenarioType.SelectedItem.ToString();
-        }
-
         private void ListBoxScenarioType_SelectedIndexChanged(object sender, EventArgs e)
         {
             TextBoxSelectedScenario.Text = ListBoxScenarioType.SelectedItem.ToString();
@@ -63,6 +57,7 @@ namespace P3D_Scenario_Generator
                 ListBoxRunways.Enabled = false;
                 TextBoxSearchRunway.Enabled = false;
                 ButtonRandRunway.Enabled = false;
+                SetDefaultPhotoTourParams();
             }
             else
             {
@@ -86,7 +81,7 @@ namespace P3D_Scenario_Generator
             }
             Runway.SetRunway();
             ScenarioFXML.GenerateFXMLfile();
-            ScenarioHTML.GenerateOverview();
+            ScenarioHTML.GenerateHTMLfiles();
             ScenarioXML.GenerateXMLfile();
             message = $"Scenario files created in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - enjoy your flight!";
             MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -139,75 +134,51 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private void TextBoxCircuitBase_TextChanged(object sender, EventArgs e)
+        #endregion
+
+        #region Photo Tour Tab
+
+        private void ButtonPhotoTourDefault_Click(object sender, EventArgs e)
         {
-            if (!ValidateCircuitParam(TextBoxCircuitBase.Text))
-            {
-                TextBoxCircuitBase.Text = "0";
-            }
+            SetDefaultPhotoTourParams();
         }
 
-        private void TextBoxCircuitFinal_TextChanged(object sender, EventArgs e)
+        private void SetDefaultPhotoTourParams()
         {
-            if (!ValidateCircuitParam(TextBoxCircuitFinal.Text))
-            {
-                TextBoxCircuitFinal.Text = "0";
-            }
-        }
-
-        private void TextBoxCircuitHeight_TextChanged(object sender, EventArgs e)
-        {
-            if (!ValidateCircuitParam(TextBoxCircuitHeightDown.Text))
-            {
-                TextBoxCircuitHeightDown.Text = "0";
-            }
-            if ((Convert.ToDouble(TextBoxCircuitHeightDown.Text) < Convert.ToDouble(TextBoxCircuitHeightUpwind.Text)) || (Convert.ToDouble(TextBoxCircuitHeightDown.Text) < Convert.ToDouble(TextBoxCircuitHeightBase.Text)))
-            {
-                MessageBox.Show($"Program expects gates 1/2 and 7/8 to be lower than the downwind leg height, strange results may occur", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
-
-        private void TextBoxCircuitSpeed_TextChanged(object sender, EventArgs e)
-        {
-            if (!ValidateCircuitParam(TextBoxCircuitSpeed.Text))
-            {
-                TextBoxCircuitSpeed.Text = "0";
-            }
-        }
-
-        private void TextBoxCircuitUpwind_TextChanged(object sender, EventArgs e)
-        {
-            if (!ValidateCircuitParam(TextBoxCircuitUpwind.Text))
-            {
-                TextBoxCircuitUpwind.Text = "0";
-            }
-        }
-
-        private bool ValidateCircuitParam(string paramValue)
-        {
-            double paramAsDouble;
-            try 
-            {
-                paramAsDouble = Convert.ToDouble(paramValue);
-                if (paramAsDouble < 0)
-                {
-                    MessageBox.Show($"Numeric value greater than zero expected", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return false;
-                }
-            }
-            catch (Exception)
-            {
-                MessageBox.Show($"Numeric value expected", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-            return true;
+            TextBoxPhotoMaxLeg.Text = "10";
         }
 
         #endregion
+
+        #region Utilities
 
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
             Help.ShowHelp(this, "P3D Scenario Generator.chm", "introduction.htm");
         }
+
+        private void TextBoxDouble_TextChanged(object sender, EventArgs e)
+        {
+            double paramAsDouble;
+            try
+            {
+                paramAsDouble = Convert.ToDouble(((TextBox)sender).Text);
+                if (paramAsDouble < 0)
+                {
+                    MessageBox.Show($"Numeric value greater than zero expected", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ((TextBox)sender).Text = "0";
+                    return; 
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show($"Numeric value expected", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ((TextBox)sender).Text = "0";
+                return;
+            }
+        }
+
+        #endregion
+
     }
 }
