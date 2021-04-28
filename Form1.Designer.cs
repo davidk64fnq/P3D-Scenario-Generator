@@ -65,12 +65,16 @@ namespace P3D_Scenario_Generator
             this.ButtonCircuitDefault = new System.Windows.Forms.Button();
             this.PictureBoxCircuit = new System.Windows.Forms.PictureBox();
             this.TabPagePhoto = new System.Windows.Forms.TabPage();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.TextBoxPhotoMaxNoLegs = new System.Windows.Forms.TextBox();
+            this.TextBoxPhotoMinNoLegs = new System.Windows.Forms.TextBox();
+            this.ButtonPhotoTourDefault = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
-            this.TextBoxPhotoMaxLeg = new System.Windows.Forms.TextBox();
+            this.TextBoxPhotoMaxLegDist = new System.Windows.Forms.TextBox();
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ButtonHelp = new System.Windows.Forms.Button();
-            this.ButtonPhotoTourDefault = new System.Windows.Forms.Button();
             this.TabControl.SuspendLayout();
             this.TabPageGeneral.SuspendLayout();
             this.TabPageCircuit.SuspendLayout();
@@ -298,10 +302,10 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitUpwind.Name = "TextBoxCircuitUpwind";
             this.TextBoxCircuitUpwind.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitUpwind.TabIndex = 5;
-            this.TextBoxCircuitUpwind.Text = "0";
+            this.TextBoxCircuitUpwind.Text = "1";
             this.TextBoxCircuitUpwind.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitUpwind, "Distance between runway and gate 1 in miles");
-            this.TextBoxCircuitUpwind.TextChanged += new System.EventHandler(this.TextBoxDouble_TextChanged);
+            this.TextBoxCircuitUpwind.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
             // 
             // TextBoxCircuitHeightUpwind
             // 
@@ -310,10 +314,10 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitHeightUpwind.Name = "TextBoxCircuitHeightUpwind";
             this.TextBoxCircuitHeightUpwind.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitHeightUpwind.TabIndex = 13;
-            this.TextBoxCircuitHeightUpwind.Text = "0";
+            this.TextBoxCircuitHeightUpwind.Text = "500";
             this.TextBoxCircuitHeightUpwind.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitHeightUpwind, "Height of circuit above runway in feet (gate 1)");
-            this.TextBoxCircuitHeightUpwind.TextChanged += new System.EventHandler(this.TextBoxDouble_TextChanged);
+            this.TextBoxCircuitHeightUpwind.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
             // 
             // label9
             // 
@@ -332,10 +336,10 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitBase.Name = "TextBoxCircuitBase";
             this.TextBoxCircuitBase.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitBase.TabIndex = 1;
-            this.TextBoxCircuitBase.Text = "0";
+            this.TextBoxCircuitBase.Text = "0.5";
             this.TextBoxCircuitBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitBase, "Distance between gates 2 and 3 (6 and 7) in miles");
-            this.TextBoxCircuitBase.TextChanged += new System.EventHandler(this.TextBoxDouble_TextChanged);
+            this.TextBoxCircuitBase.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
             // 
             // label5
             // 
@@ -354,10 +358,10 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitFinal.Name = "TextBoxCircuitFinal";
             this.TextBoxCircuitFinal.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitFinal.TabIndex = 2;
-            this.TextBoxCircuitFinal.Text = "0";
+            this.TextBoxCircuitFinal.Text = "1";
             this.TextBoxCircuitFinal.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitFinal, "Distance between gate 8 and runway in miles");
-            this.TextBoxCircuitFinal.TextChanged += new System.EventHandler(this.TextBoxDouble_TextChanged);
+            this.TextBoxCircuitFinal.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
             // 
             // TextBoxCircuitHeightDown
             // 
@@ -366,10 +370,10 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitHeightDown.Name = "TextBoxCircuitHeightDown";
             this.TextBoxCircuitHeightDown.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitHeightDown.TabIndex = 3;
-            this.TextBoxCircuitHeightDown.Text = "0";
+            this.TextBoxCircuitHeightDown.Text = "1000";
             this.TextBoxCircuitHeightDown.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitHeightDown, "Height of circuit above runway in feet (gates 3 to 6)");
-            this.TextBoxCircuitHeightDown.TextChanged += new System.EventHandler(this.TextBoxDouble_TextChanged);
+            this.TextBoxCircuitHeightDown.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
             // 
             // label4
             // 
@@ -388,10 +392,10 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitSpeed.Name = "TextBoxCircuitSpeed";
             this.TextBoxCircuitSpeed.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitSpeed.TabIndex = 4;
-            this.TextBoxCircuitSpeed.Text = "0";
+            this.TextBoxCircuitSpeed.Text = "65";
             this.TextBoxCircuitSpeed.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitSpeed, "Cruise speed between gates 1 and 8 in knots");
-            this.TextBoxCircuitSpeed.TextChanged += new System.EventHandler(this.TextBoxDouble_TextChanged);
+            this.TextBoxCircuitSpeed.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
             // 
             // label3
             // 
@@ -421,10 +425,10 @@ namespace P3D_Scenario_Generator
             this.TextBoxCircuitHeightBase.Name = "TextBoxCircuitHeightBase";
             this.TextBoxCircuitHeightBase.Size = new System.Drawing.Size(100, 23);
             this.TextBoxCircuitHeightBase.TabIndex = 12;
-            this.TextBoxCircuitHeightBase.Text = "0";
+            this.TextBoxCircuitHeightBase.Text = "500";
             this.TextBoxCircuitHeightBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxCircuitHeightBase, "Height of circuit above runway in feet (gate 8)");
-            this.TextBoxCircuitHeightBase.TextChanged += new System.EventHandler(this.TextBoxDouble_TextChanged);
+            this.TextBoxCircuitHeightBase.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
             // 
             // ButtonCircuitDefault
             // 
@@ -446,9 +450,13 @@ namespace P3D_Scenario_Generator
             // 
             // TabPagePhoto
             // 
+            this.TabPagePhoto.Controls.Add(this.label13);
+            this.TabPagePhoto.Controls.Add(this.label12);
+            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMaxNoLegs);
+            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMinNoLegs);
             this.TabPagePhoto.Controls.Add(this.ButtonPhotoTourDefault);
             this.TabPagePhoto.Controls.Add(this.label11);
-            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMaxLeg);
+            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMaxLegDist);
             this.TabPagePhoto.Location = new System.Drawing.Point(4, 24);
             this.TabPagePhoto.Name = "TabPagePhoto";
             this.TabPagePhoto.Size = new System.Drawing.Size(812, 438);
@@ -456,24 +464,75 @@ namespace P3D_Scenario_Generator
             this.TabPagePhoto.Text = "Photo Tour";
             this.TabPagePhoto.UseVisualStyleBackColor = true;
             // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(16, 118);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(79, 15);
+            this.label13.TabIndex = 16;
+            this.label13.Text = "Max No. Legs";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(16, 75);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(77, 15);
+            this.label12.TabIndex = 15;
+            this.label12.Text = "Min No. Legs";
+            // 
+            // TextBoxPhotoMaxNoLegs
+            // 
+            this.TextBoxPhotoMaxNoLegs.Location = new System.Drawing.Point(112, 110);
+            this.TextBoxPhotoMaxNoLegs.Name = "TextBoxPhotoMaxNoLegs";
+            this.TextBoxPhotoMaxNoLegs.Size = new System.Drawing.Size(119, 23);
+            this.TextBoxPhotoMaxNoLegs.TabIndex = 14;
+            this.TextBoxPhotoMaxNoLegs.Text = "7";
+            this.TextBoxPhotoMaxNoLegs.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxPhotoMaxNoLegs, "Maximum leg distance in miles to next photo");
+            this.TextBoxPhotoMaxNoLegs.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
+            // TextBoxPhotoMinNoLegs
+            // 
+            this.TextBoxPhotoMinNoLegs.Location = new System.Drawing.Point(112, 67);
+            this.TextBoxPhotoMinNoLegs.Name = "TextBoxPhotoMinNoLegs";
+            this.TextBoxPhotoMinNoLegs.Size = new System.Drawing.Size(119, 23);
+            this.TextBoxPhotoMinNoLegs.TabIndex = 13;
+            this.TextBoxPhotoMinNoLegs.Text = "3";
+            this.TextBoxPhotoMinNoLegs.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxPhotoMinNoLegs, "Maximum leg distance in miles to next photo");
+            this.TextBoxPhotoMinNoLegs.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
+            // ButtonPhotoTourDefault
+            // 
+            this.ButtonPhotoTourDefault.Location = new System.Drawing.Point(469, 15);
+            this.ButtonPhotoTourDefault.Name = "ButtonPhotoTourDefault";
+            this.ButtonPhotoTourDefault.Size = new System.Drawing.Size(75, 23);
+            this.ButtonPhotoTourDefault.TabIndex = 12;
+            this.ButtonPhotoTourDefault.Text = "Default";
+            this.ButtonPhotoTourDefault.UseVisualStyleBackColor = true;
+            this.ButtonPhotoTourDefault.Click += new System.EventHandler(this.ButtonPhotoTourDefault_Click);
+            // 
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(16, 31);
+            this.label11.Location = new System.Drawing.Point(16, 32);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(75, 15);
             this.label11.TabIndex = 4;
             this.label11.Text = "Max Leg Dist";
             // 
-            // TextBoxPhotoMaxLeg
+            // TextBoxPhotoMaxLegDist
             // 
-            this.TextBoxPhotoMaxLeg.Location = new System.Drawing.Point(112, 24);
-            this.TextBoxPhotoMaxLeg.Name = "TextBoxPhotoMaxLeg";
-            this.TextBoxPhotoMaxLeg.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxPhotoMaxLeg.TabIndex = 3;
-            this.TextBoxPhotoMaxLeg.Text = "0";
-            this.TextBoxPhotoMaxLeg.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxPhotoMaxLeg, "Maximum leg distance in miles to next photo");
+            this.TextBoxPhotoMaxLegDist.Location = new System.Drawing.Point(112, 24);
+            this.TextBoxPhotoMaxLegDist.Name = "TextBoxPhotoMaxLegDist";
+            this.TextBoxPhotoMaxLegDist.Size = new System.Drawing.Size(119, 23);
+            this.TextBoxPhotoMaxLegDist.TabIndex = 3;
+            this.TextBoxPhotoMaxLegDist.Text = "10";
+            this.TextBoxPhotoMaxLegDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxPhotoMaxLegDist, "Maximum leg distance in miles to next photo");
+            this.TextBoxPhotoMaxLegDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
             // 
             // ButtonGenerateScenario
             // 
@@ -495,16 +554,6 @@ namespace P3D_Scenario_Generator
             this.ButtonHelp.Text = "Help";
             this.ButtonHelp.UseVisualStyleBackColor = true;
             this.ButtonHelp.Click += new System.EventHandler(this.ButtonHelp_Click);
-            // 
-            // ButtonPhotoTourDefault
-            // 
-            this.ButtonPhotoTourDefault.Location = new System.Drawing.Point(469, 15);
-            this.ButtonPhotoTourDefault.Name = "ButtonPhotoTourDefault";
-            this.ButtonPhotoTourDefault.Size = new System.Drawing.Size(75, 23);
-            this.ButtonPhotoTourDefault.TabIndex = 12;
-            this.ButtonPhotoTourDefault.Text = "Default";
-            this.ButtonPhotoTourDefault.UseVisualStyleBackColor = true;
-            this.ButtonPhotoTourDefault.Click += new System.EventHandler(this.ButtonPhotoTourDefault_Click);
             // 
             // Form
             // 
@@ -576,8 +625,12 @@ namespace P3D_Scenario_Generator
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.TabPage TabPagePhoto;
         private System.Windows.Forms.Label label11;
-        internal System.Windows.Forms.TextBox TextBoxPhotoMaxLeg;
+        internal System.Windows.Forms.TextBox TextBoxPhotoMaxLegDist;
         private System.Windows.Forms.Button ButtonPhotoTourDefault;
+        internal System.Windows.Forms.TextBox TextBoxPhotoMaxNoLegs;
+        internal System.Windows.Forms.TextBox TextBoxPhotoMinNoLegs;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label label12;
     }
 }
 

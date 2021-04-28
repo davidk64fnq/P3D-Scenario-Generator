@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
@@ -9,6 +10,8 @@ namespace P3D_Scenario_Generator
 {
     public partial class Form : System.Windows.Forms.Form
     {
+        private static readonly Form form = (Form)Application.OpenForms[0];
+
         public Form()
         {
             InitializeComponent();
@@ -134,6 +137,16 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        static private bool ValidateCircuitParameters()
+        {
+            if ((Convert.ToDouble(form.TextBoxCircuitHeightDown.Text) < Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text)) || (Convert.ToDouble(form.TextBoxCircuitHeightDown.Text) < Convert.ToDouble(form.TextBoxCircuitHeightBase.Text)))
+            {
+                MessageBox.Show($"Gates 1/2 and 7/8 must be lower than the downwind leg height (Gates 3 to 6)", "Circuit Scenario: heights", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            return true;
+        }
+
         #endregion
 
         #region Photo Tour Tab
@@ -145,7 +158,29 @@ namespace P3D_Scenario_Generator
 
         private void SetDefaultPhotoTourParams()
         {
-            TextBoxPhotoMaxLeg.Text = "10";
+            TextBoxPhotoMaxLegDist.Text = "10";
+            TextBoxPhotoMinNoLegs.Text = "3";
+            TextBoxPhotoMaxNoLegs.Text = "7";
+        }
+
+        static private bool ValidatePhotoParameters()
+        {
+            if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) > 15)
+            {
+                MessageBox.Show($"Minimum number of legs must be less than 16", "Photo Tour Scenario: minimum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            if (Convert.ToInt32(form.TextBoxPhotoMaxNoLegs.Text) > 15)
+            {
+                MessageBox.Show($"Maximum number of legs must be less than 16", "Photo Tour Scenario: maximum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            if (Convert.ToInt32(form.TextBoxPhotoMaxNoLegs.Text) < Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text))
+            {
+                MessageBox.Show($"Maximum number of legs to be greater than or equal to minimum number of legs", "Photo Tour Scenario: number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            return true;
         }
 
         #endregion
@@ -157,24 +192,55 @@ namespace P3D_Scenario_Generator
             Help.ShowHelp(this, "P3D Scenario Generator.chm", "introduction.htm");
         }
 
-        private void TextBoxDouble_TextChanged(object sender, EventArgs e)
+        private void TextBoxDouble_Validating(object sender, CancelEventArgs e)
         {
             double paramAsDouble;
             try
             {
                 paramAsDouble = Convert.ToDouble(((TextBox)sender).Text);
-                if (paramAsDouble < 0)
+                if (paramAsDouble <= 0)
                 {
-                    MessageBox.Show($"Numeric value greater than zero expected", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    ((TextBox)sender).Text = "0";
-                    return; 
+                    MessageBox.Show($"Numeric value greater than zero expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    e.Cancel = true;
                 }
             }
             catch (Exception)
             {
-                MessageBox.Show($"Numeric value expected", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                ((TextBox)sender).Text = "0";
-                return;
+                MessageBox.Show($"Numeric value expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                e.Cancel = true;
+            }
+            if(((TextBox)sender).Name.Contains("TextBoxCircuitHeight"))
+            {
+                if (e.Cancel == false && !ValidateCircuitParameters())
+                {
+                    e.Cancel = true;
+                }
+            }
+        }
+        
+        private void TextBoxInteger_Validating(object sender, CancelEventArgs e)
+        {
+            int paramAsInt;
+            try
+            {
+                paramAsInt = Convert.ToInt32(((TextBox)sender).Text);
+                if (paramAsInt <= 0)
+                {
+                    MessageBox.Show($"Integer value greater than zero expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    e.Cancel = true;
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show($"Integer value expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                e.Cancel = true;
+            }
+            if (((TextBox)sender).Name.Contains("TextBoxPhoto") && ((TextBox)sender).Name.Contains("NoLegs"))
+            {
+                if (e.Cancel == false && !ValidatePhotoParameters())
+                {
+                    e.Cancel = true;
+                }
             }
         }
 

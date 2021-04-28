@@ -16,6 +16,7 @@ namespace P3D_Scenario_Generator
             amsl = d3;
         }
     }
+
     public struct Gate
     {
         public double lat;

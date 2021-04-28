@@ -25,6 +25,8 @@ namespace P3D_Scenario_Generator
 
         // Photo Tour
         internal static double MaxLegDist { get; private set; }
+        internal static double MinNoLegs { get; private set; }
+        internal static double MaxNoLegs { get; private set; }
 
         static private bool IsValidFilename(string fileName)
         {
@@ -57,7 +59,6 @@ namespace P3D_Scenario_Generator
             {
                 BaseLeg = Convert.ToDouble(form.TextBoxCircuitBase.Text);
                 FinalLeg = Convert.ToDouble(form.TextBoxCircuitFinal.Text);
-                ValidateTextBoxCircuitHeights();
                 HeightUpwind = Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text);
                 HeightDown = Convert.ToDouble(form.TextBoxCircuitHeightDown.Text);
                 HeightBase = Convert.ToDouble(form.TextBoxCircuitHeightBase.Text);
@@ -68,7 +69,9 @@ namespace P3D_Scenario_Generator
             // Photo Tour
             if (SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
-                MaxLegDist = Convert.ToDouble(form.TextBoxPhotoMaxLeg.Text);
+                MaxLegDist = Convert.ToDouble(form.TextBoxPhotoMaxLegDist.Text);
+                MinNoLegs = Convert.ToDouble(form.TextBoxPhotoMinNoLegs.Text);
+                MaxNoLegs = Convert.ToDouble(form.TextBoxPhotoMaxNoLegs.Text);
             }
 
             if (errorMsg != "")
@@ -105,14 +108,6 @@ namespace P3D_Scenario_Generator
                 return false;
             }
             return true;
-        }
-
-        static private void ValidateTextBoxCircuitHeights()
-        {
-            if ((Convert.ToDouble(form.TextBoxCircuitHeightDown.Text) < Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text)) || (Convert.ToDouble(form.TextBoxCircuitHeightDown.Text) < Convert.ToDouble(form.TextBoxCircuitHeightBase.Text)))
-            {
-                MessageBox.Show($"Program expects gates 1/2 and 7/8 to be lower than the downwind leg height, strange results may occur", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
         }
     }
 }
