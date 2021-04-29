@@ -9,22 +9,26 @@ namespace P3D_Scenario_Generator
     public struct PhotoLegParams
     {
         public string image;
-        public string locationDesc;
-        public double lastLegDist;
         public string id;
+        public double lastLegDist;
         public double latitude;
         public double longitude;
+        public double bearing;
     }
 
     internal class PhotoTour
     {
-        static private List<PhotoLegParams> photoLegs = new List<PhotoLegParams>();
+        private static readonly List<PhotoLegParams> photoLegs = new List<PhotoLegParams>();
 
         static internal void SetRandomPhotoTour()
         {
             double distance = 9999;
+            double bearing = 0;
+            double airportLat = 0;
+            double airportLon = 0;
 
-            while (distance > Parameters.MaxLegDist)
+            bool continueSearching = true;
+            while (continueSearching)
             {
                 // Get starting random photo
                 using WebClient client = new WebClient();
@@ -36,62 +40,102 @@ namespace P3D_Scenario_Generator
                 // Extract photo leg parameters
                 StreamReader reader = new StreamReader(saveLocation);
                 photoLegs.Clear();
-                ExtractLegParams(saveLocation);
-                Parameters.SelectedRunway = Runway.GetNearestAirport(photoLegs[0].latitude, photoLegs[0].longitude, ref distance);
-
-                reader.Dispose();
-            //    File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html");
-            }
-        }
-
-        /// <summary>
-        /// Assumes required double in source string is first "double.TryParse" embedded between ">" and "<" characters
-        /// </summary>
-        static internal double ExtractDouble(string source)
-        {
-            double number = 0;
-            string[] words = source.Split(">");
-            foreach (string word in words)
-            {
-                string[] subWords = word.Split("<");
-                if (double.TryParse(subWords[0], out number))
+                PhotoLegParams photoLeg;
+                photoLeg = ExtractLegParams(saveLocation);
+                Parameters.SelectedRunway = Runway.GetNearestAirport(photoLeg.latitude, photoLeg.longitude, ref distance, ref airportLat, ref airportLon);
+                photoLeg.lastLegDist = distance;
+                bearing = MathRoutines.CalcBearing(airportLat, airportLon, photoLeg.latitude, photoLeg.longitude);
+                photoLeg.bearing = bearing;
+                photoLegs.Add(photoLeg);
+                if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist)
                 {
-                    break;
+                    bool addLegs = true;
+                    while (photoLegs.Count < Parameters.MaxNoLegs && addLegs)
+                    {
+                        // Get next nearest unselected photo
+                        url = GetNextLeg(saveLocation, ref distance, ref bearing);
+                        if (url != "")
+                        {
+                            reader.Dispose();
+                            File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html");
+                            client.DownloadFile(new Uri(url), saveLocation);
+                            reader = new StreamReader(saveLocation);
+                            photoLeg = ExtractLegParams(saveLocation);
+                            photoLeg.lastLegDist = distance;
+                            photoLeg.bearing = bearing;
+                            photoLegs.Add(photoLeg);
+                        }
+                        else
+                        {
+                            addLegs = false;
+                        }
+                    }
+                    if (photoLegs.Count >= Parameters.MinNoLegs)
+                    {
+                        string destRunway = Runway.GetNearestAirport(photoLegs[^1].latitude, photoLegs[^1].longitude, ref distance, ref airportLat, ref airportLon);
+                        if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist)
+                        {
+                            Parameters.DestRunway = destRunway;
+                            Parameters.DestDistance = distance;
+                            continueSearching = false;
+                        }
+                    }
                 }
+                reader.Dispose();
+                File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html");
             }
-            return number;
         }
 
-        static private void ExtractLegParams(string saveLocation)
+        static private PhotoLegParams ExtractLegParams(string saveLocation)
         {
             PhotoLegParams photoLeg = new PhotoLegParams();
             var htmlDoc = new HtmlDocument();
             htmlDoc.Load(saveLocation);
 
-            string latitude = htmlDoc.DocumentNode
-                .SelectSingleNode("//span[@class='sp_latitude-longitude']/following::span[@class='dtab']")
-                .Attributes["dvalue"].Value;
+            photoLeg.image = htmlDoc.DocumentNode.SelectSingleNode("//meta[8]").GetAttributeValue("content", "");
+            photoLeg.id = Path.GetFileNameWithoutExtension(photoLeg.image);
+            photoLeg.latitude = Convert.ToDouble(htmlDoc.DocumentNode.SelectSingleNode("//ul[@class='details'][4]/li[1]/div[@class='dbox'][1]/span[@class='dvalue'][1]").InnerText);
+            photoLeg.longitude = Convert.ToDouble(htmlDoc.DocumentNode.SelectSingleNode("//ul[@class='details'][4]/li[2]/div[@class='dbox'][1]/span[@class='dvalue'][1]").InnerText);
 
-            System.Windows.Forms.MessageBox.Show(latitude);
+            return photoLeg;
+        }
 
-            /*
-            string photoHTML = "";
+        static private void ExtractNextLegCoords(HtmlDocument htmlDoc, string id, ref double latitude, ref double longitude)
+        {
+            string script = htmlDoc.DocumentNode.SelectSingleNode($"//body[1]/script[1]").InnerText;
+            int idIndex = script.IndexOf(id);
+            script = script.Remove(0, idIndex);
+            string[] words = script.Split(',');
+            latitude = Convert.ToDouble(words[1]);
+            longitude = Convert.ToDouble(words[2]);
+        }
 
-            while (!photoHTML.Contains("meta property=\"og: title\""))
+        static private string GetNextLeg(string saveLocation, ref double distance, ref double bearing)
+        {
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.Load(saveLocation);
+
+            int index = 1;
+            while (index <= 15)
             {
-                photoHTML = reader.ReadLine();
+                string nextLeg = htmlDoc.DocumentNode.SelectSingleNode($"//li[{index}]/div[@class='dbox'][1]/a[1]").GetAttributeValue("href", "");
+                string nextDist = htmlDoc.DocumentNode.SelectSingleNode($"//li[{index}]/div[@class='dbox'][1]/p[@class='undertitletext'][1]").InnerText;
+                string[] words = nextDist.Split('/');
+                distance = Convert.ToDouble(words[1][..^11]);
+                string id = Path.GetFileNameWithoutExtension(nextLeg);
+                double nextLat = 0;
+                double nextLon = 0;
+                ExtractNextLegCoords(htmlDoc, id, ref nextLat, ref nextLon);
+                bearing = MathRoutines.CalcBearing(photoLegs[^1].latitude, photoLegs[^1].longitude, nextLat, nextLon);
+                int headingChange = MathRoutines.CalcHeadingChange(photoLegs[^1].bearing, bearing);
+                if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist && Math.Abs(headingChange) < 90 && photoLegs.FindIndex(leg => nextLeg.Contains(leg.id)) == -1)
+                {
+                    return nextLeg;
+                }
+                index++;
             }
-            while (!photoHTML.Contains("GPS INFORMATION"))
-            {
-                photoHTML = reader.ReadLine();
-            }
-            _ = reader.ReadLine();
-            photoHTML = reader.ReadLine();
-            photoLeg.latitude = ExtractDouble(photoHTML);
-            photoHTML = reader.ReadLine();
-            photoLeg.longitude = ExtractDouble(photoHTML);
-            photoLegs.Add(photoLeg);
-            */
+
+            return "";
         }
     }
 }

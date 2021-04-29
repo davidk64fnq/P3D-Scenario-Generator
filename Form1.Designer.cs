@@ -65,6 +65,8 @@ namespace P3D_Scenario_Generator
             this.ButtonCircuitDefault = new System.Windows.Forms.Button();
             this.PictureBoxCircuit = new System.Windows.Forms.PictureBox();
             this.TabPagePhoto = new System.Windows.Forms.TabPage();
+            this.label14 = new System.Windows.Forms.Label();
+            this.TextBoxPhotoMinLegDist = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.TextBoxPhotoMaxNoLegs = new System.Windows.Forms.TextBox();
@@ -75,6 +77,8 @@ namespace P3D_Scenario_Generator
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ButtonHelp = new System.Windows.Forms.Button();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.TabControl.SuspendLayout();
             this.TabPageGeneral.SuspendLayout();
             this.TabPageCircuit.SuspendLayout();
@@ -450,6 +454,8 @@ namespace P3D_Scenario_Generator
             // 
             // TabPagePhoto
             // 
+            this.TabPagePhoto.Controls.Add(this.label14);
+            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMinLegDist);
             this.TabPagePhoto.Controls.Add(this.label13);
             this.TabPagePhoto.Controls.Add(this.label12);
             this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMaxNoLegs);
@@ -464,10 +470,30 @@ namespace P3D_Scenario_Generator
             this.TabPagePhoto.Text = "Photo Tour";
             this.TabPagePhoto.UseVisualStyleBackColor = true;
             // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(16, 79);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(73, 15);
+            this.label14.TabIndex = 18;
+            this.label14.Text = "Min Leg Dist";
+            // 
+            // TextBoxPhotoMinLegDist
+            // 
+            this.TextBoxPhotoMinLegDist.Location = new System.Drawing.Point(112, 71);
+            this.TextBoxPhotoMinLegDist.Name = "TextBoxPhotoMinLegDist";
+            this.TextBoxPhotoMinLegDist.Size = new System.Drawing.Size(119, 23);
+            this.TextBoxPhotoMinLegDist.TabIndex = 17;
+            this.TextBoxPhotoMinLegDist.Text = "3";
+            this.TextBoxPhotoMinLegDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxPhotoMinLegDist, "Minimum leg distance in miles to next photo");
+            this.TextBoxPhotoMinLegDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
+            // 
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(16, 118);
+            this.label13.Location = new System.Drawing.Point(16, 174);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(79, 15);
             this.label13.TabIndex = 16;
@@ -476,7 +502,7 @@ namespace P3D_Scenario_Generator
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(16, 75);
+            this.label12.Location = new System.Drawing.Point(16, 126);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(77, 15);
             this.label12.TabIndex = 15;
@@ -484,7 +510,7 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxPhotoMaxNoLegs
             // 
-            this.TextBoxPhotoMaxNoLegs.Location = new System.Drawing.Point(112, 110);
+            this.TextBoxPhotoMaxNoLegs.Location = new System.Drawing.Point(112, 166);
             this.TextBoxPhotoMaxNoLegs.Name = "TextBoxPhotoMaxNoLegs";
             this.TextBoxPhotoMaxNoLegs.Size = new System.Drawing.Size(119, 23);
             this.TextBoxPhotoMaxNoLegs.TabIndex = 14;
@@ -495,7 +521,7 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxPhotoMinNoLegs
             // 
-            this.TextBoxPhotoMinNoLegs.Location = new System.Drawing.Point(112, 67);
+            this.TextBoxPhotoMinNoLegs.Location = new System.Drawing.Point(112, 118);
             this.TextBoxPhotoMinNoLegs.Name = "TextBoxPhotoMinNoLegs";
             this.TextBoxPhotoMinNoLegs.Size = new System.Drawing.Size(119, 23);
             this.TextBoxPhotoMinNoLegs.TabIndex = 13;
@@ -532,7 +558,7 @@ namespace P3D_Scenario_Generator
             this.TextBoxPhotoMaxLegDist.Text = "10";
             this.TextBoxPhotoMaxLegDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxPhotoMaxLegDist, "Maximum leg distance in miles to next photo");
-            this.TextBoxPhotoMaxLegDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            this.TextBoxPhotoMaxLegDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
             // 
             // ButtonGenerateScenario
             // 
@@ -555,11 +581,19 @@ namespace P3D_Scenario_Generator
             this.ButtonHelp.UseVisualStyleBackColor = true;
             this.ButtonHelp.Click += new System.EventHandler(this.ButtonHelp_Click);
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(128, 502);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(100, 23);
+            this.progressBar1.TabIndex = 3;
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(844, 553);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.ButtonHelp);
             this.Controls.Add(this.ButtonGenerateScenario);
             this.Controls.Add(this.TabControl);
@@ -631,6 +665,10 @@ namespace P3D_Scenario_Generator
         internal System.Windows.Forms.TextBox TextBoxPhotoMinNoLegs;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Label label14;
+        internal System.Windows.Forms.TextBox TextBoxPhotoMinLegDist;
+        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 }
 

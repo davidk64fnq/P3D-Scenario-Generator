@@ -25,8 +25,11 @@ namespace P3D_Scenario_Generator
 
         // Photo Tour
         internal static double MaxLegDist { get; private set; }
+        internal static double MinLegDist { get; private set; }
         internal static double MinNoLegs { get; private set; }
         internal static double MaxNoLegs { get; private set; }
+        internal static string DestRunway { get; set; }
+        internal static double DestDistance { get; set; }
 
         static private bool IsValidFilename(string fileName)
         {
@@ -70,6 +73,7 @@ namespace P3D_Scenario_Generator
             if (SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
                 MaxLegDist = Convert.ToDouble(form.TextBoxPhotoMaxLegDist.Text);
+                MinLegDist = Convert.ToDouble(form.TextBoxPhotoMinLegDist.Text);
                 MinNoLegs = Convert.ToDouble(form.TextBoxPhotoMinNoLegs.Text);
                 MaxNoLegs = Convert.ToDouble(form.TextBoxPhotoMaxNoLegs.Text);
             }

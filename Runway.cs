@@ -57,11 +57,9 @@ namespace P3D_Scenario_Generator
             return icaoIDs;
         }
 
-        static internal string GetNearestAirport(double latitude, double longitude, ref double distance)
+        static internal string GetNearestAirport(double latitude, double longitude, ref double distance, ref double airportLat, ref double airportLon)
         {
             string icao = "";
-            double curLongitude;
-            double curLatitude;
             double minDifference = 9999;
             double difference;
             Stream stream = GetRunwayXMLstream();
@@ -77,10 +75,10 @@ namespace P3D_Scenario_Generator
                         {
                             currentAirport += $"\t({reader.GetAttribute("id")})";
                             reader.ReadToFollowing("Lat");
-                            curLatitude = reader.ReadElementContentAsDouble();
+                            airportLat = reader.ReadElementContentAsDouble();
                             reader.ReadToFollowing("Lon");
-                            curLongitude = reader.ReadElementContentAsDouble();
-                            difference = MathRoutines.CalcDistance(curLatitude, curLongitude, latitude, longitude);
+                            airportLon = reader.ReadElementContentAsDouble();
+                            difference = MathRoutines.CalcDistance(airportLat, airportLon, latitude, longitude);
                             if (difference < minDifference)
                             {
                                 minDifference = difference;

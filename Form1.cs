@@ -137,11 +137,21 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        static private bool ValidateCircuitParameters()
+        static private bool ValidateCircuitDoubleParameters()
         {
             if ((Convert.ToDouble(form.TextBoxCircuitHeightDown.Text) < Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text)) || (Convert.ToDouble(form.TextBoxCircuitHeightDown.Text) < Convert.ToDouble(form.TextBoxCircuitHeightBase.Text)))
             {
                 MessageBox.Show($"Gates 1/2 and 7/8 must be lower than the downwind leg height (Gates 3 to 6)", "Circuit Scenario: heights", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            return true;
+        }
+
+        static private bool ValidatePhotoDoubleParameters()
+        {
+            if (Convert.ToDouble(form.TextBoxPhotoMaxLegDist.Text) < Convert.ToDouble(form.TextBoxPhotoMinLegDist.Text))
+            {
+                MessageBox.Show($"Maximum leg distance to be greater than or equal to minimum leg distance", "Photo Tour Scenario: leg distances", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
             return true;
@@ -159,11 +169,12 @@ namespace P3D_Scenario_Generator
         private void SetDefaultPhotoTourParams()
         {
             TextBoxPhotoMaxLegDist.Text = "10";
+            TextBoxPhotoMinLegDist.Text = "3";
             TextBoxPhotoMinNoLegs.Text = "3";
             TextBoxPhotoMaxNoLegs.Text = "7";
         }
 
-        static private bool ValidatePhotoParameters()
+        static private bool ValidatePhotoIntegerParameters()
         {
             if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) > 15)
             {
@@ -211,7 +222,14 @@ namespace P3D_Scenario_Generator
             }
             if(((TextBox)sender).Name.Contains("TextBoxCircuitHeight"))
             {
-                if (e.Cancel == false && !ValidateCircuitParameters())
+                if (e.Cancel == false && !ValidateCircuitDoubleParameters())
+                {
+                    e.Cancel = true;
+                }
+            }
+            if (((TextBox)sender).Name.Contains("TextBoxPhoto") && ((TextBox)sender).Name.Contains("LegDist"))
+            {
+                if (e.Cancel == false && !ValidatePhotoDoubleParameters())
                 {
                     e.Cancel = true;
                 }
@@ -237,7 +255,7 @@ namespace P3D_Scenario_Generator
             }
             if (((TextBox)sender).Name.Contains("TextBoxPhoto") && ((TextBox)sender).Name.Contains("NoLegs"))
             {
-                if (e.Cancel == false && !ValidatePhotoParameters())
+                if (e.Cancel == false && !ValidatePhotoIntegerParameters())
                 {
                     e.Cancel = true;
                 }
