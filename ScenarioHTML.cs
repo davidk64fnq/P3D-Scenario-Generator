@@ -190,6 +190,20 @@ namespace P3D_Scenario_Generator
                 client.DownloadFile(new Uri(url), $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlFilename[index]}");
             }
 
+            string pushpins = $"pp={Runway.AirportLat},{Runway.AirportLon};1;{Runway.IcaoName}&";
+            for (int index = 0; index < PhotoTour.PhotoCount; index++)
+            {
+                PhotoLegParams curPhoto = PhotoTour.GetPhotoLeg(index);
+                pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{index + 1}";
+                if (index != PhotoTour.PhotoCount - 1)
+                {
+                    pushpins += "&";
+                }
+            }
+
+            url = $"https://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial?{pushpins}&mapSize={urlMapSize[2]}{urlKey}";
+            client.DownloadFile(new Uri(url), $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\PhotoTour.jpg");
+
             // Copy selected aircraft thumbnail image from P3D instal
             string aircraftImageSource = $"{Aircraft.GetImagename(Parameters.SelectedAircraft)}";
             string aircraftImageDest = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\Overview_01.jpg";

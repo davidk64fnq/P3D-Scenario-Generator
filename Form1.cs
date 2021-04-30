@@ -77,6 +77,7 @@ namespace P3D_Scenario_Generator
                 return;
             }
             string message = $"Creating scenario files in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - will confirm when complete";
+            Cursor.Current = Cursors.WaitCursor;
             MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
             if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
@@ -86,6 +87,7 @@ namespace P3D_Scenario_Generator
             ScenarioFXML.GenerateFXMLfile();
             ScenarioHTML.GenerateHTMLfiles();
             ScenarioXML.GenerateXMLfile();
+            Cursor.Current = Cursors.Default;
             message = $"Scenario files created in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - enjoy your flight!";
             MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }

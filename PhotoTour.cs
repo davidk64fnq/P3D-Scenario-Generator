@@ -83,6 +83,7 @@ namespace P3D_Scenario_Generator
                 }
                 reader.Dispose();
                 File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html");
+                PhotoCount = photoLegs.Count;
             }
         }
 
@@ -137,5 +138,12 @@ namespace P3D_Scenario_Generator
 
             return "";
         }
+        
+        static internal PhotoLegParams GetPhotoLeg(int index)
+        {
+            return photoLegs[index];
+        }
+       
+        internal static int PhotoCount { get; private set; }
     }
 }
