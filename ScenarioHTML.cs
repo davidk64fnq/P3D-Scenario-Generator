@@ -60,7 +60,7 @@ namespace P3D_Scenario_Generator
                     overview.Heading1 = "Circuit Practise";
                     overview.Location = $"{Runway.IcaoName} ({Runway.IcaoId}) {Runway.City}, {Runway.Country}";
                     overview.Difficulty = "Beginner";
-                    // Duration (minutes) approximately sum of leg distances (miles) * speed (knots) * 60 minutes
+                    // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
                     double duration = ((Parameters.FinalLeg + (Runway.Len / Constants.feetInKnot) + Parameters.UpwindLeg) * 2 + (Parameters.BaseLeg * 2)) / Parameters.Speed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{Parameters.SelectedAircraft}";
@@ -77,10 +77,9 @@ namespace P3D_Scenario_Generator
                     overview.Title = "Photo Tour";
                     overview.Heading1 = "Photo Tour";
                     overview.Location = $"{Runway.IcaoName} ({Runway.IcaoId}) {Runway.City}, {Runway.Country}";
-                    overview.Difficulty = "Beginner";
-                    // Duration (minutes) approximately sum of leg distances (miles) * speed (knots) * 60 minutes
-            //        duration = ((Parameters.FinalLeg + (Runway.Len / Constants.feetInKnot) + Parameters.UpwindLeg) * 2 + (Parameters.BaseLeg * 2)) / Parameters.Speed * 60;
-                    duration = 999;
+                    overview.Difficulty = "Intermediate";
+                    // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
+                    duration = PhotoTour.GetPhotoTourDistance() / Aircraft.CruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{Parameters.SelectedAircraft}";
                     overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
@@ -89,8 +88,11 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
                     overview.Briefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
                     overview.Briefing += $"{Runway.City}, {Runway.Country}.";
-                    overview.Objective = "Take off and visit a series of photo locations following dead reckoning instructions before finishing the flight with a landing.";
-                    overview.Tips = "Look after the pennies and the pounds will look after themselves.";
+                    string[] words = Parameters.DestRunway.Split('\t');
+                    overview.Objective = "Take off and visit a series of photo locations following dead reckoning instructions before landing ";
+                    overview.Objective += $"at {words[0]}, runway {words[1]}";
+                    overview.Tips = "Consider overflying the starting airport runway at your cruising altitude on the required bearing ";
+                    overview.Tips += "for greater accuracy in reaching the first photo location.";
                     break;
                 default:
                     break;
@@ -190,19 +192,25 @@ namespace P3D_Scenario_Generator
                 client.DownloadFile(new Uri(url), $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlFilename[index]}");
             }
 
-            string pushpins = $"pp={Runway.AirportLat},{Runway.AirportLon};1;{Runway.IcaoName}&";
-            for (int index = 0; index < PhotoTour.PhotoCount; index++)
+            // For photo tour do pushpin version of Charts_01.jpg
+            if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
-                PhotoLegParams curPhoto = PhotoTour.GetPhotoLeg(index);
-                pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{index + 1}";
-                if (index != PhotoTour.PhotoCount - 1)
+                PhotoLegParams curPhoto;
+                string[] words = Parameters.SelectedRunway.Split("\t");
+                curPhoto = PhotoTour.GetPhotoLeg(0);
+                string pushpins = $"pp={curPhoto.latitude},{curPhoto.longitude};1;{words[0]}&";
+                for (int index = 1; index < PhotoTour.PhotoCount - 1; index++)
                 {
-                    pushpins += "&";
+                    curPhoto = PhotoTour.GetPhotoLeg(index);
+                    pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{index}&";
                 }
-            }
+                words = Parameters.DestRunway.Split("\t");
+                curPhoto = PhotoTour.GetPhotoLeg(PhotoTour.PhotoCount - 1);
+                pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{words[0]}";
 
-            url = $"https://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial?{pushpins}&mapSize={urlMapSize[2]}{urlKey}";
-            client.DownloadFile(new Uri(url), $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\PhotoTour.jpg");
+                url = $"https://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial?{pushpins}&mapSize={urlMapSize[2]}{urlKey}";
+                client.DownloadFile(new Uri(url), $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\Charts_01.jpg");
+            }
 
             // Copy selected aircraft thumbnail image from P3D instal
             string aircraftImageSource = $"{Aircraft.GetImagename(Parameters.SelectedAircraft)}";

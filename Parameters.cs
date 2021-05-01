@@ -29,7 +29,6 @@ namespace P3D_Scenario_Generator
         internal static double MinNoLegs { get; private set; }
         internal static double MaxNoLegs { get; private set; }
         internal static string DestRunway { get; set; }
-        internal static double DestDistance { get; set; }
 
         static private bool IsValidFilename(string fileName)
         {

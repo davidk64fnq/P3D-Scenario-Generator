@@ -61,6 +61,8 @@ namespace P3D_Scenario_Generator
         {
             string icao = "";
             double minDifference = 9999;
+            double minLatitude = 0;
+            double minLongitude = 0;
             double difference;
             Stream stream = GetRunwayXMLstream();
             XmlReader reader = XmlReader.Create(stream);
@@ -82,6 +84,8 @@ namespace P3D_Scenario_Generator
                             if (difference < minDifference)
                             {
                                 minDifference = difference;
+                                minLatitude = airportLat;
+                                minLongitude = airportLon;
                                 icao = currentAirport;
                             }
                         }
@@ -95,6 +99,8 @@ namespace P3D_Scenario_Generator
             stream.Dispose();
 
             distance = minDifference;
+            airportLat = minLatitude;
+            airportLon = minLongitude;
             return icao;
         }
 

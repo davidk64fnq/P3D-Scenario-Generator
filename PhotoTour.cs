@@ -6,63 +6,72 @@ using HtmlAgilityPack;
 
 namespace P3D_Scenario_Generator
 {
-    public struct PhotoLegParams
+    public class PhotoLegParams
     {
         public string image;
         public string id;
-        public double lastLegDist;
+        public double forwardDist;
         public double latitude;
         public double longitude;
-        public double bearing;
+        public double forwardBearing;
     }
 
     internal class PhotoTour
     {
         private static readonly List<PhotoLegParams> photoLegs = new List<PhotoLegParams>();
 
+        internal static int PhotoCount { get; private set; }
+
         static internal void SetRandomPhotoTour()
         {
             double distance = 9999;
             double bearing = 0;
-            double airportLat = 0;
-            double airportLon = 0;
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html";
+            string url;
+            WebClient client = new WebClient();
+            PhotoLegParams photoLeg;
+            PhotoLegParams airportLeg;
 
             bool continueSearching = true;
             while (continueSearching)
             {
-                // Get starting random photo
-                using WebClient client = new WebClient();
-                string url;
-                url = $"https://www.pic2map.com/random.php";
-                string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html";
-                client.DownloadFile(new Uri(url), saveLocation);
-
-                // Extract photo leg parameters
-                StreamReader reader = new StreamReader(saveLocation);
+                // Clear last attempt
                 photoLegs.Clear();
-                PhotoLegParams photoLeg;
+
+                // Get starting random photo
+                client.DownloadFile(new Uri("https://www.pic2map.com/random.php"), saveLocation);
+
+                // Extract starting random photo leg parameters
+                StreamReader reader = new StreamReader(saveLocation);
                 photoLeg = ExtractLegParams(saveLocation);
-                Parameters.SelectedRunway = Runway.GetNearestAirport(photoLeg.latitude, photoLeg.longitude, ref distance, ref airportLat, ref airportLon);
-                photoLeg.lastLegDist = distance;
-                bearing = MathRoutines.CalcBearing(airportLat, airportLon, photoLeg.latitude, photoLeg.longitude);
-                photoLeg.bearing = bearing;
+
+                // Find nearest airport to starting random photo
+                airportLeg = new PhotoLegParams();
+                Parameters.SelectedRunway = Runway.GetNearestAirport(photoLeg.latitude, photoLeg.longitude, ref airportLeg.forwardDist, ref airportLeg.latitude, ref airportLeg.longitude);
+                airportLeg.forwardBearing = MathRoutines.CalcBearing(airportLeg.latitude, airportLeg.longitude, photoLeg.latitude, photoLeg.longitude);
+                airportLeg.id = "ZZZZZZ";
+                photoLegs.Add(airportLeg);
                 photoLegs.Add(photoLeg);
-                if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist)
+
+                if (airportLeg.forwardDist <= Parameters.MaxLegDist && airportLeg.forwardDist >= Parameters.MinLegDist)
                 {
                     bool addLegs = true;
-                    while (photoLegs.Count < Parameters.MaxNoLegs && addLegs)
+                    while (photoLegs.Count - 1 < Parameters.MaxNoLegs && addLegs)
                     {
                         // Get next nearest unselected photo
                         url = GetNextLeg(saveLocation, ref distance, ref bearing);
                         if (url != "")
                         {
+                            // Add forward distance and bearing for this next nearest unselected photo to last selected photo location
+                            photoLegs[^1].forwardDist = distance;
+                            photoLegs[^1].forwardBearing = bearing;
+
+                            // Extract next nearest unselected photo leg parameters
                             reader.Dispose();
-                            File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html");
+                            File.Delete(saveLocation);
                             client.DownloadFile(new Uri(url), saveLocation);
                             reader = new StreamReader(saveLocation);
                             photoLeg = ExtractLegParams(saveLocation);
-                            photoLeg.lastLegDist = distance;
-                            photoLeg.bearing = bearing;
                             photoLegs.Add(photoLeg);
                         }
                         else
@@ -70,21 +79,28 @@ namespace P3D_Scenario_Generator
                             addLegs = false;
                         }
                     }
-                    if (photoLegs.Count >= Parameters.MinNoLegs)
+
+                    // If candidate route has enough legs try to locate a destination airport
+                    if (photoLegs.Count - 1 >= Parameters.MinNoLegs)
                     {
-                        string destRunway = Runway.GetNearestAirport(photoLegs[^1].latitude, photoLegs[^1].longitude, ref distance, ref airportLat, ref airportLon);
-                        if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist)
-                        {
-                            Parameters.DestRunway = destRunway;
-                            Parameters.DestDistance = distance;
+                        airportLeg = new PhotoLegParams();
+                        Parameters.DestRunway = Runway.GetNearestAirport(photoLegs[^1].latitude, photoLegs[^1].longitude, ref distance, ref airportLeg.latitude, ref airportLeg.longitude);
+
+                        // Add forward distance and bearing for destination airport to last selected photo location
+                        photoLegs[^1].forwardDist = distance;
+                        photoLegs[^1].forwardBearing = MathRoutines.CalcBearing(photoLegs[^1].latitude, photoLegs[^1].longitude, airportLeg.latitude, airportLeg.longitude);
+                        int headingChange = MathRoutines.CalcHeadingChange(photoLegs[^2].forwardBearing, photoLegs[^1].forwardBearing);
+                        if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist && Math.Abs(headingChange) < 90)
+                        { 
+                            photoLegs.Add(airportLeg);
                             continueSearching = false;
                         }
                     }
                 }
                 reader.Dispose();
                 File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html");
-                PhotoCount = photoLegs.Count;
             }
+            PhotoCount = photoLegs.Count;
         }
 
         static private PhotoLegParams ExtractLegParams(string saveLocation)
@@ -111,6 +127,17 @@ namespace P3D_Scenario_Generator
             longitude = Convert.ToDouble(words[2]);
         }
 
+        static internal double GetPhotoTourDistance()
+        {
+            double distance = 0;
+            foreach (PhotoLegParams leg in photoLegs)
+            {
+                distance += leg.forwardDist;
+            }
+
+            return distance;
+        }
+
         static private string GetNextLeg(string saveLocation, ref double distance, ref double bearing)
         {
             var htmlDoc = new HtmlDocument();
@@ -128,7 +155,7 @@ namespace P3D_Scenario_Generator
                 double nextLon = 0;
                 ExtractNextLegCoords(htmlDoc, id, ref nextLat, ref nextLon);
                 bearing = MathRoutines.CalcBearing(photoLegs[^1].latitude, photoLegs[^1].longitude, nextLat, nextLon);
-                int headingChange = MathRoutines.CalcHeadingChange(photoLegs[^1].bearing, bearing);
+                int headingChange = MathRoutines.CalcHeadingChange(photoLegs[^2].forwardBearing, bearing);
                 if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist && Math.Abs(headingChange) < 90 && photoLegs.FindIndex(leg => nextLeg.Contains(leg.id)) == -1)
                 {
                     return nextLeg;
@@ -144,6 +171,5 @@ namespace P3D_Scenario_Generator
             return photoLegs[index];
         }
        
-        internal static int PhotoCount { get; private set; }
     }
 }
