@@ -186,6 +186,7 @@ namespace P3D_Scenario_Generator
             // Download Bing images
             using WebClient client = new WebClient();
             string url;
+            string altURL;
             for (int index = 0; index < urlZoom.Length; index++)
             {
                 url = $"{urlBase}{Runway.AirportLat},{Runway.AirportLon}/{urlZoom[index]}?mapSize={urlMapSize[index]}{urlKey}";
@@ -210,6 +211,24 @@ namespace P3D_Scenario_Generator
 
                 url = $"https://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial?{pushpins}&mapSize={urlMapSize[2]}{urlKey}";
                 client.DownloadFile(new Uri(url), $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\Charts_01.jpg");
+            }
+
+            // For photo tour get Bing route image for each leg
+            if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
+            {
+                string[] startRunwayWords = Parameters.SelectedRunway.Split("\t");
+                string[] finishRunwayWords = Parameters.DestRunway.Split("\t");
+                for (int index = 0; index < PhotoTour.PhotoCount - 1; index++)
+                {
+                    PhotoLegParams curPhoto = PhotoTour.GetPhotoLeg(index);
+                    string wayPoints = $"wp.0={curPhoto.latitude},{curPhoto.longitude};1;{(index == 0 ? startRunwayWords[0] : index.ToString())}&";
+                    curPhoto = PhotoTour.GetPhotoLeg(index + 1);
+                    wayPoints += $"wp.1={curPhoto.latitude},{curPhoto.longitude};1;{((index + 1) == (PhotoTour.PhotoCount - 1) ? finishRunwayWords[0] : (index + 1).ToString())}";
+                    url = $"https://dev.virtualearth.net/REST/v1/Imagery/Map/Road/Routes/Walking?{wayPoints}&mapSize={urlMapSize[2]}{urlKey}";
+                    wayPoints = wayPoints.Replace("wp.0", "pp").Replace("wp.1", "pp");
+                    altURL = $"https://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial?{wayPoints}&mapSize={urlMapSize[2]}{urlKey}";
+                    GetBingImage(client, url, altURL, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}.jpg");
+                }
             }
 
             // Copy selected aircraft thumbnail image from P3D instal
@@ -264,6 +283,25 @@ namespace P3D_Scenario_Generator
                     stream.CopyTo(outputFileStream);
                 }
                 stream.Dispose();
+            }
+        }
+
+        static void GetBingImage(WebClient client, string url, string altURL, string saveLocation)
+        {
+            try
+            {
+                client.DownloadFile(new Uri(url), saveLocation);
+            }
+            catch 
+            {
+                try
+                {
+                    client.DownloadFile(new Uri(altURL), saveLocation);
+                }
+                catch
+                {
+                    System.Windows.Forms.MessageBox.Show("Encountered issues obtaining Bing images, try generating a new scenario", "Bing image download", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
+                }
             }
         }
 
