@@ -46,7 +46,9 @@ namespace P3D_Scenario_Generator
             string missionBriefHTML = SetMissionBriefHTML(missionBrief);
             File.WriteAllText($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}.htm", missionBriefHTML);
 
-            CreateImages();
+            CopyFiles();
+
+            BingImages.CreateHTMLImages();
         }
 
         static private Overview SetOverviewStruct()
@@ -83,16 +85,15 @@ namespace P3D_Scenario_Generator
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{Parameters.SelectedAircraft}";
                     overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
-                    overview.Briefing += " as you navigate from one photo location to the next using dead reckoning. ";
+                    overview.Briefing += " as you navigate from one photo location to the next using IFR (I follow roads) ";
                     overview.Briefing += "You'll take off, fly to a series of photo locations, ";
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
                     overview.Briefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
                     overview.Briefing += $"{Runway.City}, {Runway.Country}.";
                     string[] words = Parameters.DestRunway.Split('\t');
-                    overview.Objective = "Take off and visit a series of photo locations following dead reckoning instructions before landing ";
+                    overview.Objective = "Take off and visit a series of photo locations before landing ";
                     overview.Objective += $"at {words[0]}, runway {words[1]}";
-                    overview.Tips = "Consider overflying the starting airport runway at your cruising altitude on the required bearing ";
-                    overview.Tips += "for greater accuracy in reaching the first photo location.";
+                    overview.Tips = "Never do today what you can put off till tomorrow";
                     break;
                 default:
                     break;
@@ -168,92 +169,12 @@ namespace P3D_Scenario_Generator
             return missionBriefHTML;
         }
 
-        static private void CreateImages()
+        static private void CopyFiles()
         {
-            string urlBase = "https://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial/";
-            string urlKey = "&key=95MBlXbvWXxTKi68aPQA~v9ISwpDCewOlSTQWVHFWWA~AtBDc3Ar7Wh3dy-_6ZnRAOYycWbDfnKmTS8aLwaLYrjJ7mfgZ1K_uazGhZMurFtr";
-            string[] urlZoom = { "14", "15", "16", "16", "16", "16" };
-            string[] urlMapSize = { "920,135", "300,180", "750,565", "380,232", "380,232", "86,86" };
-            string[] urlFilename = { "header.jpg", "chart_thumb.jpg", "Charts_01.jpg", "temp1", "temp2", "temp3" };
-            string[] urlIcon = { "", "", "", "success-icon.png", "failure-icon.png", "exit-icon.png" };
-            string[] urlIconAdded = { "", "", "", "imgM_c.bmp", "imgM_i.bmp", "exitMission.bmp" };
-
-            if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
-            { 
-                Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
-            }
-            
-            // Download Bing images
-            using WebClient client = new WebClient();
-            string url;
-            string altURL;
-            for (int index = 0; index < urlZoom.Length; index++)
-            {
-                url = $"{urlBase}{Runway.AirportLat},{Runway.AirportLon}/{urlZoom[index]}?mapSize={urlMapSize[index]}{urlKey}";
-                client.DownloadFile(new Uri(url), $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlFilename[index]}");
-            }
-
-            // For photo tour do pushpin version of Charts_01.jpg
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
-            {
-                PhotoLegParams curPhoto;
-                string[] words = Parameters.SelectedRunway.Split("\t");
-                curPhoto = PhotoTour.GetPhotoLeg(0);
-                string pushpins = $"pp={curPhoto.latitude},{curPhoto.longitude};1;{words[0]}&";
-                for (int index = 1; index < PhotoTour.PhotoCount - 1; index++)
-                {
-                    curPhoto = PhotoTour.GetPhotoLeg(index);
-                    pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{index}&";
-                }
-                words = Parameters.DestRunway.Split("\t");
-                curPhoto = PhotoTour.GetPhotoLeg(PhotoTour.PhotoCount - 1);
-                pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{words[0]}";
-
-                url = $"https://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial?{pushpins}&mapSize={urlMapSize[2]}{urlKey}";
-                client.DownloadFile(new Uri(url), $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\Charts_01.jpg");
-            }
-
-            // For photo tour get Bing route image for each leg
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
-            {
-                string[] startRunwayWords = Parameters.SelectedRunway.Split("\t");
-                string[] finishRunwayWords = Parameters.DestRunway.Split("\t");
-                for (int index = 0; index < PhotoTour.PhotoCount - 1; index++)
-                {
-                    PhotoLegParams curPhoto = PhotoTour.GetPhotoLeg(index);
-                    string wayPoints = $"wp.0={curPhoto.latitude},{curPhoto.longitude};1;{(index == 0 ? startRunwayWords[0] : index.ToString())}&";
-                    curPhoto = PhotoTour.GetPhotoLeg(index + 1);
-                    wayPoints += $"wp.1={curPhoto.latitude},{curPhoto.longitude};1;{((index + 1) == (PhotoTour.PhotoCount - 1) ? finishRunwayWords[0] : (index + 1).ToString())}";
-                    url = $"https://dev.virtualearth.net/REST/v1/Imagery/Map/Road/Routes/Walking?{wayPoints}&mapSize={urlMapSize[2]}{urlKey}";
-                    wayPoints = wayPoints.Replace("wp.0", "pp").Replace("wp.1", "pp");
-                    altURL = $"https://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial?{wayPoints}&mapSize={urlMapSize[2]}{urlKey}";
-                    GetBingImage(client, url, altURL, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}.jpg");
-                }
-            }
-
             // Copy selected aircraft thumbnail image from P3D instal
             string aircraftImageSource = $"{Aircraft.GetImagename(Parameters.SelectedAircraft)}";
             string aircraftImageDest = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\Overview_01.jpg";
             File.Copy(aircraftImageSource, aircraftImageDest, true);
-
-            // Create completion and exit images
-            for (int index = 3; index < urlZoom.Length; index++) 
-            { 
-                string imageDest = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlFilename[index]}";
-                using Image image = Image.FromFile(imageDest);
-                using (Graphics graphic = Graphics.FromImage(image))
-                {
-                    Stream iconStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{urlIcon[index]}");
-                    using Image imageIcon = Image.FromStream(iconStream);
-                    iconStream.Dispose();
-                    graphic.DrawImage(imageIcon, 20, 20);
-                }
-                image.Save($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlIconAdded[index]}");
-            }
-            for (int index = 3; index < urlZoom.Length; index++)
-            {
-                File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlFilename[index]}");
-            }
 
             // Copy style files
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.style_kneeboard.css"); 
@@ -283,25 +204,6 @@ namespace P3D_Scenario_Generator
                     stream.CopyTo(outputFileStream);
                 }
                 stream.Dispose();
-            }
-        }
-
-        static void GetBingImage(WebClient client, string url, string altURL, string saveLocation)
-        {
-            try
-            {
-                client.DownloadFile(new Uri(url), saveLocation);
-            }
-            catch 
-            {
-                try
-                {
-                    client.DownloadFile(new Uri(altURL), saveLocation);
-                }
-                catch
-                {
-                    System.Windows.Forms.MessageBox.Show("Encountered issues obtaining Bing images, try generating a new scenario", "Bing image download", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
-                }
             }
         }
 

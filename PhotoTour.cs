@@ -93,14 +93,17 @@ namespace P3D_Scenario_Generator
                         if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist && Math.Abs(headingChange) < 90)
                         { 
                             photoLegs.Add(airportLeg);
-                            continueSearching = false;
+                            PhotoCount = photoLegs.Count;
+                            if (BingImages.CreatePhotoTourLegImages())
+                            {
+                                continueSearching = false;
+                            }
                         }
                     }
                 }
                 reader.Dispose();
                 File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html");
             }
-            PhotoCount = photoLegs.Count;
         }
 
         static private PhotoLegParams ExtractLegParams(string saveLocation)

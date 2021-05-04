@@ -88,6 +88,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
             {
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.PhotoTour):
 					daList.Add(new SimMissionDialogAction("Dialog_Intro_01", ScenarioHTML.overview.Briefing, "2", "Text-To-Speech", GetGUID()));
 					daList.Add(new SimMissionDialogAction("Dialog_Intro_02", ScenarioHTML.overview.Tips, "2", "Text-To-Speech", GetGUID()));
 					break;
@@ -103,6 +104,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.PhotoTour):
 					ta.AirportIdent = $"{Runway.IcaoId}";
 					break;
 				default:
@@ -117,6 +119,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.PhotoTour):
 					gList.Add(new SimMissionGoal("Goal_01", ScenarioHTML.overview.Objective, GetGUID()));
 					break;
 				default:
