@@ -94,8 +94,9 @@ namespace P3D_Scenario_Generator
                         { 
                             photoLegs.Add(airportLeg);
                             PhotoCount = photoLegs.Count;
-                            if (BingImages.CreatePhotoTourLegImages())
+                            if (BingImages.GetPhotoTourLegImages())
                             {
+                                GetPhotos();
                                 continueSearching = false;
                             }
                         }
@@ -174,5 +175,18 @@ namespace P3D_Scenario_Generator
             return photoLegs[index];
         }
        
+        static private void GetPhotos()
+        {
+            using WebClient client = new WebClient();
+            string url;
+            string saveLocation;
+
+            for (int index = 1; index < photoLegs.Count - 1; index++)
+            {
+                url = photoLegs[index].image;
+                saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\photo_{index}.jpg";
+                client.DownloadFile(new Uri(url), saveLocation);
+            }
+        }
     }
 }

@@ -35,7 +35,7 @@ namespace P3D_Scenario_Generator
 
             if (Parameters.SelectedScenario == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
-                CreatePhotoTourOverviewImage();
+                GetPhotoTourOverviewImage();
             }
 
             // Create completion and exit images
@@ -58,7 +58,7 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        internal static bool CreatePhotoTourLegImages()
+        internal static bool GetPhotoTourLegImages()
         {
             using WebClient client = new WebClient();
             string url;
@@ -87,7 +87,7 @@ namespace P3D_Scenario_Generator
             return true;
         }
 
-        internal static void CreatePhotoTourOverviewImage()
+        internal static void GetPhotoTourOverviewImage()
         {
             using WebClient client = new WebClient();
             string url;
@@ -109,7 +109,6 @@ namespace P3D_Scenario_Generator
             url = $"{urlBingBase}Road/Routes/Walking?{pushpins}&mapSize={urlMapSize[2]}{urlKey}";
             GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlFilename[2]}");
         }
-
 
         private static bool GetBingImage(WebClient client, string url, string saveLocation)
         {

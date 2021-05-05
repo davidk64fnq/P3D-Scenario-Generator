@@ -471,7 +471,7 @@ namespace P3D_Scenario_Generator
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(16, 79);
+            this.label14.Location = new System.Drawing.Point(16, 34);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(73, 15);
             this.label14.TabIndex = 18;
@@ -479,7 +479,7 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxPhotoMinLegDist
             // 
-            this.TextBoxPhotoMinLegDist.Location = new System.Drawing.Point(112, 71);
+            this.TextBoxPhotoMinLegDist.Location = new System.Drawing.Point(112, 26);
             this.TextBoxPhotoMinLegDist.Name = "TextBoxPhotoMinLegDist";
             this.TextBoxPhotoMinLegDist.Size = new System.Drawing.Size(119, 23);
             this.TextBoxPhotoMinLegDist.TabIndex = 17;
@@ -541,7 +541,7 @@ namespace P3D_Scenario_Generator
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(16, 32);
+            this.label11.Location = new System.Drawing.Point(16, 79);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(75, 15);
             this.label11.TabIndex = 4;
@@ -549,7 +549,7 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxPhotoMaxLegDist
             // 
-            this.TextBoxPhotoMaxLegDist.Location = new System.Drawing.Point(112, 24);
+            this.TextBoxPhotoMaxLegDist.Location = new System.Drawing.Point(112, 71);
             this.TextBoxPhotoMaxLegDist.Name = "TextBoxPhotoMaxLegDist";
             this.TextBoxPhotoMaxLegDist.Size = new System.Drawing.Size(119, 23);
             this.TextBoxPhotoMaxLegDist.TabIndex = 3;

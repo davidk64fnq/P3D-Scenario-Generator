@@ -44,6 +44,7 @@ namespace P3D_Scenario_Generator
 			SetLibraryObject();
 			SetOneShotSoundAction();
 			SetRectangleArea();
+			SetCylinderArea();
 			SetScenarioMetadata();
 			SetRealismOverrides();
 		}
@@ -185,6 +186,20 @@ namespace P3D_Scenario_Generator
 					break;
 			}
 			simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea = raList;
+		}
+
+		static private void SetCylinderArea()
+		{
+			List<SimMissionCylinderArea> caList = new List<SimMissionCylinderArea>();
+			switch (Parameters.SelectedScenario)
+			{
+				case nameof(ScenarioTypes.PhotoTour):
+					SetCylinderAreas(caList);
+					break;
+				default:
+					break;
+			}
+			simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea = caList;
 		}
 
 		static private void SetScenarioMetadata()
@@ -520,6 +535,22 @@ namespace P3D_Scenario_Generator
 			System.Guid guid = System.Guid.NewGuid();
 			string guidUpper = guid.ToString().ToUpper();
 			return $"{{{guidUpper}}}";
+		}
+
+		static private void SetCylinderAreas(List<SimMissionCylinderArea> caList)
+		{
+			for (int index = 1; index < PhotoTour.PhotoCount - 1; index++)
+			{
+				string descr = $"Area_Cylinder_{index}";
+				string orientation = "0.0,0.0,0.0";
+				string radius = "10.0"; // metres
+				string height = "18520.0"; // metres (10nm)
+				string drawStyle = "Outlined"; 
+				PhotoLegParams photoLegParams = PhotoTour.GetPhotoLeg(index);
+				string worldPosition = $"{ScenarioFXML.FormatCoordXML(photoLegParams.latitude, "N", "S")},{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W")},+0.0";
+				AttachedWorldPosition wp = new AttachedWorldPosition(worldPosition, "True");
+				caList.Add(new SimMissionCylinderArea(descr, orientation, radius, height, drawStyle, wp, GetGUID()));
+			}
 		}
 
 		static private void SetDialogReference(string objectName, int index, List<ObjectReference> orList)
@@ -932,6 +963,46 @@ namespace P3D_Scenario_Generator
 
 		[XmlElement(ElementName = "AttachedWorldObject")]
 		public AttachedWorldObject AttachedWorldObject { get; set; }
+	}
+	[XmlRoot(ElementName = "SimMission.RectangleArea")]
+	
+	public class SimMissionCylinderArea
+	{
+		public SimMissionCylinderArea(string v1, string v2, string v3, string v4, string v5, AttachedWorldPosition v6, string v7)
+		{
+			Descr = v1;
+			Orientation = v2;
+			AreaRadius = v3;
+			Height = v4;
+			DrawStyle = v5;
+			AttachedWorldPosition = v6;
+			InstanceId = v7;
+		}
+
+		public SimMissionCylinderArea()
+		{
+		}
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "Orientation")]
+		public string Orientation { get; set; }
+
+		[XmlElement(ElementName = "AreaRadius")]
+		public string AreaRadius { get; set; }
+
+		[XmlElement(ElementName = "Height")]
+		public string Height { get; set; }
+
+		[XmlElement(ElementName = "DrawStyle")]
+		public string DrawStyle { get; set; }
+
+		[XmlElement(ElementName = "AttachedWorldPosition")]
+		public AttachedWorldPosition AttachedWorldPosition { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
 	}
 
 	[XmlRoot(ElementName = "AttachedWorldObject")]
@@ -1496,6 +1567,9 @@ namespace P3D_Scenario_Generator
 
 		[XmlElement(ElementName = "SimMission.RectangleArea")]
 		public List<SimMissionRectangleArea> SimMissionRectangleArea { get; set; }
+
+		[XmlElement(ElementName = "SimMission.CylinderArea")]
+		public List<SimMissionCylinderArea> SimMissionCylinderArea { get; set; }
 
 		[XmlElement(ElementName = "SimMission.AreaLandingTrigger")]
 		public List<SimMissionAreaLandingTrigger> SimMissionAreaLandingTrigger { get; set; }
