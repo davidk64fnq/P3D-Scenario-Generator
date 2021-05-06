@@ -33,7 +33,7 @@ namespace P3D_Scenario_Generator
                 GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlFilename[index]}");
             }
 
-            if (Parameters.SelectedScenario == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour])
+            if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
                 GetPhotoTourOverviewImage();
             }
@@ -106,7 +106,7 @@ namespace P3D_Scenario_Generator
             curPhoto = PhotoTour.GetPhotoLeg(PhotoTour.PhotoCount - 1);
             pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{words[0]}";
 
-            url = $"{urlBingBase}Road/Routes/Walking?{pushpins}&mapSize={urlMapSize[2]}{urlKey}";
+            url = $"{urlBingBase}Aerial?{pushpins}&mapSize={urlMapSize[2]}{urlKey}";
             GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlFilename[2]}");
         }
 

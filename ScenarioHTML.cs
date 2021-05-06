@@ -191,7 +191,7 @@ namespace P3D_Scenario_Generator
             }
             stream.Dispose();
 
-            if (Parameters.SelectedScenario == Constants.scenarioNames[(int)ScenarioTypes.Circuit])
+            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Circuit))
             {
                 // Copy sound files
                 if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound"))
