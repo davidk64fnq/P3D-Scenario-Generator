@@ -191,20 +191,17 @@ namespace P3D_Scenario_Generator
             }
             stream.Dispose();
 
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Circuit))
+            // Copy sound files
+            if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound"))
             {
-                // Copy sound files
-                if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound"))
-                {
-                    Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound");
-                }
-                stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.ThruHoop.wav");
-                using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound\\ThruHoop.wav", FileMode.Create))
-                {
-                    stream.CopyTo(outputFileStream);
-                }
-                stream.Dispose();
+                Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound");
             }
+            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.ThruHoop.wav");
+            using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound\\ThruHoop.wav", FileMode.Create))
+            {
+                stream.CopyTo(outputFileStream);
+            }
+            stream.Dispose();
         }
 
         static internal int GetDuration()

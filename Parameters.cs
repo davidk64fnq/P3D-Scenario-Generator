@@ -29,6 +29,9 @@ namespace P3D_Scenario_Generator
         internal static double MinNoLegs { get; private set; }
         internal static double MaxNoLegs { get; private set; }
         internal static string DestRunway { get; set; }
+        internal static double LegWindowWidth { get; set; }
+        internal static double LegWindowHeight { get; set; }
+        internal static double MaxBearingChange { get; set; }
 
         static private bool IsValidFilename(string fileName)
         {
@@ -75,6 +78,9 @@ namespace P3D_Scenario_Generator
                 MinLegDist = Convert.ToDouble(form.TextBoxPhotoMinLegDist.Text);
                 MinNoLegs = Convert.ToDouble(form.TextBoxPhotoMinNoLegs.Text);
                 MaxNoLegs = Convert.ToDouble(form.TextBoxPhotoMaxNoLegs.Text);
+                LegWindowWidth = Convert.ToDouble(form.TextBoxPhotoWidth.Text);
+                LegWindowHeight = Convert.ToDouble(form.TextBoxPhotoHeight.Text);
+                MaxBearingChange = Convert.ToDouble(form.TextBoxPhotoMaxBearingChange.Text);
             }
 
             if (errorMsg != "")

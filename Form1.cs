@@ -170,10 +170,13 @@ namespace P3D_Scenario_Generator
 
         private void SetDefaultPhotoTourParams()
         {
-            TextBoxPhotoMaxLegDist.Text = "10";
             TextBoxPhotoMinLegDist.Text = "3";
+            TextBoxPhotoMaxLegDist.Text = "10";
             TextBoxPhotoMinNoLegs.Text = "3";
             TextBoxPhotoMaxNoLegs.Text = "7";
+            TextBoxPhotoWidth.Text = "500";
+            TextBoxPhotoHeight.Text = "500";
+            TextBoxPhotoMaxBearingChange.Text = "90";
         }
 
         static private bool ValidatePhotoIntegerParameters()
@@ -191,6 +194,11 @@ namespace P3D_Scenario_Generator
             if (Convert.ToInt32(form.TextBoxPhotoMaxNoLegs.Text) < Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text))
             {
                 MessageBox.Show($"Maximum number of legs to be greater than or equal to minimum number of legs", "Photo Tour Scenario: number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            if (Convert.ToInt32(form.TextBoxPhotoMaxBearingChange.Text) > 180)
+            {
+                MessageBox.Show($"Maximum bearing change is limited to 180 degress", "Photo Tour Scenario: max bearing change", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
             return true;
@@ -255,7 +263,7 @@ namespace P3D_Scenario_Generator
                 MessageBox.Show($"Integer value expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 e.Cancel = true;
             }
-            if (((TextBox)sender).Name.Contains("TextBoxPhoto") && ((TextBox)sender).Name.Contains("NoLegs"))
+            if (((TextBox)sender).Name.Contains("TextBoxPhoto") && (((TextBox)sender).Name.Contains("NoLegs") || ((TextBox)sender).Name.Contains("MaxBearingChange")))
             {
                 if (e.Cancel == false && !ValidatePhotoIntegerParameters())
                 {

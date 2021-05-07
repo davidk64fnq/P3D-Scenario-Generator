@@ -90,7 +90,7 @@ namespace P3D_Scenario_Generator
                         photoLegs[^1].forwardDist = distance;
                         photoLegs[^1].forwardBearing = MathRoutines.CalcBearing(photoLegs[^1].latitude, photoLegs[^1].longitude, airportLeg.latitude, airportLeg.longitude);
                         int headingChange = MathRoutines.CalcHeadingChange(photoLegs[^2].forwardBearing, photoLegs[^1].forwardBearing);
-                        if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist && Math.Abs(headingChange) < 90)
+                        if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist && Math.Abs(headingChange) < Parameters.MaxBearingChange)
                         { 
                             photoLegs.Add(airportLeg);
                             PhotoCount = photoLegs.Count;
@@ -160,7 +160,7 @@ namespace P3D_Scenario_Generator
                 ExtractNextLegCoords(htmlDoc, id, ref nextLat, ref nextLon);
                 bearing = MathRoutines.CalcBearing(photoLegs[^1].latitude, photoLegs[^1].longitude, nextLat, nextLon);
                 int headingChange = MathRoutines.CalcHeadingChange(photoLegs[^2].forwardBearing, bearing);
-                if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist && Math.Abs(headingChange) < 90 && photoLegs.FindIndex(leg => nextLeg.Contains(leg.id)) == -1)
+                if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist && Math.Abs(headingChange) < Parameters.MaxBearingChange && photoLegs.FindIndex(leg => nextLeg.Contains(leg.id)) == -1)
                 {
                     return nextLeg;
                 }

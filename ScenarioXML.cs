@@ -55,8 +55,8 @@ namespace P3D_Scenario_Generator
 		{
 			SetGoalResolutionAction();
 			SetObjectActivationAction();
-			SetOpenWindowAction();
 			SetPointOfInterest();
+			SetWindowActions();
 		}
 
 		static private void SetThirdPassObjects()
@@ -166,6 +166,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.PhotoTour):
 					saList.Add(new SimMissionOneShotSoundAction("OneShotSound_ThruHoop_01", "ThruHoop.wav", GetGUID()));
 					break;
 				default:
@@ -251,6 +252,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.PhotoTour):
 					string search = "Goal_01";
 					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionGoal.FindIndex(g => g.Descr == search);
 					List<ObjectReference> orList = new List<ObjectReference>
@@ -290,21 +292,6 @@ namespace P3D_Scenario_Generator
 			simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction = oaaList;
 		}
 
-		// Requires 1st pass SetScaleformPanelWindow()
-		static private void SetOpenWindowAction()
-		{
-			List<SimMissionOpenWindowAction> owaList = new List<SimMissionOpenWindowAction>();
-			switch (Parameters.SelectedScenario)
-			{
-				case nameof(ScenarioTypes.PhotoTour):
-					SetPhotoTourOpenWindowActionObjects(owaList);
-					break;
-				default:
-					break;
-			}
-			simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction = owaList;
-		}
-
 		// Requires 1st pass SetLibraryObject()
 		static private void SetPointOfInterest()
 		{
@@ -318,6 +305,24 @@ namespace P3D_Scenario_Generator
 					break;
 			}
 			simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest = poiList;
+		}
+
+		// Requires 1st pass SetScaleformPanelWindow()
+		static private void SetWindowActions()
+		{
+			List<SimMissionOpenWindowAction> owaList = new List<SimMissionOpenWindowAction>();
+			List<SimMissionCloseWindowAction> cwaList = new List<SimMissionCloseWindowAction>();
+			switch (Parameters.SelectedScenario)
+			{
+				case nameof(ScenarioTypes.PhotoTour):
+					SetPhotoTourOpenWindowActionObjects(owaList);
+					SetPhotoTourCloseWindowActionObjects(cwaList);
+					break;
+				default:
+					break;
+			}
+			simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction = owaList;
+			simBaseDocumentXML.WorldBaseFlight.SimMissionCloseWindowAction = cwaList;
 		}
 
 		#endregion
@@ -342,6 +347,21 @@ namespace P3D_Scenario_Generator
 						Activated = "False",
 						AirportIdent = Runway.IcaoId,
 						RunwayFilter = rf,
+						Actions = a
+					};
+					altList.Add(alt);
+					break;
+				case nameof(ScenarioTypes.PhotoTour):
+					orList = new List<ObjectReference>();
+					SetGoalResolutionReference("Resolve_Goal_0X", 1, orList);
+					a = new Actions(orList);
+					string[] words = Parameters.DestRunway.Split("\t");
+					alt = new SimMissionAirportLandingTrigger
+					{
+						InstanceId = GetGUID(),
+						Descr = "Airport_Landing_Trigger_01",
+						Activated = "False",
+						AirportIdent = words[0],
 						Actions = a
 					};
 					altList.Add(alt);
@@ -392,6 +412,21 @@ namespace P3D_Scenario_Generator
 					}; 
 					ttList.Add(tt);
 					break;
+				case nameof(ScenarioTypes.PhotoTour):
+					orList = new List<ObjectReference>();
+					SetDialogReference("Dialog_Intro_0X", 1, orList);
+					SetDialogReference("Dialog_Intro_0X", 2, orList);
+					SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Leg_X", 1, orList);
+					tt = new SimMissionTimerTrigger
+					{
+						InstanceId = GetGUID(),
+						Descr = "Timer_Trigger_01",
+						StopTime = 1.0,
+						Activated = "True",
+						Actions = new Actions(orList)
+					};
+					ttList.Add(tt);
+					break;
 				default:
 					break;
 			}
@@ -408,6 +443,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.PhotoTour):
 					string search = "Airport_Landing_Trigger_01";
 					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.FindIndex(alt => alt.Descr == search);
 					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].InstanceId);
@@ -451,6 +487,29 @@ namespace P3D_Scenario_Generator
 							SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", index + 2, orActionList);
 							SetPOIactivationActionReference("Activate_POI_Gate_0X", index + 2, orActionList);
 						}
+						SetSoundAction("OneShotSound_ThruHoop_0X", 1, orActionList);
+						OnEnterActions oea = new OnEnterActions(orActionList);
+						SimMissionProximityTrigger pt = new SimMissionProximityTrigger
+						{
+							InstanceId = GetGUID(),
+							Descr = $"Proximity_Trigger_0{index + 1}",
+							Activated = "False",
+							Areas = a,
+							OnEnterActions = oea
+						};
+						ptList.Add(pt);
+					}
+					break;
+				case nameof(ScenarioTypes.PhotoTour):
+					for (int index = 1; index < Gates.GateCount - 1; index++)
+					{
+						List<ObjectReference> orAreaList = new List<ObjectReference>();
+						SetCylinderAreaReference("Area_Cylinder_X", index + 1, orAreaList);
+						Areas a = new Areas(orAreaList);
+						List<ObjectReference> orActionList = new List<ObjectReference>();
+						SetCloseWindowActionReference("Close_Scaleform_Panel_Window_Leg_X", index, orActionList);
+						SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Photo_X", index, orActionList);
+						SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Leg_X", index + 1, orActionList);
 						SetSoundAction("OneShotSound_ThruHoop_0X", 1, orActionList);
 						OnEnterActions oea = new OnEnterActions(orActionList);
 						SimMissionProximityTrigger pt = new SimMissionProximityTrigger
@@ -567,6 +626,22 @@ namespace P3D_Scenario_Generator
 			System.Guid guid = System.Guid.NewGuid();
 			string guidUpper = guid.ToString().ToUpper();
 			return $"{{{guidUpper}}}";
+		}
+
+		static private void SetCloseWindowActionReference(string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionCloseWindowAction.FindIndex(cwa => cwa.Descr == search);
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionCloseWindowAction[idIndex].InstanceId);
+			orList.Add(or);
+		}
+
+		static private void SetCylinderAreaReference(string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea.FindIndex(ca => ca.Descr == search);
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea[idIndex].InstanceId);
+			orList.Add(or);
 		}
 
 		static private void SetCylinderAreas(List<SimMissionCylinderArea> caList)
@@ -695,9 +770,47 @@ namespace P3D_Scenario_Generator
 			orList.Add(or);
 		}
 
+		static private void SetOpenWindowActionReference(string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction.FindIndex(owa => owa.Descr == search);
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction[idIndex].InstanceId);
+			orList.Add(or);
+		}
+
 		static private string SetOrientation(double headingAdj)
 		{
 			return $"0.0,0.0,{string.Format("{0:0.0}", (Runway.Hdg + Runway.MagVar + headingAdj) % 360)}";
+		}
+
+		static private void SetPhotoTourCloseWindowActionObjects(List<SimMissionCloseWindowAction> cwaList)
+		{
+			for (int index = 1; index < PhotoTour.PhotoCount; index++)
+			{
+				string search = $"Scaleform_Panel_Window_Leg_{index}";
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
+				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
+				SimMissionCloseWindowAction cwa = new SimMissionCloseWindowAction
+				{
+					Descr = $"Close_Scaleform_Panel_Window_Leg_{index}",
+					ObjectReference = or,
+					InstanceId = GetGUID()
+				};
+				cwaList.Add(cwa);
+			}
+			for (int index = 1; index < PhotoTour.PhotoCount - 1; index++)
+			{
+				string search = $"Scaleform_Panel_Window_Photo_{index}";
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
+				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
+				SimMissionCloseWindowAction cwa = new SimMissionCloseWindowAction
+				{
+					Descr = $"Close_Scaleform_Panel_Window_Photo_{index}",
+					ObjectReference = or,
+					InstanceId = GetGUID()
+				};
+				cwaList.Add(cwa);
+			}
 		}
 
 		static private void SetPhotoTourOpenWindowActionObjects(List<SimMissionOpenWindowAction> owaList)
@@ -707,9 +820,7 @@ namespace P3D_Scenario_Generator
 				string search = $"Scaleform_Panel_Window_Leg_{index}";
 				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
 				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
-				string bitmapFilename = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_X.jpg".Replace("X", index.ToString());
-				Bitmap drawing = new Bitmap(bitmapFilename);
-				SetWindowSize sws = new SetWindowSize(drawing.Width.ToString(), drawing.Height.ToString());
+				SetWindowSize sws = new SetWindowSize((Parameters.LegWindowWidth + 10).ToString(), (Parameters.LegWindowHeight + 20).ToString());
 				SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 				{
 					Descr = $"Open_Scaleform_Panel_Window_Leg_{index}",
@@ -726,7 +837,7 @@ namespace P3D_Scenario_Generator
 				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
 				string bitmapFilename = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\photo_X.jpg".Replace("X", index.ToString());
 				Bitmap drawing = new Bitmap(bitmapFilename);
-				SetWindowSize sws = new SetWindowSize(drawing.Width.ToString(), drawing.Height.ToString());
+				SetWindowSize sws = new SetWindowSize((drawing.Width + 10).ToString(), (drawing.Height + 20).ToString());
 				SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 				{
 					Descr = $"Open_Scaleform_Panel_Window_Photo_{index}",
@@ -791,7 +902,7 @@ namespace P3D_Scenario_Generator
 		static private void SetRectangleAreaReference(string objectName, int index, List<ObjectReference> orList)
 		{
 			string search = objectName.Replace("X", index.ToString());
-			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.FindIndex(oaa => oaa.Descr == search);
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.FindIndex(ra => ra.Descr == search);
 			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea[idIndex].InstanceId);
 			orList.Add(or);
 		}
@@ -1297,6 +1408,30 @@ namespace P3D_Scenario_Generator
 
 		[XmlElement(ElementName = "Areas")]
 		public Areas Areas { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.CloseWindowAction")]
+	public class SimMissionCloseWindowAction
+	{
+		public SimMissionCloseWindowAction(string v1, ObjectReference v2, string v3)
+		{
+			Descr = v1;
+			ObjectReference = v2;
+			InstanceId = v3;
+		}
+
+		public SimMissionCloseWindowAction()
+		{
+		}
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "ObjectReference")]
+		public ObjectReference ObjectReference { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
 	}
 
 	[XmlRoot(ElementName = "SimMission.CylinderArea")]
@@ -1812,6 +1947,9 @@ namespace P3D_Scenario_Generator
 
 		[XmlElement(ElementName = "SimMission.AreaLandingTrigger")]
 		public List<SimMissionAreaLandingTrigger> SimMissionAreaLandingTrigger { get; set; }
+
+		[XmlElement(ElementName = "SimMission.CloseWindowAction")]
+		public List<SimMissionCloseWindowAction> SimMissionCloseWindowAction { get; set; }
 
 		[XmlElement(ElementName = "SimMission.CylinderArea")]
 		public List<SimMissionCylinderArea> SimMissionCylinderArea { get; set; }
