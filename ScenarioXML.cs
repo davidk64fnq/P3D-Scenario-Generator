@@ -74,14 +74,14 @@ namespace P3D_Scenario_Generator
 
 		static private void SetFifthPassObjects()
         {
-			SetLastGateLandingTrigger();
+			SetLastEventLandingTrigger();
 			SetProximityTriggerActivationAction();
-			SetTimerTriggerFirstGate();
         }
 
 		static private void SetSixthPassObjects()
         {
 			SetProximityTriggerOnEnterAction();
+			SetTimerTriggerFirstEvent();
         }
 
 		#region First pass object creation
@@ -92,7 +92,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.PhotoTour):
-					SetCylinderAreas(caList);
+					SetPhotoTourCylinderAreas(caList);
 					break;
 				default:
 					break;
@@ -212,7 +212,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.PhotoTour):
-					SetScaleformPanelWindow(spwList);
+					SetPhotoTourScaleformPanelWindow(spwList);
 					break;
 				default:
 					break;
@@ -299,7 +299,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					SetPointOfInterestObjects(poiList);
+					SetGatePointOfInterestObjects(poiList);
 					break;
 				default:
 					break;
@@ -380,8 +380,8 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					SetPOIactivationActions(paaList, $"Activate_POI_Gate_0X", "True");
-					SetPOIactivationActions(paaList, $"DeActivate_POI_Gate_0X", "False");
+					SetGatePOIactivationActions(paaList, $"Activate_POI_Gate_0X", "True");
+					SetGatePOIactivationActions(paaList, $"DeActivate_POI_Gate_0X", "False");
 					break;
 				default:
 					break;
@@ -501,10 +501,10 @@ namespace P3D_Scenario_Generator
 					}
 					break;
 				case nameof(ScenarioTypes.PhotoTour):
-					for (int index = 1; index < Gates.GateCount - 1; index++)
+					for (int index = 1; index < PhotoTour.PhotoCount - 1; index++)
 					{
 						List<ObjectReference> orAreaList = new List<ObjectReference>();
-						SetCylinderAreaReference("Area_Cylinder_X", index + 1, orAreaList);
+						SetCylinderAreaReference("Area_Cylinder_X", index, orAreaList);
 						Areas a = new Areas(orAreaList);
 						List<ObjectReference> orActionList = new List<ObjectReference>();
 						SetCloseWindowActionReference("Close_Scaleform_Panel_Window_Leg_X", index, orActionList);
@@ -515,7 +515,7 @@ namespace P3D_Scenario_Generator
 						SimMissionProximityTrigger pt = new SimMissionProximityTrigger
 						{
 							InstanceId = GetGUID(),
-							Descr = $"Proximity_Trigger_0{index + 1}",
+							Descr = $"Proximity_Trigger_0{index}",
 							Activated = "False",
 							Areas = a,
 							OnEnterActions = oea
@@ -534,17 +534,18 @@ namespace P3D_Scenario_Generator
 		#region Fifth pass object creation/editing
 
 		// Requires 4th pass SetAirportLandingTriggerActivation()
-		static private void SetLastGateLandingTrigger()
+		static private void SetLastEventLandingTrigger()
 		{
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.PhotoTour):
 					string search = "Activate_Airport_Landing_Trigger_01";
 					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(oa => oa.Descr == search);
 					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
-					search = $"Proximity_Trigger_0{Gates.GateCount}";
-					idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
-					simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(or);
+//					search = $"Proximity_Trigger_0{Gates.GateCount}";
+//					idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
+					simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[^1].OnEnterActions.ObjectReference.Add(or);
 					break;
 				default:
 					break;
@@ -558,31 +559,17 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					SetGateTriggerActivations($"Proximity_Trigger_0X", oaaList, "Activate_Proximity_Trigger_0", "True");
-					SetGateTriggerActivations($"Proximity_Trigger_0X", oaaList, "Deactivate_Proximity_Trigger_0", "False");
+					SetProximityTriggerActivations(Gates.GateCount, $"Proximity_Trigger_0X", oaaList, "Activate_Proximity_Trigger_0", "True");
+					SetProximityTriggerActivations(Gates.GateCount, $"Proximity_Trigger_0X", oaaList, "Deactivate_Proximity_Trigger_0", "False");
+					break;
+				case nameof(ScenarioTypes.PhotoTour):
+					SetProximityTriggerActivations(PhotoTour.PhotoCount - 2, $"Proximity_Trigger_0X", oaaList, "Activate_Proximity_Trigger_0", "True");
+					SetProximityTriggerActivations(PhotoTour.PhotoCount - 2, $"Proximity_Trigger_0X", oaaList, "Deactivate_Proximity_Trigger_0", "False");
 					break;
 				default:
 					break;
 			}
 			simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.AddRange(oaaList);
-		}
-
-		// Requires 4th pass SetProximityTriggerActivationAction()
-		static private void SetTimerTriggerFirstGate()
-		{
-			switch (Parameters.SelectedScenario)
-			{
-				case nameof(ScenarioTypes.Circuit):
-					string search = "Activate_Proximity_Trigger_01";
-					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(pt => pt.Descr == search);
-					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
-					search = "Timer_Trigger_01";
-					idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.FindIndex(tt => tt.Descr == search);
-					simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions.ObjectReference.Add(or);
-					break;
-				default:
-					break;
-			}
 		}
 
 		#endregion
@@ -595,22 +582,29 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					for (int index = 0; index < Gates.GateCount; index++)
-					{
-						List<ObjectReference> orActionList = new List<ObjectReference>();
-						SetObjectActivationReference("Deactivate_Proximity_Trigger_0X", index + 1, orActionList);
-						if (index + 1 < Gates.GateCount)
-						{
-							SetObjectActivationReference("Activate_Proximity_Trigger_0X", index + 2, orActionList);
-						}
-						string search = $"Proximity_Trigger_0X".Replace("X", (index + 1).ToString());
-						int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
-						simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(orActionList[0]);
-						if (index + 1 < Gates.GateCount)
-						{
-							simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(orActionList[1]);
-						}
-					}
+					SetProximityTriggerOnEnters(Gates.GateCount);
+					break;
+				case nameof(ScenarioTypes.PhotoTour):
+					SetProximityTriggerOnEnters(PhotoTour.PhotoCount - 2);
+					break;
+				default:
+					break;
+			}
+		}
+
+		// Requires 4th pass SetProximityTriggerActivationAction()
+		static private void SetTimerTriggerFirstEvent()
+		{
+			switch (Parameters.SelectedScenario)
+			{
+				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.PhotoTour):
+					string search = "Activate_Proximity_Trigger_01";
+					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(pt => pt.Descr == search);
+					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
+					search = "Timer_Trigger_01";
+					idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.FindIndex(tt => tt.Descr == search);
+					simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions.ObjectReference.Add(or);
 					break;
 				default:
 					break;
@@ -642,22 +636,6 @@ namespace P3D_Scenario_Generator
 			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea.FindIndex(ca => ca.Descr == search);
 			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea[idIndex].InstanceId);
 			orList.Add(or);
-		}
-
-		static private void SetCylinderAreas(List<SimMissionCylinderArea> caList)
-		{
-			for (int index = 1; index < PhotoTour.PhotoCount - 1; index++)
-			{
-				string descr = $"Area_Cylinder_{index}";
-				string orientation = "0.0,0.0,0.0";
-				string radius = "10.0"; // metres
-				string height = "18520.0"; // metres (10nm)
-				string drawStyle = "Outlined"; 
-				PhotoLegParams photoLegParams = PhotoTour.GetPhotoLeg(index);
-				string worldPosition = $"{ScenarioFXML.FormatCoordXML(photoLegParams.latitude, "N", "S")},{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W")},+0.0";
-				AttachedWorldPosition wp = new AttachedWorldPosition(worldPosition, "True");
-				caList.Add(new SimMissionCylinderArea(descr, orientation, radius, height, drawStyle, wp, GetGUID()));
-			}
 		}
 
 		static private void SetDialogReference(string objectName, int index, List<ObjectReference> orList)
@@ -718,6 +696,48 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
+		static private void SetGatePOIactivationActions(List<SimMissionPointOfInterestActivationAction> paaList, string descr, string newObjectState)
+        {
+			for (int index = 0; index < Gates.GateCount; index++)
+			{
+				string search = $"POI_Gate_0{index + 1}";
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest.FindIndex(poi => poi.Descr == search);
+				List<ObjectReference> orList = new List<ObjectReference>
+				{
+					new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest[idIndex].InstanceId)
+				};
+				SimMissionPointOfInterestActivationAction paa = new SimMissionPointOfInterestActivationAction
+				{
+					InstanceId = GetGUID(),
+					Descr = descr.Replace("X", (index + 1).ToString()),
+					NewObjectState = newObjectState,
+					ObjectReferenceList = new ObjectReferenceList(orList)
+				};
+				paaList.Add(paa);
+			}
+        }
+
+		static private void SetGatePointOfInterestObjects(List<SimMissionPointOfInterest> poiList)
+		{
+			for (int index = 0; index < Gates.GateCount; index++)
+			{
+				string search = Constants.genGameNumBlueDesc.Replace("X", (index + 1).ToString());
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject.FindIndex(lo => lo.Descr == search);
+				ObjectReference or = new ObjectReference
+				{
+					InstanceId = simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject[idIndex].InstanceId
+				};
+				AttachedWorldObject awo = new AttachedWorldObject
+				{
+					ObjectReference = or,
+					OffsetXYZ = "0, 80, 0, 0"
+				};
+				string descr = $"POI_Gate_0{index + 1}";
+				string targetName = $"Gate {index + 1}";
+				poiList.Add(new SimMissionPointOfInterest(descr, targetName, "False", awo, GetGUID(), "False", index + 1));
+            }
+		}
+
 		static private void SetGateRectangleAreas(List<SimMissionRectangleArea> raList, double[] headingAdj)
 		{
 			for (int index = 0; index < Gates.GateCount; index++)
@@ -728,29 +748,6 @@ namespace P3D_Scenario_Generator
 				string worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
 				AttachedWorldPosition wp = new AttachedWorldPosition(worldPosition, Constants.heightAMSL);
 				raList.Add(new SimMissionRectangleArea(descr, orientation, "100.0", "25.0", "100.0", wp, GetGUID()));
-			}
-		}
-
-		static private void SetGateTriggerActivations(string objectName, List<SimMissionObjectActivationAction> oaaList, string descr, string newObjectState)
-		{
-			for (int index = 0; index < Gates.GateCount; index++)
-			{
-				string search = objectName.Replace("X", (index + 1).ToString());
-				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(lo => lo.Descr == search);
-				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].InstanceId);
-				List<ObjectReference> orList = new List<ObjectReference>
-				{
-					or
-				};
-				ObjectReferenceList orl = new ObjectReferenceList(orList);
-				SimMissionObjectActivationAction oaa = new SimMissionObjectActivationAction
-				{
-					InstanceId = GetGUID(),
-					Descr = $"{descr}{index + 1}",
-					NewObjectState = newObjectState
-				};
-				oaa.ObjectReferenceList = orl;
-				oaaList.Add(oaa);
 			}
 		}
 
@@ -813,6 +810,22 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
+		static private void SetPhotoTourCylinderAreas(List<SimMissionCylinderArea> caList)
+		{
+			for (int index = 1; index < PhotoTour.PhotoCount - 1; index++)
+			{
+				string descr = $"Area_Cylinder_{index}";
+				string orientation = "0.0,0.0,0.0";
+				string radius = "10.0"; // metres
+				string height = "18520.0"; // metres (10nm)
+				string drawStyle = "Outlined";
+				PhotoLegParams photoLegParams = PhotoTour.GetPhotoLeg(index);
+				string worldPosition = $"{ScenarioFXML.FormatCoordXML(photoLegParams.latitude, "N", "S")},{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W")},+0.0";
+				AttachedWorldPosition wp = new AttachedWorldPosition(worldPosition, "True");
+				caList.Add(new SimMissionCylinderArea(descr, orientation, radius, height, drawStyle, wp, GetGUID()));
+			}
+		}
+
 		static private void SetPhotoTourOpenWindowActionObjects(List<SimMissionOpenWindowAction> owaList)
 		{
 			for (int index = 1; index < PhotoTour.PhotoCount; index++)
@@ -849,65 +862,7 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
-		static private void SetPOIactivationActions(List<SimMissionPointOfInterestActivationAction> paaList, string descr, string newObjectState)
-        {
-			for (int index = 0; index < Gates.GateCount; index++)
-			{
-				string search = $"POI_Gate_0{index + 1}";
-				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest.FindIndex(poi => poi.Descr == search);
-				List<ObjectReference> orList = new List<ObjectReference>
-				{
-					new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest[idIndex].InstanceId)
-				};
-				SimMissionPointOfInterestActivationAction paa = new SimMissionPointOfInterestActivationAction
-				{
-					InstanceId = GetGUID(),
-					Descr = descr.Replace("X", (index + 1).ToString()),
-					NewObjectState = newObjectState,
-					ObjectReferenceList = new ObjectReferenceList(orList)
-				};
-				paaList.Add(paa);
-			}
-        }
-
-		static private void SetPOIactivationActionReference(string objectName, int index, List<ObjectReference> orList)
-		{
-			string search = objectName.Replace("X", index.ToString());
-			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction.FindIndex(paa => paa.Descr == search);
-			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction[idIndex].InstanceId);
-			orList.Add(or);
-		}
-
-		static private void SetPointOfInterestObjects(List<SimMissionPointOfInterest> poiList)
-		{
-			for (int index = 0; index < Gates.GateCount; index++)
-			{
-				string search = Constants.genGameNumBlueDesc.Replace("X", (index + 1).ToString());
-				int idIndex = simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject.FindIndex(lo => lo.Descr == search);
-				ObjectReference or = new ObjectReference
-				{
-					InstanceId = simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject[idIndex].InstanceId
-				};
-				AttachedWorldObject awo = new AttachedWorldObject
-				{
-					ObjectReference = or,
-					OffsetXYZ = "0, 80, 0, 0"
-				};
-				string descr = $"POI_Gate_0{index + 1}";
-				string targetName = $"Gate {index + 1}";
-				poiList.Add(new SimMissionPointOfInterest(descr, targetName, "False", awo, GetGUID(), "False", index + 1));
-            }
-		}
-
-		static private void SetRectangleAreaReference(string objectName, int index, List<ObjectReference> orList)
-		{
-			string search = objectName.Replace("X", index.ToString());
-			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.FindIndex(ra => ra.Descr == search);
-			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea[idIndex].InstanceId);
-			orList.Add(or);
-		}
-
-		static private void SetScaleformPanelWindow(List<SimMissionScaleformPanelWindow> spwList)
+		static private void SetPhotoTourScaleformPanelWindow(List<SimMissionScaleformPanelWindow> spwList)
 		{
 			for (int index = 1; index < PhotoTour.PhotoCount; index++)
 			{
@@ -923,6 +878,65 @@ namespace P3D_Scenario_Generator
 				File.WriteAllText($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\photo_X.html".Replace("X", index.ToString()), html);
 				spwList.Add(new SimMissionScaleformPanelWindow(descr, "True", "True", "images\\photo_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf"));
 			}
+		}
+
+		static private void SetPOIactivationActionReference(string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction.FindIndex(paa => paa.Descr == search);
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction[idIndex].InstanceId);
+			orList.Add(or);
+		}
+
+		static private void SetProximityTriggerActivations(int indexCount, string objectName, List<SimMissionObjectActivationAction> oaaList, string descr, string newObjectState)
+		{
+			for (int index = 1; index <= indexCount; index++)
+			{
+				string search = objectName.Replace("X", index.ToString());
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
+				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].InstanceId);
+				List<ObjectReference> orList = new List<ObjectReference>
+				{
+					or
+				};
+				ObjectReferenceList orl = new ObjectReferenceList(orList);
+				SimMissionObjectActivationAction oaa = new SimMissionObjectActivationAction
+				{
+					InstanceId = GetGUID(),
+					Descr = $"{descr}{index}",
+					NewObjectState = newObjectState
+				};
+				oaa.ObjectReferenceList = orl;
+				oaaList.Add(oaa);
+			}
+		}
+
+		static private void SetProximityTriggerOnEnters(int indexCount)
+		{
+			for (int index = 1; index <= indexCount; index++)
+			{
+				List<ObjectReference> orActionList = new List<ObjectReference>();
+				SetObjectActivationReference("Deactivate_Proximity_Trigger_0X", index, orActionList);
+				if (index < indexCount)
+				{
+					SetObjectActivationReference("Activate_Proximity_Trigger_0X", index + 1, orActionList);
+				}
+				string search = $"Proximity_Trigger_0X".Replace("X", (index).ToString());
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
+				simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(orActionList[0]);
+				if (index < indexCount)
+				{
+					simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(orActionList[1]);
+				}
+			}
+		}
+
+		static private void SetRectangleAreaReference(string objectName, int index, List<ObjectReference> orList)
+		{
+			string search = objectName.Replace("X", index.ToString());
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.FindIndex(ra => ra.Descr == search);
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea[idIndex].InstanceId);
+			orList.Add(or);
 		}
 
 		static private void SetSoundAction(string objectName, int index, List<ObjectReference> orList)
