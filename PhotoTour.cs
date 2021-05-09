@@ -20,6 +20,9 @@ namespace P3D_Scenario_Generator
     {
         private static readonly List<PhotoLegParams> photoLegs = new List<PhotoLegParams>();
 
+        /// <summary>
+        /// Includes start and finish airports
+        /// </summary>
         internal static int PhotoCount { get; private set; }
 
         static internal void SetRandomPhotoTour()

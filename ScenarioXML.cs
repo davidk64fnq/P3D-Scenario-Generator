@@ -354,6 +354,8 @@ namespace P3D_Scenario_Generator
 				case nameof(ScenarioTypes.PhotoTour):
 					orList = new List<ObjectReference>();
 					SetGoalResolutionReference("Resolve_Goal_0X", 1, orList);
+					SetCloseWindowActionReference("Close_Scaleform_Panel_Window_Leg_X", PhotoTour.PhotoCount - 1, orList);
+					SetCloseWindowActionReference("Close_Scaleform_Panel_Window_Photo_X", PhotoTour.PhotoCount - 2, orList);
 					a = new Actions(orList);
 					string[] words = Parameters.DestRunway.Split("\t");
 					alt = new SimMissionAirportLandingTrigger
@@ -414,9 +416,9 @@ namespace P3D_Scenario_Generator
 					break;
 				case nameof(ScenarioTypes.PhotoTour):
 					orList = new List<ObjectReference>();
+					SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Leg_X", 1, orList);
 					SetDialogReference("Dialog_Intro_0X", 1, orList);
 					SetDialogReference("Dialog_Intro_0X", 2, orList);
-					SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Leg_X", 1, orList);
 					tt = new SimMissionTimerTrigger
 					{
 						InstanceId = GetGUID(),
@@ -507,6 +509,10 @@ namespace P3D_Scenario_Generator
 						SetCylinderAreaReference("Area_Cylinder_X", index, orAreaList);
 						Areas a = new Areas(orAreaList);
 						List<ObjectReference> orActionList = new List<ObjectReference>();
+						if (index > 1)
+						{
+							SetCloseWindowActionReference("Close_Scaleform_Panel_Window_Photo_X", index - 1, orActionList);
+						}
 						SetCloseWindowActionReference("Close_Scaleform_Panel_Window_Leg_X", index, orActionList);
 						SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Photo_X", index, orActionList);
 						SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Leg_X", index + 1, orActionList);
@@ -543,8 +549,6 @@ namespace P3D_Scenario_Generator
 					string search = "Activate_Airport_Landing_Trigger_01";
 					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(oa => oa.Descr == search);
 					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
-//					search = $"Proximity_Trigger_0{Gates.GateCount}";
-//					idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(pt => pt.Descr == search);
 					simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[^1].OnEnterActions.ObjectReference.Add(or);
 					break;
 				default:
@@ -869,14 +873,14 @@ namespace P3D_Scenario_Generator
 				string descr = $"Scaleform_Panel_Window_Leg_{index}";
 				string html = "<!DOCTYPE HTML>\n<html>\t<img src=\"LegRoute_X.jpg\">\n</html>".Replace("X", index.ToString());
 				File.WriteAllText($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_X.html".Replace("X", index.ToString()), html);
-				spwList.Add(new SimMissionScaleformPanelWindow(descr, "True", "True", "images\\LegRoute_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf"));
+				spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\LegRoute_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf"));
 			}
 			for (int index = 1; index < PhotoTour.PhotoCount - 1; index++)
 			{
 				string descr = $"Scaleform_Panel_Window_Photo_{index}";
 				string html = "<!DOCTYPE HTML>\n<html>\t<img src=\"photo_X.jpg\">\n</html>".Replace("X", index.ToString());
 				File.WriteAllText($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\photo_X.html".Replace("X", index.ToString()), html);
-				spwList.Add(new SimMissionScaleformPanelWindow(descr, "True", "True", "images\\photo_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf"));
+				spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\photo_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf"));
 			}
 		}
 

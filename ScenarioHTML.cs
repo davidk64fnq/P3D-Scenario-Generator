@@ -46,9 +46,9 @@ namespace P3D_Scenario_Generator
             string missionBriefHTML = SetMissionBriefHTML(missionBrief);
             File.WriteAllText($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}.htm", missionBriefHTML);
 
-            CopyFiles();
-
             BingImages.CreateHTMLImages();
+
+            CopyFiles();
         }
 
         static private Overview SetOverviewStruct()
