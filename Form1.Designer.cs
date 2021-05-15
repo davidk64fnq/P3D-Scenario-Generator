@@ -83,6 +83,8 @@ namespace P3D_Scenario_Generator
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ButtonHelp = new System.Windows.Forms.Button();
+            this.TextBoxPhotoHotspotRadius = new System.Windows.Forms.TextBox();
+            this.label18 = new System.Windows.Forms.Label();
             this.TabControl.SuspendLayout();
             this.TabPageGeneral.SuspendLayout();
             this.TabPageCircuit.SuspendLayout();
@@ -458,6 +460,8 @@ namespace P3D_Scenario_Generator
             // 
             // TabPagePhoto
             // 
+            this.TabPagePhoto.Controls.Add(this.label18);
+            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoHotspotRadius);
             this.TabPagePhoto.Controls.Add(this.label17);
             this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMaxBearingChange);
             this.TabPagePhoto.Controls.Add(this.label16);
@@ -651,6 +655,26 @@ namespace P3D_Scenario_Generator
             this.ButtonHelp.UseVisualStyleBackColor = true;
             this.ButtonHelp.Click += new System.EventHandler(this.ButtonHelp_Click);
             // 
+            // TextBoxPhotoHotspotRadius
+            // 
+            this.TextBoxPhotoHotspotRadius.Location = new System.Drawing.Point(148, 356);
+            this.TextBoxPhotoHotspotRadius.Name = "TextBoxPhotoHotspotRadius";
+            this.TextBoxPhotoHotspotRadius.Size = new System.Drawing.Size(119, 23);
+            this.TextBoxPhotoHotspotRadius.TabIndex = 25;
+            this.TextBoxPhotoHotspotRadius.Text = "100";
+            this.TextBoxPhotoHotspotRadius.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxPhotoHotspotRadius, "Radius of photo hotspot location in metres");
+            this.TextBoxPhotoHotspotRadius.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(16, 364);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(88, 15);
+            this.label18.TabIndex = 26;
+            this.label18.Text = "Hotspot Radius";
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -735,6 +759,8 @@ namespace P3D_Scenario_Generator
         private System.Windows.Forms.Label label15;
         internal System.Windows.Forms.TextBox TextBoxPhotoHeight;
         internal System.Windows.Forms.TextBox TextBoxPhotoWidth;
+        private System.Windows.Forms.Label label18;
+        internal System.Windows.Forms.TextBox TextBoxPhotoHotspotRadius;
     }
 }
 

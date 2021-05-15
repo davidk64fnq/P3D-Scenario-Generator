@@ -32,6 +32,7 @@ namespace P3D_Scenario_Generator
         internal static double LegWindowWidth { get; set; }
         internal static double LegWindowHeight { get; set; }
         internal static double MaxBearingChange { get; set; }
+        internal static double HotspotRadius { get; set; }
 
         static private bool IsValidFilename(string fileName)
         {
@@ -81,6 +82,7 @@ namespace P3D_Scenario_Generator
                 LegWindowWidth = Convert.ToDouble(form.TextBoxPhotoWidth.Text);
                 LegWindowHeight = Convert.ToDouble(form.TextBoxPhotoHeight.Text);
                 MaxBearingChange = Convert.ToDouble(form.TextBoxPhotoMaxBearingChange.Text);
+                HotspotRadius = Convert.ToDouble(form.TextBoxPhotoHotspotRadius.Text);
             }
 
             if (errorMsg != "")

@@ -202,6 +202,18 @@ namespace P3D_Scenario_Generator
                 stream.CopyTo(outputFileStream);
             }
             stream.Dispose();
+
+            // Copy PhotoTour leg route html aircraft image
+            if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
+            {
+                Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
+            }
+            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.aircraft.png");
+            using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\aircraft.png", FileMode.Create))
+            {
+                stream.CopyTo(outputFileStream);
+            }
+            stream.Dispose();
         }
 
         static internal int GetDuration()

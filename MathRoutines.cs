@@ -17,7 +17,7 @@ namespace P3D_Scenario_Generator
             double dLon2 = dLon1 + Math.Atan2(Math.Sin(dBrng) * Math.Sin(dDist / Constants.radiusEarth) * Math.Cos(dLat1), Math.Cos(dDist / Constants.radiusEarth) - (Math.Sin(dLat1) * Math.Sin(dLat2)));
 
             // Convert back to degrees
-            dFinishLat = dLat2 ;
+            dFinishLat = dLat2 * (180 / Math.PI);
             dFinishLon = dLon2 * (180 / Math.PI);
         }
 

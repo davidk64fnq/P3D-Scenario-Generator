@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator
@@ -820,14 +821,34 @@ namespace P3D_Scenario_Generator
 			{
 				string descr = $"Area_Cylinder_{index}";
 				string orientation = "0.0,0.0,0.0";
-				string radius = "10.0"; // metres
+				string radius = Parameters.HotspotRadius.ToString(); // metres
 				string height = "18520.0"; // metres (10nm)
-				string drawStyle = "Outlined";
+				string drawStyle = "None";
 				PhotoLegParams photoLegParams = PhotoTour.GetPhotoLeg(index);
 				string worldPosition = $"{ScenarioFXML.FormatCoordXML(photoLegParams.latitude, "N", "S")},{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W")},+0.0";
 				AttachedWorldPosition wp = new AttachedWorldPosition(worldPosition, "True");
 				caList.Add(new SimMissionCylinderArea(descr, orientation, radius, height, drawStyle, wp, GetGUID()));
 			}
+		}
+
+		static private void SetPhotoTourLegRouteHTML(string saveLocation, int photoIndex)
+		{
+			string legRouteHTML;
+
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.PhotoTour_LegRoute.html");
+			StreamReader reader = new StreamReader(stream);
+			legRouteHTML = reader.ReadToEnd();
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X", $"LegRoute_{photoIndex}");
+			PhotoLegParams photoLeg = PhotoTour.GetPhotoLeg(photoIndex - 1);
+			legRouteHTML = legRouteHTML.Replace("mapNorthX", photoLeg.northEdge.ToString());
+			legRouteHTML = legRouteHTML.Replace("mapEastX", photoLeg.eastEdge.ToString());
+			legRouteHTML = legRouteHTML.Replace("mapSouthX", photoLeg.southEdge.ToString());
+			legRouteHTML = legRouteHTML.Replace("mapWestX", photoLeg.westEdge.ToString());
+			legRouteHTML = legRouteHTML.Replace("mapWestX", photoLeg.westEdge.ToString());
+			legRouteHTML = legRouteHTML.Replace("mapWidthX", Parameters.LegWindowWidth.ToString());
+			legRouteHTML = legRouteHTML.Replace("mapHeightX", Parameters.LegWindowHeight.ToString());
+			File.WriteAllText(saveLocation, legRouteHTML);
+			stream.Dispose();
 		}
 
 		static private void SetPhotoTourOpenWindowActionObjects(List<SimMissionOpenWindowAction> owaList)
@@ -871,8 +892,8 @@ namespace P3D_Scenario_Generator
 			for (int index = 1; index < PhotoTour.PhotoCount; index++)
 			{
 				string descr = $"Scaleform_Panel_Window_Leg_{index}";
-				string html = "<!DOCTYPE HTML>\n<html>\t<img src=\"LegRoute_X.jpg\">\n</html>".Replace("X", index.ToString());
-				File.WriteAllText($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_X.html".Replace("X", index.ToString()), html);
+				string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_X.html".Replace("X", index.ToString());
+				SetPhotoTourLegRouteHTML(saveLocation, index);
 				spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\LegRoute_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf"));
 			}
 			for (int index = 1; index < PhotoTour.PhotoCount - 1; index++)

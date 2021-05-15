@@ -3,6 +3,8 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace P3D_Scenario_Generator
 {
@@ -82,6 +84,10 @@ namespace P3D_Scenario_Generator
                 {
                     return false;
                 }
+                else
+                {
+                    GetBingMetadata(client, url, PhotoTour.GetPhotoLeg(index));
+                }
             }
 
             return true;
@@ -123,6 +129,23 @@ namespace P3D_Scenario_Generator
             }
 
             return true;
+        }
+
+        private static void GetBingMetadata(WebClient client, string url, PhotoLegParams curPhoto)
+        {
+            url += "&mapMetadata=1&o=xml";
+            GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\temp.xml");
+            XmlDocument doc = new XmlDocument();
+            doc.Load($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\temp.xml");
+            string xml = doc.OuterXml;
+            string strXMLPattern = @"xmlns(:\w+)?=""([^""]+)""|xsi(:\w+)?=""([^""]+)""";
+            xml = Regex.Replace(xml, strXMLPattern, "");
+            doc.LoadXml(xml);
+            curPhoto.northEdge = Convert.ToDouble(doc.SelectSingleNode("/Response/ResourceSets/ResourceSet/Resources/StaticMapMetadata/BoundingBox/NorthLatitude/text()").Value);
+            curPhoto.eastEdge = Convert.ToDouble(doc.SelectSingleNode("/Response/ResourceSets/ResourceSet/Resources/StaticMapMetadata/BoundingBox/EastLongitude/text()").Value);
+            curPhoto.southEdge = Convert.ToDouble(doc.SelectSingleNode("/Response/ResourceSets/ResourceSet/Resources/StaticMapMetadata/BoundingBox/SouthLatitude/text()").Value);
+            curPhoto.westEdge = Convert.ToDouble(doc.SelectSingleNode("/Response/ResourceSets/ResourceSet/Resources/StaticMapMetadata/BoundingBox/WestLongitude/text()").Value);
+            File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\temp.xml");
         }
     }
 }

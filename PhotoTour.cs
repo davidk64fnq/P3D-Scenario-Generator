@@ -14,6 +14,10 @@ namespace P3D_Scenario_Generator
         public double latitude;
         public double longitude;
         public double forwardBearing;
+        public double northEdge;
+        public double eastEdge;
+        public double southEdge;
+        public double westEdge;
     }
 
     internal class PhotoTour

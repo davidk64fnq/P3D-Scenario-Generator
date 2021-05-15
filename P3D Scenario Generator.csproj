@@ -9,12 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="aircraft.png" />
     <None Remove="circuitTab.jpg" />
     <None Remove="exit-icon.png" />
     <None Remove="failure-icon.png" />
     <None Remove="MissionBriefSource.htm" />
     <None Remove="OverviewSource.htm" />
     <None Remove="P3D Scenario Generator.pdf" />
+    <None Remove="PhotoTour_LegRoute.html" />
     <None Remove="runways.xml" />
     <None Remove="source.fxml" />
     <None Remove="style_kneeboard.css" />
@@ -24,12 +26,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="aircraft.png" />
     <EmbeddedResource Include="circuitTab.jpg" />
     <EmbeddedResource Include="exit-icon.png" />
     <EmbeddedResource Include="failure-icon.png" />
     <EmbeddedResource Include="MissionBriefSource.htm" />
     <EmbeddedResource Include="OverviewSource.htm" />
     <EmbeddedResource Include="P3D Scenario Generator.pdf" />
+    <EmbeddedResource Include="PhotoTour_LegRoute.html" />
     <EmbeddedResource Include="runways.xml" />
     <EmbeddedResource Include="source.fxml" />
     <EmbeddedResource Include="style_kneeboard.css" />
@@ -40,8 +44,6 @@
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.33" />
-    <PackageReference Include="PdfiumViewer.Native.x86_64.v8-xfa" Version="2018.4.8.256" />
-    <PackageReference Include="PdfiumViewer.Updated" Version="2.14.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,12 +52,21 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resource1.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resource1.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resource1.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

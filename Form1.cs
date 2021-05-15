@@ -176,7 +176,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMaxNoLegs.Text = "7";
             TextBoxPhotoWidth.Text = "500";
             TextBoxPhotoHeight.Text = "500";
-            TextBoxPhotoMaxBearingChange.Text = "90";
+            TextBoxPhotoMaxBearingChange.Text = "135";
         }
 
         static private bool ValidatePhotoIntegerParameters()

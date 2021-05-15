@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>	
+<head>
+<style>
+body {
+  overflow: hidden;
+}
+#map {
+  position: relative;
+}
+#plane {
+  position: absolute;
+}
+</style>
+</head>
+<body>
+	<div>
+		<img id="map" src="LegRoute_X.jpg" style="border-radius: 50%" /> 
+		<img id="plane" src="aircraft.png"  /> 
+	</div>
+	<script>
+		const mapNorth = mapNorthX;
+		const mapEast = mapEastX;
+		const mapSouth = mapSouthX;
+		const mapWest = mapWestX;
+		const mapWidth = mapWidthX;
+		const mapHeight = mapHeightX;
+		function update(timestamp)
+		{
+			var plane = document.getElementById("plane");
+			var planeHeadingDeg = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI;
+			var planeLonDeg = VarGet("A:PLANE LONGITUDE" ,"Radians") * 180 / Math.PI; // x
+			var planeLatDeg = VarGet("A:PLANE LATITUDE" ,"Radians") * 180 / Math.PI;  // y
+			pixelsTop = Math.round((planeLatDeg - mapNorth) / (mapSouth - mapNorth) * mapHeight) - 15;
+			pixelsLeft = Math.round((planeLonDeg - mapWest) / (mapEast - mapWest) * mapWidth) - 15;
+			document.getElementById('plane').style.top=pixelsTop + "px";
+			document.getElementById('plane').style.left=pixelsLeft + "px";
+			plane.style.transform = "rotate(" + planeHeadingDeg + "deg)";
+			window.requestAnimationFrame(update);
+		}
+		window.requestAnimationFrame(update);
+	</script>
+</body>
+</html>
