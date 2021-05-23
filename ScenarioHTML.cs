@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
-using System.Net;
 using System.Reflection;
 
 namespace P3D_Scenario_Generator

@@ -3,20 +3,38 @@
 <head>
 <style>
 body {
-  overflow: hidden;
+	overflow: hidden;
+    background-color: transparent;
+	margin: 0; 
+	padding: 0;
 }
-#map {
-  position: relative;
+#hide {
+	display: none;
+	position: absolute;
+	left: 5px;
+	bottom: 10px;
 }
 #plane {
-  position: absolute;
+	display: none;
+	position: absolute;
+}
+#show {
+	position: absolute;
+	left: 5px;
+	bottom: 10px;
 }
 </style>
 </head>
 <body>
 	<div>
-		<img id="map" src="LegRoute_X.jpg" style="border-radius: 50%" /> 
-		<img id="plane" src="aircraft.png"  /> 
+		<img src="LegRoute_X.jpg" /> 
+		<img id="plane" src="aircraft.png" /> 
+		<button type="button" id="hide" onclick="hidePlane()">
+			Hide Plane
+		</button>
+		<button type="button" id="show" onclick="showPlane()">
+			Show Plane
+		</button>
 	</div>
 	<script>
 		const mapNorth = mapNorthX;
@@ -39,6 +57,17 @@ body {
 			window.requestAnimationFrame(update);
 		}
 		window.requestAnimationFrame(update);
+		
+		function hidePlane() {
+			document.getElementById('plane').style.display = 'none';
+			document.getElementById('show').style.display = 'inline';
+			document.getElementById('hide').style.display = 'none';
+		}
+		function showPlane() {
+			document.getElementById('plane').style.display = 'inline';
+			document.getElementById('hide').style.display = 'inline';
+			document.getElementById('show').style.display = 'none';
+		}
 	</script>
 </body>
 </html>

@@ -82,7 +82,7 @@ namespace P3D_Scenario_Generator
                 LegWindowWidth = Convert.ToDouble(form.TextBoxPhotoWidth.Text);
                 LegWindowHeight = Convert.ToDouble(form.TextBoxPhotoHeight.Text);
                 MaxBearingChange = Convert.ToDouble(form.TextBoxPhotoMaxBearingChange.Text);
-                HotspotRadius = Convert.ToDouble(form.TextBoxPhotoHotspotRadius.Text);
+                HotspotRadius = Convert.ToDouble(form.TextBoxPhotoHotspotRadius.Text) * 0.3084; // Convert feet to metres
             }
 
             if (errorMsg != "")

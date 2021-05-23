@@ -515,8 +515,8 @@ namespace P3D_Scenario_Generator
 							SetCloseWindowActionReference("Close_Scaleform_Panel_Window_Photo_X", index - 1, orActionList);
 						}
 						SetCloseWindowActionReference("Close_Scaleform_Panel_Window_Leg_X", index, orActionList);
-						SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Photo_X", index, orActionList);
 						SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Leg_X", index + 1, orActionList);
+						SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Photo_X", index, orActionList);
 						SetSoundAction("OneShotSound_ThruHoop_0X", 1, orActionList);
 						OnEnterActions oea = new OnEnterActions(orActionList);
 						SimMissionProximityTrigger pt = new SimMissionProximityTrigger
@@ -858,7 +858,7 @@ namespace P3D_Scenario_Generator
 				string search = $"Scaleform_Panel_Window_Leg_{index}";
 				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
 				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
-				SetWindowSize sws = new SetWindowSize((Parameters.LegWindowWidth + 10).ToString(), (Parameters.LegWindowHeight + 20).ToString());
+				SetWindowSize sws = new SetWindowSize((Parameters.LegWindowWidth + 5).ToString(), (Parameters.LegWindowHeight + 5).ToString());
 				SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 				{
 					Descr = $"Open_Scaleform_Panel_Window_Leg_{index}",

@@ -177,6 +177,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoWidth.Text = "500";
             TextBoxPhotoHeight.Text = "500";
             TextBoxPhotoMaxBearingChange.Text = "135";
+            TextBoxPhotoHotspotRadius.Text = "300";
         }
 
         static private bool ValidatePhotoIntegerParameters()
@@ -210,7 +211,7 @@ namespace P3D_Scenario_Generator
 
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
-            Help.ShowHelp(this, "P3D Scenario Generator.chm", "introduction.htm");
+            Help.ShowHelp(this, "help/introduction.htm");
         }
 
         private void TextBoxDouble_Validating(object sender, CancelEventArgs e)
