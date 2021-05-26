@@ -77,10 +77,10 @@ namespace P3D_Scenario_Generator
             }
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{convertHdg}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
-			string formattedLatitude = FormatCoordXML(Runway.Lat, "N", "S");
+			string formattedLatitude = FormatCoordXML(Runway.Lat, "N", "S", false);
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
-			string formattedLongitude = FormatCoordXML(Runway.Lon, "E", "W");
+			string formattedLongitude = FormatCoordXML(Runway.Lon, "E", "W", false);
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "+0";
@@ -93,7 +93,7 @@ namespace P3D_Scenario_Generator
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}";
 		}
 
-		static public string FormatCoordXML(double dCoord, string sPosDir, string sNegDir)
+		static public string FormatCoordXML(double dCoord, string sPosDir, string sNegDir, bool roundSeconds)
         {
 			double dDecimalPart, dMinutes, dSeconds, dLocalCoord;
 			string sCoordLine = "";
@@ -117,6 +117,15 @@ namespace P3D_Scenario_Generator
 			// Seconds is decimal part of minutes times 60
 			dDecimalPart = dMinutes - (int)dMinutes;
 			dSeconds = dDecimalPart * 60;
+			// Round seconds
+			if (roundSeconds)
+            {
+				dSeconds = Math.Round(dSeconds);
+				if (dSeconds > 60)
+				{
+					dSeconds = 0;
+				}
+            }
 			sCoordLine += $"{dSeconds}\"";
 
 			return sCoordLine;

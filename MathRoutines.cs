@@ -57,5 +57,33 @@ namespace P3D_Scenario_Generator
             }
             return headingChange;
         }
+
+        /// <summary>
+        /// Round decimal degrees to nearest whole number of seconds and return as decimal degrees
+        /// </summary>
+        static internal double RoundDecDegreesToNearestSec(double dLocalCoord)
+        {
+            double dDecimalPart, dDegrees, dMinutes, dSeconds;
+
+            // Degrees is integer part of raw coord
+            dDegrees = (int)dLocalCoord;
+
+            // Minutes is decimal part of raw coord times 60
+            dDecimalPart = dLocalCoord - dDegrees;
+            dMinutes = (int)(dDecimalPart * 60);
+
+            // Seconds is decimal part of minutes times 60
+            dDecimalPart = (dDecimalPart * 60) - dMinutes;
+            dSeconds = dDecimalPart * 60;
+
+            // Round seconds
+            dSeconds = Math.Round(dSeconds);
+            if (dSeconds > 60)
+            {
+                dSeconds = 0;
+            }
+
+            return dDegrees + (dMinutes / 60) + (dSeconds / 3600);
+        }
     }
 }

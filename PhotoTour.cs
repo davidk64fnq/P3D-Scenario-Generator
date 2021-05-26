@@ -123,7 +123,9 @@ namespace P3D_Scenario_Generator
             photoLeg.image = htmlDoc.DocumentNode.SelectSingleNode("//meta[8]").GetAttributeValue("content", "");
             photoLeg.id = Path.GetFileNameWithoutExtension(photoLeg.image);
             photoLeg.latitude = Convert.ToDouble(htmlDoc.DocumentNode.SelectSingleNode("//ul[@class='details'][4]/li[1]/div[@class='dbox'][1]/span[@class='dvalue'][1]").InnerText);
+            photoLeg.latitude = MathRoutines.RoundDecDegreesToNearestSec(photoLeg.latitude);
             photoLeg.longitude = Convert.ToDouble(htmlDoc.DocumentNode.SelectSingleNode("//ul[@class='details'][4]/li[2]/div[@class='dbox'][1]/span[@class='dvalue'][1]").InnerText);
+            photoLeg.longitude = MathRoutines.RoundDecDegreesToNearestSec(photoLeg.longitude);
 
             return photoLeg;
         }
@@ -134,8 +136,8 @@ namespace P3D_Scenario_Generator
             int idIndex = script.IndexOf(id);
             script = script.Remove(0, idIndex);
             string[] words = script.Split(',');
-            latitude = Convert.ToDouble(words[1]);
-            longitude = Convert.ToDouble(words[2]);
+            latitude = MathRoutines.RoundDecDegreesToNearestSec(Convert.ToDouble(words[1]));
+            longitude = MathRoutines.RoundDecDegreesToNearestSec(Convert.ToDouble(words[2]));
         }
 
         static internal double GetPhotoTourDistance()

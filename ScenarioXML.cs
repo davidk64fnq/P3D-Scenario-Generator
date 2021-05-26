@@ -825,7 +825,7 @@ namespace P3D_Scenario_Generator
 				string height = "18520.0"; // metres (10nm)
 				string drawStyle = "None";
 				PhotoLegParams photoLegParams = PhotoTour.GetPhotoLeg(index);
-				string worldPosition = $"{ScenarioFXML.FormatCoordXML(photoLegParams.latitude, "N", "S")},{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W")},+0.0";
+				string worldPosition = $"{ScenarioFXML.FormatCoordXML(photoLegParams.latitude, "N", "S", true)},{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W", true)},+0.0";
 				AttachedWorldPosition wp = new AttachedWorldPosition(worldPosition, "True");
 				caList.Add(new SimMissionCylinderArea(descr, orientation, radius, height, drawStyle, wp, GetGUID()));
 			}
@@ -974,7 +974,7 @@ namespace P3D_Scenario_Generator
 
 		static private string SetWorldPosition(Gate gate, double vertOffset)
 		{
-			return $"{ScenarioFXML.FormatCoordXML(gate.lat, "N", "S")},{ScenarioFXML.FormatCoordXML(gate.lon, "E", "W")},+{gate.amsl + vertOffset}";
+			return $"{ScenarioFXML.FormatCoordXML(gate.lat, "N", "S", false)},{ScenarioFXML.FormatCoordXML(gate.lon, "E", "W", false)},+{gate.amsl + vertOffset}";
 		}
 
 		#endregion

@@ -211,7 +211,7 @@ namespace P3D_Scenario_Generator
 
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
-            Help.ShowHelp(this, "help/introduction.htm");
+            Help.ShowHelp(this, "help/index.htm");
         }
 
         private void TextBoxDouble_Validating(object sender, CancelEventArgs e)

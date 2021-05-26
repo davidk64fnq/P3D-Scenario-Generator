@@ -76,10 +76,10 @@ namespace P3D_Scenario_Generator
             for (int index = 0; index < PhotoTour.PhotoCount - 1; index++)
             {
                 PhotoLegParams curPhoto = PhotoTour.GetPhotoLeg(index);
-                string wayPoints = $"wp.0={curPhoto.latitude},{curPhoto.longitude};1;{(index == 0 ? startRunwayWords[0] : index.ToString())}&";
+                string wayPoints = $"pp={curPhoto.latitude},{curPhoto.longitude};1;{(index == 0 ? startRunwayWords[0] : index.ToString())}&";
                 curPhoto = PhotoTour.GetPhotoLeg(index + 1);
-                wayPoints += $"wp.1={curPhoto.latitude},{curPhoto.longitude};1;{((index + 1) == (PhotoTour.PhotoCount - 1) ? finishRunwayWords[0] : (index + 1).ToString())}";
-                url = $"{urlBingBase}Road/Routes/Walking?{wayPoints}&mapSize={Parameters.LegWindowWidth},{Parameters.LegWindowHeight}{urlKey}";
+                wayPoints += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{((index + 1) == (PhotoTour.PhotoCount - 1) ? finishRunwayWords[0] : (index + 1).ToString())}";
+                url = $"{urlBingBase}AerialWithLabels?{wayPoints}&mapSize={Parameters.LegWindowWidth},{Parameters.LegWindowHeight}{urlKey}";
                 if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}.jpg"))
                 {
                     return false;

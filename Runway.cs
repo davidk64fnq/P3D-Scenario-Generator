@@ -59,7 +59,10 @@ namespace P3D_Scenario_Generator
 
         static internal string GetNearestAirport(double latitude, double longitude, ref double distance, ref double airportLat, ref double airportLon)
         {
-            string icao = "";
+            string minId = "";
+            string minAirport = "";
+            string currentId;
+            string currentAirport;
             double minDifference = 9999;
             double minLatitude = 0;
             double minLongitude = 0;
@@ -70,12 +73,12 @@ namespace P3D_Scenario_Generator
             {
                 if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.Element)
                 {
-                    string currentAirport = reader.GetAttribute("id");
+                    currentAirport = reader.GetAttribute("id");
                     while (reader.Read())
                     {
                         if (reader.Name == "Runway" && reader.NodeType == XmlNodeType.Element)
                         {
-                            currentAirport += $"\t({reader.GetAttribute("id")})";
+                            currentId = reader.GetAttribute("id");
                             reader.ReadToFollowing("Lat");
                             airportLat = reader.ReadElementContentAsDouble();
                             reader.ReadToFollowing("Lon");
@@ -86,7 +89,8 @@ namespace P3D_Scenario_Generator
                                 minDifference = difference;
                                 minLatitude = airportLat;
                                 minLongitude = airportLon;
-                                icao = currentAirport;
+                                minId = currentId;
+                                minAirport = currentAirport;
                             }
                         }
                         if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.EndElement)
@@ -101,7 +105,7 @@ namespace P3D_Scenario_Generator
             distance = minDifference;
             airportLat = minLatitude;
             airportLon = minLongitude;
-            return icao;
+            return $"{minAirport}\t({minId})";
         }
 
         static private Stream GetRunwayXMLstream()
