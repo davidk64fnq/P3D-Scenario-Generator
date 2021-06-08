@@ -174,10 +174,9 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMaxLegDist.Text = "10";
             TextBoxPhotoMinNoLegs.Text = "3";
             TextBoxPhotoMaxNoLegs.Text = "7";
-            TextBoxPhotoWidth.Text = "500";
-            TextBoxPhotoHeight.Text = "500";
+            TextBoxPhotoWindowSize.Text = "500";
             TextBoxPhotoMaxBearingChange.Text = "135";
-            TextBoxPhotoHotspotRadius.Text = "300";
+            TextBoxPhotoHotspotRadius.Text = "500";
         }
 
         static private bool ValidatePhotoIntegerParameters()

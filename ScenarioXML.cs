@@ -838,15 +838,17 @@ namespace P3D_Scenario_Generator
 			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.PhotoTour_LegRoute.html");
 			StreamReader reader = new StreamReader(stream);
 			legRouteHTML = reader.ReadToEnd();
-			legRouteHTML = legRouteHTML.Replace("LegRoute_X", $"LegRoute_{photoIndex}");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_1", $"LegRoute_{photoIndex}_1");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_2", $"LegRoute_{photoIndex}_2");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_3", $"LegRoute_{photoIndex}_3");
 			PhotoLegParams photoLeg = PhotoTour.GetPhotoLeg(photoIndex - 1);
 			legRouteHTML = legRouteHTML.Replace("mapNorthX", photoLeg.northEdge.ToString());
 			legRouteHTML = legRouteHTML.Replace("mapEastX", photoLeg.eastEdge.ToString());
 			legRouteHTML = legRouteHTML.Replace("mapSouthX", photoLeg.southEdge.ToString());
 			legRouteHTML = legRouteHTML.Replace("mapWestX", photoLeg.westEdge.ToString());
 			legRouteHTML = legRouteHTML.Replace("mapWestX", photoLeg.westEdge.ToString());
-			legRouteHTML = legRouteHTML.Replace("mapWidthX", Parameters.LegWindowWidth.ToString());
-			legRouteHTML = legRouteHTML.Replace("mapHeightX", Parameters.LegWindowHeight.ToString());
+			legRouteHTML = legRouteHTML.Replace("mapWidthX", Parameters.LegWindowSize.ToString());
+			legRouteHTML = legRouteHTML.Replace("mapHeightX", Parameters.LegWindowSize.ToString());
 			File.WriteAllText(saveLocation, legRouteHTML);
 			stream.Dispose();
 		}
@@ -858,7 +860,7 @@ namespace P3D_Scenario_Generator
 				string search = $"Scaleform_Panel_Window_Leg_{index}";
 				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
 				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
-				SetWindowSize sws = new SetWindowSize((Parameters.LegWindowWidth + 5).ToString(), (Parameters.LegWindowHeight + 5).ToString());
+				SetWindowSize sws = new SetWindowSize((Parameters.LegWindowSize).ToString(), (Parameters.LegWindowSize).ToString());
 				SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 				{
 					Descr = $"Open_Scaleform_Panel_Window_Leg_{index}",
@@ -875,7 +877,7 @@ namespace P3D_Scenario_Generator
 				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
 				string bitmapFilename = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\photo_X.jpg".Replace("X", index.ToString());
 				Bitmap drawing = new Bitmap(bitmapFilename);
-				SetWindowSize sws = new SetWindowSize((drawing.Width + 10).ToString(), (drawing.Height + 20).ToString());
+				SetWindowSize sws = new SetWindowSize((drawing.Width).ToString(), (drawing.Height).ToString());
 				SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 				{
 					Descr = $"Open_Scaleform_Panel_Window_Photo_{index}",
@@ -894,14 +896,14 @@ namespace P3D_Scenario_Generator
 				string descr = $"Scaleform_Panel_Window_Leg_{index}";
 				string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_X.html".Replace("X", index.ToString());
 				SetPhotoTourLegRouteHTML(saveLocation, index);
-				spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\LegRoute_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf"));
+				spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\LegRoute_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf", "False"));
 			}
 			for (int index = 1; index < PhotoTour.PhotoCount - 1; index++)
 			{
 				string descr = $"Scaleform_Panel_Window_Photo_{index}";
 				string html = "<!DOCTYPE HTML>\n<html>\t<img src=\"photo_X.jpg\">\n</html>".Replace("X", index.ToString());
 				File.WriteAllText($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\photo_X.html".Replace("X", index.ToString()), html);
-				spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\photo_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf"));
+				spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\photo_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf", "False"));
 			}
 		}
 
@@ -1741,7 +1743,7 @@ namespace P3D_Scenario_Generator
 	[XmlRoot(ElementName = "SimMission.ScaleformPanelWindow")]
 	public class SimMissionScaleformPanelWindow
 	{
-		public SimMissionScaleformPanelWindow(string v1, string v2, string v3, string v4, string v5, string v6)
+		public SimMissionScaleformPanelWindow(string v1, string v2, string v3, string v4, string v5, string v6, string v7)
 		{
 			Descr = v1;
 			Locked = v2;
@@ -1749,6 +1751,7 @@ namespace P3D_Scenario_Generator
 			FlashFileName = v4;
 			InstanceId = v5;
 			UIPanelFileName = v6;
+			Docked = v7;
 		}
 
 		public SimMissionScaleformPanelWindow()
@@ -1772,6 +1775,9 @@ namespace P3D_Scenario_Generator
 
 		[XmlElement(ElementName = "UIPanelFileName")]
 		public string UIPanelFileName { get; set; }
+
+		[XmlElement(ElementName = "Docked")]
+		public string Docked { get; set; }
 	}
 
 	[XmlRoot(ElementName = "SimMission.PointOfInterest")]

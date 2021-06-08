@@ -69,10 +69,8 @@ namespace P3D_Scenario_Generator
             this.TextBoxPhotoHotspotRadius = new System.Windows.Forms.TextBox();
             this.label17 = new System.Windows.Forms.Label();
             this.TextBoxPhotoMaxBearingChange = new System.Windows.Forms.TextBox();
-            this.label16 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
-            this.TextBoxPhotoHeight = new System.Windows.Forms.TextBox();
-            this.TextBoxPhotoWidth = new System.Windows.Forms.TextBox();
+            this.TextBoxPhotoWindowSize = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
             this.TextBoxPhotoMinLegDist = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
@@ -82,6 +80,7 @@ namespace P3D_Scenario_Generator
             this.ButtonPhotoTourDefault = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
             this.TextBoxPhotoMaxLegDist = new System.Windows.Forms.TextBox();
+            this.TabPageSign = new System.Windows.Forms.TabPage();
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ButtonHelp = new System.Windows.Forms.Button();
@@ -98,6 +97,7 @@ namespace P3D_Scenario_Generator
             this.TabControl.Controls.Add(this.TabPageGeneral);
             this.TabControl.Controls.Add(this.TabPageCircuit);
             this.TabControl.Controls.Add(this.TabPagePhoto);
+            this.TabControl.Controls.Add(this.TabPageSign);
             this.TabControl.Location = new System.Drawing.Point(12, 12);
             this.TabControl.Name = "TabControl";
             this.TabControl.SelectedIndex = 0;
@@ -464,10 +464,8 @@ namespace P3D_Scenario_Generator
             this.TabPagePhoto.Controls.Add(this.TextBoxPhotoHotspotRadius);
             this.TabPagePhoto.Controls.Add(this.label17);
             this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMaxBearingChange);
-            this.TabPagePhoto.Controls.Add(this.label16);
             this.TabPagePhoto.Controls.Add(this.label15);
-            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoHeight);
-            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoWidth);
+            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoWindowSize);
             this.TabPagePhoto.Controls.Add(this.label14);
             this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMinLegDist);
             this.TabPagePhoto.Controls.Add(this.label13);
@@ -487,7 +485,7 @@ namespace P3D_Scenario_Generator
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(16, 364);
+            this.label18.Location = new System.Drawing.Point(16, 314);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(88, 15);
             this.label18.TabIndex = 26;
@@ -495,11 +493,11 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxPhotoHotspotRadius
             // 
-            this.TextBoxPhotoHotspotRadius.Location = new System.Drawing.Point(148, 356);
+            this.TextBoxPhotoHotspotRadius.Location = new System.Drawing.Point(148, 306);
             this.TextBoxPhotoHotspotRadius.Name = "TextBoxPhotoHotspotRadius";
             this.TextBoxPhotoHotspotRadius.Size = new System.Drawing.Size(119, 23);
             this.TextBoxPhotoHotspotRadius.TabIndex = 25;
-            this.TextBoxPhotoHotspotRadius.Text = "300";
+            this.TextBoxPhotoHotspotRadius.Text = "500";
             this.TextBoxPhotoHotspotRadius.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxPhotoHotspotRadius, "Radius of photo hotspot location in feet");
             this.TextBoxPhotoHotspotRadius.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
@@ -507,7 +505,7 @@ namespace P3D_Scenario_Generator
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(16, 316);
+            this.label17.Location = new System.Drawing.Point(16, 266);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(117, 15);
             this.label17.TabIndex = 24;
@@ -515,7 +513,7 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxPhotoMaxBearingChange
             // 
-            this.TextBoxPhotoMaxBearingChange.Location = new System.Drawing.Point(148, 308);
+            this.TextBoxPhotoMaxBearingChange.Location = new System.Drawing.Point(148, 258);
             this.TextBoxPhotoMaxBearingChange.Name = "TextBoxPhotoMaxBearingChange";
             this.TextBoxPhotoMaxBearingChange.Size = new System.Drawing.Size(119, 23);
             this.TextBoxPhotoMaxBearingChange.TabIndex = 23;
@@ -524,45 +522,25 @@ namespace P3D_Scenario_Generator
             this.toolTip1.SetToolTip(this.TextBoxPhotoMaxBearingChange, "Maximum bearing change left or right each leg in degrees");
             this.TextBoxPhotoMaxBearingChange.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
             // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(16, 268);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(90, 15);
-            this.label16.TabIndex = 22;
-            this.label16.Text = "Window Height";
-            // 
             // label15
             // 
             this.label15.AutoSize = true;
             this.label15.Location = new System.Drawing.Point(16, 221);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(86, 15);
+            this.label15.Size = new System.Drawing.Size(74, 15);
             this.label15.TabIndex = 21;
-            this.label15.Text = "Window Width";
+            this.label15.Text = "Window Size";
             // 
-            // TextBoxPhotoHeight
+            // TextBoxPhotoWindowSize
             // 
-            this.TextBoxPhotoHeight.Location = new System.Drawing.Point(148, 260);
-            this.TextBoxPhotoHeight.Name = "TextBoxPhotoHeight";
-            this.TextBoxPhotoHeight.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxPhotoHeight.TabIndex = 20;
-            this.TextBoxPhotoHeight.Text = "500";
-            this.TextBoxPhotoHeight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxPhotoHeight, "Height of leg route window in pixels");
-            this.TextBoxPhotoHeight.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
-            // 
-            // TextBoxPhotoWidth
-            // 
-            this.TextBoxPhotoWidth.Location = new System.Drawing.Point(148, 213);
-            this.TextBoxPhotoWidth.Name = "TextBoxPhotoWidth";
-            this.TextBoxPhotoWidth.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxPhotoWidth.TabIndex = 19;
-            this.TextBoxPhotoWidth.Text = "500";
-            this.TextBoxPhotoWidth.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxPhotoWidth, "Width of leg route window in pixels");
-            this.TextBoxPhotoWidth.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            this.TextBoxPhotoWindowSize.Location = new System.Drawing.Point(148, 213);
+            this.TextBoxPhotoWindowSize.Name = "TextBoxPhotoWindowSize";
+            this.TextBoxPhotoWindowSize.Size = new System.Drawing.Size(119, 23);
+            this.TextBoxPhotoWindowSize.TabIndex = 19;
+            this.TextBoxPhotoWindowSize.Text = "500";
+            this.TextBoxPhotoWindowSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxPhotoWindowSize, "Size of leg route window in pixels");
+            this.TextBoxPhotoWindowSize.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
             // 
             // label14
             // 
@@ -653,6 +631,15 @@ namespace P3D_Scenario_Generator
             this.TextBoxPhotoMaxLegDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxPhotoMaxLegDist, "Maximum leg distance in miles to next photo");
             this.TextBoxPhotoMaxLegDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
+            // 
+            // TabPageSign
+            // 
+            this.TabPageSign.Location = new System.Drawing.Point(4, 24);
+            this.TabPageSign.Name = "TabPageSign";
+            this.TabPageSign.Size = new System.Drawing.Size(812, 438);
+            this.TabPageSign.TabIndex = 3;
+            this.TabPageSign.Text = "Sign Writing";
+            this.TabPageSign.UseVisualStyleBackColor = true;
             // 
             // ButtonGenerateScenario
             // 
@@ -755,12 +742,11 @@ namespace P3D_Scenario_Generator
         internal System.Windows.Forms.TextBox TextBoxPhotoMinLegDist;
         private System.Windows.Forms.Label label17;
         internal System.Windows.Forms.TextBox TextBoxPhotoMaxBearingChange;
-        private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label label15;
-        internal System.Windows.Forms.TextBox TextBoxPhotoHeight;
-        internal System.Windows.Forms.TextBox TextBoxPhotoWidth;
+        internal System.Windows.Forms.TextBox TextBoxPhotoWindowSize;
         private System.Windows.Forms.Label label18;
         internal System.Windows.Forms.TextBox TextBoxPhotoHotspotRadius;
+        private System.Windows.Forms.TabPage TabPageSign;
     }
 }
 

@@ -93,6 +93,24 @@ namespace P3D_Scenario_Generator
                     overview.Objective += $"at {words[0]}, runway {words[1]}";
                     overview.Tips = "Never do today what you can put off till tomorrow";
                     break;
+                case nameof(ScenarioTypes.SignWriting):
+                    overview.Title = "Sign Writing";
+                    overview.Heading1 = "Sign Writing";
+                    overview.Location = $"{Runway.IcaoName} ({Runway.IcaoId}) {Runway.City}, {Runway.Country}";
+                    overview.Difficulty = "Advanced";
+                    // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
+                    duration = SignWriting.GetSignWritingDistance() / Aircraft.CruiseSpeed * 60;
+                    overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
+                    overview.Aircraft = $"{Parameters.SelectedAircraft}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
+                    overview.Briefing += " as you take on the role of sign writer in the sky!";
+                    overview.Briefing += "You'll take off, fly through a series of gates to spell out a message ";
+                    overview.Briefing += "and land again when you've finished. The scenario begins on runway ";
+                    overview.Briefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
+                    overview.Briefing += $"{Runway.City}, {Runway.Country}.";
+                    overview.Objective = "Take off and fly through a series of gates before landing on the same runway.";
+                    overview.Tips = "When life gives you lemons, squirt someone in the eye.";
+                    break;
                 default:
                     break;
             }

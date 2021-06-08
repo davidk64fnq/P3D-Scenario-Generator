@@ -12,7 +12,8 @@ namespace P3D_Scenario_Generator
     public enum ScenarioTypes
     {
         Circuit,
-        PhotoTour
+        PhotoTour,
+        SignWriting
     };
 
     public static class Constants
@@ -20,7 +21,7 @@ namespace P3D_Scenario_Generator
         public static string appTitle = "P3D Scenario Generator";
         public static double feetInKnot = 6076.12;
         public static double radiusEarth = 20902230.971129; // Radius of earth at equator in feet
-        public static string[] scenarioNames = { "Circuit", "Photo Tour" };
+        public static string[] scenarioNames = { "Circuit", "Photo Tour", "Sign Writing" };
         public static string heightAMSL = "False";
 
         public static string[] genGameNumBlueMDLguid =

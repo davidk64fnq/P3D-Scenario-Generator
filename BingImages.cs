@@ -64,33 +64,125 @@ namespace P3D_Scenario_Generator
         {
             using WebClient client = new WebClient();
             string url;
+            string mapArea;
             string[] startRunwayWords = Parameters.SelectedRunway.Split("\t");
             string[] finishRunwayWords = Parameters.DestRunway.Split("\t");
+            string[] imageryTypes = { "Aerial", "AerialWithLabels", "Road" };
+            bool imagesOkay;
 
             if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
             {
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
             }
 
-            // For photo tour get Bing route image for each leg
+            // For photo tour get Bing route images for each leg
             for (int index = 0; index < PhotoTour.PhotoCount - 1; index++)
             {
                 PhotoLegParams curPhoto = PhotoTour.GetPhotoLeg(index);
-                string wayPoints = $"pp={curPhoto.latitude},{curPhoto.longitude};1;{(index == 0 ? startRunwayWords[0] : index.ToString())}&";
+                mapArea = GetMapBoundingBox(curPhoto, index);
+                string pushpins = $"pp={curPhoto.latitude},{curPhoto.longitude};1;{(index == 0 ? startRunwayWords[0] : index.ToString())}&";
                 curPhoto = PhotoTour.GetPhotoLeg(index + 1);
-                wayPoints += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{((index + 1) == (PhotoTour.PhotoCount - 1) ? finishRunwayWords[0] : (index + 1).ToString())}";
-                url = $"{urlBingBase}AerialWithLabels?{wayPoints}&mapSize={Parameters.LegWindowWidth},{Parameters.LegWindowHeight}{urlKey}";
-                if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}.jpg"))
+                pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{((index + 1) == (PhotoTour.PhotoCount - 1) ? finishRunwayWords[0] : (index + 1).ToString())}";
+                imagesOkay = true;
+                for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
                 {
-                    return false;
+                    url = $"{urlBingBase}{imageryTypes[typeIndex]}?{pushpins}&mapSize={Parameters.LegWindowSize},{Parameters.LegWindowSize}{urlKey}";
+                    if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}_{typeIndex + 1}.jpg"))
+                    {
+                        imagesOkay = false;
+                        break;
+                    }
                 }
-                else
+                if (imagesOkay)
                 {
+                    url = $"{urlBingBase}Aerial?{pushpins}&mapSize={Parameters.LegWindowSize},{Parameters.LegWindowSize}{urlKey}";
                     GetBingMetadata(client, url, PhotoTour.GetPhotoLeg(index));
                 }
             }
 
             return true;
+        }
+
+        private static string GetMapBoundingBox(PhotoLegParams curPhoto, int legIndex)
+        {
+            string mapArea = "mapArea=";
+            PhotoLegParams nextPhoto = PhotoTour.GetPhotoLeg(legIndex + 1);
+
+            double deltaLat = Math.Abs(curPhoto.latitude - nextPhoto.latitude);
+            double deltaLon = Math.Abs(curPhoto.longitude - nextPhoto.longitude);
+            double tenPercent;
+            double eastEdge, westEdge, northEdge, southEdge, latMiddle, lonMiddle;
+
+            if (deltaLat >= deltaLon) 
+            {
+                tenPercent = deltaLat * 0.1;
+                if (curPhoto.latitude >= nextPhoto.latitude)
+                {
+                    northEdge = curPhoto.latitude + tenPercent;
+                    southEdge = nextPhoto.latitude - tenPercent;
+                }
+                else
+                {
+                    northEdge = nextPhoto.latitude + tenPercent;
+                    southEdge = curPhoto.latitude - tenPercent;
+                }
+                if (curPhoto.longitude >= nextPhoto.longitude)
+                {
+                    lonMiddle = nextPhoto.longitude + (curPhoto.longitude - nextPhoto.longitude) / 2;
+                }
+                else
+                {
+                    lonMiddle = curPhoto.longitude + (nextPhoto.longitude - curPhoto.longitude) / 2;
+                }
+                eastEdge = lonMiddle + deltaLat * 0.5;
+                westEdge = lonMiddle - deltaLat * 0.5;
+            }
+            else 
+            {
+                tenPercent = deltaLon * 0.1;
+                if (curPhoto.longitude >= nextPhoto.longitude)
+                {
+                    eastEdge = curPhoto.longitude + tenPercent;
+                    westEdge = nextPhoto.longitude - tenPercent;
+                }
+                else
+                {
+                    eastEdge = nextPhoto.longitude + tenPercent;
+                    westEdge = curPhoto.longitude - tenPercent;
+                }
+                if (curPhoto.latitude >= nextPhoto.latitude)
+                {
+                    latMiddle = nextPhoto.latitude + (curPhoto.latitude - nextPhoto.latitude) / 2;
+                }
+                else
+                {
+                    latMiddle = curPhoto.latitude + (nextPhoto.latitude - curPhoto.latitude) / 2;
+                }
+                northEdge = latMiddle + deltaLon * 0.5;
+                southEdge = latMiddle - deltaLon * 0.5;
+            }
+
+            // Handle east/west calculated points exceeding +180/-180 degrees
+            if (eastEdge > 180)
+            {
+                eastEdge -= 360;
+            }
+            if (westEdge < -180)
+            {
+                westEdge += 360;
+            }
+
+            // Handle north/south calculated points exceeding +90/-90 degrees
+            if (northEdge > 90)
+            {
+                northEdge = 90;
+            }
+            if (southEdge < -90)
+            {
+                southEdge = -90;
+            }
+
+            return mapArea += $"{southEdge},{westEdge},{northEdge},{eastEdge}";
         }
 
         internal static void GetPhotoTourOverviewImage()

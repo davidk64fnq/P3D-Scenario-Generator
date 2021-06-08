@@ -29,8 +29,7 @@ namespace P3D_Scenario_Generator
         internal static double MinNoLegs { get; private set; }
         internal static double MaxNoLegs { get; private set; }
         internal static string DestRunway { get; set; }
-        internal static double LegWindowWidth { get; set; }
-        internal static double LegWindowHeight { get; set; }
+        internal static double LegWindowSize { get; set; }
         internal static double MaxBearingChange { get; set; }
         internal static double HotspotRadius { get; set; }
 
@@ -79,8 +78,7 @@ namespace P3D_Scenario_Generator
                 MinLegDist = Convert.ToDouble(form.TextBoxPhotoMinLegDist.Text);
                 MinNoLegs = Convert.ToDouble(form.TextBoxPhotoMinNoLegs.Text);
                 MaxNoLegs = Convert.ToDouble(form.TextBoxPhotoMaxNoLegs.Text);
-                LegWindowWidth = Convert.ToDouble(form.TextBoxPhotoWidth.Text);
-                LegWindowHeight = Convert.ToDouble(form.TextBoxPhotoHeight.Text);
+                LegWindowSize = Convert.ToDouble(form.TextBoxPhotoWindowSize.Text);
                 MaxBearingChange = Convert.ToDouble(form.TextBoxPhotoMaxBearingChange.Text);
                 HotspotRadius = Convert.ToDouble(form.TextBoxPhotoHotspotRadius.Text) * 0.3084; // Convert feet to metres
             }
