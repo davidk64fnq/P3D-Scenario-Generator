@@ -3,6 +3,8 @@ using System.IO;
 using System.Net;
 using System.Collections.Generic;
 using HtmlAgilityPack;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace P3D_Scenario_Generator
 {
@@ -18,6 +20,9 @@ namespace P3D_Scenario_Generator
         public double eastEdge;
         public double southEdge;
         public double westEdge;
+        public double zoom;
+        public double centreLat;
+        public double centreLon;
     }
 
     internal class PhotoTour
@@ -103,6 +108,7 @@ namespace P3D_Scenario_Generator
                             PhotoCount = photoLegs.Count;
                             if (BingImages.GetPhotoTourLegImages())
                             {
+                                SetLegRouteMarkers();
                                 GetPhotos();
                                 continueSearching = false;
                             }
@@ -111,6 +117,69 @@ namespace P3D_Scenario_Generator
                 }
                 reader.Dispose();
                 File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html");
+            }
+        }
+
+        static internal void SetLegRouteMarkers()
+        {
+            for (int index = 0; index < PhotoCount - 1; index++)
+            {
+                // Draw starting marker on overview maps
+                SetLegRouteMarker(index, index, 1, "");
+
+                // Draw finishing marker on overview maps
+                if (index > 0)
+                {
+                    SetLegRouteMarker(index, index - 1, 1, "");
+                }
+
+                // Draw starting marker on zoom maps
+                SetLegRouteMarker(index, index, 2, "_zoom");
+
+                // Draw finishing marker on zoom maps
+                if (index > 0)
+                {
+                    SetLegRouteMarker(index, index - 1, 2, "_zoom");
+                }
+            }
+
+            // Draw finishing marker on last overview maps
+            SetLegRouteMarker(PhotoCount - 1, PhotoCount - 2, 1, "");
+
+            // Draw finishing marker on last zoom maps
+            SetLegRouteMarker(PhotoCount - 1, PhotoCount - 2, 2, "_zoom");
+        }
+
+        static internal void SetLegRouteMarker(int sourcePhotoIndex, int destPhotoIndex, int zoomFactor, string zoomSuffix)
+        {
+            Bitmap bm;
+
+            // Calculate circle radius in pixels
+            PhotoLegParams sourcePhoto = GetPhotoLeg(sourcePhotoIndex);
+            PhotoLegParams destPhoto = GetPhotoLeg(destPhotoIndex);
+            double latDeltaAbs = Math.Abs(destPhoto.northEdge - destPhoto.southEdge);
+            double pixelSize = latDeltaAbs * Constants.degreeLatFeet / Parameters.LegWindowSize;
+            int markerRadiusPixels = Convert.ToInt32(Parameters.HotspotRadius / pixelSize);
+
+            // Calculate y coordinate of top left corner of bounding box
+            int yCoord = Convert.ToInt32(Math.Abs(sourcePhoto.latitude - destPhoto.northEdge) / latDeltaAbs * Parameters.LegWindowSize) - markerRadiusPixels;
+
+            // Calculate x coordinate of top left corner of bounding box
+            double longDeltaAbs = Math.Abs(destPhoto.westEdge - destPhoto.eastEdge);
+            int xCoord = Convert.ToInt32(Math.Abs(sourcePhoto.longitude - destPhoto.westEdge) / longDeltaAbs * Parameters.LegWindowSize) - markerRadiusPixels;
+
+            // Draw starting marker on overview maps
+            for (int typeIndex = 0; typeIndex < 3; typeIndex++)
+            {
+                using (FileStream fs = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{destPhotoIndex + 1}_{typeIndex + 1}{zoomSuffix}.jpg", FileMode.Open))
+                {
+                    bm = new Bitmap(fs);
+                    fs.Close();
+                }
+                Graphics g = Graphics.FromImage(bm);
+                Pen pen = new Pen(Color.Magenta, 3);
+                g.DrawEllipse(pen, xCoord * zoomFactor, yCoord * zoomFactor, markerRadiusPixels * 2 * zoomFactor, markerRadiusPixels * 2 * zoomFactor);
+                bm.Save($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{destPhotoIndex + 1}_{typeIndex + 1}{zoomSuffix}.jpg", ImageFormat.Jpeg);
             }
         }
 

@@ -497,7 +497,7 @@ namespace P3D_Scenario_Generator
             this.TextBoxPhotoHotspotRadius.Name = "TextBoxPhotoHotspotRadius";
             this.TextBoxPhotoHotspotRadius.Size = new System.Drawing.Size(119, 23);
             this.TextBoxPhotoHotspotRadius.TabIndex = 25;
-            this.TextBoxPhotoHotspotRadius.Text = "500";
+            this.TextBoxPhotoHotspotRadius.Text = "1000";
             this.TextBoxPhotoHotspotRadius.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.toolTip1.SetToolTip(this.TextBoxPhotoHotspotRadius, "Radius of photo hotspot location in feet");
             this.TextBoxPhotoHotspotRadius.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);

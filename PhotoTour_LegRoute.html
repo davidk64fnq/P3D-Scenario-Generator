@@ -1,32 +1,11 @@
 <!DOCTYPE HTML>
 <html>	
 <head>
-<style>
-body {
-	overflow: hidden;
-    background-color: rgb(240, 248, 255);
-	margin: 0; 
-	padding: 0;
-}
-#aerialMap {
-	display: none;
-}
-#roadMap {
-	display: none;
-}
-#plane {
-	position: absolute;
-}
-#showButton {
-	display: none;
-}
-#aerialLabelsButton {
-	display: none;
-}
-</style>
+<link rel="stylesheet" href="styleMovingMap.css">
+<script src="scriptsMovingMap_X.js"></script>
 </head>
 <body>
-	<div>
+	<div id="mapDiv">
 		<div id="aerialMap" >
 			<img src="LegRoute_X_1.jpg" /> 
 		</div>
@@ -36,6 +15,17 @@ body {
 		<div id="roadMap" >
 			<img src="LegRoute_X_3.jpg" />
 		</div>
+		<div id="aerialMapZoom" >
+			<img src="LegRoute_X_1_zoom.jpg" id="aerialMapZoomImg"/> 
+		</div>
+		<div id="aerialLabelsMapZoom" >
+			<img src="LegRoute_X_2_zoom.jpg" id="aerialLabelsMapZoomImg"/> 
+		</div>
+		<div id="roadMapZoom" >
+			<img src="LegRoute_X_3_zoom.jpg" id="roadMapZoomImg"/>
+		</div>
+	</div>
+	<div id="buttonDiv">
 		<img id="plane" src="aircraft.png" /> 
 		<button type="button" id="hideButton" onclick="hidePlane()">
 			Hide Plane
@@ -52,64 +42,12 @@ body {
 		<button type="button" id="roadButton" onclick="showRoadMap()">
 			Road Map
 		</button>
+		<button type="button" id="zoomButton" onclick="showZoomMap()">
+			Zoom
+		</button>
+		<button type="button" id="overviewButton" onclick="showOverviewMap()">
+			Overview
+		</button>
 	</div>
-	<script>
-		const mapNorth = mapNorthX;
-		const mapEast = mapEastX;
-		const mapSouth = mapSouthX;
-		const mapWest = mapWestX;
-		const mapWidth = mapWidthX;
-		const mapHeight = mapHeightX;
-		
-		function update(timestamp)
-		{
-			var plane = document.getElementById("plane");
-			var planeHeadingDeg = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI;
-			var planeLonDeg = VarGet("A:PLANE LONGITUDE" ,"Radians") * 180 / Math.PI; // x
-			var planeLatDeg = VarGet("A:PLANE LATITUDE" ,"Radians") * 180 / Math.PI;  // y
-			pixelsTop = Math.round((planeLatDeg - mapNorth) / (mapSouth - mapNorth) * mapHeight) - 15;
-			pixelsLeft = Math.round((planeLonDeg - mapWest) / (mapEast - mapWest) * mapWidth) - 15;
-			document.getElementById('plane').style.top=pixelsTop + "px";
-			document.getElementById('plane').style.left=pixelsLeft + "px";
-			plane.style.transform = "rotate(" + planeHeadingDeg + "deg)";
-			window.requestAnimationFrame(update);
-		}
-		window.requestAnimationFrame(update);
-		
-		function hidePlane() {
-			document.getElementById('plane').style.display = 'none';
-			document.getElementById('showButton').style.display = 'inline';
-			document.getElementById('hideButton').style.display = 'none';
-		}
-		function showPlane() {
-			document.getElementById('plane').style.display = 'inline';
-			document.getElementById('hideButton').style.display = 'inline';
-			document.getElementById('showButton').style.display = 'none';
-		}
-		function showAerialMap() {
-			document.getElementById('aerialLabelsMap').style.display = 'none';
-			document.getElementById('roadMap').style.display = 'none';
-			document.getElementById('aerialMap').style.display = 'inline';
-			document.getElementById('aerialButton').style.display = 'none';
-			document.getElementById('aerialLabelsButton').style.display = 'inline';
-			document.getElementById('roadButton').style.display = 'inline';
-		}
-		function showAerialLabelsMap() {
-			document.getElementById('aerialMap').style.display = 'none';
-			document.getElementById('aerialLabelsMap').style.display = 'inline';
-			document.getElementById('roadMap').style.display = 'none';
-			document.getElementById('aerialButton').style.display = 'inline';
-			document.getElementById('aerialLabelsButton').style.display = 'none';
-			document.getElementById('roadButton').style.display = 'inline';
-		}
-		function showRoadMap() {
-			document.getElementById('aerialMap').style.display = 'none';
-			document.getElementById('aerialLabelsMap').style.display = 'none';
-			document.getElementById('roadMap').style.display = 'inline';
-			document.getElementById('aerialButton').style.display = 'inline';
-			document.getElementById('aerialLabelsButton').style.display = 'inline';
-			document.getElementById('roadButton').style.display = 'none';
-		}
-	</script>
 </body>
 </html>

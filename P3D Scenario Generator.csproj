@@ -18,7 +18,9 @@
     <None Remove="P3D Scenario Generator.pdf" />
     <None Remove="PhotoTour_LegRoute.html" />
     <None Remove="runways.xml" />
+    <None Remove="scriptsMovingMap.js" />
     <None Remove="source.fxml" />
+    <None Remove="styleMovingMap.css" />
     <None Remove="style_kneeboard.css" />
     <None Remove="style_load_flight.css" />
     <None Remove="success-icon.png" />
@@ -35,7 +37,9 @@
     <EmbeddedResource Include="P3D Scenario Generator.pdf" />
     <EmbeddedResource Include="PhotoTour_LegRoute.html" />
     <EmbeddedResource Include="runways.xml" />
+    <EmbeddedResource Include="scriptsMovingMap.js" />
     <EmbeddedResource Include="source.fxml" />
+    <EmbeddedResource Include="styleMovingMap.css" />
     <EmbeddedResource Include="style_kneeboard.css" />
     <EmbeddedResource Include="style_load_flight.css" />
     <EmbeddedResource Include="success-icon.png" />
