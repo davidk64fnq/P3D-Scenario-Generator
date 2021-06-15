@@ -6,23 +6,32 @@
 </head>
 <body>
 	<div id="mapDiv">
-		<div id="aerialMap" >
-			<img src="LegRoute_X_1.jpg" /> 
+		<div id="aerialMapZoom1" >
+			<img src="LegRoute_X_1_zoom1.jpg" /> 
 		</div>
-		<div id="aerialLabelsMap" >
-			<img src="LegRoute_X_2.jpg" /> 
+		<div id="aerialLabelsMapZoom1" >
+			<img src="LegRoute_X_2_zoom1.jpg" /> 
 		</div>
-		<div id="roadMap" >
-			<img src="LegRoute_X_3.jpg" />
+		<div id="roadMapZoom1" >
+			<img src="LegRoute_X_3_zoom1.jpg" />
 		</div>
-		<div id="aerialMapZoom" >
-			<img src="LegRoute_X_1_zoom.jpg" id="aerialMapZoomImg"/> 
+		<div id="aerialMapZoom2" >
+			<img src="LegRoute_X_1_zoom2.jpg" id="aerialMapZoom2Img"/> 
 		</div>
-		<div id="aerialLabelsMapZoom" >
-			<img src="LegRoute_X_2_zoom.jpg" id="aerialLabelsMapZoomImg"/> 
+		<div id="aerialLabelsMapZoom2" >
+			<img src="LegRoute_X_2_zoom2.jpg" id="aerialLabelsMapZoom2Img"/> 
 		</div>
-		<div id="roadMapZoom" >
-			<img src="LegRoute_X_3_zoom.jpg" id="roadMapZoomImg"/>
+		<div id="roadMapZoom2" >
+			<img src="LegRoute_X_3_zoom2.jpg" id="roadMapZoom2Img"/>
+		</div>
+		<div id="aerialMapZoom4" >
+			<img src="LegRoute_X_1_zoom4.jpg" id="aerialMapZoom4Img"/> 
+		</div>
+		<div id="aerialLabelsMapZoom4" >
+			<img src="LegRoute_X_2_zoom4.jpg" id="aerialLabelsMapZoom4Img"/> 
+		</div>
+		<div id="roadMapZoom4" >
+			<img src="LegRoute_X_3_zoom4.jpg" id="roadMapZoom4Img"/>
 		</div>
 	</div>
 	<div id="buttonDiv">
@@ -42,11 +51,14 @@
 		<button type="button" id="roadButton" onclick="showRoadMap()">
 			Road Map
 		</button>
-		<button type="button" id="zoomButton" onclick="showZoomMap()">
-			Zoom
+		<button type="button" id="zoom1Button" onclick="showZoom1Map()">
+			Zoom 1
+		</button
+		<button type="button" id="zoom2Button" onclick="showZoom2Map()">
+			Zoom 2
 		</button>
-		<button type="button" id="overviewButton" onclick="showOverviewMap()">
-			Overview
+		<button type="button" id="zoom4Button" onclick="showZoom4Map()">
+			Zoom 3
 		</button>
 	</div>
 </body>

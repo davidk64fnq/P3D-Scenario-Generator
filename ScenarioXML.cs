@@ -839,12 +839,15 @@ namespace P3D_Scenario_Generator
 			StreamReader reader = new StreamReader(stream);
 			legRouteHTML = reader.ReadToEnd();
 			legRouteHTML = legRouteHTML.Replace("scriptsMovingMap_X.js", $"scriptsMovingMap_{photoIndex}.js");
-			legRouteHTML = legRouteHTML.Replace("LegRoute_X_1", $"LegRoute_{photoIndex}_1");
-			legRouteHTML = legRouteHTML.Replace("LegRoute_X_2", $"LegRoute_{photoIndex}_2");
-			legRouteHTML = legRouteHTML.Replace("LegRoute_X_3", $"LegRoute_{photoIndex}_3");
-			legRouteHTML = legRouteHTML.Replace("LegRoute_X_1_zoom", $"LegRoute_{photoIndex}_1");
-			legRouteHTML = legRouteHTML.Replace("LegRoute_X_2_zoom", $"LegRoute_{photoIndex}_2");
-			legRouteHTML = legRouteHTML.Replace("LegRoute_X_3_zoom", $"LegRoute_{photoIndex}_3");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_1_zoom1", $"LegRoute_{photoIndex}_1_zoom1");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_2_zoom1", $"LegRoute_{photoIndex}_2_zoom1");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_3_zoom1", $"LegRoute_{photoIndex}_3_zoom1");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_1_zoom2", $"LegRoute_{photoIndex}_1_zoom2");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_2_zoom2", $"LegRoute_{photoIndex}_2_zoom2");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_3_zoom2", $"LegRoute_{photoIndex}_3_zoom2");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_1_zoom4", $"LegRoute_{photoIndex}_1_zoom4");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_2_zoom4", $"LegRoute_{photoIndex}_2_zoom4");
+			legRouteHTML = legRouteHTML.Replace("LegRoute_X_3_zoom4", $"LegRoute_{photoIndex}_3_zoom4");
 			File.WriteAllText(saveLocation, legRouteHTML);
 			stream.Dispose();
 		}

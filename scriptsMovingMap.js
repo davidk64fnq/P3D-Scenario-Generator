@@ -1,13 +1,14 @@
-const mapNorth = mapNorthX;
+const mapNorth = mapNorthX; //these 4 map edges are for the central square of 375 pixels in zoom1 images
 const mapEast = mapEastX;
 const mapSouth = mapSouthX;
 const mapWest = mapWestX;
 const mapWidth = mapWidthX;
 const mapHeight = mapHeightX;
-var zoom = false;
+var zoomN, zoomE, zoomS, zoomW; // adjusted map edges allowing for different zoom factor of 1, 2, or 4
+const imagePixels = 1500;
+var zoomFactor = 1;
 var curMap = "aerialLabelsMap";
-var pixelsTop, pixelsTopZoom;
-var pixelsLeft, pixelsLeftZoom;
+var planeTopPixels, planeLeftPixels;
 var clipTop, clipRight, clipBottom, clipLeft;
 
 function update(timestamp)
@@ -16,36 +17,32 @@ function update(timestamp)
 	var planeHeadingDeg = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI;
 	var planeLonDeg = VarGet("A:PLANE LONGITUDE" ,"Radians") * 180 / Math.PI; // x
 	var planeLatDeg = VarGet("A:PLANE LATITUDE" ,"Radians") * 180 / Math.PI;  // y
-	pixelsTop = Math.round((planeLatDeg - mapNorth) / (mapSouth - mapNorth) * mapHeight);
-	pixelsLeft = Math.round((planeLonDeg - mapWest) / (mapEast - mapWest) * mapWidth);
-	if (!Boolean(zoom)){
-		document.getElementById('plane').style.top=pixelsTop - 15 + "px";
-		document.getElementById('plane').style.left=pixelsLeft - 15 + "px";
+	zoomN = mapNorth + (mapNorth - mapSouth) * ((4 / zoomFactor - 1) * 0.5);
+	zoomE = mapEast + (mapEast - mapWest) * ((4 / zoomFactor - 1) * 0.5);
+	zoomS = mapSouth - (mapNorth - mapSouth) * ((4 / zoomFactor - 1) * 0.5);
+	zoomW = mapWest - (mapEast - mapWest) * ((4 / zoomFactor - 1) * 0.5);
+	planeTopPixels = Math.round((planeLatDeg - zoomN) / (zoomS - zoomN) * imagePixels);
+	planeLeftPixels = Math.round((planeLonDeg - zoomW) / (zoomE - zoomW) * imagePixels);
+	clipTop = planeTopPixels - (mapHeight / 2);
+	if (clipTop < 0) {
+		clipTop = 0;
+	} else if (clipTop > (imagePixels - mapHeight)) {
+		clipTop = (imagePixels - mapHeight);
 	}
-	else {
-		pixelsTopZoom = pixelsTop * 2;
-		pixelsLeftZoom = pixelsLeft * 2;
-		clipTop = pixelsTopZoom - (mapHeight / 2);
-		if (clipTop < 0) {
-			clipTop = 0;
-		} else if (clipTop > mapHeight) {
-			clipTop = mapHeight;
-		}
-		clipRight = pixelsLeftZoom + (mapWidth / 2);
-		if (clipRight > mapWidth * 2) {
-			clipRight = mapWidth * 2;
-		} else if (clipRight < mapWidth) {
-			clipRight = mapWidth;
-		}
-		clipBottom = clipTop + mapHeight;
-		clipLeft = clipRight - mapWidth;
-		document.getElementById(curMap + 'Img').style.top = '-' + clipTop + 'px';
-		document.getElementById(curMap + 'Img').style.left = '-' + clipLeft + 'px';
-		document.getElementById(curMap + 'Img').style.position = 'absolute';
-		document.getElementById(curMap + 'Img').style.clip = 'rect(' + clipTop + 'px,' + clipRight + 'px,' + clipBottom + 'px,' + clipLeft + 'px)';
-		document.getElementById('plane').style.top=pixelsTopZoom - clipTop - 15 + "px";
-		document.getElementById('plane').style.left=pixelsLeftZoom - clipLeft - 15 + "px";
+	clipRight = planeLeftPixels + (mapWidth / 2);
+	if (clipRight > imagePixels) {
+		clipRight = imagePixels;
+	} else if (clipRight < mapWidth) {
+		clipRight = mapWidth;
 	}
+	clipBottom = clipTop + mapHeight;
+	clipLeft = clipRight - mapWidth;
+	document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.top = '-' + clipTop + 'px';
+	document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.left = '-' + clipLeft + 'px';
+	document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.position = 'absolute';
+	document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.clip = 'rect(' + clipTop + 'px,' + clipRight + 'px,' + clipBottom + 'px,' + clipLeft + 'px)';
+	document.getElementById('plane').style.top=planeTopPixels - clipTop - 15 + "px";
+	document.getElementById('plane').style.left=planeLeftPixels - clipLeft - 15 + "px";
 	plane.style.transform = "rotate(" + planeHeadingDeg + "deg)";
 	window.requestAnimationFrame(update);
 }
@@ -56,92 +53,129 @@ function hidePlane() {
 	document.getElementById('showButton').style.display = 'inline';
 	document.getElementById('hideButton').style.display = 'none';
 }
+
 function showPlane() {
 	document.getElementById('plane').style.display = 'inline';
 	document.getElementById('hideButton').style.display = 'inline';
 	document.getElementById('showButton').style.display = 'none';
 }
+
 function showAerialMap() {
-	if (!Boolean(zoom)){
-		document.getElementById('aerialLabelsMap').style.display = 'none';
-		document.getElementById('roadMap').style.display = 'none';
-		document.getElementById('aerialMap').style.display = 'inline';
-		curMap = 'aerialMap';
+	curMap = 'aerialMap';
+	if (zoomFactor == 1){
+		document.getElementById('aerialLabelsMapZoom1').style.display = 'none';
+		document.getElementById('roadMapZoom1').style.display = 'none';
+		document.getElementById('aerialMapZoom1').style.display = 'inline';
+	} else if (zoomFactor == 2){
+		document.getElementById('aerialLabelsMapZoom2').style.display = 'none';
+		document.getElementById('roadMapZoom2').style.display = 'none';
+		document.getElementById('aerialMapZoom2').style.display = 'inline';
 	} else {
-		document.getElementById('aerialLabelsMapZoom').style.display = 'none';
-		document.getElementById('roadMapZoom').style.display = 'none';
-		document.getElementById('aerialMapZoom').style.display = 'inline';
-		curMap = 'aerialMapZoom';
+		document.getElementById('aerialLabelsMapZoom4').style.display = 'none';
+		document.getElementById('roadMapZoom4').style.display = 'none';
+		document.getElementById('aerialMapZoom4').style.display = 'inline';
 	}
 	document.getElementById('aerialButton').style.display = 'none';
 	document.getElementById('aerialLabelsButton').style.display = 'inline';
 	document.getElementById('roadButton').style.display = 'inline';
 }
+
 function showAerialLabelsMap() {
-	if (!Boolean(zoom)){
-		document.getElementById('aerialMap').style.display = 'none';
-		document.getElementById('aerialLabelsMap').style.display = 'inline';
-		document.getElementById('roadMap').style.display = 'none';
-		curMap = 'aerialLabelsMap';
+	curMap = 'aerialMap';
+	if (zoomFactor == 1){
+		document.getElementById('aerialLabelsMapZoom1').style.display = 'inline';
+		document.getElementById('roadMapZoom1').style.display = 'none';
+		document.getElementById('aerialMapZoom1').style.display = 'none';
+	} else if (zoomFactor == 2){
+		document.getElementById('aerialLabelsMapZoom2').style.display = 'inline';
+		document.getElementById('roadMapZoom2').style.display = 'none';
+		document.getElementById('aerialMapZoom2').style.display = 'none';
 	} else {
-		document.getElementById('aerialMapZoom').style.display = 'none';
-		document.getElementById('aerialLabelsMapZoom').style.display = 'inline';
-		document.getElementById('roadMapZoom').style.display = 'none';
-		curMap = 'aerialLabelsMapZoom';
+		document.getElementById('aerialLabelsMapZoom4').style.display = 'inline';
+		document.getElementById('roadMapZoom4').style.display = 'none';
+		document.getElementById('aerialMapZoom4').style.display = 'none';
 	}
 	document.getElementById('aerialButton').style.display = 'inline';
 	document.getElementById('aerialLabelsButton').style.display = 'none';
 	document.getElementById('roadButton').style.display = 'inline';
 }
+
 function showRoadMap() {
-	if (!Boolean(zoom)){
-		document.getElementById('aerialMap').style.display = 'none';
-		document.getElementById('aerialLabelsMap').style.display = 'none';
-		document.getElementById('roadMap').style.display = 'inline';
-		curMap = 'roadMap';
+	curMap = 'roadMap';
+	if (zoomFactor == 1){
+		document.getElementById('aerialLabelsMapZoom1').style.display = 'none';
+		document.getElementById('roadMapZoom1').style.display = 'inline';
+		document.getElementById('aerialMapZoom1').style.display = 'none';
+	} else if (zoomFactor == 2){
+		document.getElementById('aerialLabelsMapZoom2').style.display = 'none';
+		document.getElementById('roadMapZoom2').style.display = 'inline';
+		document.getElementById('aerialMapZoom2').style.display = 'none';
 	} else {
-		document.getElementById('aerialMapZoom').style.display = 'none';
-		document.getElementById('aerialLabelsMapZoom').style.display = 'none';
-		document.getElementById('roadMapZoom').style.display = 'inline';
-		curMap = 'roadMapZoom';
+		document.getElementById('aerialLabelsMapZoom4').style.display = 'none';
+		document.getElementById('roadMapZoom4').style.display = 'inline';
+		document.getElementById('aerialMapZoom4').style.display = 'none';
 	}
 	document.getElementById('aerialButton').style.display = 'inline';
 	document.getElementById('aerialLabelsButton').style.display = 'inline';
 	document.getElementById('roadButton').style.display = 'none';
 }
-function showZoomMap() {
-	zoom = true;
-	document.getElementById('zoomButton').style.display = 'none';
-	document.getElementById('overviewButton').style.display = 'inline';
+
+function showZoom1Map() {
+	zoomFactor = 1;
+	document.getElementById('zoom1Button').style.display = 'none';
+	document.getElementById('zoom2Button').style.display = 'inline';
+	document.getElementById('zoom4Button').style.display = 'inline';
 	if (curMap == 'aerialMap') {
-		document.getElementById('aerialMap').style.display = 'none';
-		document.getElementById('aerialMapZoom').style.display = 'inline';
-		curMap = 'aerialMapZoom';
+		document.getElementById('aerialMapZoom1').style.display = 'inline';
+		document.getElementById('aerialMapZoom2').style.display = 'none';
+		document.getElementById('aerialMapZoom4').style.display = 'none';
 	} else if (curMap == 'aerialLabelsMap') {
-		document.getElementById('aerialLabelsMap').style.display = 'none';
-		document.getElementById('aerialLabelsMapZoom').style.display = 'inline';
-		curMap = 'aerialLabelsMapZoom';
+		document.getElementById('aerialLabelsMapZoom1').style.display = 'inline';
+		document.getElementById('aerialLabelsMapZoom2').style.display = 'none';
+		document.getElementById('aerialLabelsMapZoom4').style.display = 'none';
 	} else {
-		document.getElementById('roadMap').style.display = 'none';
-		document.getElementById('roadMapZoom').style.display = 'inline';
-		curMap = 'roadMapZoom';
+		document.getElementById('roadMapZoom1').style.display = 'inline';
+		document.getElementById('roadMapZoom2').style.display = 'none';
+		document.getElementById('roadMapZoom4').style.display = 'none';
 	} 
 }
-function showOverviewMap() {
-	zoom = false;
-	document.getElementById('zoomButton').style.display = 'inline';
-	document.getElementById('overviewButton').style.display = 'none';
-	if (curMap == 'aerialMapZoom') {
-		document.getElementById('aerialMap').style.display = 'inline';
-		document.getElementById('aerialMapZoom').style.display = 'none';
-		curMap = 'aerialMap';
-	} else if (curMap == 'aerialLabelsMapZoom') {
-		document.getElementById('aerialLabelsMap').style.display = 'inline';
-		document.getElementById('aerialLabelsMapZoom').style.display = 'none';
-		curMap = 'aerialLabelsMap';
+
+function showZoom2Map() {
+	zoomFactor = 2;
+	document.getElementById('zoom1Button').style.display = 'inline';
+	document.getElementById('zoom2Button').style.display = 'none';
+	document.getElementById('zoom4Button').style.display = 'inline';
+	if (curMap == 'aerialMap') {
+		document.getElementById('aerialMapZoom1').style.display = 'none';
+		document.getElementById('aerialMapZoom2').style.display = 'inline';
+		document.getElementById('aerialMapZoom4').style.display = 'none';
+	} else if (curMap == 'aerialLabelsMap') {
+		document.getElementById('aerialLabelsMapZoom1').style.display = 'none';
+		document.getElementById('aerialLabelsMapZoom2').style.display = 'inline';
+		document.getElementById('aerialLabelsMapZoom4').style.display = 'none';
 	} else {
-		document.getElementById('roadMap').style.display = 'inline';
-		document.getElementById('roadMapZoom').style.display = 'none';
-		curMap = 'roadMap';
+		document.getElementById('roadMapZoom1').style.display = 'none';
+		document.getElementById('roadMapZoom2').style.display = 'inline';
+		document.getElementById('roadMapZoom4').style.display = 'none';
+	} 
+}
+
+function showZoom3Map() {
+	zoomFactor = 4;
+	document.getElementById('zoom1Button').style.display = 'inline';
+	document.getElementById('zoom2Button').style.display = 'inline';
+	document.getElementById('zoom4Button').style.display = 'none';
+	if (curMap == 'aerialMap') {
+		document.getElementById('aerialMapZoom1').style.display = 'none';
+		document.getElementById('aerialMapZoom2').style.display = 'none';
+		document.getElementById('aerialMapZoom4').style.display = 'inline';
+	} else if (curMap == 'aerialLabelsMap') {
+		document.getElementById('aerialLabelsMapZoom1').style.display = 'none';
+		document.getElementById('aerialLabelsMapZoom2').style.display = 'none';
+		document.getElementById('aerialLabelsMapZoom4').style.display = 'inline';
+	} else {
+		document.getElementById('roadMapZoom1').style.display = 'none';
+		document.getElementById('roadMapZoom2').style.display = 'none';
+		document.getElementById('roadMapZoom4').style.display = 'inline';
 	} 
 }

@@ -201,6 +201,11 @@ namespace P3D_Scenario_Generator
                 MessageBox.Show($"Maximum bearing change is limited to 180 degress", "Photo Tour Scenario: max bearing change", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
+            if ((Convert.ToInt32(form.TextBoxPhotoWindowSize.Text) < 375) || (Convert.ToInt32(form.TextBoxPhotoWindowSize.Text) > 1500))
+            {
+                MessageBox.Show($"Window size is limited to between 375 and 1500 pixels inclusive", "Photo Tour Scenario: window size", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
             return true;
         }
 

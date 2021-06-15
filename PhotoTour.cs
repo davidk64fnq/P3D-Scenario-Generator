@@ -124,30 +124,42 @@ namespace P3D_Scenario_Generator
         {
             for (int index = 0; index < PhotoCount - 1; index++)
             {
-                // Draw starting marker on overview maps
-                SetLegRouteMarker(index, index, 1, "");
+                // Draw starting marker on zoom1 maps
+                SetLegRouteMarker(index, index, 1, "_zoom1");
 
                 // Draw finishing marker on overview maps
                 if (index > 0)
                 {
-                    SetLegRouteMarker(index, index - 1, 1, "");
+                    SetLegRouteMarker(index, index - 1, 1, "_zoom1");
                 }
 
-                // Draw starting marker on zoom maps
-                SetLegRouteMarker(index, index, 2, "_zoom");
+                // Draw starting marker on zoom2 maps
+                SetLegRouteMarker(index, index, 2, "_zoom2");
 
-                // Draw finishing marker on zoom maps
+                // Draw finishing marker on zoom2 maps
                 if (index > 0)
                 {
-                    SetLegRouteMarker(index, index - 1, 2, "_zoom");
+                    SetLegRouteMarker(index, index - 1, 2, "_zoom2");
+                }
+
+                // Draw starting marker on zoom4 maps
+                SetLegRouteMarker(index, index, 4, "_zoom4");
+
+                // Draw finishing marker on zoom4 maps
+                if (index > 0)
+                {
+                    SetLegRouteMarker(index, index - 1, 4, "_zoom4");
                 }
             }
 
-            // Draw finishing marker on last overview maps
-            SetLegRouteMarker(PhotoCount - 1, PhotoCount - 2, 1, "");
+            // Draw finishing marker on last zoom1 maps
+            SetLegRouteMarker(PhotoCount - 1, PhotoCount - 2, 1, "_zoom1");
 
-            // Draw finishing marker on last zoom maps
-            SetLegRouteMarker(PhotoCount - 1, PhotoCount - 2, 2, "_zoom");
+            // Draw finishing marker on last zoom2 maps
+            SetLegRouteMarker(PhotoCount - 1, PhotoCount - 2, 2, "_zoom2");
+
+            // Draw finishing marker on last zoom4 maps
+            SetLegRouteMarker(PhotoCount - 1, PhotoCount - 2, 4, "_zoom4");
         }
 
         static internal void SetLegRouteMarker(int sourcePhotoIndex, int destPhotoIndex, int zoomFactor, string zoomSuffix)
@@ -157,16 +169,20 @@ namespace P3D_Scenario_Generator
             // Calculate circle radius in pixels
             PhotoLegParams sourcePhoto = GetPhotoLeg(sourcePhotoIndex);
             PhotoLegParams destPhoto = GetPhotoLeg(destPhotoIndex);
-            double latDeltaAbs = Math.Abs(destPhoto.northEdge - destPhoto.southEdge);
-            double pixelSize = latDeltaAbs * Constants.degreeLatFeet / Parameters.LegWindowSize;
-            int markerRadiusPixels = Convert.ToInt32(Parameters.HotspotRadius / pixelSize);
+            double latDeltaAbs = Math.Abs(destPhoto.northEdge - destPhoto.southEdge) * 4 / zoomFactor;
+            double pixelSize = latDeltaAbs * Constants.degreeLatFeet / 1500;
+            int markerRadiusPixels = Convert.ToInt32(Parameters.HotspotRadius * 3.2808399 / pixelSize);
 
             // Calculate y coordinate of top left corner of bounding box
-            int yCoord = Convert.ToInt32(Math.Abs(sourcePhoto.latitude - destPhoto.northEdge) / latDeltaAbs * Parameters.LegWindowSize) - markerRadiusPixels;
+            double latDeltaCentre = destPhoto.centreLat - sourcePhoto.latitude;
+            double latDeltaPixels = latDeltaCentre / latDeltaAbs * 1500;
+            int yCoord = Convert.ToInt32(750 + latDeltaPixels) - markerRadiusPixels;
 
             // Calculate x coordinate of top left corner of bounding box
-            double longDeltaAbs = Math.Abs(destPhoto.westEdge - destPhoto.eastEdge);
-            int xCoord = Convert.ToInt32(Math.Abs(sourcePhoto.longitude - destPhoto.westEdge) / longDeltaAbs * Parameters.LegWindowSize) - markerRadiusPixels;
+            double longDeltaCentre = sourcePhoto.longitude - destPhoto.centreLon;
+            double longDeltaAbs = Math.Abs(destPhoto.westEdge - destPhoto.eastEdge) * 4 / zoomFactor;
+            double longDeltaPixels = longDeltaCentre / longDeltaAbs * 1500;
+            int xCoord = Convert.ToInt32(750 + longDeltaPixels) - markerRadiusPixels;
 
             // Draw starting marker on overview maps
             for (int typeIndex = 0; typeIndex < 3; typeIndex++)
@@ -178,7 +194,7 @@ namespace P3D_Scenario_Generator
                 }
                 Graphics g = Graphics.FromImage(bm);
                 Pen pen = new Pen(Color.Magenta, 3);
-                g.DrawEllipse(pen, xCoord * zoomFactor, yCoord * zoomFactor, markerRadiusPixels * 2 * zoomFactor, markerRadiusPixels * 2 * zoomFactor);
+                g.DrawEllipse(pen, xCoord, yCoord, markerRadiusPixels * 2, markerRadiusPixels * 2);
                 bm.Save($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{destPhotoIndex + 1}_{typeIndex + 1}{zoomSuffix}.jpg", ImageFormat.Jpeg);
             }
         }

@@ -11,7 +11,7 @@ body {
 #buttonDiv {
 	padding: 10px;
 }
-#aerialMap, #roadMap, #aerialMapZoom, #aerialLabelsMapZoom, #roadMapZoom, #showButton, #aerialLabelsButton, #overviewButton {
+#aerialMapZoom1, #roadMapZoom1, #aerialMapZoom2, #aerialLabelsMapZoom2, #roadMapZoom2, #aerialMapZoom3, #aerialLabelsMapZoom3, #roadMapZoom3, #showButton, #aerialLabelsButton, #zoom1Button {
 	display: none;
 }
 #plane {

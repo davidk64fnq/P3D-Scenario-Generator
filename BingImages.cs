@@ -75,20 +75,20 @@ namespace P3D_Scenario_Generator
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
             }
 
-            //    string pushpins = $"pp={curPhoto.latitude},{curPhoto.longitude};1;{(index == 0 ? startRunwayWords[0] : index.ToString())}&";
-            //    curPhoto = PhotoTour.GetPhotoLeg(index + 1);
-            //    pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{((index + 1) == (PhotoTour.PhotoCount - 1) ? finishRunwayWords[0] : (index + 1).ToString())}";
-
             // For photo tour get Bing route images for each leg
             for (int index = 0; index < PhotoTour.PhotoCount - 1; index++)
             {
                 PhotoLegParams curPhoto = PhotoTour.GetPhotoLeg(index);
                 mapArea = GetMapBoundingBox(curPhoto, index);
                 imagesOkay = true;
+                url = $"{urlBingBase}Aerial?{mapArea}&mapSize=375,375{urlKey}";
+                GetBingMetadata(client, url, PhotoTour.GetPhotoLeg(index));
+                mapCentre = $"/{curPhoto.centreLat},{curPhoto.centreLon}";
                 for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
                 {
-                    url = $"{urlBingBase}{imageryTypes[typeIndex]}?{mapArea}&mapSize={Parameters.LegWindowSize},{Parameters.LegWindowSize}{urlKey}";
-                    if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}_{typeIndex + 1}.jpg"))
+                    mapZoom = $"/{curPhoto.zoom}";
+                    url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize=1500,1500{urlKey}";
+                    if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}_{typeIndex + 1}_zoom1.jpg"))
                     {
                         imagesOkay = false;
                         break;
@@ -96,18 +96,28 @@ namespace P3D_Scenario_Generator
                 }
                 if (imagesOkay)
                 {
-                    url = $"{urlBingBase}Aerial?{mapArea}&mapSize={Parameters.LegWindowSize},{Parameters.LegWindowSize}{urlKey}";
-                    GetBingMetadata(client, url, PhotoTour.GetPhotoLeg(index));
-                }
-                for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
-                {
-                    mapCentre = $"/{curPhoto.centreLat},{curPhoto.centreLon}";
-                    mapZoom = $"/{curPhoto.zoom + 1}";
-                    url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize={Parameters.LegWindowSize * 2},{Parameters.LegWindowSize * 2}{urlKey}";
-                    if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}_{typeIndex + 1}_zoom.jpg"))
+                    for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
                     {
-                        imagesOkay = false;
-                        break;
+                        mapZoom = $"/{curPhoto.zoom + 1}";
+                        url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize=1500,1500{urlKey}";
+                        if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}_{typeIndex + 1}_zoom2.jpg"))
+                        {
+                            imagesOkay = false;
+                            break;
+                        }
+                    }
+                }
+                if (imagesOkay)
+                {
+                    for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
+                    {
+                        mapZoom = $"/{curPhoto.zoom + 2}";
+                        url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize=1500,1500{urlKey}";
+                        if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}_{typeIndex + 1}_zoom4.jpg"))
+                        {
+                            imagesOkay = false;
+                            break;
+                        }
                     }
                 }
             }
