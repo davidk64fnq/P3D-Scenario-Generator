@@ -17,32 +17,44 @@ function update(timestamp)
 	var planeHeadingDeg = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI;
 	var planeLonDeg = VarGet("A:PLANE LONGITUDE" ,"Radians") * 180 / Math.PI; // x
 	var planeLatDeg = VarGet("A:PLANE LATITUDE" ,"Radians") * 180 / Math.PI;  // y
-	zoomN = mapNorth + (mapNorth - mapSouth) * ((4 / zoomFactor - 1) * 0.5);
-	zoomE = mapEast + (mapEast - mapWest) * ((4 / zoomFactor - 1) * 0.5);
-	zoomS = mapSouth - (mapNorth - mapSouth) * ((4 / zoomFactor - 1) * 0.5);
-	zoomW = mapWest - (mapEast - mapWest) * ((4 / zoomFactor - 1) * 0.5);
-	planeTopPixels = Math.round((planeLatDeg - zoomN) / (zoomS - zoomN) * imagePixels);
-	planeLeftPixels = Math.round((planeLonDeg - zoomW) / (zoomE - zoomW) * imagePixels);
-	clipTop = planeTopPixels - (mapHeight / 2);
-	if (clipTop < 0) {
-		clipTop = 0;
-	} else if (clipTop > (imagePixels - mapHeight)) {
-		clipTop = (imagePixels - mapHeight);
+	if (zoomFactor > 1) {
+		zoomN = mapNorth + (mapNorth - mapSouth) * ((4 / zoomFactor - 1) * 0.5);
+		zoomE = mapEast + (mapEast - mapWest) * ((4 / zoomFactor - 1) * 0.5);
+		zoomS = mapSouth - (mapNorth - mapSouth) * ((4 / zoomFactor - 1) * 0.5);
+		zoomW = mapWest - (mapEast - mapWest) * ((4 / zoomFactor - 1) * 0.5);
+		planeTopPixels = Math.round((planeLatDeg - zoomN) / (zoomS - zoomN) * imagePixels);
+		planeLeftPixels = Math.round((planeLonDeg - zoomW) / (zoomE - zoomW) * imagePixels);
+		clipTop = planeTopPixels - (mapHeight / 2);
+		if (clipTop < 0) {
+			clipTop = 0;
+		} else if (clipTop > (imagePixels - mapHeight)) {
+			clipTop = (imagePixels - mapHeight);
+		}
+		clipRight = planeLeftPixels + (mapWidth / 2);
+		if (clipRight > imagePixels) {
+			clipRight = imagePixels;
+		} else if (clipRight < mapWidth) {
+			clipRight = mapWidth;
+		}
+		clipBottom = clipTop + mapHeight;
+		clipLeft = clipRight - mapWidth;
+		document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.top = '-' + clipTop + 'px';
+		document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.left = '-' + clipLeft + 'px';
+		document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.position = 'absolute';
+		document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.clip = 'rect(' + clipTop + 'px,' + clipRight + 'px,' + clipBottom + 'px,' + clipLeft + 'px)';
+		document.getElementById('plane').style.top=planeTopPixels - clipTop - 15 + "px";
+		document.getElementById('plane').style.left=planeLeftPixels - clipLeft - 15 + "px";
 	}
-	clipRight = planeLeftPixels + (mapWidth / 2);
-	if (clipRight > imagePixels) {
-		clipRight = imagePixels;
-	} else if (clipRight < mapWidth) {
-		clipRight = mapWidth;
+	else {
+		zoomN = mapNorth + (mapNorth - mapSouth) * (mapHeight - 375) / 375 * 0.5;
+		zoomE = mapEast + (mapEast - mapWest) * (mapWidth - 375) / 375 * 0.5;
+		zoomS = mapSouth - (mapNorth - mapSouth) * (mapHeight - 375) / 375 * 0.5;
+		zoomW = mapWest - (mapEast - mapWest) * (mapWidth - 375) / 375 * 0.5;
+		planeTopPixels = Math.round((planeLatDeg - zoomN) / (zoomS - zoomN) * mapHeight);
+		planeLeftPixels = Math.round((planeLonDeg - zoomW) / (zoomE - zoomW) * mapWidth);
+		document.getElementById('plane').style.top=planeTopPixels - 15 + "px";
+		document.getElementById('plane').style.left=planeLeftPixels - 15 + "px";
 	}
-	clipBottom = clipTop + mapHeight;
-	clipLeft = clipRight - mapWidth;
-	document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.top = '-' + clipTop + 'px';
-	document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.left = '-' + clipLeft + 'px';
-	document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.position = 'absolute';
-	document.getElementById(curMap + 'Zoom' + zoomFactor + 'Img').style.clip = 'rect(' + clipTop + 'px,' + clipRight + 'px,' + clipBottom + 'px,' + clipLeft + 'px)';
-	document.getElementById('plane').style.top=planeTopPixels - clipTop - 15 + "px";
-	document.getElementById('plane').style.left=planeLeftPixels - clipLeft - 15 + "px";
 	plane.style.transform = "rotate(" + planeHeadingDeg + "deg)";
 	window.requestAnimationFrame(update);
 }
@@ -160,7 +172,7 @@ function showZoom2Map() {
 	} 
 }
 
-function showZoom3Map() {
+function showZoom4Map() {
 	zoomFactor = 4;
 	document.getElementById('zoom1Button').style.display = 'inline';
 	document.getElementById('zoom2Button').style.display = 'inline';

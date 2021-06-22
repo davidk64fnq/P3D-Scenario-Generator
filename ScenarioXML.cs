@@ -14,7 +14,7 @@ namespace P3D_Scenario_Generator
 		static internal void GenerateXMLfile()
 		{
 			SetSimbaseDocumentXML();
-			Gates.SetGates();
+			Gates.SetCircuitGates();
 			SetWorldBaseFlightXML();
 			WriteXML();
 		}

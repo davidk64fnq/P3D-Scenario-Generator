@@ -81,6 +81,8 @@ namespace P3D_Scenario_Generator
             this.label11 = new System.Windows.Forms.Label();
             this.TextBoxPhotoMaxLegDist = new System.Windows.Forms.TextBox();
             this.TabPageSign = new System.Windows.Forms.TabPage();
+            this.TextBoxSignMessage = new System.Windows.Forms.TextBox();
+            this.label16 = new System.Windows.Forms.Label();
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ButtonHelp = new System.Windows.Forms.Button();
@@ -90,6 +92,7 @@ namespace P3D_Scenario_Generator
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBoxCircuit)).BeginInit();
             this.TabPagePhoto.SuspendLayout();
+            this.TabPageSign.SuspendLayout();
             this.SuspendLayout();
             // 
             // TabControl
@@ -634,12 +637,33 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageSign
             // 
+            this.TabPageSign.Controls.Add(this.TextBoxSignMessage);
+            this.TabPageSign.Controls.Add(this.label16);
             this.TabPageSign.Location = new System.Drawing.Point(4, 24);
             this.TabPageSign.Name = "TabPageSign";
             this.TabPageSign.Size = new System.Drawing.Size(812, 438);
             this.TabPageSign.TabIndex = 3;
             this.TabPageSign.Text = "Sign Writing";
             this.TabPageSign.UseVisualStyleBackColor = true;
+            // 
+            // TextBoxSignMessage
+            // 
+            this.TextBoxSignMessage.Location = new System.Drawing.Point(148, 26);
+            this.TextBoxSignMessage.Name = "TextBoxSignMessage";
+            this.TextBoxSignMessage.Size = new System.Drawing.Size(232, 23);
+            this.TextBoxSignMessage.TabIndex = 1;
+            this.TextBoxSignMessage.Text = "A";
+            this.toolTip1.SetToolTip(this.TextBoxSignMessage, "Message consisting only of alphabetic characters");
+            this.TextBoxSignMessage.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxString_Validating);
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(16, 34);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(53, 15);
+            this.label16.TabIndex = 0;
+            this.label16.Text = "Message";
             // 
             // ButtonGenerateScenario
             // 
@@ -684,6 +708,8 @@ namespace P3D_Scenario_Generator
             ((System.ComponentModel.ISupportInitialize)(this.PictureBoxCircuit)).EndInit();
             this.TabPagePhoto.ResumeLayout(false);
             this.TabPagePhoto.PerformLayout();
+            this.TabPageSign.ResumeLayout(false);
+            this.TabPageSign.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -747,6 +773,8 @@ namespace P3D_Scenario_Generator
         private System.Windows.Forms.Label label18;
         internal System.Windows.Forms.TextBox TextBoxPhotoHotspotRadius;
         private System.Windows.Forms.TabPage TabPageSign;
+        internal System.Windows.Forms.TextBox TextBoxSignMessage;
+        private System.Windows.Forms.Label label16;
     }
 }
 

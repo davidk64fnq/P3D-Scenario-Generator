@@ -33,6 +33,9 @@ namespace P3D_Scenario_Generator
         internal static double MaxBearingChange { get; set; }
         internal static double HotspotRadius { get; set; }
 
+        // Sign Writing
+        internal static string Message { get; private set; }
+
         static private bool IsValidFilename(string fileName)
         {
             return !string.IsNullOrEmpty(fileName) &&
@@ -83,7 +86,13 @@ namespace P3D_Scenario_Generator
                 HotspotRadius = Convert.ToDouble(form.TextBoxPhotoHotspotRadius.Text) * 0.3084; // Convert feet to metres
             }
 
-            if (errorMsg != "")
+            // Sign Writing
+            if (SelectedScenario == nameof(ScenarioTypes.SignWriting))
+            {
+                Message = form.TextBoxSignMessage.Text;
+            }
+
+                if (errorMsg != "")
             {
                 MessageBox.Show($"Please attend to the following:\n{errorMsg}", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;

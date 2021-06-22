@@ -87,7 +87,7 @@ namespace P3D_Scenario_Generator
                 for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
                 {
                     mapZoom = $"/{curPhoto.zoom}";
-                    url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize=1500,1500{urlKey}";
+                    url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize={Parameters.LegWindowSize},{Parameters.LegWindowSize}{urlKey}";
                     if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}_{typeIndex + 1}_zoom1.jpg"))
                     {
                         imagesOkay = false;

@@ -37,7 +37,7 @@ namespace P3D_Scenario_Generator
 
         internal static int GateCount { get; private set; }
 
-        internal static void SetGates()
+        internal static void SetCircuitGates()
         {
             // Turn radius approx speed/180, then use pythagorus to get turn distance
             double turnDistance = Parameters.Speed * Constants.feetInKnot / 180 / Math.Sin(45 * Math.PI / 180);

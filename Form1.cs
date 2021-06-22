@@ -22,6 +22,8 @@ namespace P3D_Scenario_Generator
 
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.circuitTab.jpg");
             PictureBoxCircuit.Image = new Bitmap(stream);
+
+            SignWriting.InitLetterPaths();
         }
 
         #region General Tab
@@ -211,6 +213,10 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
+        #region Sign Writing Tab
+
+        #endregion
+
         #region Utilities
 
         private void ButtonHelp_Click(object sender, EventArgs e)
@@ -277,7 +283,20 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        #endregion
+        private void TextBoxString_Validating(object sender, CancelEventArgs e)
+        {
+            if (string.IsNullOrEmpty(((TextBox)sender).Text))
+            {
+                MessageBox.Show($"Alphabetic string expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                e.Cancel = true;
+            }
 
-    }
+            for (int i = 0; i < ((TextBox)sender).Text.Length; i++)
+                if (!char.IsLetter(((TextBox)sender).Text[i]))
+                {
+                    MessageBox.Show($"Alphabetic string expected, 'A' to 'Z' and 'a' to 'z' only", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    e.Cancel = true;
+                }
+        }
+        #endregion
 }

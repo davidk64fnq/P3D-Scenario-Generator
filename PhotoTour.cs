@@ -165,24 +165,53 @@ namespace P3D_Scenario_Generator
         static internal void SetLegRouteMarker(int sourcePhotoIndex, int destPhotoIndex, int zoomFactor, string zoomSuffix)
         {
             Bitmap bm;
+            double latDeltaAbs;
+            double pixelSize;
+            int yCoord;
+            int xCoord;
 
             // Calculate circle radius in pixels
             PhotoLegParams sourcePhoto = GetPhotoLeg(sourcePhotoIndex);
             PhotoLegParams destPhoto = GetPhotoLeg(destPhotoIndex);
-            double latDeltaAbs = Math.Abs(destPhoto.northEdge - destPhoto.southEdge) * 4 / zoomFactor;
-            double pixelSize = latDeltaAbs * Constants.degreeLatFeet / 1500;
+            if (zoomFactor > 1)
+            {
+                latDeltaAbs = Math.Abs(destPhoto.northEdge - destPhoto.southEdge) * 4 / zoomFactor;
+                pixelSize = latDeltaAbs * Constants.degreeLatFeet / 1500;
+            }
+            else
+            {
+                latDeltaAbs = Math.Abs(destPhoto.northEdge - destPhoto.southEdge) * (1 + (Parameters.LegWindowSize - 375) / 375);
+                pixelSize = latDeltaAbs * Constants.degreeLatFeet / Parameters.LegWindowSize;
+            }
             int markerRadiusPixels = Convert.ToInt32(Parameters.HotspotRadius * 3.2808399 / pixelSize);
 
             // Calculate y coordinate of top left corner of bounding box
             double latDeltaCentre = destPhoto.centreLat - sourcePhoto.latitude;
-            double latDeltaPixels = latDeltaCentre / latDeltaAbs * 1500;
-            int yCoord = Convert.ToInt32(750 + latDeltaPixels) - markerRadiusPixels;
+            if (zoomFactor > 1)
+            {
+                double latDeltaPixels = latDeltaCentre / latDeltaAbs * 1500;
+                yCoord = Convert.ToInt32(750 + latDeltaPixels) - markerRadiusPixels;
+            }
+            else
+            {
+                double latDeltaPixels = latDeltaCentre / latDeltaAbs * Parameters.LegWindowSize;
+                yCoord = Convert.ToInt32(Parameters.LegWindowSize / 2 + latDeltaPixels) - markerRadiusPixels;
+            }
 
             // Calculate x coordinate of top left corner of bounding box
             double longDeltaCentre = sourcePhoto.longitude - destPhoto.centreLon;
-            double longDeltaAbs = Math.Abs(destPhoto.westEdge - destPhoto.eastEdge) * 4 / zoomFactor;
-            double longDeltaPixels = longDeltaCentre / longDeltaAbs * 1500;
-            int xCoord = Convert.ToInt32(750 + longDeltaPixels) - markerRadiusPixels;
+            if (zoomFactor > 1)
+            {
+                double longDeltaAbs = Math.Abs(destPhoto.westEdge - destPhoto.eastEdge) * 4 / zoomFactor;
+                double longDeltaPixels = longDeltaCentre / longDeltaAbs * 1500;
+                xCoord = Convert.ToInt32(750 + longDeltaPixels) - markerRadiusPixels;
+            }
+            else
+            {
+                double longDeltaAbs = Math.Abs(destPhoto.westEdge - destPhoto.eastEdge) * (1 + (Parameters.LegWindowSize - 375) / 375);
+                double longDeltaPixels = longDeltaCentre / longDeltaAbs * Parameters.LegWindowSize;
+                xCoord = Convert.ToInt32(Parameters.LegWindowSize / 2 + longDeltaPixels) - markerRadiusPixels;
+            }
 
             // Draw starting marker on overview maps
             for (int typeIndex = 0; typeIndex < 3; typeIndex++)
