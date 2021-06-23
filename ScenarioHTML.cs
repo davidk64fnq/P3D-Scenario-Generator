@@ -103,7 +103,7 @@ namespace P3D_Scenario_Generator
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{Parameters.SelectedAircraft}";
                     overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
-                    overview.Briefing += " as you take on the role of sign writer in the sky!";
+                    overview.Briefing += " as you take on the role of sign writer in the sky! ";
                     overview.Briefing += "You'll take off, fly through a series of gates to spell out a message ";
                     overview.Briefing += "and land again when you've finished. The scenario begins on runway ";
                     overview.Briefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";

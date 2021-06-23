@@ -22,8 +22,6 @@ namespace P3D_Scenario_Generator
 
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.circuitTab.jpg");
             PictureBoxCircuit.Image = new Bitmap(stream);
-
-            SignWriting.InitLetterPaths();
         }
 
         #region General Tab
@@ -86,6 +84,7 @@ namespace P3D_Scenario_Generator
                 PhotoTour.SetRandomPhotoTour();
             }
             Runway.SetRunway();
+            Gates.SetGates();
             ScenarioFXML.GenerateFXMLfile();
             ScenarioHTML.GenerateHTMLfiles();
             ScenarioXML.GenerateXMLfile();
@@ -100,7 +99,7 @@ namespace P3D_Scenario_Generator
 
         private void ButtonAircraft_Click(object sender, EventArgs e)
         {
-            List<string> uiVariations = Aircraft.GetUIvariations(); 
+            List<string> uiVariations = Aircraft.GetUIvariations();
             if (uiVariations.Count > 0)
             {
                 ListBoxAircraft.DataSource = uiVariations;
@@ -241,7 +240,7 @@ namespace P3D_Scenario_Generator
                 MessageBox.Show($"Numeric value expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 e.Cancel = true;
             }
-            if(((TextBox)sender).Name.Contains("TextBoxCircuitHeight"))
+            if (((TextBox)sender).Name.Contains("TextBoxCircuitHeight"))
             {
                 if (e.Cancel == false && !ValidateCircuitDoubleParameters())
                 {
@@ -256,7 +255,7 @@ namespace P3D_Scenario_Generator
                 }
             }
         }
-        
+
         private void TextBoxInteger_Validating(object sender, CancelEventArgs e)
         {
             int paramAsInt;
@@ -299,4 +298,5 @@ namespace P3D_Scenario_Generator
                 }
         }
         #endregion
+    }
 }

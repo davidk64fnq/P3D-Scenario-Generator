@@ -8,13 +8,11 @@ namespace P3D_Scenario_Generator
 {
 	public class ScenarioXML
     {
-		static private readonly double[] circuitHeadingAdj = { 360, 90, 90, 180, 180, 270, 270, 360 };
 		private static readonly SimBaseDocumentXML simBaseDocumentXML = new SimBaseDocumentXML();
 
 		static internal void GenerateXMLfile()
 		{
 			SetSimbaseDocumentXML();
-			Gates.SetCircuitGates();
 			SetWorldBaseFlightXML();
 			WriteXML();
 		}
@@ -108,6 +106,7 @@ namespace P3D_Scenario_Generator
             {
 				case nameof(ScenarioTypes.Circuit):
 				case nameof(ScenarioTypes.PhotoTour):
+				case nameof(ScenarioTypes.SignWriting):
 					daList.Add(new SimMissionDialogAction("Dialog_Intro_01", ScenarioHTML.overview.Briefing, "2", "Text-To-Speech", GetGUID()));
 					daList.Add(new SimMissionDialogAction("Dialog_Intro_02", ScenarioHTML.overview.Tips, "2", "Text-To-Speech", GetGUID()));
 					break;
@@ -124,6 +123,7 @@ namespace P3D_Scenario_Generator
 			{
 				case nameof(ScenarioTypes.Circuit):
 				case nameof(ScenarioTypes.PhotoTour):
+				case nameof(ScenarioTypes.SignWriting):
 					ta.AirportIdent = $"{Runway.IcaoId}";
 					break;
 				default:
@@ -139,6 +139,7 @@ namespace P3D_Scenario_Generator
 			{
 				case nameof(ScenarioTypes.Circuit):
 				case nameof(ScenarioTypes.PhotoTour):
+				case nameof(ScenarioTypes.SignWriting):
 					gList.Add(new SimMissionGoal("Goal_01", ScenarioHTML.overview.Objective, GetGUID()));
 					break;
 				default:
@@ -153,7 +154,8 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					SetGateLibraryObjects(loList, circuitHeadingAdj);
+				case nameof(ScenarioTypes.SignWriting):
+					SetGateLibraryObjects(loList);
 					break;
 				default:
 					break;
@@ -168,6 +170,7 @@ namespace P3D_Scenario_Generator
 			{
 				case nameof(ScenarioTypes.Circuit):
 				case nameof(ScenarioTypes.PhotoTour):
+				case nameof(ScenarioTypes.SignWriting):
 					saList.Add(new SimMissionOneShotSoundAction("OneShotSound_ThruHoop_01", "ThruHoop.wav", GetGUID()));
 					break;
 				default:
@@ -199,7 +202,8 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-					SetGateRectangleAreas(raList, circuitHeadingAdj);
+				case nameof(ScenarioTypes.SignWriting):
+					SetGateRectangleAreas(raList);
 					break;
 				default:
 					break;
@@ -254,6 +258,7 @@ namespace P3D_Scenario_Generator
 			{
 				case nameof(ScenarioTypes.Circuit):
 				case nameof(ScenarioTypes.PhotoTour):
+				case nameof(ScenarioTypes.SignWriting):
 					string search = "Goal_01";
 					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionGoal.FindIndex(g => g.Descr == search);
 					List<ObjectReference> orList = new List<ObjectReference>
@@ -282,6 +287,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.SignWriting):
 					SetGateObjectActivations(Constants.genGameHoopNumActiveDesc, oaaList, "Activate_Hoop_Active_0", "True");
 					SetGateObjectActivations(Constants.genGameHoopNumActiveDesc, oaaList, "Deactivate_Hoop_Active_0", "False");
 					SetGateObjectActivations(Constants.genGameHoopNumInactiveDesc, oaaList, "Activate_Hoop_Inactive_0", "True");
@@ -300,6 +306,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.SignWriting):
 					SetGatePointOfInterestObjects(poiList);
 					break;
 				default:
@@ -337,6 +344,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.SignWriting):
 					RunwayFilter rf = new RunwayFilter("Runway_Filter_01", Runway.Number, Runway.Designator);
 					List<ObjectReference> orList = new List<ObjectReference>();
 					SetGoalResolutionReference("Resolve_Goal_0X", 1, orList);
@@ -383,6 +391,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.SignWriting):
 					SetGatePOIactivationActions(paaList, $"Activate_POI_Gate_0X", "True");
 					SetGatePOIactivationActions(paaList, $"DeActivate_POI_Gate_0X", "False");
 					break;
@@ -399,6 +408,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.SignWriting):
 					List<ObjectReference> orList = new List<ObjectReference>();
 					SetObjectActivationReference("Activate_Hoop_Active_0X", 1, orList);
 					SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", 1, orList);
@@ -447,6 +457,7 @@ namespace P3D_Scenario_Generator
 			{
 				case nameof(ScenarioTypes.Circuit):
 				case nameof(ScenarioTypes.PhotoTour):
+				case nameof(ScenarioTypes.SignWriting):
 					string search = "Airport_Landing_Trigger_01";
 					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.FindIndex(alt => alt.Descr == search);
 					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].InstanceId);
@@ -475,6 +486,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.SignWriting):
 					for (int index = 0; index < Gates.GateCount; index++)
 					{
 						List<ObjectReference> orAreaList = new List<ObjectReference>();
@@ -547,6 +559,7 @@ namespace P3D_Scenario_Generator
 			{
 				case nameof(ScenarioTypes.Circuit):
 				case nameof(ScenarioTypes.PhotoTour):
+				case nameof(ScenarioTypes.SignWriting):
 					string search = "Activate_Airport_Landing_Trigger_01";
 					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(oa => oa.Descr == search);
 					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
@@ -564,6 +577,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.SignWriting):
 					SetProximityTriggerActivations(Gates.GateCount, $"Proximity_Trigger_0X", oaaList, "Activate_Proximity_Trigger_0", "True");
 					SetProximityTriggerActivations(Gates.GateCount, $"Proximity_Trigger_0X", oaaList, "Deactivate_Proximity_Trigger_0", "False");
 					break;
@@ -587,6 +601,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
+				case nameof(ScenarioTypes.SignWriting):
 					SetProximityTriggerOnEnters(Gates.GateCount);
 					break;
 				case nameof(ScenarioTypes.PhotoTour):
@@ -604,6 +619,7 @@ namespace P3D_Scenario_Generator
 			{
 				case nameof(ScenarioTypes.Circuit):
 				case nameof(ScenarioTypes.PhotoTour):
+				case nameof(ScenarioTypes.SignWriting):
 					string search = "Activate_Proximity_Trigger_01";
 					int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(pt => pt.Descr == search);
 					ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
@@ -651,15 +667,15 @@ namespace P3D_Scenario_Generator
 			orList.Add(or);
 		}
 
-		static private void SetGateLibraryObjects(List<SceneryObjectsLibraryObject> loList, double[] headingAdj)
+		static private void SetGateLibraryObjects(List<SceneryObjectsLibraryObject> loList)
 		{
 			for (int index = 0; index < Gates.GateCount; index++)
 			{
-				string orientation = SetOrientation(headingAdj[index]);
+				string orientation = SetOrientation(Gates.GetGate(index));
 
 				// Number objects
 				string descr = Constants.genGameNumBlueDesc.Replace("X", (index + 1).ToString());
-				string mdlGUID = Constants.genGameNumBlueMDLguid[index];
+				string mdlGUID = Constants.genGameNumBlueMDLguid[index % 8];
 				double vOffset = Constants.genGameNumBlueVertOffset;
 				string worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
 				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, Constants.heightAMSL, "1", GetGUID(), "True"));
@@ -743,12 +759,12 @@ namespace P3D_Scenario_Generator
             }
 		}
 
-		static private void SetGateRectangleAreas(List<SimMissionRectangleArea> raList, double[] headingAdj)
+		static private void SetGateRectangleAreas(List<SimMissionRectangleArea> raList)
 		{
 			for (int index = 0; index < Gates.GateCount; index++)
 			{
 				string descr = $"Area_Hoop_0{index + 1}";
-				string orientation = SetOrientation(headingAdj[index]);
+				string orientation = SetOrientation(Gates.GetGate(index));
 				double vOffset = Constants.genGameHoopNumActiveVertOffset;
 				string worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
 				AttachedWorldPosition wp = new AttachedWorldPosition(worldPosition, Constants.heightAMSL);
@@ -780,9 +796,9 @@ namespace P3D_Scenario_Generator
 			orList.Add(or);
 		}
 
-		static private string SetOrientation(double headingAdj)
+		static private string SetOrientation(Gate gate)
 		{
-			return $"0.0,0.0,{string.Format("{0:0.0}", (Runway.Hdg + Runway.MagVar + headingAdj) % 360)}";
+			return $"0.0,0.0,{string.Format("{0:0.0}", gate.orientation)}";
 		}
 
 		static private void SetPhotoTourCloseWindowActionObjects(List<SimMissionCloseWindowAction> cwaList)
