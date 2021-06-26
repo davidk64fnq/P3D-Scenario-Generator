@@ -408,37 +408,53 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-				case nameof(ScenarioTypes.SignWriting):
-					List<ObjectReference> orList = new List<ObjectReference>();
-					SetObjectActivationReference("Activate_Hoop_Active_0X", 1, orList);
-					SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", 1, orList);
-					SetPOIactivationActionReference("Activate_POI_Gate_0X", 1, orList);
-					SetDialogReference("Dialog_Intro_0X", 1, orList);
-					SetDialogReference("Dialog_Intro_0X", 2, orList);
-					SimMissionTimerTrigger tt = new SimMissionTimerTrigger
+					List<ObjectReference> orCircuitList = new List<ObjectReference>();
+					SetObjectActivationReference("Activate_Hoop_Active_0X", 1, orCircuitList);
+					SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", 1, orCircuitList);
+					SetPOIactivationActionReference("Activate_POI_Gate_0X", 1, orCircuitList);
+					SetDialogReference("Dialog_Intro_0X", 1, orCircuitList);
+					SetDialogReference("Dialog_Intro_0X", 2, orCircuitList);
+					SimMissionTimerTrigger circuitTT = new SimMissionTimerTrigger
 					{
 						InstanceId = GetGUID(),
 						Descr = "Timer_Trigger_01",
 						StopTime = 1.0,
 						Activated = "True",
-						Actions = new Actions(orList)
-					}; 
-					ttList.Add(tt);
+						Actions = new Actions(orCircuitList)
+					};
+					ttList.Add(circuitTT);
 					break;
 				case nameof(ScenarioTypes.PhotoTour):
-					orList = new List<ObjectReference>();
-					SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Leg_X", 1, orList);
-					SetDialogReference("Dialog_Intro_0X", 1, orList);
-					SetDialogReference("Dialog_Intro_0X", 2, orList);
-					tt = new SimMissionTimerTrigger
+					List<ObjectReference> orPhotoList = new List<ObjectReference>();
+					SetOpenWindowActionReference("Open_Scaleform_Panel_Window_Leg_X", 1, orPhotoList);
+					SetDialogReference("Dialog_Intro_0X", 1, orPhotoList);
+					SetDialogReference("Dialog_Intro_0X", 2, orPhotoList);
+					SimMissionTimerTrigger photoTT = new SimMissionTimerTrigger
 					{
 						InstanceId = GetGUID(),
 						Descr = "Timer_Trigger_01",
 						StopTime = 1.0,
 						Activated = "True",
-						Actions = new Actions(orList)
+						Actions = new Actions(orPhotoList)
 					};
-					ttList.Add(tt);
+					ttList.Add(photoTT);
+					break;
+				case nameof(ScenarioTypes.SignWriting):
+					List<ObjectReference> orSignList = new List<ObjectReference>();
+					SetObjectActivationReference("Activate_Hoop_Active_0X", 1, orSignList);
+					SetObjectActivationReference("Activate_Hoop_Inactive_0X", 2, orSignList);
+					SetPOIactivationActionReference("Activate_POI_Gate_0X", 1, orSignList);
+					SetDialogReference("Dialog_Intro_0X", 1, orSignList);
+					SetDialogReference("Dialog_Intro_0X", 2, orSignList);
+					SimMissionTimerTrigger signTT = new SimMissionTimerTrigger
+					{
+						InstanceId = GetGUID(),
+						Descr = "Timer_Trigger_01",
+						StopTime = 1.0,
+						Activated = "True",
+						Actions = new Actions(orSignList)
+					}; 
+					ttList.Add(signTT);
 					break;
 				default:
 					break;
@@ -486,7 +502,6 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.Circuit):
-				case nameof(ScenarioTypes.SignWriting):
 					for (int index = 0; index < Gates.GateCount; index++)
 					{
 						List<ObjectReference> orAreaList = new List<ObjectReference>();
@@ -535,6 +550,55 @@ namespace P3D_Scenario_Generator
 						{
 							InstanceId = GetGUID(),
 							Descr = $"Proximity_Trigger_0{index}",
+							Activated = "False",
+							Areas = a,
+							OnEnterActions = oea
+						};
+						ptList.Add(pt);
+					}
+					break;
+				case nameof(ScenarioTypes.SignWriting):
+					for (int index = 0; index < Gates.GateCount; index++)
+					{
+						List<ObjectReference> orAreaList = new List<ObjectReference>();
+						SetRectangleAreaReference("Area_Hoop_0X", index + 1, orAreaList);
+						Areas a = new Areas(orAreaList);
+						List<ObjectReference> orActionList = new List<ObjectReference>();
+						// First of gate pair marking a segment
+						if (index % 2 == 0)
+						{
+							// Make segment start gate inactive
+							SetObjectActivationReference("Activate_Hoop_Inactive_0X", index + 1, orActionList);
+							SetObjectActivationReference("Deactivate_Hoop_Active_0X", index + 1, orActionList);
+							SetPOIactivationActionReference("DeActivate_POI_Gate_0X", index + 1, orActionList);
+							// Make segment end gate active
+							SetObjectActivationReference("Activate_Hoop_Active_0X", index + 2, orActionList);
+							SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", index + 2, orActionList);
+							SetPOIactivationActionReference("Activate_POI_Gate_0X", index + 2, orActionList);
+						}
+						// Second of gate pair marking a segment
+						else
+						{
+							// Hide current inactive segment start gate
+							SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", index, orActionList);
+							// Hide current active segment end gate
+							SetObjectActivationReference("Deactivate_Hoop_Active_0X", index + 1, orActionList);
+							SetPOIactivationActionReference("DeActivate_POI_Gate_0X", index + 1, orActionList);
+							if (index + 1 < Gates.GateCount)
+							{
+								// Make next segment start gate active
+								SetObjectActivationReference("Activate_Hoop_Active_0X", index + 2, orActionList);
+								SetPOIactivationActionReference("Activate_POI_Gate_0X", index + 2, orActionList);
+								// Show next segment end gate as inactive
+								SetObjectActivationReference("Activate_Hoop_Inactive_0X", index + 3, orActionList);
+							}
+						}
+						SetSoundAction("OneShotSound_ThruHoop_0X", 1, orActionList);
+						OnEnterActions oea = new OnEnterActions(orActionList);
+						SimMissionProximityTrigger pt = new SimMissionProximityTrigger
+						{
+							InstanceId = GetGUID(),
+							Descr = $"Proximity_Trigger_0{index + 1}",
 							Activated = "False",
 							Areas = a,
 							OnEnterActions = oea
@@ -673,18 +737,11 @@ namespace P3D_Scenario_Generator
 			{
 				string orientation = SetOrientation(Gates.GetGate(index));
 
-				// Number objects
-				string descr = Constants.genGameNumBlueDesc.Replace("X", (index + 1).ToString());
-				string mdlGUID = Constants.genGameNumBlueMDLguid[index % 8];
-				double vOffset = Constants.genGameNumBlueVertOffset;
-				string worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
-				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, Constants.heightAMSL, "1", GetGUID(), "True"));
-
 				// Hoop active objects
-				descr = Constants.genGameHoopNumActiveDesc.Replace("X", (index + 1).ToString());
-				mdlGUID = Constants.genGameHoopNumActiveMDLguid;
-				vOffset = Constants.genGameHoopNumActiveVertOffset;
-				worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
+				string descr = Constants.genGameHoopNumActiveDesc.Replace("X", (index + 1).ToString());
+				string mdlGUID = Constants.genGameHoopNumActiveMDLguid;
+				double vOffset = Constants.genGameHoopNumActiveVertOffset;
+				string worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
 				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, Constants.heightAMSL, "1", GetGUID(), "False"));
 
 				// Hoop inactive objects
@@ -692,7 +749,22 @@ namespace P3D_Scenario_Generator
 				mdlGUID = Constants.genGameHoopNumInactiveMDLguid;
 				vOffset = Constants.genGameHoopNumInactiveVertOffset;
 				worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
-				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, Constants.heightAMSL, "1", GetGUID(), "True"));
+				string isActivated = "False";
+				if (Parameters.SelectedScenario == nameof(ScenarioTypes.Circuit))
+                {
+					isActivated = "True";
+				}
+				loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, Constants.heightAMSL, "1", GetGUID(), isActivated));
+
+				// Number objects
+				if (Parameters.SelectedScenario == nameof(ScenarioTypes.Circuit))
+                {
+					descr = Constants.genGameNumBlueDesc.Replace("X", (index + 1).ToString());
+					mdlGUID = Constants.genGameNumBlueMDLguid[index];
+					vOffset = Constants.genGameNumBlueVertOffset;
+					worldPosition = SetWorldPosition(Gates.GetGate(index), vOffset);
+					loList.Add(new SceneryObjectsLibraryObject(descr, mdlGUID, worldPosition, orientation, Constants.heightAMSL, "1", GetGUID(), "True"));
+                }
 			}
 		}
 
@@ -742,7 +814,7 @@ namespace P3D_Scenario_Generator
 		{
 			for (int index = 0; index < Gates.GateCount; index++)
 			{
-				string search = Constants.genGameNumBlueDesc.Replace("X", (index + 1).ToString());
+				string search = Constants.genGameHoopNumActiveDesc.Replace("X", (index + 1).ToString());
 				int idIndex = simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject.FindIndex(lo => lo.Descr == search);
 				ObjectReference or = new ObjectReference
 				{
@@ -798,7 +870,7 @@ namespace P3D_Scenario_Generator
 
 		static private string SetOrientation(Gate gate)
 		{
-			return $"0.0,0.0,{string.Format("{0:0.0}", gate.orientation)}";
+			return $"{string.Format("{0:0.0}", gate.pitch)},0.0,{string.Format("{0:0.0}", gate.orientation)}";
 		}
 
 		static private void SetPhotoTourCloseWindowActionObjects(List<SimMissionCloseWindowAction> cwaList)
@@ -1970,6 +2042,66 @@ namespace P3D_Scenario_Generator
 		public Actions Actions { get; set; }
 	}
 
+	[XmlRoot(ElementName = "TriggerValue")]
+	public class TriggerValue
+	{
+
+		[XmlElement(ElementName = "Constant")]
+		public Constant Constant { get; set; }
+	}
+
+	[XmlRoot(ElementName = "TriggerCondition")]
+	public class TriggerCondition
+	{
+
+		[XmlElement(ElementName = "Actions")]
+		public Actions Actions { get; set; }
+
+		[XmlElement(ElementName = "TriggerValue")]
+		public TriggerValue TriggerValue { get; set; }
+	}
+
+
+	[XmlRoot(ElementName = "SimMission.ScenarioVariable")]
+	public class SimMissionScenarioVariable
+	{
+
+		[XmlElement(ElementName = "TriggerCondition")]
+		public List<TriggerCondition> TriggerCondition { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlText]
+		public string Text { get; set; }
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "Name")]
+		public string Name { get; set; }
+
+		[XmlElement(ElementName = "VariableValue")]
+		public string VariableValue { get; set; }
+	}
+
+	[XmlRoot(ElementName = "SimMission.ScriptAction")]
+	public class SimMissionScriptAction
+	{
+
+		[XmlElement(ElementName = "Descr")]
+		public string Descr { get; set; }
+
+		[XmlElement(ElementName = "Script")]
+		public string Script { get; set; }
+
+		[XmlAttribute(AttributeName = "InstanceId")]
+		public string InstanceId { get; set; }
+
+		[XmlText]
+		public string Text { get; set; }
+	}
+
 	[XmlRoot(ElementName = "SimMissionUI.ScenarioMetadata")]
 	public class SimMissionUIScenarioMetadata
 	{
@@ -2092,6 +2224,12 @@ namespace P3D_Scenario_Generator
 
 		[XmlElement(ElementName = "SimMission.ScaleformPanelWindow")]
 		public List<SimMissionScaleformPanelWindow> SimMissionScaleformPanelWindow { get; set; }
+
+		[XmlElement(ElementName = "SimMission.ScenarioVariable")]
+		public List<SimMissionScenarioVariable> SimMissionScenarioVariable { get; set; }
+
+		[XmlElement(ElementName = "SimMission.ScriptAction")]
+		public SimMissionScriptAction SimMissionScriptAction { get; set; }
 
 		[XmlElement(ElementName = "SimMission.TimerTrigger")]
 		public List<SimMissionTimerTrigger> SimMissionTimerTrigger { get; set; }

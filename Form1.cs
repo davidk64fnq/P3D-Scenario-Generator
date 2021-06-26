@@ -214,6 +214,16 @@ namespace P3D_Scenario_Generator
 
         #region Sign Writing Tab
 
+        static private bool ValidateSignWritingParameters()
+        {
+            if (Convert.ToInt32(form.TextBoxSignTilt.Text) > 90)
+            {
+                MessageBox.Show($"Tilt angle is limited to between 0 and 90 degrees inclusive", "Sign Writing Scenario: tilt angle", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            return true;
+        }
+
         #endregion
 
         #region Utilities
@@ -276,6 +286,13 @@ namespace P3D_Scenario_Generator
             if (((TextBox)sender).Name.Contains("TextBoxPhoto") && (((TextBox)sender).Name.Contains("NoLegs") || ((TextBox)sender).Name.Contains("MaxBearingChange")))
             {
                 if (e.Cancel == false && !ValidatePhotoIntegerParameters())
+                {
+                    e.Cancel = true;
+                }
+            }
+            else if (((TextBox)sender).Name.Contains("TextBoxSignTilt"))
+            {
+                if (e.Cancel == false && !ValidateSignWritingParameters())
                 {
                     e.Cancel = true;
                 }

@@ -35,6 +35,7 @@ namespace P3D_Scenario_Generator
 
         // Sign Writing
         internal static string Message { get; private set; }
+        internal static double TiltAngle { get; private set; }
 
         static private bool IsValidFilename(string fileName)
         {
@@ -90,6 +91,7 @@ namespace P3D_Scenario_Generator
             if (SelectedScenario == nameof(ScenarioTypes.SignWriting))
             {
                 Message = form.TextBoxSignMessage.Text;
+                TiltAngle = Convert.ToDouble(form.TextBoxSignTilt.Text);
             }
 
                 if (errorMsg != "")

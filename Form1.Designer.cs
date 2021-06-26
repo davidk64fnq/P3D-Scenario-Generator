@@ -81,6 +81,8 @@ namespace P3D_Scenario_Generator
             this.label11 = new System.Windows.Forms.Label();
             this.TextBoxPhotoMaxLegDist = new System.Windows.Forms.TextBox();
             this.TabPageSign = new System.Windows.Forms.TabPage();
+            this.TextBoxSignTilt = new System.Windows.Forms.TextBox();
+            this.label19 = new System.Windows.Forms.Label();
             this.TextBoxSignMessage = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
@@ -637,6 +639,8 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageSign
             // 
+            this.TabPageSign.Controls.Add(this.TextBoxSignTilt);
+            this.TabPageSign.Controls.Add(this.label19);
             this.TabPageSign.Controls.Add(this.TextBoxSignMessage);
             this.TabPageSign.Controls.Add(this.label16);
             this.TabPageSign.Location = new System.Drawing.Point(4, 24);
@@ -645,6 +649,25 @@ namespace P3D_Scenario_Generator
             this.TabPageSign.TabIndex = 3;
             this.TabPageSign.Text = "Sign Writing";
             this.TabPageSign.UseVisualStyleBackColor = true;
+            // 
+            // TextBoxSignTilt
+            // 
+            this.TextBoxSignTilt.Location = new System.Drawing.Point(148, 71);
+            this.TextBoxSignTilt.Name = "TextBoxSignTilt";
+            this.TextBoxSignTilt.Size = new System.Drawing.Size(100, 23);
+            this.TextBoxSignTilt.TabIndex = 3;
+            this.TextBoxSignTilt.Text = "0";
+            this.TextBoxSignTilt.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(16, 79);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(57, 15);
+            this.label19.TabIndex = 2;
+            this.label19.Text = "Tilt Angle";
+            this.toolTip1.SetToolTip(this.label19, "Tilt Angle in degrees from horizontal");
             // 
             // TextBoxSignMessage
             // 
@@ -775,6 +798,8 @@ namespace P3D_Scenario_Generator
         private System.Windows.Forms.TabPage TabPageSign;
         internal System.Windows.Forms.TextBox TextBoxSignMessage;
         private System.Windows.Forms.Label label16;
+        internal System.Windows.Forms.TextBox TextBoxSignTilt;
+        private System.Windows.Forms.Label label19;
     }
 }
 
