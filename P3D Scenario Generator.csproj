@@ -19,8 +19,11 @@
     <None Remove="PhotoTour_LegRoute.html" />
     <None Remove="runways.xml" />
     <None Remove="scriptsMovingMap.js" />
+    <None Remove="scriptsSignWriting.js" />
+    <None Remove="SignWriting.html" />
     <None Remove="source.fxml" />
     <None Remove="styleMovingMap.css" />
+    <None Remove="styleSignWriting.css" />
     <None Remove="style_kneeboard.css" />
     <None Remove="style_load_flight.css" />
     <None Remove="success-icon.png" />
@@ -38,8 +41,11 @@
     <EmbeddedResource Include="PhotoTour_LegRoute.html" />
     <EmbeddedResource Include="runways.xml" />
     <EmbeddedResource Include="scriptsMovingMap.js" />
+    <EmbeddedResource Include="scriptsSignWriting.js" />
+    <EmbeddedResource Include="SignWriting.html" />
     <EmbeddedResource Include="source.fxml" />
     <EmbeddedResource Include="styleMovingMap.css" />
+    <EmbeddedResource Include="styleSignWriting.css" />
     <EmbeddedResource Include="style_kneeboard.css" />
     <EmbeddedResource Include="style_load_flight.css" />
     <EmbeddedResource Include="success-icon.png" />

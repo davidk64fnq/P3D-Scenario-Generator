@@ -47,6 +47,7 @@ namespace P3D_Scenario_Generator
 			SetRectangleArea();
 			SetScaleformPanelWindow();
 			SetScenarioMetadata();
+			SetScenarioVariable();
 			SetRealismOverrides();
 		}
 
@@ -219,6 +220,9 @@ namespace P3D_Scenario_Generator
 				case nameof(ScenarioTypes.PhotoTour):
 					SetPhotoTourScaleformPanelWindow(spwList);
 					break;
+				case nameof(ScenarioTypes.SignWriting):
+					SetSignWritingScaleformPanelWindow(spwList);
+					break;
 				default:
 					break;
 			}
@@ -244,6 +248,22 @@ namespace P3D_Scenario_Generator
 				UserCrashMessage = $"Yikes! You crashed and therefore failed the \"{Parameters.SelectedScenario}\" scenario objectives."
 			};
 			simBaseDocumentXML.WorldBaseFlight.SimMissionUIScenarioMetadata = md;
+		}
+		
+		static private void SetScenarioVariable()
+		{
+			List<SimMissionScenarioVariable> svList = new List<SimMissionScenarioVariable>();
+			SimMissionScenarioVariable sv = new SimMissionScenarioVariable(); 
+			switch (Parameters.SelectedScenario)
+			{
+				case nameof(ScenarioTypes.SignWriting):
+					sv = new SimMissionScenarioVariable(null, GetGUID(), "", "Smoke on/off variable", "smokeOn", "False");
+					break;
+				default:
+					break;
+			}
+			svList.Add(sv);
+			simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable = svList;
 		}
 
 		#endregion
@@ -325,6 +345,10 @@ namespace P3D_Scenario_Generator
 				case nameof(ScenarioTypes.PhotoTour):
 					SetPhotoTourOpenWindowActionObjects(owaList);
 					SetPhotoTourCloseWindowActionObjects(cwaList);
+					break;
+				case nameof(ScenarioTypes.SignWriting):
+					SetSignWritingOpenWindowActionObjects(owaList);
+					SetSignWritingCloseWindowActionObjects(cwaList);
 					break;
 				default:
 					break;
@@ -441,6 +465,7 @@ namespace P3D_Scenario_Generator
 					break;
 				case nameof(ScenarioTypes.SignWriting):
 					List<ObjectReference> orSignList = new List<ObjectReference>();
+					SetOpenWindowActionReference("Open_Scaleform_Panel_Window_SignWriting", 1, orSignList);
 					SetObjectActivationReference("Activate_Hoop_Active_0X", 1, orSignList);
 					SetObjectActivationReference("Activate_Hoop_Inactive_0X", 2, orSignList);
 					SetPOIactivationActionReference("Activate_POI_Gate_0X", 1, orSignList);
@@ -1088,6 +1113,80 @@ namespace P3D_Scenario_Generator
 			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.FindIndex(ra => ra.Descr == search);
 			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea[idIndex].InstanceId);
 			orList.Add(or);
+		}
+
+		static private void SetSignWritingCloseWindowActionObjects(List<SimMissionCloseWindowAction> cwaList)
+		{
+			string search = $"Scaleform_Panel_Window_SignWriting";
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
+			SimMissionCloseWindowAction cwa = new SimMissionCloseWindowAction
+			{
+				Descr = $"Close_Scaleform_Panel_Window_SignWriting",
+				ObjectReference = or,
+				InstanceId = GetGUID()
+			};
+			cwaList.Add(cwa);
+		}
+
+		static private void SetSignWritingHTML(string saveLocation)
+		{
+			string signWritingHTML;
+
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.SignWriting.html");
+			StreamReader reader = new StreamReader(stream);
+			signWritingHTML = reader.ReadToEnd();
+			File.WriteAllText(saveLocation, signWritingHTML);
+			stream.Dispose();
+		}
+
+		static private void SetSignWritingJS(string saveLocation)
+		{
+			string signWritingJS;
+
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.scriptsSignWriting.js");
+			StreamReader reader = new StreamReader(stream);
+			signWritingJS = reader.ReadToEnd();
+			File.WriteAllText(saveLocation, signWritingJS);
+			stream.Dispose();
+		}
+
+		static private void SetSignWritingCSS(string saveLocation)
+		{
+			string signWritingCSS;
+
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.styleSignWriting.css");
+			StreamReader reader = new StreamReader(stream);
+			signWritingCSS = reader.ReadToEnd();
+			File.WriteAllText(saveLocation, signWritingCSS);
+			stream.Dispose();
+		}
+		static private void SetSignWritingOpenWindowActionObjects(List<SimMissionOpenWindowAction> owaList)
+		{
+				string search = $"Scaleform_Panel_Window_SignWriting";
+				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
+				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
+				SetWindowSize sws = new SetWindowSize("1000", "300");
+				SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
+				{
+					Descr = $"Open_Scaleform_Panel_Window_SignWriting",
+					SetWindowSize = sws,
+					ObjectReference = or,
+					InstanceId = GetGUID()
+				};
+				owaList.Add(owa);
+		}
+
+		static private void SetSignWritingScaleformPanelWindow(List<SimMissionScaleformPanelWindow> spwList)
+		{
+			string descr = $"Scaleform_Panel_Window_SignWriting";
+			string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\htmlSignWriting.html";
+			SetSignWritingHTML(saveLocation);
+			saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsSignWriting.js";
+			SetSignWritingJS(saveLocation);
+			saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleSignWriting.css";
+			SetSignWritingCSS(saveLocation);
+			spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\htmlSignWriting.html", GetGUID(), "window.swf", "False"));
 		}
 
 		static private void SetSoundAction(string objectName, int index, List<ObjectReference> orList)
@@ -2061,10 +2160,22 @@ namespace P3D_Scenario_Generator
 		public TriggerValue TriggerValue { get; set; }
 	}
 
-
 	[XmlRoot(ElementName = "SimMission.ScenarioVariable")]
 	public class SimMissionScenarioVariable
 	{
+		public SimMissionScenarioVariable(List<TriggerCondition> v1, string v2, string v3, string v4, string v5, string v6)
+		{
+			TriggerCondition = v1;
+			InstanceId = v2;
+			Text = v3;
+			Descr = v4;
+			Name = v5;
+			VariableValue = v6;
+		}
+
+		public SimMissionScenarioVariable()
+		{
+		}
 
 		[XmlElement(ElementName = "TriggerCondition")]
 		public List<TriggerCondition> TriggerCondition { get; set; }
