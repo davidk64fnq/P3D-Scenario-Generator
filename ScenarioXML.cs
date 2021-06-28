@@ -44,11 +44,12 @@ namespace P3D_Scenario_Generator
 			SetGoal();
 			SetLibraryObject();
 			SetOneShotSoundAction();
+			SetRealismOverrides();
 			SetRectangleArea();
 			SetScaleformPanelWindow();
 			SetScenarioMetadata();
 			SetScenarioVariable();
-			SetRealismOverrides();
+			SetScriptAction();
 		}
 
 		static private void SetSecondPassObjects()
@@ -249,7 +250,7 @@ namespace P3D_Scenario_Generator
 			};
 			simBaseDocumentXML.WorldBaseFlight.SimMissionUIScenarioMetadata = md;
 		}
-		
+
 		static private void SetScenarioVariable()
 		{
 			List<SimMissionScenarioVariable> svList = new List<SimMissionScenarioVariable>();
@@ -257,7 +258,7 @@ namespace P3D_Scenario_Generator
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.SignWriting):
-					sv = new SimMissionScenarioVariable(null, GetGUID(), "", "Smoke on/off variable", "smokeOn", "False");
+					sv = new SimMissionScenarioVariable(null, GetGUID(), "", "Smoke on/off variable", "smokeOn", "0");
 					break;
 				default:
 					break;
@@ -266,6 +267,19 @@ namespace P3D_Scenario_Generator
 			simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable = svList;
 		}
 
+		static private void SetScriptAction()
+		{
+			SimMissionScriptAction sa = new SimMissionScriptAction();
+			switch (Parameters.SelectedScenario)
+			{
+				case nameof(ScenarioTypes.SignWriting):
+					sa = new SimMissionScriptAction("Smoke on/off script", "!lua local var smokeOn = varget(\"S:smokeOn\", \"NUMBER\") if smokeOn == 1 then varset(\"S:smokeOn\", \"NUMBER\", 0) else varset(\"S:smokeOn\", \"NUMBER\", 1) end", GetGUID(), "");
+					break;
+				default:
+					break;
+			}
+			simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction = sa;
+		}
 		#endregion
 
 		#region Second pass object creation/editing
@@ -592,6 +606,8 @@ namespace P3D_Scenario_Generator
 						// First of gate pair marking a segment
 						if (index % 2 == 0)
 						{
+							// Turn smoke on
+							SetScriptActionReference("Smoke on/off script", orActionList);
 							// Make segment start gate inactive
 							SetObjectActivationReference("Activate_Hoop_Inactive_0X", index + 1, orActionList);
 							SetObjectActivationReference("Deactivate_Hoop_Active_0X", index + 1, orActionList);
@@ -604,6 +620,8 @@ namespace P3D_Scenario_Generator
 						// Second of gate pair marking a segment
 						else
 						{
+							// Turn smoke off
+							SetScriptActionReference("Smoke on/off script", orActionList);
 							// Hide current inactive segment start gate
 							SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", index, orActionList);
 							// Hide current active segment end gate
@@ -1112,6 +1130,12 @@ namespace P3D_Scenario_Generator
 			string search = objectName.Replace("X", index.ToString());
 			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.FindIndex(ra => ra.Descr == search);
 			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea[idIndex].InstanceId);
+			orList.Add(or);
+		}
+
+		static private void SetScriptActionReference(string objectName, List<ObjectReference> orList)
+		{
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction.InstanceId);
 			orList.Add(or);
 		}
 
@@ -2141,25 +2165,6 @@ namespace P3D_Scenario_Generator
 		public Actions Actions { get; set; }
 	}
 
-	[XmlRoot(ElementName = "TriggerValue")]
-	public class TriggerValue
-	{
-
-		[XmlElement(ElementName = "Constant")]
-		public Constant Constant { get; set; }
-	}
-
-	[XmlRoot(ElementName = "TriggerCondition")]
-	public class TriggerCondition
-	{
-
-		[XmlElement(ElementName = "Actions")]
-		public Actions Actions { get; set; }
-
-		[XmlElement(ElementName = "TriggerValue")]
-		public TriggerValue TriggerValue { get; set; }
-	}
-
 	[XmlRoot(ElementName = "SimMission.ScenarioVariable")]
 	public class SimMissionScenarioVariable
 	{
@@ -2199,6 +2204,17 @@ namespace P3D_Scenario_Generator
 	[XmlRoot(ElementName = "SimMission.ScriptAction")]
 	public class SimMissionScriptAction
 	{
+		public SimMissionScriptAction(string v1, string v2, string v3, string v4)
+		{
+			Descr = v1;
+			Script = v2;
+			InstanceId = v3;
+			Text = v4;
+		}
+
+		public SimMissionScriptAction()
+		{
+		}
 
 		[XmlElement(ElementName = "Descr")]
 		public string Descr { get; set; }
@@ -2270,6 +2286,25 @@ namespace P3D_Scenario_Generator
 
 		[XmlElement(ElementName = "AirportIdent")]
 		public string AirportIdent { get; set; }
+	}
+
+	[XmlRoot(ElementName = "TriggerCondition")]
+	public class TriggerCondition
+	{
+
+		[XmlElement(ElementName = "Actions")]
+		public Actions Actions { get; set; }
+
+		[XmlElement(ElementName = "TriggerValue")]
+		public TriggerValue TriggerValue { get; set; }
+	}
+
+	[XmlRoot(ElementName = "TriggerValue")]
+	public class TriggerValue
+	{
+
+		[XmlElement(ElementName = "Constant")]
+		public Constant Constant { get; set; }
 	}
 
 	[XmlRoot(ElementName = "WorldBase.Flight")]
