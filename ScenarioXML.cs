@@ -607,7 +607,7 @@ namespace P3D_Scenario_Generator
 						if (index % 2 == 0)
 						{
 							// Turn smoke on
-							SetScriptActionReference("Smoke on/off script", orActionList);
+							SetScriptActionReference(orActionList);
 							// Make segment start gate inactive
 							SetObjectActivationReference("Activate_Hoop_Inactive_0X", index + 1, orActionList);
 							SetObjectActivationReference("Deactivate_Hoop_Active_0X", index + 1, orActionList);
@@ -621,7 +621,7 @@ namespace P3D_Scenario_Generator
 						else
 						{
 							// Turn smoke off
-							SetScriptActionReference("Smoke on/off script", orActionList);
+							SetScriptActionReference(orActionList);
 							// Hide current inactive segment start gate
 							SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", index, orActionList);
 							// Hide current active segment end gate
@@ -996,8 +996,8 @@ namespace P3D_Scenario_Generator
 			legRouteJS = legRouteJS.Replace("mapSouthX", photoLeg.southEdge.ToString());
 			legRouteJS = legRouteJS.Replace("mapWestX", photoLeg.westEdge.ToString());
 			legRouteJS = legRouteJS.Replace("mapWestX", photoLeg.westEdge.ToString());
-			legRouteJS = legRouteJS.Replace("mapWidthX", Parameters.LegWindowSize.ToString());
-			legRouteJS = legRouteJS.Replace("mapHeightX", Parameters.LegWindowSize.ToString());
+			legRouteJS = legRouteJS.Replace("mapWidthX", Parameters.PhotoLegWindowSize.ToString());
+			legRouteJS = legRouteJS.Replace("mapHeightX", Parameters.PhotoLegWindowSize.ToString());
 			File.WriteAllText(saveLocation, legRouteJS);
 			stream.Dispose();
 		}
@@ -1009,8 +1009,8 @@ namespace P3D_Scenario_Generator
 			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.styleMovingMap.css");
 			StreamReader reader = new StreamReader(stream);
 			legRouteCSS = reader.ReadToEnd();
-			legRouteCSS = legRouteCSS.Replace("mapWidthX", Parameters.LegWindowSize.ToString());
-			legRouteCSS = legRouteCSS.Replace("mapHeightX", Parameters.LegWindowSize.ToString());
+			legRouteCSS = legRouteCSS.Replace("mapWidthX", Parameters.PhotoLegWindowSize.ToString());
+			legRouteCSS = legRouteCSS.Replace("mapHeightX", Parameters.PhotoLegWindowSize.ToString());
 			File.WriteAllText(saveLocation, legRouteCSS);
 			stream.Dispose();
 		}
@@ -1022,7 +1022,7 @@ namespace P3D_Scenario_Generator
 				string search = $"Scaleform_Panel_Window_Leg_{index}";
 				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
 				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
-				SetWindowSize sws = new SetWindowSize((Parameters.LegWindowSize + 15).ToString(), (Parameters.LegWindowSize + 65).ToString());
+				SetWindowSize sws = new SetWindowSize((Parameters.PhotoLegWindowSize + 15).ToString(), (Parameters.PhotoLegWindowSize + 65).ToString());
 				SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 				{
 					Descr = $"Open_Scaleform_Panel_Window_Leg_{index}",
@@ -1133,7 +1133,7 @@ namespace P3D_Scenario_Generator
 			orList.Add(or);
 		}
 
-		static private void SetScriptActionReference(string objectName, List<ObjectReference> orList)
+		static private void SetScriptActionReference(List<ObjectReference> orList)
 		{
 			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction.InstanceId);
 			orList.Add(or);
@@ -1160,6 +1160,16 @@ namespace P3D_Scenario_Generator
 			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.SignWriting.html");
 			StreamReader reader = new StreamReader(stream);
 			signWritingHTML = reader.ReadToEnd();
+			signWritingHTML = signWritingHTML.Replace("canvasWidthX", Parameters.MessageWindowWidth.ToString());
+			signWritingHTML = signWritingHTML.Replace("canvasHeightX", Parameters.MessageWindowHeight.ToString());
+			signWritingHTML = signWritingHTML.Replace("mapNorthX", (Runway.AirportLat + Gates.unitSegment * 4).ToString());
+			signWritingHTML = signWritingHTML.Replace("mapEastX", (Runway.AirportLon + Gates.unitSegment * 3 * Parameters.Message.Length).ToString());
+			signWritingHTML = signWritingHTML.Replace("mapSouthX", Runway.AirportLat.ToString());
+			signWritingHTML = signWritingHTML.Replace("mapWestX", Runway.AirportLon.ToString());
+			signWritingHTML = signWritingHTML.Replace("mapWidthX", Parameters.MessageWindowWidth.ToString());
+			signWritingHTML = signWritingHTML.Replace("mapHeightX", Parameters.MessageWindowHeight.ToString());
+			signWritingHTML = signWritingHTML.Replace("messageLengthX", Parameters.Message.Length.ToString());
+			signWritingHTML = signWritingHTML.Replace("magVarX", Runway.MagVar.ToString());
 			File.WriteAllText(saveLocation, signWritingHTML);
 			stream.Dispose();
 		}
@@ -1185,12 +1195,13 @@ namespace P3D_Scenario_Generator
 			File.WriteAllText(saveLocation, signWritingCSS);
 			stream.Dispose();
 		}
+		
 		static private void SetSignWritingOpenWindowActionObjects(List<SimMissionOpenWindowAction> owaList)
 		{
 				string search = $"Scaleform_Panel_Window_SignWriting";
 				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
 				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
-				SetWindowSize sws = new SetWindowSize("1000", "300");
+				SetWindowSize sws = new SetWindowSize(Parameters.MessageWindowWidth.ToString(), Parameters.MessageWindowHeight.ToString());
 				SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 				{
 					Descr = $"Open_Scaleform_Panel_Window_SignWriting",

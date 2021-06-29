@@ -29,13 +29,15 @@ namespace P3D_Scenario_Generator
         internal static double MinNoLegs { get; private set; }
         internal static double MaxNoLegs { get; private set; }
         internal static string DestRunway { get; set; }
-        internal static double LegWindowSize { get; set; }
+        internal static double PhotoLegWindowSize { get; set; }
         internal static double MaxBearingChange { get; set; }
         internal static double HotspotRadius { get; set; }
 
         // Sign Writing
         internal static string Message { get; private set; }
         internal static double TiltAngle { get; private set; }
+        internal static double MessageWindowHeight { get; set; }
+        internal static double MessageWindowWidth { get; set; }
 
         static private bool IsValidFilename(string fileName)
         {
@@ -82,7 +84,7 @@ namespace P3D_Scenario_Generator
                 MinLegDist = Convert.ToDouble(form.TextBoxPhotoMinLegDist.Text);
                 MinNoLegs = Convert.ToDouble(form.TextBoxPhotoMinNoLegs.Text);
                 MaxNoLegs = Convert.ToDouble(form.TextBoxPhotoMaxNoLegs.Text);
-                LegWindowSize = Convert.ToDouble(form.TextBoxPhotoWindowSize.Text);
+                PhotoLegWindowSize = Convert.ToDouble(form.TextBoxPhotoWindowSize.Text);
                 MaxBearingChange = Convert.ToDouble(form.TextBoxPhotoMaxBearingChange.Text);
                 HotspotRadius = Convert.ToDouble(form.TextBoxPhotoHotspotRadius.Text) * 0.3084; // Convert feet to metres
             }
@@ -92,6 +94,8 @@ namespace P3D_Scenario_Generator
             {
                 Message = form.TextBoxSignMessage.Text;
                 TiltAngle = Convert.ToDouble(form.TextBoxSignTilt.Text);
+                MessageWindowHeight = Convert.ToDouble(form.TextBoxSignWindowHeight.Text);
+                MessageWindowWidth = Convert.ToDouble(form.TextBoxSignWindowWidth.Text);
             }
 
                 if (errorMsg != "")

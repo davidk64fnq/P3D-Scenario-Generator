@@ -41,7 +41,7 @@ namespace P3D_Scenario_Generator
     {
         private static readonly List<Gate> gates = new List<Gate>();
         private static readonly int signLetterNoGates = 32;
-        private static readonly double unitSegment = 40.0 / 3600;   // approx 4000ft or 40 secs of latitude
+        internal static readonly double unitSegment = 40.0 / 3600;   // approx 4000ft or 40 secs of latitude
 
         internal static int GateCount { get; private set; }
 
@@ -120,43 +120,43 @@ namespace P3D_Scenario_Generator
 
         internal static void SetSignGatesSingleLetter()
         {
-            double junctionRadius = 2.0 / 3600;     // approx 200ft or 2 seconds of latitude
+            double junctionRadius = 4.0 / 3600;     // approx 400ft or 4 seconds of latitude
             double diagonalAngle = Math.Atan(2.0) * 180 / Math.PI;
             double shortRadius = junctionRadius * Math.Cos(diagonalAngle * Math.PI / 180); // used to position start and finish of diagonal segments
             double longRadius = junctionRadius * Math.Sin(diagonalAngle * Math.PI / 180);
 
-            gates.Add(new Gate(0, junctionRadius, 0, 0, 90));                                                                      // Start segment 1
-            gates.Add(new Gate(0, unitSegment - junctionRadius, 0, 0, 90));                                                        // Finish segment 1
-            gates.Add(new Gate(0, unitSegment + junctionRadius, 0, 0, 90));                                                        // Start segment 2
-            gates.Add(new Gate(0, unitSegment * 2 - junctionRadius, 0, 0, 90));                                                    // Finish segment 2
-            gates.Add(new Gate(unitSegment * 2, unitSegment * 2 - junctionRadius, 0, 0, 270));                                     // Start segment 3
-            gates.Add(new Gate(unitSegment * 2, unitSegment + junctionRadius, 0, 0, 270));                                         // Finish segment 3
-            gates.Add(new Gate(unitSegment * 2, unitSegment - junctionRadius, 0, 0, 270));                                         // Start segment 4
-            gates.Add(new Gate(unitSegment * 2, junctionRadius, 0, 0, 270));                                                       // Finish segment 4
-            gates.Add(new Gate(unitSegment * 4, junctionRadius, 0, 0, 90));                                                        // Start segment 5
-            gates.Add(new Gate(unitSegment * 4, unitSegment - junctionRadius, 0, 0, 90));                                          // Finish segment 5
-            gates.Add(new Gate(unitSegment * 4, unitSegment + junctionRadius, 0, 0, 90));                                          // Start segment 6
-            gates.Add(new Gate(unitSegment * 4, unitSegment * 2 - junctionRadius, 0, 0, 90));                                      // Finish segment 6
-            gates.Add(new Gate(unitSegment * 4 - longRadius, shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));                              // Start segment 7
-            gates.Add(new Gate(unitSegment * 2 + longRadius, unitSegment - shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));                // Finish segment 7
-            gates.Add(new Gate(unitSegment * 2 - longRadius, unitSegment + shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));                // Start segment 8
-            gates.Add(new Gate(longRadius, unitSegment * 2 - shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));                              // Finish segment 8
-            gates.Add(new Gate(longRadius, shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));                                                // Start segment 9
-            gates.Add(new Gate(unitSegment * 2 - longRadius, unitSegment - shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));                // Finish segment 9
-            gates.Add(new Gate(unitSegment * 2 + longRadius, unitSegment + shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));                // Start segment 10
-            gates.Add(new Gate(unitSegment * 4 - longRadius, unitSegment * 2 - shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));            // Finish segment 10
-            gates.Add(new Gate(unitSegment * 4 - junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                                   // Start segment 11
-            gates.Add(new Gate(unitSegment * 2 + junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                                   // Finish segment 11
-            gates.Add(new Gate(unitSegment * 2 - junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                                   // Start segment 12
-            gates.Add(new Gate(junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                                                     // Finish segment 12
-            gates.Add(new Gate(junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                                             // Start segment 13
-            gates.Add(new Gate(unitSegment * 2 - junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                           // Finish segment 13
-            gates.Add(new Gate(unitSegment * 2 + junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                           // Start segment 14
-            gates.Add(new Gate(unitSegment * 4 - junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                           // Finish segment 14
-            gates.Add(new Gate(unitSegment * 4 - junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                                     // Start segment 15
-            gates.Add(new Gate(unitSegment * 2 + junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                                     // Finish segment 15
-            gates.Add(new Gate(unitSegment * 2 - junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                                     // Start segment 16
-            gates.Add(new Gate(junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                                                       // Finish segment 16
+            gates.Add(new Gate(0, junctionRadius, 0, 0, 90));                                                                                   // Start segment 1
+            gates.Add(new Gate(0, unitSegment - junctionRadius, 0, 0, 90));                                                                     // Finish segment 1
+            gates.Add(new Gate(0, unitSegment + junctionRadius, 0, 0, 90));                                                                     // Start segment 2
+            gates.Add(new Gate(0, unitSegment * 2 - junctionRadius, 0, 0, 90));                                                                 // Finish segment 2
+            gates.Add(new Gate(unitSegment * 2, unitSegment * 2 - junctionRadius, 0, 0, 270));                                                  // Start segment 3
+            gates.Add(new Gate(unitSegment * 2, unitSegment + junctionRadius, 0, 0, 270));                                                      // Finish segment 3
+            gates.Add(new Gate(unitSegment * 2, unitSegment - junctionRadius, 0, 0, 270));                                                      // Start segment 4
+            gates.Add(new Gate(unitSegment * 2, junctionRadius, 0, 0, 270));                                                                    // Finish segment 4
+            gates.Add(new Gate(unitSegment * 4, junctionRadius, 0, 0, 90));                                                                     // Start segment 5
+            gates.Add(new Gate(unitSegment * 4, unitSegment - junctionRadius, 0, 0, 90));                                                       // Finish segment 5
+            gates.Add(new Gate(unitSegment * 4, unitSegment + junctionRadius, 0, 0, 90));                                                       // Start segment 6
+            gates.Add(new Gate(unitSegment * 4, unitSegment * 2 - junctionRadius, 0, 0, 90));                                                   // Finish segment 6
+            gates.Add(new Gate(unitSegment * 4 - longRadius, shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));                        // Start segment 7
+            gates.Add(new Gate(unitSegment * 2 + longRadius, unitSegment - shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));          // Finish segment 7
+            gates.Add(new Gate(unitSegment * 2 - longRadius, unitSegment + shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));          // Start segment 8
+            gates.Add(new Gate(longRadius, unitSegment * 2 - shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));                        // Finish segment 8
+            gates.Add(new Gate(longRadius, shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));                                         // Start segment 9
+            gates.Add(new Gate(unitSegment * 2 - longRadius, unitSegment - shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));         // Finish segment 9
+            gates.Add(new Gate(unitSegment * 2 + longRadius, unitSegment + shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));         // Start segment 10
+            gates.Add(new Gate(unitSegment * 4 - longRadius, unitSegment * 2 - shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));     // Finish segment 10
+            gates.Add(new Gate(unitSegment * 4 - junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                             // Start segment 11
+            gates.Add(new Gate(unitSegment * 2 + junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                             // Finish segment 11
+            gates.Add(new Gate(unitSegment * 2 - junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                             // Start segment 12
+            gates.Add(new Gate(junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                                               // Finish segment 12
+            gates.Add(new Gate(junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                                      // Start segment 13
+            gates.Add(new Gate(unitSegment * 2 - junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                    // Finish segment 13
+            gates.Add(new Gate(unitSegment * 2 + junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                    // Start segment 14
+            gates.Add(new Gate(unitSegment * 4 - junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                    // Finish segment 14
+            gates.Add(new Gate(unitSegment * 4 - junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                               // Start segment 15
+            gates.Add(new Gate(unitSegment * 2 + junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                               // Finish segment 15
+            gates.Add(new Gate(unitSegment * 2 - junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                               // Start segment 16
+            gates.Add(new Gate(junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                                                 // Finish segment 16
             GateCount += signLetterNoGates;
         }
 

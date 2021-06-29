@@ -180,8 +180,8 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                latDeltaAbs = Math.Abs(destPhoto.northEdge - destPhoto.southEdge) * (1 + (Parameters.LegWindowSize - 375) / 375);
-                pixelSize = latDeltaAbs * Constants.degreeLatFeet / Parameters.LegWindowSize;
+                latDeltaAbs = Math.Abs(destPhoto.northEdge - destPhoto.southEdge) * (1 + (Parameters.PhotoLegWindowSize - 375) / 375);
+                pixelSize = latDeltaAbs * Constants.degreeLatFeet / Parameters.PhotoLegWindowSize;
             }
             int markerRadiusPixels = Convert.ToInt32(Parameters.HotspotRadius * 3.2808399 / pixelSize);
 
@@ -194,8 +194,8 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                double latDeltaPixels = latDeltaCentre / latDeltaAbs * Parameters.LegWindowSize;
-                yCoord = Convert.ToInt32(Parameters.LegWindowSize / 2 + latDeltaPixels) - markerRadiusPixels;
+                double latDeltaPixels = latDeltaCentre / latDeltaAbs * Parameters.PhotoLegWindowSize;
+                yCoord = Convert.ToInt32(Parameters.PhotoLegWindowSize / 2 + latDeltaPixels) - markerRadiusPixels;
             }
 
             // Calculate x coordinate of top left corner of bounding box
@@ -208,9 +208,9 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                double longDeltaAbs = Math.Abs(destPhoto.westEdge - destPhoto.eastEdge) * (1 + (Parameters.LegWindowSize - 375) / 375);
-                double longDeltaPixels = longDeltaCentre / longDeltaAbs * Parameters.LegWindowSize;
-                xCoord = Convert.ToInt32(Parameters.LegWindowSize / 2 + longDeltaPixels) - markerRadiusPixels;
+                double longDeltaAbs = Math.Abs(destPhoto.westEdge - destPhoto.eastEdge) * (1 + (Parameters.PhotoLegWindowSize - 375) / 375);
+                double longDeltaPixels = longDeltaCentre / longDeltaAbs * Parameters.PhotoLegWindowSize;
+                xCoord = Convert.ToInt32(Parameters.PhotoLegWindowSize / 2 + longDeltaPixels) - markerRadiusPixels;
             }
 
             // Draw starting marker on overview maps
