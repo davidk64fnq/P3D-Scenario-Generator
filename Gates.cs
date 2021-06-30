@@ -120,10 +120,10 @@ namespace P3D_Scenario_Generator
 
         internal static void SetSignGatesSingleLetter()
         {
-            double junctionRadius = 4.0 / 3600;     // approx 400ft or 4 seconds of latitude
+            double junctionRadius = 4.5 / 3600;     // approx 450ft or 4.5 seconds of latitude
             double diagonalAngle = Math.Atan(2.0) * 180 / Math.PI;
-            double shortRadius = junctionRadius * Math.Cos(diagonalAngle * Math.PI / 180); // used to position start and finish of diagonal segments
-            double longRadius = junctionRadius * Math.Sin(diagonalAngle * Math.PI / 180);
+            double shortRadius = junctionRadius * 1.5 * Math.Cos(diagonalAngle * Math.PI / 180); // used to position start and finish of diagonal segments
+            double longRadius = junctionRadius * 1.5 * Math.Sin(diagonalAngle * Math.PI / 180);
 
             gates.Add(new Gate(0, junctionRadius, 0, 0, 90));                                                                                   // Start segment 1
             gates.Add(new Gate(0, unitSegment - junctionRadius, 0, 0, 90));                                                                     // Finish segment 1

@@ -1201,7 +1201,7 @@ namespace P3D_Scenario_Generator
 				string search = $"Scaleform_Panel_Window_SignWriting";
 				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
 				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
-				SetWindowSize sws = new SetWindowSize(Parameters.MessageWindowWidth.ToString(), Parameters.MessageWindowHeight.ToString());
+				SetWindowSize sws = new SetWindowSize((Parameters.MessageWindowWidth + 20).ToString(), (Parameters.MessageWindowHeight).ToString());
 				SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 				{
 					Descr = $"Open_Scaleform_Panel_Window_SignWriting",
