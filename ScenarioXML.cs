@@ -254,31 +254,29 @@ namespace P3D_Scenario_Generator
 		static private void SetScenarioVariable()
 		{
 			List<SimMissionScenarioVariable> svList = new List<SimMissionScenarioVariable>();
-			SimMissionScenarioVariable sv = new SimMissionScenarioVariable(); 
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.SignWriting):
-					sv = new SimMissionScenarioVariable(null, GetGUID(), "", "Smoke on/off variable", "smokeOn", "0");
+					SetSignWritingScenarioVariables(svList);
 					break;
 				default:
 					break;
 			}
-			svList.Add(sv);
 			simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable = svList;
 		}
 
 		static private void SetScriptAction()
 		{
-			SimMissionScriptAction sa = new SimMissionScriptAction();
+			List<SimMissionScriptAction> saList = new List<SimMissionScriptAction>();
 			switch (Parameters.SelectedScenario)
 			{
 				case nameof(ScenarioTypes.SignWriting):
-					sa = new SimMissionScriptAction("Smoke on/off script", "!lua local var smokeOn = varget(\"S:smokeOn\", \"NUMBER\") if smokeOn == 1 then varset(\"S:smokeOn\", \"NUMBER\", 0) else varset(\"S:smokeOn\", \"NUMBER\", 1) end", GetGUID(), "");
+					SetSignWritingScriptActions(saList);
 					break;
 				default:
 					break;
 			}
-			simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction = sa;
+			simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction = saList;
 		}
 		#endregion
 
@@ -603,11 +601,13 @@ namespace P3D_Scenario_Generator
 						SetRectangleAreaReference("Area_Hoop_0X", index + 1, orAreaList);
 						Areas a = new Areas(orAreaList);
 						List<ObjectReference> orActionList = new List<ObjectReference>();
+						// Increment gate number scenario variable
+						SetScriptActionReference("Increment gate number script", orActionList);
 						// First of gate pair marking a segment
 						if (index % 2 == 0)
 						{
 							// Turn smoke on
-							SetScriptActionReference(orActionList);
+							SetScriptActionReference("Smoke on/off script", orActionList);
 							// Make segment start gate inactive
 							SetObjectActivationReference("Activate_Hoop_Inactive_0X", index + 1, orActionList);
 							SetObjectActivationReference("Deactivate_Hoop_Active_0X", index + 1, orActionList);
@@ -621,7 +621,7 @@ namespace P3D_Scenario_Generator
 						else
 						{
 							// Turn smoke off
-							SetScriptActionReference(orActionList);
+							SetScriptActionReference("Smoke on/off script", orActionList);
 							// Hide current inactive segment start gate
 							SetObjectActivationReference("Deactivate_Hoop_Inactive_0X", index, orActionList);
 							// Hide current active segment end gate
@@ -1133,9 +1133,10 @@ namespace P3D_Scenario_Generator
 			orList.Add(or);
 		}
 
-		static private void SetScriptActionReference(List<ObjectReference> orList)
+		static private void SetScriptActionReference(string objectName, List<ObjectReference> orList)
 		{
-			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction.InstanceId);
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction.FindIndex(sa => sa.Descr == objectName);
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction[idIndex].InstanceId);
 			orList.Add(or);
 		}
 
@@ -1160,13 +1161,13 @@ namespace P3D_Scenario_Generator
 			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.SignWriting.html");
 			StreamReader reader = new StreamReader(stream);
 			signWritingHTML = reader.ReadToEnd();
-			signWritingHTML = signWritingHTML.Replace("canvasWidthX", Parameters.MessageWindowWidth.ToString());
+			double canvasWidth = Parameters.MessageWindowHeight * 0.75 * Parameters.Message.Length;
+			signWritingHTML = signWritingHTML.Replace("canvasWidthX", canvasWidth.ToString());
 			signWritingHTML = signWritingHTML.Replace("canvasHeightX", Parameters.MessageWindowHeight.ToString());
 			signWritingHTML = signWritingHTML.Replace("mapNorthX", (Runway.AirportLat + Gates.unitSegment * 4).ToString());
 			signWritingHTML = signWritingHTML.Replace("mapEastX", (Runway.AirportLon + Gates.unitSegment * 3 * Parameters.Message.Length).ToString());
 			signWritingHTML = signWritingHTML.Replace("mapSouthX", Runway.AirportLat.ToString());
 			signWritingHTML = signWritingHTML.Replace("mapWestX", Runway.AirportLon.ToString());
-			signWritingHTML = signWritingHTML.Replace("mapWidthX", Parameters.MessageWindowWidth.ToString());
 			signWritingHTML = signWritingHTML.Replace("mapHeightX", Parameters.MessageWindowHeight.ToString());
 			signWritingHTML = signWritingHTML.Replace("messageLengthX", Parameters.Message.Length.ToString());
 			signWritingHTML = signWritingHTML.Replace("magVarX", Runway.MagVar.ToString());
@@ -1198,18 +1199,21 @@ namespace P3D_Scenario_Generator
 		
 		static private void SetSignWritingOpenWindowActionObjects(List<SimMissionOpenWindowAction> owaList)
 		{
-				string search = $"Scaleform_Panel_Window_SignWriting";
-				int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
-				ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
-				SetWindowSize sws = new SetWindowSize((Parameters.MessageWindowWidth + 20).ToString(), (Parameters.MessageWindowHeight).ToString());
-				SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
-				{
-					Descr = $"Open_Scaleform_Panel_Window_SignWriting",
-					SetWindowSize = sws,
-					ObjectReference = or,
-					InstanceId = GetGUID()
-				};
-				owaList.Add(owa);
+			string search = $"Scaleform_Panel_Window_SignWriting";
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
+			double windowWidth = Parameters.MessageWindowHeight * 0.75 * Parameters.Message.Length;
+			if (windowWidth > Parameters.MessageWindowWidth)
+				windowWidth = Parameters.MessageWindowWidth;
+			SetWindowSize sws = new SetWindowSize((windowWidth + 20).ToString(), (Parameters.MessageWindowHeight + 35).ToString());
+			SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
+			{
+				Descr = $"Open_Scaleform_Panel_Window_SignWriting",
+				SetWindowSize = sws,
+				ObjectReference = or,
+				InstanceId = GetGUID()
+			};
+			owaList.Add(owa);
 		}
 
 		static private void SetSignWritingScaleformPanelWindow(List<SimMissionScaleformPanelWindow> spwList)
@@ -1222,6 +1226,18 @@ namespace P3D_Scenario_Generator
 			saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleSignWriting.css";
 			SetSignWritingCSS(saveLocation);
 			spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\htmlSignWriting.html", GetGUID(), "window.swf", "False"));
+		}
+
+		static private void SetSignWritingScenarioVariables(List<SimMissionScenarioVariable> svList)
+		{
+			svList.Add(new SimMissionScenarioVariable(null, GetGUID(), "", "Smoke on/off variable", "smokeOn", "0"));
+			svList.Add(new SimMissionScenarioVariable(null, GetGUID(), "", "Current gate number variable", "currentGateNo", "0"));
+		}
+		
+		static private void SetSignWritingScriptActions(List<SimMissionScriptAction> saList)
+		{
+			saList.Add(new SimMissionScriptAction("Smoke on/off script", "!lua local var smokeOn = varget(\"S:smokeOn\", \"NUMBER\") if smokeOn == 1 then varset(\"S:smokeOn\", \"NUMBER\", 0) else varset(\"S:smokeOn\", \"NUMBER\", 1) end", GetGUID(), ""));
+			saList.Add(new SimMissionScriptAction("Increment gate number script", "!lua local var currentGateNo = varget(\"S:currentGateNo\", \"NUMBER\") currentGateNo = currentGateNo + 1 varset(\"S:currentGateNo\", \"NUMBER\", currentGateNo)", GetGUID(), ""));
 		}
 
 		static private void SetSoundAction(string objectName, int index, List<ObjectReference> orList)
@@ -2386,7 +2402,7 @@ namespace P3D_Scenario_Generator
 		public List<SimMissionScenarioVariable> SimMissionScenarioVariable { get; set; }
 
 		[XmlElement(ElementName = "SimMission.ScriptAction")]
-		public SimMissionScriptAction SimMissionScriptAction { get; set; }
+		public List<SimMissionScriptAction> SimMissionScriptAction { get; set; }
 
 		[XmlElement(ElementName = "SimMission.TimerTrigger")]
 		public List<SimMissionTimerTrigger> SimMissionTimerTrigger { get; set; }

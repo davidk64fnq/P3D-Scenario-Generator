@@ -1,0 +1,255 @@
+<!DOCTYPE HTML>
+<html>	
+<head>
+<link rel="stylesheet" href="styleSignWriting.css">
+<script src="scriptsSignWriting.js"></script>
+</head>
+<body>
+	<div>
+		<canvas id="canvas" width="canvasWidthX" height="canvasHeightX"></canvas>
+		<p></p>
+	</div>
+	<script>
+	var smokeOld = 0;
+	var smokeHasToggled = false;
+	var canvas = document.getElementById('canvas');
+	var context = canvas.getContext('2d');
+	var oldPlaneTopPixels;
+	var oldPlaneLeftPixels;
+	var planeTopPixels;
+	var planeLeftPixels;
+	function update(timestamp)
+	{
+		const mapNorth = mapNorthX; 
+		const mapEast = mapEastX;
+		const mapSouth = mapSouthX;
+		const mapWest = mapWestX;
+		const mapWidth = mapWidthX;
+		const mapHeight = mapHeightX;
+		const messageLength = messageLengthX;
+		const magVar = magVarX;
+		const padding = 20;
+	
+		var planeHeadingT = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI + magVar;
+		var planeLonDeg = VarGet("A:PLANE LONGITUDE" ,"Radians") * 180 / Math.PI; // x
+		var planeLatDeg = VarGet("A:PLANE LATITUDE" ,"Radians") * 180 / Math.PI;  // y
+		var messageHeight = mapHeight - 2 * padding;
+		var messageWidth = 0.75 * messageHeight * messageLength;
+		oldPlaneTopPixels = planeTopPixels;
+		oldPlaneLeftPixels = planeLeftPixels;
+		planeTopPixels = Math.round((planeLatDeg - mapNorth) / (mapSouth - mapNorth) * messageHeight);
+		planeLeftPixels = Math.round((planeLonDeg - mapWest) / (mapEast - mapWest) * messageWidth);
+		var smokeOn = VarGet("S:smokeOn", "NUMBER"); 
+		if (smokeOn != smokeOld)
+			smokeHasToggled = true;
+		smokeOld = smokeOn;
+		if (smokeHasToggled && smokeOn == 1) {
+			if (planeHeadingT >= 166.5 && planeHeadingT < 193.5)
+				drawNcap(planeLeftPixels + padding, planeTopPixels + padding);
+			else if (planeHeadingT >= 193.5 && planeHeadingT < 238.5)
+				drawNEcap(planeLeftPixels + padding, planeTopPixels + padding);
+			else if (planeHeadingT >= 238.5 && planeHeadingT < 301.5)
+				drawEcap(planeLeftPixels + padding, planeTopPixels + padding);
+			else if (planeHeadingT >= 301.5 && planeHeadingT < 346.5)
+				drawSEcap(planeLeftPixels + padding, planeTopPixels + padding);
+			else if (planeHeadingT >= 346.5 && planeHeadingT < 13.5)
+				drawScap(planeLeftPixels + padding, planeTopPixels + padding);
+			else if (planeHeadingT >= 13.5 && planeHeadingT < 58.5)
+				drawSWcap(planeLeftPixels + padding, planeTopPixels + padding);
+			else if (planeHeadingT >= 58.5 && planeHeadingT < 121.5)
+				drawWcap(planeLeftPixels + padding, planeTopPixels + padding);
+			else if (planeHeadingT >= 121.5 && planeHeadingT < 166.5)
+				drawNWcap(planeLeftPixels + padding, planeTopPixels + padding);
+			smokeHasToggled = false;
+		}
+		if (smokeOn == 1) {
+			if ((planeHeadingT >= 346.5 && planeHeadingT < 13.5) || (planeHeadingT >= 166.5 && planeHeadingT < 193.5))
+				drawLineNS(planeLeftPixels + padding, planeTopPixels + padding);
+			else if ((planeHeadingT >= 13.5 && planeHeadingT < 58.5) || (planeHeadingT >= 193.5 && planeHeadingT < 238.5))
+				drawLineNESW(planeLeftPixels + padding, planeTopPixels + padding);
+			else if ((planeHeadingT >= 58.5 && planeHeadingT < 121.5) || (planeHeadingT >= 238.5 && planeHeadingT < 301.5))
+				drawLineEW(planeLeftPixels + padding, planeTopPixels + padding);
+			else if ((planeHeadingT >= 121.5 && planeHeadingT < 166.5) || (planeHeadingT >= 301.5 && planeHeadingT < 346.5))
+				drawLineSENW(planeLeftPixels + padding, planeTopPixels + padding);
+		}
+		if (smokeHasToggled && smokeOn == 0) {
+			if (planeHeadingT >= 166.5 && planeHeadingT < 193.5)
+				drawScap(oldPlaneLeftPixels + padding, oldPlaneTopPixels + padding);
+			else if (planeHeadingT >= 193.5 && planeHeadingT < 238.5)
+				drawSWcap(oldPlaneLeftPixels + padding, oldPlaneTopPixels + padding);
+			else if (planeHeadingT >= 238.5 && planeHeadingT < 301.5)
+				drawWcap(oldPlaneLeftPixels + padding, oldPlaneTopPixels + padding);
+			else if (planeHeadingT >= 301.5 && planeHeadingT < 346.5)
+				drawNWcap(oldPlaneLeftPixels + padding, oldPlaneTopPixels + padding);
+			else if (planeHeadingT >= 346.5 && planeHeadingT < 13.5)
+				drawNcap(oldPlaneLeftPixels + padding, oldPlaneTopPixels + padding);
+			else if (planeHeadingT >= 13.5 && planeHeadingT < 58.5)
+				drawNEcap(oldPlaneLeftPixels + padding, oldPlaneTopPixels + padding);
+			else if (planeHeadingT >= 58.5 && planeHeadingT < 121.5)
+				drawEcap(oldPlaneLeftPixels + padding, oldPlaneTopPixels + padding);
+			else if (planeHeadingT >= 121.5 && planeHeadingT < 166.5)
+				drawSEcap(oldPlaneLeftPixels + padding, oldPlaneTopPixels + padding);
+			smokeHasToggled = false;
+		}
+		window.requestAnimationFrame(update);
+	}
+	function drawNcap(left, top)
+	{
+		context.fillRect(left - 4, top - 1, 2, 1);
+		context.fillStyle = "red";
+		context.fillRect(left - 2, top - 1, 5, 1);
+		context.fillStyle = "black";
+		context.fillRect(left + 3, top - 1, 2, 1);
+		
+		context.fillRect(left - 3, top - 2, 2, 1);
+		context.fillStyle = "red";
+		context.fillRect(left - 1, top - 2, 3, 1);
+		context.fillStyle = "black";
+		context.fillRect(left + 2, top - 2, 2, 1);
+		
+		context.fillRect(left - 2, top - 3, 2, 1);
+		context.fillStyle = "red";
+		context.fillRect(left, top - 3, 1, 1);
+		context.fillStyle = "black";
+		context.fillRect(left + 1, top - 3, 2, 1);
+		
+		context.fillRect(left - 1, top - 4, 3, 1);
+		
+		context.fillRect(left, top - 5, 1, 1);
+	}
+	function drawNEcap(left, top)
+	{
+	}
+	function drawEcap(left, top)
+	{
+		context.fillRect(left + 1, top - 4, 1, 2);
+		context.fillStyle = "red";
+		context.fillRect(left + 1, top - 2, 1, 5);
+		context.fillStyle = "black";
+		context.fillRect(left + 1, top + 3, 1, 2);
+		
+		context.fillRect(left + 2, top - 3, 1, 2);
+		context.fillStyle = "red";
+		context.fillRect(left + 2, top - 1, 1, 3);
+		context.fillStyle = "black";
+		context.fillRect(left + 2, top + 2, 1, 2);
+		
+		context.fillRect(left + 3, top - 2, 1, 2);
+		context.fillStyle = "red";
+		context.fillRect(left + 3, top, 1, 1);
+		context.fillStyle = "black";
+		context.fillRect(left + 3, top + 1, 1, 2);
+		
+		context.fillRect(left + 4, top - 1, 1, 3);
+		
+		context.fillRect(left + 5, top, 1, 1);
+	}
+	function drawSEcap(left, top)
+	{
+	}
+	function drawScap(left, top)
+	{
+		context.fillRect(left - 4, top + 1, 2, 1);
+		context.fillStyle = "red";
+		context.fillRect(left - 2, top + 1, 5, 1);
+		context.fillStyle = "black";
+		context.fillRect(left + 3, top + 1, 2, 1);
+		
+		context.fillRect(left - 3, top + 2, 2, 1);
+		context.fillStyle = "red";
+		context.fillRect(left - 1, top + 2, 3, 1);
+		context.fillStyle = "black";
+		context.fillRect(left + 2, top + 2, 2, 1);
+		
+		context.fillRect(left - 2, top + 3, 2, 1);
+		context.fillStyle = "red";
+		context.fillRect(left, top + 3, 1, 1);
+		context.fillStyle = "black";
+		context.fillRect(left + 1, top + 3, 2, 1);
+		
+		context.fillRect(left - 1, top + 4, 3, 1);
+		
+		context.fillRect(left, top + 5, 1, 1);
+	}
+	function drawSWcap(left, top)
+	{
+	}
+	function drawWcap(left, top)
+	{
+		context.fillRect(left - 1, top - 4, 1, 2);
+		context.fillStyle = "red";
+		context.fillRect(left - 1, top - 2, 1, 5);
+		context.fillStyle = "black";
+		context.fillRect(left - 1, top + 3, 1, 2);
+		
+		context.fillRect(left - 2, top - 3, 1, 2);
+		context.fillStyle = "red";
+		context.fillRect(left - 2, top - 1, 1, 3);
+		context.fillStyle = "black";
+		context.fillRect(left - 2, top + 2, 1, 2);
+		
+		context.fillRect(left - 3, top - 2, 1, 2);
+		context.fillStyle = "red";
+		context.fillRect(left - 3, top, 1, 1);
+		context.fillStyle = "black";
+		context.fillRect(left - 3, top + 1, 1, 2);
+		
+		context.fillRect(left - 4, top - 1, 1, 3);
+		
+		context.fillRect(left - 5, top, 1, 1);
+	}
+	function drawNWcap(left, top)
+	{
+		context.fillStyle = "black";
+		context.fillRect(left - 3, top - 3, 6, 1);
+		context.fillRect(left - 3, top - 2, 1, 5);
+		context.fillStyle = "red";
+		context.fillRect(left - 2, top - 2, 4, 1);
+		context.fillRect(left - 2, top - 1, 3, 1);
+		context.fillRect(left - 2, top, 2, 1);
+		context.fillRect(left - 2, top + 1, 1, 1);
+	}
+	function drawLineNS(left, top)
+	{
+		context.fillRect(left - 5, top, 2, 1);
+		context.fillStyle = "red";
+		context.fillRect(left - 3, top, 7, 1);
+		context.fillStyle = "black";
+		context.fillRect(left + 4, top, 2, 1);
+	}
+	function drawLineNESW(left, top)
+	{
+		context.fillRect(left + 3, top + 3, 1, 1);
+		context.fillStyle = "red";
+		context.fillRect(left + 2, top + 2, 1, 1);
+		context.fillRect(left + 1, top + 1, 1, 1);
+		context.fillRect(left, top, 1, 1);
+		context.fillRect(left - 1, top - 1, 1, 1);
+		context.fillRect(left - 2, top - 2, 1, 1);
+		context.fillStyle = "black";
+		context.fillRect(left - 3, top - 3, 1, 1);
+	}
+	function drawLineEW(left, top)
+	{
+		context.fillRect(left, top - 5, 1, 2);
+		context.fillStyle = "red";
+		context.fillRect(left, top - 3, 1, 7);
+		context.fillStyle = "black";
+		context.fillRect(left, top + 4, 1, 2);
+	}
+	function drawLineSENW(left, top)
+	{
+		context.fillRect(left - 3, top + 3, 1, 1);
+		context.fillStyle = "red";
+		context.fillRect(left - 2, top + 2, 1, 1);
+		context.fillRect(left - 1, top + 1, 1, 1);
+		context.fillRect(left, top, 1, 1);
+		context.fillRect(left + 1, top - 1, 1, 1);
+		context.fillRect(left + 2, top - 2, 1, 1);
+		context.fillStyle = "black";
+		context.fillRect(left + 3, top - 3, 1, 1);
+	}
+	window.requestAnimationFrame(update);
+	</script>
+</body>
+</html>

@@ -26,22 +26,26 @@ namespace P3D_Scenario_Generator
         public double amsl;
         public double pitch;
         public double orientation;
+        public double topPixels;
+        public double leftPixels;
 
-        public Gate(double d1, double d2, double d3, double d4, double d5)
+        public Gate(double d1, double d2, double d3, double d4, double d5, double d6, double d7)
         {
             lat = d1;
             lon = d2;
             amsl = d3;
             pitch = d4;
             orientation = d5;
+            topPixels = d6;
+            leftPixels = d7;
         }
     }
 
     internal class Gates
     {
         private static readonly List<Gate> gates = new List<Gate>();
-        private static readonly int signLetterNoGates = 32;
-        internal static readonly double unitSegment = 40.0 / 3600;   // approx 4000ft or 40 secs of latitude
+        private static readonly int signLetterNoGates = 44;
+        internal static readonly double unitSegment = 36.0 / 3600;   // approx 3600ft or 36 secs of latitude
 
         internal static int GateCount { get; private set; }
 
@@ -87,7 +91,7 @@ namespace P3D_Scenario_Generator
             {
                 MathRoutines.AdjCoords(dStartLat, dStartLon, legParams[index].heading, legParams[index].distance, ref dFinishLat, ref dFinishLon);
                 orientation = (Runway.Hdg + Runway.MagVar + circuitHeadingAdj[index]) % 360;
-                gates.Add(new Gate(dFinishLat, dFinishLon, legParams[index].amsl, 0, orientation));
+                gates.Add(new Gate(dFinishLat, dFinishLon, legParams[index].amsl, 0, orientation, 0, 0));
                 dStartLat = dFinishLat;
                 dStartLon = dFinishLon;
             }
@@ -111,52 +115,63 @@ namespace P3D_Scenario_Generator
             gates.Clear();
             for (int index = 0; index < Parameters.Message.Length; index++)
             {
-                SetSignGatesSingleLetter();
+                SetSignGatesLetter();
                 TranslateGates(GateCount - signLetterNoGates, signLetterNoGates, 0, unitSegment * 3 * index, 0);
             }
             TiltGates(0, GateCount);
             TranslateGates(0, GateCount, Runway.AirportLat, Runway.AirportLon, Runway.Altitude + 1000);
         }
 
-        internal static void SetSignGatesSingleLetter()
+        internal static void SetSignGatesLetter()
         {
-            double junctionRadius = 4.5 / 3600;     // approx 450ft or 4.5 seconds of latitude
-            double diagonalAngle = Math.Atan(2.0) * 180 / Math.PI;
-            double shortRadius = junctionRadius * 1.5 * Math.Cos(diagonalAngle * Math.PI / 180); // used to position start and finish of diagonal segments
-            double longRadius = junctionRadius * 1.5 * Math.Sin(diagonalAngle * Math.PI / 180);
+            double junctionRadius = 2.0 / 3600;
+            double cellPixels = 48;
+            double cellInset = 2;
 
-            gates.Add(new Gate(0, junctionRadius, 0, 0, 90));                                                                                   // Start segment 1
-            gates.Add(new Gate(0, unitSegment - junctionRadius, 0, 0, 90));                                                                     // Finish segment 1
-            gates.Add(new Gate(0, unitSegment + junctionRadius, 0, 0, 90));                                                                     // Start segment 2
-            gates.Add(new Gate(0, unitSegment * 2 - junctionRadius, 0, 0, 90));                                                                 // Finish segment 2
-            gates.Add(new Gate(unitSegment * 2, unitSegment * 2 - junctionRadius, 0, 0, 270));                                                  // Start segment 3
-            gates.Add(new Gate(unitSegment * 2, unitSegment + junctionRadius, 0, 0, 270));                                                      // Finish segment 3
-            gates.Add(new Gate(unitSegment * 2, unitSegment - junctionRadius, 0, 0, 270));                                                      // Start segment 4
-            gates.Add(new Gate(unitSegment * 2, junctionRadius, 0, 0, 270));                                                                    // Finish segment 4
-            gates.Add(new Gate(unitSegment * 4, junctionRadius, 0, 0, 90));                                                                     // Start segment 5
-            gates.Add(new Gate(unitSegment * 4, unitSegment - junctionRadius, 0, 0, 90));                                                       // Finish segment 5
-            gates.Add(new Gate(unitSegment * 4, unitSegment + junctionRadius, 0, 0, 90));                                                       // Start segment 6
-            gates.Add(new Gate(unitSegment * 4, unitSegment * 2 - junctionRadius, 0, 0, 90));                                                   // Finish segment 6
-            gates.Add(new Gate(unitSegment * 4 - longRadius, shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));                        // Start segment 7
-            gates.Add(new Gate(unitSegment * 2 + longRadius, unitSegment - shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));          // Finish segment 7
-            gates.Add(new Gate(unitSegment * 2 - longRadius, unitSegment + shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));          // Start segment 8
-            gates.Add(new Gate(longRadius, unitSegment * 2 - shortRadius, 0, Parameters.TiltAngle, 90 + diagonalAngle));                        // Finish segment 8
-            gates.Add(new Gate(longRadius, shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));                                         // Start segment 9
-            gates.Add(new Gate(unitSegment * 2 - longRadius, unitSegment - shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));         // Finish segment 9
-            gates.Add(new Gate(unitSegment * 2 + longRadius, unitSegment + shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));         // Start segment 10
-            gates.Add(new Gate(unitSegment * 4 - longRadius, unitSegment * 2 - shortRadius, 0, -Parameters.TiltAngle, 90 - diagonalAngle));     // Finish segment 10
-            gates.Add(new Gate(unitSegment * 4 - junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                             // Start segment 11
-            gates.Add(new Gate(unitSegment * 2 + junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                             // Finish segment 11
-            gates.Add(new Gate(unitSegment * 2 - junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                             // Start segment 12
-            gates.Add(new Gate(junctionRadius, 0, 0, Parameters.TiltAngle, 180));                                                               // Finish segment 12
-            gates.Add(new Gate(junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                                      // Start segment 13
-            gates.Add(new Gate(unitSegment * 2 - junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                    // Finish segment 13
-            gates.Add(new Gate(unitSegment * 2 + junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                    // Start segment 14
-            gates.Add(new Gate(unitSegment * 4 - junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0));                                    // Finish segment 14
-            gates.Add(new Gate(unitSegment * 4 - junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                               // Start segment 15
-            gates.Add(new Gate(unitSegment * 2 + junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                               // Finish segment 15
-            gates.Add(new Gate(unitSegment * 2 - junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                               // Start segment 16
-            gates.Add(new Gate(junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180));                                                 // Finish segment 16
+            gates.Add(new Gate(0, junctionRadius, 0, 0, 90, cellPixels * 4, cellInset));                                                       // Start segment 1
+            gates.Add(new Gate(0, unitSegment - junctionRadius, 0, 0, 90, cellPixels * 4, cellPixels - cellInset));                                         // Finish segment 1
+            gates.Add(new Gate(0, unitSegment + junctionRadius, 0, 0, 90, cellPixels * 4, cellPixels + cellInset));                                         // Start segment 2
+            gates.Add(new Gate(0, unitSegment * 2 - junctionRadius, 0, 0, 90, cellPixels * 4, cellPixels * 2 - cellInset));                                     // Finish segment 2
+            gates.Add(new Gate(unitSegment, unitSegment * 2 - junctionRadius, 0, 0, 270, cellPixels * 3, cellPixels * 2 - cellInset));                          // Start segment 3
+            gates.Add(new Gate(unitSegment, unitSegment + junctionRadius, 0, 0, 270, cellPixels * 3, cellPixels + cellInset));                              // Finish segment 3
+            gates.Add(new Gate(unitSegment, unitSegment - junctionRadius, 0, 0, 270, cellPixels * 3, cellPixels - cellInset));                              // Start segment 4
+            gates.Add(new Gate(unitSegment, junctionRadius, 0, 0, 270, cellPixels * 3, cellInset));                                            // Finish segment 4
+            gates.Add(new Gate(unitSegment * 2, junctionRadius, 0, 0, 90, cellPixels * 2, cellInset));                                         // Start segment 5
+            gates.Add(new Gate(unitSegment * 2, unitSegment - junctionRadius, 0, 0, 90, cellPixels * 2, cellPixels - cellInset));                           // Finish segment 5
+            gates.Add(new Gate(unitSegment * 2, unitSegment + junctionRadius, 0, 0, 90, cellPixels * 2, cellPixels + cellInset));                           // Start segment 6
+            gates.Add(new Gate(unitSegment * 2, unitSegment * 2 - junctionRadius, 0, 0, 90, cellPixels * 2, cellPixels * 2 - cellInset));                       // Finish segment 6
+            gates.Add(new Gate(unitSegment * 3, unitSegment * 2 - junctionRadius, 0, 0, 270, cellPixels, cellPixels * 2 - cellInset));                      // Start segment 7
+            gates.Add(new Gate(unitSegment * 3, unitSegment + junctionRadius, 0, 0, 270, cellPixels, cellPixels + cellInset));                          // Finish segment 7
+            gates.Add(new Gate(unitSegment * 3, unitSegment - junctionRadius, 0, 0, 270, cellPixels, cellPixels - cellInset));                          // Start segment 8
+            gates.Add(new Gate(unitSegment * 3, junctionRadius, 0, 0, 270, cellPixels, cellInset));                                        // Finish segment 8
+            gates.Add(new Gate(unitSegment * 4, junctionRadius, 0, 0, 90, 0, cellInset));                                         // Start segment 9
+            gates.Add(new Gate(unitSegment * 4, unitSegment - junctionRadius, 0, 0, 90, 0, cellPixels - cellInset));                           // Finish segment 9
+            gates.Add(new Gate(unitSegment * 4, unitSegment + junctionRadius, 0, 0, 90, 0, cellPixels + cellInset));                           // Start segment 10
+            gates.Add(new Gate(unitSegment * 4, unitSegment * 2 - junctionRadius, 0, 0, 90, 0, cellPixels * 2 - cellInset));                       // Finish segment 10
+            gates.Add(new Gate(unitSegment * 4 - junctionRadius, 0, 0, Parameters.TiltAngle, 180, cellInset, 0));                 // Start segment 11
+            gates.Add(new Gate(unitSegment * 3 + junctionRadius, 0, 0, Parameters.TiltAngle, 180, cellPixels - cellInset, 0));                 // Finish segment 11
+            gates.Add(new Gate(unitSegment * 3 - junctionRadius, 0, 0, Parameters.TiltAngle, 180, cellPixels + cellInset, 0));                 // Start segment 12
+            gates.Add(new Gate(unitSegment * 2 + junctionRadius, 0, 0, Parameters.TiltAngle, 180, cellPixels * 2 - cellInset, 0));                 // Finish segment 12
+            gates.Add(new Gate(unitSegment * 2 - junctionRadius, 0, 0, Parameters.TiltAngle, 180, cellPixels * 2 + cellInset, 0));                 // Start segment 13
+            gates.Add(new Gate(unitSegment * 1 + junctionRadius, 0, 0, Parameters.TiltAngle, 180, cellPixels * 3 - cellInset, 0));                 // Finish segment 13
+            gates.Add(new Gate(unitSegment * 1 - junctionRadius, 0, 0, Parameters.TiltAngle, 180, cellPixels * 3 + cellInset, 0));                 // Start segment 14
+            gates.Add(new Gate(junctionRadius, 0, 0, Parameters.TiltAngle, 180, cellPixels * 4 - cellInset, 0));                                   // Finish segment 14
+            gates.Add(new Gate(junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0, cellPixels * 4 - cellInset, cellPixels));                          // Start segment 15
+            gates.Add(new Gate(unitSegment * 1 - junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0, cellPixels * 3 + cellInset, cellPixels));        // Finish segment 15
+            gates.Add(new Gate(unitSegment * 1 + junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0, cellPixels * 3 - cellInset, cellPixels));        // Start segment 16
+            gates.Add(new Gate(unitSegment * 2 - junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0, cellPixels * 2 + cellInset, cellPixels));        // Finish segment 16
+            gates.Add(new Gate(unitSegment * 2 + junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0, cellPixels * 2 - cellInset, cellPixels));        // Start segment 17
+            gates.Add(new Gate(unitSegment * 3 - junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0, cellPixels + cellInset, cellPixels));        // Finish segment 17
+            gates.Add(new Gate(unitSegment * 3 + junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0, cellPixels - cellInset, cellPixels));        // Start segment 18
+            gates.Add(new Gate(unitSegment * 4 - junctionRadius, unitSegment, 0, -Parameters.TiltAngle, 0, cellInset, cellPixels));        // Finish segment 18
+            gates.Add(new Gate(unitSegment * 4 - junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180, cellInset, cellPixels * 2));   // Start segment 19
+            gates.Add(new Gate(unitSegment * 3 + junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180, cellPixels - cellInset, cellPixels * 2));   // Finish segment 19
+            gates.Add(new Gate(unitSegment * 3 - junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180, cellPixels + cellInset, cellPixels * 2));   // Start segment 20
+            gates.Add(new Gate(unitSegment * 2 + junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180, cellPixels * 2 - cellInset, cellPixels * 2));   // Finish segment 20
+            gates.Add(new Gate(unitSegment * 2 - junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180, cellPixels * 2 + cellInset, cellPixels * 2));   // Start segment 21
+            gates.Add(new Gate(unitSegment * 1 + junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180, cellPixels * 3 - cellInset, cellPixels * 2));   // Finish segment 21
+            gates.Add(new Gate(unitSegment * 1 - junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180, cellPixels * 3 + cellInset, cellPixels * 2));   // Start segment 22
+            gates.Add(new Gate(junctionRadius, unitSegment * 2, 0, Parameters.TiltAngle, 180, cellPixels * 4 - cellInset, cellPixels * 2));                     // Finish segment 22
             GateCount += signLetterNoGates;
         }
 
