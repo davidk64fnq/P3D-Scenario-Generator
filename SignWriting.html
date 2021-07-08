@@ -7,17 +7,88 @@
 <body>
 	<div>
 		<canvas id="canvas" width="canvasWidthX" height="canvasHeightX"></canvas>
-		<p id="debug"></p>
 	</div>
 	<script>
 	var smokeOld = 0;
 	var smokeHasToggled = false;
 	var canvas = document.getElementById('canvas');
 	var context = canvas.getContext('2d');
-	var oldPlaneTopPixels;
-	var oldPlaneLeftPixels;
 	var planeTopPixels;
 	var planeLeftPixels;
+	var startTopPixels;
+	var startLeftPixels;
+	
+	const colours = ["", "red", "black"];
+	
+	const endCap = [];
+	endCap[0] = [0,0,0,0,0,2,0,0,0,0,0];
+	endCap[1] = [0,0,0,0,2,2,2,0,0,0,0];
+	endCap[2] = [0,0,0,2,2,1,2,2,0,0,0];
+	endCap[3] = [0,0,2,2,1,1,1,2,2,0,0];
+	endCap[4] = [0,2,2,1,1,1,1,1,2,2,0];
+	endCap[5] = [2,2,1,1,1,1,1,1,1,2,2];
+	endCap[6] = [0,0,0,0,0,0,0,0,0,0,0];
+	endCap[7] = [0,0,0,0,0,0,0,0,0,0,0];
+	endCap[8] = [0,0,0,0,0,0,0,0,0,0,0];
+	endCap[9] = [0,0,0,0,0,0,0,0,0,0,0];
+	endCap[10] = [0,0,0,0,0,0,0,0,0,0,0];
+	
+	var curCap = [];
+	curCap[0] = [];
+	curCap[1] = [];
+	curCap[2] = [];
+	curCap[3] = [];
+	curCap[4] = [];
+	curCap[5] = [];
+	curCap[6] = [];
+	curCap[7] = [];
+	curCap[8] = [];
+	curCap[9] = [];
+	curCap[10] = [];
+	
+	function rotateSquareArray(inArray, outArray, rotation)
+	{
+		if (rotation == 0)
+			for(let row = 0; row < inArray.length; row++)
+				for(let col = 0; col < inArray.length; col++)
+				{
+					outArray[row][col] = inArray[row][col];
+				}
+		else if (rotation == 90)
+			for(let row = 0; row < inArray.length; row++)
+				for(let col = 0; col < inArray.length; col++)
+				{
+					outArray[col][inArray.length - 1 - row] = inArray[row][col];
+				}
+		else if (rotation == 180)
+			for(let row = 0; row < inArray.length; row++)
+				for(let col = 0; col < inArray.length; col++)
+				{
+					outArray[inArray.length - 1 - row][col] = inArray[row][col];
+				}
+		else if (rotation == 270)
+			for(let row = 0; row < inArray.length; row++)
+				for(let col = 0; col < inArray.length; col++)
+				{
+					outArray[inArray.length - 1 - col][row] = inArray[row][col];
+				}
+	}
+	
+	function drawCap(top, left, capArray)
+	{
+		for(let row = 0; row < capArray.length; row++)
+		{
+			for(let col = 0; col < capArray.length; col++)
+			{
+				if(capArray[row][col] != 0)
+				{
+					context.fillStyle = colours[capArray[row][col]];
+					context.fillRect(left + col, top + row, 1, 1);
+				}
+			}
+		}
+	}
+	
 	function update(timestamp)
 	{
 		const mapNorth = mapNorthX; 
@@ -27,7 +98,10 @@
 		const mapHeight = mapHeightX;
 		const messageLength = messageLengthX;
 		const magVar = magVarX;
-		const padding = 20
+		const gateTopPixels = [gateTopPixelsX];
+		const gateLeftPixels = [gateLeftPixelsX];
+		const gateBearings = [gateBearingsX];
+		const padding = 20;
 	
 		var currentGateNo = VarGet("S:currentGateNo" ,"NUMBER");
 		var planeHeadingT = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI + magVar;
@@ -37,7 +111,7 @@
 			planeHeadingT = planeHeadingT + 360;
 		var planeLonDeg = VarGet("A:PLANE LONGITUDE" ,"Radians") * 180 / Math.PI; // x
 		var planeLatDeg = VarGet("A:PLANE LATITUDE" ,"Radians") * 180 / Math.PI;  // y
-		var messageHeight = mapHeight - 2 * padding;
+		var messageHeight = mapHeight;
 		var messageWidth = 0.75 * messageHeight * messageLength;
 		planeTopPixels = Math.round((planeLatDeg - mapNorth) / (mapSouth - mapNorth) * messageHeight);
 		planeLeftPixels = Math.round((planeLonDeg - mapWest) / (mapEast - mapWest) * messageWidth);
@@ -46,27 +120,36 @@
 			smokeHasToggled = true;
 		smokeOld = smokeOn;
 		if (smokeHasToggled && smokeOn == 1) {
-			oldPlaneTopPixels = planeTopPixels;
-			oldPlaneLeftPixels = planeLeftPixels;
-			context.beginPath();
-			if ((planeHeadingT > 345 || planeHeadingT < 15) || (planeHeadingT > 75 && planeHeadingT < 105) || (planeHeadingT > 165 && planeHeadingT < 195) || (planeHeadingT > 255 && planeHeadingT < 285))
-				context.lineWidth = "10";
-			else
-				context.lineWidth = "7";
-			document.getElementById('debug').innerHTML = "currentGateNo = " + currentGateNo;
-			context.strokeStyle = "red"; 
-			context.lineCap = "round";
+			startTopPixels = gateTopPixels[currentGateNo];
+			startLeftPixels = gateLeftPixels[currentGateNo];
+			rotateSquareArray(endCap, curCap, (gateBearings[currentGateNo] + 180) % 360);
+			if (gateBearings[currentGateNo] == 0)
+				drawCap(startTopPixels + 20, startLeftPixels - 5 + 20, curCap);
+			else if (gateBearings[currentGateNo] == 90)
+				drawCap(startTopPixels - 5 + 20, startLeftPixels - 10 + 20, curCap);
+			else if (gateBearings[currentGateNo] == 180)
+				drawCap(startTopPixels - 10 + 20, startLeftPixels - 5 + 20, curCap);
+			else if (gateBearings[currentGateNo] == 270)
+				drawCap(startTopPixels - 5 + 20, startLeftPixels + 20, curCap);
 			smokeHasToggled = false;
 		}
 		if (smokeOn == 1) {
-			document.getElementById('debug').innerHTML = "currentGateNo = " + currentGateNo;
-			context.moveTo(oldPlaneLeftPixels + padding, oldPlaneTopPixels + padding);
-			context.lineTo(planeLeftPixels + padding, planeTopPixels + padding);
-			context.stroke(); // Draw it
 		}
-		oldPlaneTopPixels = planeTopPixels;
-		oldPlaneLeftPixels = planeLeftPixels;
 		window.requestAnimationFrame(update);
+		if (smokeHasToggled && smokeOn == 0) {
+			startTopPixels = gateTopPixels[currentGateNo];
+			startLeftPixels = gateLeftPixels[currentGateNo];
+			rotateSquareArray(endCap, curCap, gateBearings[currentGateNo]);
+			if (gateBearings[currentGateNo] == 0)
+				drawCap(startTopPixels + 20, startLeftPixels - 5 + 20, curCap);
+			else if (gateBearings[currentGateNo] == 90)
+				drawCap(startTopPixels - 5 + 20, startLeftPixels - 10 + 20, curCap);
+			else if (gateBearings[currentGateNo] == 180)
+				drawCap(startTopPixels - 10 + 20, startLeftPixels - 5 + 20, curCap);
+			else if (gateBearings[currentGateNo] == 270)
+				drawCap(startTopPixels - 5 + 20, startLeftPixels + 20, curCap);
+			smokeHasToggled = false;
+		}
 	}
 	window.requestAnimationFrame(update);
 	</script>

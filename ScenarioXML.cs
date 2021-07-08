@@ -1161,16 +1161,31 @@ namespace P3D_Scenario_Generator
 			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.SignWriting.html");
 			StreamReader reader = new StreamReader(stream);
 			signWritingHTML = reader.ReadToEnd();
-			double canvasWidth = Parameters.MessageWindowHeight * 0.75 * Parameters.Message.Length;
-			signWritingHTML = signWritingHTML.Replace("canvasWidthX", canvasWidth.ToString());
-			signWritingHTML = signWritingHTML.Replace("canvasHeightX", Parameters.MessageWindowHeight.ToString());
+			signWritingHTML = signWritingHTML.Replace("canvasWidthX", (Gates.unitPixels * 3 * Parameters.Message.Length - Gates.unitPixels + 40).ToString());
+			signWritingHTML = signWritingHTML.Replace("canvasHeightX", (Gates.unitPixels * 4 + 40).ToString());
 			signWritingHTML = signWritingHTML.Replace("mapNorthX", (Runway.AirportLat + Gates.unitSegment * 4).ToString());
 			signWritingHTML = signWritingHTML.Replace("mapEastX", (Runway.AirportLon + Gates.unitSegment * 3 * Parameters.Message.Length).ToString());
 			signWritingHTML = signWritingHTML.Replace("mapSouthX", Runway.AirportLat.ToString());
 			signWritingHTML = signWritingHTML.Replace("mapWestX", Runway.AirportLon.ToString());
-			signWritingHTML = signWritingHTML.Replace("mapHeightX", Parameters.MessageWindowHeight.ToString());
+			signWritingHTML = signWritingHTML.Replace("mapHeightX", (Gates.unitPixels * 4).ToString());
 			signWritingHTML = signWritingHTML.Replace("messageLengthX", Parameters.Message.Length.ToString());
 			signWritingHTML = signWritingHTML.Replace("magVarX", Runway.MagVar.ToString());
+			string topPixels = "0,";
+			string leftPixels = "0,";
+			Gate gate;
+			for (int index = 0; index < Gates.GateCount; index++)
+            {
+				gate = Gates.GetGate(index);
+				topPixels += gate.topPixels.ToString();
+				leftPixels += gate.leftPixels.ToString();
+				if (index < Gates.GateCount - 1)
+				{
+					topPixels += ",";
+					leftPixels += ",";
+				}
+			}
+			signWritingHTML = signWritingHTML.Replace("gateTopPixelsX", topPixels);
+			signWritingHTML = signWritingHTML.Replace("gateLeftPixelsX", leftPixels);
 			File.WriteAllText(saveLocation, signWritingHTML);
 			stream.Dispose();
 		}
@@ -1202,10 +1217,10 @@ namespace P3D_Scenario_Generator
 			string search = $"Scaleform_Panel_Window_SignWriting";
 			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
 			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
-			double windowWidth = Parameters.MessageWindowHeight * 0.75 * Parameters.Message.Length;
+			double windowWidth = Gates.unitPixels * 3 * Parameters.Message.Length - Gates.unitPixels + 55;
 			if (windowWidth > Parameters.MessageWindowWidth)
 				windowWidth = Parameters.MessageWindowWidth;
-			SetWindowSize sws = new SetWindowSize((windowWidth + 20).ToString(), (Parameters.MessageWindowHeight + 35).ToString());
+			SetWindowSize sws = new SetWindowSize((windowWidth).ToString(), (Gates.unitPixels * 4 + 60).ToString());
 			SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 			{
 				Descr = $"Open_Scaleform_Panel_Window_SignWriting",
