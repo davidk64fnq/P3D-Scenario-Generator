@@ -46,8 +46,7 @@ namespace P3D_Scenario_Generator
         private static readonly List<Gate> gates = new List<Gate>();
         private static readonly int signLetterNoGates = 44;
         internal static readonly double unitSegment = 36.0 / 3600;   // approx 3600ft or 36 secs of latitude
-        internal static readonly double unitPixels = 48;
-        internal static readonly double unitHalfLinePixels = 6;
+        internal static readonly double cellPixels = 36;
 
         internal static int GateCount { get; private set; }
 
@@ -127,7 +126,6 @@ namespace P3D_Scenario_Generator
         internal static void SetSignGatesLetter()
         {
             double junctionRadius = 2.0 / 3600;
-            double cellPixels = 48;
             double cellInset = 2;
 
             gates.Add(new Gate(0, junctionRadius, 0, 0, 90, cellPixels * 4, cellInset));                                                       // Start segment 1

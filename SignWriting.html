@@ -17,6 +17,7 @@
 	var planeLeftPixels;
 	var startTopPixels;
 	var startLeftPixels;
+	const padding = 20;
 	
 	const colours = ["", "red", "black"];
 	
@@ -45,6 +46,10 @@
 	curCap[8] = [];
 	curCap[9] = [];
 	curCap[10] = [];
+	
+	const gateTopPixels = [gateTopPixelsX];
+	const gateLeftPixels = [gateLeftPixelsX];
+	const gateBearings = [gateBearingsX];
 	
 	function rotateSquareArray(inArray, outArray, rotation)
 	{
@@ -89,6 +94,66 @@
 		}
 	}
 	
+	function drawLine(finishGateNo)
+	{
+		if (gateBearings[finishGateNo] == 0){
+			if (planeTopPixels >= gateTopPixels[finishGateNo - 1] - 5)
+				planeTopPixels = gateTopPixels[finishGateNo - 1] - 6;
+			if (planeTopPixels <= gateTopPixels[finishGateNo] + 5)
+				planeTopPixels = gateTopPixels[finishGateNo] + 6;
+			var lineHeight = (gateTopPixels[finishGateNo - 1] - 6) - planeTopPixels;
+			var lineStartTop = planeTopPixels + padding;
+			var lineStartLeftMiddle = gateLeftPixels[finishGateNo] + padding;
+			context.fillStyle = colours[2];
+			context.fillRect(lineStartLeftMiddle - 5, lineStartTop, 1, lineHeight);
+			context.fillRect(lineStartLeftMiddle + 5, lineStartTop, 1, lineHeight);
+			context.fillStyle = colours[1];
+			context.fillRect(lineStartLeftMiddle - 4, lineStartTop, 9, lineHeight);
+		}
+		else if (gateBearings[finishGateNo] == 90){
+			if (planeLeftPixels <= gateLeftPixels[finishGateNo - 1] + 5)
+				planeLeftPixels = gateLeftPixels[finishGateNo - 1] + 6;
+			if (planeLeftPixels >= gateLeftPixels[finishGateNo] - 5)
+				planeLeftPixels = gateLeftPixels[finishGateNo] - 6;
+			var lineLength = planeLeftPixels - (gateLeftPixels[finishGateNo - 1] + 6);
+			var lineStartLeft = gateLeftPixels[finishGateNo - 1] + 6 + padding;
+			var lineStartTopMiddle = gateTopPixels[finishGateNo] + padding;
+			context.fillStyle = colours[2];
+			context.fillRect(lineStartLeft, lineStartTopMiddle - 5, lineLength, 1);
+			context.fillRect(lineStartLeft, lineStartTopMiddle + 5, lineLength, 1);
+			context.fillStyle = colours[1];
+			context.fillRect(lineStartLeft, lineStartTopMiddle - 4, lineLength, 9);
+		}
+		else if (gateBearings[finishGateNo] == 180){
+			if (planeTopPixels <= gateTopPixels[finishGateNo - 1] + 5)
+				planeTopPixels = gateTopPixels[finishGateNo - 1] + 6;
+			if (planeTopPixels >= gateTopPixels[finishGateNo] - 5)
+				planeTopPixels = gateTopPixels[finishGateNo] - 6;
+			var lineHeight = planeTopPixels - (gateTopPixels[finishGateNo - 1] + 6);
+			var lineStartTop = gateTopPixels[finishGateNo - 1] + 6 + padding;
+			var lineStartLeftMiddle = gateLeftPixels[finishGateNo] + padding;
+			context.fillStyle = colours[2];
+			context.fillRect(lineStartLeftMiddle - 5, lineStartTop, 1, lineHeight);
+			context.fillRect(lineStartLeftMiddle + 5, lineStartTop, 1, lineHeight);
+			context.fillStyle = colours[1];
+			context.fillRect(lineStartLeftMiddle - 4, lineStartTop, 9, lineHeight);
+		}
+		else if (gateBearings[finishGateNo] == 270){
+			if (planeLeftPixels >= gateLeftPixels[finishGateNo - 1] - 5)
+				planeLeftPixels = gateLeftPixels[finishGateNo - 1] - 6;
+			if (planeLeftPixels <= gateLeftPixels[finishGateNo] + 5)
+				planeLeftPixels = gateLeftPixels[finishGateNo] + 6;
+			var lineLength = (gateLeftPixels[finishGateNo - 1] - 6) - planeLeftPixels;
+			var lineStartLeft = planeLeftPixels + padding;
+			var lineStartTopMiddle = gateTopPixels[finishGateNo] + padding;
+			context.fillStyle = colours[2];
+			context.fillRect(lineStartLeft, lineStartTopMiddle - 5, lineLength, 1);
+			context.fillRect(lineStartLeft, lineStartTopMiddle + 5, lineLength, 1);
+			context.fillStyle = colours[1];
+			context.fillRect(lineStartLeft, lineStartTopMiddle - 4, lineLength, 9);
+		}
+	}
+	
 	function update(timestamp)
 	{
 		const mapNorth = mapNorthX; 
@@ -98,10 +163,6 @@
 		const mapHeight = mapHeightX;
 		const messageLength = messageLengthX;
 		const magVar = magVarX;
-		const gateTopPixels = [gateTopPixelsX];
-		const gateLeftPixels = [gateLeftPixelsX];
-		const gateBearings = [gateBearingsX];
-		const padding = 20;
 	
 		var currentGateNo = VarGet("S:currentGateNo" ,"NUMBER");
 		var planeHeadingT = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI + magVar;
@@ -124,32 +185,33 @@
 			startLeftPixels = gateLeftPixels[currentGateNo];
 			rotateSquareArray(endCap, curCap, (gateBearings[currentGateNo] + 180) % 360);
 			if (gateBearings[currentGateNo] == 0)
-				drawCap(startTopPixels + 20, startLeftPixels - 5 + 20, curCap);
+				drawCap(startTopPixels - 11 + padding, startLeftPixels - 5 + padding, curCap);
 			else if (gateBearings[currentGateNo] == 90)
-				drawCap(startTopPixels - 5 + 20, startLeftPixels - 10 + 20, curCap);
+				drawCap(startTopPixels - 5 + padding, startLeftPixels + padding, curCap);
 			else if (gateBearings[currentGateNo] == 180)
-				drawCap(startTopPixels - 10 + 20, startLeftPixels - 5 + 20, curCap);
+				drawCap(startTopPixels + padding, startLeftPixels - 5 + padding, curCap);
 			else if (gateBearings[currentGateNo] == 270)
-				drawCap(startTopPixels - 5 + 20, startLeftPixels + 20, curCap);
+				drawCap(startTopPixels - 5 + padding, startLeftPixels - 11 + padding, curCap);
 			smokeHasToggled = false;
 		}
 		if (smokeOn == 1) {
+			drawLine(currentGateNo + 1);
 		}
-		window.requestAnimationFrame(update);
 		if (smokeHasToggled && smokeOn == 0) {
 			startTopPixels = gateTopPixels[currentGateNo];
 			startLeftPixels = gateLeftPixels[currentGateNo];
 			rotateSquareArray(endCap, curCap, gateBearings[currentGateNo]);
 			if (gateBearings[currentGateNo] == 0)
-				drawCap(startTopPixels + 20, startLeftPixels - 5 + 20, curCap);
+				drawCap(startTopPixels + padding, startLeftPixels - 5 + padding, curCap);
 			else if (gateBearings[currentGateNo] == 90)
-				drawCap(startTopPixels - 5 + 20, startLeftPixels - 10 + 20, curCap);
+				drawCap(startTopPixels - 5 + padding, startLeftPixels - 11 + padding, curCap);
 			else if (gateBearings[currentGateNo] == 180)
-				drawCap(startTopPixels - 10 + 20, startLeftPixels - 5 + 20, curCap);
+				drawCap(startTopPixels - 11 + padding, startLeftPixels - 5 + padding, curCap);
 			else if (gateBearings[currentGateNo] == 270)
-				drawCap(startTopPixels - 5 + 20, startLeftPixels + 20, curCap);
+				drawCap(startTopPixels - 5 + padding, startLeftPixels + padding, curCap);
 			smokeHasToggled = false;
 		}
+		window.requestAnimationFrame(update);
 	}
 	window.requestAnimationFrame(update);
 	</script>
