@@ -14,6 +14,7 @@ namespace P3D_Scenario_Generator
 
         public Form()
         {
+            SignWriting.InitLetterPaths();
             InitializeComponent();
 
             // Populate ICAO listbox
@@ -308,7 +309,7 @@ namespace P3D_Scenario_Generator
             }
 
             for (int i = 0; i < ((TextBox)sender).Text.Length; i++)
-                if (!char.IsLetter(((TextBox)sender).Text[i]))
+                if (!char.IsLetter(((TextBox)sender).Text[i]) && ((TextBox)sender).Text[i] != ' ')
                 {
                     MessageBox.Show($"Alphabetic string expected, 'A' to 'Z' and 'a' to 'z' only", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
                     e.Cancel = true;

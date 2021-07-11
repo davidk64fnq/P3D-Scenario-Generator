@@ -44,11 +44,9 @@ namespace P3D_Scenario_Generator
     internal class Gates
     {
         private static readonly List<Gate> gates = new List<Gate>();
-        private static readonly int signLetterNoGates = 44;
         internal static readonly double unitSegment = 36.0 / 3600;   // approx 3600ft or 36 secs of latitude
         private static readonly double junctionRadius = 2.0 / 3600;
         internal static readonly double cellPixels = 36;
-        private static readonly double cellInset = 2;
 
         internal static int GateCount { get; private set; }
 
@@ -115,22 +113,33 @@ namespace P3D_Scenario_Generator
 
         internal static void SetSignGatesMessage()
         {
+            int signLetterNoGates;
             gates.Clear();
             for (int index = 0; index < Parameters.Message.Length; index++)
             {
-                SetSignGatesLetter();
-                TranslateGates(GateCount - signLetterNoGates, signLetterNoGates, 0, unitSegment * 3 * index, 0);
+                if (Parameters.Message[index] != ' ')
+                {
+                    signLetterNoGates = SetSignGatesLetter(index);
+                    TranslateGates(GateCount - signLetterNoGates, signLetterNoGates, 0, unitSegment * 3 * index, 0);
+                }
             }
             TiltGates(0, GateCount);
             TranslateGates(0, GateCount, Runway.AirportLat, Runway.AirportLon, Runway.Altitude + 1000);
         }
 
-        internal static void SetSegmentGate(double latCoef, double latOffsetCoef, double lonCoef, double lonOffsetCoef, double orientation, double topPixels, double leftPixels)
+        internal static void SetSegmentGate(double latCoef, double latOffsetCoef, double lonCoef, double lonOffsetCoef, double orientation, double topPixels, double leftPixels, int gateNo, int letterIndex)
         {
             double lat = unitSegment * latCoef + junctionRadius * latOffsetCoef;
             double lon = unitSegment * lonCoef + junctionRadius * lonOffsetCoef;
             double amsl = 0;
             double pitch;
+
+            // convert gateNo to segment position
+            int segmentIndex = gateNo / 2;
+            if (!SignWriting.SegmentIsSet(Parameters.Message[letterIndex], segmentIndex))
+            {
+                return;
+            }
 
             if ((orientation == 90) || (orientation == 270))
             {
@@ -145,56 +154,64 @@ namespace P3D_Scenario_Generator
                 pitch = -Parameters.TiltAngle;
             }
 
+            // shift left pixels based on which letter it is in message
+            leftPixels += letterIndex * 105;
+
+            GateCount++;
             gates.Add(new Gate(lat, lon, amsl, pitch, orientation, topPixels, leftPixels));
         }
 
-        internal static void SetSignGatesLetter()
+        internal static int SetSignGatesLetter(int letterIndex)
         {
-            SetSegmentGate(0, 0, 0, 1, 90, 140, 2);
-            SetSegmentGate(0, 0, 1, -1, 90, 140, 34);
-            SetSegmentGate(0, 0, 1, 1, 90, 140, 37);
-            SetSegmentGate(0, 0, 2, -1, 90, 140, 69);
-            SetSegmentGate(1, 0, 2, -1, 270,105, 69);
-            SetSegmentGate(1, 0, 1, 1, 270, 105, 37);
-            SetSegmentGate(1, 0, 1, -1, 270, 105, 34);
-            SetSegmentGate(1, 0, 0, 1, 270, 105, 2);
-            SetSegmentGate(2, 0, 0, 1, 90, 70, 2);
-            SetSegmentGate(2, 0, 1, -1, 90, 70, 34);
-            SetSegmentGate(2, 0, 1, 1, 90, 70, 37);
-            SetSegmentGate(2, 0, 2, -1, 90, 70, 69);
-            SetSegmentGate(3, 0, 2, -1, 270, 35, 69);
-            SetSegmentGate(3, 0, 1, 1, 270, 35, 37);
-            SetSegmentGate(3, 0, 1, -1, 270, 35, 34);
-            SetSegmentGate(3, 0, 0, 1, 270, 35, 2);
-            SetSegmentGate(4, 0, 0, 1, 90, 0, 2);
-            SetSegmentGate(4, 0, 1, -1, 90, 0, 34);
-            SetSegmentGate(4, 0, 1, 1, 90, 0, 37);
-            SetSegmentGate(4, 0, 2, -1, 90, 0, 69);
-            SetSegmentGate(4, -1, 0, 0, 180, 2, 0);
-            SetSegmentGate(3, 1, 0, 0, 180, 34, 0);
-            SetSegmentGate(3, -1, 0, 0, 180, 37, 0);
-            SetSegmentGate(2, 1, 0, 0, 180, 69, 0);
-            SetSegmentGate(2, -1, 0, 0, 180, 72, 0);
-            SetSegmentGate(1, 1, 0, 0, 180, 104, 0);
-            SetSegmentGate(1, -1, 0, 0, 180, 107, 0);
-            SetSegmentGate(0, 1, 0, 0, 180, 139, 0);
-            SetSegmentGate(0, 1, 1, 0, 0, 139, 35);
-            SetSegmentGate(1, -1, 1, 0, 0, 107, 35);
-            SetSegmentGate(1, 1, 1, 0, 0, 104, 35);
-            SetSegmentGate(2, -1, 1, 0, 0, 72, 35);
-            SetSegmentGate(2, 1, 1, 0, 0, 69, 35);
-            SetSegmentGate(3, -1, 1, 0, 0, 37, 35);
-            SetSegmentGate(3, 1, 1, 0, 0, 34, 35);
-            SetSegmentGate(4, -1, 1, 0, 0, 2, 35);
-            SetSegmentGate(4, -1, 2, 0, 180, 2, 70);
-            SetSegmentGate(3, 1, 2, 0, 180, 34, 70);
-            SetSegmentGate(3, -1, 2, 0, 180, 37, 70);
-            SetSegmentGate(2, 1, 2, 0, 180, 69, 70);
-            SetSegmentGate(2, -1, 2, 0, 180, 72, 70);
-            SetSegmentGate(1, 1, 2, 0, 180, 104, 70);
-            SetSegmentGate(1, -1, 2, 0, 180, 107, 70);
-            SetSegmentGate(0, 1, 2, 0, 180, 139, 70);
-            GateCount += signLetterNoGates;
+            int gateNo = 0;
+            int startNoGates = GateCount;
+
+            SetSegmentGate(0, 0, 0, 1, 90, 140, 2, gateNo++, letterIndex);
+            SetSegmentGate(0, 0, 1, -1, 90, 140, 34, gateNo++, letterIndex);
+            SetSegmentGate(0, 0, 1, 1, 90, 140, 37, gateNo++, letterIndex);
+            SetSegmentGate(0, 0, 2, -1, 90, 140, 69, gateNo++, letterIndex);
+            SetSegmentGate(1, 0, 2, -1, 270,105, 69, gateNo++, letterIndex);
+            SetSegmentGate(1, 0, 1, 1, 270, 105, 37, gateNo++, letterIndex);
+            SetSegmentGate(1, 0, 1, -1, 270, 105, 34, gateNo++, letterIndex);
+            SetSegmentGate(1, 0, 0, 1, 270, 105, 2, gateNo++, letterIndex);
+            SetSegmentGate(2, 0, 0, 1, 90, 70, 2, gateNo++, letterIndex);
+            SetSegmentGate(2, 0, 1, -1, 90, 70, 34, gateNo++, letterIndex);
+            SetSegmentGate(2, 0, 1, 1, 90, 70, 37, gateNo++, letterIndex);
+            SetSegmentGate(2, 0, 2, -1, 90, 70, 69, gateNo++, letterIndex);
+            SetSegmentGate(3, 0, 2, -1, 270, 35, 69, gateNo++, letterIndex);
+            SetSegmentGate(3, 0, 1, 1, 270, 35, 37, gateNo++, letterIndex);
+            SetSegmentGate(3, 0, 1, -1, 270, 35, 34, gateNo++, letterIndex);
+            SetSegmentGate(3, 0, 0, 1, 270, 35, 2, gateNo++, letterIndex);
+            SetSegmentGate(4, 0, 0, 1, 90, 0, 2, gateNo++, letterIndex);
+            SetSegmentGate(4, 0, 1, -1, 90, 0, 34, gateNo++, letterIndex);
+            SetSegmentGate(4, 0, 1, 1, 90, 0, 37, gateNo++, letterIndex);
+            SetSegmentGate(4, 0, 2, -1, 90, 0, 69, gateNo++, letterIndex);
+            SetSegmentGate(4, -1, 0, 0, 180, 2, 0, gateNo++, letterIndex);
+            SetSegmentGate(3, 1, 0, 0, 180, 34, 0, gateNo++, letterIndex);
+            SetSegmentGate(3, -1, 0, 0, 180, 37, 0, gateNo++, letterIndex);
+            SetSegmentGate(2, 1, 0, 0, 180, 69, 0, gateNo++, letterIndex);
+            SetSegmentGate(2, -1, 0, 0, 180, 72, 0, gateNo++, letterIndex);
+            SetSegmentGate(1, 1, 0, 0, 180, 104, 0, gateNo++, letterIndex);
+            SetSegmentGate(1, -1, 0, 0, 180, 107, 0, gateNo++, letterIndex);
+            SetSegmentGate(0, 1, 0, 0, 180, 139, 0, gateNo++, letterIndex);
+            SetSegmentGate(0, 1, 1, 0, 0, 139, 35, gateNo++, letterIndex);
+            SetSegmentGate(1, -1, 1, 0, 0, 107, 35, gateNo++, letterIndex);
+            SetSegmentGate(1, 1, 1, 0, 0, 104, 35, gateNo++, letterIndex);
+            SetSegmentGate(2, -1, 1, 0, 0, 72, 35, gateNo++, letterIndex);
+            SetSegmentGate(2, 1, 1, 0, 0, 69, 35, gateNo++, letterIndex);
+            SetSegmentGate(3, -1, 1, 0, 0, 37, 35, gateNo++, letterIndex);
+            SetSegmentGate(3, 1, 1, 0, 0, 34, 35, gateNo++, letterIndex);
+            SetSegmentGate(4, -1, 1, 0, 0, 2, 35, gateNo++, letterIndex);
+            SetSegmentGate(4, -1, 2, 0, 180, 2, 70, gateNo++, letterIndex);
+            SetSegmentGate(3, 1, 2, 0, 180, 34, 70, gateNo++, letterIndex);
+            SetSegmentGate(3, -1, 2, 0, 180, 37, 70, gateNo++, letterIndex);
+            SetSegmentGate(2, 1, 2, 0, 180, 69, 70, gateNo++, letterIndex);
+            SetSegmentGate(2, -1, 2, 0, 180, 72, 70, gateNo++, letterIndex);
+            SetSegmentGate(1, 1, 2, 0, 180, 104, 70, gateNo++, letterIndex);
+            SetSegmentGate(1, -1, 2, 0, 180, 107, 70, gateNo++, letterIndex);
+            SetSegmentGate(0, 1, 2, 0, 180, 139, 70, gateNo++, letterIndex);
+
+            return GateCount - startNoGates;
         }
 
         internal static void TiltGates(int startGateIndex, int noGates)
