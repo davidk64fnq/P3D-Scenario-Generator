@@ -23,6 +23,8 @@ namespace P3D_Scenario_Generator
 
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.circuitTab.jpg");
             PictureBoxCircuit.Image = new Bitmap(stream);
+            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.signTabSegment22Font.jpg");
+            PictureBoxSignWriting.Image = new Bitmap(stream);
         }
 
         #region General Tab

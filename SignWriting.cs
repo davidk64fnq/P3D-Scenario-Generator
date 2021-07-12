@@ -6,7 +6,7 @@ namespace P3D_Scenario_Generator
 {
     internal class SignWriting
     {
-        private static readonly int[] letterPath = new int[122];
+        private static readonly int[] letterPath = new int[123];
 
         static internal void InitLetterPaths()
         {
@@ -36,7 +36,32 @@ namespace P3D_Scenario_Generator
             letterPath['X'] = 2467020;
             letterPath['Y'] = 838704;
             letterPath['Z'] = 369483;
-        //    letterPath[''] = ;
+            letterPath['a'] = 3277760;
+            letterPath['b'] = 2230208;
+            letterPath['c'] = 2228992;
+            letterPath['d'] = 2229216;
+            letterPath['e'] = 2491200;
+            letterPath['f'] = 393984;
+            letterPath['g'] = 2491072;
+            letterPath['h'] = 133056;
+            letterPath['i'] = 192;
+            letterPath['j'] = 2097344;
+            letterPath['k'] = 395168;
+            letterPath['l'] = 2098944;
+            letterPath['m'] = 197571;
+            letterPath['n'] = 132032;
+            letterPath['o'] = 2229184;
+            letterPath['p'] = 394048;
+            letterPath['q'] = 393920;
+            letterPath['r'] = 131840;
+            letterPath['s'] = 2491008;
+            letterPath['t'] = 196832;
+            letterPath['u'] = 2098112;
+            letterPath['v'] = 262848;
+            letterPath['w'] = 3146691;
+            letterPath['x'] = 263104;
+            letterPath['y'] = 2360000;
+            letterPath['z'] = 2490688;
         }
 
         static internal bool SegmentIsSet(char letter, int bitPosition)

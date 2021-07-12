@@ -81,6 +81,11 @@ namespace P3D_Scenario_Generator
             this.label11 = new System.Windows.Forms.Label();
             this.TextBoxPhotoMaxLegDist = new System.Windows.Forms.TextBox();
             this.TabPageSign = new System.Windows.Forms.TabPage();
+            this.PictureBoxSignWriting = new System.Windows.Forms.PictureBox();
+            this.TextBoxSignWindowWidth = new System.Windows.Forms.TextBox();
+            this.TextBoxSignFont = new System.Windows.Forms.TextBox();
+            this.label21 = new System.Windows.Forms.Label();
+            this.label20 = new System.Windows.Forms.Label();
             this.TextBoxSignTilt = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
             this.TextBoxSignMessage = new System.Windows.Forms.TextBox();
@@ -88,10 +93,6 @@ namespace P3D_Scenario_Generator
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ButtonHelp = new System.Windows.Forms.Button();
-            this.label20 = new System.Windows.Forms.Label();
-            this.label21 = new System.Windows.Forms.Label();
-            this.TextBoxSignWindowHeight = new System.Windows.Forms.TextBox();
-            this.TextBoxSignWindowWidth = new System.Windows.Forms.TextBox();
             this.TabControl.SuspendLayout();
             this.TabPageGeneral.SuspendLayout();
             this.TabPageCircuit.SuspendLayout();
@@ -99,6 +100,7 @@ namespace P3D_Scenario_Generator
             ((System.ComponentModel.ISupportInitialize)(this.PictureBoxCircuit)).BeginInit();
             this.TabPagePhoto.SuspendLayout();
             this.TabPageSign.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.PictureBoxSignWriting)).BeginInit();
             this.SuspendLayout();
             // 
             // TabControl
@@ -643,8 +645,9 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageSign
             // 
+            this.TabPageSign.Controls.Add(this.PictureBoxSignWriting);
             this.TabPageSign.Controls.Add(this.TextBoxSignWindowWidth);
-            this.TabPageSign.Controls.Add(this.TextBoxSignWindowHeight);
+            this.TabPageSign.Controls.Add(this.TextBoxSignFont);
             this.TabPageSign.Controls.Add(this.label21);
             this.TabPageSign.Controls.Add(this.label20);
             this.TabPageSign.Controls.Add(this.TextBoxSignTilt);
@@ -658,13 +661,59 @@ namespace P3D_Scenario_Generator
             this.TabPageSign.Text = "Sign Writing";
             this.TabPageSign.UseVisualStyleBackColor = true;
             // 
+            // PictureBoxSignWriting
+            // 
+            this.PictureBoxSignWriting.Location = new System.Drawing.Point(279, 71);
+            this.PictureBoxSignWriting.Name = "PictureBoxSignWriting";
+            this.PictureBoxSignWriting.Size = new System.Drawing.Size(500, 241);
+            this.PictureBoxSignWriting.TabIndex = 8;
+            this.PictureBoxSignWriting.TabStop = false;
+            // 
+            // TextBoxSignWindowWidth
+            // 
+            this.TextBoxSignWindowWidth.Location = new System.Drawing.Point(148, 166);
+            this.TextBoxSignWindowWidth.Name = "TextBoxSignWindowWidth";
+            this.TextBoxSignWindowWidth.Size = new System.Drawing.Size(100, 23);
+            this.TextBoxSignWindowWidth.TabIndex = 7;
+            this.TextBoxSignWindowWidth.Text = "1000";
+            this.TextBoxSignWindowWidth.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.TextBoxSignWindowWidth.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
+            // TextBoxSignFont
+            // 
+            this.TextBoxSignFont.Enabled = false;
+            this.TextBoxSignFont.Location = new System.Drawing.Point(148, 118);
+            this.TextBoxSignFont.Name = "TextBoxSignFont";
+            this.TextBoxSignFont.Size = new System.Drawing.Size(100, 23);
+            this.TextBoxSignFont.TabIndex = 6;
+            this.TextBoxSignFont.Text = "Segment 22";
+            this.TextBoxSignFont.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(16, 175);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(86, 15);
+            this.label21.TabIndex = 5;
+            this.label21.Text = "Window Width";
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(16, 126);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(31, 15);
+            this.label20.TabIndex = 4;
+            this.label20.Text = "Font";
+            // 
             // TextBoxSignTilt
             // 
             this.TextBoxSignTilt.Location = new System.Drawing.Point(148, 71);
             this.TextBoxSignTilt.Name = "TextBoxSignTilt";
             this.TextBoxSignTilt.Size = new System.Drawing.Size(100, 23);
             this.TextBoxSignTilt.TabIndex = 3;
-            this.TextBoxSignTilt.Text = "0";
+            this.TextBoxSignTilt.Text = "10";
             this.TextBoxSignTilt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.TextBoxSignTilt.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
             // 
@@ -682,7 +731,7 @@ namespace P3D_Scenario_Generator
             // 
             this.TextBoxSignMessage.Location = new System.Drawing.Point(148, 26);
             this.TextBoxSignMessage.Name = "TextBoxSignMessage";
-            this.TextBoxSignMessage.Size = new System.Drawing.Size(232, 23);
+            this.TextBoxSignMessage.Size = new System.Drawing.Size(631, 23);
             this.TextBoxSignMessage.TabIndex = 1;
             this.TextBoxSignMessage.Text = "A";
             this.toolTip1.SetToolTip(this.TextBoxSignMessage, "Message consisting only of alphabetic characters");
@@ -718,44 +767,6 @@ namespace P3D_Scenario_Generator
             this.ButtonHelp.UseVisualStyleBackColor = true;
             this.ButtonHelp.Click += new System.EventHandler(this.ButtonHelp_Click);
             // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(16, 126);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(90, 15);
-            this.label20.TabIndex = 4;
-            this.label20.Text = "Window Height";
-            // 
-            // label21
-            // 
-            this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(16, 175);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(86, 15);
-            this.label21.TabIndex = 5;
-            this.label21.Text = "Window Width";
-            // 
-            // TextBoxSignWindowHeight
-            // 
-            this.TextBoxSignWindowHeight.Location = new System.Drawing.Point(148, 118);
-            this.TextBoxSignWindowHeight.Name = "TextBoxSignWindowHeight";
-            this.TextBoxSignWindowHeight.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxSignWindowHeight.TabIndex = 6;
-            this.TextBoxSignWindowHeight.Text = "300";
-            this.TextBoxSignWindowHeight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.TextBoxSignWindowHeight.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
-            // 
-            // TextBoxSignWindowWidth
-            // 
-            this.TextBoxSignWindowWidth.Location = new System.Drawing.Point(148, 166);
-            this.TextBoxSignWindowWidth.Name = "TextBoxSignWindowWidth";
-            this.TextBoxSignWindowWidth.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxSignWindowWidth.TabIndex = 7;
-            this.TextBoxSignWindowWidth.Text = "1000";
-            this.TextBoxSignWindowWidth.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.TextBoxSignWindowWidth.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
-            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -780,6 +791,7 @@ namespace P3D_Scenario_Generator
             this.TabPagePhoto.PerformLayout();
             this.TabPageSign.ResumeLayout(false);
             this.TabPageSign.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.PictureBoxSignWriting)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -848,9 +860,10 @@ namespace P3D_Scenario_Generator
         internal System.Windows.Forms.TextBox TextBoxSignTilt;
         private System.Windows.Forms.Label label19;
         internal System.Windows.Forms.TextBox TextBoxSignWindowWidth;
-        internal System.Windows.Forms.TextBox TextBoxSignWindowHeight;
+        internal System.Windows.Forms.TextBox TextBoxSignFont;
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.PictureBox PictureBoxSignWriting;
     }
 }
 

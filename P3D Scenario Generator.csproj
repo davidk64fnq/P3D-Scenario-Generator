@@ -20,6 +20,7 @@
     <None Remove="runways.xml" />
     <None Remove="scriptsMovingMap.js" />
     <None Remove="scriptsSignWriting.js" />
+    <None Remove="signTabSegment22Font.jpg" />
     <None Remove="SignWriting.html" />
     <None Remove="source.fxml" />
     <None Remove="styleMovingMap.css" />
@@ -42,6 +43,7 @@
     <EmbeddedResource Include="runways.xml" />
     <EmbeddedResource Include="scriptsMovingMap.js" />
     <EmbeddedResource Include="scriptsSignWriting.js" />
+    <EmbeddedResource Include="signTabSegment22Font.jpg" />
     <EmbeddedResource Include="SignWriting.html" />
     <EmbeddedResource Include="source.fxml" />
     <EmbeddedResource Include="styleMovingMap.css" />
