@@ -93,7 +93,7 @@ function showAerialMap() {
 }
 
 function showAerialLabelsMap() {
-	curMap = 'aerialMap';
+	curMap = 'aerialLabelsMap';
 	if (zoomFactor == 1){
 		document.getElementById('aerialLabelsMapZoom1').style.display = 'inline';
 		document.getElementById('roadMapZoom1').style.display = 'none';

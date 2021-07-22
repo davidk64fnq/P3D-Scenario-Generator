@@ -10,6 +10,7 @@ namespace P3D_Scenario_Generator
 
         static internal void InitLetterPaths()
         {
+            letterPath['@'] = 4194303;  // Test character all segments turned on
             letterPath['A'] = 3948336;
             letterPath['B'] = 4178723;
             letterPath['C'] = 16131;
@@ -36,32 +37,32 @@ namespace P3D_Scenario_Generator
             letterPath['X'] = 2467020;
             letterPath['Y'] = 838704;
             letterPath['Z'] = 369483;
-            letterPath['a'] = 3277760;
-            letterPath['b'] = 2230208;
-            letterPath['c'] = 2228992;
-            letterPath['d'] = 2229216;
-            letterPath['e'] = 2491200;
-            letterPath['f'] = 393984;
-            letterPath['g'] = 2491072;
-            letterPath['h'] = 133056;
-            letterPath['i'] = 192;
-            letterPath['j'] = 2097344;
-            letterPath['k'] = 395168;
-            letterPath['l'] = 2098944;
-            letterPath['m'] = 197571;
-            letterPath['n'] = 132032;
-            letterPath['o'] = 2229184;
-            letterPath['p'] = 394048;
-            letterPath['q'] = 393920;
-            letterPath['r'] = 131840;
-            letterPath['s'] = 2491008;
-            letterPath['t'] = 196832;
-            letterPath['u'] = 2098112;
-            letterPath['v'] = 262848;
-            letterPath['w'] = 3146691;
-            letterPath['x'] = 263104;
-            letterPath['y'] = 2360000;
-            letterPath['z'] = 2490688;
+            letterPath['a'] = 3684592;
+            letterPath['b'] = 3784931;
+            letterPath['c'] = 14531;
+            letterPath['d'] = 3784899;
+            letterPath['e'] = 14579;
+            letterPath['f'] = 14576;
+            letterPath['g'] = 2111684;
+            letterPath['h'] = 3684400;
+            letterPath['i'] = 114883;
+            letterPath['j'] = 3678211;
+            letterPath['k'] = 2668572;
+            letterPath['l'] = 14339;
+            letterPath['m'] = 3782848;
+            letterPath['n'] = 3717140;
+            letterPath['o'] = 3684547;
+            letterPath['p'] = 538864;
+            letterPath['q'] = 3717355;
+            letterPath['r'] = 2668776;
+            letterPath['s'] = 2132183;
+            letterPath['t'] = 114880;
+            letterPath['u'] = 3684355;
+            letterPath['v'] = 1853460;
+            letterPath['w'] = 3733507;
+            letterPath['x'] = 2664508;
+            letterPath['y'] = 575536;
+            letterPath['z'] = 565483;
         }
 
         static internal bool SegmentIsSet(char letter, int bitPosition)
@@ -88,6 +89,7 @@ namespace P3D_Scenario_Generator
 
         static internal double GetSignWritingDistance()
         {
+
             return 0;
         }
     }

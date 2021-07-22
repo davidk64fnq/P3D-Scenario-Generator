@@ -38,7 +38,6 @@
     <EmbeddedResource Include="failure-icon.png" />
     <EmbeddedResource Include="MissionBriefSource.htm" />
     <EmbeddedResource Include="OverviewSource.htm" />
-    <EmbeddedResource Include="P3D Scenario Generator.pdf" />
     <EmbeddedResource Include="PhotoTour_LegRoute.html" />
     <EmbeddedResource Include="runways.xml" />
     <EmbeddedResource Include="scriptsMovingMap.js" />
