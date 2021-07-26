@@ -18,6 +18,7 @@
 	var startTopPixels;
 	var startLeftPixels;
 	const padding = 20;
+	const capExtra = 5;
 	
 	const colours = ["", "red", "black"];
 	
@@ -160,7 +161,6 @@
 		const mapEast = mapEastX;
 		const mapSouth = mapSouthX;
 		const mapWest = mapWestX;
-		const mapHeight = mapHeightX;
 		const messageLength = messageLengthX;
 		const magVar = magVarX;
 	
@@ -172,8 +172,8 @@
 			planeHeadingT = planeHeadingT + 360;
 		var planeLonDeg = VarGet("A:PLANE LONGITUDE" ,"Radians") * 180 / Math.PI; // x
 		var planeLatDeg = VarGet("A:PLANE LATITUDE" ,"Radians") * 180 / Math.PI;  // y
-		var messageHeight = mapHeight;
-		var messageWidth = 0.75 * messageHeight * messageLength;
+		var messageHeight = document.getElementsByTagName("canvas")[0].getAttribute("height") - capExtra * 2 - padding * 2;
+		var messageWidth = document.getElementsByTagName("canvas")[0].getAttribute("width") - capExtra * 2 - padding * 2;
 		planeTopPixels = Math.round((planeLatDeg - mapNorth) / (mapSouth - mapNorth) * messageHeight);
 		planeLeftPixels = Math.round((planeLonDeg - mapWest) / (mapEast - mapWest) * messageWidth);
 		var smokeOn = VarGet("S:smokeOn", "NUMBER"); 

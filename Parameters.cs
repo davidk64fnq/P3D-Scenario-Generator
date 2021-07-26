@@ -37,6 +37,7 @@ namespace P3D_Scenario_Generator
         internal static string Message { get; private set; }
         internal static double TiltAngle { get; private set; }
         internal static double MessageWindowWidth { get; set; }
+        internal static double GateHeight { get; set; }
 
         static private bool IsValidFilename(string fileName)
         {
@@ -94,9 +95,10 @@ namespace P3D_Scenario_Generator
                 Message = form.TextBoxSignMessage.Text;
                 TiltAngle = Convert.ToDouble(form.TextBoxSignTilt.Text);
                 MessageWindowWidth = Convert.ToDouble(form.TextBoxSignWindowWidth.Text);
+                GateHeight = Convert.ToDouble(form.TextBoxSignWindowGateHeight.Text);
             }
 
-                if (errorMsg != "")
+            if (errorMsg != "")
             {
                 MessageBox.Show($"Please attend to the following:\n{errorMsg}", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;

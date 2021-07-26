@@ -46,7 +46,8 @@ namespace P3D_Scenario_Generator
         private static readonly List<Gate> gates = new List<Gate>();
         internal static readonly double unitSegment = 36.0 / 3600;   // approx 3600ft or 36 secs of latitude
         private static readonly double junctionRadius = 2.0 / 3600;
-        internal static readonly double cellPixels = 36;
+        internal static readonly double cellPixels = 35;
+        internal static readonly double cellCapExtraPixels = 5;
 
         internal static int GateCount { get; private set; }
 
@@ -124,7 +125,7 @@ namespace P3D_Scenario_Generator
                 }
             }
             TiltGates(0, GateCount);
-            TranslateGates(0, GateCount, Runway.AirportLat, Runway.AirportLon, Runway.Altitude + 1000);
+            TranslateGates(0, GateCount, Runway.AirportLat, Runway.AirportLon, Runway.Altitude + Parameters.GateHeight);
         }
 
         internal static void SetSegmentGate(double latCoef, double latOffsetCoef, double lonCoef, double lonOffsetCoef, double orientation, double topPixels, double leftPixels, int gateNo, int letterIndex)

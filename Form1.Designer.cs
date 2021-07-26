@@ -93,6 +93,8 @@ namespace P3D_Scenario_Generator
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ButtonHelp = new System.Windows.Forms.Button();
+            this.label22 = new System.Windows.Forms.Label();
+            this.TextBoxSignWindowGateHeight = new System.Windows.Forms.TextBox();
             this.TabControl.SuspendLayout();
             this.TabPageGeneral.SuspendLayout();
             this.TabPageCircuit.SuspendLayout();
@@ -645,6 +647,8 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageSign
             // 
+            this.TabPageSign.Controls.Add(this.TextBoxSignWindowGateHeight);
+            this.TabPageSign.Controls.Add(this.label22);
             this.TabPageSign.Controls.Add(this.PictureBoxSignWriting);
             this.TabPageSign.Controls.Add(this.TextBoxSignWindowWidth);
             this.TabPageSign.Controls.Add(this.TextBoxSignFont);
@@ -767,6 +771,26 @@ namespace P3D_Scenario_Generator
             this.ButtonHelp.UseVisualStyleBackColor = true;
             this.ButtonHelp.Click += new System.EventHandler(this.ButtonHelp_Click);
             // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(16, 217);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(70, 15);
+            this.label22.TabIndex = 9;
+            this.label22.Text = "Gate Height";
+            // 
+            // TextBoxSignWindowGateHeight
+            // 
+            this.TextBoxSignWindowGateHeight.Location = new System.Drawing.Point(148, 214);
+            this.TextBoxSignWindowGateHeight.Name = "TextBoxSignWindowGateHeight";
+            this.TextBoxSignWindowGateHeight.Size = new System.Drawing.Size(100, 23);
+            this.TextBoxSignWindowGateHeight.TabIndex = 10;
+            this.TextBoxSignWindowGateHeight.Text = "1000";
+            this.TextBoxSignWindowGateHeight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxSignWindowGateHeight, "Above ground (feet)");
+            this.TextBoxSignWindowGateHeight.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -864,6 +888,8 @@ namespace P3D_Scenario_Generator
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.PictureBox PictureBoxSignWriting;
+        internal System.Windows.Forms.TextBox TextBoxSignWindowGateHeight;
+        private System.Windows.Forms.Label label22;
     }
 }
 
