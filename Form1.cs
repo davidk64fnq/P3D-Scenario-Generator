@@ -14,19 +14,9 @@ namespace P3D_Scenario_Generator
 
         public Form()
         {
-            SignWriting.GetSignWritingDistance();
-
-            SignWriting.InitLetterPaths();
             InitializeComponent();
 
-            // Populate ICAO listbox
-            ListBoxRunways.DataSource = Runway.GetICAOids();
-            ListBoxScenarioType.DataSource = Constants.scenarioNames;
-
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.circuitTab.jpg");
-            PictureBoxCircuit.Image = new Bitmap(stream);
-            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.signTabSegment22Font.jpg");
-            PictureBoxSignWriting.Image = new Bitmap(stream);
+            PrepareFormFields();
         }
 
         #region General Tab
@@ -87,6 +77,10 @@ namespace P3D_Scenario_Generator
             if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
                 PhotoTour.SetRandomPhotoTour();
+            }
+            else if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.SignWriting])
+            {
+                SignWriting.InitLetterPaths();
             }
             Runway.SetRunway();
             Gates.SetGates();
@@ -235,7 +229,22 @@ namespace P3D_Scenario_Generator
 
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
-            Help.ShowHelp(this, "help/index.htm");
+            Help.ShowHelp(this, "Resources/help/index.htm");
+        }
+
+        private void PrepareFormFields()
+        {
+            // General tab
+            ListBoxRunways.DataSource = Runway.GetICAOids();
+            ListBoxScenarioType.DataSource = Constants.scenarioNames;
+
+            // Circuit tab
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.circuitTab.jpg");
+            PictureBoxCircuit.Image = new Bitmap(stream);
+
+            // Signwriting tab
+            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.signTabSegment22Font.jpg");
+            PictureBoxSignWriting.Image = new Bitmap(stream);
         }
 
         private void TextBoxDouble_Validating(object sender, CancelEventArgs e)

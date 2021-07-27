@@ -22,7 +22,7 @@ namespace P3D_Scenario_Generator
 		static private SimBaseDocument ReadSourceFXML()
         {
 			XmlSerializer serializer = new XmlSerializer(typeof(SimBaseDocument));
-			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{fxmlFilename}");
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.XML.{fxmlFilename}");
 			SimBaseDocument simBaseDocument = (SimBaseDocument)serializer.Deserialize(stream);
 			stream.Dispose();
 			return simBaseDocument;

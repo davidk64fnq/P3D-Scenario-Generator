@@ -225,6 +225,8 @@ namespace P3D_Scenario_Generator
                 Pen pen = new Pen(Color.Magenta, 3);
                 g.DrawEllipse(pen, xCoord, yCoord, markerRadiusPixels * 2, markerRadiusPixels * 2);
                 bm.Save($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{destPhotoIndex + 1}_{typeIndex + 1}{zoomSuffix}.jpg", ImageFormat.Jpeg);
+                bm.Dispose();
+                g.Dispose();
             }
         }
 

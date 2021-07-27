@@ -1,0 +1,78 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%; 
+    font-family:Sans-serif;
+    line-height: 1.5em;
+}
+
+img {
+    display: block;
+    max-width: 600px;
+}
+
+#header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100px; 
+    overflow: hidden; /* Disables scrollbars on the header frame. To enable scrollbars, change "hidden" to "scroll" */
+    background: #BCCE98;
+}
+
+#nav {
+    position: absolute; 
+    top: 100px; 
+    left: 0; 
+    bottom: 0;
+    width: 250px;
+    overflow: auto; /* Scrollbars will appear on this frame only when there's enough content to require scrolling. To disable scrollbars, change to "hidden", or use "scroll" to enable permanent scrollbars */
+    background: #DAE9BC; 
+    padding-left: 15px;
+}
+
+#logo {
+    padding:15px;
+}
+
+main {
+    position: fixed;
+    top: 100px; /* Set this to the height of the header */
+    left: 250px; 
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    padding-left: 30px;
+}
+
+iframe {
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+p li {
+    color: #555;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul a {
+    color: darkgreen;
+    text-decoration: none;
+}
+        
+/*IE6 fix*/
+* html body{
+    padding: 100px 0 0 250px; /* Set the first value to the height of the header and last value to the width of the nav */
+}
+
+* html main{ 
+    height: 100%; 
+    width: 100%; 
+}

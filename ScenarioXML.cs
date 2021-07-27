@@ -966,7 +966,7 @@ namespace P3D_Scenario_Generator
 		{
 			string legRouteHTML;
 
-			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.PhotoTour_LegRoute.html");
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.PhotoTour_LegRoute.html");
 			StreamReader reader = new StreamReader(stream);
 			legRouteHTML = reader.ReadToEnd();
 			legRouteHTML = legRouteHTML.Replace("scriptsMovingMap_X.js", $"scriptsMovingMap_{photoIndex}.js");
@@ -987,7 +987,7 @@ namespace P3D_Scenario_Generator
 		{
 			string legRouteJS;
 
-			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.scriptsMovingMap.js");
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsMovingMap.js");
 			StreamReader reader = new StreamReader(stream);
 			legRouteJS = reader.ReadToEnd();
 			PhotoLegParams photoLeg = PhotoTour.GetPhotoLeg(photoIndex - 1);
@@ -1006,7 +1006,7 @@ namespace P3D_Scenario_Generator
 		{
 			string legRouteCSS;
 
-			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.styleMovingMap.css");
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleMovingMap.css");
 			StreamReader reader = new StreamReader(stream);
 			legRouteCSS = reader.ReadToEnd();
 			legRouteCSS = legRouteCSS.Replace("mapWidthX", Parameters.PhotoLegWindowSize.ToString());
@@ -1160,7 +1160,7 @@ namespace P3D_Scenario_Generator
 			double canvasWidth;
 			double canvasHeight;
 
-			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.SignWriting.html");
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.SignWriting.html");
 			StreamReader reader = new StreamReader(stream);
 			signWritingHTML = reader.ReadToEnd();
 
@@ -1206,7 +1206,7 @@ namespace P3D_Scenario_Generator
 		{
 			string signWritingJS;
 
-			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.scriptsSignWriting.js");
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsSignWriting.js");
 			StreamReader reader = new StreamReader(stream);
 			signWritingJS = reader.ReadToEnd();
 			File.WriteAllText(saveLocation, signWritingJS);
@@ -1217,7 +1217,7 @@ namespace P3D_Scenario_Generator
 		{
 			string signWritingCSS;
 
-			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.styleSignWriting.css");
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleSignWriting.css");
 			StreamReader reader = new StreamReader(stream);
 			signWritingCSS = reader.ReadToEnd();
 			File.WriteAllText(saveLocation, signWritingCSS);

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>P3D Scenario Generator | Photo Tour</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <h2>Photo Tour</h2>
+        <h3>Introduction</h3>
+        <p>
+            The photo tour scenario has you start and finish at an airport with visits along the way to locations where photos have been taken. The only thing common to the photos is that they were taken in the same geographical area. As you reach each location a window opens displaying the photo and a second window displays a map view of the region encompassing the current and next location. The photos are sourced from the <a href="https://www.pic2map.com/" title="pic2map.com" target="_blank">Pic2Map</a> website. The leg route images are sourced from <a href="https://docs.microsoft.com/en-us/bingmaps/rest-services/imagery/get-a-static-map" title="docs.microsoft.com/en-us/bingmaps/rest-services/imagery/get-a-static-map" target="_blank">Bing Maps</a>. The idea of the scenario is to give you a purpose for taking a random flight, to see what photo was taken at each location and uploaded to Pic2Map by some anomynous user. By default the map displays an icon representing your aircraft but you can choose to hide the icon to add a degree of complexity in navigating to each new photo location.
+        </p>
+        <h3>Quick Start</h3>
+        <p>Follow these steps to generate and fly your first Photo Tour scenario.</p>
+        <ol>
+            <li>Start the P3D Scenario Generator program.</li>
+            <li>Click on "Photo Tour" in the list of scenario types. <strong>Note:</strong> this will gray out the runway selection inputs as this scenario only supports a random starting location.</li>
+            <li>Click on the "aircraft.cfg" button to choose the aircraft you will fly.</li>
+            <li>Type in a scenario title.</li>
+            <li>For this first photo tour flight leave the scenario parameters set at the default values on the "Photo Tour" tab.</li>
+            <li>Click on "Generate Scenario" and wait patiently for the program to generate your photo tour flight files.</li>
+            <li>Once the program confirms the photo tour flight is ready to fly, start Prepar3D and choose the flight scenario title you assigned to this photo tour.</li>
+            <li>Your aircraft will be positioned at the runway threshold of the photo tour starting airport, cold and dark, the simulator will be paused.</li>
+            <li>Unpause the simulator and listen to the introductory comments while starting your aircraft and preparing for takeoff.</li>
+            <li>You will notice a window displaying a map. On the map are two blue markers, one showing the starting airport, the other the location where the first randon photo of the photo tour was taken.</li>
+            <li>At the starting airport you will see a black outline of an aircraft. During the photo tour this will move on the map showing your position. If at some point you want to stop seeing the plane icon, press the "Hide Plane" button, to see the plane icon again, press the "Show Plane" button.</li>
+            <li>By default the map uses Bing aerial imagery with a roads overlay. Two other options are available, Aerial with no roads overlay, and a road map. These can be selected by pressing the button corresponding to the map type you require.</li>
+            <li>Take off and fly to the first photo location indicated by the blue marker with a "1" on it. Once you get close enough to the marker, the current map window will close and you will see a window open showing the random photo that was taken at this location. A second window showing the next leg of the photo tour also opens but is initially hidden underneath the photo window. </li>
+            <li>If you are having difficulty getting the photo and next map leg windows to trigger be sure that you are lining up the middle of the aircraft fuselage icon (behind the wings) with the point of the "V" at the bottom of the blue marker on the map as shown in the diagram below. <strong>Note:</strong> the plane can be heading in any direction as long as those two reference points coincide.</li>
+            <img src="images/planeOnMarker.jpg" alt="Image showing plane on marker in leg route map" title="Image showing plane on marker in leg route map">
+            <li>Drag the photo window to another part of your screen or right click on the window to choose the "Close Window" pop-up menu option. This will reveal the new map window and allow you to start navigating to the next photo tour photo location marked with a "2".</li>
+            <li>Continue flying from one photo location to the next until you have seen all the photos in the photo tour. The last map window will show a blue marker with a CIAO code on it. This is the airport you must land on and come to a stop in order to complete the scenario. <strong>Note:</strong> sometimes the photo tour starts and finishes at the same airport.</li>
+        </ol>
+        <h3>Scenario Parameters</h3>
+        <p>
+            These are the steps taken by P3D Scenario Generator in attempting to generate a photo tour. Knowledge of these steps will aid in understanding the scenario parameters available and the likely effect of modifying them on the time it takes for P3D Scenario Generator to find a photo tour that conforms to the selected parameters.
+        </p>
+        <ol>
+            <li>Request a random photo from Pic2Map.</li>
+            <li>Find the nearest airport and continue if distance of first leg is between "Min Leg Dist" and "Max Leg Dist".</li>
+            <li>Find a new photo location and continue if distance of next leg is between "Min Leg Dist" and "Max Leg Dist" and the required bearing change is less than "Max Bearing Change".</li>
+            <li>Keep looking for new photo locations until the number of legs in the route is between "Min No. Legs" and "Max No. Legs" or a new photo location that meets the parameters can't be located.</li>
+            <li>Find the nearest airport and continue if distance of last leg is between "Min Leg Dist" and "Max Leg Dist" and the required bearing change is less than "Max Bearing Change".</li>
+            <li>Attempt to source Bing images for the leg routes. <strong>Note:</strong> having found a set of photos on Pic2Map that meet the selected scenario parameters the process can still fail if Bing imagery cannot be obtained. Not all geographical areas have suitable imagery for the leg routes.</li>
+        </ol>
+        <p>
+            From this description of the steps taken you will discern the impact of changing the default scenario parameters. For example setting a smaller "Max Bearing Change" will mean P3D Scenario Generator takes longer to find a suitable photo tour. Increasing the "Max Leg Distance" will mean P3D Scenario Generator takes less time to find a suitable photo tour. The default scenario parameters usually find a suitable photo tour in order of magnitude several minutes.
+        </p>
+        <p>
+            The size of the map is a configurable parameter as well as the radius of the hotspot in Prepar3D that triggers the photo and next leg route windows to open. There is no visual indication within Prepar3D of where the photo location is. If you set yourself the task of triggering the photo without having the plane silhouette displayed on the map and in addition you have configured a small radius for the hotspot then it can be quite tricky. As a last resort you may decide to enter slew mode in Prepar3D to hit the trigger point. <strong>Note:</strong> with the default parameters a pixel on the map is order of magnitude 100 feet across.
+        </p>
+    </body>
+</html>

@@ -17,6 +17,45 @@
     <None Remove="OverviewSource.htm" />
     <None Remove="P3D Scenario Generator.pdf" />
     <None Remove="PhotoTour_LegRoute.html" />
+    <None Remove="Resources\CSS\styleMovingMap.css" />
+    <None Remove="Resources\CSS\styleSignWriting.css" />
+    <None Remove="Resources\CSS\style_kneeboard.css" />
+    <None Remove="Resources\CSS\style_load_flight.css" />
+    <None Remove="Resources\Help\aircraft.htm" />
+    <None Remove="Resources\Help\circuit.htm" />
+    <None Remove="Resources\Help\images\circuitTab.jpg" />
+    <None Remove="Resources\Help\images\introduction-objects.jpg" />
+    <None Remove="Resources\Help\images\legRoute.jpg" />
+    <None Remove="Resources\Help\images\panelManagerMenu.jpg" />
+    <None Remove="Resources\Help\images\panelManagerWindow.jpg" />
+    <None Remove="Resources\Help\images\pic2map-nearest.jpg" />
+    <None Remove="Resources\Help\images\pic2map.jpg" />
+    <None Remove="Resources\Help\images\planeOnMarker.jpg" />
+    <None Remove="Resources\Help\images\save-location.jpg" />
+    <None Remove="Resources\Help\images\sceanrioReset.jpg" />
+    <None Remove="Resources\Help\images\scenarioLoadMenu.jpg" />
+    <None Remove="Resources\Help\images\scenarioLoadScreen.jpg" />
+    <None Remove="Resources\Help\index.htm" />
+    <None Remove="Resources\Help\introduction.htm" />
+    <None Remove="Resources\Help\photoTour.htm" />
+    <None Remove="Resources\Help\runway.htm" />
+    <None Remove="Resources\Help\scenarioTitle.htm" />
+    <None Remove="Resources\Help\style.css" />
+    <None Remove="Resources\HTML\MissionBriefSource.htm" />
+    <None Remove="Resources\HTML\OverviewSource.htm" />
+    <None Remove="Resources\HTML\PhotoTour_LegRoute.html" />
+    <None Remove="Resources\HTML\SignWriting.html" />
+    <None Remove="Resources\Images\aircraft.png" />
+    <None Remove="Resources\Images\circuitTab.jpg" />
+    <None Remove="Resources\Images\exit-icon.png" />
+    <None Remove="Resources\Images\failure-icon.png" />
+    <None Remove="Resources\Images\signTabSegment22Font.jpg" />
+    <None Remove="Resources\Images\success-icon.png" />
+    <None Remove="Resources\Javascript\scriptsMovingMap.js" />
+    <None Remove="Resources\Javascript\scriptsSignWriting.js" />
+    <None Remove="Resources\Sounds\ThruHoop.wav" />
+    <None Remove="Resources\XML\runways.xml" />
+    <None Remove="Resources\XML\source.fxml" />
     <None Remove="runways.xml" />
     <None Remove="scriptsMovingMap.js" />
     <None Remove="scriptsSignWriting.js" />
@@ -32,25 +71,85 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="aircraft.png" />
-    <EmbeddedResource Include="circuitTab.jpg" />
-    <EmbeddedResource Include="exit-icon.png" />
-    <EmbeddedResource Include="failure-icon.png" />
-    <EmbeddedResource Include="MissionBriefSource.htm" />
-    <EmbeddedResource Include="OverviewSource.htm" />
-    <EmbeddedResource Include="PhotoTour_LegRoute.html" />
-    <EmbeddedResource Include="runways.xml" />
-    <EmbeddedResource Include="scriptsMovingMap.js" />
-    <EmbeddedResource Include="scriptsSignWriting.js" />
-    <EmbeddedResource Include="signTabSegment22Font.jpg" />
-    <EmbeddedResource Include="SignWriting.html" />
-    <EmbeddedResource Include="source.fxml" />
-    <EmbeddedResource Include="styleMovingMap.css" />
-    <EmbeddedResource Include="styleSignWriting.css" />
-    <EmbeddedResource Include="style_kneeboard.css" />
-    <EmbeddedResource Include="style_load_flight.css" />
-    <EmbeddedResource Include="success-icon.png" />
-    <EmbeddedResource Include="ThruHoop.wav" />
+    <EmbeddedResource Include="Resources\CSS\styleMovingMap.css" />
+    <EmbeddedResource Include="Resources\CSS\styleSignWriting.css" />
+    <EmbeddedResource Include="Resources\CSS\style_kneeboard.css" />
+    <EmbeddedResource Include="Resources\CSS\style_load_flight.css" />
+    <EmbeddedResource Include="Resources\Help\aircraft.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\circuit.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\circuitTab.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\introduction-objects.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\legRoute.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\panelManagerMenu.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\panelManagerWindow.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\pic2map-nearest.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\pic2map.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\planeOnMarker.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\save-location.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\sceanrioReset.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\scenarioLoadMenu.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\scenarioLoadScreen.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\index.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\introduction.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\photoTour.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\runway.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\scenarioTitle.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\style.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\HTML\MissionBriefSource.htm" />
+    <EmbeddedResource Include="Resources\HTML\OverviewSource.htm" />
+    <EmbeddedResource Include="Resources\HTML\PhotoTour_LegRoute.html" />
+    <EmbeddedResource Include="Resources\HTML\SignWriting.html" />
+    <EmbeddedResource Include="Resources\Images\aircraft.png" />
+    <EmbeddedResource Include="Resources\Images\circuitTab.jpg" />
+    <EmbeddedResource Include="Resources\Images\exit-icon.png" />
+    <EmbeddedResource Include="Resources\Images\failure-icon.png" />
+    <EmbeddedResource Include="Resources\Images\signTabSegment22Font.jpg" />
+    <EmbeddedResource Include="Resources\Images\success-icon.png" />
+    <EmbeddedResource Include="Resources\Javascript\scriptsMovingMap.js" />
+    <EmbeddedResource Include="Resources\Javascript\scriptsSignWriting.js" />
+    <EmbeddedResource Include="Resources\Sounds\ThruHoop.wav" />
+    <EmbeddedResource Include="Resources\XML\runways.xml" />
+    <EmbeddedResource Include="Resources\XML\source.fxml" />
   </ItemGroup>
 
   <ItemGroup>

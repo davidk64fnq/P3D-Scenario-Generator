@@ -47,15 +47,15 @@ namespace P3D_Scenario_Generator
                 using Image image = Image.FromFile(imageDest);
                 using (Graphics graphic = Graphics.FromImage(image))
                 {
-                    Stream iconStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.{urlIcon[index]}");
+                    Stream iconStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.{urlIcon[index]}");
                     using Image imageIcon = Image.FromStream(iconStream);
                     iconStream.Dispose();
                     graphic.DrawImage(imageIcon, 20, 20);
+                    imageIcon.Dispose();
+                    graphic.Dispose();
                 }
                 image.Save($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlIconAdded[index]}");
-            }
-            for (int index = 3; index < urlZoom.Length; index++)
-            {
+                image.Dispose();
                 File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlFilename[index]}");
             }
         }
