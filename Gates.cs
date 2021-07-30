@@ -44,8 +44,6 @@ namespace P3D_Scenario_Generator
     internal class Gates
     {
         private static readonly List<Gate> gates = new List<Gate>();
-        internal static readonly double unitSegment = 36.0 / 3600;   // approx 3600ft or 36 secs of latitude
-        private static readonly double junctionRadius = 2.0 / 3600;
         internal static readonly double cellPixels = 35;
         internal static readonly double cellCapExtraPixels = 5;
 
@@ -121,7 +119,7 @@ namespace P3D_Scenario_Generator
                 if (Parameters.Message[index] != ' ')
                 {
                     signLetterNoGates = SetSignGatesLetter(index);
-                    TranslateGates(GateCount - signLetterNoGates, signLetterNoGates, 0, unitSegment * 3 * index, 0);
+                    TranslateGates(GateCount - signLetterNoGates, signLetterNoGates, 0, Parameters.SegmentLengthDeg * 3 * index, 0);
                 }
             }
             TiltGates(0, GateCount);
@@ -130,8 +128,8 @@ namespace P3D_Scenario_Generator
 
         internal static void SetSegmentGate(double latCoef, double latOffsetCoef, double lonCoef, double lonOffsetCoef, double orientation, double topPixels, double leftPixels, int gateNo, int letterIndex)
         {
-            double lat = unitSegment * latCoef + junctionRadius * latOffsetCoef;
-            double lon = unitSegment * lonCoef + junctionRadius * lonOffsetCoef;
+            double lat = Parameters.SegmentLengthDeg * latCoef + Parameters.SegmentRadiusDeg * latOffsetCoef;
+            double lon = Parameters.SegmentLengthDeg * lonCoef + Parameters.SegmentRadiusDeg * lonOffsetCoef;
             double amsl = 0;
             double pitch;
 

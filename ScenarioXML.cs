@@ -1172,8 +1172,8 @@ namespace P3D_Scenario_Generator
 			signWritingHTML = signWritingHTML.Replace("canvasWidthX", canvasWidth.ToString());
 			canvasHeight = Gates.cellPixels * 4 + 1 + Gates.cellCapExtraPixels * 2 + 40;
 			signWritingHTML = signWritingHTML.Replace("canvasHeightX", canvasHeight.ToString());
-			signWritingHTML = signWritingHTML.Replace("mapNorthX", (Runway.AirportLat + Gates.unitSegment * 4).ToString());
-			signWritingHTML = signWritingHTML.Replace("mapEastX", (Runway.AirportLon + Gates.unitSegment * (3 * Parameters.Message.Length - 1)).ToString());
+			signWritingHTML = signWritingHTML.Replace("mapNorthX", (Runway.AirportLat + Parameters.SegmentLengthDeg * 4).ToString());
+			signWritingHTML = signWritingHTML.Replace("mapEastX", (Runway.AirportLon + Parameters.SegmentLengthDeg * (3 * Parameters.Message.Length - 1)).ToString());
 			signWritingHTML = signWritingHTML.Replace("mapSouthX", Runway.AirportLat.ToString());
 			signWritingHTML = signWritingHTML.Replace("mapWestX", Runway.AirportLon.ToString());
 			signWritingHTML = signWritingHTML.Replace("messageLengthX", Parameters.Message.Length.ToString());

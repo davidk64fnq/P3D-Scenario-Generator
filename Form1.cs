@@ -217,7 +217,7 @@ namespace P3D_Scenario_Generator
         {
             if (Convert.ToInt32(form.TextBoxSignTilt.Text) > 90)
             {
-                MessageBox.Show($"Tilt angle is limited to between 0 and 90 degrees inclusive", "Sign Writing Scenario: tilt angle", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Tilt angle is limited to between 1 and 90 degrees inclusive", "Sign Writing Scenario: tilt angle", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
             return true;

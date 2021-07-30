@@ -38,6 +38,8 @@ namespace P3D_Scenario_Generator
         internal static double TiltAngle { get; private set; }
         internal static double MessageWindowWidth { get; set; }
         internal static double GateHeight { get; set; }
+        internal static double SegmentLengthDeg { get; set; }
+        internal static double SegmentRadiusDeg { get; set; }
 
         static private bool IsValidFilename(string fileName)
         {
@@ -95,7 +97,9 @@ namespace P3D_Scenario_Generator
                 Message = form.TextBoxSignMessage.Text;
                 TiltAngle = Convert.ToDouble(form.TextBoxSignTilt.Text);
                 MessageWindowWidth = Convert.ToDouble(form.TextBoxSignWindowWidth.Text);
-                GateHeight = Convert.ToDouble(form.TextBoxSignWindowGateHeight.Text);
+                GateHeight = Convert.ToDouble(form.TextBoxSignGateHeight.Text);
+                SegmentLengthDeg = Convert.ToDouble(form.TextBoxSignSegmentLength.Text) / Constants.degreeLatFeet;
+                SegmentRadiusDeg = Convert.ToDouble(form.TextBoxSignSegmentRadius.Text) / Constants.degreeLatFeet;
             }
 
             if (errorMsg != "")

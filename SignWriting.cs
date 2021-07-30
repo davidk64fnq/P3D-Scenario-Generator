@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace P3D_Scenario_Generator
 {
@@ -8,6 +6,10 @@ namespace P3D_Scenario_Generator
     {
         private static readonly int[] letterPath = new int[123];
 
+        // To code a character in  letterPath, work out the 22 digit binary number which shows which segments
+        // need to be displayed. The 22 segments are always considered for inclusion in the same order. The first
+        // segment of the 22 segment path is coded at the right hand end of the binary number i.e. the bit representing
+        // 0 or 1. Then convert the binary number to decimal.
         static internal void InitLetterPaths()
         {
             letterPath['@'] = 4194303;  // Test character all segments turned on
@@ -65,6 +67,8 @@ namespace P3D_Scenario_Generator
             letterPath['z'] = 565483;
         }
 
+        // A bitPosition parameter of '0' would mean test the righthand most bit in the binary segement representation
+        // of the character.
         static internal bool SegmentIsSet(char letter, int bitPosition)
         {
             string letterBinary = Convert.ToString(letterPath[letter], 2);
@@ -87,10 +91,11 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        // Approximate distance flown as number of segments (number of gates divided by two) times length of a segment
+        // plus 50% for flying between segments.
         static internal double GetSignWritingDistance()
         {
-
-            return 0;
+            return Gates.GateCount / 2 * Parameters.SegmentLengthDeg * Constants.degreeLatFeet / Constants.feetInKnot * 1.5;
         }
     }
 }

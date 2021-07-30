@@ -81,6 +81,12 @@ namespace P3D_Scenario_Generator
             this.label11 = new System.Windows.Forms.Label();
             this.TextBoxPhotoMaxLegDist = new System.Windows.Forms.TextBox();
             this.TabPageSign = new System.Windows.Forms.TabPage();
+            this.TextBoxSignSegmentRadius = new System.Windows.Forms.TextBox();
+            this.TextBoxSignSegmentLength = new System.Windows.Forms.TextBox();
+            this.label24 = new System.Windows.Forms.Label();
+            this.label23 = new System.Windows.Forms.Label();
+            this.TextBoxSignGateHeight = new System.Windows.Forms.TextBox();
+            this.label22 = new System.Windows.Forms.Label();
             this.PictureBoxSignWriting = new System.Windows.Forms.PictureBox();
             this.TextBoxSignWindowWidth = new System.Windows.Forms.TextBox();
             this.TextBoxSignFont = new System.Windows.Forms.TextBox();
@@ -93,8 +99,6 @@ namespace P3D_Scenario_Generator
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ButtonHelp = new System.Windows.Forms.Button();
-            this.label22 = new System.Windows.Forms.Label();
-            this.TextBoxSignWindowGateHeight = new System.Windows.Forms.TextBox();
             this.TabControl.SuspendLayout();
             this.TabPageGeneral.SuspendLayout();
             this.TabPageCircuit.SuspendLayout();
@@ -647,7 +651,11 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageSign
             // 
-            this.TabPageSign.Controls.Add(this.TextBoxSignWindowGateHeight);
+            this.TabPageSign.Controls.Add(this.TextBoxSignSegmentRadius);
+            this.TabPageSign.Controls.Add(this.TextBoxSignSegmentLength);
+            this.TabPageSign.Controls.Add(this.label24);
+            this.TabPageSign.Controls.Add(this.label23);
+            this.TabPageSign.Controls.Add(this.TextBoxSignGateHeight);
             this.TabPageSign.Controls.Add(this.label22);
             this.TabPageSign.Controls.Add(this.PictureBoxSignWriting);
             this.TabPageSign.Controls.Add(this.TextBoxSignWindowWidth);
@@ -664,6 +672,66 @@ namespace P3D_Scenario_Generator
             this.TabPageSign.TabIndex = 3;
             this.TabPageSign.Text = "Sign Writing";
             this.TabPageSign.UseVisualStyleBackColor = true;
+            // 
+            // TextBoxSignSegmentRadius
+            // 
+            this.TextBoxSignSegmentRadius.Location = new System.Drawing.Point(148, 312);
+            this.TextBoxSignSegmentRadius.Name = "TextBoxSignSegmentRadius";
+            this.TextBoxSignSegmentRadius.Size = new System.Drawing.Size(100, 23);
+            this.TextBoxSignSegmentRadius.TabIndex = 14;
+            this.TextBoxSignSegmentRadius.Text = "500";
+            this.TextBoxSignSegmentRadius.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxSignSegmentRadius, "Radius of space between segment ends in feet");
+            this.TextBoxSignSegmentRadius.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
+            // TextBoxSignSegmentLength
+            // 
+            this.TextBoxSignSegmentLength.Location = new System.Drawing.Point(148, 262);
+            this.TextBoxSignSegmentLength.Name = "TextBoxSignSegmentLength";
+            this.TextBoxSignSegmentLength.Size = new System.Drawing.Size(100, 23);
+            this.TextBoxSignSegmentLength.TabIndex = 13;
+            this.TextBoxSignSegmentLength.Text = "5000";
+            this.TextBoxSignSegmentLength.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxSignSegmentLength, "Length of segment in feet");
+            this.TextBoxSignSegmentLength.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(16, 315);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(92, 15);
+            this.label24.TabIndex = 12;
+            this.label24.Text = "Segment Radius";
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(16, 265);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(94, 15);
+            this.label23.TabIndex = 11;
+            this.label23.Text = "Segment Length";
+            // 
+            // TextBoxSignGateHeight
+            // 
+            this.TextBoxSignGateHeight.Location = new System.Drawing.Point(148, 214);
+            this.TextBoxSignGateHeight.Name = "TextBoxSignGateHeight";
+            this.TextBoxSignGateHeight.Size = new System.Drawing.Size(100, 23);
+            this.TextBoxSignGateHeight.TabIndex = 10;
+            this.TextBoxSignGateHeight.Text = "1000";
+            this.TextBoxSignGateHeight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxSignGateHeight, "Above ground (feet)");
+            this.TextBoxSignGateHeight.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(16, 217);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(70, 15);
+            this.label22.TabIndex = 9;
+            this.label22.Text = "Gate Height";
             // 
             // PictureBoxSignWriting
             // 
@@ -737,7 +805,7 @@ namespace P3D_Scenario_Generator
             this.TextBoxSignMessage.Name = "TextBoxSignMessage";
             this.TextBoxSignMessage.Size = new System.Drawing.Size(631, 23);
             this.TextBoxSignMessage.TabIndex = 1;
-            this.TextBoxSignMessage.Text = "A";
+            this.TextBoxSignMessage.Text = "FNQ Kid";
             this.toolTip1.SetToolTip(this.TextBoxSignMessage, "Message consisting only of alphabetic characters");
             this.TextBoxSignMessage.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxString_Validating);
             // 
@@ -770,26 +838,6 @@ namespace P3D_Scenario_Generator
             this.ButtonHelp.Text = "Help";
             this.ButtonHelp.UseVisualStyleBackColor = true;
             this.ButtonHelp.Click += new System.EventHandler(this.ButtonHelp_Click);
-            // 
-            // label22
-            // 
-            this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(16, 217);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(70, 15);
-            this.label22.TabIndex = 9;
-            this.label22.Text = "Gate Height";
-            // 
-            // TextBoxSignWindowGateHeight
-            // 
-            this.TextBoxSignWindowGateHeight.Location = new System.Drawing.Point(148, 214);
-            this.TextBoxSignWindowGateHeight.Name = "TextBoxSignWindowGateHeight";
-            this.TextBoxSignWindowGateHeight.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxSignWindowGateHeight.TabIndex = 10;
-            this.TextBoxSignWindowGateHeight.Text = "1000";
-            this.TextBoxSignWindowGateHeight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxSignWindowGateHeight, "Above ground (feet)");
-            this.TextBoxSignWindowGateHeight.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
             // 
             // Form
             // 
@@ -888,8 +936,12 @@ namespace P3D_Scenario_Generator
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.PictureBox PictureBoxSignWriting;
-        internal System.Windows.Forms.TextBox TextBoxSignWindowGateHeight;
+        internal System.Windows.Forms.TextBox TextBoxSignGateHeight;
         private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Label label23;
+        internal System.Windows.Forms.TextBox TextBoxSignSegmentRadius;
+        internal System.Windows.Forms.TextBox TextBoxSignSegmentLength;
     }
 }
 
