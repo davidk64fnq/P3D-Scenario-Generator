@@ -224,6 +224,9 @@ namespace P3D_Scenario_Generator
 				case nameof(ScenarioTypes.SignWriting):
 					SetSignWritingScaleformPanelWindow(spwList);
 					break;
+				case nameof(ScenarioTypes.Celestial):
+					SetCelestialSextantScaleformPanelWindow(spwList);
+					break;
 				default:
 					break;
 			}
@@ -362,6 +365,10 @@ namespace P3D_Scenario_Generator
 					SetSignWritingOpenWindowActionObjects(owaList);
 					SetSignWritingCloseWindowActionObjects(cwaList);
 					break;
+				case nameof(ScenarioTypes.Celestial):
+					SetCelestialOpenWindowActionObjects(owaList);
+					SetCelestialCloseWindowActionObjects(cwaList);
+					break;
 				default:
 					break;
 			}
@@ -492,6 +499,19 @@ namespace P3D_Scenario_Generator
 						Actions = new Actions(orSignList)
 					}; 
 					ttList.Add(signTT);
+					break;
+				case nameof(ScenarioTypes.Celestial):
+					List<ObjectReference> orCelestialList = new List<ObjectReference>();
+					SetOpenWindowActionReference("Open_Scaleform_Panel_Window_CelestialSextant", 1, orCelestialList);
+					SimMissionTimerTrigger celestialTT = new SimMissionTimerTrigger
+					{
+						InstanceId = GetGUID(),
+						Descr = "Timer_Trigger_01",
+						StopTime = 1.0,
+						Activated = "True",
+						Actions = new Actions(orCelestialList)
+					};
+					ttList.Add(celestialTT);
 					break;
 				default:
 					break;
@@ -748,6 +768,81 @@ namespace P3D_Scenario_Generator
 			System.Guid guid = System.Guid.NewGuid();
 			string guidUpper = guid.ToString().ToUpper();
 			return $"{{{guidUpper}}}";
+		}
+
+		static private void SetCelestialCloseWindowActionObjects(List<SimMissionCloseWindowAction> cwaList)
+		{
+			string search = $"Scaleform_Panel_Window_CelestialSextant";
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
+			SimMissionCloseWindowAction cwa = new SimMissionCloseWindowAction
+			{
+				Descr = $"Close_Scaleform_Panel_Window_CelestialSextant",
+				ObjectReference = or,
+				InstanceId = GetGUID()
+			};
+			cwaList.Add(cwa);
+		}
+
+		static private void SetCelestialOpenWindowActionObjects(List<SimMissionOpenWindowAction> owaList)
+		{
+			string search = $"Scaleform_Panel_Window_CelestialSextant";
+			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
+			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
+			SetWindowSize sws = new SetWindowSize("500", "250");
+			SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
+			{
+				Descr = $"Open_Scaleform_Panel_Window_CelestialSextant",
+				SetWindowSize = sws,
+				ObjectReference = or,
+				InstanceId = GetGUID()
+			};
+			owaList.Add(owa);
+		}
+
+		static private void SetCelestialSextantScaleformPanelWindow(List<SimMissionScaleformPanelWindow> spwList)
+		{
+			string descr = $"Scaleform_Panel_Window_CelestialSextant";
+			string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\htmlCelestialSextant.html";
+			SetCelestialSextantHTML(saveLocation);
+			saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsCelestialSextant.js";
+			SetCelestialSextantJS(saveLocation);
+			saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleCelestialSextant.css";
+			SetCelestialSextantCSS(saveLocation);
+			spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\htmlCelestialSextant.html", GetGUID(), "window.swf", "False"));
+		}
+
+		static private void SetCelestialSextantHTML(string saveLocation)
+		{
+			string signWritingHTML;
+
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.CelestialSextant.html");
+			StreamReader reader = new StreamReader(stream);
+			signWritingHTML = reader.ReadToEnd();
+			File.WriteAllText(saveLocation, signWritingHTML);
+			stream.Dispose();
+		}
+
+		static private void SetCelestialSextantJS(string saveLocation)
+		{
+			string signWritingJS;
+
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsCelestialSextant.js");
+			StreamReader reader = new StreamReader(stream);
+			signWritingJS = reader.ReadToEnd();
+			File.WriteAllText(saveLocation, signWritingJS);
+			stream.Dispose();
+		}
+
+		static private void SetCelestialSextantCSS(string saveLocation)
+		{
+			string signWritingCSS;
+
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleCelestialSextant.css");
+			StreamReader reader = new StreamReader(stream);
+			signWritingCSS = reader.ReadToEnd();
+			File.WriteAllText(saveLocation, signWritingCSS);
+			stream.Dispose();
 		}
 
 		static private void SetCloseWindowActionReference(string objectName, int index, List<ObjectReference> orList)

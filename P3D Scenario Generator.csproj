@@ -17,6 +17,7 @@
     <None Remove="OverviewSource.htm" />
     <None Remove="P3D Scenario Generator.pdf" />
     <None Remove="PhotoTour_LegRoute.html" />
+    <None Remove="Resources\CSS\styleCelestialSextant.css" />
     <None Remove="Resources\CSS\styleMovingMap.css" />
     <None Remove="Resources\CSS\styleSignWriting.css" />
     <None Remove="Resources\CSS\style_kneeboard.css" />
@@ -41,6 +42,7 @@
     <None Remove="Resources\Help\runway.htm" />
     <None Remove="Resources\Help\scenarioTitle.htm" />
     <None Remove="Resources\Help\style.css" />
+    <None Remove="Resources\HTML\CelestialSextant.html" />
     <None Remove="Resources\HTML\MissionBriefSource.htm" />
     <None Remove="Resources\HTML\OverviewSource.htm" />
     <None Remove="Resources\HTML\PhotoTour_LegRoute.html" />
@@ -51,6 +53,7 @@
     <None Remove="Resources\Images\failure-icon.png" />
     <None Remove="Resources\Images\signTabSegment22Font.jpg" />
     <None Remove="Resources\Images\success-icon.png" />
+    <None Remove="Resources\Javascript\scriptsCelestialSextant.js" />
     <None Remove="Resources\Javascript\scriptsMovingMap.js" />
     <None Remove="Resources\Javascript\scriptsSignWriting.js" />
     <None Remove="Resources\Sounds\ThruHoop.wav" />
@@ -71,6 +74,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\CSS\styleCelestialSextant.css" />
     <EmbeddedResource Include="Resources\CSS\styleMovingMap.css" />
     <EmbeddedResource Include="Resources\CSS\styleSignWriting.css" />
     <EmbeddedResource Include="Resources\CSS\style_kneeboard.css" />
@@ -135,6 +139,7 @@
     <EmbeddedResource Include="Resources\Help\style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\HTML\CelestialSextant.html" />
     <EmbeddedResource Include="Resources\HTML\MissionBriefSource.htm" />
     <EmbeddedResource Include="Resources\HTML\OverviewSource.htm" />
     <EmbeddedResource Include="Resources\HTML\PhotoTour_LegRoute.html" />
@@ -145,6 +150,7 @@
     <EmbeddedResource Include="Resources\Images\failure-icon.png" />
     <EmbeddedResource Include="Resources\Images\signTabSegment22Font.jpg" />
     <EmbeddedResource Include="Resources\Images\success-icon.png" />
+    <EmbeddedResource Include="Resources\Javascript\scriptsCelestialSextant.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsMovingMap.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsSignWriting.js" />
     <EmbeddedResource Include="Resources\Sounds\ThruHoop.wav" />

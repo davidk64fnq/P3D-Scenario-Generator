@@ -99,6 +99,7 @@ namespace P3D_Scenario_Generator
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ButtonHelp = new System.Windows.Forms.Button();
+            this.TabPageCelestial = new System.Windows.Forms.TabPage();
             this.TabControl.SuspendLayout();
             this.TabPageGeneral.SuspendLayout();
             this.TabPageCircuit.SuspendLayout();
@@ -115,6 +116,7 @@ namespace P3D_Scenario_Generator
             this.TabControl.Controls.Add(this.TabPageCircuit);
             this.TabControl.Controls.Add(this.TabPagePhoto);
             this.TabControl.Controls.Add(this.TabPageSign);
+            this.TabControl.Controls.Add(this.TabPageCelestial);
             this.TabControl.Location = new System.Drawing.Point(12, 12);
             this.TabControl.Name = "TabControl";
             this.TabControl.SelectedIndex = 0;
@@ -839,6 +841,15 @@ namespace P3D_Scenario_Generator
             this.ButtonHelp.UseVisualStyleBackColor = true;
             this.ButtonHelp.Click += new System.EventHandler(this.ButtonHelp_Click);
             // 
+            // TabPageCelestial
+            // 
+            this.TabPageCelestial.Location = new System.Drawing.Point(4, 24);
+            this.TabPageCelestial.Name = "TabPageCelestial";
+            this.TabPageCelestial.Size = new System.Drawing.Size(812, 438);
+            this.TabPageCelestial.TabIndex = 4;
+            this.TabPageCelestial.Text = "Celestial Navigation";
+            this.TabPageCelestial.UseVisualStyleBackColor = true;
+            // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -942,6 +953,7 @@ namespace P3D_Scenario_Generator
         private System.Windows.Forms.Label label23;
         internal System.Windows.Forms.TextBox TextBoxSignSegmentRadius;
         internal System.Windows.Forms.TextBox TextBoxSignSegmentLength;
+        private System.Windows.Forms.TabPage TabPageCelestial;
     }
 }
 

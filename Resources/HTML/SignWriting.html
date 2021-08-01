@@ -9,6 +9,10 @@
 		<canvas id="canvas" width="canvasWidthX" height="canvasHeightX"></canvas>
 	</div>
 	<script>
+	<!-- 
+		Smoke variables refer to use of scenario variable "smokeOn" which is toggled on when first
+		gate of a segment is triggered and off when second gate of a segment is triggered. 
+	-->
 	var smokeOld = 0;
 	var smokeHasToggled = false;
 	var canvas = document.getElementById('canvas');
@@ -17,8 +21,8 @@
 	var planeLeftPixels;
 	var startTopPixels;
 	var startLeftPixels;
-	const padding = 20;
-	const capExtra = 5;
+	const padding = 20; <!-- Between canvas edges and message characters -->
+	const capExtra = 5; <!-- The number of pixels either side of central row/col of segemnt line -->
 	
 	const colours = ["", "red", "black"];
 	

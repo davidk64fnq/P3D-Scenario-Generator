@@ -52,6 +52,7 @@ namespace P3D_Scenario_Generator
         static private Overview SetOverviewStruct()
         {
             Overview overview = new Overview();
+            string[] words;
 
             switch (Parameters.SelectedScenario)
             {
@@ -88,7 +89,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
                     overview.Briefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
                     overview.Briefing += $"{Runway.City}, {Runway.Country}.";
-                    string[] words = Parameters.DestRunway.Split('\t');
+                    words = Parameters.DestRunway.Split('\t');
                     overview.Objective = "Take off and visit a series of photo locations before landing ";
                     overview.Objective += $"at {words[0]}, runway {words[1]}";
                     overview.Tips = "Never do today what you can put off till tomorrow";
@@ -110,6 +111,25 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += $"{Runway.City}, {Runway.Country}.";
                     overview.Objective = "Take off and fly through a series of gates before landing on the same runway.";
                     overview.Tips = "When life gives you lemons, squirt someone in the eye.";
+                    break;
+                case nameof(ScenarioTypes.Celestial):
+                    overview.Title = "Celestial Navigation";
+                    overview.Heading1 = "Celestial Navigation";
+                    overview.Location = $"{Runway.IcaoName} ({Runway.IcaoId}) {Runway.City}, {Runway.Country}";
+                    overview.Difficulty = "Advanced";
+                    // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
+                    duration = 0 / Aircraft.CruiseSpeed * 60;
+                    overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
+                    overview.Aircraft = $"{Parameters.SelectedAircraft}";
+                    overview.Briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
+                    overview.Briefing += $"as you test your navigation skills flying a {Parameters.SelectedAircraft}.";
+                    overview.Briefing += "The scenario begins on runway ";
+                    overview.Briefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
+                    overview.Briefing += $"{Runway.City}, {Runway.Country}.";
+                    //words = Parameters.DestRunway.Split('\t');
+                    overview.Objective = "Take off and navigate using celestial navigation before landing ";
+                    //overview.Objective += $"at {words[0]}, runway {words[1]}";
+                    overview.Tips = "Never go to bed mad. Stay up and fight.";
                     break;
                 default:
                     break;

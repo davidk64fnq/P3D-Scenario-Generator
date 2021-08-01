@@ -6,7 +6,7 @@ namespace P3D_Scenario_Generator
     {
         private static readonly int[] letterPath = new int[123];
 
-        // To code a character in  letterPath, work out the 22 digit binary number which shows which segments
+        // To code a character in letterPath, work out the 22 digit binary number which shows which segments
         // need to be displayed. The 22 segments are always considered for inclusion in the same order. The first
         // segment of the 22 segment path is coded at the right hand end of the binary number i.e. the bit representing
         // 0 or 1. Then convert the binary number to decimal.
@@ -91,7 +91,7 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        // Approximate distance flown as number of segments (number of gates divided by two) times length of a segment
+        // Approximate distance flown in miles as number of segments (number of gates divided by two) times length of a segment
         // plus 50% for flying between segments.
         static internal double GetSignWritingDistance()
         {
