@@ -82,6 +82,10 @@ namespace P3D_Scenario_Generator
             {
                 SignWriting.InitLetterPaths();
             }
+            else if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.Celestial])
+            {
+                CelestialNav.InitStars();
+            }
             Runway.SetRunway();
             Gates.SetGates();
             ScenarioFXML.GenerateFXMLfile();

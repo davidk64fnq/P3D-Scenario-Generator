@@ -22,6 +22,8 @@
     <None Remove="Resources\CSS\styleSignWriting.css" />
     <None Remove="Resources\CSS\style_kneeboard.css" />
     <None Remove="Resources\CSS\style_load_flight.css" />
+    <None Remove="Resources\Excel\Celestial Nav Stars.xlsx" />
+    <None Remove="Resources\Excel\CelestialNavStars.xlsx" />
     <None Remove="Resources\Help\aircraft.htm" />
     <None Remove="Resources\Help\circuit.htm" />
     <None Remove="Resources\Help\images\circuitTab.jpg" />
@@ -79,6 +81,7 @@
     <EmbeddedResource Include="Resources\CSS\styleSignWriting.css" />
     <EmbeddedResource Include="Resources\CSS\style_kneeboard.css" />
     <EmbeddedResource Include="Resources\CSS\style_load_flight.css" />
+    <EmbeddedResource Include="Resources\Excel\CelestialNavStars.xlsx" />
     <EmbeddedResource Include="Resources\Help\aircraft.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -159,6 +162,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="EPPlus" Version="5.7.2" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.33" />
   </ItemGroup>
 
