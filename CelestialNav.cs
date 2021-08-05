@@ -70,8 +70,12 @@ namespace P3D_Scenario_Generator
                                         (double)worksheet.Cells[index, 13].Value
                                         ));
                 }
-                System.Windows.Forms.MessageBox.Show(stars[noStars - 1].notUsed);
             }
+        }
+
+        static internal Star GetStar(int index)
+        {
+            return stars[index];
         }
     }
 }

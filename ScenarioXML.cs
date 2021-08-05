@@ -789,7 +789,7 @@ namespace P3D_Scenario_Generator
 			string search = $"Scaleform_Panel_Window_CelestialSextant";
 			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
 			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
-			SetWindowSize sws = new SetWindowSize("500", "250");
+			SetWindowSize sws = new SetWindowSize("800", "450");
 			SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 			{
 				Descr = $"Open_Scaleform_Panel_Window_CelestialSextant",
@@ -814,12 +814,64 @@ namespace P3D_Scenario_Generator
 
 		static private void SetCelestialSextantHTML(string saveLocation)
 		{
-			string signWritingHTML;
+			string celestialHTML;
 
 			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.CelestialSextant.html");
 			StreamReader reader = new StreamReader(stream);
-			signWritingHTML = reader.ReadToEnd();
-			File.WriteAllText(saveLocation, signWritingHTML);
+			celestialHTML = reader.ReadToEnd();
+			string constellation = "";
+			string starNumber = "";
+			string starName = "";
+			string bayer = "";
+			string raH = "";
+			string raM = "";
+			string raS = "";
+			string decD = "";
+			string decM = "";
+			string decS = "";
+			string visMag = "";
+			Star star;
+			for (int index = 0; index < CelestialNav.noStars; index++)
+			{
+				star = CelestialNav.GetStar(index);
+				constellation += $"\"{star.constellation}\"";
+				starNumber += star.starNumber.ToString();
+				starName += $"\"{star.starName}\"";
+				bayer += $"\"{star.bayer}\"";
+				raH += star.raH.ToString();
+				raM += star.raM.ToString();
+				raS += star.raS.ToString();
+				decD += star.decD.ToString();
+				decM += star.decM.ToString();
+				decS += star.decS.ToString();
+				visMag += star.visMag.ToString();
+				if (index < CelestialNav.noStars - 1)
+				{
+					constellation += ",";
+					starNumber += ",";
+					starName += ",";
+					bayer += ",";
+					raH += ",";
+					raM += ",";
+					raS += ",";
+					decD += ",";
+					decM += ",";
+					decS += ",";
+					visMag += ",";
+				}
+			}
+			celestialHTML = celestialHTML.Replace("constellationX", constellation);
+			celestialHTML = celestialHTML.Replace("starNumberX", starNumber);
+			celestialHTML = celestialHTML.Replace("starNameX", starName);
+			celestialHTML = celestialHTML.Replace("bayerX", bayer);
+			celestialHTML = celestialHTML.Replace("raHX", raH);
+			celestialHTML = celestialHTML.Replace("raMX", raM);
+			celestialHTML = celestialHTML.Replace("raSX", raS);
+			celestialHTML = celestialHTML.Replace("decDX", decD);
+			celestialHTML = celestialHTML.Replace("decMX", decM);
+			celestialHTML = celestialHTML.Replace("decSX", decS);
+			celestialHTML = celestialHTML.Replace("visMagX", visMag);
+			File.WriteAllText(saveLocation, celestialHTML);
 			stream.Dispose();
 		}
 
