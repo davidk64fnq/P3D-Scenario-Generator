@@ -1,5 +1,98 @@
+:root {
+	/* INFO button group colours */
+	--info-background-color: darkseagreen;
+	--info-border-color: darkolivegreen;
+	--info-text-color: darkolivegreen;
+	--info-hover-background-color: darkolivegreen;
+	
+	/* FOVH, AZ, ALT button groups colours */
+	--viewPort-background-color: powderblue;
+	--viewPort-border-color: navy;
+	--viewPort-text-color: navy;
+	--viewPort-hover-background-color: navy;
+	
+	/* Ho button group colours */
+	--reading-background-color: plum;
+	--reading-border-color: purple;
+	--reading-text-color: purple;
+	--reading-hover-background-color: purple;
+	
+	/* Button group */
+	--button-group-line: 2px;
+	--button-group-margin: 5px;
+	--button-group-padding: 5px;
+	--button-group-radius: 8px;
+	
+	/* Button */
+	--button-hover-text-color: white;
+	--button-line: 1px;
+	--button-radius: 5px;
+}
+	
 body {
     background-color: rgb(240, 248, 255);
 	margin: 0; 
 	padding: 0;
+}
+
+#canvas {
+	padding: var(--button-group-padding);
+}
+
+#INFO, #FOV, #AZ, #ALT, #Ho  {
+	border-radius: var(--button-group-radius);
+	display: inline-block;
+	margin: var(--button-group-margin);
+	padding: var(--button-group-padding);
+}
+
+#INFO {
+	background-color: var(--info-background-color);
+	border: var(--button-group-line) solid var(--info-border-color);
+}
+
+#FOV, #AZ, #ALT {
+	background-color: var(--viewPort-background-color);
+	border: var(--button-group-line) solid var(--viewPort-border-color);
+}
+
+#Ho {
+	background-color: var(--reading-background-color);
+	border: var(--button-group-line) solid var(--reading-border-color);
+}
+
+#INFO button, #FOV button, #AZ button, #ALT button, #Ho button {
+	cursor: pointer; 
+	border-radius: var(--button-radius);
+}
+
+#INFO button {
+	color: var(--info-text-color); 
+	border: var(--button-line) solid var(--info-border-color);
+}
+
+#FOV button, #AZ button, #ALT button {
+	color: var(--viewPort-text-color); 
+	border: var(--button-line) solid var(--viewPort-border-color);
+}
+
+#Ho button {
+	color: var(--reading-text-color); 
+	border: var(--button-line) solid var(--reading-border-color);
+}
+
+#INFO button:hover, #FOV button:hover, #AZ button:hover, #ALT button:hover, #Ho button:hover {
+	color: var(--button-hover-text-color); 
+}
+
+#INFO button:hover {
+	background-color: var(--info-hover-background-color); 
+}
+
+#FOV button:hover, #AZ button:hover, #ALT button:hover {
+	background-color: var(--viewPort-hover-background-color); 
+}
+
+#Ho button:hover {
+	background-color: var(--reading-hover-background-color); 
 }

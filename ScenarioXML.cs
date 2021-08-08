@@ -789,7 +789,7 @@ namespace P3D_Scenario_Generator
 			string search = $"Scaleform_Panel_Window_CelestialSextant";
 			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
 			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
-			SetWindowSize sws = new SetWindowSize("800", "450");
+			SetWindowSize sws = new SetWindowSize("986", "705");
 			SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 			{
 				Descr = $"Open_Scaleform_Panel_Window_CelestialSextant",
@@ -819,6 +819,17 @@ namespace P3D_Scenario_Generator
 			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.CelestialSextant.html");
 			StreamReader reader = new StreamReader(stream);
 			celestialHTML = reader.ReadToEnd();
+			File.WriteAllText(saveLocation, celestialHTML);
+			stream.Dispose();
+		}
+
+		static private void SetCelestialSextantJS(string saveLocation)
+		{
+			string celestialJS;
+
+			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsCelestialSextant.js");
+			StreamReader reader = new StreamReader(stream);
+			celestialJS = reader.ReadToEnd();
 			string constellation = "";
 			string starNumber = "";
 			string starName = "";
@@ -860,29 +871,18 @@ namespace P3D_Scenario_Generator
 					visMag += ",";
 				}
 			}
-			celestialHTML = celestialHTML.Replace("constellationX", constellation);
-			celestialHTML = celestialHTML.Replace("starNumberX", starNumber);
-			celestialHTML = celestialHTML.Replace("starNameX", starName);
-			celestialHTML = celestialHTML.Replace("bayerX", bayer);
-			celestialHTML = celestialHTML.Replace("raHX", raH);
-			celestialHTML = celestialHTML.Replace("raMX", raM);
-			celestialHTML = celestialHTML.Replace("raSX", raS);
-			celestialHTML = celestialHTML.Replace("decDX", decD);
-			celestialHTML = celestialHTML.Replace("decMX", decM);
-			celestialHTML = celestialHTML.Replace("decSX", decS);
-			celestialHTML = celestialHTML.Replace("visMagX", visMag);
-			File.WriteAllText(saveLocation, celestialHTML);
-			stream.Dispose();
-		}
-
-		static private void SetCelestialSextantJS(string saveLocation)
-		{
-			string signWritingJS;
-
-			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsCelestialSextant.js");
-			StreamReader reader = new StreamReader(stream);
-			signWritingJS = reader.ReadToEnd();
-			File.WriteAllText(saveLocation, signWritingJS);
+			celestialJS = celestialJS.Replace("constellationX", constellation);
+			celestialJS = celestialJS.Replace("starNumberX", starNumber);
+			celestialJS = celestialJS.Replace("starNameX", starName);
+			celestialJS = celestialJS.Replace("bayerX", bayer);
+			celestialJS = celestialJS.Replace("raHX", raH);
+			celestialJS = celestialJS.Replace("raMX", raM);
+			celestialJS = celestialJS.Replace("raSX", raS);
+			celestialJS = celestialJS.Replace("decDX", decD);
+			celestialJS = celestialJS.Replace("decMX", decM);
+			celestialJS = celestialJS.Replace("decSX", decS);
+			celestialJS = celestialJS.Replace("visMagX", visMag);
+			File.WriteAllText(saveLocation, celestialJS);
 			stream.Dispose();
 		}
 

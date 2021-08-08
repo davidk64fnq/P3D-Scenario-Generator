@@ -1,106 +1,50 @@
 <!DOCTYPE HTML>
 <html>	
 <head>
-<link rel="stylesheet" href="styleCelestialSextant.css">
-<script src="scriptsCelestialSextant.js"></script>
+	<link rel="stylesheet" href="styleCelestialSextant.css">
+	<script src="scriptsCelestialSextant.js"></script>
+	<style>
+	</style>
 </head>
 <body>
+	<div id="INFO">
+		<button type="button" onclick="toggleLabelStars()">Stars</button>
+	</div>
 	<div>
-		<canvas id="canvas" width="720" height="360"></canvas>
+		<canvas id="canvas" width="960" height="540"></canvas>
+	</div>
+	<div id="FOV">
+		<button type="button" onclick="moveFOVdec5()">-5</button>
+		<button type="button" onclick="moveFOVreset()">FOV</button>
+		<button type="button" onclick="moveFOVinc5()">+5</button>
+	</div>
+	<div id="AZ">
+		<button type="button" onclick="moveAZleft1()">-1</button>
+		<button type="button" onclick="moveAZleft5()">-5</button>
+		<button type="button" onclick="moveAZreset()">AZ</button>
+		<button type="button" onclick="moveAZright5()">+5</button>
+		<button type="button" onclick="moveAZright1()">+1</button>
+	</div>
+	<div id="ALT">
+		<button type="button" onclick="moveALTup1()">+1</button>
+		<button type="button" onclick="moveALTup5()">+5</button>
+		<button type="button" onclick="moveALTreset()">ALT</button>
+		<button type="button" onclick="moveALTdown5()">-5</button>
+		<button type="button" onclick="moveALTdown1()">-1</button>
+	</div>
+	<div id="Ho">
+		<button type="button" onclick="moveHup01()">+0.1</button>
+		<button type="button" onclick="moveHup1()">+1</button>
+		<button type="button" onclick="moveHup5()">+5</button>
+		<button type="button" onclick="moveHreset()">Ho</button>
+		<button type="button" onclick="moveHdown5()">-5</button>
+		<button type="button" onclick="moveHdown1()">-1</button>
+		<button type="button" onclick="moveHdown01()">-0.1</button>
 	</div>
 	<p id="debug1"></p>
 	<p id="debug2"></p>
 	<p id="debug3"></p>
 	<script>
-		const constellation = [constellationX];
-		const starNumber = [starNumberX];
-		const starName = [starNameX];
-		const bayer = [bayerX];
-		const raH = [raHX];
-		const raM = [raMX];
-		const raS = [raSX];
-		const decD = [decDX];
-		const decM = [decMX];
-		const decS = [decSX];
-		const visMag = [visMagX];
-		const daysToBeginMth = [0,0,31,59,90,120,151,181,212,243,273,304,334];
-		
-		function update(timestamp)
-		{
-			var planeHeadingDeg = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI;
-			var planeLonDeg = VarGet("A:PLANE LONGITUDE" ,"Radians") * 180 / Math.PI; // x
-			var planeLatDeg = VarGet("A:PLANE LATITUDE" ,"Radians") * 180 / Math.PI;  // y 
-			
-			for(let starIndex = 0; starIndex < raH.length; starIndex++)
-			{
-				var RAhr = raH[starIndex] + raM[starIndex] / 60 + raS[starIndex] / 3600;
-				var RAdeg = RAhr * 15;
-				var DEC = decD[starIndex] + decM[starIndex] / 60 + decS[starIndex] / 3600;
-				var LST = getLocalSiderialTime(planeLonDeg);
-				var HA = getHourAngle(LST, RAdeg);
-				var ALT = getALT(DEC, planeLatDeg, HA);
-				var AZ = getAZ(DEC, ALT, planeLatDeg);
-			} 
-			document.getElementById('debug1').innerHTML = "";
-			document.getElementById('debug2').innerHTML = "";
-			document.getElementById('debug3').innerHTML = "";
-			
-			
-			window.requestAnimationFrame(update);
-		}
-		window.requestAnimationFrame(update);
-		
-		function getJ2000Day(zuluTime)
-		{ 
-			var zuluDay = VarGet("E:ZULU DAY OF WEEK" ,"Number");  
-			var zuluMonth = VarGet("E:ZULU MONTH OF YEAR" ,"Number");  
-			var zuluYear = VarGet("E:ZULU YEAR" ,"Number");
-
-			var decTime = zuluTime / (60 * 60 * 24);
-			var daysToBegMth = daysToBeginMth[zuluMonth];
-			if ((zuluYear % 4 == 0) && (zuluMonth > 2))
-				daysToBegMth = daysToBegMth + 1
-			var daysToBegYear = -0.5 + (zuluYear - 2000) * 365 + Math.floor((zuluYear - 2001) / 4);
-				
-			return decTime + daysToBegMth + zuluDay + daysToBegYear;
-		}
-		
-		function getLocalSiderialTime(planeLonDeg)
-		{
-			var zuluTime = VarGet("E:ZULU TIME" ,"Seconds");
-			var j2000Days = getJ2000Day(zuluTime);
-			var UT = zuluTime / (60 * 60);
-			var LST = 100.46 + 0.985647 * j2000Days + planeLonDeg + 15 * UT;
-			while (LST < 0)
-				LST += 360;
-			while (LST > 360)
-				LST -= 360;
-			
-			return LST;
-		}
-		
-		function getHourAngle(LST, RAdeg)
-		{
-			var HA = LST - RAdeg;
-			while (HA < 0)
-				HA += 360;
-				
-			return HA;
-		}
-		
-		function getALT(DEC, LAT, HA)
-		{
-			return Math.asin(Math.sin(DEC) * Math.sin(LAT) + Math.cos(DEC) * Math.cos(LAT) * Math.cos(HA));
-		}
-		
-		function getAZ(DEC, ALT, planeLatDeg)
-		{
-			var A = Math.acos((Math.sin(DEC) - Math.sin(ALT) * Math.sin(LAT)) / (Math.cos(ALT) * Math.cos(LAT)));
-			if (Math.sin(HA) < 0)
-				return A;
-			else
-				return 360 - A;
-		}
 	</script>
 </body>
 </html>
