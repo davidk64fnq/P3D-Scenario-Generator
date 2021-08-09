@@ -1,5 +1,6 @@
 // Constants populated by P3D Scenario Generator application
 const constellation = [constellationX];
+const id = [idX];
 const starNumber = [starNumberX];
 const starName = [starNameX];
 const bayer = [bayerX];
@@ -10,6 +11,7 @@ const decD = [decDX];
 const decM = [decMX];
 const decS = [decSX];
 const visMag = [visMagX];
+const lines = [linesX];
 
 // Constants
 const daysToBeginMth = [0,0,31,59,90,120,151,181,212,243,273,304,334];
@@ -25,6 +27,7 @@ var sexALT = 0; // Sextant window base elevation
 var sexHo = fovV / 2; // Sextant observed altitude line
 var planeHeadDeg;
 var labelStars = 0; // Whether to show star labels
+var labelConstellations = 0; // Whether to show lines between stars in constellations
 
 // Main function that loops refreshing star map
 function update(timestamp)
@@ -34,6 +37,7 @@ function update(timestamp)
 	var planeLat = VarGet("A:PLANE LATITUDE" ,"Radians");  // y 
 	var canvas = document.getElementById('canvas');
 	var context = canvas.getContext('2d');
+	var linePtsList = new Array();
 	
 	// Clear star map from last update
 	context.fillStyle = "black";
@@ -62,10 +66,13 @@ function update(timestamp)
 			var relativeAZ = getRelativeAZ(AZ, sexAZ, fovH); // Number of degrees from left edge of sextant window
 			var left = Math.round(relativeAZ / fovH * windowW);
 			var top = Math.round((sexALT + fovV - ALT) / fovV * windowH);
-			context.fillRect(left, top, 2, 2);
+			setStarIcon(starIndex, context, left, top)
 			setStarLabel(starIndex, context, left, top);
+			updateLinePtsList(starIndex, linePtsList, left, top);
 		}
 	} 
+	setConstellationLines(context, linePtsList);
+	
 	document.getElementById('debug1').innerHTML = "";
 	document.getElementById('debug2').innerHTML = "";
 	
@@ -85,6 +92,60 @@ function setHoLine(context)
 	context.fillRect(0, Math.round((sexALT + fovV - sexHo) / fovV * windowH), windowW, 1);
 }
 
+function setConstellationLines(context, linePtsList)
+{
+	if (labelConstellations == 1)
+	{
+		context.strokeStyle = "red";
+		for(let linePt = 0; linePt < lines.length; linePt += 2)
+		{
+			var startPt = lines[linePt];
+			var startPtIndex = linePtsList.indexOf(startPt);
+			if (startPtIndex > -1)
+			{
+				var finishPt = lines[linePt + 1];
+				var finishPtIndex = linePtsList.indexOf(finishPt);
+				if (startPtIndex > -1)
+				{
+					context.beginPath();
+					context.moveTo(linePtsList[startPtIndex + 1], linePtsList[startPtIndex + 2]);
+					context.lineTo(linePtsList[finishPtIndex + 1], linePtsList[finishPtIndex + 2]);
+					context.stroke();
+				}
+			}
+		}
+	}
+	
+	// clear array ready for next iteration
+	linePtsList.splice(0,linePtsList.length)
+}
+
+function setStarIcon(starIndex, context, left, top)
+{
+	context.fillStyle = "yellow";
+	if (visMag[starIndex] < 1)
+	{
+		context.fillRect(left, top - 2, 1, 1);
+		context.fillRect(left - 1, top - 1, 3, 1);
+		context.fillRect(left - 2, top, 5, 1);
+		context.fillRect(left - 1, top + 1, 3, 1);
+		context.fillRect(left, top + 2, 1, 1);
+	}
+	else if (visMag[starIndex] < 2)
+	{
+		context.fillRect(left - 1, top - 1, 3, 3);
+	}
+	else if (visMag[starIndex] < 3)
+	{
+		context.fillRect(left, top - 1, 1, 1);
+		context.fillRect(left - 1, top, 3, 1);
+		context.fillRect(left, top + 1, 1, 1);
+	}
+	else{
+		context.fillRect(left, top - 1, 1, 1);
+	}
+}
+
 function setStarLabel(starIndex, context, left, top)
 {
 	if (labelStars == 1)
@@ -96,8 +157,14 @@ function setStarLabel(starIndex, context, left, top)
 			starLabel = bayer[starIndex];
 		context.fillStyle = "red";
 		context.fillText(starLabel, left + 5, top - 5);
-		context.fillStyle = "yellow";
 	}
+}
+
+function updateLinePtsList(starIndex, linePtsList, left, top)
+{
+	linePtsList.push(id[starIndex]);
+	linePtsList.push(left);
+	linePtsList.push(top);
 }
 
 // Functions used in calculating local position of stars
@@ -188,12 +255,20 @@ function getRelativeAZ(AZ, sexAZ, fovH)
 
 // Button onClick functions for handling info buttons
 	
-function labelStars()
+function toggleLabelStars()
 {
 	if (labelStars == 0)
 		labelStars = 1;
 	else
 		labelStars = 0;
+}	
+
+function toggleLabelConstellations()
+{
+	if (labelConstellations == 0)
+		labelConstellations = 1;
+	else
+		labelConstellations = 0;
 }
 
 // Button onClick functions for adjusting FOV, AV, ALT, Ho 

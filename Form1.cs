@@ -85,6 +85,7 @@ namespace P3D_Scenario_Generator
             else if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.Celestial])
             {
                 CelestialNav.InitStars();
+                CelestialNav.CreateStarsDat();
             }
             Runway.SetRunway();
             Gates.SetGates();

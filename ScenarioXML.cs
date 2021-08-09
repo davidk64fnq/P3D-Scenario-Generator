@@ -831,6 +831,7 @@ namespace P3D_Scenario_Generator
 			StreamReader reader = new StreamReader(stream);
 			celestialJS = reader.ReadToEnd();
 			string constellation = "";
+			string id = "";
 			string starNumber = "";
 			string starName = "";
 			string bayer = "";
@@ -841,12 +842,14 @@ namespace P3D_Scenario_Generator
 			string decM = "";
 			string decS = "";
 			string visMag = "";
+			string lines = "";
 			Star star;
 			for (int index = 0; index < CelestialNav.noStars; index++)
 			{
 				star = CelestialNav.GetStar(index);
 				constellation += $"\"{star.constellation}\"";
-				starNumber += star.starNumber.ToString();
+				id += $"\"{star.id}\"";
+				starNumber += $"\"{star.starNumber}\"";
 				starName += $"\"{star.starName}\"";
 				bayer += $"\"{star.bayer}\"";
 				raH += star.raH.ToString();
@@ -856,9 +859,18 @@ namespace P3D_Scenario_Generator
 				decM += star.decM.ToString();
 				decS += star.decS.ToString();
 				visMag += star.visMag.ToString();
+				if (star.connectedId != "")
+                {
+					if (lines != "")
+                    {
+						lines += ", ";
+                    }
+					lines = lines + $"\"{star.id}\", \"{star.connectedId}\"";
+				}
 				if (index < CelestialNav.noStars - 1)
 				{
 					constellation += ",";
+					id += ",";
 					starNumber += ",";
 					starName += ",";
 					bayer += ",";
@@ -872,6 +884,7 @@ namespace P3D_Scenario_Generator
 				}
 			}
 			celestialJS = celestialJS.Replace("constellationX", constellation);
+			celestialJS = celestialJS.Replace("idX", id);
 			celestialJS = celestialJS.Replace("starNumberX", starNumber);
 			celestialJS = celestialJS.Replace("starNameX", starName);
 			celestialJS = celestialJS.Replace("bayerX", bayer);
@@ -882,6 +895,7 @@ namespace P3D_Scenario_Generator
 			celestialJS = celestialJS.Replace("decMX", decM);
 			celestialJS = celestialJS.Replace("decSX", decS);
 			celestialJS = celestialJS.Replace("visMagX", visMag);
+			celestialJS = celestialJS.Replace("linesX", lines);
 			File.WriteAllText(saveLocation, celestialJS);
 			stream.Dispose();
 		}
