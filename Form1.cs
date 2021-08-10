@@ -84,6 +84,7 @@ namespace P3D_Scenario_Generator
             }
             else if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.Celestial])
             {
+                CelestialNav.getAlmanacData();
                 CelestialNav.InitStars();
                 CelestialNav.CreateStarsDat();
             }

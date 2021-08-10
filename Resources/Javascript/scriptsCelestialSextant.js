@@ -37,17 +37,10 @@ function update(timestamp)
 	var planeLat = VarGet("A:PLANE LATITUDE" ,"Radians");  // y 
 	var canvas = document.getElementById('canvas');
 	var context = canvas.getContext('2d');
-	var linePtsList = new Array();
+	var ptsList = new Array(); // Pixel positions for stars in current sextant FOV
 	
-	// Clear star map from last update
-	context.fillStyle = "black";
-	context.fillRect(0, 0, windowW, windowH);
 	
-	// Refresh information lines
-	setInfoLine(context);
-	setHoLine(context);
-	
-	// Calculate and plot local position of stars
+	// Calculate local position of stars
 	for(let starIndex = 0; starIndex < raH.length; starIndex++)
 	{
 		// Using formulae from here http://www.stargazing.net/kepler/altaz.html
@@ -59,19 +52,29 @@ function update(timestamp)
 		var HA = getHourAngle(LST, RA);
 		var ALT = getALT(DEC, planeLat, HA);
 		var AZ = getAZ(DEC, ALT, planeLat, HA);
-		context.fillStyle = "yellow";
 		var AZbearingDelta = getBearingDif(AZ, sexAZ); // Comparing star AZ to sextant window mid-point bearing
 		if ((ALT > sexALT) && (ALT < sexALT + fovV) && (AZbearingDelta <= fovH / 2))
 		{
 			var relativeAZ = getRelativeAZ(AZ, sexAZ, fovH); // Number of degrees from left edge of sextant window
 			var left = Math.round(relativeAZ / fovH * windowW);
 			var top = Math.round((sexALT + fovV - ALT) / fovV * windowH);
-			setStarIcon(starIndex, context, left, top)
-			setStarLabel(starIndex, context, left, top);
-			updateLinePtsList(starIndex, linePtsList, left, top);
+			updatePtsList(starIndex, ptsList, left, top);
 		}
-	} 
-	setConstellationLines(context, linePtsList);
+	}
+	
+	// Clear star map from last update
+	context.fillStyle = "black";
+	context.fillRect(0, 0, windowW, windowH);
+	
+	// Refresh information lines
+	setInfoLine(context);
+	setHoLine(context);
+
+	// Plot local position of stars
+	setConstellationLines(context, ptsList);
+	setStarIcons(context, ptsList)
+	setStarLabels(context, ptsList);
+	ptsList.splice(0,ptsList.length) // clear array ready for next iteration
 	
 	document.getElementById('debug1').innerHTML = "";
 	document.getElementById('debug2').innerHTML = "";
@@ -92,79 +95,93 @@ function setHoLine(context)
 	context.fillRect(0, Math.round((sexALT + fovV - sexHo) / fovV * windowH), windowW, 1);
 }
 
-function setConstellationLines(context, linePtsList)
+function setConstellationLines(context, ptsList)
 {
 	if (labelConstellations == 1)
 	{
 		context.strokeStyle = "red";
 		for(let linePt = 0; linePt < lines.length; linePt += 2)
 		{
-			var startPt = lines[linePt];
-			var startPtIndex = linePtsList.indexOf(startPt);
+			let startPt = lines[linePt];
+			let startPtIndex = ptsList.indexOf(startPt);
 			if (startPtIndex > -1)
 			{
-				var finishPt = lines[linePt + 1];
-				var finishPtIndex = linePtsList.indexOf(finishPt);
-				if (startPtIndex > -1)
+				let finishPt = lines[linePt + 1];
+				let finishPtIndex = ptsList.indexOf(finishPt);
+				if (finishPtIndex > -1)
 				{
 					context.beginPath();
-					context.moveTo(linePtsList[startPtIndex + 1], linePtsList[startPtIndex + 2]);
-					context.lineTo(linePtsList[finishPtIndex + 1], linePtsList[finishPtIndex + 2]);
+					context.moveTo(ptsList[startPtIndex + 2], ptsList[startPtIndex + 3]);
+					context.lineTo(ptsList[finishPtIndex + 2], ptsList[finishPtIndex + 3]);
 					context.stroke();
 				}
 			}
 		}
 	}
-	
-	// clear array ready for next iteration
-	linePtsList.splice(0,linePtsList.length)
 }
 
-function setStarIcon(starIndex, context, left, top)
+function setStarIcons(context, ptsList)
 {
 	context.fillStyle = "yellow";
-	if (visMag[starIndex] < 1)
+	for(let starIndex = 0; starIndex < ptsList.length; starIndex += 7)
 	{
-		context.fillRect(left, top - 2, 1, 1);
-		context.fillRect(left - 1, top - 1, 3, 1);
-		context.fillRect(left - 2, top, 5, 1);
-		context.fillRect(left - 1, top + 1, 3, 1);
-		context.fillRect(left, top + 2, 1, 1);
-	}
-	else if (visMag[starIndex] < 2)
-	{
-		context.fillRect(left - 1, top - 1, 3, 3);
-	}
-	else if (visMag[starIndex] < 3)
-	{
-		context.fillRect(left, top - 1, 1, 1);
-		context.fillRect(left - 1, top, 3, 1);
-		context.fillRect(left, top + 1, 1, 1);
-	}
-	else{
-		context.fillRect(left, top - 1, 1, 1);
+		let visMag = ptsList[starIndex + 1];
+		let left = ptsList[starIndex + 2];
+		let top = ptsList[starIndex + 3];
+		if (visMag < 1)
+		{
+			context.fillRect(left, top - 2, 1, 1);
+			context.fillRect(left - 1, top - 1, 3, 1);
+			context.fillRect(left - 2, top, 5, 1);
+			context.fillRect(left - 1, top + 1, 3, 1);
+			context.fillRect(left, top + 2, 1, 1);
+		}
+		else if (visMag < 2)
+		{
+			context.fillRect(left - 1, top - 1, 3, 3);
+		}
+		else if (visMag < 3)
+		{
+			context.fillRect(left, top - 1, 1, 1);
+			context.fillRect(left - 1, top, 3, 1);
+			context.fillRect(left, top + 1, 1, 1);
+		}
+		else{
+			context.fillRect(left, top - 1, 1, 1);
+		}
 	}
 }
 
-function setStarLabel(starIndex, context, left, top)
+function setStarLabels(context, ptsList)
 {
 	if (labelStars == 1)
 	{
-		var starLabel;
-		if (starNumber[starIndex] >= 1)
-			starLabel = "[" + starNumber[starIndex] + "] " + starName[starIndex];
-		else
-			starLabel = bayer[starIndex];
 		context.fillStyle = "red";
-		context.fillText(starLabel, left + 5, top - 5);
+		for(let starIndex = 0; starIndex < ptsList.length; starIndex += 7)
+		{
+			let left = ptsList[starIndex + 2];
+			let top = ptsList[starIndex + 3];
+			let starNumber = ptsList[starIndex + 4];
+			let starName = ptsList[starIndex + 5];
+			let bayer = ptsList[starIndex + 6];
+			if (starNumber >= 1)
+				starLabel = "[" + starNumber + "] " + starName;
+			else
+				starLabel = bayer;
+			context.fillText(starLabel, left + 5, top - 5);
+		}
 	}
 }
 
-function updateLinePtsList(starIndex, linePtsList, left, top)
+function updatePtsList(starIndex, ptsList, left, top)
 {
-	linePtsList.push(id[starIndex]);
-	linePtsList.push(left);
-	linePtsList.push(top);
+	ptsList.push(id[starIndex]);
+	ptsList.push(visMag[starIndex]);
+	ptsList.push(left);
+	ptsList.push(top);
+	ptsList.push(starNumber[starIndex]);
+	ptsList.push(starName[starIndex]);
+	ptsList.push(bayer[starIndex]);
 }
 
 // Functions used in calculating local position of stars
