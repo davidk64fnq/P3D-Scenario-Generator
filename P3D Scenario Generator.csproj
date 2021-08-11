@@ -22,7 +22,6 @@
     <None Remove="Resources\CSS\styleSignWriting.css" />
     <None Remove="Resources\CSS\style_kneeboard.css" />
     <None Remove="Resources\CSS\style_load_flight.css" />
-    <None Remove="Resources\Excel\2021 en.xls" />
     <None Remove="Resources\Excel\Celestial Nav Stars.xlsx" />
     <None Remove="Resources\Excel\CelestialNavStars.xlsx" />
     <None Remove="Resources\Help\aircraft.htm" />
@@ -82,7 +81,6 @@
     <EmbeddedResource Include="Resources\CSS\styleSignWriting.css" />
     <EmbeddedResource Include="Resources\CSS\style_kneeboard.css" />
     <EmbeddedResource Include="Resources\CSS\style_load_flight.css" />
-    <EmbeddedResource Include="Resources\Excel\2021 en.xls" />
     <EmbeddedResource Include="Resources\Excel\CelestialNavStars.xlsx" />
     <EmbeddedResource Include="Resources\Help\aircraft.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

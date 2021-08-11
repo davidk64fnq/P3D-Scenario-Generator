@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Reflection;
 
 namespace P3D_Scenario_Generator
@@ -46,6 +47,12 @@ namespace P3D_Scenario_Generator
     {
         private static readonly List<Star> stars = new List<Star>();
         internal static int noStars = 0;
+        internal static double[,] ariesGHAd = new double [3, 24];
+        internal static double[,] ariesGHAm = new double [3, 24];
+        internal static double[] starsSHAd = new double[57];
+        internal static double[] starsSHAm = new double[57];
+        internal static double[] starsDECd = new double[57];
+        internal static double[] starsDECm = new double[57];
 
         static internal void CreateStarsDat()
         {
@@ -78,15 +85,79 @@ namespace P3D_Scenario_Generator
             return stars[index];
         }
 
-        static internal void getAlmanacData()
+        static internal void GetAlmanacData()
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            using WebClient client = new WebClient();
+            string url;
+            string almanacData = "";
+            int[] navStarMapping = {6, 4, 29, 18, -1, 9, 31, 33, 54, 14, 24, 40, 0, 50, 1, 41, 36, 42, 21, 12, 15, 16, 11, -1, 52, 27, 3, 26, 13, 46, 53, 55, 30, 28, 34, 5, 47, 39, 56, 7, 35, 23, 8, 49, 51, -1, 20, 19, 45, 25, 10, 37, 43, 2, 44, 17, 32, 22, 48, 38};
 
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Excel.2021 en.xls");
-            using (ExcelPackage package = new ExcelPackage(stream))
+            url = "http://www.tecepe.com.br/scripts/AlmanacPagesISAPI.dll/pages?date=08%2F11%2F2021";
+
+            try
             {
-                ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
-                System.Windows.Forms.MessageBox.Show(worksheet.Cells[15, 10].Value.ToString());
+                almanacData = client.DownloadString(new Uri(url));
+            }
+            catch
+            {
+                System.Windows.Forms.MessageBox.Show("Encountered issues obtaining almanac data", "Almanac data download", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
+            }
+
+            string ariesGHAdata = almanacData.Substring(almanacData.IndexOf("G.M.T"));
+            string[] days = ariesGHAdata.Split(" 0 ");
+            for (int day = 0; day < 3; day++)
+            {
+                string[] hours = days[day + 1].Split("\n");
+                int hour = 0;
+                for (int line = 0; line < 27; line++)
+                {
+                    if (hours[line].Contains('|'))
+                    {
+                        string[] pipes = hours[line].Split('|');
+                        string[] spaces = pipes[1].Trim().Split(' ');
+                        ariesGHAd[day, hour] = Convert.ToDouble(spaces[0]);
+                        ariesGHAm[day, hour++] = Convert.ToDouble(spaces[1]);
+                    }
+                }
+            }
+
+            string starsData = almanacData.Substring(almanacData.IndexOf(" | Acamar"));
+            string[] stars = starsData.Split("\n");
+            int starNo = 0;
+            int decSign;
+            for (int line = 0; line < 71; line++)
+            {
+                string[] pipes = stars[line].Split('|');
+                if (!String.Equals(pipes[pipes.Length - 1], " \r"))
+                {
+                    string starData = pipes[pipes.Length - 1].Substring(12);
+                    string[] spaces = starData.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                    int mappedStarNo = navStarMapping[starNo];
+                    if (mappedStarNo != -1)
+                    {
+                        starsSHAd[mappedStarNo] = Convert.ToDouble(spaces[0]);
+                        starsSHAm[mappedStarNo] = Convert.ToDouble(spaces[1]);
+                        if (spaces[2].StartsWith('S'))
+                        {
+                            decSign = -1;
+                        }
+                        else
+                        {
+                            decSign = 1;
+                        }
+                        if (spaces[2].Length == 1)
+                        {
+                            starsDECd[mappedStarNo] = Convert.ToDouble(spaces[3]) * decSign;
+                            starsDECm[mappedStarNo] = Convert.ToDouble(spaces[4]);
+                        }
+                        else
+                        {
+                            starsDECd[mappedStarNo] = Convert.ToDouble(spaces[2].Substring(1)) * decSign;
+                            starsDECm[mappedStarNo] = Convert.ToDouble(spaces[3]);
+                        }
+                    }
+                    starNo++;
+                }
             }
         }
 
