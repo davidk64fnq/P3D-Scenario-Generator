@@ -7,45 +7,228 @@
 	</style>
 </head>
 <body>
-	<div id="INFO">
-		<button type="button" onclick="toggleLabelStars()">Stars</button>
-		<button type="button" onclick="toggleLabelConstellations()">Constellations</button>
-	</div>
-	<div>
-		<canvas id="canvas" width="960" height="540"></canvas>
-	</div>
-	<div id="FOV">
-		<button type="button" onclick="moveFOVdec5()">-5</button>
-		<button type="button" onclick="moveFOVreset()">FOV</button>
-		<button type="button" onclick="moveFOVinc5()">+5</button>
-	</div>
-	<div id="AZ">
-		<button type="button" onclick="moveAZleft1()">-1</button>
-		<button type="button" onclick="moveAZleft5()">-5</button>
-		<button type="button" onclick="moveAZreset()">AZ</button>
-		<button type="button" onclick="moveAZright5()">+5</button>
-		<button type="button" onclick="moveAZright1()">+1</button>
-	</div>
-	<div id="ALT">
-		<button type="button" onclick="moveALTup1()">+1</button>
-		<button type="button" onclick="moveALTup5()">+5</button>
-		<button type="button" onclick="moveALTreset()">ALT</button>
-		<button type="button" onclick="moveALTdown5()">-5</button>
-		<button type="button" onclick="moveALTdown1()">-1</button>
-	</div>
-	<div id="Ho">
-		<button type="button" onclick="moveHup01()">+0.1</button>
-		<button type="button" onclick="moveHup1()">+1</button>
-		<button type="button" onclick="moveHup5()">+5</button>
-		<button type="button" onclick="moveHreset()">Ho</button>
-		<button type="button" onclick="moveHdown5()">-5</button>
-		<button type="button" onclick="moveHdown1()">-1</button>
-		<button type="button" onclick="moveHdown01()">-0.1</button>
-	</div>
-	<p id="debug1"></p>
-	<p id="debug2"></p>
-	<p id="debug3"></p>
-	<script>
-	</script>
+    <button class="tablink" onclick="openPage('Star Chart')" id="defaultOpen">Star Chart</button>
+    <button class="tablink" onclick="openPage('Sight Reduction')">Sight Reduction</button>
+    <button class="tablink" onclick="openPage('Plotting')">Plotting</button>
+    <button class="tablink" onclick="openPage('Tables')">Tables</button>
+
+    <div id="Star Chart" class="tabcontent">
+        <div id="INFO">
+            <button type="button" onclick="toggleLabelStars()">Stars</button>
+            <button type="button" onclick="toggleLabelConstellations()">Constellations</button>
+        </div>
+        <div>
+            <canvas id="canvas" width="960" height="540"></canvas>
+        </div>
+        <div id="FOV">
+            <button type="button" onclick="moveFOVdec5()">-5</button>
+            <button type="button" onclick="moveFOVreset()">FOV</button>
+            <button type="button" onclick="moveFOVinc5()">+5</button>
+        </div>
+        <div id="AZ">
+            <button type="button" onclick="moveAZleft1()">-1</button>
+            <button type="button" onclick="moveAZleft5()">-5</button>
+            <button type="button" onclick="moveAZreset()">AZ</button>
+            <button type="button" onclick="moveAZright5()">+5</button>
+            <button type="button" onclick="moveAZright1()">+1</button>
+        </div>
+        <div id="ALT">
+            <button type="button" onclick="moveALTup1()">+1</button>
+            <button type="button" onclick="moveALTup5()">+5</button>
+            <button type="button" onclick="moveALTreset()">ALT</button>
+            <button type="button" onclick="moveALTdown5()">-5</button>
+            <button type="button" onclick="moveALTdown1()">-1</button>
+        </div>
+        <div id="Ho">
+            <button type="button" onclick="moveHup01()">+0.1</button>
+            <button type="button" onclick="moveHup1()">+1</button>
+            <button type="button" onclick="moveHup5()">+5</button>
+            <button type="button" onclick="moveHreset()">Ho</button>
+            <button type="button" onclick="moveHdown5()">-5</button>
+            <button type="button" onclick="moveHdown1()">-1</button>
+            <button type="button" onclick="moveHdown01()">-0.1</button>
+        </div>
+    </div>
+
+    <div id="Sight Reduction" class="tabcontent">
+        <table>
+            <tr>
+                <th>Sight #</th>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+                <td>5</td>
+                <td>6</td>
+            </tr>
+            <tr>
+                <th>Star</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th>DR Latitude</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th>DR Longitude</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <th>Date</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th>UT</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <th>Hs</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">ACT</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th style="text-align: right;">Ho</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td style="text-align: left;">GHA</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">GHA increment</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th style="text-align: right;">GHA</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td style="text-align: left;">AP</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th style="text-align: right;">LHA</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <th>Hc</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Zn</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <th>Intercept</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="Plotting" class="tabcontent">
+    </div>
+
+    <div id="Tables" class="tabcontent">
+        <!--
+    <p id="debug1"></p>
+    <p id="debug2"></p>
+    <p id="debug3"></p>
+            -->
+    </div>
+    <script>
+    </script>
 </body>
 </html>

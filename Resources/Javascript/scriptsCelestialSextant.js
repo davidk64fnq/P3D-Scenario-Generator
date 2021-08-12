@@ -184,6 +184,17 @@ function updatePtsList(starIndex, ptsList, left, top)
 	ptsList.push(bayer[starIndex]);
 }
 
+// Handle tabs
+
+function openPage(pageName) {
+	var i, tabcontent;
+	tabcontent = document.getElementsByClassName("tabcontent");
+	for (i = 0; i < tabcontent.length; i++) {
+		tabcontent[i].style.display = "none";
+	}
+	document.getElementById(pageName).style.display = "block";
+}
+
 // Functions used in calculating local position of stars
 		
 function getJ2000Day(zuluTime)

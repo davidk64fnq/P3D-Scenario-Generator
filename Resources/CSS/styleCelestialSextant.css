@@ -28,11 +28,35 @@
 	--button-line: 1px;
 	--button-radius: 5px;
 }
-	
+
 body {
-    background-color: rgb(240, 248, 255);
-	margin: 0; 
+	background-color: rgb(240, 248, 255);
+	height: 100%;
+	margin: 0;
 	padding: 0;
+}
+
+.tablink {
+	background-color: #555;
+	color: white;
+	float: left;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	padding: 14px 16px;
+	font-size: 17px;
+	width: 25%;
+}
+
+.tablink:hover {
+	background-color: #777;
+}
+
+/* Style the tab content (and add height:100% for full page content) */
+.tabcontent {
+	color: white;
+	display: none;
+	height: 100%;
 }
 
 #canvas {
@@ -95,4 +119,31 @@ body {
 
 #Ho button:hover {
 	background-color: var(--reading-hover-background-color); 
+}
+
+/* Sight Reduction table */
+
+#SightReduction {
+	float: left;
+}
+
+table, th, td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+
+table {
+	margin: 10px 25px 10px 25px;
+}
+
+td {
+	text-align: center;
+	padding: 5px;
+	width: 120px;
+}
+
+th {
+	text-align: left;
+	padding: 5px;
+	width: 120px;
 }

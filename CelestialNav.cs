@@ -85,6 +85,7 @@ namespace P3D_Scenario_Generator
             return stars[index];
         }
 
+        // http://www.tecepe.com.br/scripts/AlmanacPagesISAPI.dll
         static internal void GetAlmanacData()
         {
             using WebClient client = new WebClient();

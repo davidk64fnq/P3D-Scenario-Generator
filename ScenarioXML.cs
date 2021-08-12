@@ -789,7 +789,7 @@ namespace P3D_Scenario_Generator
 			string search = $"Scaleform_Panel_Window_CelestialSextant";
 			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
 			ObjectReference or = new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
-			SetWindowSize sws = new SetWindowSize("986", "705");
+			SetWindowSize sws = new SetWindowSize("986", "755");
 			SimMissionOpenWindowAction owa = new SimMissionOpenWindowAction
 			{
 				Descr = $"Open_Scaleform_Panel_Window_CelestialSextant",
