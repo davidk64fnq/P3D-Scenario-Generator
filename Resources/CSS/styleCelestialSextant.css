@@ -54,7 +54,6 @@ body {
 
 /* Style the tab content (and add height:100% for full page content) */
 .tabcontent {
-	color: white;
 	display: none;
 	height: 100%;
 }
@@ -123,13 +122,14 @@ body {
 
 /* Sight Reduction table */
 
-#SightReduction {
-	float: left;
-}
 
 table, th, td {
 	border: 1px solid black;
 	border-collapse: collapse;
+}
+
+table select {
+	width: 115px;
 }
 
 table {

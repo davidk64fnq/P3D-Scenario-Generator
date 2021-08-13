@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 
+
 namespace P3D_Scenario_Generator
 {
     public class Star
@@ -46,6 +47,7 @@ namespace P3D_Scenario_Generator
     class CelestialNav
     {
         private static readonly List<Star> stars = new List<Star>();
+        internal static List<string> navStars = new List<string>();
         internal static int noStars = 0;
         internal static double[,] ariesGHAd = new double [3, 24];
         internal static double[,] ariesGHAm = new double [3, 24];
@@ -173,7 +175,7 @@ namespace P3D_Scenario_Generator
                 int index = 2; // skip header row
                 while (worksheet.Cells[index, 1].Value != null)
                 {
-                    stars.Add(new Star(worksheet.Cells[index, 1].Value.ToString(),
+                    stars.Add(new Star(Convert.ToString(worksheet.Cells[index, 1].Value),
                         Convert.ToString(worksheet.Cells[index, 2].Value),
                         Convert.ToString(worksheet.Cells[index, 3].Value),
                         Convert.ToString(worksheet.Cells[index, 4].Value),
@@ -190,8 +192,12 @@ namespace P3D_Scenario_Generator
                         ));
                     noStars++;
                     index++;
-
+                    if (Convert.ToString(worksheet.Cells[index, 5].Value) != "")
+                    {
+                        navStars.Add(worksheet.Cells[index, 5].Value.ToString());
+                    }
                 }
+                navStars.Sort();
             }
         }
     }

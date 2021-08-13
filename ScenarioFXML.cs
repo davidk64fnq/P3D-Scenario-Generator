@@ -38,7 +38,7 @@ namespace P3D_Scenario_Generator
 			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Title");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Description");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Constants.appTitle} - Circuit";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Constants.appTitle} - {Parameters.SelectedScenario}";
 
 			// Options section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "Options");
@@ -91,6 +91,58 @@ namespace P3D_Scenario_Generator
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "ObjectFile");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "File");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}";
+
+
+			if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
+            {
+				EditCelestialSourceFXML(simBaseDocument);
+			}
+		}
+		static private void EditCelestialSourceFXML(SimBaseDocument simBaseDocument)
+		{
+			FlightSections fs;
+			fs = simBaseDocument.FlightSections;
+
+			// Options section
+			int sectionIndex = fs.Section.FindIndex(s => s.Name == "Options");
+			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Pause");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "False";
+
+			// DateTimeSeason section
+			sectionIndex = fs.Section.FindIndex(s => s.Name == "DateTimeSeason");
+			DateTime now = DateTime.Now;
+			now = new DateTime(now.Year, now.Month, now.Day, 23, 59, 59);
+			var persianMonth = new PersianCalendar().GetMonth(DateTime.Now);
+			var season = (Season)Math.Ceiling(persianMonth / 3.0);
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Season");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{season}";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Year");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.Year}";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Day");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.DayOfYear}";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Hours");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.Hour}";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Minutes");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.Minute}";
+
+			// Simvars.0 section
+			sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
+			Random random = new Random();
+			double randomHeading = -180 + random.Next(0, 360);
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{randomHeading}";
+
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
+			string formattedLatitude = FormatCoordXML(Runway.Lat, "N", "S", false);
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
+			string formattedLongitude = FormatCoordXML(Runway.Lon, "E", "W", false);
+
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "+3000";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "SimOnGround");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "False";
 		}
 
 		static public string FormatCoordXML(double dCoord, string sPosDir, string sNegDir, bool roundSeconds)

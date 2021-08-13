@@ -50,7 +50,7 @@ namespace P3D_Scenario_Generator
         private void ListBoxScenarioType_SelectedIndexChanged(object sender, EventArgs e)
         {
             TextBoxSelectedScenario.Text = ListBoxScenarioType.SelectedItem.ToString();
-            if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour])
+            if ((TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour]) || (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.Celestial]))
             {
                 ListBoxRunways.Enabled = false;
                 TextBoxSearchRunway.Enabled = false;
@@ -231,6 +231,19 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
+        #region Celestial Navigation Tab
+        static private bool ValidateCelestialIntegerParameters()
+        {
+            if (Convert.ToInt32(form.TextBoxCelestialMaxDist.Text) < Convert.ToInt32(form.TextBoxCelestialMinDist.Text))
+            {
+                MessageBox.Show($"Maximum distance from start position to destination must be greater than minimum distance", "Celestial Navigation Scenario: leg distance", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            return true;
+        }
+
+        #endregion
+
         #region Utilities
 
         private void ButtonHelp_Click(object sender, EventArgs e)
@@ -313,6 +326,13 @@ namespace P3D_Scenario_Generator
             else if (((TextBox)sender).Name.Contains("TextBoxSignTilt"))
             {
                 if (e.Cancel == false && !ValidateSignWritingParameters())
+                {
+                    e.Cancel = true;
+                }
+            }
+            else if (((TextBox)sender).Name.Contains("TextBoxCelestial") && ((TextBox)sender).Name.Contains("Dist"))
+            {
+                if (e.Cancel == false && !ValidateCelestialIntegerParameters())
                 {
                     e.Cancel = true;
                 }

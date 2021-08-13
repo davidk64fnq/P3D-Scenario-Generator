@@ -76,8 +76,8 @@ function update(timestamp)
 	setStarLabels(context, ptsList);
 	ptsList.splice(0,ptsList.length) // clear array ready for next iteration
 	
-	document.getElementById('debug1').innerHTML = "";
-	document.getElementById('debug2').innerHTML = "";
+	//document.getElementById('debug1').innerHTML = "";
+	//document.getElementById('debug2').innerHTML = "";
 	
 	window.requestAnimationFrame(update);
 }

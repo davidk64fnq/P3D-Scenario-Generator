@@ -819,6 +819,12 @@ namespace P3D_Scenario_Generator
 			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.CelestialSextant.html");
 			StreamReader reader = new StreamReader(stream);
 			celestialHTML = reader.ReadToEnd();
+			string starOptions = "";
+			for (int index = 0; index < CelestialNav.navStars.Count; index++)
+            {
+				starOptions += $"<option>{CelestialNav.navStars[index]}</option>";
+			}
+			celestialHTML = celestialHTML.Replace("starOptionsX", starOptions);
 			File.WriteAllText(saveLocation, celestialHTML);
 			stream.Dispose();
 		}

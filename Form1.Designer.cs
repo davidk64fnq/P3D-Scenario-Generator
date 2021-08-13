@@ -96,10 +96,14 @@ namespace P3D_Scenario_Generator
             this.label19 = new System.Windows.Forms.Label();
             this.TextBoxSignMessage = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
+            this.TabPageCelestial = new System.Windows.Forms.TabPage();
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ButtonHelp = new System.Windows.Forms.Button();
-            this.TabPageCelestial = new System.Windows.Forms.TabPage();
+            this.label25 = new System.Windows.Forms.Label();
+            this.label26 = new System.Windows.Forms.Label();
+            this.TextBoxCelestialMinDist = new System.Windows.Forms.TextBox();
+            this.TextBoxCelestialMaxDist = new System.Windows.Forms.TextBox();
             this.TabControl.SuspendLayout();
             this.TabPageGeneral.SuspendLayout();
             this.TabPageCircuit.SuspendLayout();
@@ -108,6 +112,7 @@ namespace P3D_Scenario_Generator
             this.TabPagePhoto.SuspendLayout();
             this.TabPageSign.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBoxSignWriting)).BeginInit();
+            this.TabPageCelestial.SuspendLayout();
             this.SuspendLayout();
             // 
             // TabControl
@@ -820,6 +825,19 @@ namespace P3D_Scenario_Generator
             this.label16.TabIndex = 0;
             this.label16.Text = "Message";
             // 
+            // TabPageCelestial
+            // 
+            this.TabPageCelestial.Controls.Add(this.TextBoxCelestialMaxDist);
+            this.TabPageCelestial.Controls.Add(this.TextBoxCelestialMinDist);
+            this.TabPageCelestial.Controls.Add(this.label26);
+            this.TabPageCelestial.Controls.Add(this.label25);
+            this.TabPageCelestial.Location = new System.Drawing.Point(4, 24);
+            this.TabPageCelestial.Name = "TabPageCelestial";
+            this.TabPageCelestial.Size = new System.Drawing.Size(812, 438);
+            this.TabPageCelestial.TabIndex = 4;
+            this.TabPageCelestial.Text = "Celestial Navigation";
+            this.TabPageCelestial.UseVisualStyleBackColor = true;
+            // 
             // ButtonGenerateScenario
             // 
             this.ButtonGenerateScenario.ImageAlign = System.Drawing.ContentAlignment.BottomLeft;
@@ -841,14 +859,45 @@ namespace P3D_Scenario_Generator
             this.ButtonHelp.UseVisualStyleBackColor = true;
             this.ButtonHelp.Click += new System.EventHandler(this.ButtonHelp_Click);
             // 
-            // TabPageCelestial
+            // label25
             // 
-            this.TabPageCelestial.Location = new System.Drawing.Point(4, 24);
-            this.TabPageCelestial.Name = "TabPageCelestial";
-            this.TabPageCelestial.Size = new System.Drawing.Size(812, 438);
-            this.TabPageCelestial.TabIndex = 4;
-            this.TabPageCelestial.Text = "Celestial Navigation";
-            this.TabPageCelestial.UseVisualStyleBackColor = true;
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(16, 34);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(107, 15);
+            this.label25.TabIndex = 0;
+            this.label25.Text = "Minimum distance";
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(16, 79);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(109, 15);
+            this.label26.TabIndex = 1;
+            this.label26.Text = "Maximum distance";
+            // 
+            // TextBoxCelestialMinDist
+            // 
+            this.TextBoxCelestialMinDist.Location = new System.Drawing.Point(148, 26);
+            this.TextBoxCelestialMinDist.Name = "TextBoxCelestialMinDist";
+            this.TextBoxCelestialMinDist.Size = new System.Drawing.Size(100, 23);
+            this.TextBoxCelestialMinDist.TabIndex = 2;
+            this.TextBoxCelestialMinDist.Text = "20";
+            this.TextBoxCelestialMinDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxCelestialMinDist, "Min run home from starting position (miles)");
+            this.TextBoxCelestialMinDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
+            // TextBoxCelestialMaxDist
+            // 
+            this.TextBoxCelestialMaxDist.Location = new System.Drawing.Point(148, 71);
+            this.TextBoxCelestialMaxDist.Name = "TextBoxCelestialMaxDist";
+            this.TextBoxCelestialMaxDist.Size = new System.Drawing.Size(100, 23);
+            this.TextBoxCelestialMaxDist.TabIndex = 3;
+            this.TextBoxCelestialMaxDist.Text = "30";
+            this.TextBoxCelestialMaxDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxCelestialMaxDist, "Max run home from starting position (miles)");
+            this.TextBoxCelestialMaxDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
             // 
             // Form
             // 
@@ -875,6 +924,8 @@ namespace P3D_Scenario_Generator
             this.TabPageSign.ResumeLayout(false);
             this.TabPageSign.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBoxSignWriting)).EndInit();
+            this.TabPageCelestial.ResumeLayout(false);
+            this.TabPageCelestial.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -954,6 +1005,10 @@ namespace P3D_Scenario_Generator
         internal System.Windows.Forms.TextBox TextBoxSignSegmentRadius;
         internal System.Windows.Forms.TextBox TextBoxSignSegmentLength;
         private System.Windows.Forms.TabPage TabPageCelestial;
+        internal System.Windows.Forms.TextBox TextBoxCelestialMaxDist;
+        internal System.Windows.Forms.TextBox TextBoxCelestialMinDist;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.Label label25;
     }
 }
 

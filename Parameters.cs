@@ -41,6 +41,10 @@ namespace P3D_Scenario_Generator
         internal static double SegmentLengthDeg { get; set; }
         internal static double SegmentRadiusDeg { get; set; }
 
+        // Celestial Navigation
+        internal static double CelestialMinDistance { get; set; }
+        internal static double CelestialMaxDistance { get; set; }
+
         static private bool IsValidFilename(string fileName)
         {
             return !string.IsNullOrEmpty(fileName) &&
@@ -100,6 +104,13 @@ namespace P3D_Scenario_Generator
                 GateHeight = Convert.ToDouble(form.TextBoxSignGateHeight.Text);
                 SegmentLengthDeg = Convert.ToDouble(form.TextBoxSignSegmentLength.Text) / Constants.degreeLatFeet;
                 SegmentRadiusDeg = Convert.ToDouble(form.TextBoxSignSegmentRadius.Text) / Constants.degreeLatFeet;
+            }
+
+            // Celestial Navigation
+            if (SelectedScenario == nameof(ScenarioTypes.Celestial))
+            {
+                CelestialMinDistance = Convert.ToDouble(form.TextBoxCelestialMinDist.Text);
+                CelestialMaxDistance = Convert.ToDouble(form.TextBoxCelestialMaxDist.Text);
             }
 
             if (errorMsg != "")

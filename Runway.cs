@@ -147,7 +147,18 @@ namespace P3D_Scenario_Generator
         {
             Stream stream = GetRunwayXMLstream();
             XmlReader reader = XmlReader.Create(stream);
-            string[] words = Parameters.SelectedRunway.Split("\t");
+            string[] words;
+            double unused1 = 0, unused2 = 0, unused3 = 0;
+            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
+            {
+                Random random = new Random();
+                string randomRunway = GetNearestAirport(-90 + random.Next(0, 180), -180 + random.Next(0, 360), ref unused1, ref unused2, ref unused3);
+                words = randomRunway.Split("\t");
+            }
+            else
+            {
+                words = Parameters.SelectedRunway.Split("\t");
+            }
             IcaoId = words[0];
             SetQuadrantStrings();
 
