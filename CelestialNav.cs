@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 
@@ -67,6 +68,12 @@ namespace P3D_Scenario_Generator
                 File.Move("C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\\stars.dat", "C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\\stars.dat.P3DscenarioGenerator.backup");
             }
 
+            // Get maximum/minimum star visibility magnitude
+            double maxVisMag = stars.Max(x => x.visMag);
+            double minVisMag = stars.Min(x => x.visMag);
+            double lightness, hue;
+            int r = 0, g = 0, b = 0;
+
             for (int index = 0; index < noStars; index++)
             {
                 starsDat += $"Star.{index} = {index + 1}";
@@ -76,7 +83,13 @@ namespace P3D_Scenario_Generator
                 starsDat += $",{stars[index].decD}";
                 starsDat += $",{stars[index].decM}";
                 starsDat += $",{stars[index].decS}";
-                starsDat += $",{stars[index].visMag}\n";
+                starsDat += $",{stars[index].visMag}";
+                // 0.5 pure colour 1.0 white
+                lightness = 0.5 + (stars[index].visMag - minVisMag) / (maxVisMag - minVisMag) * 0.5;
+                // 20 is redish orange, 60 yellowish
+                hue = 20 + (stars[index].visMag - minVisMag) / (maxVisMag - minVisMag) * 40;
+                HlsToRgb(hue, 0.5, 1.0, out r, out g, out b);
+                starsDat += $",,0x{r:X}{g:X}{b:X}FF\n";
             }
 
             File.WriteAllText("C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\\stars.dat", starsDat);
@@ -164,6 +177,36 @@ namespace P3D_Scenario_Generator
             }
         }
 
+
+        // Convert an HLS value into an RGB value.
+        public static void HlsToRgb(double h, double l, double s,
+            out int r, out int g, out int b)
+        {
+            double p2;
+            if (l <= 0.5) p2 = l * (1 + s);
+            else p2 = l + s - l * s;
+
+            double p1 = 2 * l - p2;
+            double double_r, double_g, double_b;
+            if (s == 0)
+            {
+                double_r = l;
+                double_g = l;
+                double_b = l;
+            }
+            else
+            {
+                double_r = QqhToRgb(p1, p2, h + 120);
+                double_g = QqhToRgb(p1, p2, h);
+                double_b = QqhToRgb(p1, p2, h - 120);
+            }
+
+            // Convert RGB to the 0 to 255 range.
+            r = (int)(double_r * 255.0);
+            g = (int)(double_g * 255.0);
+            b = (int)(double_b * 255.0);
+        }
+
         static internal void InitStars()
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -199,6 +242,17 @@ namespace P3D_Scenario_Generator
                 }
                 navStars.Sort();
             }
+        }
+
+        private static double QqhToRgb(double q1, double q2, double hue)
+        {
+            if (hue > 360) hue -= 360;
+            else if (hue < 0) hue += 360;
+
+            if (hue < 60) return q1 + (q2 - q1) * hue / 60;
+            if (hue < 180) return q2;
+            if (hue < 240) return q1 + (q2 - q1) * (240 - hue) / 60;
+            return q1;
         }
     }
 }

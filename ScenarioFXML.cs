@@ -47,19 +47,16 @@ namespace P3D_Scenario_Generator
 
 			// DateTimeSeason section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "DateTimeSeason");
-			DateTime now = DateTime.Now;
-			var persianMonth = new PersianCalendar().GetMonth(DateTime.Now);
-			var season = (Season)Math.Ceiling(persianMonth / 3.0);
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Season");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{season}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.Season}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Year");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.Year}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.Year}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Day");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.DayOfYear}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.DayOfYear}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Hours");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.Hour}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.Hours}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Minutes");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.Minute}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.Minutes}";
 
 			// Sim.0 section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "Sim.0");
@@ -98,51 +95,38 @@ namespace P3D_Scenario_Generator
 				EditCelestialSourceFXML(simBaseDocument);
 			}
 		}
+
+		// Celestial scenario starts in air
 		static private void EditCelestialSourceFXML(SimBaseDocument simBaseDocument)
 		{
 			FlightSections fs;
 			fs = simBaseDocument.FlightSections;
 
-			// Options section
-			int sectionIndex = fs.Section.FindIndex(s => s.Name == "Options");
-			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Pause");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "False";
-
-			// DateTimeSeason section
-			sectionIndex = fs.Section.FindIndex(s => s.Name == "DateTimeSeason");
-			DateTime now = DateTime.Now;
-			now = new DateTime(now.Year, now.Month, now.Day, 23, 59, 59);
-			var persianMonth = new PersianCalendar().GetMonth(DateTime.Now);
-			var season = (Season)Math.Ceiling(persianMonth / 3.0);
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Season");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{season}";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Year");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.Year}";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Day");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.DayOfYear}";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Hours");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.Hour}";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Minutes");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{now.Minute}";
-
 			// Simvars.0 section
-			sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
-			Random random = new Random();
-			double randomHeading = -180 + random.Next(0, 360);
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{randomHeading}";
-
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
-			string formattedLatitude = FormatCoordXML(Runway.Lat, "N", "S", false);
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
-			string formattedLongitude = FormatCoordXML(Runway.Lon, "E", "W", false);
-
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
+			int sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
+			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "+3000";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "SimOnGround");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "False";
+
+			// Engine Parameters section
+			sectionIndex = fs.Section.FindIndex(s => s.Name == "Engine Parameters.1.0");
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Combustion");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "ThrottleLeverPct");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "1";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "PropellerLeverPct");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "1";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "MixtureLeverPct");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "1";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Pct Engine RPM");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "0.25";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "LeftMagneto");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "RightMagneto");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
+			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "GeneratorSwitch");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
 		}
 
 		static public string FormatCoordXML(double dCoord, string sPosDir, string sNegDir, bool roundSeconds)

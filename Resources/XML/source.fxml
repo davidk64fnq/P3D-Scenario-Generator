@@ -29,6 +29,16 @@
             <Property Name="Heading" Value="" />
             <Property Name="SimOnGround" Value="True" />
         </Section>
+		<Section Name="Engine Parameters.1.0">
+			<Property Name="Combustion" Value="" />
+			<Property Name="ThrottleLeverPct" Value="" />
+			<Property Name="PropellerLeverPct" Value="" />
+			<Property Name="MixtureLeverPct" Value="" />
+			<Property Name="Pct Engine RPM" Value="" />
+			<Property Name="LeftMagneto" Value="" />
+			<Property Name="RightMagneto" Value="" />
+			<Property Name="GeneratorSwitch" Value="" />
+		</Section>
         <Section Name="ObjectFile">
             <Property Name="File" Value="" />
         </Section>

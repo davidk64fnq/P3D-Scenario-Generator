@@ -409,7 +409,7 @@ namespace P3D_Scenario_Generator
 					SetCloseWindowActionReference("Close_Scaleform_Panel_Window_Leg_X", PhotoTour.PhotoCount - 1, orList);
 					SetCloseWindowActionReference("Close_Scaleform_Panel_Window_Photo_X", PhotoTour.PhotoCount - 2, orList);
 					a = new Actions(orList);
-					string[] words = Parameters.DestRunway.Split("\t");
+					string[] words = Parameters.PhotoDestRunway.Split("\t");
 					alt = new SimMissionAirportLandingTrigger
 					{
 						InstanceId = GetGUID(),

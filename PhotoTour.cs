@@ -96,7 +96,7 @@ namespace P3D_Scenario_Generator
                     if (photoLegs.Count - 1 >= Parameters.MinNoLegs)
                     {
                         airportLeg = new PhotoLegParams();
-                        Parameters.DestRunway = Runway.GetNearestAirport(photoLegs[^1].latitude, photoLegs[^1].longitude, ref distance, ref airportLeg.latitude, ref airportLeg.longitude);
+                        Parameters.PhotoDestRunway = Runway.GetNearestAirport(photoLegs[^1].latitude, photoLegs[^1].longitude, ref distance, ref airportLeg.latitude, ref airportLeg.longitude);
 
                         // Add forward distance and bearing for destination airport to last selected photo location
                         photoLegs[^1].forwardDist = distance;

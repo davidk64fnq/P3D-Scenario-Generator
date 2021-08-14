@@ -34,6 +34,8 @@ namespace P3D_Scenario_Generator
             this.components = new System.ComponentModel.Container();
             this.TabControl = new System.Windows.Forms.TabControl();
             this.TabPageGeneral = new System.Windows.Forms.TabPage();
+            this.TimePicker = new System.Windows.Forms.DateTimePicker();
+            this.DatePicker = new System.Windows.Forms.DateTimePicker();
             this.label8 = new System.Windows.Forms.Label();
             this.TextBoxScenarioTitle = new System.Windows.Forms.TextBox();
             this.ListBoxAircraft = new System.Windows.Forms.ListBox();
@@ -97,13 +99,13 @@ namespace P3D_Scenario_Generator
             this.TextBoxSignMessage = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
             this.TabPageCelestial = new System.Windows.Forms.TabPage();
+            this.TextBoxCelestialMaxDist = new System.Windows.Forms.TextBox();
+            this.TextBoxCelestialMinDist = new System.Windows.Forms.TextBox();
+            this.label26 = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
             this.ButtonGenerateScenario = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.ButtonHelp = new System.Windows.Forms.Button();
-            this.label25 = new System.Windows.Forms.Label();
-            this.label26 = new System.Windows.Forms.Label();
-            this.TextBoxCelestialMinDist = new System.Windows.Forms.TextBox();
-            this.TextBoxCelestialMaxDist = new System.Windows.Forms.TextBox();
             this.TabControl.SuspendLayout();
             this.TabPageGeneral.SuspendLayout();
             this.TabPageCircuit.SuspendLayout();
@@ -131,6 +133,8 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageGeneral
             // 
+            this.TabPageGeneral.Controls.Add(this.TimePicker);
+            this.TabPageGeneral.Controls.Add(this.DatePicker);
             this.TabPageGeneral.Controls.Add(this.label8);
             this.TabPageGeneral.Controls.Add(this.TextBoxScenarioTitle);
             this.TabPageGeneral.Controls.Add(this.ListBoxAircraft);
@@ -150,6 +154,23 @@ namespace P3D_Scenario_Generator
             this.TabPageGeneral.TabIndex = 0;
             this.TabPageGeneral.Text = "General";
             this.TabPageGeneral.UseVisualStyleBackColor = true;
+            // 
+            // TimePicker
+            // 
+            this.TimePicker.Format = System.Windows.Forms.DateTimePickerFormat.Time;
+            this.TimePicker.Location = new System.Drawing.Point(112, 303);
+            this.TimePicker.Name = "TimePicker";
+            this.TimePicker.ShowUpDown = true;
+            this.TimePicker.Size = new System.Drawing.Size(119, 23);
+            this.TimePicker.TabIndex = 16;
+            // 
+            // DatePicker
+            // 
+            this.DatePicker.CustomFormat = "";
+            this.DatePicker.Location = new System.Drawing.Point(112, 350);
+            this.DatePicker.Name = "DatePicker";
+            this.DatePicker.Size = new System.Drawing.Size(206, 23);
+            this.DatePicker.TabIndex = 15;
             // 
             // label8
             // 
@@ -838,6 +859,46 @@ namespace P3D_Scenario_Generator
             this.TabPageCelestial.Text = "Celestial Navigation";
             this.TabPageCelestial.UseVisualStyleBackColor = true;
             // 
+            // TextBoxCelestialMaxDist
+            // 
+            this.TextBoxCelestialMaxDist.Location = new System.Drawing.Point(148, 71);
+            this.TextBoxCelestialMaxDist.Name = "TextBoxCelestialMaxDist";
+            this.TextBoxCelestialMaxDist.Size = new System.Drawing.Size(100, 23);
+            this.TextBoxCelestialMaxDist.TabIndex = 3;
+            this.TextBoxCelestialMaxDist.Text = "30";
+            this.TextBoxCelestialMaxDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxCelestialMaxDist, "Max run home from starting position (miles)");
+            this.TextBoxCelestialMaxDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
+            // TextBoxCelestialMinDist
+            // 
+            this.TextBoxCelestialMinDist.Location = new System.Drawing.Point(148, 26);
+            this.TextBoxCelestialMinDist.Name = "TextBoxCelestialMinDist";
+            this.TextBoxCelestialMinDist.Size = new System.Drawing.Size(100, 23);
+            this.TextBoxCelestialMinDist.TabIndex = 2;
+            this.TextBoxCelestialMinDist.Text = "20";
+            this.TextBoxCelestialMinDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.TextBoxCelestialMinDist, "Min run home from starting position (miles)");
+            this.TextBoxCelestialMinDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(16, 79);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(109, 15);
+            this.label26.TabIndex = 1;
+            this.label26.Text = "Maximum distance";
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(16, 34);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(107, 15);
+            this.label25.TabIndex = 0;
+            this.label25.Text = "Minimum distance";
+            // 
             // ButtonGenerateScenario
             // 
             this.ButtonGenerateScenario.ImageAlign = System.Drawing.ContentAlignment.BottomLeft;
@@ -858,46 +919,6 @@ namespace P3D_Scenario_Generator
             this.ButtonHelp.Text = "Help";
             this.ButtonHelp.UseVisualStyleBackColor = true;
             this.ButtonHelp.Click += new System.EventHandler(this.ButtonHelp_Click);
-            // 
-            // label25
-            // 
-            this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(16, 34);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(107, 15);
-            this.label25.TabIndex = 0;
-            this.label25.Text = "Minimum distance";
-            // 
-            // label26
-            // 
-            this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(16, 79);
-            this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(109, 15);
-            this.label26.TabIndex = 1;
-            this.label26.Text = "Maximum distance";
-            // 
-            // TextBoxCelestialMinDist
-            // 
-            this.TextBoxCelestialMinDist.Location = new System.Drawing.Point(148, 26);
-            this.TextBoxCelestialMinDist.Name = "TextBoxCelestialMinDist";
-            this.TextBoxCelestialMinDist.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxCelestialMinDist.TabIndex = 2;
-            this.TextBoxCelestialMinDist.Text = "20";
-            this.TextBoxCelestialMinDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxCelestialMinDist, "Min run home from starting position (miles)");
-            this.TextBoxCelestialMinDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
-            // 
-            // TextBoxCelestialMaxDist
-            // 
-            this.TextBoxCelestialMaxDist.Location = new System.Drawing.Point(148, 71);
-            this.TextBoxCelestialMaxDist.Name = "TextBoxCelestialMaxDist";
-            this.TextBoxCelestialMaxDist.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxCelestialMaxDist.TabIndex = 3;
-            this.TextBoxCelestialMaxDist.Text = "30";
-            this.TextBoxCelestialMaxDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxCelestialMaxDist, "Max run home from starting position (miles)");
-            this.TextBoxCelestialMaxDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
             // 
             // Form
             // 
@@ -1009,6 +1030,8 @@ namespace P3D_Scenario_Generator
         internal System.Windows.Forms.TextBox TextBoxCelestialMinDist;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.Label label25;
+        internal System.Windows.Forms.DateTimePicker DatePicker;
+        internal System.Windows.Forms.DateTimePicker TimePicker;
     }
 }
 

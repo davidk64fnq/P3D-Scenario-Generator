@@ -89,7 +89,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
                     overview.Briefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
                     overview.Briefing += $"{Runway.City}, {Runway.Country}.";
-                    words = Parameters.DestRunway.Split('\t');
+                    words = Parameters.PhotoDestRunway.Split('\t');
                     overview.Objective = "Take off and visit a series of photo locations before landing ";
                     overview.Objective += $"at {words[0]}, runway {words[1]}";
                     overview.Tips = "Never do today what you can put off till tomorrow";

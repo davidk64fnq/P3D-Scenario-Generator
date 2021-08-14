@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Windows.Forms;
 
@@ -13,6 +14,11 @@ namespace P3D_Scenario_Generator
         internal static string SaveLocation { get; private set; }
         internal static string SelectedAircraft { get; private set; }
         internal static string SelectedScenario { get; private set; }
+        internal static int DayOfYear { get; private set; }
+        internal static int Year { get; private set; }
+        internal static Season Season { get; private set; }
+        internal static int Hours { get; private set; }
+        internal static int Minutes { get; private set; }
 
         // Circuit tab
         internal static double BaseLeg { get; private set; }
@@ -28,7 +34,7 @@ namespace P3D_Scenario_Generator
         internal static double MinLegDist { get; private set; }
         internal static double MinNoLegs { get; private set; }
         internal static double MaxNoLegs { get; private set; }
-        internal static string DestRunway { get; set; }
+        internal static string PhotoDestRunway { get; set; }
         internal static double PhotoLegWindowSize { get; set; }
         internal static double MaxBearingChange { get; set; }
         internal static double HotspotRadius { get; set; }
@@ -42,6 +48,7 @@ namespace P3D_Scenario_Generator
         internal static double SegmentRadiusDeg { get; set; }
 
         // Celestial Navigation
+        internal static string CelestialDestRunway { get; set; }
         internal static double CelestialMinDistance { get; set; }
         internal static double CelestialMaxDistance { get; set; }
 
@@ -70,6 +77,12 @@ namespace P3D_Scenario_Generator
             SelectedRunway = form.TextBoxSelectedRunway.Text;
             int index = Array.FindIndex(Constants.scenarioNames, s => s == form.TextBoxSelectedScenario.Text);
             SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
+            DayOfYear = form.DatePicker.Value.DayOfYear;
+            Year = form.DatePicker.Value.Year;
+            var persianMonth = new PersianCalendar().GetMonth(form.DatePicker.Value);
+            Season = (Season)Math.Ceiling(persianMonth / 3.0);
+            Hours = form.TimePicker.Value.Hour;
+            Minutes = form.TimePicker.Value.Minute;
 
             // Circuit tab
             if (SelectedScenario == nameof(ScenarioTypes.Circuit))

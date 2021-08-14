@@ -66,7 +66,7 @@ namespace P3D_Scenario_Generator
             string url;
             string mapArea, mapCentre, mapZoom;
             string[] startRunwayWords = Parameters.SelectedRunway.Split("\t");
-            string[] finishRunwayWords = Parameters.DestRunway.Split("\t");
+            string[] finishRunwayWords = Parameters.PhotoDestRunway.Split("\t");
             string[] imageryTypes = { "Aerial", "AerialWithLabels", "Road" };
             bool imagesOkay = true;
 
@@ -222,7 +222,7 @@ namespace P3D_Scenario_Generator
                 curPhoto = PhotoTour.GetPhotoLeg(index);
                 pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{index}&";
             }
-            words = Parameters.DestRunway.Split("\t");
+            words = Parameters.PhotoDestRunway.Split("\t");
             curPhoto = PhotoTour.GetPhotoLeg(PhotoTour.PhotoCount - 1);
             pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{words[0]}";
 

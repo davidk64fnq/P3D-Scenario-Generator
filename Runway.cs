@@ -152,8 +152,8 @@ namespace P3D_Scenario_Generator
             if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
             {
                 Random random = new Random();
-                string randomRunway = GetNearestAirport(-90 + random.Next(0, 180), -180 + random.Next(0, 360), ref unused1, ref unused2, ref unused3);
-                words = randomRunway.Split("\t");
+                Parameters.CelestialDestRunway = GetNearestAirport(-90 + random.Next(0, 180), -180 + random.Next(0, 360), ref unused1, ref unused2, ref unused3);
+                words = Parameters.CelestialDestRunway.Split("\t");
             }
             else
             {
@@ -205,6 +205,42 @@ namespace P3D_Scenario_Generator
                 }
             }
             stream.Dispose();
+
+
+            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
+            {
+                SetCelestialStartLocation();
+            }
+        }
+
+        static private void SetCelestialStartLocation()
+        {
+            Random random = new Random();
+            Hdg = -180 + random.Next(0, 360);
+
+            // Position plane in random direction from destination runway between min/max distance parameter
+            double randomAngle = random.Next(0, 90) * Math.PI / 180.0;
+            double randomRadius = Parameters.CelestialMinDistance + random.Next(0, (int)(Parameters.CelestialMaxDistance - Parameters.CelestialMinDistance));
+            double randomLatAdj = randomRadius * Math.Cos(randomAngle) * random.Next(0, 2) * 2 - 1;
+            double randomLonAdj = randomRadius * Math.Sin(randomAngle) * random.Next(0, 2) * 2 - 1;
+            Lat += randomLatAdj;
+            if (Lat > 180)
+            {
+                Lat -= 360;
+            }
+            else if (Lat < -180)
+            {
+                Lat += 360;
+            }
+            Lon += randomLonAdj;
+            if (Lon > 90)
+            {
+                Lon -= 180;
+            }
+            else if (Lon < -90)
+            {
+                Lon += 180;
+            }
         }
 
         static private void SetRunwayId(string runwayId)
