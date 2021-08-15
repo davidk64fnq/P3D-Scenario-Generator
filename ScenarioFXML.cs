@@ -89,10 +89,10 @@ namespace P3D_Scenario_Generator
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "File");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}";
 
-
 			if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
             {
 				EditCelestialSourceFXML(simBaseDocument);
+
 			}
 		}
 

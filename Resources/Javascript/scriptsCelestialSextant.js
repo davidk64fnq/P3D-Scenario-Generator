@@ -22,17 +22,20 @@ const defaultFOV = 45;
 // Global variables referenced in the button onClick functions		
 var fovH = defaultFOV; // Sextant window width of sky 
 var fovV = fovH * windowH / windowW; // Sextant window height of sky
-var sexAZ = 0; // Sextant window mid-point bearing
-var sexALT = 0; // Sextant window base elevation
+var sexAZ = 0; // Sextant window mid-point bearing relative to plane heading
+var sexALT = 0; // Sextant window base elevation relative to plane pitch
 var sexHo = fovV / 2; // Sextant observed altitude line
 var planeHeadDeg;
+var planePitchDeg;
 var labelStars = 0; // Whether to show star labels
 var labelConstellations = 0; // Whether to show lines between stars in constellations
 
 // Main function that loops refreshing star map
 function update(timestamp)
 {
-	planeHeadDeg = toDegrees(VarGet("A:PLANE HEADING DEGREES TRUE" ,"Radians"));
+	planeHeadDeg = toDegrees(VarGet("A:PLANE HEADING DEGREES TRUE", "Radians"));
+	planePitchDeg = toDegrees(VarGet("A:PLANE PITCH DEGREES", "Radians"));
+	sexHo = fovV / 2 - planePitchDeg;
 	var planeLon = VarGet("A:PLANE LONGITUDE" ,"Radians"); // x
 	var planeLat = VarGet("A:PLANE LATITUDE" ,"Radians");  // y 
 	var canvas = document.getElementById('canvas');
@@ -52,12 +55,14 @@ function update(timestamp)
 		var HA = getHourAngle(LST, RA);
 		var ALT = getALT(DEC, planeLat, HA);
 		var AZ = getAZ(DEC, ALT, planeLat, HA);
-		var AZbearingDelta = getBearingDif(AZ, sexAZ); // Comparing star AZ to sextant window mid-point bearing
-		if ((ALT > sexALT) && (ALT < sexALT + fovV) && (AZbearingDelta <= fovH / 2))
+		var relSexAZ = sexAZ + planeHeadDeg;
+		var relSexALT = sexALT - planePitchDeg;
+		var AZbearingDelta = getBearingDif(AZ, relSexAZ); // Comparing star AZ to sextant window mid-point bearing
+		if ((ALT > relSexALT) && (ALT < relSexALT + fovV) && (AZbearingDelta <= fovH / 2))
 		{
-			var relativeAZ = getRelativeAZ(AZ, sexAZ, fovH); // Number of degrees from left edge of sextant window
+			var relativeAZ = getRelativeAZ(AZ, relSexAZ, fovH); // Number of degrees from left edge of sextant window
 			var left = Math.round(relativeAZ / fovH * windowW);
-			var top = Math.round((sexALT + fovV - ALT) / fovV * windowH);
+			var top = Math.round((relSexALT + fovV - ALT) / fovV * windowH);
 			updatePtsList(starIndex, ptsList, left, top);
 		}
 	}
@@ -270,9 +275,9 @@ function getBearingDif(AZ, sexAZ)
 		return 360 - absDelta;
 }
 
-function getRelativeAZ(AZ, sexAZ, fovH)
+function getRelativeAZ(AZ, relSexAZ, fovH)
 {
-	var left = sexAZ - fovH / 2;
+	var left = relSexAZ - fovH / 2;
 	if (left < 0)
 		left += 360;
 	if (AZ > left)
@@ -343,7 +348,7 @@ function moveAZleft5()
 
 function moveAZreset()
 {
-	sexAZ = planeHeadDeg;
+	sexAZ = 0;
 }
 
 function moveAZright5()
@@ -376,7 +381,7 @@ function moveALTup5()
 
 function moveALTreset()
 {
-	sexALT = 0;
+	sexALT = planePitchDeg;
 }
 
 function moveALTdown5()
@@ -411,7 +416,7 @@ function moveHup5()
 
 function moveHreset()
 {
-	sexHo = sexALT + fovV / 2;
+	sexHo = sexALT - planePitchDeg + fovV / 2;
 }
 
 function moveHdown5()

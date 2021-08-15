@@ -152,7 +152,7 @@ namespace P3D_Scenario_Generator
             if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
             {
                 Random random = new Random();
-                Parameters.CelestialDestRunway = GetNearestAirport(-90 + random.Next(0, 180), -180 + random.Next(0, 360), ref unused1, ref unused2, ref unused3);
+                Parameters.CelestialDestRunway = GetNearestAirport(-60 + random.Next(0, 120), -180 + random.Next(0, 360), ref unused1, ref unused2, ref unused3);
                 words = Parameters.CelestialDestRunway.Split("\t");
             }
             else
