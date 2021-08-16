@@ -12,6 +12,10 @@ const decM = [decMX];
 const decS = [decSX];
 const visMag = [visMagX];
 const lines = [linesX];
+const destLat = [destLatX];
+const destLon = [destLonX];
+const ariesGHAd = [ariesGHAdX];
+const ariesGHAm = [ariesGHAmX];
 
 // Constants
 const daysToBeginMth = [0,0,31,59,90,120,151,181,212,243,273,304,334];
@@ -22,9 +26,9 @@ const defaultFOV = 45;
 // Global variables referenced in the button onClick functions		
 var fovH = defaultFOV; // Sextant window width of sky 
 var fovV = fovH * windowH / windowW; // Sextant window height of sky
-var sexAZ = 0; // Sextant window mid-point bearing relative to plane heading
-var sexALT = 0; // Sextant window base elevation relative to plane pitch
-var sexHo = fovV / 2; // Sextant observed altitude line
+var sexAZ = 0; // Sextant window mid-point bearing relative to plane heading (degrees)
+var sexALT = 0; // Sextant window base elevation relative to plane pitch (degrees)
+var sexHo = windowH / 2; // Sextant observed altitude line (pixels)
 var planeHeadDeg;
 var planePitchDeg;
 var labelStars = 0; // Whether to show star labels
@@ -34,8 +38,7 @@ var labelConstellations = 0; // Whether to show lines between stars in constella
 function update(timestamp)
 {
 	planeHeadDeg = toDegrees(VarGet("A:PLANE HEADING DEGREES TRUE", "Radians"));
-	planePitchDeg = toDegrees(VarGet("A:PLANE PITCH DEGREES", "Radians"));
-	sexHo = fovV / 2 - planePitchDeg;
+	planePitchDeg = toDegrees(VarGet("A:PLANE PITCH DEGREES", "Radians")); // Pitched down +ve, up -ve
 	var planeLon = VarGet("A:PLANE LONGITUDE" ,"Radians"); // x
 	var planeLat = VarGet("A:PLANE LATITUDE" ,"Radians");  // y 
 	var canvas = document.getElementById('canvas');
@@ -79,7 +82,10 @@ function update(timestamp)
 	setConstellationLines(context, ptsList);
 	setStarIcons(context, ptsList)
 	setStarLabels(context, ptsList);
-	ptsList.splice(0,ptsList.length) // clear array ready for next iteration
+	ptsList.splice(0, ptsList.length) // clear array ready for next iteration
+
+	// Update plotting tab
+	updatePlotTab();
 	
 	//document.getElementById('debug1').innerHTML = "";
 	//document.getElementById('debug2').innerHTML = "";
@@ -87,17 +93,26 @@ function update(timestamp)
 	window.requestAnimationFrame(update);
 }
 window.requestAnimationFrame(update);
+
+function getHoInDeg() {
+	var sexHoRaw = (sexHo / windowH) * fovV + sexALT - planePitchDeg;
+	var sexHoDeg = Math.floor(sexHoRaw);
+	var sexHoMin = (sexHoRaw - sexHoDeg) * 60;
+
+	return sexHoDeg + "° " + sexHoMin.toFixed(1) + "'";
+}
 		
 function setInfoLine(context)
 {
 	context.fillStyle = "red";
-	context.fillText("FOVH: " + Math.floor(fovH) + " ° FOVV: " + Math.floor(fovV) + "° AZ: " + Math.floor(sexAZ) + "° ALT: " + Math.floor(sexALT) + "° Ho: " + sexHo.toFixed(2) + "°", 10, windowH - 10);
+	var sexHoAccuracy = fovV / windowH * 60;
+	context.fillText("FOVH: " + Math.floor(fovH) + " ° FOVV: " + Math.floor(fovV) + "° AZ: " + Math.floor(sexAZ) + "° ALT: " + Math.floor(sexALT) + "° Ho: " + getHoInDeg() + " (" + sexHoAccuracy.toFixed(1) + ")", 10, windowH - 10);
 }
 
 function setHoLine(context)
 {
 	context.fillStyle = "red";
-	context.fillRect(0, Math.round((sexALT + fovV - sexHo) / fovV * windowH), windowW, 1);
+	context.fillRect(0, windowH - sexHo, windowW, 1);
 }
 
 function setConstellationLines(context, ptsList)
@@ -176,6 +191,14 @@ function setStarLabels(context, ptsList)
 			context.fillText(starLabel, left + 5, top - 5);
 		}
 	}
+}
+
+function updatePlotTab() {
+	var plotCanvas = document.getElementById("plottingCanvas");
+	var ctx = plotCanvas.getContext("2d");
+	var image = new Image(960, 540)
+	image.src = "plotImage.jpg"
+	ctx.drawImage(image, 0, 0);
 }
 
 function updatePtsList(starIndex, ptsList, left, top)
@@ -304,6 +327,67 @@ function toggleLabelConstellations()
 		labelConstellations = 0;
 }
 
+// Button onClick functions for handling fix buttons
+
+function takeSighting()
+{
+	// locate first empty Hs field
+	var HsArray = document.getElementsByClassName("Hs");
+	var found = false;
+	var curIndex = -1;
+	for (let index = 0; index < HsArray.length && found == false; index++) {
+		if (HsArray[index].innerHTML == "") {
+			found = true;
+			curIndex = index;
+        }
+	}
+
+	if (found) {
+		var DTlat = document.getElementsByClassName("DT Lat");
+		DTlat[curIndex].innerHTML = formatLatDeg(destLat);
+		var DTlon = document.getElementsByClassName("DT Lon");
+		DTlon[curIndex].innerHTML = formatLonDeg(destLon);
+		var dayOfMonth = VarGet("E:ZULU DAY OF MONTH", "Number");
+		var monthOfYear = VarGet("E:ZULU MONTH OF YEAR", "Number");
+		var year = VarGet("E:ZULU YEAR", "Number");
+		var DateArray = document.getElementsByClassName("Date");
+		DateArray[curIndex].innerHTML = dayOfMonth + "/" + monthOfYear + "/" + year;
+		var time = VarGet("E:ZULU TIME", "Seconds");
+		var UTArray = document.getElementsByClassName("UT");
+		UTArray[curIndex].innerHTML = secondsToTime(time);
+		HsArray[curIndex].innerHTML = getHoInDeg(); 
+		var GHAhourArray = document.getElementsByClassName("GHAhour");
+		GHAhourArray[curIndex].innerHTML = ariesGHAd[Math.floor(time / 3600)] + "° " + ariesGHAm[Math.floor(time / 3600)] + "'";
+    }
+}
+
+function formatLatDeg(latitude) {
+	if (latitude >= 0) {
+		return "N " + Math.floor(latitude) + "°"
+	}
+	else {
+		return "S " + Math.floor(latitude * -1) + "°"
+    }
+}
+
+function formatLonDeg(longitude) {
+	if (longitude >= 0) {
+		return "E " + Math.floor(longitude) + "°"
+	}
+	else {
+		return "W " + Math.floor(longitude * -1) + "°"
+	}
+}
+
+function secondsToTime(e) {
+	var h = Math.floor(e / 3600).toString().padStart(2, '0'),
+		m = Math.floor(e % 3600 / 60).toString().padStart(2, '0'),
+		s = Math.floor(e % 60).toString().padStart(2, '0');
+
+	return h + ':' + m + ':' + s;
+	//return `${h}:${m}:${s}`;
+}
+
 // Button onClick functions for adjusting FOV, AV, ALT, Ho 
 		
 function moveFOVinc5()
@@ -398,41 +482,41 @@ function moveALTdown1()
 
 function moveHup01()
 {
-	if (sexHo <= sexALT + fovV - 0.1)
-		sexHo += 0.1;
+	if (sexHo <= windowH - 1)
+		sexHo += 1;
 }
 
 function moveHup1()
 {
-	if (sexHo <= sexALT + fovV - 1)
-		sexHo += 1;
+	if (sexHo <= windowH - 10)
+		sexHo += 10;
 }
 
 function moveHup5()
 {
-	if (sexHo <= sexALT + fovV - 5)
-		sexHo += 5;
+	if (sexHo <= windowH - 50)
+		sexHo += 50;
 }
 
 function moveHreset()
 {
-	sexHo = sexALT - planePitchDeg + fovV / 2;
+	sexHo = Math.floor(windowH / 2);
 }
 
 function moveHdown5()
 {
-	if (sexHo >= sexALT + 5)
-		sexHo -= 5;
+	if (sexHo >= 50)
+		sexHo -= 50;
 }
 
 function moveHdown1()
 {
-	if (sexHo >= sexALT + 1)
-		sexHo -= 1;
+	if (sexHo >= 10)
+		sexHo -= 10;
 }
 
 function moveHdown01()
 {
-	if (sexHo >= sexALT + 0.1)
-		sexHo -= 0.1;
+	if (sexHo >= 1)
+		sexHo -= 1;
 }

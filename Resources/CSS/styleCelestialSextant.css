@@ -4,25 +4,26 @@
 	--info-border-color: darkolivegreen;
 	--info-text-color: darkolivegreen;
 	--info-hover-background-color: darkolivegreen;
-	
+	/* FIX button group colours */
+	--fix-background-color: coral;
+	--fix-border-color: firebrick;
+	--fix-text-color: firebrick;
+	--fix-hover-background-color: firebrick;
 	/* FOVH, AZ, ALT button groups colours */
 	--viewPort-background-color: powderblue;
 	--viewPort-border-color: navy;
 	--viewPort-text-color: navy;
 	--viewPort-hover-background-color: navy;
-	
 	/* Ho button group colours */
 	--reading-background-color: plum;
 	--reading-border-color: purple;
 	--reading-text-color: purple;
 	--reading-hover-background-color: purple;
-	
 	/* Button group */
 	--button-group-line: 2px;
 	--button-group-margin: 5px;
 	--button-group-padding: 5px;
 	--button-group-radius: 8px;
-	
 	/* Button */
 	--button-hover-text-color: white;
 	--button-line: 1px;
@@ -62,7 +63,7 @@ body {
 	padding: var(--button-group-padding);
 }
 
-#INFO, #FOV, #AZ, #ALT, #Ho  {
+#INFO, #FIX, #FOV, #AZ, #ALT, #Ho  {
 	border-radius: var(--button-group-radius);
 	display: inline-block;
 	margin: var(--button-group-margin);
@@ -72,6 +73,11 @@ body {
 #INFO {
 	background-color: var(--info-background-color);
 	border: var(--button-group-line) solid var(--info-border-color);
+}
+
+#FIX {
+	background-color: var(--fix-background-color);
+	border: var(--button-group-line) solid var(--fix-border-color);
 }
 
 #FOV, #AZ, #ALT {
@@ -84,14 +90,19 @@ body {
 	border: var(--button-group-line) solid var(--reading-border-color);
 }
 
-#INFO button, #FOV button, #AZ button, #ALT button, #Ho button {
-	cursor: pointer; 
+#INFO button, #FIX button, #FOV button, #AZ button, #ALT button, #Ho button {
+	cursor: pointer;
 	border-radius: var(--button-radius);
 }
 
 #INFO button {
 	color: var(--info-text-color); 
 	border: var(--button-line) solid var(--info-border-color);
+}
+
+#FIX button {
+	color: var(--fix-text-color);
+	border: var(--button-line) solid var(--fix-border-color);
 }
 
 #FOV button, #AZ button, #ALT button {
@@ -104,12 +115,16 @@ body {
 	border: var(--button-line) solid var(--reading-border-color);
 }
 
-#INFO button:hover, #FOV button:hover, #AZ button:hover, #ALT button:hover, #Ho button:hover {
-	color: var(--button-hover-text-color); 
+#INFO button:hover, #FIX button:hover, #FOV button:hover, #AZ button:hover, #ALT button:hover, #Ho button:hover {
+	color: var(--button-hover-text-color);
 }
 
 #INFO button:hover {
 	background-color: var(--info-hover-background-color); 
+}
+
+#FIX button:hover {
+	background-color: var(--fix-hover-background-color);
 }
 
 #FOV button:hover, #AZ button:hover, #ALT button:hover {

@@ -60,6 +60,21 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        internal static void GetCelestialOverviewImage()
+        {
+            using WebClient client = new WebClient();
+            string url;
+
+            string[] words = Parameters.CelestialDestRunway.Split("\t");
+            string pushpins = $"&pp={Runway.AirportLat},{Runway.AirportLon};1;{words[0]}";
+            url = $"{urlBingBase}Road/{Runway.AirportLat},{Runway.AirportLon}/8?mapSize=960,540{pushpins}{urlKey}";
+            if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
+            {
+                Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
+            }
+            GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\plotImage.jpg");
+        }
+
         internal static bool GetPhotoTourLegImages()
         {
             using WebClient client = new WebClient();

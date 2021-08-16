@@ -17,6 +17,9 @@
             <button type="button" onclick="toggleLabelStars()">Stars</button>
             <button type="button" onclick="toggleLabelConstellations()">Constellations</button>
         </div>
+        <div id="FIX">
+            <button type="button" onclick="takeSighting()">Take Sighting</button>
+        </div>
         <div>
             <canvas id="canvas" width="960" height="540"></canvas>
         </div>
@@ -40,13 +43,13 @@
             <button type="button" onclick="moveALTdown1()">-1</button>
         </div>
         <div id="Ho">
-            <button type="button" onclick="moveHup01()">+0.1</button>
-            <button type="button" onclick="moveHup1()">+1</button>
-            <button type="button" onclick="moveHup5()">+5</button>
+            <button type="button" onclick="moveHup01()">+1</button>
+            <button type="button" onclick="moveHup1()">+10</button>
+            <button type="button" onclick="moveHup5()">+50</button>
             <button type="button" onclick="moveHreset()">Ho</button>
-            <button type="button" onclick="moveHdown5()">-5</button>
-            <button type="button" onclick="moveHdown1()">-1</button>
-            <button type="button" onclick="moveHdown01()">-0.1</button>
+            <button type="button" onclick="moveHdown5()">-50</button>
+            <button type="button" onclick="moveHdown1()">-10</button>
+            <button type="button" onclick="moveHdown01()">-1</button>
         </div>
     </div>
 
@@ -63,61 +66,61 @@
             </tr>
             <tr>
                 <th>Star</th>
-                <td><select onfocus='this.size=10;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px; height: 60px">starOptionsX</select></td>
-                <td><select onfocus='this.size=10;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px; height: 60px">starOptionsX</select></td>
-                <td><select onfocus='this.size=10;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px; height: 60px">starOptionsX</select></td>
-                <td><select onfocus='this.size=10;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px; height: 60px">starOptionsX</select></td>
-                <td><select onfocus='this.size=10;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px; height: 60px">starOptionsX</select></td>
-                <td><select onfocus='this.size=10;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px; height: 60px">starOptionsX</select></td>
+                <td><select onfocus='this.size=20;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px;">starOptionsX</select></td>
+                <td><select onfocus='this.size=20;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px;">starOptionsX</select></td>
+                <td><select onfocus='this.size=20;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px;">starOptionsX</select></td>
+                <td><select onfocus='this.size=20;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px;">starOptionsX</select></td>
+                <td><select onfocus='this.size=20;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px;">starOptionsX</select></td>
+                <td><select onfocus='this.size=20;' onblur='this.size=1;' onchange='this.size=1; this.blur();' style="width: 115px;">starOptionsX</select></td>
             </tr>
             <tr>
                 <th>DR Latitude</th>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td><input type="text" id="DR Lat" size="15"></td>
+                <td><input type="text" id="DR Lat" size="15"></td>
+                <td><input type="text" id="DR Lat" size="15"></td>
+                <td><input type="text" id="DR Lat" size="15"></td>
+                <td><input type="text" id="DR Lat" size="15"></td>
+                <td><input type="text" id="DR Lat" size="15"></td>
             </tr>
             <tr>
                 <th>DR Longitude</th>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td><input type="text" id="DR Lon" size="15"></td>
+                <td><input type="text" id="DR Lon" size="15"></td>
+                <td><input type="text" id="DR Lon" size="15"></td>
+                <td><input type="text" id="DR Lon" size="15"></td>
+                <td><input type="text" id="DR Lon" size="15"></td>
+                <td><input type="text" id="DR Lon" size="15"></td>
             </tr>
         </table>
         <table>
             <tr>
                 <th>Date</th>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td class="Date"></td>
+                <td class="Date"></td>
+                <td class="Date"></td>
+                <td class="Date"></td>
+                <td class="Date"></td>
+                <td class="Date"></td>
             </tr>
             <tr>
                 <th>UT</th>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td class="UT"></td>
+                <td class="UT"></td>
+                <td class="UT"></td>
+                <td class="UT"></td>
+                <td class="UT"></td>
+                <td class="UT"></td>
             </tr>
         </table>
         <table>
             <tr>
                 <th>Hs</th>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td class="Hs"></td>
+                <td class="Hs"></td>
+                <td class="Hs"></td>
+                <td class="Hs"></td>
+                <td class="Hs"></td>
+                <td class="Hs"></td>
             </tr>
             <tr>
                 <td style="text-align: left;">ACT</td>
@@ -140,7 +143,16 @@
         </table>
         <table>
             <tr>
-                <td style="text-align: left;">GHA</td>
+                <td style="text-align: left;">GHA &#9800;</td>
+                <td class="GHAhour"></td>
+                <td class="GHAhour"></td>
+                <td class="GHAhour"></td>
+                <td class="GHAhour"></td>
+                <td class="GHAhour"></td>
+                <td class="GHAhour"></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">GHA &#9800; increment</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -149,16 +161,7 @@
                 <td></td>
             </tr>
             <tr>
-                <td style="text-align: left;">GHA increment</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <th style="text-align: right;">GHA</th>
+                <th style="text-align: right;">GHA &#9800;</th>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -169,7 +172,7 @@
         </table>
         <table>
             <tr>
-                <td style="text-align: left;">AP</td>
+                <td style="text-align: left;">AP &#955;</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -178,7 +181,7 @@
                 <td></td>
             </tr>
             <tr>
-                <th style="text-align: right;">LHA</th>
+                <th style="text-align: right;">LHA &#9800;</th>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -219,6 +222,8 @@
     </div>
 
     <div id="Plotting" class="tabcontent">
+        <Canvas id="plottingCanvas" width="960" height="540">
+        </Canvas>
     </div>
 
     <div id="Tables" class="tabcontent">

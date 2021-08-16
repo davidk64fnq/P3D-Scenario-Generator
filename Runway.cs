@@ -209,6 +209,7 @@ namespace P3D_Scenario_Generator
 
             if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
             {
+                BingImages.GetCelestialOverviewImage();
                 SetCelestialStartLocation();
             }
         }
@@ -221,25 +222,25 @@ namespace P3D_Scenario_Generator
             // Position plane in random direction from destination runway between min/max distance parameter
             double randomAngle = random.Next(0, 90) * Math.PI / 180.0;
             double randomRadius = Parameters.CelestialMinDistance + random.Next(0, (int)(Parameters.CelestialMaxDistance - Parameters.CelestialMinDistance));
-            double randomLatAdj = randomRadius * Math.Cos(randomAngle) * random.Next(0, 2) * 2 - 1;
-            double randomLonAdj = randomRadius * Math.Sin(randomAngle) * random.Next(0, 2) * 2 - 1;
+            double randomLatAdj = randomRadius * Constants.feetInKnot / Constants.degreeLatFeet * Math.Cos(randomAngle) * (random.Next(0, 2) * 2 - 1);
+            double randomLonAdj = randomRadius * Constants.feetInKnot / Constants.degreeLatFeet * Math.Sin(randomAngle) * (random.Next(0, 2) * 2 - 1);
             Lat += randomLatAdj;
-            if (Lat > 180)
+            if (Lat > 90)
             {
-                Lat -= 360;
+                Lat -= 180;
             }
-            else if (Lat < -180)
+            else if (Lat < -90)
             {
-                Lat += 360;
+                Lat += 180;
             }
             Lon += randomLonAdj;
-            if (Lon > 90)
+            if (Lon > 180)
             {
-                Lon -= 180;
+                Lon -= 360;
             }
-            else if (Lon < -90)
+            else if (Lon < -180)
             {
-                Lon += 180;
+                Lon += 360;
             }
         }
 

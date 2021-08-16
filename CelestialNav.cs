@@ -96,7 +96,7 @@ namespace P3D_Scenario_Generator
             string almanacData = "";
             int[] navStarMapping = { 6, 4, 29, 18, -1, 9, 31, 33, 54, 14, 24, 40, 0, 50, 1, 41, 36, 42, 21, 12, 15, 16, 11, -1, 52, 27, 3, 26, 13, 46, 53, 55, 30, 28, 34, 5, 47, 39, 56, 7, 35, 23, 8, 49, 51, -1, 20, 19, 45, 25, 10, 37, 43, 2, 44, 17, 32, 22, 48, 38 };
 
-            url = "http://www.tecepe.com.br/scripts/AlmanacPagesISAPI.dll/pages?date=08%2F11%2F2021";
+            url = $"http://www.tecepe.com.br/scripts/AlmanacPagesISAPI.dll/pages?date={Parameters.Month}%2F{Parameters.Day}%2F{Parameters.Year}";
 
             try
             {
@@ -108,7 +108,7 @@ namespace P3D_Scenario_Generator
             }
 
             string ariesGHAdata = almanacData.Substring(almanacData.IndexOf("G.M.T"));
-            string[] days = ariesGHAdata.Split(" 0 ");
+            string[] days = ariesGHAdata.Split("  0 ");
             for (int day = 0; day < 3; day++)
             {
                 string[] hours = days[day + 1].Split("\n");

@@ -15,6 +15,8 @@ namespace P3D_Scenario_Generator
         internal static string SelectedAircraft { get; private set; }
         internal static string SelectedScenario { get; private set; }
         internal static int DayOfYear { get; private set; }
+        internal static int Day { get; private set; }
+        internal static int Month { get; private set; }
         internal static int Year { get; private set; }
         internal static Season Season { get; private set; }
         internal static int Hours { get; private set; }
@@ -78,6 +80,8 @@ namespace P3D_Scenario_Generator
             int index = Array.FindIndex(Constants.scenarioNames, s => s == form.TextBoxSelectedScenario.Text);
             SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
             DayOfYear = form.DatePicker.Value.DayOfYear;
+            Day = form.DatePicker.Value.Day;
+            Month = form.DatePicker.Value.Month;
             Year = form.DatePicker.Value.Year;
             var persianMonth = new PersianCalendar().GetMonth(form.DatePicker.Value);
             Season = (Season)Math.Ceiling(persianMonth / 3.0);
