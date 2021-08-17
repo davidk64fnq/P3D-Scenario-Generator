@@ -12,10 +12,11 @@ const decM = [decMX];
 const decS = [decSX];
 const visMag = [visMagX];
 const lines = [linesX];
-const destLat = [destLatX];
-const destLon = [destLonX];
+const destLat = destLatX;
+const destLon = destLonX;
 const ariesGHAd = [ariesGHAdX];
 const ariesGHAm = [ariesGHAmX];
+const startDate = startDateX;
 
 // Constants
 const daysToBeginMth = [0,0,31,59,90,120,151,181,212,243,273,304,334];
@@ -343,39 +344,76 @@ function takeSighting()
 	}
 
 	if (found) {
-		var DTlat = document.getElementsByClassName("DT Lat");
-		DTlat[curIndex].innerHTML = formatLatDeg(destLat);
-		var DTlon = document.getElementsByClassName("DT Lon");
-		DTlon[curIndex].innerHTML = formatLonDeg(destLon);
+		// Display Dead Reckoning Latitude
+		var DRlat = document.getElementsByClassName("DR Lat");
+		DRlat[curIndex].value = formatLatDeg(destLat);
+
+		// Display Dead Reckoning Longitude
+		var DRlon = document.getElementsByClassName("DR Lon");
+		DRlon[curIndex].value = formatLonDeg(destLon);
+
+		// Display date
 		var dayOfMonth = VarGet("E:ZULU DAY OF MONTH", "Number");
 		var monthOfYear = VarGet("E:ZULU MONTH OF YEAR", "Number");
 		var year = VarGet("E:ZULU YEAR", "Number");
 		var DateArray = document.getElementsByClassName("Date");
 		DateArray[curIndex].innerHTML = dayOfMonth + "/" + monthOfYear + "/" + year;
+
+		// Display current Universal Time
 		var time = VarGet("E:ZULU TIME", "Seconds");
 		var UTArray = document.getElementsByClassName("UT");
 		UTArray[curIndex].innerHTML = secondsToTime(time);
-		HsArray[curIndex].innerHTML = getHoInDeg(); 
+
+		// Display sextant reading
+		HsArray[curIndex].innerHTML = getHoInDeg();
+
+		// Display Aries GHA for current hour
+		var day = getElapsedDays(dayOfMonth + "/" + monthOfYear + "/" + year); // from start date of scenario
+		var hour = Math.floor(time / 3600);
 		var GHAhourArray = document.getElementsByClassName("GHAhour");
-		GHAhourArray[curIndex].innerHTML = ariesGHAd[Math.floor(time / 3600)] + "° " + ariesGHAm[Math.floor(time / 3600)] + "'";
+		GHAhourArray[curIndex].innerHTML = ariesGHAd[day][hour] + "° " + ariesGHAm[day][hour] + "'";
+
     }
+}
+
+function getElapsedDays(currentdate) {
+	// JavaScript program to illustrate 
+	// calculation of no. of days between two date 
+
+	// To set two dates to two variables
+	var date1 = new Date(startDate);
+	var date2 = new Date(currentdate);
+
+	// To calculate the time difference of two dates
+	var Difference_In_Time = date2.getTime() - date1.getTime();
+
+	// To calculate the no. of days between two dates
+	return Difference_In_Time / (1000 * 3600 * 24);
 }
 
 function formatLatDeg(latitude) {
 	if (latitude >= 0) {
-		return "N " + Math.floor(latitude) + "°"
+		var degrees = Math.floor(latitude);
+		var minutes = (latitude - degrees) * 60;
+		return "N " + degrees + "° " + Math.floor(minutes) + "'";
 	}
 	else {
-		return "S " + Math.floor(latitude * -1) + "°"
+		var degrees = Math.floor(latitude * -1);
+		var minutes = (latitude * -1 - degrees) * 60;
+		return "S " + degrees + "° " + Math.floor(minutes) + "'";
     }
 }
 
 function formatLonDeg(longitude) {
 	if (longitude >= 0) {
-		return "E " + Math.floor(longitude) + "°"
+		var degrees = Math.floor(longitude);
+		var minutes = (longitude - degrees) * 60;
+		return "E " + degrees + "° " + Math.floor(minutes) + "'";
 	}
 	else {
-		return "W " + Math.floor(longitude * -1) + "°"
+		var degrees = Math.floor(longitude * -1);
+		var minutes = (longitude * -1 - degrees) * 60;
+		return "W " + degrees + "° " + Math.floor(minutes) + "'";
 	}
 }
 

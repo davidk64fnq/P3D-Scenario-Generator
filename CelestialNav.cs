@@ -108,19 +108,21 @@ namespace P3D_Scenario_Generator
             }
 
             string ariesGHAdata = almanacData.Substring(almanacData.IndexOf("G.M.T"));
-            string[] days = ariesGHAdata.Split("  0 ");
-            for (int day = 0; day < 3; day++)
+            string[] hours = ariesGHAdata.Split("\n");
+            int day = 0;
+            int hour = 0;
+            for (int line = 2; line < 85; line++)
             {
-                string[] hours = days[day + 1].Split("\n");
-                int hour = 0;
-                for (int line = 0; line < 27; line++)
+                if (hours[line].Length > 6 && hours[line][6] == '|')
                 {
-                    if (hours[line].Contains('|'))
+                    string[] pipes = hours[line].Split('|');
+                    string[] spaces = pipes[1].Trim().Split(' ');
+                    ariesGHAd[day, hour] = Convert.ToDouble(spaces[0]);
+                    ariesGHAm[day, hour++] = Convert.ToDouble(spaces[1]);
+                    if (hour == 24)
                     {
-                        string[] pipes = hours[line].Split('|');
-                        string[] spaces = pipes[1].Trim().Split(' ');
-                        ariesGHAd[day, hour] = Convert.ToDouble(spaces[0]);
-                        ariesGHAm[day, hour++] = Convert.ToDouble(spaces[1]);
+                        hour = 0;
+                        day++;
                     }
                 }
             }

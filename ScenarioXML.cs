@@ -906,13 +906,32 @@ namespace P3D_Scenario_Generator
 			celestialJS = celestialJS.Replace("destLonX", Runway.AirportLon.ToString());
 			string ariesGHAd = "";
 			string ariesGHAm = "";
-			for (int hour = 0; hour < 24; hour++)
+			for (int day = 0; day < 3; day++)
             {
-				ariesGHAd += CelestialNav.ariesGHAd[0, hour];
-				ariesGHAm += CelestialNav.ariesGHAm[0, hour];
+				ariesGHAd += "[";
+				ariesGHAm += "[";
+				for (int hour = 0; hour < 24; hour++)
+				{
+					ariesGHAd += CelestialNav.ariesGHAd[day, hour];
+					ariesGHAm += CelestialNav.ariesGHAm[day, hour];
+					if (hour < 23)
+					{
+						ariesGHAd += ",";
+						ariesGHAm += ",";
+					}
+				}
+				ariesGHAd += "]";
+				ariesGHAm += "]";
+				if (day < 2)
+				{
+					ariesGHAd += ",";
+					ariesGHAm += ",";
+				}
 			}
 			celestialJS = celestialJS.Replace("ariesGHAdX", ariesGHAd);
 			celestialJS = celestialJS.Replace("ariesGHAmX", ariesGHAm);
+			string startDate = $"\"{Parameters.Month}/{Parameters.Day}/{Parameters.Year}\"";
+			celestialJS = celestialJS.Replace("startDateX", startDate);
 			File.WriteAllText(saveLocation, celestialJS);
 			stream.Dispose();
 		}
