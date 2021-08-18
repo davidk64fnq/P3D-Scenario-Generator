@@ -48,7 +48,7 @@ namespace P3D_Scenario_Generator
     class CelestialNav
     {
         private static readonly List<Star> stars = new List<Star>();
-        internal static List<string> navStars = new List<string>();
+        internal static List<string> navStarNames = new List<string>();
         internal static int noStars = 0;
         internal static double[,] ariesGHAd = new double[3, 24];
         internal static double[,] ariesGHAm = new double[3, 24];
@@ -129,7 +129,8 @@ namespace P3D_Scenario_Generator
 
             string starsData = almanacData.Substring(almanacData.IndexOf(" | Acamar"));
             string[] stars = starsData.Split("\n");
-            int starNo = 0;
+            int sequenceNo = 0;
+            int alphaNo = 0;
             int decSign;
             for (int line = 0; line < 71; line++)
             {
@@ -138,11 +139,14 @@ namespace P3D_Scenario_Generator
                 {
                     string starData = pipes[pipes.Length - 1].Substring(12);
                     string[] spaces = starData.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                    int mappedStarNo = navStarMapping[starNo];
-                    if (mappedStarNo != -1)
+                    if (sequenceNo != 4 && sequenceNo != 23 && sequenceNo != 45) // these stars not included
                     {
-                        starsSHAd[mappedStarNo] = Convert.ToDouble(spaces[0]);
-                        starsSHAm[mappedStarNo] = Convert.ToDouble(spaces[1]);
+                        if (sequenceNo == 8)
+                        {
+                            alphaNo = 4; // put "Al Nair" in sort order that C# uses
+                        }
+                        starsSHAd[alphaNo] = Convert.ToDouble(spaces[0]);
+                        starsSHAm[alphaNo] = Convert.ToDouble(spaces[1]);
                         if (spaces[2].StartsWith('S'))
                         {
                             decSign = -1;
@@ -153,16 +157,28 @@ namespace P3D_Scenario_Generator
                         }
                         if (spaces[2].Length == 1)
                         {
-                            starsDECd[mappedStarNo] = Convert.ToDouble(spaces[3]) * decSign;
-                            starsDECm[mappedStarNo] = Convert.ToDouble(spaces[4]);
+                            starsDECd[alphaNo] = Convert.ToDouble(spaces[3]) * decSign;
+                            starsDECm[alphaNo] = Convert.ToDouble(spaces[4]);
                         }
                         else
                         {
-                            starsDECd[mappedStarNo] = Convert.ToDouble(spaces[2].Substring(1)) * decSign;
-                            starsDECm[mappedStarNo] = Convert.ToDouble(spaces[3]);
+                            starsDECd[alphaNo] = Convert.ToDouble(spaces[2].Substring(1)) * decSign;
+                            starsDECm[alphaNo] = Convert.ToDouble(spaces[3]);
+                        }
+                        if (alphaNo == 3)
+                        {
+                            alphaNo = 5; // leave room for "Al Nair"
+                        }
+                        else if (alphaNo == 4)
+                        {
+                            alphaNo = 8; // skip back to usual alphabetical order
+                        }
+                        else
+                        {
+                            alphaNo++;
                         }
                     }
-                    starNo++;
+                    sequenceNo++;
                 }
             }
         }
@@ -193,14 +209,14 @@ namespace P3D_Scenario_Generator
                         (double)worksheet.Cells[index, 13].Value,
                         (double)worksheet.Cells[index, 14].Value
                         ));
-                    noStars++;
-                    index++;
                     if (Convert.ToString(worksheet.Cells[index, 5].Value) != "")
                     {
-                        navStars.Add(worksheet.Cells[index, 5].Value.ToString());
+                        navStarNames.Add(worksheet.Cells[index, 5].Value.ToString());
                     }
+                    noStars++;
+                    index++;
                 }
-                navStars.Sort();
+                navStarNames.Sort();
             }
         }
     }

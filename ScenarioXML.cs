@@ -820,9 +820,9 @@ namespace P3D_Scenario_Generator
 			StreamReader reader = new StreamReader(stream);
 			celestialHTML = reader.ReadToEnd();
 			string starOptions = "";
-			for (int index = 0; index < CelestialNav.navStars.Count; index++)
+			for (int index = 0; index < CelestialNav.navStarNames.Count; index++)
             {
-				starOptions += $"<option>{CelestialNav.navStars[index]}</option>";
+				starOptions += $"<option>{CelestialNav.navStarNames[index]}</option>";
 			}
 			celestialHTML = celestialHTML.Replace("starOptionsX", starOptions);
 			File.WriteAllText(saveLocation, celestialHTML);
@@ -930,6 +930,30 @@ namespace P3D_Scenario_Generator
 			}
 			celestialJS = celestialJS.Replace("ariesGHAdX", ariesGHAd);
 			celestialJS = celestialJS.Replace("ariesGHAmX", ariesGHAm);
+			string starsSHAd = "";
+			string starsSHAm = "";
+			for (int starIndex = 0; starIndex < CelestialNav.starsSHAd.Length; starIndex++)
+            {
+				starsSHAd += CelestialNav.starsSHAd[starIndex];
+				starsSHAm += CelestialNav.starsSHAm[starIndex];
+				if (starIndex < CelestialNav.starsSHAd.Length - 1)
+				{
+					starsSHAd += ",";
+					starsSHAm += ",";
+				}
+			}
+			celestialJS = celestialJS.Replace("starsSHAdX", starsSHAd);
+			celestialJS = celestialJS.Replace("starsSHAmX", starsSHAm);
+			string starNameList = "";
+			for (int starIndex = 0; starIndex < CelestialNav.navStarNames.Count; starIndex++)
+			{
+				starNameList += $"\"{CelestialNav.navStarNames[starIndex]}\"";
+				if (starIndex < CelestialNav.navStarNames.Count - 1)
+				{
+					starNameList += ",";
+				}
+			}
+			celestialJS = celestialJS.Replace("starNameListX", starNameList);
 			string startDate = $"\"{Parameters.Month}/{Parameters.Day}/{Parameters.Year}\"";
 			celestialJS = celestialJS.Replace("startDateX", startDate);
 			File.WriteAllText(saveLocation, celestialJS);

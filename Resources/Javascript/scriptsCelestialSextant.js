@@ -1,4 +1,6 @@
 // Constants populated by P3D Scenario Generator application
+
+// These arrays have an entry for every star in almanac
 const constellation = [constellationX];
 const id = [idX];
 const starNumber = [starNumberX];
@@ -11,12 +13,16 @@ const decD = [decDX];
 const decM = [decMX];
 const decS = [decSX];
 const visMag = [visMagX];
-const lines = [linesX];
-const destLat = destLatX;
+
+const lines = [linesX];				// pairs of stars connected by a line when constellations displayed
+const destLat = destLatX;			// latitude of dest airport in degrees
 const destLon = destLonX;
 const ariesGHAd = [ariesGHAdX];
 const ariesGHAm = [ariesGHAmX];
-const startDate = startDateX;
+const starsSHAd = [starsSHAdX];
+const starsSHAm = [starsSHAmX];
+const starNameList = [starNameListX];	// list of the 57 navigational stars in alphabetical order, spelling per almanac
+const startDate = startDateX;		
 
 // Constants
 const daysToBeginMth = [0,0,31,59,90,120,151,181,212,243,273,304,334];
@@ -330,8 +336,7 @@ function toggleLabelConstellations()
 
 // Button onClick functions for handling fix buttons
 
-function takeSighting()
-{
+function takeSighting() {
 	// locate first empty Hs field
 	var HsArray = document.getElementsByClassName("Hs");
 	var found = false;
@@ -340,7 +345,7 @@ function takeSighting()
 		if (HsArray[index].innerHTML == "") {
 			found = true;
 			curIndex = index;
-        }
+		}
 	}
 
 	if (found) {
@@ -368,12 +373,54 @@ function takeSighting()
 		HsArray[curIndex].innerHTML = getHoInDeg();
 
 		// Display Aries GHA for current hour
-		var day = getElapsedDays(dayOfMonth + "/" + monthOfYear + "/" + year); // from start date of scenario
+		var day = getElapsedDays(monthOfYear + "/" + dayOfMonth + "/" + year); // from start date of scenario
 		var hour = Math.floor(time / 3600);
 		var GHAhourArray = document.getElementsByClassName("GHAhour");
-		GHAhourArray[curIndex].innerHTML = ariesGHAd[day][hour] + "° " + ariesGHAm[day][hour] + "'";
+		if (day >= 0 && day <= 2) {
+			GHAhourArray[curIndex].innerHTML = ariesGHAd[day][hour] + "° " + ariesGHAm[day][hour] + "'";
+		}
+		else {
+			GHAhourArray[curIndex].innerHTML = "No data";
+		}
 
-    }
+		// Interpolate Aries GHA for minutes and seconds
+		var GHAincArray = document.getElementsByClassName("GHAinc");
+		GHAincArray[curIndex].innerHTML = getGHAincrement(day, hour, time);
+
+		// Display star SHA
+		var SHAincArray = document.getElementsByClassName("SHAinc");
+		var selectStarNameArray = document.getElementsByClassName("starName");
+		var starNameIndex = starNameList.findIndex(x => x == selectStarNameArray[curIndex].value);
+		SHAincArray[curIndex].innerHTML = starsSHAd[starNameIndex] + "° " + starsSHAm[starNameIndex] + "'";
+	}
+}
+
+function getGHAincrement(day, hour, time) {
+	// Convert start hour GHA to decimal
+	var startGHAdec = ariesGHAd[day][hour] + ariesGHAm[day][hour] / 60;
+
+	// Get finish hour GHA and convert to decimal
+	if (day < 0) {
+		return "No data"
+	}
+	if (hour == 23) {
+		day += 1;
+		hour = 0;
+	}
+	else {
+		hour += 1;
+	}
+	if (day > 2) {
+		return "No data"
+	}
+	var finishGHAdec = ariesGHAd[day][hour] + ariesGHAm[day][hour] / 60;
+
+	// Calc increment as decimal
+	var hourProportion = time % 3600 / 3600;
+	incGHAdec = (finishGHAdec - startGHAdec) * hourProportion;
+
+	// Return GHA increment as degrees
+	return Math.floor(incGHAdec) + "° " + ((incGHAdec - Math.floor(incGHAdec)) * 60).toFixed(1) + "'";
 }
 
 function getElapsedDays(currentdate) {
