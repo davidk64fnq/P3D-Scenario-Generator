@@ -21,6 +21,8 @@ const ariesGHAd = [ariesGHAdX];
 const ariesGHAm = [ariesGHAmX];
 const starsSHAd = [starsSHAdX];
 const starsSHAm = [starsSHAmX];
+const starsDECd = [starsDECdX];
+const starsDECm = [starsDECmX];
 const starNameList = [starNameListX];	// list of the 57 navigational stars in alphabetical order, spelling per almanac
 const startDate = startDateX;		
 
@@ -349,13 +351,13 @@ function takeSighting() {
 	}
 
 	if (found) {
-		// Display Dead Reckoning Latitude
-		var DRlat = document.getElementsByClassName("DR Lat");
-		DRlat[curIndex].value = formatLatDeg(destLat);
+		// Display Assumed Position Latitude
+		var APlat = document.getElementsByClassName("AP Lat");
+		APlat[curIndex].value = formatLatDeg(destLat);
 
-		// Display Dead Reckoning Longitude
-		var DRlon = document.getElementsByClassName("DR Lon");
-		DRlon[curIndex].value = formatLonDeg(destLon);
+		// Display Assumed Position Longitude
+		var APlon = document.getElementsByClassName("AP Lon");
+		APlon[curIndex].value = formatLonDeg(destLon);
 
 		// Display date
 		var dayOfMonth = VarGet("E:ZULU DAY OF MONTH", "Number");
@@ -376,6 +378,7 @@ function takeSighting() {
 		var day = getElapsedDays(monthOfYear + "/" + dayOfMonth + "/" + year); // from start date of scenario
 		var hour = Math.floor(time / 3600);
 		var GHAhourArray = document.getElementsByClassName("GHAhour");
+		var ariesGHA = ariesGHAd[day][hour] + ariesGHAm[day][hour] / 60;
 		if (day >= 0 && day <= 2) {
 			GHAhourArray[curIndex].innerHTML = ariesGHAd[day][hour] + "° " + ariesGHAm[day][hour] + "'";
 		}
@@ -385,13 +388,30 @@ function takeSighting() {
 
 		// Interpolate Aries GHA for minutes and seconds
 		var GHAincArray = document.getElementsByClassName("GHAinc");
-		GHAincArray[curIndex].innerHTML = getGHAincrement(day, hour, time);
+		var ariesGHAinc = getGHAincrement(day, hour, time);
+		GHAincArray[curIndex].innerHTML = Math.floor(ariesGHAinc) + "° " + ((ariesGHAinc - Math.floor(ariesGHAinc)) * 60).toFixed(1) + "'";
 
 		// Display star SHA
 		var SHAincArray = document.getElementsByClassName("SHAinc");
 		var selectStarNameArray = document.getElementsByClassName("starName");
 		var starNameIndex = starNameList.findIndex(x => x == selectStarNameArray[curIndex].value);
+		var starSHA = starsSHAd[starNameIndex] + starsSHAm[starNameIndex] / 60;
 		SHAincArray[curIndex].innerHTML = starsSHAd[starNameIndex] + "° " + starsSHAm[starNameIndex] + "'";
+
+		// Display GHA total
+		var GHAtotal = ariesGHA + ariesGHAinc + starSHA;
+		var GHAtotalArray = document.getElementsByClassName("GHAtotal");
+		GHAtotalArray[curIndex].innerHTML = Math.floor(GHAtotal) + "° " + ((GHAtotal - Math.floor(GHAtotal)) * 60).toFixed(1) + "'";
+
+		// Display star Dec
+		var DecArray = document.getElementsByClassName("Dec");
+		if (starsDECd[starNameIndex] > 0) {
+			var starDEC = starsDECd[starNameIndex] + starsDECm[starNameIndex] / 60;
+		}
+		else {
+			var starDEC = starsDECd[starNameIndex] - starsDECm[starNameIndex] / 60;
+		}
+		DecArray[curIndex].innerHTML = formatLatDeg(starDEC);
 	}
 }
 
@@ -417,10 +437,7 @@ function getGHAincrement(day, hour, time) {
 
 	// Calc increment as decimal
 	var hourProportion = time % 3600 / 3600;
-	incGHAdec = (finishGHAdec - startGHAdec) * hourProportion;
-
-	// Return GHA increment as degrees
-	return Math.floor(incGHAdec) + "° " + ((incGHAdec - Math.floor(incGHAdec)) * 60).toFixed(1) + "'";
+	return (finishGHAdec - startGHAdec) * hourProportion;
 }
 
 function getElapsedDays(currentdate) {
@@ -442,12 +459,12 @@ function formatLatDeg(latitude) {
 	if (latitude >= 0) {
 		var degrees = Math.floor(latitude);
 		var minutes = (latitude - degrees) * 60;
-		return "N " + degrees + "° " + Math.floor(minutes) + "'";
+		return "N " + degrees + "° " + minutes.toFixed(1) + "'";
 	}
 	else {
 		var degrees = Math.floor(latitude * -1);
 		var minutes = (latitude * -1 - degrees) * 60;
-		return "S " + degrees + "° " + Math.floor(minutes) + "'";
+		return "S " + degrees + "° " + minutes.toFixed(1) + "'";
     }
 }
 
@@ -455,12 +472,12 @@ function formatLonDeg(longitude) {
 	if (longitude >= 0) {
 		var degrees = Math.floor(longitude);
 		var minutes = (longitude - degrees) * 60;
-		return "E " + degrees + "° " + Math.floor(minutes) + "'";
+		return "E " + degrees + "° " + minutes.toFixed(1) + "'";
 	}
 	else {
 		var degrees = Math.floor(longitude * -1);
 		var minutes = (longitude * -1 - degrees) * 60;
-		return "W " + degrees + "° " + Math.floor(minutes) + "'";
+		return "W " + degrees + "° " + minutes.toFixed(1) + "'";
 	}
 }
 

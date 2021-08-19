@@ -809,7 +809,7 @@ namespace P3D_Scenario_Generator
 			SetCelestialSextantJS(saveLocation);
 			saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleCelestialSextant.css";
 			SetCelestialSextantCSS(saveLocation);
-			spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\htmlCelestialSextant.html", GetGUID(), "window.swf", "False"));
+			spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\htmlCelestialSextant.html", GetGUID(), "window.swf", "False", "True"));
 		}
 
 		static private void SetCelestialSextantHTML(string saveLocation)
@@ -944,6 +944,20 @@ namespace P3D_Scenario_Generator
 			}
 			celestialJS = celestialJS.Replace("starsSHAdX", starsSHAd);
 			celestialJS = celestialJS.Replace("starsSHAmX", starsSHAm);
+			string starsDECd = "";
+			string starsDECm = "";
+			for (int starIndex = 0; starIndex < CelestialNav.starsDECd.Length; starIndex++)
+			{
+				starsDECd += CelestialNav.starsDECd[starIndex];
+				starsDECm += CelestialNav.starsDECm[starIndex];
+				if (starIndex < CelestialNav.starsDECd.Length - 1)
+				{
+					starsDECd += ",";
+					starsDECm += ",";
+				}
+			}
+			celestialJS = celestialJS.Replace("starsDECdX", starsDECd);
+			celestialJS = celestialJS.Replace("starsDECmX", starsDECm);
 			string starNameList = "";
 			for (int starIndex = 0; starIndex < CelestialNav.navStarNames.Count; starIndex++)
 			{
@@ -1282,7 +1296,7 @@ namespace P3D_Scenario_Generator
 				SetPhotoTourLegRouteHTML(saveLocation, index);
 				saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsMovingMap_X.js".Replace("X", index.ToString());
 				SetPhotoTourLegRouteJS(saveLocation, index);
-				spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\LegRoute_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf", "False"));
+				spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\LegRoute_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf", "False", "False"));
 			}
 			saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleMovingMap.css";
 			SetPhotoTourLegRouteCSS(saveLocation);
@@ -1291,7 +1305,7 @@ namespace P3D_Scenario_Generator
 				string descr = $"Scaleform_Panel_Window_Photo_{index}";
 				string html = "<!DOCTYPE HTML>\n<html>\t<img src=\"photo_X.jpg\">\n</html>".Replace("X", index.ToString());
 				File.WriteAllText($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\photo_X.html".Replace("X", index.ToString()), html);
-				spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\photo_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf", "False"));
+				spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\photo_X.html".Replace("X", index.ToString()), GetGUID(), "window.swf", "False", "False"));
 			}
 		}
 
@@ -1474,7 +1488,7 @@ namespace P3D_Scenario_Generator
 			SetSignWritingJS(saveLocation);
 			saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleSignWriting.css";
 			SetSignWritingCSS(saveLocation);
-			spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\htmlSignWriting.html", GetGUID(), "window.swf", "False"));
+			spwList.Add(new SimMissionScaleformPanelWindow(descr, "False", "True", "images\\htmlSignWriting.html", GetGUID(), "window.swf", "False", "False"));
 		}
 
 		static private void SetSignWritingScenarioVariables(List<SimMissionScenarioVariable> svList)
@@ -2266,7 +2280,7 @@ namespace P3D_Scenario_Generator
 	[XmlRoot(ElementName = "SimMission.ScaleformPanelWindow")]
 	public class SimMissionScaleformPanelWindow
 	{
-		public SimMissionScaleformPanelWindow(string v1, string v2, string v3, string v4, string v5, string v6, string v7)
+		public SimMissionScaleformPanelWindow(string v1, string v2, string v3, string v4, string v5, string v6, string v7, string v8)
 		{
 			Descr = v1;
 			Locked = v2;
@@ -2275,6 +2289,7 @@ namespace P3D_Scenario_Generator
 			InstanceId = v5;
 			UIPanelFileName = v6;
 			Docked = v7;
+			HasKeyboardInteractivity = v8;
 		}
 
 		public SimMissionScaleformPanelWindow()
@@ -2301,6 +2316,9 @@ namespace P3D_Scenario_Generator
 
 		[XmlElement(ElementName = "Docked")]
 		public string Docked { get; set; }
+
+		[XmlElement(ElementName = "HasKeyboardInteractivity")]
+		public string HasKeyboardInteractivity { get; set; }
 	}
 
 	[XmlRoot(ElementName = "SimMission.PointOfInterest")]
