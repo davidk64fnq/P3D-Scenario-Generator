@@ -805,7 +805,7 @@ namespace P3D_Scenario_Generator
 			string descr = $"Scaleform_Panel_Window_CelestialSextant";
 			string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\htmlCelestialSextant.html";
 			SetCelestialSextantHTML(saveLocation);
-			saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsCelestialSextant.js";
+			saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
 			SetCelestialSextantJS(saveLocation);
 			saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleCelestialSextant.css";
 			SetCelestialSextantCSS(saveLocation);
@@ -970,7 +970,13 @@ namespace P3D_Scenario_Generator
 			celestialJS = celestialJS.Replace("starNameListX", starNameList);
 			string startDate = $"\"{Parameters.Month}/{Parameters.Day}/{Parameters.Year}\"";
 			celestialJS = celestialJS.Replace("startDateX", startDate);
-			File.WriteAllText(saveLocation, celestialJS);
+			File.WriteAllText($"{saveLocation}scriptsCelestialSextant.js", celestialJS);
+			stream.Dispose();
+
+			stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsCelestialAstroCalcs.js");
+			reader = new StreamReader(stream);
+			celestialJS = reader.ReadToEnd();
+			File.WriteAllText($"{saveLocation}scriptsCelestialAstroCalcs.js", celestialJS);
 			stream.Dispose();
 		}
 

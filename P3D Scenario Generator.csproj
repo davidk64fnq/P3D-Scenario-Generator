@@ -55,6 +55,7 @@
     <None Remove="Resources\Images\failure-icon.png" />
     <None Remove="Resources\Images\signTabSegment22Font.jpg" />
     <None Remove="Resources\Images\success-icon.png" />
+    <None Remove="Resources\Javascript\scriptsCelestialAstroCalcs.js" />
     <None Remove="Resources\Javascript\scriptsCelestialSextant.js" />
     <None Remove="Resources\Javascript\scriptsMovingMap.js" />
     <None Remove="Resources\Javascript\scriptsSignWriting.js" />
@@ -153,6 +154,7 @@
     <EmbeddedResource Include="Resources\Images\failure-icon.png" />
     <EmbeddedResource Include="Resources\Images\signTabSegment22Font.jpg" />
     <EmbeddedResource Include="Resources\Images\success-icon.png" />
+    <EmbeddedResource Include="Resources\Javascript\scriptsCelestialAstroCalcs.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsCelestialSextant.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsMovingMap.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsSignWriting.js" />

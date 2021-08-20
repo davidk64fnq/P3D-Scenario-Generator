@@ -60,15 +60,15 @@ function update(timestamp)
 	{
 		// Using formulae from here http://www.stargazing.net/kepler/altaz.html
 		// Note: working in radians rather than degrees until ALT/AZ as Javascript trig uses radians
-		var RAhr = raH[starIndex] + raM[starIndex] / 60 + raS[starIndex] / 3600;
+		var RAhr = hmsToDecimal(raH[starIndex], raM[starIndex], raS[starIndex]);
 		var RA = toRadians(RAhr * 15);
-		var DEC = toRadians(decD[starIndex] + decM[starIndex] / 60 + decS[starIndex] / 3600);
+		var DEC = toRadians(hmsToDecimal(decD[starIndex], decM[starIndex], decS[starIndex]));
 		var LST = getLocalSiderialTime(planeLon);
 		var HA = getHourAngle(LST, RA);
 		var ALT = getALT(DEC, planeLat, HA);
 		var AZ = getAZ(DEC, ALT, planeLat, HA);
 		var relSexAZ = sexAZ + planeHeadDeg;
-		var relSexALT = sexALT - planePitchDeg;
+		var relSexALT = sexALT - planePitchDeg; // plane pitching down is negative
 		var AZbearingDelta = getBearingDif(AZ, relSexAZ); // Comparing star AZ to sextant window mid-point bearing
 		if ((ALT > relSexALT) && (ALT < relSexALT + fovV) && (AZbearingDelta <= fovH / 2))
 		{
@@ -233,70 +233,6 @@ function openPage(pageName) {
 }
 
 // Functions used in calculating local position of stars
-		
-function getJ2000Day(zuluTime)
-{ 
-	var zuluDay = VarGet("E:ZULU DAY OF WEEK" ,"Number");  
-	var zuluMonth = VarGet("E:ZULU MONTH OF YEAR" ,"Number");  
-	var zuluYear = VarGet("E:ZULU YEAR" ,"Number");
-
-	var decTime = zuluTime / (60 * 60 * 24);
-	var daysToBegMth = daysToBeginMth[zuluMonth];
-	if ((zuluYear % 4 == 0) && (zuluMonth > 2))
-		daysToBegMth = daysToBegMth + 1
-	var daysToBegYear = -0.5 + (zuluYear - 2000) * 365 + Math.floor((zuluYear - 2001) / 4);
-		
-	return decTime + daysToBegMth + zuluDay + daysToBegYear;
-}
-
-function getLocalSiderialTime(planeLon)
-{
-	var zuluTime = VarGet("E:ZULU TIME" ,"Seconds");
-	var j2000Days = getJ2000Day(zuluTime);
-	var UT = zuluTime / (60 * 60);
-	var planeLonDeg = toDegrees(planeLon);
-	var LSTdeg = 100.46 + 0.985647 * j2000Days + planeLonDeg + 15 * UT;
-	while (LSTdeg < 0)
-		LSTdeg += 360;
-	while (LSTdeg > 360)
-		LSTdeg -= 360;
-	
-	return toRadians(LSTdeg);
-}
-
-function getHourAngle(LST, RA)
-{
-	var HA = LST - RA;
-	while (HA < 0)
-		HA += toRadians(360);
-		
-	return HA;
-}
-
-function getALT(DEC, LAT, HA)
-{
-	return toDegrees(Math.asin(Math.sin(DEC) * Math.sin(LAT) + Math.cos(DEC) * Math.cos(LAT) * Math.cos(HA)));
-}
-
-function getAZ(DEC, ALT, LAT, HA)
-{
-	var ALTrad = toRadians(ALT);
-	var A = Math.acos((Math.sin(DEC) - Math.sin(ALTrad) * Math.sin(LAT)) / (Math.cos(ALTrad) * Math.cos(LAT)));
-	if (Math.sin(HA) < 0)
-		return toDegrees(A);
-	else
-		return 360 - toDegrees(A);
-}
-
-function toRadians(degrees)
-{
-	return degrees * Math.PI / 180;
-}
-
-function toDegrees(radians)
-{
-	return radians * 180 / Math.PI;
-}
 
 function getBearingDif(AZ, sexAZ)
 {
@@ -352,12 +288,12 @@ function takeSighting() {
 
 	if (found) {
 		// Display Assumed Position Latitude
-		var APlat = document.getElementsByClassName("AP Lat");
-		APlat[curIndex].value = formatLatDeg(destLat);
+		var APlatArray = document.getElementsByClassName("AP Lat");
+		APlatArray[curIndex].value = formatLatDeg(destLat);
 
 		// Display Assumed Position Longitude
-		var APlon = document.getElementsByClassName("AP Lon");
-		APlon[curIndex].value = formatLonDeg(destLon);
+		var APlonArray = document.getElementsByClassName("AP Lon");
+		APlonArray[curIndex].value = formatLonDeg(destLon);
 
 		// Display date
 		var dayOfMonth = VarGet("E:ZULU DAY OF MONTH", "Number");
@@ -400,6 +336,9 @@ function takeSighting() {
 
 		// Display GHA total
 		var GHAtotal = ariesGHA + ariesGHAinc + starSHA;
+		if (GHAtotal > 360) {
+			GHAtotal -= 360;
+        }
 		var GHAtotalArray = document.getElementsByClassName("GHAtotal");
 		GHAtotalArray[curIndex].innerHTML = Math.floor(GHAtotal) + "° " + ((GHAtotal - Math.floor(GHAtotal)) * 60).toFixed(1) + "'";
 
@@ -412,6 +351,20 @@ function takeSighting() {
 			var starDEC = starsDECd[starNameIndex] - starsDECm[starNameIndex] / 60;
 		}
 		DecArray[curIndex].innerHTML = formatLatDeg(starDEC);
+
+		// Calculate Hc
+		var RA = toRadians(GHAtotal);
+		var DEC = toRadians(starDEC);
+		var LST = getLocalSiderialTime(destLon);
+		var HA = getHourAngle(LST, RA);
+		var Hc = getALT(DEC, destLat, HA);
+		var HcArray = document.getElementsByClassName("Hc");
+		HcArray[curIndex].innerHTML = Math.floor(Hc) + "° " + ((Hc - Math.floor(Hc)) * 60).toFixed(1) + "'";
+
+		// Calculate Zn
+		var Zn = getAZ(DEC, Hc, destLat, HA);
+		var ZnArray = document.getElementsByClassName("Zn");
+		ZnArray[curIndex].innerHTML = Math.floor(Zn) + "° " + ((Zn - Math.floor(Zn)) * 60).toFixed(1) + "'";
 	}
 }
 
@@ -567,7 +520,7 @@ function moveALTup5()
 
 function moveALTreset()
 {
-	sexALT = planePitchDeg;
+	sexALT = planePitchDeg * -1;
 }
 
 function moveALTdown5()
