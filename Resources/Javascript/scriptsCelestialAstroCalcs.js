@@ -35,12 +35,12 @@ function getJ2000Day(zuluTime) {
 	return decTime + daysToBegMth + zuluDay + daysToBegYear;
 }
 
-function getLocalSiderialTime(planeLon) {
+function getLocalSiderialTime(longitude) {
 	var zuluTime = VarGet("E:ZULU TIME", "Seconds");
 	var j2000Days = getJ2000Day(zuluTime);
 	var UT = zuluTime / (60 * 60);
-	var planeLonDeg = toDegrees(planeLon);
-	var LSTdeg = 100.46 + 0.985647 * j2000Days + planeLonDeg + 15 * UT;
+	var lonDeg = toDegrees(longitude);
+	var LSTdeg = 100.46 + 0.985647 * j2000Days + lonDeg + 15 * UT;
 	while (LSTdeg < 0)
 		LSTdeg += 360;
 	while (LSTdeg > 360)

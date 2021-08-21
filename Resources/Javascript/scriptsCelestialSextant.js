@@ -355,14 +355,15 @@ function takeSighting() {
 		// Calculate Hc
 		var RA = toRadians(GHAtotal);
 		var DEC = toRadians(starDEC);
-		var LST = getLocalSiderialTime(destLon);
-		var HA = getHourAngle(LST, RA);
-		var Hc = getALT(DEC, destLat, HA);
+		var HA = toRadians(destLon) + RA;
+		while (HA > 360)
+			HA -= toRadians(360);
+		var Hc = getALT(DEC, toRadians(destLat), HA);
 		var HcArray = document.getElementsByClassName("Hc");
 		HcArray[curIndex].innerHTML = Math.floor(Hc) + "° " + ((Hc - Math.floor(Hc)) * 60).toFixed(1) + "'";
 
 		// Calculate Zn
-		var Zn = getAZ(DEC, Hc, destLat, HA);
+		var Zn = getAZ(DEC, Hc, toRadians(destLat), HA);
 		var ZnArray = document.getElementsByClassName("Zn");
 		ZnArray[curIndex].innerHTML = Math.floor(Zn) + "° " + ((Zn - Math.floor(Zn)) * 60).toFixed(1) + "'";
 	}
@@ -520,18 +521,18 @@ function moveALTup5()
 
 function moveALTreset()
 {
-	sexALT = planePitchDeg * -1;
+	sexALT = 0;
 }
 
 function moveALTdown5()
 {
-	if (sexALT >= 5)
+	if (sexALT >= -85)
 		sexALT -= 5;
 }
 
 function moveALTdown1()
 {
-	if (sexALT >= 1)
+	if (sexALT >= -89)
 		sexALT -= 1;
 }
 
