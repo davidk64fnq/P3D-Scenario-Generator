@@ -22,17 +22,17 @@ function getHourAngle(LST, RA) {
 }
 
 function getJ2000Day(zuluTime) {
-	var zuluDay = VarGet("E:ZULU DAY OF WEEK", "Number");
+	var zuluDayOfMonth = VarGet("E:ZULU DAY OF MONTH", "Number");
 	var zuluMonth = VarGet("E:ZULU MONTH OF YEAR", "Number");
 	var zuluYear = VarGet("E:ZULU YEAR", "Number");
 
-	var decTime = zuluTime / (60 * 60 * 24);
+	var dayFraction = zuluTime / (60 * 60 * 24);
 	var daysToBegMth = daysToBeginMth[zuluMonth];
 	if ((zuluYear % 4 == 0) && (zuluMonth > 2))
 		daysToBegMth = daysToBegMth + 1
-	var daysToBegYear = -0.5 + (zuluYear - 2000) * 365 + Math.floor((zuluYear - 2001) / 4);
+	var daysToBegYear = -1.5 + (zuluYear - 2000) * 365 + Math.ceil((zuluYear - 2000) / 4);
 
-	return decTime + daysToBegMth + zuluDay + daysToBegYear;
+	return dayFraction + daysToBegMth + zuluDayOfMonth + daysToBegYear;
 }
 
 function getLocalSiderialTime(longitude) {

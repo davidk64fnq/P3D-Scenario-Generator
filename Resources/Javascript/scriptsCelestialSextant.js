@@ -336,7 +336,7 @@ function takeSighting() {
 
 		// Display GHA total
 		var GHAtotal = ariesGHA + ariesGHAinc + starSHA;
-		if (GHAtotal > 360) {
+		while (GHAtotal > 360) {
 			GHAtotal -= 360;
         }
 		var GHAtotalArray = document.getElementsByClassName("GHAtotal");
