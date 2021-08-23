@@ -1,4 +1,30 @@
+function convertCoordToPixels(coord) {
+	var lat = coord[0];
+	var lon = coord[1];
+	var left = (lon - westEdge) / (eastEdge - westEdge) * windowW;
+	var top = (northEdge - lat) / (northEdge - southEdge) * windowH;
+	var coordPixels = [top, left];
+	return coordPixels;
+}
 
+function convertZtoZn(Z, LHA, latitude) {
+	if (latitude >= 0) {
+		if (LHA >= 180) {
+			return Z;
+		}
+		else {
+			return 360 - Z;
+        }
+	}
+	else {
+		if (LHA >= 180) {
+			return 180 - Z;
+		}
+		else {
+			return 180 + Z;
+		}
+    }
+}
 
 function getALT(DEC, LAT, HA) {
 	return toDegrees(Math.asin(Math.sin(DEC) * Math.sin(LAT) + Math.cos(DEC) * Math.cos(LAT) * Math.cos(HA)));
@@ -47,6 +73,18 @@ function getLocalSiderialTime(longitude) {
 		LSTdeg -= 360;
 
 	return toRadians(LSTdeg);
+}
+
+function getLOPcoord(lat1, lon1, bearing, distance) {
+	const earthRadius = 3963; // nm
+	lat1 = lat1 / 180 * Math.PI;
+	lon1 = lon1 / 180 * Math.PI;
+	var lat2 = Math.asin(Math.sin(lat1) * Math.cos(distance / earthRadius) + Math.cos(lat1) * Math.sin(distance / earthRadius) * Math.cos(bearing));
+	var lon2 = lon1 + Math.atan2(Math.sin(bearing) * Math.sin(distance / earthRadius) * Math.cos(lat1), Math.cos(distance / earthRadius) - Math.sin(lat1) * Math.sin(lat2));
+	lat2 = lat2 / Math.PI * 180;
+	lon2 = lon2 / Math.PI * 180;
+	var LOPcoord = [lat2, lon2];
+	return LOPcoord;
 }
 
 function hmsToDecimal(hour, minute, second) {

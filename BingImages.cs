@@ -73,6 +73,14 @@ namespace P3D_Scenario_Generator
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
             }
             GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\plotImage.jpg");
+
+            // Get meta data
+            PhotoLegParams celestialImage = new PhotoLegParams();
+            GetBingMetadata(client, url, celestialImage);
+            Parameters.CelestialImageNorth = celestialImage.northEdge;
+            Parameters.CelestialImageEast = celestialImage.eastEdge;
+            Parameters.CelestialImageSouth = celestialImage.southEdge;
+            Parameters.CelestialImageWest = celestialImage.westEdge;
         }
 
         internal static bool GetPhotoTourLegImages()

@@ -24,7 +24,11 @@ const starsSHAm = [starsSHAmX];
 const starsDECd = [starsDECdX];
 const starsDECm = [starsDECmX];
 const starNameList = [starNameListX];	// list of the 57 navigational stars in alphabetical order, spelling per almanac
-const startDate = startDateX;		
+const startDate = startDateX;
+const northEdge = northEdgeX;
+const eastEdge = eastEdgeX;
+const southEdge = southEdgeX;
+const westEdge = westEdgeX;
 
 // Constants
 const daysToBeginMth = [0,0,31,59,90,120,151,181,212,243,273,304,334];
@@ -42,6 +46,14 @@ var planeHeadDeg;
 var planePitchDeg;
 var labelStars = 0; // Whether to show star labels
 var labelConstellations = 0; // Whether to show lines between stars in constellations
+
+// Plotting global variables
+var fixNumber = 1; // refers to set of three sight reductions made close together temporally
+var sightNumber = 1; // refers to cumulative sight reduction
+var assumedLat = [0, destLatX]; // first fix assumes destination as that's the only known point
+var assumedLon = [0, destLonX];
+var LOPpixelsTop = [0];
+var LOPpixelsLeft = [0];
 
 // Main function that loops refreshing star map
 function update(timestamp)
@@ -104,18 +116,14 @@ function update(timestamp)
 window.requestAnimationFrame(update);
 
 function getHoInDeg() {
-	var sexHoRaw = (sexHo / windowH) * fovV + sexALT - planePitchDeg;
-	var sexHoDeg = Math.floor(sexHoRaw);
-	var sexHoMin = (sexHoRaw - sexHoDeg) * 60;
-
-	return sexHoDeg + "° " + sexHoMin.toFixed(1) + "'";
+	return (sexHo / windowH) * fovV + sexALT - planePitchDeg;
 }
 		
 function setInfoLine(context)
 {
 	context.fillStyle = "red";
 	var sexHoAccuracy = fovV / windowH * 60;
-	context.fillText("FOVH: " + Math.floor(fovH) + " ° FOVV: " + Math.floor(fovV) + "° AZ: " + Math.floor(sexAZ) + "° ALT: " + Math.floor(sexALT) + "° Ho: " + getHoInDeg() + " (" + sexHoAccuracy.toFixed(1) + ")", 10, windowH - 10);
+	context.fillText("FOVH: " + Math.floor(fovH) + " ° FOVV: " + Math.floor(fovV) + "° AZ: " + Math.floor(sexAZ) + "° ALT: " + Math.floor(sexALT) + "° Ho: " + Math.floor(getHoInDeg()) + " (" + sexHoAccuracy.toFixed(1) + ")", 10, windowH - 10);
 }
 
 function setHoLine(context)
@@ -204,10 +212,16 @@ function setStarLabels(context, ptsList)
 
 function updatePlotTab() {
 	var plotCanvas = document.getElementById("plottingCanvas");
-	var ctx = plotCanvas.getContext("2d");
+	var context = plotCanvas.getContext("2d");
 	var image = new Image(960, 540)
 	image.src = "plotImage.jpg"
-	ctx.drawImage(image, 0, 0);
+	context.drawImage(image, 0, 0);
+
+	// Plot LOPs
+	context.fillStyle = "red";
+	for (let ptNo = 1; ptNo < sightNumber; ptNo++) {
+		context.fillRect(LOPpixelsLeft[ptNo] - 2, LOPpixelsTop[ptNo] - 2, 5, 5);
+    }
 }
 
 function updatePtsList(starIndex, ptsList, left, top)
@@ -289,11 +303,11 @@ function takeSighting() {
 	if (found) {
 		// Display Assumed Position Latitude
 		var APlatArray = document.getElementsByClassName("AP Lat");
-		APlatArray[curIndex].value = formatLatDeg(destLat);
+		APlatArray[curIndex].value = formatLatDeg(assumedLat[fixNumber]);
 
 		// Display Assumed Position Longitude
 		var APlonArray = document.getElementsByClassName("AP Lon");
-		APlonArray[curIndex].value = formatLonDeg(destLon);
+		APlonArray[curIndex].value = formatLonDeg(assumedLon[fixNumber]);
 
 		// Display date
 		var dayOfMonth = VarGet("E:ZULU DAY OF MONTH", "Number");
@@ -308,7 +322,8 @@ function takeSighting() {
 		UTArray[curIndex].innerHTML = secondsToTime(time);
 
 		// Display sextant reading
-		HsArray[curIndex].innerHTML = getHoInDeg();
+		var Hs = getHoInDeg();
+		HsArray[curIndex].innerHTML = formatDMdecimal(Hs, 1);
 
 		// Display Aries GHA for current hour
 		var day = getElapsedDays(monthOfYear + "/" + dayOfMonth + "/" + year); // from start date of scenario
@@ -325,7 +340,7 @@ function takeSighting() {
 		// Interpolate Aries GHA for minutes and seconds
 		var GHAincArray = document.getElementsByClassName("GHAinc");
 		var ariesGHAinc = getGHAincrement(day, hour, time);
-		GHAincArray[curIndex].innerHTML = Math.floor(ariesGHAinc) + "° " + ((ariesGHAinc - Math.floor(ariesGHAinc)) * 60).toFixed(1) + "'";
+		GHAincArray[curIndex].innerHTML = formatDMdecimal(ariesGHAinc, 1);
 
 		// Display star SHA
 		var SHAincArray = document.getElementsByClassName("SHAinc");
@@ -340,7 +355,7 @@ function takeSighting() {
 			GHAtotal -= 360;
         }
 		var GHAtotalArray = document.getElementsByClassName("GHAtotal");
-		GHAtotalArray[curIndex].innerHTML = Math.floor(GHAtotal) + "° " + ((GHAtotal - Math.floor(GHAtotal)) * 60).toFixed(1) + "'";
+		GHAtotalArray[curIndex].innerHTML = formatDMdecimal(GHAtotal, 1);
 
 		// Display star Dec
 		var DecArray = document.getElementsByClassName("Dec");
@@ -355,17 +370,34 @@ function takeSighting() {
 		// Calculate Hc
 		var RA = toRadians(GHAtotal);
 		var DEC = toRadians(starDEC);
-		var HA = toRadians(destLon) + RA;
+		var HA = toRadians(assumedLon[fixNumber]) + RA;
 		while (HA > 360)
 			HA -= toRadians(360);
-		var Hc = getALT(DEC, toRadians(destLat), HA);
+		var Hc = getALT(DEC, toRadians(assumedLat[fixNumber]), HA);
 		var HcArray = document.getElementsByClassName("Hc");
-		HcArray[curIndex].innerHTML = Math.floor(Hc) + "° " + ((Hc - Math.floor(Hc)) * 60).toFixed(1) + "'";
+		HcArray[curIndex].innerHTML = formatDMdecimal(Hc, 1);
 
 		// Calculate Zn
-		var Zn = getAZ(DEC, Hc, toRadians(destLat), HA);
+		var Z = getAZ(DEC, Hc, toRadians(assumedLat[fixNumber]), HA);
+		var Zn = convertZtoZn(Z, HA, assumedLat[fixNumber]);
 		var ZnArray = document.getElementsByClassName("Zn");
-		ZnArray[curIndex].innerHTML = Math.floor(Zn) + "° " + ((Zn - Math.floor(Zn)) * 60).toFixed(1) + "'";
+		ZnArray[curIndex].innerHTML = formatDMdecimal(Zn, 1);
+
+		// Calculate Intercept
+		var intercept = Math.floor(Math.abs(Hs - Hc) * 60);
+		var interceptArray = document.getElementsByClassName("Intercept");
+		interceptArray[curIndex].innerHTML = intercept + "nm";
+
+		// Plot LOS!
+		// Get coordinates of LOP and Zn line intersection
+		var LOPcoord = getLOPcoord(assumedLat[fixNumber], assumedLon[fixNumber], Zn, intercept);
+		var LOPpixels = convertCoordToPixels(LOPcoord);
+		LOPpixelsTop.push(LOPpixels[0]);
+		LOPpixelsLeft.push(LOPpixels[1]);
+		if (sightNumber % 3 == 0) {
+			fixNumber += 1;
+        }
+		sightNumber += 1;
 	}
 }
 
@@ -407,6 +439,10 @@ function getElapsedDays(currentdate) {
 
 	// To calculate the no. of days between two dates
 	return Difference_In_Time / (1000 * 3600 * 24);
+}
+
+function formatDMdecimal(coordinate, numberPlaces){
+	return Math.floor(coordinate) + "° " + ((coordinate - Math.floor(coordinate)) * 60).toFixed(numberPlaces) + "'"
 }
 
 function formatLatDeg(latitude) {

@@ -970,6 +970,10 @@ namespace P3D_Scenario_Generator
 			celestialJS = celestialJS.Replace("starNameListX", starNameList);
 			string startDate = $"\"{Parameters.Month}/{Parameters.Day}/{Parameters.Year}\"";
 			celestialJS = celestialJS.Replace("startDateX", startDate);
+			celestialJS = celestialJS.Replace("northEdgeX", Parameters.CelestialImageNorth.ToString());
+			celestialJS = celestialJS.Replace("eastEdgeX", Parameters.CelestialImageEast.ToString());
+			celestialJS = celestialJS.Replace("southEdgeX", Parameters.CelestialImageSouth.ToString());
+			celestialJS = celestialJS.Replace("westEdgeX", Parameters.CelestialImageWest.ToString());
 			File.WriteAllText($"{saveLocation}scriptsCelestialSextant.js", celestialJS);
 			stream.Dispose();
 
