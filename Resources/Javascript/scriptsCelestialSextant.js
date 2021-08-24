@@ -221,7 +221,28 @@ function updatePlotTab() {
 	context.fillStyle = "red";
 	for (let ptNo = 1; ptNo < sightNumber; ptNo++) {
 		context.fillRect(LOPpixelsLeft[ptNo] - 2, LOPpixelsTop[ptNo] - 2, 5, 5);
-    }
+	}
+	var coord = [northEdge, westEdge];
+	var pixels = convertCoordToPixels(coord);
+	context.fillRect(pixels[1], pixels[0], 5, 5);
+	coord = [southEdge, eastEdge];
+	pixels = convertCoordToPixels(coord);
+	context.fillRect(pixels[1] - 5, pixels[0] - 5, 5, 5);
+	coord = [destLat, destLon];
+	pixels = convertCoordToPixels(coord);
+	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
+	coord = getLOPcoord(destLat, destLon, 90, 50);
+	pixels = convertCoordToPixels(coord);
+	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
+	coord = getLOPcoord(destLat, destLon, 180, 50);
+	pixels = convertCoordToPixels(coord);
+	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
+	coord = getLOPcoord(destLat, destLon, 270, 50);
+	pixels = convertCoordToPixels(coord);
+	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
+	coord = getLOPcoord(destLat, destLon, 0, 50);
+	pixels = convertCoordToPixels(coord);
+	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
 }
 
 function updatePtsList(starIndex, ptsList, left, top)
@@ -367,30 +388,21 @@ function takeSighting() {
 		}
 		DecArray[curIndex].innerHTML = formatLatDeg(starDEC);
 
-		// Calculate Hc
-		var RA = toRadians(GHAtotal);
-		var DEC = toRadians(starDEC);
-		var HA = toRadians(assumedLon[fixNumber]) + RA;
-		while (HA > 360)
-			HA -= toRadians(360);
-		var Hc = getALT(DEC, toRadians(assumedLat[fixNumber]), HA);
+		// Calc Hc and Zn using sight reduction calculator
+		var HcZn = SphericalTrig(toRadians(GHAtotal), toRadians(starDEC), toRadians(assumedLon[fixNumber]), toRadians(assumedLat[fixNumber]));
 		var HcArray = document.getElementsByClassName("Hc");
-		HcArray[curIndex].innerHTML = formatDMdecimal(Hc, 1);
-
-		// Calculate Zn
-		var Z = getAZ(DEC, Hc, toRadians(assumedLat[fixNumber]), HA);
-		var Zn = convertZtoZn(Z, HA, assumedLat[fixNumber]);
+		HcArray[curIndex].innerHTML = formatDMdecimal(toDegrees(HcZn[0]), 1);
 		var ZnArray = document.getElementsByClassName("Zn");
-		ZnArray[curIndex].innerHTML = formatDMdecimal(Zn, 1);
+		ZnArray[curIndex].innerHTML = formatDMdecimal(toDegrees(HcZn[1]), 1);
 
 		// Calculate Intercept
-		var intercept = Math.floor(Math.abs(Hs - Hc) * 60);
+		var intercept = Azimuth_and_Intercept(HcZn[1], toRadians(Hs), HcZn[0]);
 		var interceptArray = document.getElementsByClassName("Intercept");
-		interceptArray[curIndex].innerHTML = intercept + "nm";
+		interceptArray[curIndex].innerHTML = intercept.toFixed(1) + "nm";
 
 		// Plot LOS!
 		// Get coordinates of LOP and Zn line intersection
-		var LOPcoord = getLOPcoord(assumedLat[fixNumber], assumedLon[fixNumber], Zn, intercept);
+		var LOPcoord = getLOPcoord(assumedLat[fixNumber], assumedLon[fixNumber], toDegrees(HcZn[1]), intercept);
 		var LOPpixels = convertCoordToPixels(LOPcoord);
 		LOPpixelsTop.push(LOPpixels[0]);
 		LOPpixelsLeft.push(LOPpixels[1]);

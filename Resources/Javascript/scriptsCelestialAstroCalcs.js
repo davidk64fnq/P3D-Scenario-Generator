@@ -1,3 +1,30 @@
+function Azimuth_and_Intercept(Zn, Ho, Hc) {
+	with (Math) {
+		ZnDecimal = toDegrees(Zn);
+		ZnDeg = floor(ZnDecimal);
+		ZnMin = round(600 * (ZnDecimal - ZnDeg)) / 10;
+		if (ZnMin == 60) { ZnDeg += 1; ZnMin = 0; }
+		if (ZnDeg >= 360) ZnDeg -= 360;
+		HoDecimal = toDegrees(Ho);
+		AbsHoDecimal = abs(HoDecimal);
+		SigHo = HoDecimal / AbsHoDecimal;
+		HoDeg = floor(AbsHoDecimal);
+		HoMin = round(600 * (AbsHoDecimal - HoDeg)) / 10;
+		if (HoMin == 60) { HoDeg += 1; HoMin = 0; }
+		HoDeg *= SigHo;
+		if (SigHo < 0 && HoDeg == 0) HoMin = -HoMin;
+		HcDecimal = toDegrees(Hc);
+		AbsHcDecimal = abs(HcDecimal);
+		SigHc = HcDecimal / AbsHcDecimal;
+		HcDeg = floor(AbsHcDecimal);
+		HcMin = round(600 * (AbsHcDecimal - HcDeg)) / 10;
+		if (HcMin == 60) { HcDeg += 1; HcMin = 0; }
+		HcDeg *= SigHc;
+		if (SigHc < 0 && HcDeg == 0) HcMin = -HcMin;
+		return 60 * (HoDecimal - HcDecimal);
+	}
+}
+
 function convertCoordToPixels(coord) {
 	var lat = coord[0];
 	var lon = coord[1];
@@ -77,12 +104,15 @@ function getLocalSiderialTime(longitude) {
 
 function getLOPcoord(lat1, lon1, bearing, distance) {
 	const earthRadius = 3963; // nm
-	lat1 = lat1 / 180 * Math.PI;
-	lon1 = lon1 / 180 * Math.PI;
+
+	lat1 = toRadians(lat1);
+	lon1 = toRadians(lon1);
+	bearing = toRadians(bearing);
 	var lat2 = Math.asin(Math.sin(lat1) * Math.cos(distance / earthRadius) + Math.cos(lat1) * Math.sin(distance / earthRadius) * Math.cos(bearing));
 	var lon2 = lon1 + Math.atan2(Math.sin(bearing) * Math.sin(distance / earthRadius) * Math.cos(lat1), Math.cos(distance / earthRadius) - Math.sin(lat1) * Math.sin(lat2));
-	lat2 = lat2 / Math.PI * 180;
-	lon2 = lon2 / Math.PI * 180;
+	lat2 = toDegrees(lat2);
+	lon2 = toDegrees(lon2);
+	lon2 = (lon2 + 540) % 360 - 180; // Normalise to -180 ... +180
 	var LOPcoord = [lat2, lon2];
 	return LOPcoord;
 }
@@ -94,6 +124,33 @@ function hmsToDecimal(hour, minute, second) {
     else {
         return hour - minute / 60 - second / 3600
     }
+}
+
+
+function SphericalTrig(GHA, DEC, LON, LAT) {
+	with (Math) {
+		var LHA = GHA + LON;
+		if (LHA >= 2 * PI) LHA -= 2 * PI;
+		var Hc = asin(sin(LAT) * sin(DEC) + cos(LAT) * cos(DEC) * cos(LHA));
+		var cosZ = (sin(DEC) - sin(Hc) * sin(LAT)) / cos(Hc) / cos(LAT);
+		if (cosZ > 1) cosZ = 1;
+		if (cosZ < -1) cosZ = -1;
+		var Z = acos(cosZ);
+		if (sin(LHA) < 0) Zn = Z;
+		if (sin(LHA) > 0) Zn = 2 * PI - Z;
+		if (LHA == 0 && DEC > LAT) Zn = 0;
+		if (LHA == 0 && DEC < LAT) Zn = PI;
+		if (LHA == 0 && DEC == LAT) { Zn = 0 / 0; alert("Azimuth undefined !"); }
+		if (LHA == PI && DEC > 0 && LAT > 0) Zn = 0;
+		if (LHA == PI && DEC < 0 && LAT < 0) Zn = PI;
+		if (LHA == PI && DEC < 0 && LAT > 0 && -DEC < LAT) Zn = 0;
+		if (LHA == PI && DEC < 0 && LAT > 0 && -DEC > LAT) Zn = PI;
+		if (LHA == PI && DEC > 0 && LAT < 0 && DEC < -LAT) Zn = PI;
+		if (LHA == PI && DEC > 0 && LAT < 0 && DEC > -LAT) Zn = 0;
+		if (LHA == PI && DEC + LAT == 0) { Zn = 0 / 0; alert("Azimuth undefined !"); }
+	}
+	var HcZn = [Hc, Zn];
+	return HcZn;
 }
 
 function toDegrees(radians) {
