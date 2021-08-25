@@ -52,8 +52,14 @@ var fixNumber = 1; // refers to set of three sight reductions made close togethe
 var sightNumber = 1; // refers to cumulative sight reduction
 var assumedLat = [0, destLatX]; // first fix assumes destination as that's the only known point
 var assumedLon = [0, destLonX];
+var Hc = [0];
+var Zn = [0];
 var LOPpixelsTop = [0];
 var LOPpixelsLeft = [0];
+var LOPZncoordLat = [0];
+var LOPZncoordLon = [0];
+var LOPLOPcoordLat = [0];
+var LOPLOPcoordLon = [0];
 
 // Main function that loops refreshing star map
 function update(timestamp)
@@ -219,7 +225,7 @@ function updatePlotTab() {
 
 	// Plot LOPs
 	context.fillStyle = "red";
-	for (let ptNo = 1; ptNo < sightNumber; ptNo++) {
+	for (let ptNo = 1; ptNo < sightNumber - sightNumber % 3; ptNo++) {
 		context.fillRect(LOPpixelsLeft[ptNo] - 2, LOPpixelsTop[ptNo] - 2, 5, 5);
 	}
 	var coord = [northEdge, westEdge];
@@ -231,18 +237,24 @@ function updatePlotTab() {
 	coord = [destLat, destLon];
 	pixels = convertCoordToPixels(coord);
 	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
-	coord = getLOPcoord(destLat, destLon, 90, 50);
+	coord = getLOPZncoord(destLat, destLon, 90, 50);
 	pixels = convertCoordToPixels(coord);
 	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
-	coord = getLOPcoord(destLat, destLon, 180, 50);
+	coord = getLOPZncoord(destLat, destLon, 180, 50);
 	pixels = convertCoordToPixels(coord);
 	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
-	coord = getLOPcoord(destLat, destLon, 270, 50);
+	coord = getLOPZncoord(destLat, destLon, 270, 50);
 	pixels = convertCoordToPixels(coord);
 	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
-	coord = getLOPcoord(destLat, destLon, 0, 50);
+	coord = getLOPZncoord(destLat, destLon, 0, 50);
 	pixels = convertCoordToPixels(coord);
 	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
+	context.fillStyle = "green";
+	for (let ptNo = 1; ptNo <= sightNumber - sightNumber % 3; ptNo++) {
+		coord = [LOPLOPcoordLat[ptNo], LOPLOPcoordLon[ptNo]];
+		pixels = convertCoordToPixels(coord);
+		context.fillRect(pixels[1], pixels[0], 1, 1);
+	}
 }
 
 function updatePtsList(starIndex, ptsList, left, top)
@@ -390,23 +402,34 @@ function takeSighting() {
 
 		// Calc Hc and Zn using sight reduction calculator
 		var HcZn = SphericalTrig(toRadians(GHAtotal), toRadians(starDEC), toRadians(assumedLon[fixNumber]), toRadians(assumedLat[fixNumber]));
+		Hc.push(HcZn[0]);
+		Zn.push(HcZn[1]);
 		var HcArray = document.getElementsByClassName("Hc");
 		HcArray[curIndex].innerHTML = formatDMdecimal(toDegrees(HcZn[0]), 1);
 		var ZnArray = document.getElementsByClassName("Zn");
 		ZnArray[curIndex].innerHTML = formatDMdecimal(toDegrees(HcZn[1]), 1);
 
-		// Calculate Intercept
+		// Calculate Intercept using sight reduction calculator
 		var intercept = Azimuth_and_Intercept(HcZn[1], toRadians(Hs), HcZn[0]);
 		var interceptArray = document.getElementsByClassName("Intercept");
 		interceptArray[curIndex].innerHTML = intercept.toFixed(1) + "nm";
 
 		// Plot LOS!
 		// Get coordinates of LOP and Zn line intersection
-		var LOPcoord = getLOPcoord(assumedLat[fixNumber], assumedLon[fixNumber], toDegrees(HcZn[1]), intercept);
-		var LOPpixels = convertCoordToPixels(LOPcoord);
+		var LOPZncoord = getLOPZncoord(assumedLat[fixNumber], assumedLon[fixNumber], toDegrees(HcZn[1]), intercept);
+		LOPZncoordLat.push(LOPZncoord[0]);
+		LOPZncoordLon.push(LOPZncoord[1]);
+		var LOPpixels = convertCoordToPixels(LOPZncoord);
 		LOPpixelsTop.push(LOPpixels[0]);
 		LOPpixelsLeft.push(LOPpixels[1]);
+
 		if (sightNumber % 3 == 0) {
+			var LOPLOPcoord = getLOPLOPcoord();
+			for (let fixNo = 1; fixNo <= 6; fixNo += 2) {
+				LOPLOPcoordLat.push(LOPLOPcoord[fixNo]);
+				LOPLOPcoordLon.push(LOPLOPcoord[fixNo + 1]);
+			}
+			// calc new AP and store and display
 			fixNumber += 1;
         }
 		sightNumber += 1;

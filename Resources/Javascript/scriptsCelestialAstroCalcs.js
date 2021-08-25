@@ -102,7 +102,33 @@ function getLocalSiderialTime(longitude) {
 	return toRadians(LSTdeg);
 }
 
-function getLOPcoord(lat1, lon1, bearing, distance) {
+function getLOPLOPcoord() {
+	// http://www.mygeodesy.id.au/documents/Chapter%2010.pdf
+
+	var LOPLOPcoord = [0];
+	for (let pt1 = sightNumber - 2; pt1 <= sightNumber; pt1++) {
+		var pt2 = pt1 + 1;
+		if (pt2 == sightNumber + 1) {
+			pt2 = sightNumber - 2;
+        }
+		var LatPt1 = LOPZncoordLat[pt1];
+		var LatPt2 = LOPZncoordLat[pt2];
+		var LonPt1 = LOPZncoordLon[pt1];
+		var LonPt2 = LOPZncoordLon[pt2];
+		with (Math) {
+			var BearingPt1 = Zn[pt1] + PI / 2;
+			var BearingPt2 = Zn[pt2] + PI / 2;
+			var LOPLOPlat = (LatPt1 * tan(BearingPt1) - LatPt2 * tan(BearingPt2) + LonPt2 - LonPt1) / (tan(BearingPt1) - tan(BearingPt2));
+			var LOPLOPlon = LOPLOPlat * tan(BearingPt1) - LatPt1 * tan(BearingPt1) + LonPt1;
+		}
+		LOPLOPcoord.push(LOPLOPlat);
+		LOPLOPcoord.push(LOPLOPlon);
+	}
+
+	return LOPLOPcoord;
+}
+
+function getLOPZncoord(lat1, lon1, bearing, distance) {
 	const earthRadius = 3963; // nm
 
 	lat1 = toRadians(lat1);
@@ -127,7 +153,10 @@ function hmsToDecimal(hour, minute, second) {
 }
 
 
+SphericalTrig(toRadians(GHAtotal), toRadians(starDEC), toRadians(assumedLon[fixNumber]), toRadians(assumedLat[fixNumber]))
+
 function SphericalTrig(GHA, DEC, LON, LAT) {
+	var Zn;
 	with (Math) {
 		var LHA = GHA + LON;
 		if (LHA >= 2 * PI) LHA -= 2 * PI;
@@ -148,9 +177,9 @@ function SphericalTrig(GHA, DEC, LON, LAT) {
 		if (LHA == PI && DEC > 0 && LAT < 0 && DEC < -LAT) Zn = PI;
 		if (LHA == PI && DEC > 0 && LAT < 0 && DEC > -LAT) Zn = 0;
 		if (LHA == PI && DEC + LAT == 0) { Zn = 0 / 0; alert("Azimuth undefined !"); }
+		var HcZn = [Hc, Zn];
+		return HcZn;
 	}
-	var HcZn = [Hc, Zn];
-	return HcZn;
 }
 
 function toDegrees(radians) {
