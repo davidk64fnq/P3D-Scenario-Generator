@@ -969,8 +969,7 @@ namespace P3D_Scenario_Generator
 				}
 			}
 			celestialJS = celestialJS.Replace("starNameListX", starNameList);
-			DateTime startDateUTC = new DateTime(Parameters.Year, Parameters.Month, Parameters.Day).ToUniversalTime();
-			string startDate = $"\"{startDateUTC.Month}/{startDateUTC.Day}/{startDateUTC.Year}\"";
+			string startDate = $"\"{Parameters.Month}/{Parameters.Day}/{Parameters.Year}\"";
 			celestialJS = celestialJS.Replace("startDateX", startDate);
 			celestialJS = celestialJS.Replace("northEdgeX", Parameters.CelestialImageNorth.ToString());
 			celestialJS = celestialJS.Replace("eastEdgeX", Parameters.CelestialImageEast.ToString());

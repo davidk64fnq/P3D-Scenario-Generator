@@ -152,9 +152,6 @@ function hmsToDecimal(hour, minute, second) {
     }
 }
 
-
-SphericalTrig(toRadians(GHAtotal), toRadians(starDEC), toRadians(assumedLon[fixNumber]), toRadians(assumedLat[fixNumber]))
-
 function SphericalTrig(GHA, DEC, LON, LAT) {
 	var Zn;
 	with (Math) {

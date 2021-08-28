@@ -14,6 +14,9 @@ namespace P3D_Scenario_Generator
         internal static string SaveLocation { get; private set; }
         internal static string SelectedAircraft { get; private set; }
         internal static string SelectedScenario { get; private set; }
+        internal static int Second { get; private set; }
+        internal static int Minute { get; private set; }
+        internal static int Hour { get; private set; }
         internal static int DayOfYear { get; private set; }
         internal static int Day { get; private set; }
         internal static int Month { get; private set; }
@@ -83,6 +86,9 @@ namespace P3D_Scenario_Generator
             SelectedRunway = form.TextBoxSelectedRunway.Text;
             int index = Array.FindIndex(Constants.scenarioNames, s => s == form.TextBoxSelectedScenario.Text);
             SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
+            Second = form.DatePicker.Value.Second;
+            Minute = form.DatePicker.Value.Minute;
+            Hour = form.DatePicker.Value.Hour;
             DayOfYear = form.DatePicker.Value.DayOfYear;
             Day = form.DatePicker.Value.Day;
             Month = form.DatePicker.Value.Month;

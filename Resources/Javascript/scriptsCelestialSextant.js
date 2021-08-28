@@ -17,14 +17,14 @@ const visMag = [visMagX];
 const lines = [linesX];				// pairs of stars connected by a line when constellations displayed
 const destLat = destLatX;			// latitude of dest airport in degrees
 const destLon = destLonX;
-const ariesGHAd = [ariesGHAdX];
+const ariesGHAd = [ariesGHAdX]; // Three days of data starting the day BEFORE scenario selected start date to allow for UT going backwards to previous day
 const ariesGHAm = [ariesGHAmX];
 const starsSHAd = [starsSHAdX];
 const starsSHAm = [starsSHAmX];
 const starsDECd = [starsDECdX];
 const starsDECm = [starsDECmX];
 const starNameList = [starNameListX];	// list of the 57 navigational stars in alphabetical order, spelling per almanac
-const startDate = startDateX;
+const startDate = startDateX; // The local date selected when scenario generated
 const northEdge = northEdgeX;
 const eastEdge = eastEdgeX;
 const southEdge = southEdgeX;
@@ -54,8 +54,8 @@ var assumedLat = [0, destLatX]; // first fix assumes destination as that's the o
 var assumedLon = [0, destLonX];
 var Hc = [0];
 var Zn = [0];
-var LOPpixelsTop = [0];
-var LOPpixelsLeft = [0];
+var LOPZnpixelsTop = [0];
+var LOPZnpixelsLeft = [0];
 var LOPZncoordLat = [0];
 var LOPZncoordLon = [0];
 var LOPLOPcoordLat = [0];
@@ -225,8 +225,8 @@ function updatePlotTab() {
 
 	// Plot LOPs
 	context.fillStyle = "red";
-	for (let ptNo = 1; ptNo < sightNumber - sightNumber % 3; ptNo++) {
-		context.fillRect(LOPpixelsLeft[ptNo] - 2, LOPpixelsTop[ptNo] - 2, 5, 5);
+	for (let ptNo = 1; ptNo <= sightNumber - sightNumber % 3; ptNo++) {
+		context.fillRect(LOPZnpixelsLeft[ptNo] - 2, LOPZnpixelsTop[ptNo] - 2, 5, 5);
 	}
 	var coord = [northEdge, westEdge];
 	var pixels = convertCoordToPixels(coord);
@@ -359,12 +359,12 @@ function takeSighting() {
 		HsArray[curIndex].innerHTML = formatDMdecimal(Hs, 1);
 
 		// Display Aries GHA for current hour
-		var day = getElapsedDays(monthOfYear + "/" + dayOfMonth + "/" + year); // from start date of scenario
+		var dayIndexOffset = getElapsedDays(monthOfYear + "/" + dayOfMonth + "/" + year); // Will be -1 if UT day is one day earlier than local day
 		var hour = Math.floor(time / 3600);
 		var GHAhourArray = document.getElementsByClassName("GHAhour");
-		var ariesGHA = ariesGHAd[day][hour] + ariesGHAm[day][hour] / 60;
-		if (day >= 0 && day <= 2) {
-			GHAhourArray[curIndex].innerHTML = ariesGHAd[day][hour] + "° " + ariesGHAm[day][hour] + "'";
+		var ariesGHA = ariesGHAd[dayIndexOffset + 1][hour] + ariesGHAm[dayIndexOffset + 1][hour] / 60;
+		if (dayIndexOffset >= -1 && dayIndexOffset <= 1) {
+			GHAhourArray[curIndex].innerHTML = ariesGHAd[dayIndexOffset + 1][hour] + "° " + ariesGHAm[dayIndexOffset + 1][hour] + "'";
 		}
 		else {
 			GHAhourArray[curIndex].innerHTML = "No data";
@@ -372,7 +372,7 @@ function takeSighting() {
 
 		// Interpolate Aries GHA for minutes and seconds
 		var GHAincArray = document.getElementsByClassName("GHAinc");
-		var ariesGHAinc = getGHAincrement(day, hour, time);
+		var ariesGHAinc = getGHAincrement(dayIndexOffset + 1, hour, time);
 		GHAincArray[curIndex].innerHTML = formatDMdecimal(ariesGHAinc, 1);
 
 		// Display star SHA
@@ -419,9 +419,9 @@ function takeSighting() {
 		var LOPZncoord = getLOPZncoord(assumedLat[fixNumber], assumedLon[fixNumber], toDegrees(HcZn[1]), intercept);
 		LOPZncoordLat.push(LOPZncoord[0]);
 		LOPZncoordLon.push(LOPZncoord[1]);
-		var LOPpixels = convertCoordToPixels(LOPZncoord);
-		LOPpixelsTop.push(LOPpixels[0]);
-		LOPpixelsLeft.push(LOPpixels[1]);
+		var LOPZnpixels = convertCoordToPixels(LOPZncoord);
+		LOPZnpixelsTop.push(LOPZnpixels[0]);
+		LOPZnpixelsLeft.push(LOPZnpixels[1]);
 
 		if (sightNumber % 3 == 0) {
 			var LOPLOPcoord = getLOPLOPcoord();
@@ -457,23 +457,39 @@ function getGHAincrement(day, hour, time) {
 	var finishGHAdec = ariesGHAd[day][hour] + ariesGHAm[day][hour] / 60;
 
 	// Calc increment as decimal
-	var hourProportion = time % 3600 / 3600;
-	return (finishGHAdec - startGHAdec) * hourProportion;
+	var hourProportion = (time % 3600) / 3600;
+	return ((finishGHAdec - startGHAdec + 360) % 360) * hourProportion;
 }
 
 function getElapsedDays(currentdate) {
+
+	var dateStart = new Date(startDate);
+	var dateCurrent = new Date(currentdate);
+	if (dateStart.getDate() == dateCurrent.getDate()) {
+		return 0;
+	}
+	else if (dateStart.getDate() + 1 == dateCurrent.getDate()) {
+		return +1;
+	}
+	else if (dateStart.getDate() == dateCurrent.getDate() + 1) {
+		return -1;
+	}
+	else {
+		return;
+    }
+
 	// JavaScript program to illustrate 
 	// calculation of no. of days between two date 
 
 	// To set two dates to two variables
-	var date1 = new Date(startDate);
-	var date2 = new Date(currentdate);
+	//var date1 = new Date(startDate);
+	//var date2 = new Date(currentdate);
 
 	// To calculate the time difference of two dates
-	var Difference_In_Time = date2.getTime() - date1.getTime();
+	//var Difference_In_Time = date2.getTime() - date1.getTime();
 
 	// To calculate the no. of days between two dates
-	return Difference_In_Time / (1000 * 3600 * 24);
+	//return Difference_In_Time / (1000 * 3600 * 24);
 }
 
 function formatDMdecimal(coordinate, numberPlaces){
