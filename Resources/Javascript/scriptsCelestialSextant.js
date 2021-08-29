@@ -14,18 +14,18 @@ const decM = [decMX];
 const decS = [decSX];
 const visMag = [visMagX];
 
-const lines = [linesX];				// pairs of stars connected by a line when constellations displayed
-const destLat = destLatX;			// latitude of dest airport in degrees
+const lines = [linesX];					// pairs of stars connected by a line when constellations displayed
+const destLat = destLatX;				// latitude of dest airport (degrees)
 const destLon = destLonX;
-const ariesGHAd = [ariesGHAdX]; // Three days of data starting the day BEFORE scenario selected start date to allow for UT going backwards to previous day
+const ariesGHAd = [ariesGHAdX];			// Three days of data starting the day BEFORE scenario selected start date to allow for UT going backwards to previous day
 const ariesGHAm = [ariesGHAmX];
 const starsSHAd = [starsSHAdX];
 const starsSHAm = [starsSHAmX];
 const starsDECd = [starsDECdX];
 const starsDECm = [starsDECmX];
 const starNameList = [starNameListX];	// list of the 57 navigational stars in alphabetical order, spelling per almanac
-const startDate = startDateX; // The local date selected when scenario generated
-const northEdge = northEdgeX;
+const startDate = startDateX;			// The local date selected when scenario generated
+const northEdge = northEdgeX;			// North edge of area covered by plotting image (degrees)
 const eastEdge = eastEdgeX;
 const southEdge = southEdgeX;
 const westEdge = westEdgeX;
@@ -37,28 +37,28 @@ const windowH = 540;
 const defaultFOV = 45;
 
 // Global variables referenced in the button onClick functions		
-var fovH = defaultFOV; // Sextant window width of sky 
-var fovV = fovH * windowH / windowW; // Sextant window height of sky
-var sexAZ = 0; // Sextant window mid-point bearing relative to plane heading (degrees)
-var sexALT = 0; // Sextant window base elevation relative to plane pitch (degrees)
-var sexHo = windowH / 2; // Sextant observed altitude line (pixels)
-var planeHeadDeg;
-var planePitchDeg;
-var labelStars = 0; // Whether to show star labels
-var labelConstellations = 0; // Whether to show lines between stars in constellations
+var fovH = defaultFOV;					// Sextant window horizontal field of view of sky (degrees)
+var fovV = fovH * windowH / windowW;	// Sextant window vertical field of view of sky (degrees)
+var sexAZ = 0;							// Sextant window mid-point bearing relative to plane heading (degrees)
+var sexALT = 0;							// Sextant window base elevation relative to plane pitch, +ve is sextant pitched up (degrees)
+var sexHo = windowH / 2;				// Sextant observed altitude line (pixels)
+var planeHeadDeg;						// Retrieved from P3D
+var planePitchDeg;						// Retrieved from P3D NOTE: +ve is plane pitched down
+var labelStars = 0;						// Whether to show star labels
+var labelConstellations = 0;			// Whether to show lines between stars in constellations
 
 // Plotting global variables
-var fixNumber = 1; // refers to set of three sight reductions made close together temporally
-var sightNumber = 1; // refers to cumulative sight reduction
-var assumedLat = [0, destLatX]; // first fix assumes destination as that's the only known point
-var assumedLon = [0, destLonX];
-var Hc = [0];
-var Zn = [0];
-var LOPZnpixelsTop = [0];
-var LOPZnpixelsLeft = [0];
+var fixNumber = 1;						// Refers to cumulative number of sets of three sight reductions made close together temporally
+var sightNumber = 1;					// Refers to cumulative number of sight reductions made
+var assumedLat = [0, destLatX];			// First fix assumes destination as that's the only known point (degrees)
+var assumedLon = [0, destLonX];			// Subsequent fixes use last obtained fix as assumed position
+var Hc = [0];							// Calculated altitude for each fix (degrees)
+var Zn = [0];							// Calculated azimuth for each fix (degrees)
+var LOPZnpixelsTop = [0];				// LOPZn coord is intercept distance from fix assumed position on Zn bearing,
+var LOPZnpixelsLeft = [0];				// if intercept positive or Zn - 180 if negative
 var LOPZncoordLat = [0];
 var LOPZncoordLon = [0];
-var LOPLOPcoordLat = [0];
+var LOPLOPcoordLat = [0];				// LOPLOP coord is intersection of right angle lines drawn from pairs of LOPZn coords
 var LOPLOPcoordLon = [0];
 
 // Main function that loops refreshing star map
@@ -253,7 +253,13 @@ function updatePlotTab() {
 	for (let ptNo = 1; ptNo <= sightNumber - sightNumber % 3; ptNo++) {
 		coord = [LOPLOPcoordLat[ptNo], LOPLOPcoordLon[ptNo]];
 		pixels = convertCoordToPixels(coord);
-		context.fillRect(pixels[1], pixels[0], 1, 1);
+		context.fillRect(pixels[1] - 1, pixels[0] - 1, 3, 3);
+	}
+	context.fillStyle = "purple";
+	for (let fixIndex = 1; fixIndex <= fixNumber; fixIndex++) {
+		coord = [assumedLat[fixIndex], assumedLon[fixIndex]];
+		pixels = convertCoordToPixels(coord);
+		context.fillRect(pixels[1] - 1, pixels[0] - 1, 3, 3);
 	}
 }
 
@@ -359,7 +365,8 @@ function takeSighting() {
 		HsArray[curIndex].innerHTML = formatDMdecimal(Hs, 1);
 
 		// Display Aries GHA for current hour
-		var dayIndexOffset = getElapsedDays(monthOfYear + "/" + dayOfMonth + "/" + year); // Will be -1 if UT day is one day earlier than local day
+		const currentDate = monthOfYear + "/" + dayOfMonth + "/" + year;
+		var dayIndexOffset = getElapsedDays(startDate, currentDate); // Will be -1 if UT current day is one day earlier than local scenario start day
 		var hour = Math.floor(time / 3600);
 		var GHAhourArray = document.getElementsByClassName("GHAhour");
 		var ariesGHA = ariesGHAd[dayIndexOffset + 1][hour] + ariesGHAm[dayIndexOffset + 1][hour] / 60;
@@ -414,7 +421,6 @@ function takeSighting() {
 		var interceptArray = document.getElementsByClassName("Intercept");
 		interceptArray[curIndex].innerHTML = intercept.toFixed(1) + "nm";
 
-		// Plot LOS!
 		// Get coordinates of LOP and Zn line intersection
 		var LOPZncoord = getLOPZncoord(assumedLat[fixNumber], assumedLon[fixNumber], toDegrees(HcZn[1]), intercept);
 		LOPZncoordLat.push(LOPZncoord[0]);
@@ -423,13 +429,16 @@ function takeSighting() {
 		LOPZnpixelsTop.push(LOPZnpixels[0]);
 		LOPZnpixelsLeft.push(LOPZnpixels[1]);
 
+		// Get fix point and store as next assumed point
 		if (sightNumber % 3 == 0) {
 			var LOPLOPcoord = getLOPLOPcoord();
 			for (let fixNo = 1; fixNo <= 6; fixNo += 2) {
 				LOPLOPcoordLat.push(LOPLOPcoord[fixNo]);
 				LOPLOPcoordLon.push(LOPLOPcoord[fixNo + 1]);
 			}
-			// calc new AP and store and display
+			var fixCoord = getFixCoord();
+			assumedLat.push(fixCoord[0]);
+			assumedLon.push(fixCoord[1]);
 			fixNumber += 1;
         }
 		sightNumber += 1;
@@ -461,35 +470,20 @@ function getGHAincrement(day, hour, time) {
 	return ((finishGHAdec - startGHAdec + 360) % 360) * hourProportion;
 }
 
-function getElapsedDays(currentdate) {
-
-	var dateStart = new Date(startDate);
-	var dateCurrent = new Date(currentdate);
-	if (dateStart.getDate() == dateCurrent.getDate()) {
-		return 0;
-	}
-	else if (dateStart.getDate() + 1 == dateCurrent.getDate()) {
-		return +1;
-	}
-	else if (dateStart.getDate() == dateCurrent.getDate() + 1) {
-		return -1;
-	}
-	else {
-		return;
-    }
+function getElapsedDays(startDate, currentdate) {
 
 	// JavaScript program to illustrate 
 	// calculation of no. of days between two date 
 
 	// To set two dates to two variables
-	//var date1 = new Date(startDate);
-	//var date2 = new Date(currentdate);
+	var dateStart = new Date(startDate);
+	var dateCurrent = new Date(currentdate);
 
 	// To calculate the time difference of two dates
-	//var Difference_In_Time = date2.getTime() - date1.getTime();
+	var Difference_In_Time = dateCurrent.getTime() - dateStart.getTime();
 
 	// To calculate the no. of days between two dates
-	//return Difference_In_Time / (1000 * 3600 * 24);
+	return Difference_In_Time / (1000 * 3600 * 24);
 }
 
 function formatDMdecimal(coordinate, numberPlaces){
