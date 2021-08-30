@@ -64,7 +64,7 @@ body {
 	padding: var(--button-group-padding);
 }
 
-#INFO, #FIX, #FOV, #AZ, #ALT, #Ho  {
+#INFO, #FIX, #FOV, #AZ, #ALT, #Ho, #clearSightings {
 	border-radius: var(--button-group-radius);
 	display: inline-block;
 	margin: var(--button-group-margin);
@@ -76,7 +76,7 @@ body {
 	border: var(--button-group-line) solid var(--info-border-color);
 }
 
-#FIX {
+#FIX, #clearSightings {
 	background-color: var(--fix-background-color);
 	border: var(--button-group-line) solid var(--fix-border-color);
 }
@@ -91,17 +91,17 @@ body {
 	border: var(--button-group-line) solid var(--reading-border-color);
 }
 
-#INFO button, #FIX button, #FOV button, #AZ button, #ALT button, #Ho button {
-	cursor: pointer;
-	border-radius: var(--button-radius);
-}
+	#INFO button, #FIX button, #FOV button, #AZ button, #ALT button, #Ho button, #clearSightings button {
+		cursor: pointer;
+		border-radius: var(--button-radius);
+	}
 
 #INFO button {
 	color: var(--info-text-color); 
 	border: var(--button-line) solid var(--info-border-color);
 }
 
-#FIX button {
+#FIX button, #clearSightings button {
 	color: var(--fix-text-color);
 	border: var(--button-line) solid var(--fix-border-color);
 }
@@ -116,7 +116,7 @@ body {
 	border: var(--button-line) solid var(--reading-border-color);
 }
 
-#INFO button:hover, #FIX button:hover, #FOV button:hover, #AZ button:hover, #ALT button:hover, #Ho button:hover {
+#INFO button:hover, #FIX button:hover, #FOV button:hover, #AZ button:hover, #ALT button:hover, #Ho button:hover, #clearSightings button:hover {
 	color: var(--button-hover-text-color);
 }
 
@@ -124,7 +124,7 @@ body {
 	background-color: var(--info-hover-background-color); 
 }
 
-#FIX button:hover {
+#FIX button:hover, #clearSightings button:hover {
 	background-color: var(--fix-hover-background-color);
 }
 

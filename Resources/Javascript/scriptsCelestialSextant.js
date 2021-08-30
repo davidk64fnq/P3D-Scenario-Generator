@@ -43,7 +43,6 @@ var sexAZ = 0;							// Sextant window mid-point bearing relative to plane headi
 var sexALT = 0;							// Sextant window base elevation relative to plane pitch, +ve is sextant pitched up (degrees)
 var sexHo = windowH / 2;				// Sextant observed altitude line (pixels)
 var planeHeadDeg;						// Retrieved from P3D
-var planePitchDeg;						// Retrieved from P3D NOTE: +ve is plane pitched down
 var labelStars = 0;						// Whether to show star labels
 var labelConstellations = 0;			// Whether to show lines between stars in constellations
 
@@ -52,14 +51,17 @@ var fixNumber = 1;						// Refers to cumulative number of sets of three sight re
 var sightNumber = 1;					// Refers to cumulative number of sight reductions made
 var assumedLat = [0, destLatX];			// First fix assumes destination as that's the only known point (degrees)
 var assumedLon = [0, destLonX];			// Subsequent fixes use last obtained fix as assumed position
-var Hc = [0];							// Calculated altitude for each fix (degrees)
-var Zn = [0];							// Calculated azimuth for each fix (degrees)
-var LOPZnpixelsTop = [0];				// LOPZn coord is intercept distance from fix assumed position on Zn bearing,
-var LOPZnpixelsLeft = [0];				// if intercept positive or Zn - 180 if negative
-var LOPZncoordLat = [0];
-var LOPZncoordLon = [0];
+var Zn = [0];							// Calculated fix star azimuth
+var LOPZncoordLat = [0];				// LOPZn coord is intercept distance from fix assumed position on Zn bearing,
+var LOPZncoordLon = [0];				// if intercept positive or Zn - 180 if negative
+var LOPZnpixelsTop = [0];
+var LOPZnpixelsLeft = [0];
 var LOPLOPcoordLat = [0];				// LOPLOP coord is intersection of right angle lines drawn from pairs of LOPZn coords
 var LOPLOPcoordLon = [0];
+var LOPLOPpixelsTop = [0];
+var LOPLOPpixelsLeft = [0];
+var fixCoordPixelsTop = [0];
+var fixCoordPixelsLeft = [0];
 
 // Main function that loops refreshing star map
 function update(timestamp)
@@ -86,13 +88,12 @@ function update(timestamp)
 		var ALT = getALT(DEC, planeLat, HA);
 		var AZ = getAZ(DEC, ALT, planeLat, HA);
 		var relSexAZ = sexAZ + planeHeadDeg;
-		var relSexALT = sexALT - planePitchDeg; // plane pitching down is negative
 		var AZbearingDelta = getBearingDif(AZ, relSexAZ); // Comparing star AZ to sextant window mid-point bearing
-		if ((ALT > relSexALT) && (ALT < relSexALT + fovV) && (AZbearingDelta <= fovH / 2))
+		if ((ALT > sexALT) && (ALT < sexALT + fovV) && (AZbearingDelta <= fovH / 2))
 		{
 			var relativeAZ = getRelativeAZ(AZ, relSexAZ, fovH); // Number of degrees from left edge of sextant window
 			var left = Math.round(relativeAZ / fovH * windowW);
-			var top = Math.round((relSexALT + fovV - ALT) / fovV * windowH);
+			var top = Math.round((sexALT + fovV - ALT) / fovV * windowH);
 			updatePtsList(starIndex, ptsList, left, top);
 		}
 	}
@@ -122,7 +123,7 @@ function update(timestamp)
 window.requestAnimationFrame(update);
 
 function getHoInDeg() {
-	return (sexHo / windowH) * fovV + sexALT - planePitchDeg;
+	return (sexHo / windowH) * fovV + sexALT;
 }
 		
 function setInfoLine(context)
@@ -223,43 +224,20 @@ function updatePlotTab() {
 	image.src = "plotImage.jpg"
 	context.drawImage(image, 0, 0);
 
-	// Plot LOPs
+	// Plot LOPZn coordinates
 	context.fillStyle = "red";
 	for (let ptNo = 1; ptNo <= sightNumber - sightNumber % 3; ptNo++) {
-		context.fillRect(LOPZnpixelsLeft[ptNo] - 2, LOPZnpixelsTop[ptNo] - 2, 5, 5);
+	//	context.fillRect(LOPZnpixelsLeft[ptNo] - 1, LOPZnpixelsTop[ptNo] - 1, 3, 3);
 	}
-	var coord = [northEdge, westEdge];
-	var pixels = convertCoordToPixels(coord);
-	context.fillRect(pixels[1], pixels[0], 5, 5);
-	coord = [southEdge, eastEdge];
-	pixels = convertCoordToPixels(coord);
-	context.fillRect(pixels[1] - 5, pixels[0] - 5, 5, 5);
-	coord = [destLat, destLon];
-	pixels = convertCoordToPixels(coord);
-	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
-	coord = getLOPZncoord(destLat, destLon, 90, 50);
-	pixels = convertCoordToPixels(coord);
-	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
-	coord = getLOPZncoord(destLat, destLon, 180, 50);
-	pixels = convertCoordToPixels(coord);
-	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
-	coord = getLOPZncoord(destLat, destLon, 270, 50);
-	pixels = convertCoordToPixels(coord);
-	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
-	coord = getLOPZncoord(destLat, destLon, 0, 50);
-	pixels = convertCoordToPixels(coord);
-	context.fillRect(pixels[1] - 2, pixels[0] - 2, 5, 5);
+	// Plot LOPLOP coordinates
 	context.fillStyle = "green";
 	for (let ptNo = 1; ptNo <= sightNumber - sightNumber % 3; ptNo++) {
-		coord = [LOPLOPcoordLat[ptNo], LOPLOPcoordLon[ptNo]];
-		pixels = convertCoordToPixels(coord);
-		context.fillRect(pixels[1] - 1, pixels[0] - 1, 3, 3);
+		context.fillRect(LOPLOPpixelsLeft[ptNo] - 1, LOPLOPpixelsTop[ptNo] - 1, 3, 3);
 	}
+	// Plot fix coordinates
 	context.fillStyle = "purple";
 	for (let fixIndex = 1; fixIndex <= fixNumber; fixIndex++) {
-		coord = [assumedLat[fixIndex], assumedLon[fixIndex]];
-		pixels = convertCoordToPixels(coord);
-		context.fillRect(pixels[1] - 1, pixels[0] - 1, 3, 3);
+		context.fillRect(fixCoordPixelsLeft[fixIndex] - 1, fixCoordPixelsTop[fixIndex] - 1, 3, 3);
 	}
 }
 
@@ -409,7 +387,6 @@ function takeSighting() {
 
 		// Calc Hc and Zn using sight reduction calculator
 		var HcZn = SphericalTrig(toRadians(GHAtotal), toRadians(starDEC), toRadians(assumedLon[fixNumber]), toRadians(assumedLat[fixNumber]));
-		Hc.push(HcZn[0]);
 		Zn.push(HcZn[1]);
 		var HcArray = document.getElementsByClassName("Hc");
 		HcArray[curIndex].innerHTML = formatDMdecimal(toDegrees(HcZn[0]), 1);
@@ -431,14 +408,21 @@ function takeSighting() {
 
 		// Get fix point and store as next assumed point
 		if (sightNumber % 3 == 0) {
-			var LOPLOPcoord = getLOPLOPcoord();
-			for (let fixNo = 1; fixNo <= 6; fixNo += 2) {
-				LOPLOPcoordLat.push(LOPLOPcoord[fixNo]);
-				LOPLOPcoordLon.push(LOPLOPcoord[fixNo + 1]);
+			var LOPLOPcoords = getLOPLOPcoord(); // returns 3 coord pairs
+			for (let indexNo = 1; indexNo <= 6; indexNo += 2) {
+				LOPLOPcoordLat.push(LOPLOPcoords[indexNo]);
+				LOPLOPcoordLon.push(LOPLOPcoords[indexNo + 1]);
+				var LOPLOPcoord = [LOPLOPcoords[indexNo], LOPLOPcoords[indexNo + 1]];
+				var LOPLOPpixels = convertCoordToPixels(LOPLOPcoord);
+				LOPLOPpixelsTop.push(LOPLOPpixels[0]);
+				LOPLOPpixelsLeft.push(LOPLOPpixels[1]);
 			}
 			var fixCoord = getFixCoord();
 			assumedLat.push(fixCoord[0]);
 			assumedLon.push(fixCoord[1]);
+			var fixCoordPixels = convertCoordToPixels(fixCoord);
+			fixCoordPixelsTop.push(fixCoordPixels[0]);
+			fixCoordPixelsLeft.push(fixCoordPixels[1]);
 			fixNumber += 1;
         }
 		sightNumber += 1;
@@ -656,4 +640,38 @@ function moveHdown01()
 {
 	if (sexHo >= 1)
 		sexHo -= 1;
+}
+
+// Button onClick functions for sight reduction tab 
+
+function clearSightings() {
+	var APlatArray = document.getElementsByClassName("AP Lat");
+	var APlonArray = document.getElementsByClassName("AP Lon");
+	var DateArray = document.getElementsByClassName("Date");
+	var UTArray = document.getElementsByClassName("UT");
+	var HsArray = document.getElementsByClassName("Hs");
+	var GHAhourArray = document.getElementsByClassName("GHAhour");
+	var GHAincArray = document.getElementsByClassName("GHAinc");
+	var SHAincArray = document.getElementsByClassName("SHAinc");
+	var GHAtotalArray = document.getElementsByClassName("GHAtotal");
+	var DecArray = document.getElementsByClassName("Dec");
+	var HcArray = document.getElementsByClassName("Hc");
+	var ZnArray = document.getElementsByClassName("Zn");
+	var interceptArray = document.getElementsByClassName("Intercept");
+
+	for (let index = 0; index < HsArray.length; index++) {
+		APlatArray[index].value = "";
+		APlonArray[index].value = "";
+		DateArray[index].innerHTML = "";
+		UTArray[index].innerHTML = "";
+		HsArray[index].innerHTML = "";
+		GHAhourArray[index].innerHTML = "";
+		GHAincArray[index].innerHTML = "";
+		SHAincArray[index].innerHTML = "";
+		GHAtotalArray[index].innerHTML = "";
+		DecArray[index].innerHTML = "";
+		HcArray[index].innerHTML = "";
+		ZnArray[index].innerHTML = "";
+		interceptArray[index].innerHTML = "";
+	}
 }
