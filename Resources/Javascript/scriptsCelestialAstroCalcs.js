@@ -1,28 +1,41 @@
-function Azimuth_and_Intercept(Zn, Ho, Hc) {
-	with (Math) {
-		ZnDecimal = toDegrees(Zn);
-		ZnDeg = floor(ZnDecimal);
-		ZnMin = round(600 * (ZnDecimal - ZnDeg)) / 10;
-		if (ZnMin == 60) { ZnDeg += 1; ZnMin = 0; }
-		if (ZnDeg >= 360) ZnDeg -= 360;
-		HoDecimal = toDegrees(Ho);
-		AbsHoDecimal = abs(HoDecimal);
-		SigHo = HoDecimal / AbsHoDecimal;
-		HoDeg = floor(AbsHoDecimal);
-		HoMin = round(600 * (AbsHoDecimal - HoDeg)) / 10;
-		if (HoMin == 60) { HoDeg += 1; HoMin = 0; }
-		HoDeg *= SigHo;
-		if (SigHo < 0 && HoDeg == 0) HoMin = -HoMin;
-		HcDecimal = toDegrees(Hc);
-		AbsHcDecimal = abs(HcDecimal);
-		SigHc = HcDecimal / AbsHcDecimal;
-		HcDeg = floor(AbsHcDecimal);
-		HcMin = round(600 * (AbsHcDecimal - HcDeg)) / 10;
-		if (HcMin == 60) { HcDeg += 1; HcMin = 0; }
-		HcDeg *= SigHc;
-		if (SigHc < 0 && HcDeg == 0) HcMin = -HcMin;
-		return 60 * (HoDecimal - HcDecimal);
+function calcHcZn(ptsList, ptsListIndex) {
+	var HcZnIndirect = new Array();
+	var topPixels = ptsList[ptsListIndex + 3];
+	var leftPixels = ptsList[ptsListIndex + 2];
+	HcZnIndirect[0] = toRadians((windowH - topPixels) / windowH * fovV + sexALT);
+	HcZnIndirect[1] = toRadians(leftPixels / windowW * fovH - fovH / 2 + sexAZ + planeHeadDeg);
+	if (HcZnIndirect[1] > 360)
+		HcZnIndirect[1] -= 360;
+	if (HcZnIndirect[1] < 0)
+		HcZnIndirect[1] += 360;
+
+	return HcZnIndirect;
+}
+
+function calcLocalStarPositions(latitude, longitude, planeHeadDeg) {
+	var ptsList = new Array(); // Pixel positions for stars in current sextant FOV
+
+	for (let starIndex = 0; starIndex < raH.length; starIndex++) {
+		// Using formulae from here http://www.stargazing.net/kepler/altaz.html
+		// Note: working in radians rather than degrees until ALT/AZ as Javascript trig uses radians
+		var RAhr = hmsToDecimal(raH[starIndex], raM[starIndex], raS[starIndex]);
+		var RA = toRadians(RAhr * 15);
+		var DEC = toRadians(hmsToDecimal(decD[starIndex], decM[starIndex], decS[starIndex]));
+		var LST = getLocalSiderialTime(longitude);
+		var HA = getHourAngle(LST, RA);
+		var ALT = getALT(DEC, latitude, HA);
+		var AZ = getAZ(DEC, ALT, latitude, HA);
+		var relSexAZ = sexAZ + planeHeadDeg;
+		var AZbearingDelta = getBearingDif(AZ, relSexAZ); // Comparing star AZ to sextant window mid-point bearing
+		if ((ALT > sexALT) && (ALT < sexALT + fovV) && (AZbearingDelta <= fovH / 2)) {
+			var relativeAZ = getRelativeAZ(AZ, relSexAZ, fovH); // Number of degrees from left edge of sextant window
+			var left = Math.round(relativeAZ / fovH * windowW);
+			var top = Math.round((sexALT + fovV - ALT) / fovV * windowH);
+			updatePtsList(starIndex, ptsList, left, top);
+		}
 	}
+
+	return ptsList;
 }
 
 // Input is a coord in degrees, output is top and left pixel values to position coord on plotting image
@@ -221,36 +234,6 @@ function hmsToDecimal(hour, minute, second) {
     else {
         return hour - minute / 60 - second / 3600
     }
-}
-
-// Inputs all in radians, outputs Hc (calculated altitude of star) and Zn (star azimuth)
-function SphericalTrig(GHA, DEC, LON, LAT) {
-	// https://www.celnav.de/sightred.htm
-
-	var Zn;
-	with (Math) {
-		var LHA = GHA + LON;
-		if (LHA >= 2 * PI) LHA -= 2 * PI;
-		var Hc = asin(sin(LAT) * sin(DEC) + cos(LAT) * cos(DEC) * cos(LHA));
-		var cosZ = (sin(DEC) - sin(Hc) * sin(LAT)) / cos(Hc) / cos(LAT);
-		if (cosZ > 1) cosZ = 1;
-		if (cosZ < -1) cosZ = -1;
-		var Z = acos(cosZ);
-		if (sin(LHA) < 0) Zn = Z;
-		if (sin(LHA) > 0) Zn = 2 * PI - Z;
-		if (LHA == 0 && DEC > LAT) Zn = 0;
-		if (LHA == 0 && DEC < LAT) Zn = PI;
-		if (LHA == 0 && DEC == LAT) { Zn = 0 / 0; alert("Azimuth undefined !"); }
-		if (LHA == PI && DEC > 0 && LAT > 0) Zn = 0;
-		if (LHA == PI && DEC < 0 && LAT < 0) Zn = PI;
-		if (LHA == PI && DEC < 0 && LAT > 0 && -DEC < LAT) Zn = 0;
-		if (LHA == PI && DEC < 0 && LAT > 0 && -DEC > LAT) Zn = PI;
-		if (LHA == PI && DEC > 0 && LAT < 0 && DEC < -LAT) Zn = PI;
-		if (LHA == PI && DEC > 0 && LAT < 0 && DEC > -LAT) Zn = 0;
-		if (LHA == PI && DEC + LAT == 0) { Zn = 0 / 0; alert("Azimuth undefined !"); }
-	}
-	var HcZn = [Hc, Zn];
-	return HcZn;
 }
 
 function toDegrees(radians) {

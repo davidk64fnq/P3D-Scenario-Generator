@@ -40,7 +40,7 @@ const defaultFOV = 45;
 var fovH = defaultFOV;					// Sextant window horizontal field of view of sky (degrees)
 var fovV = fovH * windowH / windowW;	// Sextant window vertical field of view of sky (degrees)
 var sexAZ = 0;							// Sextant window mid-point bearing relative to plane heading (degrees)
-var sexALT = 0;							// Sextant window base elevation relative to plane pitch, +ve is sextant pitched up (degrees)
+var sexALT = 0;							// Sextant window base elevation (degrees)
 var sexHo = windowH / 2;				// Sextant observed altitude line (pixels)
 var planeHeadDeg;						// Retrieved from P3D
 var labelStars = 0;						// Whether to show star labels
@@ -67,7 +67,6 @@ var fixCoordPixelsLeft = [0];
 function update(timestamp)
 {
 	planeHeadDeg = toDegrees(VarGet("A:PLANE HEADING DEGREES TRUE", "Radians"));
-	planePitchDeg = toDegrees(VarGet("A:PLANE PITCH DEGREES", "Radians")); // Pitched down +ve, up -ve
 	var planeLon = VarGet("A:PLANE LONGITUDE" ,"Radians"); // x
 	var planeLat = VarGet("A:PLANE LATITUDE" ,"Radians");  // y 
 	var canvas = document.getElementById('canvas');
@@ -76,27 +75,7 @@ function update(timestamp)
 	
 	
 	// Calculate local position of stars
-	for(let starIndex = 0; starIndex < raH.length; starIndex++)
-	{
-		// Using formulae from here http://www.stargazing.net/kepler/altaz.html
-		// Note: working in radians rather than degrees until ALT/AZ as Javascript trig uses radians
-		var RAhr = hmsToDecimal(raH[starIndex], raM[starIndex], raS[starIndex]);
-		var RA = toRadians(RAhr * 15);
-		var DEC = toRadians(hmsToDecimal(decD[starIndex], decM[starIndex], decS[starIndex]));
-		var LST = getLocalSiderialTime(planeLon);
-		var HA = getHourAngle(LST, RA);
-		var ALT = getALT(DEC, planeLat, HA);
-		var AZ = getAZ(DEC, ALT, planeLat, HA);
-		var relSexAZ = sexAZ + planeHeadDeg;
-		var AZbearingDelta = getBearingDif(AZ, relSexAZ); // Comparing star AZ to sextant window mid-point bearing
-		if ((ALT > sexALT) && (ALT < sexALT + fovV) && (AZbearingDelta <= fovH / 2))
-		{
-			var relativeAZ = getRelativeAZ(AZ, relSexAZ, fovH); // Number of degrees from left edge of sextant window
-			var left = Math.round(relativeAZ / fovH * windowW);
-			var top = Math.round((sexALT + fovV - ALT) / fovV * windowH);
-			updatePtsList(starIndex, ptsList, left, top);
-		}
-	}
+	ptsList = calcLocalStarPositions(planeLat, planeLon, planeHeadDeg);
 	
 	// Clear star map from last update
 	context.fillStyle = "black";
@@ -385,16 +364,19 @@ function takeSighting() {
 		}
 		DecArray[curIndex].innerHTML = formatLatDeg(starDEC);
 
-		// Calc Hc and Zn using sight reduction calculator
-		var HcZn = SphericalTrig(toRadians(GHAtotal), toRadians(starDEC), toRadians(assumedLon[fixNumber]), toRadians(assumedLat[fixNumber]));
+		// Calc Hc and Zn indirectly using formulae from here http://www.stargazing.net/kepler/altaz.html
+		var ptsList = calcLocalStarPositions(toRadians(assumedLat[fixNumber]), toRadians(assumedLon[fixNumber]), planeHeadDeg);
+		var starNameIndex = ptsList.findIndex(x => x == selectStarNameArray[curIndex].value);
+		var ptsListIndex = starNameIndex - 5; // star name is 6th item of 7 items stored for each star
+		var HcZn = calcHcZn(ptsList, ptsListIndex);
 		Zn.push(HcZn[1]);
 		var HcArray = document.getElementsByClassName("Hc");
 		HcArray[curIndex].innerHTML = formatDMdecimal(toDegrees(HcZn[0]), 1);
 		var ZnArray = document.getElementsByClassName("Zn");
 		ZnArray[curIndex].innerHTML = formatDMdecimal(toDegrees(HcZn[1]), 1);
 
-		// Calculate Intercept using sight reduction calculator
-		var intercept = Azimuth_and_Intercept(HcZn[1], toRadians(Hs), HcZn[0]);
+		// Calculate Intercept 
+		var intercept = (Hs - toDegrees(HcZn[0])) * 60;
 		var interceptArray = document.getElementsByClassName("Intercept");
 		interceptArray[curIndex].innerHTML = intercept.toFixed(1) + "nm";
 
