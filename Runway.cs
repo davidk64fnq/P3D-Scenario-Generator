@@ -26,8 +26,8 @@ namespace P3D_Scenario_Generator
         internal static int Len { get; private set; }     // feet
         internal static double Hdg { get; private set; }  // magnetic (add magVar for true)
         internal static string Def { get; private set; }  // surface
-        internal static double Lat { get; private set; }  // threshold latitude
-        internal static double Lon { get; private set; }  // threshold longitude
+        internal static double Lat { get; private set; }  // threshold latitude (except Celestial)
+        internal static double Lon { get; private set; }  // threshold longitude (except Celestial)
 
         static internal List<string> GetICAOids()
         {
@@ -209,8 +209,8 @@ namespace P3D_Scenario_Generator
 
             if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
             {
-                BingImages.GetCelestialOverviewImage();
                 SetCelestialStartLocation();
+                BingImages.GetCelestialOverviewImage();
             }
         }
 

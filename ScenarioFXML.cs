@@ -92,7 +92,6 @@ namespace P3D_Scenario_Generator
 			if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
             {
 				EditCelestialSourceFXML(simBaseDocument);
-
 			}
 		}
 

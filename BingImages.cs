@@ -67,15 +67,41 @@ namespace P3D_Scenario_Generator
 
             string[] words = Parameters.CelestialDestRunway.Split("\t");
             string pushpins = $"&pp={Runway.AirportLat},{Runway.AirportLon};1;{words[0]}";
-            url = $"{urlBingBase}Road/{Runway.AirportLat},{Runway.AirportLon}/8?mapSize=960,540{pushpins}{urlKey}";
+            int zoomLevel = 5;
             if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
             {
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
             }
+            PhotoLegParams celestialImage = new PhotoLegParams();
+            bool startInImage = true;
+            while (startInImage)
+            {
+                url = $"{urlBingBase}Road/{Runway.AirportLat},{Runway.AirportLon}/{zoomLevel}?mapSize=960,540{pushpins}{urlKey}";
+                GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\plotImage.jpg");
+
+                // Get meta data
+                GetBingMetadata(client, url, celestialImage);
+
+                // Check whether start position is in Bing image
+                double lonDelta = celestialImage.eastEdge - celestialImage.westEdge;
+                double latDelta = celestialImage.northEdge - celestialImage.southEdge;
+                if ((Runway.Lon < (celestialImage.westEdge + lonDelta * 0.1)) || (Runway.Lon > (celestialImage.eastEdge - lonDelta * 0.1)) ||
+                    (Runway.Lat < (celestialImage.southEdge + latDelta * 0.1)) || (Runway.Lat > (celestialImage.northEdge - latDelta * 0.1)))
+                {
+                    startInImage = false;
+                }
+                else
+                {
+                    zoomLevel += 1;
+                }
+            }
+
+            // Step back one zoom level
+            zoomLevel -= 1;
+            url = $"{urlBingBase}Road/{Runway.AirportLat},{Runway.AirportLon}/{zoomLevel}?mapSize=960,540{pushpins}{urlKey}";
             GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\plotImage.jpg");
 
             // Get meta data
-            PhotoLegParams celestialImage = new PhotoLegParams();
             GetBingMetadata(client, url, celestialImage);
             Parameters.CelestialImageNorth = celestialImage.northEdge;
             Parameters.CelestialImageEast = celestialImage.eastEdge;
