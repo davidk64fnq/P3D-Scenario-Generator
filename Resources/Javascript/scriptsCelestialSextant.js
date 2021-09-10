@@ -62,6 +62,7 @@ var LOPLOPpixelsTop = [0];
 var LOPLOPpixelsLeft = [0];
 var fixCoordPixelsTop = [0];
 var fixCoordPixelsLeft = [0];
+var showFinalLeg = 0;
 
 // Main function that loops refreshing star map
 function update(timestamp)
@@ -218,6 +219,40 @@ function updatePlotTab() {
 	for (let fixIndex = 1; fixIndex <= fixNumber; fixIndex++) {
 		context.fillRect(fixCoordPixelsLeft[fixIndex] - 1, fixCoordPixelsTop[fixIndex] - 1, 3, 3);
 	}
+
+	// Optionally plot leg info
+	if (showFinalLeg == 1) {
+		const feetInKnot = 6076.12;
+		const finalDistFeet = getDistance(assumedLat[assumedLat.length - 1], assumedLon[assumedLon.length - 1], destLat, destLon);
+		var finalBearing = getBearing(assumedLat[assumedLat.length - 1], assumedLon[assumedLon.length - 1], destLat, destLon);
+		var magVar = VarGet("A:MAGVAR", "Degrees");
+		finalBearing += magVar;
+		finalBearing = Math.floor(finalBearing + 360) % 360;
+		if (finalBearing < 10) {
+			finalBearing = "00" + finalBearing
+		}
+		else if (finalBearing < 100) {
+			finalBearing = "0" + finalBearing
+		}
+
+		context.fillStyle = "red";
+		context.fillText("Final Leg: " + finalBearing + " (" + Math.floor(finalDistFeet / feetInKnot) + "nm)", 70, windowH - 10);
+
+		context.strokeStyle = 'red';
+		context.lineWidth = 1;
+		for (let index = 1; index < fixCoordPixelsLeft.length - 1; index++) {
+			context.beginPath();
+			context.moveTo(fixCoordPixelsLeft[index], fixCoordPixelsTop[index]);
+			context.lineTo(fixCoordPixelsLeft[index + 1], fixCoordPixelsTop[index + 1]);
+			context.stroke();
+		}
+		if (fixCoordPixelsLeft.length > 1) {
+			context.beginPath();
+			context.moveTo(fixCoordPixelsLeft[fixCoordPixelsLeft.length - 1], fixCoordPixelsTop[fixCoordPixelsTop.length - 1]);
+			context.lineTo(Math.floor(windowW / 2), Math.floor(windowH / 2)); 
+			context.stroke();
+        }
+    }
 }
 
 function updatePtsList(starIndex, ptsList, left, top)
@@ -656,4 +691,17 @@ function clearSightings() {
 		ZnArray[index].innerHTML = "";
 		interceptArray[index].innerHTML = "";
 	}
+}
+
+// Button onClick functions for plotting tab
+
+function plotFinalLeg() {
+	if (showFinalLeg == 0) {
+		showFinalLeg = 1;
+		document.getElementById("finalLegButton").innerHTML = "Hide Leg Info";
+	}
+	else {
+		showFinalLeg = 0;
+		document.getElementById("finalLegButton").innerHTML = "Show Leg Info";
+    }
 }

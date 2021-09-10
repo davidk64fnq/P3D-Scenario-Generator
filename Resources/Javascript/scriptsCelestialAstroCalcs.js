@@ -92,6 +92,14 @@ function getAZ(DEC, ALT, LAT, HA) {
 		return 360 - toDegrees(A);
 }
 
+function getBearing(lat1, lon1, lat2, lon2) {
+	const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+	const x = Math.cos(lat1) * Math.sin(lat2) -
+		Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+	const angle = Math.atan2(y, x);
+	return (angle * 180 / Math.PI + 360) % 360; // in degrees
+}
+
 // Inputs in degrees, output in feet
 function getDistance(lat1, lon1, lat2, lon2) {
 	// http://www.movable-type.co.uk/scripts/latlong.html
