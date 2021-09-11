@@ -43,6 +43,8 @@ var sexAZ = 0;							// Sextant window mid-point bearing relative to plane headi
 var sexALT = 0;							// Sextant window base elevation (degrees)
 var sexHo = windowH / 2;				// Sextant observed altitude line (pixels)
 var planeHeadDeg;						// Retrieved from P3D
+var planeLon; 
+var planeLat;   
 var labelStars = 0;						// Whether to show star labels
 var labelConstellations = 0;			// Whether to show lines between stars in constellations
 
@@ -63,13 +65,14 @@ var LOPLOPpixelsLeft = [0];
 var fixCoordPixelsTop = [0];
 var fixCoordPixelsLeft = [0];
 var showFinalLeg = 0;
+var showPlane = 0;
 
 // Main function that loops refreshing star map
 function update(timestamp)
 {
 	planeHeadDeg = toDegrees(VarGet("A:PLANE HEADING DEGREES TRUE", "Radians"));
-	var planeLon = VarGet("A:PLANE LONGITUDE" ,"Radians"); // x
-	var planeLat = VarGet("A:PLANE LATITUDE" ,"Radians");  // y 
+	planeLon = VarGet("A:PLANE LONGITUDE" ,"Radians"); // x
+	planeLat = VarGet("A:PLANE LATITUDE" ,"Radians");  // y 
 	var canvas = document.getElementById('canvas');
 	var context = canvas.getContext('2d');
 	var ptsList = new Array(); // Pixel positions for stars in current sextant FOV
@@ -252,7 +255,15 @@ function updatePlotTab() {
 			context.lineTo(Math.floor(windowW / 2), Math.floor(windowH / 2)); 
 			context.stroke();
         }
-    }
+	}
+
+	// Optionally show plane
+	if (showPlane == 1) {
+		const coord = [toDegrees(planeLat), toDegrees(planeLon)];
+		const coordPixels = convertCoordToPixels(coord);
+		context.fillStyle = "red";
+		context.fillRect(coordPixels[1] - 1, coordPixels[0] - 1, 3, 3);
+	}
 }
 
 function updatePtsList(starIndex, ptsList, left, top)
@@ -704,4 +715,15 @@ function plotFinalLeg() {
 		showFinalLeg = 0;
 		document.getElementById("finalLegButton").innerHTML = "Show Leg Info";
     }
+}
+
+function plotPlane() {
+	if (showPlane == 0) {
+		showPlane = 1;
+		document.getElementById("showPlaneButton").innerHTML = "Hide Plane";
+	}
+	else {
+		showPlane = 0;
+		document.getElementById("showPlaneButton").innerHTML = "Show Plane";
+	}
 }
