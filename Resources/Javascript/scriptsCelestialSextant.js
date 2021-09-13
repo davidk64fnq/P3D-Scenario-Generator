@@ -65,7 +65,7 @@ var LOPLOPpixelsLeft = [0];
 var fixCoordPixelsTop = [0];
 var fixCoordPixelsLeft = [0];
 var showFinalLeg = 0;
-var showPlane = 0;
+var plotPlane = 0;
 
 // Main function that loops refreshing star map
 function update(timestamp)
@@ -258,9 +258,13 @@ function updatePlotTab() {
 	}
 
 	// Optionally show plane
-	if (showPlane == 1) {
-		const coord = [toDegrees(planeLat), toDegrees(planeLon)];
-		const coordPixels = convertCoordToPixels(coord);
+	if (plotPlane == 1) {
+		var coord = [toDegrees(planeLat), toDegrees(planeLon)];
+		var coordPixels = convertCoordToPixels(coord);
+		var plane = document.getElementById("plane");
+		plane.style.transform = "rotate(" + planeHeadDeg + "deg)";
+		plane.style.top = coordPixels[0] - 15 + 99 + "px"; // 99 is nav bar and buttons above context
+		plane.style.left = coordPixels[1] - 15 + "px";
 		context.fillStyle = "red";
 		context.fillRect(coordPixels[1] - 1, coordPixels[0] - 1, 3, 3);
 	}
@@ -717,13 +721,16 @@ function plotFinalLeg() {
     }
 }
 
-function plotPlane() {
-	if (showPlane == 0) {
-		showPlane = 1;
-		document.getElementById("showPlaneButton").innerHTML = "Hide Plane";
-	}
-	else {
-		showPlane = 0;
-		document.getElementById("showPlaneButton").innerHTML = "Show Plane";
-	}
+function hidePlane() {
+	plotPlane = 0;
+	document.getElementById('plane').style.display = 'none';
+	document.getElementById('showButton').style.display = 'inline';
+	document.getElementById('hideButton').style.display = 'none';
+}
+
+function showPlane() {
+	plotPlane = 1;
+	document.getElementById('plane').style.display = 'inline';
+	document.getElementById('hideButton').style.display = 'inline';
+	document.getElementById('showButton').style.display = 'none';
 }

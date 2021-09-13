@@ -166,3 +166,11 @@ th {
 	padding: 5px;
 	width: 120px;
 }
+
+#hideButton, #plane {
+	display: none;
+}
+
+#plane {
+	position: absolute;
+}

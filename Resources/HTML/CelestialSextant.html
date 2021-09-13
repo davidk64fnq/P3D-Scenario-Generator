@@ -208,10 +208,12 @@
     <div id="Plotting" class="tabcontent">
         <div id="plotFinalLeg">
             <button type="button" id="finalLegButton" onclick="plotFinalLeg()">Show Leg Info</button>
-            <button type="button" id="showPlaneButton" onclick="plotPlane()">Show Plane</button>
+            <button type="button" id="hideButton" onclick="hidePlane()">Hide Plane</button>
+            <button type="button" id="showButton" onclick="showPlane()">Show Plane</button>
         </div>
         <Canvas id="plottingCanvas" width="960" height="540">
         </Canvas>
+        <img id="plane" src="aircraft.png" />
     </div>
 
     <div id="Tables" class="tabcontent">
