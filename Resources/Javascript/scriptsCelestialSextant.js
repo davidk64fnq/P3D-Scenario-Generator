@@ -229,7 +229,7 @@ function updatePlotTab() {
 		const finalDistFeet = getDistance(assumedLat[assumedLat.length - 1], assumedLon[assumedLon.length - 1], destLat, destLon);
 		var finalBearing = getBearing(assumedLat[assumedLat.length - 1], assumedLon[assumedLon.length - 1], destLat, destLon);
 		var magVar = VarGet("A:MAGVAR", "Degrees");
-		finalBearing += magVar;
+		finalBearing -= magVar;
 		finalBearing = Math.floor(finalBearing + 360) % 360;
 		if (finalBearing < 10) {
 			finalBearing = "00" + finalBearing
