@@ -225,9 +225,9 @@ function updatePlotTab() {
 
 	// Optionally plot leg info
 	if (showFinalLeg == 1) {
-		const feetInKnot = 6076.12;
+		const feetInNauticalMile = 6076.12;
 		const finalDistFeet = getDistance(assumedLat[assumedLat.length - 1], assumedLon[assumedLon.length - 1], destLat, destLon);
-		var finalBearing = getBearing(assumedLat[assumedLat.length - 1], assumedLon[assumedLon.length - 1], destLat, destLon);
+		var finalBearing = getBearing(toRadians(assumedLat[assumedLat.length - 1]), toRadians(assumedLon[assumedLon.length - 1]), toRadians(destLat), toRadians(destLon));
 		var magVar = VarGet("A:MAGVAR", "Degrees");
 		finalBearing -= magVar;
 		finalBearing = Math.floor(finalBearing + 360) % 360;
@@ -239,7 +239,7 @@ function updatePlotTab() {
 		}
 
 		context.fillStyle = "red";
-		context.fillText("Final Leg: " + finalBearing + " (" + Math.floor(finalDistFeet / feetInKnot) + "nm)", 70, windowH - 10);
+		context.fillText("Final Leg: " + finalBearing + " (" + Math.floor(finalDistFeet / feetInNauticalMile) + "nm)", 70, windowH - 10);
 
 		context.strokeStyle = 'red';
 		context.lineWidth = 1;

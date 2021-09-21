@@ -4,9 +4,9 @@ function calcHcZn(ptsList, ptsListIndex) {
 	var leftPixels = ptsList[ptsListIndex + 2];
 	HcZnIndirect[0] = toRadians((windowH - topPixels) / windowH * fovV + sexALT);
 	HcZnIndirect[1] = toRadians(leftPixels / windowW * fovH - fovH / 2 + sexAZ + planeHeadDeg);
-	if (HcZnIndirect[1] > 360)
+	while (HcZnIndirect[1] > 360)
 		HcZnIndirect[1] -= 360;
-	if (HcZnIndirect[1] < 0)
+	while (HcZnIndirect[1] < 0)
 		HcZnIndirect[1] += 360;
 
 	return HcZnIndirect;
@@ -92,12 +92,13 @@ function getAZ(DEC, ALT, LAT, HA) {
 		return 360 - toDegrees(A);
 }
 
+// Inputs in radians
 function getBearing(lat1, lon1, lat2, lon2) {
 	const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
 	const x = Math.cos(lat1) * Math.sin(lat2) -
 		Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
 	const angle = Math.atan2(y, x);
-	return (angle * 180 / Math.PI + 360) % 360; // in degrees
+	return (toDegrees(angle) + 360) % 360; // in degrees
 }
 
 // Inputs in degrees, output in feet
@@ -110,9 +111,9 @@ function getDistance(lat1, lon1, lat2, lon2) {
 	const pt2lon = toRadians(lon2);
 	const deltaLat = pt2lat - pt1lat;
 	const deltaLon = pt2lon - pt1lon;
-	const R = 20902230.971129; // Radius of earth at equator in feet
+	const R = 20903520; // in feet based on average earth radius of 3959 miles
 
-	const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
+	const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) + Math.cos(pt1lat) * Math.cos(pt2lat) * Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
 	return R * c; 
