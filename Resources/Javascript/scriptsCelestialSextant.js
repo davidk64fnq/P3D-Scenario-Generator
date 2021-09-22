@@ -95,6 +95,9 @@ function update(timestamp)
 	setStarLabels(context, ptsList);
 	ptsList.splice(0, ptsList.length) // clear array ready for next iteration
 
+	// Update sight reduction tab
+	updateSightReductionTab();
+
 	// Update plotting tab
 	updatePlotTab();
 	
@@ -677,6 +680,7 @@ function moveHdown01()
 // Button onClick functions for sight reduction tab 
 
 function clearSightings() {
+	var starArray = document.getElementsByClassName("starName");
 	var APlatArray = document.getElementsByClassName("AP Lat");
 	var APlonArray = document.getElementsByClassName("AP Lon");
 	var DateArray = document.getElementsByClassName("Date");
@@ -692,6 +696,7 @@ function clearSightings() {
 	var interceptArray = document.getElementsByClassName("Intercept");
 
 	for (let index = 0; index < HsArray.length; index++) {
+		starArray[index].options[0].selected = true;
 		APlatArray[index].value = "";
 		APlonArray[index].value = "";
 		DateArray[index].innerHTML = "";
@@ -705,6 +710,83 @@ function clearSightings() {
 		HcArray[index].innerHTML = "";
 		ZnArray[index].innerHTML = "";
 		interceptArray[index].innerHTML = "";
+	}
+}
+
+function updateSightReductionTab() {
+	var starArray = document.getElementsByClassName("starName");
+	var HsArray = document.getElementsByClassName("Hs");
+
+	for (let index = 0; index < HsArray.length; index++) {
+
+
+		if ((starArray[index].options[0].selected == false) && (HsArray[index].innerHTML == "")) {
+
+			curIndex = index;
+
+			// Display Assumed Position Latitude
+			var APlatArray = document.getElementsByClassName("AP Lat");
+			APlatArray[curIndex].value = formatLatDeg(assumedLat[fixNumber]);
+
+			// Display Assumed Position Longitude
+			var APlonArray = document.getElementsByClassName("AP Lon");
+			APlonArray[curIndex].value = formatLonDeg(assumedLon[fixNumber]);
+
+			// Display date
+			var dayOfMonth = VarGet("E:ZULU DAY OF MONTH", "Number");
+			var monthOfYear = VarGet("E:ZULU MONTH OF YEAR", "Number");
+			var year = VarGet("E:ZULU YEAR", "Number");
+			var DateArray = document.getElementsByClassName("Date");
+			DateArray[curIndex].innerHTML = dayOfMonth + "/" + monthOfYear + "/" + year;
+
+			// Display current Universal Time
+			var time = VarGet("E:ZULU TIME", "Seconds");
+			var UTArray = document.getElementsByClassName("UT");
+			UTArray[curIndex].innerHTML = secondsToTime(time);
+
+			// Display Aries GHA for current hour
+			const currentDate = monthOfYear + "/" + dayOfMonth + "/" + year;
+			var dayIndexOffset = getElapsedDays(startDate, currentDate); // Will be -1 if UT current day is one day earlier than local scenario start day
+			var hour = Math.floor(time / 3600);
+			var GHAhourArray = document.getElementsByClassName("GHAhour");
+			var ariesGHA = ariesGHAd[dayIndexOffset + 1][hour] + ariesGHAm[dayIndexOffset + 1][hour] / 60;
+			if (dayIndexOffset >= -1 && dayIndexOffset <= 1) {
+				GHAhourArray[curIndex].innerHTML = ariesGHAd[dayIndexOffset + 1][hour] + "° " + ariesGHAm[dayIndexOffset + 1][hour] + "'";
+			}
+			else {
+				GHAhourArray[curIndex].innerHTML = "No data";
+			}
+
+			// Interpolate Aries GHA for minutes and seconds
+			var GHAincArray = document.getElementsByClassName("GHAinc");
+			var ariesGHAinc = getGHAincrement(dayIndexOffset + 1, hour, time);
+			GHAincArray[curIndex].innerHTML = formatDMdecimal(ariesGHAinc, 1);
+
+			// Display star SHA
+			var SHAincArray = document.getElementsByClassName("SHAinc");
+			var selectStarNameArray = document.getElementsByClassName("starName");
+			var starNameIndex = starNameList.findIndex(x => x == selectStarNameArray[curIndex].value);
+			var starSHA = starsSHAd[starNameIndex] + starsSHAm[starNameIndex] / 60;
+			SHAincArray[curIndex].innerHTML = starsSHAd[starNameIndex] + "° " + starsSHAm[starNameIndex] + "'";
+
+			// Display GHA total
+			var GHAtotal = ariesGHA + ariesGHAinc + starSHA;
+			while (GHAtotal > 360) {
+				GHAtotal -= 360;
+			}
+			var GHAtotalArray = document.getElementsByClassName("GHAtotal");
+			GHAtotalArray[curIndex].innerHTML = formatDMdecimal(GHAtotal, 1);
+
+			// Display star Dec
+			var DecArray = document.getElementsByClassName("Dec");
+			if (starsDECd[starNameIndex] > 0) {
+				var starDEC = starsDECd[starNameIndex] + starsDECm[starNameIndex] / 60;
+			}
+			else {
+				var starDEC = starsDECd[starNameIndex] - starsDECm[starNameIndex] / 60;
+			}
+			DecArray[curIndex].innerHTML = formatLatDeg(starDEC);
+		}
 	}
 }
 
