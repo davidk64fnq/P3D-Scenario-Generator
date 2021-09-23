@@ -39,12 +39,13 @@ const defaultFOV = 45;
 // Global variables referenced in the button onClick functions		
 var fovH = defaultFOV;					// Sextant window horizontal field of view of sky (degrees)
 var fovV = fovH * windowH / windowW;	// Sextant window vertical field of view of sky (degrees)
-var sexAZ = 0;							// Sextant window mid-point bearing relative to plane heading (degrees)
+var sexAZ = 0;							// Sextant window mid-point bearing - magnetic (degrees)
 var sexALT = 0;							// Sextant window base elevation (degrees)
 var sexHo = windowH / 2;				// Sextant observed altitude line (pixels)
 var planeHeadDeg;						// Retrieved from P3D
 var planeLon; 
-var planeLat;   
+var planeLat;
+var magVar;
 var labelStars = 0;						// Whether to show star labels
 var labelConstellations = 0;			// Whether to show lines between stars in constellations
 
@@ -71,6 +72,7 @@ var plotPlane = 0;
 function update(timestamp)
 {
 	planeHeadDeg = toDegrees(VarGet("A:PLANE HEADING DEGREES TRUE", "Radians"));
+	magVar = VarGet("A:MAGVAR", "Degrees");
 	planeLon = VarGet("A:PLANE LONGITUDE" ,"Radians"); // x
 	planeLat = VarGet("A:PLANE LATITUDE" ,"Radians");  // y 
 	var canvas = document.getElementById('canvas');
@@ -231,7 +233,6 @@ function updatePlotTab() {
 		const feetInNauticalMile = 6076.12;
 		const finalDistFeet = getDistance(assumedLat[assumedLat.length - 1], assumedLon[assumedLon.length - 1], destLat, destLon);
 		var finalBearing = getBearing(toRadians(assumedLat[assumedLat.length - 1]), toRadians(assumedLon[assumedLon.length - 1]), toRadians(destLat), toRadians(destLon));
-		var magVar = VarGet("A:MAGVAR", "Degrees");
 		finalBearing -= magVar;
 		finalBearing = Math.floor(finalBearing + 360) % 360;
 		if (finalBearing < 10) {
@@ -588,7 +589,11 @@ function moveAZleft5()
 
 function moveAZreset()
 {
-	sexAZ = 0;
+	sexAZ = Math.floor(planeHeadDeg - magVar);
+	while (sexAZ < 0)
+		sexAZ += 360;
+	while (sexAZ > 360)
+		sexAZ -= 360;
 }
 
 function moveAZright5()

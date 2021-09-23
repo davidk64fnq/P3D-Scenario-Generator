@@ -3,7 +3,7 @@ function calcHcZn(ptsList, ptsListIndex) {
 	var topPixels = ptsList[ptsListIndex + 3];
 	var leftPixels = ptsList[ptsListIndex + 2];
 	HcZnIndirect[0] = toRadians((windowH - topPixels) / windowH * fovV + sexALT);
-	HcZnIndirect[1] = toRadians(leftPixels / windowW * fovH - fovH / 2 + sexAZ + planeHeadDeg);
+	HcZnIndirect[1] = toRadians(leftPixels / windowW * fovH - fovH / 2 + sexAZ);
 	while (HcZnIndirect[1] > 360)
 		HcZnIndirect[1] -= 360;
 	while (HcZnIndirect[1] < 0)
@@ -25,10 +25,9 @@ function calcLocalStarPositions(latitude, longitude, planeHeadDeg) {
 		var HA = getHourAngle(LST, RA);
 		var ALT = getALT(DEC, latitude, HA);
 		var AZ = getAZ(DEC, ALT, latitude, HA);
-		var relSexAZ = sexAZ + planeHeadDeg;
-		var AZbearingDelta = getBearingDif(AZ, relSexAZ); // Comparing star AZ to sextant window mid-point bearing
+		var AZbearingDelta = getBearingDif(AZ, sexAZ); // Comparing star AZ to sextant window mid-point bearing
 		if ((ALT > sexALT) && (ALT < sexALT + fovV) && (AZbearingDelta <= fovH / 2)) {
-			var relativeAZ = getRelativeAZ(AZ, relSexAZ, fovH); // Number of degrees from left edge of sextant window
+			var relativeAZ = getRelativeAZ(AZ, sexAZ, fovH); // Number of degrees from left edge of sextant window
 			var left = Math.round(relativeAZ / fovH * windowW);
 			var top = Math.round((sexALT + fovV - ALT) / fovV * windowH);
 			updatePtsList(starIndex, ptsList, left, top);
