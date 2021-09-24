@@ -343,8 +343,9 @@ function takeSighting() {
 	var HsArray = document.getElementsByClassName("Hs");
 	var found = false;
 	var curIndex = -1;
+	var selectStarNameArray = document.getElementsByClassName("starName");
 	for (let index = 0; index < HsArray.length && found == false; index++) {
-		if (HsArray[index].innerHTML == "") {
+		if ((HsArray[index].innerHTML == "") && (selectStarNameArray[index].options[0].selected == false)) {
 			found = true;
 			curIndex = index;
 		}
@@ -395,7 +396,6 @@ function takeSighting() {
 
 		// Display star SHA
 		var SHAincArray = document.getElementsByClassName("SHAinc");
-		var selectStarNameArray = document.getElementsByClassName("starName");
 		var starNameIndex = starNameList.findIndex(x => x == selectStarNameArray[curIndex].value);
 		var starSHA = starsSHAd[starNameIndex] + starsSHAm[starNameIndex] / 60;
 		SHAincArray[curIndex].innerHTML = starsSHAd[starNameIndex] + "° " + starsSHAm[starNameIndex] + "'";
