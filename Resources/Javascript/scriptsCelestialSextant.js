@@ -67,6 +67,7 @@ var fixCoordPixelsTop = [0];
 var fixCoordPixelsLeft = [0];
 var showFinalLeg = 0;
 var plotPlane = 0;
+var moveAZ = 0;
 
 // Main function that loops refreshing star map
 function update(timestamp)
@@ -78,6 +79,10 @@ function update(timestamp)
 	var canvas = document.getElementById('canvas');
 	var context = canvas.getContext('2d');
 	var ptsList = new Array(); // Pixel positions for stars in current sextant FOV
+
+	// Handle held buttons
+	if (moveAZ != 0)
+		sexAZ = (sexAZ + moveAZ + 360) % 360;
 	
 	
 	// Calculate local position of stars
@@ -131,7 +136,7 @@ function setConstellationLines(context, ptsList)
 {
 	if (labelConstellations == 1)
 	{
-		context.strokeStyle = "red";
+		context.strokeStyle = "purple";
 		for(let linePt = 0; linePt < lines.length; linePt += 2)
 		{
 			let startPt = lines[linePt];
@@ -160,7 +165,7 @@ function setStarIcons(context, ptsList)
 		let visMag = ptsList[starIndex + 1];
 		let left = ptsList[starIndex + 2];
 		let top = ptsList[starIndex + 3];
-		if (visMag < 1)
+		if (visMag < 1.5)
 		{
 			context.fillRect(left, top - 2, 1, 1);
 			context.fillRect(left - 1, top - 1, 3, 1);
@@ -168,7 +173,7 @@ function setStarIcons(context, ptsList)
 			context.fillRect(left - 1, top + 1, 3, 1);
 			context.fillRect(left, top + 2, 1, 1);
 		}
-		else if (visMag < 2)
+		else if (visMag < 2.3)
 		{
 			context.fillRect(left - 1, top - 1, 3, 3);
 		}
@@ -569,6 +574,14 @@ function moveFOVdec5()
 		fovH -= 5;
 		fovV = fovH * windowH / windowW
 	}
+}
+
+function panAZ(panAmount) {
+	moveAZ = panAmount;
+}
+
+function freezeAZ() {
+	moveAZ = 0;
 }
 
 function moveAZleft1()

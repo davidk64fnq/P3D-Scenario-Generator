@@ -30,11 +30,11 @@
             <button type="button" onclick="moveFOVinc5()">+5</button>
         </div>
         <div id="AZ">
-            <button type="button" onclick="moveAZleft1()">-1</button>
-            <button type="button" onclick="moveAZleft5()">-5</button>
+            <button type="button" onmousedown="panAZ(-1)" onmouseup="freezeAZ()">-1</button>
+            <button type="button" onmousedown="panAZ(-5)" onmouseup="freezeAZ()">-5</button>
             <button type="button" onclick="moveAZreset()">AZ</button>
-            <button type="button" onclick="moveAZright5()">+5</button>
-            <button type="button" onclick="moveAZright1()">+1</button>
+            <button type="button" onmousedown="panAZ(5)" onmouseup="freezeAZ()">+5</button>
+            <button type="button" onmousedown="panAZ(1)" onmouseup="freezeAZ()">+1</button>
         </div>
         <div id="ALT">
             <button type="button" onclick="moveALTup1()">+1</button>
