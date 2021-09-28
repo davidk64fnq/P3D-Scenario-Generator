@@ -25,9 +25,9 @@
             <canvas id="canvas" width="960" height="540"></canvas>
         </div>
         <div id="FOV">
-            <button type="button" onclick="moveFOVdec5()">-5</button>
+            <button type="button" onmousedown="panFOV(-5)" onmouseup="freezeFOV()">-5</button>
             <button type="button" onclick="moveFOVreset()">FOV</button>
-            <button type="button" onclick="moveFOVinc5()">+5</button>
+            <button type="button" onmousedown="panFOV(5)" onmouseup="freezeFOV()">+5</button>
         </div>
         <div id="AZ">
             <button type="button" onmousedown="panAZ(-1)" onmouseup="freezeAZ()">-1</button>
@@ -37,11 +37,11 @@
             <button type="button" onmousedown="panAZ(1)" onmouseup="freezeAZ()">+1</button>
         </div>
         <div id="ALT">
-            <button type="button" onclick="moveALTup1()">+1</button>
-            <button type="button" onclick="moveALTup5()">+5</button>
+            <button type="button" onmousedown="panALT(1)" onmouseup="freezeALT()">+1</button>
+            <button type="button" onmousedown="panALT(5)" onmouseup="freezeALT()">+5</button>
             <button type="button" onclick="moveALTreset()">ALT</button>
-            <button type="button" onclick="moveALTdown5()">-5</button>
-            <button type="button" onclick="moveALTdown1()">-1</button>
+            <button type="button" onmousedown="panALT(-5)" onmouseup="freezeALT()">-5</button>
+            <button type="button" onmousedown="panALT(-1)" onmouseup="freezeALT()">-1</button>
         </div>
         <div id="Ho">
             <button type="button" onclick="moveHup01()">+1</button>

@@ -68,6 +68,8 @@ var fixCoordPixelsLeft = [0];
 var showFinalLeg = 0;
 var plotPlane = 0;
 var moveAZ = 0;
+var moveALT = 0;
+var alterFOV = 0;
 
 // Main function that loops refreshing star map
 function update(timestamp)
@@ -83,6 +85,21 @@ function update(timestamp)
 	// Handle held buttons
 	if (moveAZ != 0)
 		sexAZ = (sexAZ + moveAZ + 360) % 360;
+	if (moveALT != 0) {
+		sexALT = sexALT + moveALT;
+		if (sexALT < 0)
+			sexALT = 0;
+		if (sexALT > (90 - fovV / 2))
+			sexALT = 90 - fovV / 2;
+	}
+	if (alterFOV != 0) {
+		fovH = fovH + alterFOV;
+		if (fovH < 0)
+			fovH = 0;
+		if (fovH > 180)
+			fovH = 180;
+		fovV = fovH * windowH / windowW
+	}
 	
 	
 	// Calculate local position of stars
@@ -551,14 +568,13 @@ function secondsToTime(e) {
 }
 
 // Button onClick functions for adjusting FOV, AV, ALT, Ho 
-		
-function moveFOVinc5()
-{
-	// Cap FOV horizontal at max 180°
-	if (fovH <= 175){
-		fovH += 5;
-		fovV = fovH * windowH / windowW
-	}
+
+function panFOV(panAmount) {
+	alterFOV = panAmount;
+}
+
+function freezeFOV() {
+	alterFOV = 0;
 }
 
 function moveFOVreset()
@@ -567,37 +583,12 @@ function moveFOVreset()
 	fovV = fovH * windowH / windowW
 }
 
-function moveFOVdec5()
-{
-	// Cap FOV horizontal at min 5°
-	if (fovH >= 10){
-		fovH -= 5;
-		fovV = fovH * windowH / windowW
-	}
-}
-
 function panAZ(panAmount) {
 	moveAZ = panAmount;
 }
 
 function freezeAZ() {
 	moveAZ = 0;
-}
-
-function moveAZleft1()
-{
-	if (sexAZ >= 1)
-		sexAZ -= 1;
-	else
-		sexAZ = sexAZ + 359;
-}
-
-function moveAZleft5()
-{
-	if (sexAZ >= 5)
-		sexAZ -= 5;
-	else
-		sexAZ = sexAZ + 355;
 }
 
 function moveAZreset()
@@ -609,49 +600,17 @@ function moveAZreset()
 		sexAZ -= 360;
 }
 
-function moveAZright5()
-{
-	if (sexAZ < 355)
-		sexAZ += 5;
-	else
-		sexAZ = sexAZ - 355;
+function panALT(panAmount) {
+	moveALT = panAmount;
 }
 
-function moveAZright1()
-{
-	if (sexAZ < 359)
-		sexAZ += 1;
-	else
-		sexAZ = sexAZ - 359;
-}
-
-function moveALTup1()
-{
-	if (sexALT <= 90 - fovV - 1)
-		sexALT += 1;
-}
-
-function moveALTup5()
-{
-	if (sexALT <= 90 - fovV - 5)
-		sexALT += 5;
+function freezeALT() {
+	moveALT = 0;
 }
 
 function moveALTreset()
 {
 	sexALT = 0;
-}
-
-function moveALTdown5()
-{
-	if (sexALT >= -85)
-		sexALT -= 5;
-}
-
-function moveALTdown1()
-{
-	if (sexALT >= -89)
-		sexALT -= 1;
 }
 
 function moveHup01()
