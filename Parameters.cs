@@ -147,7 +147,7 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                string saveFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\Documents\\Prepar3D v5 Files\\{form.TextBoxScenarioTitle.Text}";
+                string saveFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\OneDrive\\Documents\\Prepar3D v5 Files\\{form.TextBoxScenarioTitle.Text}";
                 SaveLocation = saveFolder + $"\\{form.TextBoxScenarioTitle.Text}.fxml";
                 Directory.CreateDirectory(saveFolder);
                 return true;
@@ -160,7 +160,7 @@ namespace P3D_Scenario_Generator
             string saveFolder;
             if (IsValidFilename(form.TextBoxScenarioTitle.Text))
             {
-                saveFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\Documents\\Prepar3D v5 Files\\{form.TextBoxScenarioTitle.Text}";
+                saveFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\OneDrive\\Documents\\Prepar3D v5 Files\\{form.TextBoxScenarioTitle.Text}";
                 if (Directory.Exists(saveFolder))
                 {
                     string message = $"A scenario with the same title already exists. Either delete the folder \"{saveFolder}\" (you'll need to shut down Prepar3D first if it's running) or choose a different scenario title.";

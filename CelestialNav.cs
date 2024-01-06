@@ -1,9 +1,9 @@
-﻿using OfficeOpenXml;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using OfficeOpenXml;
 
 
 namespace P3D_Scenario_Generator
@@ -191,7 +191,7 @@ namespace P3D_Scenario_Generator
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Excel.CelestialNavStars.xlsx");
             using (ExcelPackage package = new ExcelPackage(stream))
             {
-                ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+                var worksheet = package.Workbook.Worksheets[0];
                 int index = 2; // skip header row
                 while (worksheet.Cells[index, 1].Value != null)
                 {
