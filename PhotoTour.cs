@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using HtmlAgilityPack;
 using System.Drawing;
 using System.Drawing.Imaging;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace P3D_Scenario_Generator
 {

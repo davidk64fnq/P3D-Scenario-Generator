@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace P3D_Scenario_Generator
 {
@@ -39,7 +40,7 @@ namespace P3D_Scenario_Generator
 
         private void ButtonRandRunway_Click(object sender, EventArgs e)
         {
-            Random random = new Random();
+            Random random = new();
             ListBoxRunways.SelectedIndex = random.Next(0, ListBoxRunways.Items.Count);
         }
 
@@ -96,6 +97,18 @@ namespace P3D_Scenario_Generator
             Cursor.Current = Cursors.Default;
             message = $"Scenario files created in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - enjoy your flight!";
             MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        private void ButtonP3Dv5Files_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new()
+            {
+                InitialDirectory = "C:\\Users",
+                IsFolderPicker = true
+            };
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                TextBoxP3Dv5Files.Text = dialog.FileName;
+            }
         }
 
         #endregion
@@ -355,5 +368,6 @@ namespace P3D_Scenario_Generator
                 }
         }
         #endregion
+
     }
 }
