@@ -9,7 +9,7 @@ namespace P3D_Scenario_Generator
     internal class Runway
     {
         private static readonly string xmlFilename = "runways.xml";
-        private static readonly List<string[]> quadrantStringLookup = new List<string[]>();
+        private static readonly List<string[]> quadrantStringLookup = [];
 
         internal static string IcaoId { get; private set; }
         internal static string IcaoName { get; private set; }
@@ -31,7 +31,7 @@ namespace P3D_Scenario_Generator
 
         static internal List<string> GetICAOids()
         {
-            List<string> icaoIDs = new List<string>();
+            List<string> icaoIDs = [];
             Stream stream = GetRunwayXMLstream();
             XmlReader reader = XmlReader.Create(stream);
             while (reader.Read())
@@ -125,22 +125,22 @@ namespace P3D_Scenario_Generator
 
         static private void SetQuadrantStrings()
         {
-            quadrantStringLookup.Add(new string[] { "37", "North" });
-            quadrantStringLookup.Add(new string[] { "38", "East" });
-            quadrantStringLookup.Add(new string[] { "39", "NorthWest" });
-            quadrantStringLookup.Add(new string[] { "40", "SouthWest" });
-            quadrantStringLookup.Add(new string[] { "41", "South" });
-            quadrantStringLookup.Add(new string[] { "42", "West" });
-            quadrantStringLookup.Add(new string[] { "43", "SouthEast" });
-            quadrantStringLookup.Add(new string[] { "44", "NorthEast" });
-            quadrantStringLookup.Add(new string[] { "45", "North"});
-            quadrantStringLookup.Add(new string[] { "46", "West" });
-            quadrantStringLookup.Add(new string[] { "47", "NorthWest" });
-            quadrantStringLookup.Add(new string[] { "48", "SouthWest" });
-            quadrantStringLookup.Add(new string[] { "49", "South" });
-            quadrantStringLookup.Add(new string[] { "50", "East" });
-            quadrantStringLookup.Add(new string[] { "51", "SouthEast" });
-            quadrantStringLookup.Add(new string[] { "52", "NorthEast" });
+            quadrantStringLookup.Add(["37", "North"]);
+            quadrantStringLookup.Add(["38", "East"]);
+            quadrantStringLookup.Add(["39", "NorthWest"]);
+            quadrantStringLookup.Add(["40", "SouthWest"]);
+            quadrantStringLookup.Add(["41", "South"]);
+            quadrantStringLookup.Add(["42", "West"]);
+            quadrantStringLookup.Add(["43", "SouthEast"]);
+            quadrantStringLookup.Add(["44", "NorthEast"]);
+            quadrantStringLookup.Add(["45", "North"]);
+            quadrantStringLookup.Add(["46", "West"]);
+            quadrantStringLookup.Add(["47", "NorthWest"]);
+            quadrantStringLookup.Add(["48", "SouthWest"]);
+            quadrantStringLookup.Add(["49", "South"]);
+            quadrantStringLookup.Add(["50", "East"]);
+            quadrantStringLookup.Add(["51", "SouthEast"]);
+            quadrantStringLookup.Add(["52", "NorthEast"]);
         }
 
         static internal void SetRunway()
@@ -151,7 +151,7 @@ namespace P3D_Scenario_Generator
             double unused1 = 0, unused2 = 0, unused3 = 0;
             if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
             {
-                Random random = new Random();
+                Random random = new();
                 Parameters.CelestialDestRunway = GetNearestAirport(-60 + random.Next(0, 120), -180 + random.Next(0, 360), ref unused1, ref unused2, ref unused3);
                 words = Parameters.CelestialDestRunway.Split("\t");
             }
@@ -216,7 +216,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetCelestialStartLocation()
         {
-            Random random = new Random();
+            Random random = new();
             Hdg = -180 + random.Next(0, 360);
 
             // Position plane in random direction from destination runway between min/max distance parameter
@@ -264,20 +264,20 @@ namespace P3D_Scenario_Generator
                 Designator = "Center";
                 runwayId = runwayId.TrimEnd('C');
             }
-            int.TryParse(runwayId, out int number);
-            if (number <= 36)
-            {
-                Number = runwayId.TrimStart('0');
-            } 
-            else if (number <= 52)
-            {
-                int index = quadrantStringLookup.FindIndex(quad => quad[0] == number.ToString());
-                Number = quadrantStringLookup[index][1];
-            }
-            else
-            {
-                Number = "0";
-            }
+            if (int.TryParse(runwayId, out int number))
+                if (number <= 36)
+                {
+                    Number = runwayId.TrimStart('0');
+                } 
+                else if (number <= 52)
+                {
+                    int index = quadrantStringLookup.FindIndex(quad => quad[0] == number.ToString());
+                    Number = quadrantStringLookup[index][1];
+                }
+                else
+                {
+                    Number = "0";
+                }
         }
     }
 }

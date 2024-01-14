@@ -1,14 +1,10 @@
 ﻿
 using System.Xml.Serialization;
-using System.Collections.Generic;
-using System.IO;
-using System;
-using System.Globalization;
 using System.Reflection;
 
 namespace P3D_Scenario_Generator
 {
-	public class ScenarioFXML
+    public class ScenarioFXML
 	{
 		private static readonly string fxmlFilename = "source.fxml";
 
@@ -21,7 +17,7 @@ namespace P3D_Scenario_Generator
 
 		static private SimBaseDocument ReadSourceFXML()
         {
-			XmlSerializer serializer = new XmlSerializer(typeof(SimBaseDocument));
+			XmlSerializer serializer = new(typeof(SimBaseDocument));
 			Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.XML.{fxmlFilename}");
 			SimBaseDocument simBaseDocument = (SimBaseDocument)serializer.Deserialize(stream);
 			stream.Dispose();
@@ -168,9 +164,9 @@ namespace P3D_Scenario_Generator
 
 		static private void WriteSourceFXML(SimBaseDocument simBaseDocument)
         {
-			XmlSerializer xmlSerializer = new XmlSerializer(simBaseDocument.GetType());
+			XmlSerializer xmlSerializer = new(simBaseDocument.GetType());
 
-            using StreamWriter writer = new StreamWriter(Parameters.SaveLocation);
+            using StreamWriter writer = new(Parameters.SaveLocation);
             xmlSerializer.Serialize(writer, simBaseDocument);
         }
 

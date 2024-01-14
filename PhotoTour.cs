@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Collections.Generic;
-using HtmlAgilityPack;
-using System.Drawing;
+﻿using System.Net;
 using System.Drawing.Imaging;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
@@ -28,7 +23,7 @@ namespace P3D_Scenario_Generator
 
     internal class PhotoTour
     {
-        private static readonly List<PhotoLegParams> photoLegs = new List<PhotoLegParams>();
+        private static readonly List<PhotoLegParams> photoLegs = [];
 
         /// <summary>
         /// Includes start and finish airports
@@ -41,7 +36,6 @@ namespace P3D_Scenario_Generator
             double bearing = 0;
             string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html";
             string url;
-            WebClient client = new WebClient();
             PhotoLegParams photoLeg;
             PhotoLegParams airportLeg;
 
@@ -52,10 +46,10 @@ namespace P3D_Scenario_Generator
                 photoLegs.Clear();
 
                 // Get starting random photo
-                client.DownloadFile(new Uri("https://www.pic2map.com/random.php"), saveLocation);
+                HttpRoutines.GetWebDoc("https://www.pic2map.com/random.php", Path.GetDirectoryName(Parameters.SaveLocation), "random_pic2map.html");
 
                 // Extract starting random photo leg parameters
-                StreamReader reader = new StreamReader(saveLocation);
+                StreamReader reader = new(saveLocation);
                 photoLeg = ExtractLegParams(saveLocation);
 
                 // Find nearest airport to starting random photo
@@ -82,7 +76,7 @@ namespace P3D_Scenario_Generator
                             // Extract next nearest unselected photo leg parameters
                             reader.Dispose();
                             File.Delete(saveLocation);
-                            client.DownloadFile(new Uri(url), saveLocation);
+                            HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), "random_pic2map.html");
                             reader = new StreamReader(saveLocation);
                             photoLeg = ExtractLegParams(saveLocation);
                             photoLegs.Add(photoLeg);
@@ -107,12 +101,10 @@ namespace P3D_Scenario_Generator
                         { 
                             photoLegs.Add(airportLeg);
                             PhotoCount = photoLegs.Count;
-                            if (BingImages.GetPhotoTourLegImages())
-                            {
-                                SetLegRouteMarkers();
-                                GetPhotos();
-                                continueSearching = false;
-                            }
+                            BingImages.GetPhotoTourLegImages();
+                            SetLegRouteMarkers();
+                            GetPhotos();
+                            continueSearching = false;
                         }
                     }
                 }
@@ -217,13 +209,14 @@ namespace P3D_Scenario_Generator
             // Draw starting marker on overview maps
             for (int typeIndex = 0; typeIndex < 3; typeIndex++)
             {
-                using (FileStream fs = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{destPhotoIndex + 1}_{typeIndex + 1}{zoomSuffix}.jpg", FileMode.Open))
+                using (FileStream fs = new($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{destPhotoIndex + 1}_{typeIndex + 1}{zoomSuffix}.jpg", FileMode.Open))
                 {
-                    bm = new Bitmap(fs);
+                    Bitmap bitmap = new(fs);
+                    bm = bitmap;
                     fs.Close();
                 }
                 Graphics g = Graphics.FromImage(bm);
-                Pen pen = new Pen(Color.Magenta, 3);
+                Pen pen = new(Color.Magenta, 3);
                 g.DrawEllipse(pen, xCoord, yCoord, markerRadiusPixels * 2, markerRadiusPixels * 2);
                 bm.Save($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{destPhotoIndex + 1}_{typeIndex + 1}{zoomSuffix}.jpg", ImageFormat.Jpeg);
                 bm.Dispose();
@@ -233,7 +226,7 @@ namespace P3D_Scenario_Generator
 
         static private PhotoLegParams ExtractLegParams(string saveLocation)
         {
-            PhotoLegParams photoLeg = new PhotoLegParams();
+            PhotoLegParams photoLeg = new();
             var htmlDoc = new HtmlDocument();
             htmlDoc.Load(saveLocation);
 
@@ -303,15 +296,9 @@ namespace P3D_Scenario_Generator
        
         static private void GetPhotos()
         {
-            using WebClient client = new WebClient();
-            string url;
-            string saveLocation;
-
             for (int index = 1; index < photoLegs.Count - 1; index++)
             {
-                url = photoLegs[index].image;
-                saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\photo_{index}.jpg";
-                client.DownloadFile(new Uri(url), saveLocation);
+                HttpRoutines.GetWebDoc(photoLegs[index].image, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\photo_{index}.jpg");
             }
         }
     }

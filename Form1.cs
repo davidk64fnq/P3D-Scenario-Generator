@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.IO;
+﻿using System.ComponentModel;
 using System.Reflection;
-using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace P3D_Scenario_Generator

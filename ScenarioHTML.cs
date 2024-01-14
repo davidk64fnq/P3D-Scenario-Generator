@@ -51,7 +51,7 @@ namespace P3D_Scenario_Generator
 
         static private Overview SetOverviewStruct()
         {
-            Overview overview = new Overview();
+            Overview overview = new();
             string[] words;
 
             switch (Parameters.SelectedScenario)
@@ -140,7 +140,7 @@ namespace P3D_Scenario_Generator
 
         static private MissionBrief SetMissionBriefStruct(Overview overview)
         {
-            MissionBrief missionBrief = new MissionBrief();
+            MissionBrief missionBrief = new();
 
             switch (Parameters.SelectedScenario)
             {
@@ -168,7 +168,7 @@ namespace P3D_Scenario_Generator
             string overviewHTML;
 
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.OverviewSource.htm");
-            StreamReader reader = new StreamReader(stream);
+            StreamReader reader = new(stream);
             overviewHTML = reader.ReadToEnd();
             stream.Dispose();
             overviewHTML = overviewHTML.Replace("overviewParams.title", $"{overview.Title}");
@@ -189,7 +189,7 @@ namespace P3D_Scenario_Generator
             string missionBriefHTML;
 
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.MissionBriefSource.htm");
-            StreamReader reader = new StreamReader(stream);
+            StreamReader reader = new(stream);
             missionBriefHTML = reader.ReadToEnd();
             stream.Dispose();
             missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.title", $"{missionBrief.title}");
@@ -214,14 +214,14 @@ namespace P3D_Scenario_Generator
 
             // Copy style files
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.style_kneeboard.css"); 
-            using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\style_kneeboard.css", FileMode.Create))
+            using (FileStream outputFileStream = new($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\style_kneeboard.css", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
             stream.Dispose();
 
             stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.style_load_flight.css");
-            using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\style_load_flight.css", FileMode.Create))
+            using (FileStream outputFileStream = new($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\style_load_flight.css", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
@@ -233,7 +233,7 @@ namespace P3D_Scenario_Generator
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound");
             }
             stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Sounds.ThruHoop.wav");
-            using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound\\ThruHoop.wav", FileMode.Create))
+            using (FileStream outputFileStream = new($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\sound\\ThruHoop.wav", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
@@ -245,7 +245,7 @@ namespace P3D_Scenario_Generator
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
             }
             stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.aircraft.png");
-            using (FileStream outputFileStream = new FileStream($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\aircraft.png", FileMode.Create))
+            using (FileStream outputFileStream = new($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\aircraft.png", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }

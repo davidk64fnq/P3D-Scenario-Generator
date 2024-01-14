@@ -12,11 +12,11 @@ namespace P3D_Scenario_Generator
     {
         private static readonly string urlBingBase = "https://dev.virtualearth.net/REST/v1/Imagery/Map/";
         private static readonly string urlKey = "&key=95MBlXbvWXxTKi68aPQA~v9ISwpDCewOlSTQWVHFWWA~AtBDc3Ar7Wh3dy-_6ZnRAOYycWbDfnKmTS8aLwaLYrjJ7mfgZ1K_uazGhZMurFtr";
-        private static readonly string[] urlZoom = { "14", "15", "16", "16", "16", "16" };
-        private static readonly string[] urlMapSize = { "920,135", "300,180", "750,565", "380,232", "380,232", "86,86" };
-        private static readonly string[] urlFilename = { "header.jpg", "chart_thumb.jpg", "Charts_01.jpg", "temp1", "temp2", "temp3" };
-        private static readonly string[] urlIcon = { "", "", "", "success-icon.png", "failure-icon.png", "exit-icon.png" };
-        private static readonly string[] urlIconAdded = { "", "", "", "imgM_c.bmp", "imgM_i.bmp", "exitMission.bmp" };
+        private static readonly string[] urlZoom = ["14", "15", "16", "16", "16", "16"];
+        private static readonly string[] urlMapSize = ["920,135", "300,180", "750,565", "380,232", "380,232", "86,86"];
+        private static readonly string[] urlFilename = ["header.jpg", "chart_thumb.jpg", "Charts_01.jpg", "temp1", "temp2", "temp3"];
+        private static readonly string[] urlIcon = ["", "", "", "success-icon.png", "failure-icon.png", "exit-icon.png"];
+        private static readonly string[] urlIconAdded = ["", "", "", "imgM_c.bmp", "imgM_i.bmp", "exitMission.bmp"];
 
         internal static void CreateHTMLImages()
         {
@@ -26,13 +26,12 @@ namespace P3D_Scenario_Generator
             }
 
             // Download Bing images
-            using WebClient client = new WebClient();
             string url;
 
             for (int index = 0; index < urlZoom.Length; index++)
             {
                 url = $"{urlBingBase}Aerial/{Runway.AirportLat},{Runway.AirportLon}/{urlZoom[index]}?mapSize={urlMapSize[index]}{urlKey}";
-                GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlFilename[index]}");
+                HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\{urlFilename[index]}");
             }
 
             if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
@@ -62,7 +61,6 @@ namespace P3D_Scenario_Generator
 
         internal static void GetCelestialOverviewImage()
         {
-            using WebClient client = new WebClient();
             string url;
 
             string[] words = Parameters.CelestialDestRunway.Split("\t");
@@ -72,15 +70,15 @@ namespace P3D_Scenario_Generator
             {
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
             }
-            PhotoLegParams celestialImage = new PhotoLegParams();
+            PhotoLegParams celestialImage = new();
             bool startInImage = true;
             while (startInImage)
             {
                 url = $"{urlBingBase}Road/{Runway.AirportLat},{Runway.AirportLon}/{zoomLevel}?mapSize=960,540{pushpins}{urlKey}";
-                GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\plotImage.jpg");
+                HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), "images\\plotImage.jpg");
 
                 // Get meta data
-                GetBingMetadata(client, url, celestialImage);
+                GetBingMetadata(url, celestialImage);
 
                 // Check whether start position is in Bing image
                 double lonDelta = celestialImage.eastEdge - celestialImage.westEdge;
@@ -99,25 +97,21 @@ namespace P3D_Scenario_Generator
             // Step back one zoom level
             zoomLevel -= 1;
             url = $"{urlBingBase}Road/{Runway.AirportLat},{Runway.AirportLon}/{zoomLevel}?mapSize=960,540{pushpins}{urlKey}";
-            GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\plotImage.jpg");
+            HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), "images\\plotImage.jpg");
 
             // Get meta data
-            GetBingMetadata(client, url, celestialImage);
+            GetBingMetadata(url, celestialImage);
             Parameters.CelestialImageNorth = celestialImage.northEdge;
             Parameters.CelestialImageEast = celestialImage.eastEdge;
             Parameters.CelestialImageSouth = celestialImage.southEdge;
             Parameters.CelestialImageWest = celestialImage.westEdge;
         }
 
-        internal static bool GetPhotoTourLegImages()
+        internal static void GetPhotoTourLegImages()
         {
-            using WebClient client = new WebClient();
             string url;
             string mapArea, mapCentre, mapZoom;
-            string[] startRunwayWords = Parameters.SelectedRunway.Split("\t");
-            string[] finishRunwayWords = Parameters.PhotoDestRunway.Split("\t");
-            string[] imageryTypes = { "Aerial", "AerialWithLabels", "Road" };
-            bool imagesOkay = true;
+            string[] imageryTypes = ["Aerial", "AerialWithLabels", "Road"];
 
             if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
             {
@@ -129,49 +123,28 @@ namespace P3D_Scenario_Generator
             {
                 PhotoLegParams curPhoto = PhotoTour.GetPhotoLeg(index);
                 mapArea = GetMapBoundingBox(curPhoto, index);
-                imagesOkay = true;
                 url = $"{urlBingBase}Aerial?{mapArea}&mapSize=375,375{urlKey}";
-                GetBingMetadata(client, url, PhotoTour.GetPhotoLeg(index));
+                GetBingMetadata(url, PhotoTour.GetPhotoLeg(index));
                 mapCentre = $"/{curPhoto.centreLat},{curPhoto.centreLon}";
                 for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
                 {
                     mapZoom = $"/{curPhoto.zoom}";
                     url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize={Parameters.PhotoLegWindowSize},{Parameters.PhotoLegWindowSize}{urlKey}";
-                    if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}_{typeIndex + 1}_zoom1.jpg"))
-                    {
-                        imagesOkay = false;
-                        break;
-                    }
+                    HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\LegRoute_{index + 1}_{typeIndex + 1}_zoom1.jpg");
                 }
-                if (imagesOkay)
+                for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
                 {
-                    for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
-                    {
-                        mapZoom = $"/{curPhoto.zoom + 1}";
-                        url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize=1500,1500{urlKey}";
-                        if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}_{typeIndex + 1}_zoom2.jpg"))
-                        {
-                            imagesOkay = false;
-                            break;
-                        }
-                    }
+                    mapZoom = $"/{curPhoto.zoom + 1}";
+                    url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize=1500,1500{urlKey}";
+                    HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\LegRoute_{index + 1}_{typeIndex + 1}_zoom2.jpg");
                 }
-                if (imagesOkay)
+                for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
                 {
-                    for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
-                    {
-                        mapZoom = $"/{curPhoto.zoom + 2}";
-                        url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize=1500,1500{urlKey}";
-                        if (!GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{index + 1}_{typeIndex + 1}_zoom4.jpg"))
-                        {
-                            imagesOkay = false;
-                            break;
-                        }
-                    }
+                    mapZoom = $"/{curPhoto.zoom + 2}";
+                    url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize=1500,1500{urlKey}";
+                    HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\LegRoute_{index + 1}_{typeIndex + 1}_zoom4.jpg");
                 }
             }
-
-            return imagesOkay;
         }
 
         private static string GetMapBoundingBox(PhotoLegParams curPhoto, int legIndex)
@@ -258,7 +231,6 @@ namespace P3D_Scenario_Generator
 
         internal static void GetPhotoTourOverviewImage()
         {
-            using WebClient client = new WebClient();
             string url;
 
             // For photo tour do pushpin version of Charts_01.jpg
@@ -276,29 +248,14 @@ namespace P3D_Scenario_Generator
             pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{words[0]}";
 
             url = $"{urlBingBase}Aerial?{pushpins}&mapSize={urlMapSize[2]}{urlKey}";
-            GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{urlFilename[2]}");
+            HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\{urlFilename[2]}");
         }
 
-        private static bool GetBingImage(WebClient client, string url, string saveLocation)
-        {
-            try
-            {
-                client.DownloadFile(new Uri(url), saveLocation);
-            }
-            catch
-            {
-                System.Windows.Forms.MessageBox.Show("Encountered issues obtaining Bing images, try generating a new scenario", "Bing image download", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
-                return false;
-            }
-
-            return true;
-        }
-
-        private static void GetBingMetadata(WebClient client, string url, PhotoLegParams curPhoto)
+        private static void GetBingMetadata(string url, PhotoLegParams curPhoto)
         {
             url += "&mapMetadata=1&o=xml";
-            GetBingImage(client, url, $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\temp.xml");
-            XmlDocument doc = new XmlDocument();
+            HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), "images\\temp.xml");
+            XmlDocument doc = new();
             doc.Load($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\temp.xml");
             string xml = doc.OuterXml;
             string strXMLPattern = @"xmlns(:\w+)?=""([^""]+)""|xsi(:\w+)?=""([^""]+)""";

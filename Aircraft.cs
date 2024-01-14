@@ -1,8 +1,4 @@
 ﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Windows.Forms;
 
 namespace P3D_Scenario_Generator
 {
@@ -10,14 +6,14 @@ namespace P3D_Scenario_Generator
     {
         static internal string Path { get; private set; }
         static internal double CruiseSpeed { get; private set; }
-        static internal List<string[]> uiVariations = new List<string[]>();
+        static internal List<string[]> uiVariations = [];
 
         static internal List<string> GetUIvariations()
         {
-            List<string> uiName = new List<string>();
+            List<string> uiName = [];
 
             RegistryKey key = Registry.LocalMachine.OpenSubKey("Software\\Lockheed Martin\\Prepar3D v5");
-            OpenFileDialog openFileDialog1 = new OpenFileDialog
+            OpenFileDialog openFileDialog1 = new()
             {
                 Title = "Aircraft configuration file location",
                 DefaultExt = "cfg",
@@ -42,7 +38,7 @@ namespace P3D_Scenario_Generator
                 }
                 Path = openFileDialog1.FileName;
                 string aircraftCFG = File.ReadAllText(Path);
-                using StringReader reader = new StringReader(aircraftCFG);
+                using StringReader reader = new(aircraftCFG);
                 string currentLine;
                 uiVariations.Clear();
                 int index = 0;
@@ -52,7 +48,7 @@ namespace P3D_Scenario_Generator
                     if (currentLine.StartsWith("title="))
                     {
                         uiName.Add(currentLine[6..^0].Trim());
-                        string[] newUIvariation = { $"{currentLine[6..^0].Trim()}", "" };
+                        string[] newUIvariation = [$"{currentLine[6..^0].Trim()}", ""];
                         uiVariations.Add(newUIvariation);
                     }
                     else if (currentLine.StartsWith("texture="))
