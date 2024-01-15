@@ -153,6 +153,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitBase.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 0.5 / 60);
                 // Final distance (miles) approx by speed (knots) * number of minutes / 60 (assume 1.25 minutes to descend 1000ft at 800ft/min)
                 TextBoxCircuitFinal.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 1.25 / 60);
+                TextBoxCircuitTurnRate.Text = "4.0";
             }
         }
 

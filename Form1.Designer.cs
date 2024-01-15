@@ -52,21 +52,23 @@ namespace P3D_Scenario_Generator
             TextBoxSelectedRunway = new TextBox();
             ListBoxRunways = new ListBox();
             TabPageCircuit = new TabPage();
-            tableLayoutPanel1 = new TableLayoutPanel();
+            tableLayoutPanelCircuit = new TableLayoutPanel();
             label7 = new Label();
             label6 = new Label();
             TextBoxCircuitUpwind = new TextBox();
-            TextBoxCircuitHeightUpwind = new TextBox();
             label9 = new Label();
-            TextBoxCircuitBase = new TextBox();
             label5 = new Label();
-            TextBoxCircuitFinal = new TextBox();
-            TextBoxCircuitHeightDown = new TextBox();
             label4 = new Label();
-            TextBoxCircuitSpeed = new TextBox();
             label3 = new Label();
             label10 = new Label();
             TextBoxCircuitHeightBase = new TextBox();
+            label28 = new Label();
+            TextBoxCircuitBase = new TextBox();
+            TextBoxCircuitFinal = new TextBox();
+            TextBoxCircuitHeightUpwind = new TextBox();
+            TextBoxCircuitHeightDown = new TextBox();
+            TextBoxCircuitTurnRate = new TextBox();
+            TextBoxCircuitSpeed = new TextBox();
             ButtonCircuitDefault = new Button();
             PictureBoxCircuit = new PictureBox();
             TabPagePhoto = new TabPage();
@@ -112,7 +114,7 @@ namespace P3D_Scenario_Generator
             TabControl.SuspendLayout();
             TabPageGeneral.SuspendLayout();
             TabPageCircuit.SuspendLayout();
-            tableLayoutPanel1.SuspendLayout();
+            tableLayoutPanelCircuit.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)PictureBoxCircuit).BeginInit();
             TabPagePhoto.SuspendLayout();
             TabPageSign.SuspendLayout();
@@ -314,7 +316,7 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageCircuit
             // 
-            TabPageCircuit.Controls.Add(tableLayoutPanel1);
+            TabPageCircuit.Controls.Add(tableLayoutPanelCircuit);
             TabPageCircuit.Controls.Add(ButtonCircuitDefault);
             TabPageCircuit.Controls.Add(PictureBoxCircuit);
             TabPageCircuit.Location = new Point(4, 24);
@@ -325,47 +327,50 @@ namespace P3D_Scenario_Generator
             TabPageCircuit.Text = "Circuit";
             TabPageCircuit.UseVisualStyleBackColor = true;
             // 
-            // tableLayoutPanel1
+            // tableLayoutPanelCircuit
             // 
-            tableLayoutPanel1.Anchor = AnchorStyles.None;
-            tableLayoutPanel1.AutoSize = true;
-            tableLayoutPanel1.ColumnCount = 7;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 14F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 14F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 14F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 14F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 14F));
-            tableLayoutPanel1.Controls.Add(label7, 0, 0);
-            tableLayoutPanel1.Controls.Add(label6, 6, 0);
-            tableLayoutPanel1.Controls.Add(TextBoxCircuitUpwind, 0, 1);
-            tableLayoutPanel1.Controls.Add(TextBoxCircuitHeightUpwind, 3, 1);
-            tableLayoutPanel1.Controls.Add(label9, 5, 0);
-            tableLayoutPanel1.Controls.Add(TextBoxCircuitBase, 1, 1);
-            tableLayoutPanel1.Controls.Add(label5, 4, 0);
-            tableLayoutPanel1.Controls.Add(TextBoxCircuitFinal, 2, 1);
-            tableLayoutPanel1.Controls.Add(TextBoxCircuitHeightDown, 4, 1);
-            tableLayoutPanel1.Controls.Add(label4, 2, 0);
-            tableLayoutPanel1.Controls.Add(TextBoxCircuitSpeed, 6, 1);
-            tableLayoutPanel1.Controls.Add(label3, 1, 0);
-            tableLayoutPanel1.Controls.Add(label10, 3, 0);
-            tableLayoutPanel1.Controls.Add(TextBoxCircuitHeightBase, 5, 1);
-            tableLayoutPanel1.Location = new Point(9, 361);
-            tableLayoutPanel1.Margin = new Padding(0);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 2;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Size = new Size(795, 58);
-            tableLayoutPanel1.TabIndex = 17;
+            tableLayoutPanelCircuit.Anchor = AnchorStyles.None;
+            tableLayoutPanelCircuit.ColumnCount = 8;
+            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.Controls.Add(label7, 0, 0);
+            tableLayoutPanelCircuit.Controls.Add(label6, 6, 0);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitUpwind, 0, 1);
+            tableLayoutPanelCircuit.Controls.Add(label9, 5, 0);
+            tableLayoutPanelCircuit.Controls.Add(label5, 4, 0);
+            tableLayoutPanelCircuit.Controls.Add(label4, 2, 0);
+            tableLayoutPanelCircuit.Controls.Add(label3, 1, 0);
+            tableLayoutPanelCircuit.Controls.Add(label10, 3, 0);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitHeightBase, 5, 1);
+            tableLayoutPanelCircuit.Controls.Add(label28, 7, 0);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitBase, 1, 1);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitFinal, 2, 1);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitHeightUpwind, 3, 1);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitHeightDown, 4, 1);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitTurnRate, 7, 1);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitSpeed, 6, 1);
+            tableLayoutPanelCircuit.Location = new Point(15, 361);
+            tableLayoutPanelCircuit.Margin = new Padding(0);
+            tableLayoutPanelCircuit.Name = "tableLayoutPanelCircuit";
+            tableLayoutPanelCircuit.RowCount = 2;
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanelCircuit.Size = new Size(783, 58);
+            tableLayoutPanelCircuit.TabIndex = 17;
             // 
             // label7
             // 
             label7.AllowDrop = true;
             label7.Anchor = AnchorStyles.None;
             label7.AutoSize = true;
-            label7.Location = new Point(31, 7);
+            label7.Location = new Point(24, 7);
             label7.Name = "label7";
             label7.Size = new Size(48, 15);
             label7.TabIndex = 10;
@@ -375,7 +380,7 @@ namespace P3D_Scenario_Generator
             // 
             label6.Anchor = AnchorStyles.None;
             label6.AutoSize = true;
-            label6.Location = new Point(719, 7);
+            label6.Location = new Point(611, 7);
             label6.Name = "label6";
             label6.Size = new Size(39, 15);
             label6.TabIndex = 9;
@@ -384,110 +389,50 @@ namespace P3D_Scenario_Generator
             // TextBoxCircuitUpwind
             // 
             TextBoxCircuitUpwind.Anchor = AnchorStyles.None;
-            TextBoxCircuitUpwind.Location = new Point(5, 32);
+            TextBoxCircuitUpwind.Location = new Point(8, 32);
             TextBoxCircuitUpwind.Name = "TextBoxCircuitUpwind";
-            TextBoxCircuitUpwind.Size = new Size(100, 23);
+            TextBoxCircuitUpwind.Size = new Size(80, 23);
             TextBoxCircuitUpwind.TabIndex = 5;
             TextBoxCircuitUpwind.Text = "1";
             TextBoxCircuitUpwind.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitUpwind, "Distance between runway and gate 1 in miles");
             TextBoxCircuitUpwind.Validating += TextBoxDouble_Validating;
             // 
-            // TextBoxCircuitHeightUpwind
-            // 
-            TextBoxCircuitHeightUpwind.Anchor = AnchorStyles.None;
-            TextBoxCircuitHeightUpwind.Location = new Point(342, 32);
-            TextBoxCircuitHeightUpwind.Name = "TextBoxCircuitHeightUpwind";
-            TextBoxCircuitHeightUpwind.Size = new Size(100, 23);
-            TextBoxCircuitHeightUpwind.TabIndex = 13;
-            TextBoxCircuitHeightUpwind.Text = "500";
-            TextBoxCircuitHeightUpwind.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitHeightUpwind, "Height of circuit above runway in feet (gate 1)");
-            TextBoxCircuitHeightUpwind.Validating += TextBoxDouble_Validating;
-            // 
             // label9
             // 
             label9.Anchor = AnchorStyles.None;
             label9.AutoSize = true;
-            label9.Location = new Point(583, 7);
+            label9.Location = new Point(490, 7);
             label9.Name = "label9";
             label9.Size = new Size(87, 15);
             label9.TabIndex = 15;
             label9.Text = "Height (Gate 8)";
             // 
-            // TextBoxCircuitBase
-            // 
-            TextBoxCircuitBase.Anchor = AnchorStyles.None;
-            TextBoxCircuitBase.Location = new Point(116, 32);
-            TextBoxCircuitBase.Name = "TextBoxCircuitBase";
-            TextBoxCircuitBase.Size = new Size(100, 23);
-            TextBoxCircuitBase.TabIndex = 1;
-            TextBoxCircuitBase.Text = "0.5";
-            TextBoxCircuitBase.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitBase, "Distance between gates 2 and 3 (6 and 7) in miles");
-            TextBoxCircuitBase.Validating += TextBoxDouble_Validating;
-            // 
             // label5
             // 
             label5.Anchor = AnchorStyles.None;
             label5.AutoSize = true;
-            label5.Location = new Point(460, 7);
+            label5.Location = new Point(395, 7);
             label5.Name = "label5";
-            label5.Size = new Size(103, 15);
+            label5.Size = new Size(83, 15);
             label5.TabIndex = 8;
-            label5.Text = "Height (Gates 3-6)";
-            // 
-            // TextBoxCircuitFinal
-            // 
-            TextBoxCircuitFinal.Anchor = AnchorStyles.None;
-            TextBoxCircuitFinal.Location = new Point(227, 32);
-            TextBoxCircuitFinal.Name = "TextBoxCircuitFinal";
-            TextBoxCircuitFinal.Size = new Size(100, 23);
-            TextBoxCircuitFinal.TabIndex = 2;
-            TextBoxCircuitFinal.Text = "1";
-            TextBoxCircuitFinal.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitFinal, "Distance between gate 8 and runway in miles");
-            TextBoxCircuitFinal.Validating += TextBoxDouble_Validating;
-            // 
-            // TextBoxCircuitHeightDown
-            // 
-            TextBoxCircuitHeightDown.Anchor = AnchorStyles.None;
-            TextBoxCircuitHeightDown.Location = new Point(461, 32);
-            TextBoxCircuitHeightDown.Name = "TextBoxCircuitHeightDown";
-            TextBoxCircuitHeightDown.Size = new Size(100, 23);
-            TextBoxCircuitHeightDown.TabIndex = 3;
-            TextBoxCircuitHeightDown.Text = "1000";
-            TextBoxCircuitHeightDown.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitHeightDown, "Height of circuit above runway in feet (gates 3 to 6)");
-            TextBoxCircuitHeightDown.Validating += TextBoxDouble_Validating;
+            label5.Text = "Ht. (Gates 3-6)";
             // 
             // label4
             // 
             label4.Anchor = AnchorStyles.None;
             label4.AutoSize = true;
-            label4.Location = new Point(261, 7);
+            label4.Location = new Point(226, 7);
             label4.Name = "label4";
             label4.Size = new Size(32, 15);
             label4.TabIndex = 7;
             label4.Text = "Final";
             // 
-            // TextBoxCircuitSpeed
-            // 
-            TextBoxCircuitSpeed.Anchor = AnchorStyles.None;
-            TextBoxCircuitSpeed.Location = new Point(688, 32);
-            TextBoxCircuitSpeed.Name = "TextBoxCircuitSpeed";
-            TextBoxCircuitSpeed.Size = new Size(100, 23);
-            TextBoxCircuitSpeed.TabIndex = 4;
-            TextBoxCircuitSpeed.Text = "65";
-            TextBoxCircuitSpeed.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitSpeed, "Cruise speed between gates 1 and 8 in knots");
-            TextBoxCircuitSpeed.Validating += TextBoxDouble_Validating;
-            // 
             // label3
             // 
             label3.Anchor = AnchorStyles.None;
             label3.AutoSize = true;
-            label3.Location = new Point(151, 7);
+            label3.Location = new Point(130, 7);
             label3.Name = "label3";
             label3.Size = new Size(31, 15);
             label3.TabIndex = 6;
@@ -498,7 +443,7 @@ namespace P3D_Scenario_Generator
             // 
             label10.Anchor = AnchorStyles.None;
             label10.AutoSize = true;
-            label10.Location = new Point(349, 7);
+            label10.Location = new Point(296, 7);
             label10.Name = "label10";
             label10.Size = new Size(87, 15);
             label10.TabIndex = 16;
@@ -507,14 +452,95 @@ namespace P3D_Scenario_Generator
             // TextBoxCircuitHeightBase
             // 
             TextBoxCircuitHeightBase.Anchor = AnchorStyles.None;
-            TextBoxCircuitHeightBase.Location = new Point(576, 32);
+            TextBoxCircuitHeightBase.Location = new Point(493, 32);
             TextBoxCircuitHeightBase.Name = "TextBoxCircuitHeightBase";
-            TextBoxCircuitHeightBase.Size = new Size(100, 23);
+            TextBoxCircuitHeightBase.Size = new Size(80, 23);
             TextBoxCircuitHeightBase.TabIndex = 12;
             TextBoxCircuitHeightBase.Text = "500";
             TextBoxCircuitHeightBase.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitHeightBase, "Height of circuit above runway in feet (gate 8)");
             TextBoxCircuitHeightBase.Validating += TextBoxDouble_Validating;
+            // 
+            // label28
+            // 
+            label28.Anchor = AnchorStyles.None;
+            label28.AutoSize = true;
+            label28.Location = new Point(702, 7);
+            label28.Name = "label28";
+            label28.Size = new Size(57, 15);
+            label28.TabIndex = 18;
+            label28.Text = "Turn Rate";
+            // 
+            // TextBoxCircuitBase
+            // 
+            TextBoxCircuitBase.Anchor = AnchorStyles.None;
+            TextBoxCircuitBase.Location = new Point(105, 32);
+            TextBoxCircuitBase.Name = "TextBoxCircuitBase";
+            TextBoxCircuitBase.Size = new Size(80, 23);
+            TextBoxCircuitBase.TabIndex = 1;
+            TextBoxCircuitBase.Text = "0.5";
+            TextBoxCircuitBase.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitBase, "Distance between gates 2 and 3 (6 and 7) in miles");
+            TextBoxCircuitBase.Validating += TextBoxDouble_Validating;
+            // 
+            // TextBoxCircuitFinal
+            // 
+            TextBoxCircuitFinal.Anchor = AnchorStyles.None;
+            TextBoxCircuitFinal.Location = new Point(202, 32);
+            TextBoxCircuitFinal.Name = "TextBoxCircuitFinal";
+            TextBoxCircuitFinal.Size = new Size(80, 23);
+            TextBoxCircuitFinal.TabIndex = 2;
+            TextBoxCircuitFinal.Text = "1";
+            TextBoxCircuitFinal.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitFinal, "Distance between gate 8 and runway in miles");
+            TextBoxCircuitFinal.Validating += TextBoxDouble_Validating;
+            // 
+            // TextBoxCircuitHeightUpwind
+            // 
+            TextBoxCircuitHeightUpwind.Anchor = AnchorStyles.None;
+            TextBoxCircuitHeightUpwind.Location = new Point(299, 32);
+            TextBoxCircuitHeightUpwind.Name = "TextBoxCircuitHeightUpwind";
+            TextBoxCircuitHeightUpwind.Size = new Size(80, 23);
+            TextBoxCircuitHeightUpwind.TabIndex = 13;
+            TextBoxCircuitHeightUpwind.Text = "500";
+            TextBoxCircuitHeightUpwind.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitHeightUpwind, "Height of circuit above runway in feet (gate 1)");
+            TextBoxCircuitHeightUpwind.Validating += TextBoxDouble_Validating;
+            // 
+            // TextBoxCircuitHeightDown
+            // 
+            TextBoxCircuitHeightDown.Anchor = AnchorStyles.None;
+            TextBoxCircuitHeightDown.Location = new Point(396, 32);
+            TextBoxCircuitHeightDown.Name = "TextBoxCircuitHeightDown";
+            TextBoxCircuitHeightDown.Size = new Size(80, 23);
+            TextBoxCircuitHeightDown.TabIndex = 3;
+            TextBoxCircuitHeightDown.Text = "1000";
+            TextBoxCircuitHeightDown.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitHeightDown, "Height of circuit above runway in feet (gates 3 to 6)");
+            TextBoxCircuitHeightDown.Validating += TextBoxDouble_Validating;
+            // 
+            // TextBoxCircuitTurnRate
+            // 
+            TextBoxCircuitTurnRate.Anchor = AnchorStyles.None;
+            TextBoxCircuitTurnRate.Location = new Point(691, 32);
+            TextBoxCircuitTurnRate.Name = "TextBoxCircuitTurnRate";
+            TextBoxCircuitTurnRate.Size = new Size(80, 23);
+            TextBoxCircuitTurnRate.TabIndex = 17;
+            TextBoxCircuitTurnRate.Text = "4.0";
+            TextBoxCircuitTurnRate.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitTurnRate, "360 degrees turn rate in minutes");
+            // 
+            // TextBoxCircuitSpeed
+            // 
+            TextBoxCircuitSpeed.Anchor = AnchorStyles.None;
+            TextBoxCircuitSpeed.Location = new Point(590, 32);
+            TextBoxCircuitSpeed.Name = "TextBoxCircuitSpeed";
+            TextBoxCircuitSpeed.Size = new Size(80, 23);
+            TextBoxCircuitSpeed.TabIndex = 4;
+            TextBoxCircuitSpeed.Text = "65";
+            TextBoxCircuitSpeed.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitSpeed, "Cruise speed between gates 1 and 8 in knots");
+            TextBoxCircuitSpeed.Validating += TextBoxDouble_Validating;
             // 
             // ButtonCircuitDefault
             // 
@@ -968,9 +994,8 @@ namespace P3D_Scenario_Generator
             TabPageGeneral.ResumeLayout(false);
             TabPageGeneral.PerformLayout();
             TabPageCircuit.ResumeLayout(false);
-            TabPageCircuit.PerformLayout();
-            tableLayoutPanel1.ResumeLayout(false);
-            tableLayoutPanel1.PerformLayout();
+            tableLayoutPanelCircuit.ResumeLayout(false);
+            tableLayoutPanelCircuit.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)PictureBoxCircuit).EndInit();
             TabPagePhoto.ResumeLayout(false);
             TabPagePhoto.PerformLayout();
@@ -1023,7 +1048,7 @@ namespace P3D_Scenario_Generator
         internal System.Windows.Forms.TextBox TextBoxCircuitHeightBase;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanelCircuit;
         private System.Windows.Forms.TabPage TabPagePhoto;
         private System.Windows.Forms.Label label11;
         internal System.Windows.Forms.TextBox TextBoxPhotoMaxLegDist;
@@ -1066,6 +1091,8 @@ namespace P3D_Scenario_Generator
         private System.Windows.Forms.Label label27;
         private System.Windows.Forms.Button button1;
         internal System.Windows.Forms.TextBox TextBoxP3Dv5Files;
+        internal TextBox TextBoxCircuitTurnRate;
+        private Label label28;
     }
 }
 

@@ -23,13 +23,14 @@ namespace P3D_Scenario_Generator
         internal static int Minutes { get; private set; }
 
         // Circuit tab
+        internal static double UpwindLeg { get; private set; }
         internal static double BaseLeg { get; private set; }
         internal static double FinalLeg { get; private set; }
         internal static double HeightUpwind { get; private set; }
         internal static double HeightDown { get; private set; }
         internal static double HeightBase { get; private set; }
         internal static double Speed { get; private set; }
-        internal static double UpwindLeg { get; private set; }
+        internal static double TurnRate { get; private set; }
 
         // Photo Tour
         internal static double MaxLegDist { get; private set; }
@@ -98,13 +99,14 @@ namespace P3D_Scenario_Generator
             // Circuit tab
             if (SelectedScenario == nameof(ScenarioTypes.Circuit))
             {
+                UpwindLeg = Convert.ToDouble(form.TextBoxCircuitUpwind.Text);
                 BaseLeg = Convert.ToDouble(form.TextBoxCircuitBase.Text);
                 FinalLeg = Convert.ToDouble(form.TextBoxCircuitFinal.Text);
                 HeightUpwind = Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text);
                 HeightDown = Convert.ToDouble(form.TextBoxCircuitHeightDown.Text);
                 HeightBase = Convert.ToDouble(form.TextBoxCircuitHeightBase.Text);
                 Speed = Convert.ToDouble(form.TextBoxCircuitSpeed.Text);
-                UpwindLeg = Convert.ToDouble(form.TextBoxCircuitUpwind.Text);
+                TurnRate = Convert.ToDouble(form.TextBoxCircuitTurnRate.Text);
             }
 
             // Photo Tour
