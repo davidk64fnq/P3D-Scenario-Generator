@@ -93,6 +93,7 @@ namespace P3D_Scenario_Generator
             message = $"Scenario files created in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - enjoy your flight!";
             MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
         private void ButtonP3Dv5Files_Click(object sender, EventArgs e)
         {
             CommonOpenFileDialog dialog = new()
@@ -103,6 +104,8 @@ namespace P3D_Scenario_Generator
             if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 TextBoxP3Dv5Files.Text = dialog.FileName;
+                Properties.Settings.Default.Prepar3Dv5Files = TextBoxP3Dv5Files.Text;
+                Properties.Settings.Default.Save();
             }
         }
 
@@ -361,6 +364,11 @@ namespace P3D_Scenario_Generator
                     MessageBox.Show($"Alphabetic string expected, 'A' to 'Z' and 'a' to 'z' only", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
                     e.Cancel = true;
                 }
+        }
+
+        private void Init(object sender, EventArgs e)
+        {
+            TextBoxP3Dv5Files.Text = Properties.Settings.Default.Prepar3Dv5Files;
         }
         #endregion
 

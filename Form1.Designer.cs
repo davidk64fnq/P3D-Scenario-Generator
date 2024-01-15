@@ -31,956 +31,955 @@ namespace P3D_Scenario_Generator
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.TabControl = new System.Windows.Forms.TabControl();
-            this.TabPageGeneral = new System.Windows.Forms.TabPage();
-            this.button1 = new System.Windows.Forms.Button();
-            this.TextBoxP3Dv5Files = new System.Windows.Forms.TextBox();
-            this.label27 = new System.Windows.Forms.Label();
-            this.TimePicker = new System.Windows.Forms.DateTimePicker();
-            this.DatePicker = new System.Windows.Forms.DateTimePicker();
-            this.label8 = new System.Windows.Forms.Label();
-            this.TextBoxScenarioTitle = new System.Windows.Forms.TextBox();
-            this.ListBoxAircraft = new System.Windows.Forms.ListBox();
-            this.buttonAircraft = new System.Windows.Forms.Button();
-            this.TextBoxSelectedScenario = new System.Windows.Forms.TextBox();
-            this.ListBoxScenarioType = new System.Windows.Forms.ListBox();
-            this.ButtonRandRunway = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.TextBoxSearchRunway = new System.Windows.Forms.TextBox();
-            this.TextBoxSelectedRunway = new System.Windows.Forms.TextBox();
-            this.ListBoxRunways = new System.Windows.Forms.ListBox();
-            this.TabPageCircuit = new System.Windows.Forms.TabPage();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.TextBoxCircuitUpwind = new System.Windows.Forms.TextBox();
-            this.TextBoxCircuitHeightUpwind = new System.Windows.Forms.TextBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.TextBoxCircuitBase = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.TextBoxCircuitFinal = new System.Windows.Forms.TextBox();
-            this.TextBoxCircuitHeightDown = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.TextBoxCircuitSpeed = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.TextBoxCircuitHeightBase = new System.Windows.Forms.TextBox();
-            this.ButtonCircuitDefault = new System.Windows.Forms.Button();
-            this.PictureBoxCircuit = new System.Windows.Forms.PictureBox();
-            this.TabPagePhoto = new System.Windows.Forms.TabPage();
-            this.label18 = new System.Windows.Forms.Label();
-            this.TextBoxPhotoHotspotRadius = new System.Windows.Forms.TextBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.TextBoxPhotoMaxBearingChange = new System.Windows.Forms.TextBox();
-            this.label15 = new System.Windows.Forms.Label();
-            this.TextBoxPhotoWindowSize = new System.Windows.Forms.TextBox();
-            this.label14 = new System.Windows.Forms.Label();
-            this.TextBoxPhotoMinLegDist = new System.Windows.Forms.TextBox();
-            this.label13 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
-            this.TextBoxPhotoMaxNoLegs = new System.Windows.Forms.TextBox();
-            this.TextBoxPhotoMinNoLegs = new System.Windows.Forms.TextBox();
-            this.ButtonPhotoTourDefault = new System.Windows.Forms.Button();
-            this.label11 = new System.Windows.Forms.Label();
-            this.TextBoxPhotoMaxLegDist = new System.Windows.Forms.TextBox();
-            this.TabPageSign = new System.Windows.Forms.TabPage();
-            this.TextBoxSignSegmentRadius = new System.Windows.Forms.TextBox();
-            this.TextBoxSignSegmentLength = new System.Windows.Forms.TextBox();
-            this.label24 = new System.Windows.Forms.Label();
-            this.label23 = new System.Windows.Forms.Label();
-            this.TextBoxSignGateHeight = new System.Windows.Forms.TextBox();
-            this.label22 = new System.Windows.Forms.Label();
-            this.PictureBoxSignWriting = new System.Windows.Forms.PictureBox();
-            this.TextBoxSignWindowWidth = new System.Windows.Forms.TextBox();
-            this.TextBoxSignFont = new System.Windows.Forms.TextBox();
-            this.label21 = new System.Windows.Forms.Label();
-            this.label20 = new System.Windows.Forms.Label();
-            this.TextBoxSignTilt = new System.Windows.Forms.TextBox();
-            this.label19 = new System.Windows.Forms.Label();
-            this.TextBoxSignMessage = new System.Windows.Forms.TextBox();
-            this.label16 = new System.Windows.Forms.Label();
-            this.TabPageCelestial = new System.Windows.Forms.TabPage();
-            this.TextBoxCelestialMaxDist = new System.Windows.Forms.TextBox();
-            this.TextBoxCelestialMinDist = new System.Windows.Forms.TextBox();
-            this.label26 = new System.Windows.Forms.Label();
-            this.label25 = new System.Windows.Forms.Label();
-            this.ButtonGenerateScenario = new System.Windows.Forms.Button();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.ButtonHelp = new System.Windows.Forms.Button();
-            this.TabControl.SuspendLayout();
-            this.TabPageGeneral.SuspendLayout();
-            this.TabPageCircuit.SuspendLayout();
-            this.tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.PictureBoxCircuit)).BeginInit();
-            this.TabPagePhoto.SuspendLayout();
-            this.TabPageSign.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.PictureBoxSignWriting)).BeginInit();
-            this.TabPageCelestial.SuspendLayout();
-            this.SuspendLayout();
+            components = new System.ComponentModel.Container();
+            TabControl = new TabControl();
+            TabPageGeneral = new TabPage();
+            button1 = new Button();
+            TextBoxP3Dv5Files = new TextBox();
+            label27 = new Label();
+            TimePicker = new DateTimePicker();
+            DatePicker = new DateTimePicker();
+            label8 = new Label();
+            TextBoxScenarioTitle = new TextBox();
+            ListBoxAircraft = new ListBox();
+            buttonAircraft = new Button();
+            TextBoxSelectedScenario = new TextBox();
+            ListBoxScenarioType = new ListBox();
+            ButtonRandRunway = new Button();
+            label2 = new Label();
+            label1 = new Label();
+            TextBoxSearchRunway = new TextBox();
+            TextBoxSelectedRunway = new TextBox();
+            ListBoxRunways = new ListBox();
+            TabPageCircuit = new TabPage();
+            tableLayoutPanel1 = new TableLayoutPanel();
+            label7 = new Label();
+            label6 = new Label();
+            TextBoxCircuitUpwind = new TextBox();
+            TextBoxCircuitHeightUpwind = new TextBox();
+            label9 = new Label();
+            TextBoxCircuitBase = new TextBox();
+            label5 = new Label();
+            TextBoxCircuitFinal = new TextBox();
+            TextBoxCircuitHeightDown = new TextBox();
+            label4 = new Label();
+            TextBoxCircuitSpeed = new TextBox();
+            label3 = new Label();
+            label10 = new Label();
+            TextBoxCircuitHeightBase = new TextBox();
+            ButtonCircuitDefault = new Button();
+            PictureBoxCircuit = new PictureBox();
+            TabPagePhoto = new TabPage();
+            label18 = new Label();
+            TextBoxPhotoHotspotRadius = new TextBox();
+            label17 = new Label();
+            TextBoxPhotoMaxBearingChange = new TextBox();
+            label15 = new Label();
+            TextBoxPhotoWindowSize = new TextBox();
+            label14 = new Label();
+            TextBoxPhotoMinLegDist = new TextBox();
+            label13 = new Label();
+            label12 = new Label();
+            TextBoxPhotoMaxNoLegs = new TextBox();
+            TextBoxPhotoMinNoLegs = new TextBox();
+            ButtonPhotoTourDefault = new Button();
+            label11 = new Label();
+            TextBoxPhotoMaxLegDist = new TextBox();
+            TabPageSign = new TabPage();
+            TextBoxSignSegmentRadius = new TextBox();
+            TextBoxSignSegmentLength = new TextBox();
+            label24 = new Label();
+            label23 = new Label();
+            TextBoxSignGateHeight = new TextBox();
+            label22 = new Label();
+            PictureBoxSignWriting = new PictureBox();
+            TextBoxSignWindowWidth = new TextBox();
+            TextBoxSignFont = new TextBox();
+            label21 = new Label();
+            label20 = new Label();
+            TextBoxSignTilt = new TextBox();
+            label19 = new Label();
+            TextBoxSignMessage = new TextBox();
+            label16 = new Label();
+            TabPageCelestial = new TabPage();
+            TextBoxCelestialMaxDist = new TextBox();
+            TextBoxCelestialMinDist = new TextBox();
+            label26 = new Label();
+            label25 = new Label();
+            ButtonGenerateScenario = new Button();
+            toolTip1 = new ToolTip(components);
+            ButtonHelp = new Button();
+            TabControl.SuspendLayout();
+            TabPageGeneral.SuspendLayout();
+            TabPageCircuit.SuspendLayout();
+            tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)PictureBoxCircuit).BeginInit();
+            TabPagePhoto.SuspendLayout();
+            TabPageSign.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)PictureBoxSignWriting).BeginInit();
+            TabPageCelestial.SuspendLayout();
+            SuspendLayout();
             // 
             // TabControl
             // 
-            this.TabControl.Controls.Add(this.TabPageGeneral);
-            this.TabControl.Controls.Add(this.TabPageCircuit);
-            this.TabControl.Controls.Add(this.TabPagePhoto);
-            this.TabControl.Controls.Add(this.TabPageSign);
-            this.TabControl.Controls.Add(this.TabPageCelestial);
-            this.TabControl.Location = new System.Drawing.Point(12, 12);
-            this.TabControl.Name = "TabControl";
-            this.TabControl.SelectedIndex = 0;
-            this.TabControl.Size = new System.Drawing.Size(820, 466);
-            this.TabControl.TabIndex = 0;
-            this.TabControl.SelectedIndexChanged += new System.EventHandler(this.TabControl_SelectedIndexChanged);
+            TabControl.Controls.Add(TabPageGeneral);
+            TabControl.Controls.Add(TabPageCircuit);
+            TabControl.Controls.Add(TabPagePhoto);
+            TabControl.Controls.Add(TabPageSign);
+            TabControl.Controls.Add(TabPageCelestial);
+            TabControl.Location = new Point(12, 12);
+            TabControl.Name = "TabControl";
+            TabControl.SelectedIndex = 0;
+            TabControl.Size = new Size(820, 466);
+            TabControl.TabIndex = 0;
+            TabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
             // 
             // TabPageGeneral
             // 
-            this.TabPageGeneral.Controls.Add(this.button1);
-            this.TabPageGeneral.Controls.Add(this.TextBoxP3Dv5Files);
-            this.TabPageGeneral.Controls.Add(this.label27);
-            this.TabPageGeneral.Controls.Add(this.TimePicker);
-            this.TabPageGeneral.Controls.Add(this.DatePicker);
-            this.TabPageGeneral.Controls.Add(this.label8);
-            this.TabPageGeneral.Controls.Add(this.TextBoxScenarioTitle);
-            this.TabPageGeneral.Controls.Add(this.ListBoxAircraft);
-            this.TabPageGeneral.Controls.Add(this.buttonAircraft);
-            this.TabPageGeneral.Controls.Add(this.TextBoxSelectedScenario);
-            this.TabPageGeneral.Controls.Add(this.ListBoxScenarioType);
-            this.TabPageGeneral.Controls.Add(this.ButtonRandRunway);
-            this.TabPageGeneral.Controls.Add(this.label2);
-            this.TabPageGeneral.Controls.Add(this.label1);
-            this.TabPageGeneral.Controls.Add(this.TextBoxSearchRunway);
-            this.TabPageGeneral.Controls.Add(this.TextBoxSelectedRunway);
-            this.TabPageGeneral.Controls.Add(this.ListBoxRunways);
-            this.TabPageGeneral.Location = new System.Drawing.Point(4, 24);
-            this.TabPageGeneral.Name = "TabPageGeneral";
-            this.TabPageGeneral.Padding = new System.Windows.Forms.Padding(3);
-            this.TabPageGeneral.Size = new System.Drawing.Size(812, 438);
-            this.TabPageGeneral.TabIndex = 0;
-            this.TabPageGeneral.Text = "General";
-            this.TabPageGeneral.UseVisualStyleBackColor = true;
+            TabPageGeneral.Controls.Add(button1);
+            TabPageGeneral.Controls.Add(TextBoxP3Dv5Files);
+            TabPageGeneral.Controls.Add(label27);
+            TabPageGeneral.Controls.Add(TimePicker);
+            TabPageGeneral.Controls.Add(DatePicker);
+            TabPageGeneral.Controls.Add(label8);
+            TabPageGeneral.Controls.Add(TextBoxScenarioTitle);
+            TabPageGeneral.Controls.Add(ListBoxAircraft);
+            TabPageGeneral.Controls.Add(buttonAircraft);
+            TabPageGeneral.Controls.Add(TextBoxSelectedScenario);
+            TabPageGeneral.Controls.Add(ListBoxScenarioType);
+            TabPageGeneral.Controls.Add(ButtonRandRunway);
+            TabPageGeneral.Controls.Add(label2);
+            TabPageGeneral.Controls.Add(label1);
+            TabPageGeneral.Controls.Add(TextBoxSearchRunway);
+            TabPageGeneral.Controls.Add(TextBoxSelectedRunway);
+            TabPageGeneral.Controls.Add(ListBoxRunways);
+            TabPageGeneral.Location = new Point(4, 24);
+            TabPageGeneral.Name = "TabPageGeneral";
+            TabPageGeneral.Padding = new Padding(3);
+            TabPageGeneral.Size = new Size(812, 438);
+            TabPageGeneral.TabIndex = 0;
+            TabPageGeneral.Text = "General";
+            TabPageGeneral.UseVisualStyleBackColor = true;
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(343, 399);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(120, 23);
-            this.button1.TabIndex = 19;
-            this.button1.Text = "Prepar3D v5 Files";
-            this.toolTip1.SetToolTip(this.button1, "Select the Prepar3D v5 Files location where scenario will be stored");
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.ButtonP3Dv5Files_Click);
+            button1.Location = new Point(343, 399);
+            button1.Name = "button1";
+            button1.Size = new Size(120, 23);
+            button1.TabIndex = 19;
+            button1.Text = "Prepar3D v5 Files";
+            toolTip1.SetToolTip(button1, "Select the Prepar3D v5 Files location where scenario will be stored");
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += ButtonP3Dv5Files_Click;
             // 
             // TextBoxP3Dv5Files
             // 
-            this.TextBoxP3Dv5Files.Enabled = false;
-            this.TextBoxP3Dv5Files.Location = new System.Drawing.Point(488, 399);
-            this.TextBoxP3Dv5Files.Name = "TextBoxP3Dv5Files";
-            this.TextBoxP3Dv5Files.Size = new System.Drawing.Size(302, 23);
-            this.TextBoxP3Dv5Files.TabIndex = 18;
+            TextBoxP3Dv5Files.Enabled = false;
+            TextBoxP3Dv5Files.Location = new Point(488, 399);
+            TextBoxP3Dv5Files.Name = "TextBoxP3Dv5Files";
+            TextBoxP3Dv5Files.Size = new Size(302, 23);
+            TextBoxP3Dv5Files.TabIndex = 18;
             // 
             // label27
             // 
-            this.label27.Location = new System.Drawing.Point(0, 0);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(100, 23);
-            this.label27.TabIndex = 0;
+            label27.Location = new Point(0, 0);
+            label27.Name = "label27";
+            label27.Size = new Size(100, 23);
+            label27.TabIndex = 0;
             // 
             // TimePicker
             // 
-            this.TimePicker.Format = System.Windows.Forms.DateTimePickerFormat.Time;
-            this.TimePicker.Location = new System.Drawing.Point(112, 303);
-            this.TimePicker.Name = "TimePicker";
-            this.TimePicker.ShowUpDown = true;
-            this.TimePicker.Size = new System.Drawing.Size(119, 23);
-            this.TimePicker.TabIndex = 16;
+            TimePicker.Format = DateTimePickerFormat.Time;
+            TimePicker.Location = new Point(112, 303);
+            TimePicker.Name = "TimePicker";
+            TimePicker.ShowUpDown = true;
+            TimePicker.Size = new Size(119, 23);
+            TimePicker.TabIndex = 16;
             // 
             // DatePicker
             // 
-            this.DatePicker.CustomFormat = "";
-            this.DatePicker.Location = new System.Drawing.Point(112, 350);
-            this.DatePicker.Name = "DatePicker";
-            this.DatePicker.Size = new System.Drawing.Size(206, 23);
-            this.DatePicker.TabIndex = 15;
+            DatePicker.CustomFormat = "";
+            DatePicker.Location = new Point(112, 350);
+            DatePicker.Name = "DatePicker";
+            DatePicker.Size = new Size(206, 23);
+            DatePicker.TabIndex = 15;
             // 
             // label8
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(16, 402);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(77, 15);
-            this.label8.TabIndex = 14;
-            this.label8.Text = "Scenario Title";
+            label8.AutoSize = true;
+            label8.Location = new Point(16, 402);
+            label8.Name = "label8";
+            label8.Size = new Size(77, 15);
+            label8.TabIndex = 14;
+            label8.Text = "Scenario Title";
             // 
             // TextBoxScenarioTitle
             // 
-            this.TextBoxScenarioTitle.Location = new System.Drawing.Point(112, 399);
-            this.TextBoxScenarioTitle.Name = "TextBoxScenarioTitle";
-            this.TextBoxScenarioTitle.Size = new System.Drawing.Size(206, 23);
-            this.TextBoxScenarioTitle.TabIndex = 13;
+            TextBoxScenarioTitle.Location = new Point(112, 399);
+            TextBoxScenarioTitle.Name = "TextBoxScenarioTitle";
+            TextBoxScenarioTitle.Size = new Size(206, 23);
+            TextBoxScenarioTitle.TabIndex = 13;
             // 
             // ListBoxAircraft
             // 
-            this.ListBoxAircraft.FormattingEnabled = true;
-            this.ListBoxAircraft.ItemHeight = 15;
-            this.ListBoxAircraft.Location = new System.Drawing.Point(488, 24);
-            this.ListBoxAircraft.Name = "ListBoxAircraft";
-            this.ListBoxAircraft.Size = new System.Drawing.Size(250, 94);
-            this.ListBoxAircraft.TabIndex = 12;
+            ListBoxAircraft.FormattingEnabled = true;
+            ListBoxAircraft.ItemHeight = 15;
+            ListBoxAircraft.Location = new Point(488, 24);
+            ListBoxAircraft.Name = "ListBoxAircraft";
+            ListBoxAircraft.Size = new Size(250, 94);
+            ListBoxAircraft.TabIndex = 12;
             // 
             // buttonAircraft
             // 
-            this.buttonAircraft.Location = new System.Drawing.Point(488, 135);
-            this.buttonAircraft.Name = "buttonAircraft";
-            this.buttonAircraft.Size = new System.Drawing.Size(120, 23);
-            this.buttonAircraft.TabIndex = 11;
-            this.buttonAircraft.Text = "aircraft.cfg";
-            this.toolTip1.SetToolTip(this.buttonAircraft, "Select the \"aircraft.cfg\" file for your aircraft and then the variation from the " +
-        "list above");
-            this.buttonAircraft.UseVisualStyleBackColor = true;
-            this.buttonAircraft.Click += new System.EventHandler(this.ButtonAircraft_Click);
+            buttonAircraft.Location = new Point(488, 135);
+            buttonAircraft.Name = "buttonAircraft";
+            buttonAircraft.Size = new Size(120, 23);
+            buttonAircraft.TabIndex = 11;
+            buttonAircraft.Text = "aircraft.cfg";
+            toolTip1.SetToolTip(buttonAircraft, "Select the \"aircraft.cfg\" file for your aircraft and then the variation from the list above");
+            buttonAircraft.UseVisualStyleBackColor = true;
+            buttonAircraft.Click += ButtonAircraft_Click;
             // 
             // TextBoxSelectedScenario
             // 
-            this.TextBoxSelectedScenario.Enabled = false;
-            this.TextBoxSelectedScenario.Location = new System.Drawing.Point(300, 136);
-            this.TextBoxSelectedScenario.Name = "TextBoxSelectedScenario";
-            this.TextBoxSelectedScenario.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxSelectedScenario.TabIndex = 7;
+            TextBoxSelectedScenario.Enabled = false;
+            TextBoxSelectedScenario.Location = new Point(300, 136);
+            TextBoxSelectedScenario.Name = "TextBoxSelectedScenario";
+            TextBoxSelectedScenario.Size = new Size(119, 23);
+            TextBoxSelectedScenario.TabIndex = 7;
             // 
             // ListBoxScenarioType
             // 
-            this.ListBoxScenarioType.FormattingEnabled = true;
-            this.ListBoxScenarioType.ItemHeight = 15;
-            this.ListBoxScenarioType.Location = new System.Drawing.Point(300, 24);
-            this.ListBoxScenarioType.Name = "ListBoxScenarioType";
-            this.ListBoxScenarioType.Size = new System.Drawing.Size(120, 94);
-            this.ListBoxScenarioType.TabIndex = 6;
-            this.ListBoxScenarioType.SelectedIndexChanged += new System.EventHandler(this.ListBoxScenarioType_SelectedIndexChanged);
+            ListBoxScenarioType.FormattingEnabled = true;
+            ListBoxScenarioType.ItemHeight = 15;
+            ListBoxScenarioType.Location = new Point(300, 24);
+            ListBoxScenarioType.Name = "ListBoxScenarioType";
+            ListBoxScenarioType.Size = new Size(120, 94);
+            ListBoxScenarioType.TabIndex = 6;
+            ListBoxScenarioType.SelectedIndexChanged += ListBoxScenarioType_SelectedIndexChanged;
             // 
             // ButtonRandRunway
             // 
-            this.ButtonRandRunway.Location = new System.Drawing.Point(112, 233);
-            this.ButtonRandRunway.Name = "ButtonRandRunway";
-            this.ButtonRandRunway.Size = new System.Drawing.Size(119, 23);
-            this.ButtonRandRunway.TabIndex = 5;
-            this.ButtonRandRunway.Text = "Random Runway";
-            this.ButtonRandRunway.UseVisualStyleBackColor = true;
-            this.ButtonRandRunway.Click += new System.EventHandler(this.ButtonRandRunway_Click);
+            ButtonRandRunway.Location = new Point(112, 233);
+            ButtonRandRunway.Name = "ButtonRandRunway";
+            ButtonRandRunway.Size = new Size(119, 23);
+            ButtonRandRunway.TabIndex = 5;
+            ButtonRandRunway.Text = "Random Runway";
+            ButtonRandRunway.UseVisualStyleBackColor = true;
+            ButtonRandRunway.Click += ButtonRandRunway_Click;
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(16, 191);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(51, 15);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "Selected";
+            label2.AutoSize = true;
+            label2.Location = new Point(16, 191);
+            label2.Name = "label2";
+            label2.Size = new Size(51, 15);
+            label2.TabIndex = 4;
+            label2.Text = "Selected";
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(16, 144);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(42, 15);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Search";
+            label1.AutoSize = true;
+            label1.Location = new Point(16, 144);
+            label1.Name = "label1";
+            label1.Size = new Size(42, 15);
+            label1.TabIndex = 3;
+            label1.Text = "Search";
             // 
             // TextBoxSearchRunway
             // 
-            this.TextBoxSearchRunway.Location = new System.Drawing.Point(112, 136);
-            this.TextBoxSearchRunway.Name = "TextBoxSearchRunway";
-            this.TextBoxSearchRunway.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxSearchRunway.TabIndex = 2;
-            this.TextBoxSearchRunway.TextChanged += new System.EventHandler(this.TextBoxSearchRunway_TextChanged);
+            TextBoxSearchRunway.Location = new Point(112, 136);
+            TextBoxSearchRunway.Name = "TextBoxSearchRunway";
+            TextBoxSearchRunway.Size = new Size(119, 23);
+            TextBoxSearchRunway.TabIndex = 2;
+            TextBoxSearchRunway.TextChanged += TextBoxSearchRunway_TextChanged;
             // 
             // TextBoxSelectedRunway
             // 
-            this.TextBoxSelectedRunway.Enabled = false;
-            this.TextBoxSelectedRunway.Location = new System.Drawing.Point(112, 183);
-            this.TextBoxSelectedRunway.Name = "TextBoxSelectedRunway";
-            this.TextBoxSelectedRunway.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxSelectedRunway.TabIndex = 1;
+            TextBoxSelectedRunway.Enabled = false;
+            TextBoxSelectedRunway.Location = new Point(112, 183);
+            TextBoxSelectedRunway.Name = "TextBoxSelectedRunway";
+            TextBoxSelectedRunway.Size = new Size(119, 23);
+            TextBoxSelectedRunway.TabIndex = 1;
             // 
             // ListBoxRunways
             // 
-            this.ListBoxRunways.FormattingEnabled = true;
-            this.ListBoxRunways.ItemHeight = 15;
-            this.ListBoxRunways.Location = new System.Drawing.Point(112, 24);
-            this.ListBoxRunways.Name = "ListBoxRunways";
-            this.ListBoxRunways.Size = new System.Drawing.Size(120, 94);
-            this.ListBoxRunways.TabIndex = 0;
-            this.ListBoxRunways.SelectedIndexChanged += new System.EventHandler(this.ListBoxRunways_SelectedIndexChanged);
+            ListBoxRunways.FormattingEnabled = true;
+            ListBoxRunways.ItemHeight = 15;
+            ListBoxRunways.Location = new Point(112, 24);
+            ListBoxRunways.Name = "ListBoxRunways";
+            ListBoxRunways.Size = new Size(120, 94);
+            ListBoxRunways.TabIndex = 0;
+            ListBoxRunways.SelectedIndexChanged += ListBoxRunways_SelectedIndexChanged;
             // 
             // TabPageCircuit
             // 
-            this.TabPageCircuit.Controls.Add(this.tableLayoutPanel1);
-            this.TabPageCircuit.Controls.Add(this.ButtonCircuitDefault);
-            this.TabPageCircuit.Controls.Add(this.PictureBoxCircuit);
-            this.TabPageCircuit.Location = new System.Drawing.Point(4, 24);
-            this.TabPageCircuit.Name = "TabPageCircuit";
-            this.TabPageCircuit.Padding = new System.Windows.Forms.Padding(3);
-            this.TabPageCircuit.Size = new System.Drawing.Size(812, 438);
-            this.TabPageCircuit.TabIndex = 1;
-            this.TabPageCircuit.Text = "Circuit";
-            this.TabPageCircuit.UseVisualStyleBackColor = true;
+            TabPageCircuit.Controls.Add(tableLayoutPanel1);
+            TabPageCircuit.Controls.Add(ButtonCircuitDefault);
+            TabPageCircuit.Controls.Add(PictureBoxCircuit);
+            TabPageCircuit.Location = new Point(4, 24);
+            TabPageCircuit.Name = "TabPageCircuit";
+            TabPageCircuit.Padding = new Padding(3);
+            TabPageCircuit.Size = new Size(812, 438);
+            TabPageCircuit.TabIndex = 1;
+            TabPageCircuit.Text = "Circuit";
+            TabPageCircuit.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanel1
             // 
-            this.tableLayoutPanel1.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.tableLayoutPanel1.AutoSize = true;
-            this.tableLayoutPanel1.ColumnCount = 7;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 14F));
-            this.tableLayoutPanel1.Controls.Add(this.label7, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label6, 6, 0);
-            this.tableLayoutPanel1.Controls.Add(this.TextBoxCircuitUpwind, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.TextBoxCircuitHeightUpwind, 3, 1);
-            this.tableLayoutPanel1.Controls.Add(this.label9, 5, 0);
-            this.tableLayoutPanel1.Controls.Add(this.TextBoxCircuitBase, 1, 1);
-            this.tableLayoutPanel1.Controls.Add(this.label5, 4, 0);
-            this.tableLayoutPanel1.Controls.Add(this.TextBoxCircuitFinal, 2, 1);
-            this.tableLayoutPanel1.Controls.Add(this.TextBoxCircuitHeightDown, 4, 1);
-            this.tableLayoutPanel1.Controls.Add(this.label4, 2, 0);
-            this.tableLayoutPanel1.Controls.Add(this.TextBoxCircuitSpeed, 6, 1);
-            this.tableLayoutPanel1.Controls.Add(this.label3, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.label10, 3, 0);
-            this.tableLayoutPanel1.Controls.Add(this.TextBoxCircuitHeightBase, 5, 1);
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(9, 361);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 2;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(795, 58);
-            this.tableLayoutPanel1.TabIndex = 17;
+            tableLayoutPanel1.Anchor = AnchorStyles.None;
+            tableLayoutPanel1.AutoSize = true;
+            tableLayoutPanel1.ColumnCount = 7;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 14F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 14F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 14F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 14F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 14F));
+            tableLayoutPanel1.Controls.Add(label7, 0, 0);
+            tableLayoutPanel1.Controls.Add(label6, 6, 0);
+            tableLayoutPanel1.Controls.Add(TextBoxCircuitUpwind, 0, 1);
+            tableLayoutPanel1.Controls.Add(TextBoxCircuitHeightUpwind, 3, 1);
+            tableLayoutPanel1.Controls.Add(label9, 5, 0);
+            tableLayoutPanel1.Controls.Add(TextBoxCircuitBase, 1, 1);
+            tableLayoutPanel1.Controls.Add(label5, 4, 0);
+            tableLayoutPanel1.Controls.Add(TextBoxCircuitFinal, 2, 1);
+            tableLayoutPanel1.Controls.Add(TextBoxCircuitHeightDown, 4, 1);
+            tableLayoutPanel1.Controls.Add(label4, 2, 0);
+            tableLayoutPanel1.Controls.Add(TextBoxCircuitSpeed, 6, 1);
+            tableLayoutPanel1.Controls.Add(label3, 1, 0);
+            tableLayoutPanel1.Controls.Add(label10, 3, 0);
+            tableLayoutPanel1.Controls.Add(TextBoxCircuitHeightBase, 5, 1);
+            tableLayoutPanel1.Location = new Point(9, 361);
+            tableLayoutPanel1.Margin = new Padding(0);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 2;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Size = new Size(795, 58);
+            tableLayoutPanel1.TabIndex = 17;
             // 
             // label7
             // 
-            this.label7.AllowDrop = true;
-            this.label7.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(31, 7);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(48, 15);
-            this.label7.TabIndex = 10;
-            this.label7.Text = "Upwind";
+            label7.AllowDrop = true;
+            label7.Anchor = AnchorStyles.None;
+            label7.AutoSize = true;
+            label7.Location = new Point(31, 7);
+            label7.Name = "label7";
+            label7.Size = new Size(48, 15);
+            label7.TabIndex = 10;
+            label7.Text = "Upwind";
             // 
             // label6
             // 
-            this.label6.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(719, 7);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(39, 15);
-            this.label6.TabIndex = 9;
-            this.label6.Text = "Speed";
+            label6.Anchor = AnchorStyles.None;
+            label6.AutoSize = true;
+            label6.Location = new Point(719, 7);
+            label6.Name = "label6";
+            label6.Size = new Size(39, 15);
+            label6.TabIndex = 9;
+            label6.Text = "Speed";
             // 
             // TextBoxCircuitUpwind
             // 
-            this.TextBoxCircuitUpwind.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TextBoxCircuitUpwind.Location = new System.Drawing.Point(5, 32);
-            this.TextBoxCircuitUpwind.Name = "TextBoxCircuitUpwind";
-            this.TextBoxCircuitUpwind.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxCircuitUpwind.TabIndex = 5;
-            this.TextBoxCircuitUpwind.Text = "1";
-            this.TextBoxCircuitUpwind.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxCircuitUpwind, "Distance between runway and gate 1 in miles");
-            this.TextBoxCircuitUpwind.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
+            TextBoxCircuitUpwind.Anchor = AnchorStyles.None;
+            TextBoxCircuitUpwind.Location = new Point(5, 32);
+            TextBoxCircuitUpwind.Name = "TextBoxCircuitUpwind";
+            TextBoxCircuitUpwind.Size = new Size(100, 23);
+            TextBoxCircuitUpwind.TabIndex = 5;
+            TextBoxCircuitUpwind.Text = "1";
+            TextBoxCircuitUpwind.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitUpwind, "Distance between runway and gate 1 in miles");
+            TextBoxCircuitUpwind.Validating += TextBoxDouble_Validating;
             // 
             // TextBoxCircuitHeightUpwind
             // 
-            this.TextBoxCircuitHeightUpwind.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TextBoxCircuitHeightUpwind.Location = new System.Drawing.Point(342, 32);
-            this.TextBoxCircuitHeightUpwind.Name = "TextBoxCircuitHeightUpwind";
-            this.TextBoxCircuitHeightUpwind.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxCircuitHeightUpwind.TabIndex = 13;
-            this.TextBoxCircuitHeightUpwind.Text = "500";
-            this.TextBoxCircuitHeightUpwind.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxCircuitHeightUpwind, "Height of circuit above runway in feet (gate 1)");
-            this.TextBoxCircuitHeightUpwind.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
+            TextBoxCircuitHeightUpwind.Anchor = AnchorStyles.None;
+            TextBoxCircuitHeightUpwind.Location = new Point(342, 32);
+            TextBoxCircuitHeightUpwind.Name = "TextBoxCircuitHeightUpwind";
+            TextBoxCircuitHeightUpwind.Size = new Size(100, 23);
+            TextBoxCircuitHeightUpwind.TabIndex = 13;
+            TextBoxCircuitHeightUpwind.Text = "500";
+            TextBoxCircuitHeightUpwind.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitHeightUpwind, "Height of circuit above runway in feet (gate 1)");
+            TextBoxCircuitHeightUpwind.Validating += TextBoxDouble_Validating;
             // 
             // label9
             // 
-            this.label9.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(583, 7);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(87, 15);
-            this.label9.TabIndex = 15;
-            this.label9.Text = "Height (Gate 8)";
+            label9.Anchor = AnchorStyles.None;
+            label9.AutoSize = true;
+            label9.Location = new Point(583, 7);
+            label9.Name = "label9";
+            label9.Size = new Size(87, 15);
+            label9.TabIndex = 15;
+            label9.Text = "Height (Gate 8)";
             // 
             // TextBoxCircuitBase
             // 
-            this.TextBoxCircuitBase.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TextBoxCircuitBase.Location = new System.Drawing.Point(116, 32);
-            this.TextBoxCircuitBase.Name = "TextBoxCircuitBase";
-            this.TextBoxCircuitBase.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxCircuitBase.TabIndex = 1;
-            this.TextBoxCircuitBase.Text = "0.5";
-            this.TextBoxCircuitBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxCircuitBase, "Distance between gates 2 and 3 (6 and 7) in miles");
-            this.TextBoxCircuitBase.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
+            TextBoxCircuitBase.Anchor = AnchorStyles.None;
+            TextBoxCircuitBase.Location = new Point(116, 32);
+            TextBoxCircuitBase.Name = "TextBoxCircuitBase";
+            TextBoxCircuitBase.Size = new Size(100, 23);
+            TextBoxCircuitBase.TabIndex = 1;
+            TextBoxCircuitBase.Text = "0.5";
+            TextBoxCircuitBase.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitBase, "Distance between gates 2 and 3 (6 and 7) in miles");
+            TextBoxCircuitBase.Validating += TextBoxDouble_Validating;
             // 
             // label5
             // 
-            this.label5.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(460, 7);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(103, 15);
-            this.label5.TabIndex = 8;
-            this.label5.Text = "Height (Gates 3-6)";
+            label5.Anchor = AnchorStyles.None;
+            label5.AutoSize = true;
+            label5.Location = new Point(460, 7);
+            label5.Name = "label5";
+            label5.Size = new Size(103, 15);
+            label5.TabIndex = 8;
+            label5.Text = "Height (Gates 3-6)";
             // 
             // TextBoxCircuitFinal
             // 
-            this.TextBoxCircuitFinal.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TextBoxCircuitFinal.Location = new System.Drawing.Point(227, 32);
-            this.TextBoxCircuitFinal.Name = "TextBoxCircuitFinal";
-            this.TextBoxCircuitFinal.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxCircuitFinal.TabIndex = 2;
-            this.TextBoxCircuitFinal.Text = "1";
-            this.TextBoxCircuitFinal.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxCircuitFinal, "Distance between gate 8 and runway in miles");
-            this.TextBoxCircuitFinal.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
+            TextBoxCircuitFinal.Anchor = AnchorStyles.None;
+            TextBoxCircuitFinal.Location = new Point(227, 32);
+            TextBoxCircuitFinal.Name = "TextBoxCircuitFinal";
+            TextBoxCircuitFinal.Size = new Size(100, 23);
+            TextBoxCircuitFinal.TabIndex = 2;
+            TextBoxCircuitFinal.Text = "1";
+            TextBoxCircuitFinal.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitFinal, "Distance between gate 8 and runway in miles");
+            TextBoxCircuitFinal.Validating += TextBoxDouble_Validating;
             // 
             // TextBoxCircuitHeightDown
             // 
-            this.TextBoxCircuitHeightDown.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TextBoxCircuitHeightDown.Location = new System.Drawing.Point(461, 32);
-            this.TextBoxCircuitHeightDown.Name = "TextBoxCircuitHeightDown";
-            this.TextBoxCircuitHeightDown.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxCircuitHeightDown.TabIndex = 3;
-            this.TextBoxCircuitHeightDown.Text = "1000";
-            this.TextBoxCircuitHeightDown.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxCircuitHeightDown, "Height of circuit above runway in feet (gates 3 to 6)");
-            this.TextBoxCircuitHeightDown.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
+            TextBoxCircuitHeightDown.Anchor = AnchorStyles.None;
+            TextBoxCircuitHeightDown.Location = new Point(461, 32);
+            TextBoxCircuitHeightDown.Name = "TextBoxCircuitHeightDown";
+            TextBoxCircuitHeightDown.Size = new Size(100, 23);
+            TextBoxCircuitHeightDown.TabIndex = 3;
+            TextBoxCircuitHeightDown.Text = "1000";
+            TextBoxCircuitHeightDown.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitHeightDown, "Height of circuit above runway in feet (gates 3 to 6)");
+            TextBoxCircuitHeightDown.Validating += TextBoxDouble_Validating;
             // 
             // label4
             // 
-            this.label4.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(261, 7);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(32, 15);
-            this.label4.TabIndex = 7;
-            this.label4.Text = "Final";
+            label4.Anchor = AnchorStyles.None;
+            label4.AutoSize = true;
+            label4.Location = new Point(261, 7);
+            label4.Name = "label4";
+            label4.Size = new Size(32, 15);
+            label4.TabIndex = 7;
+            label4.Text = "Final";
             // 
             // TextBoxCircuitSpeed
             // 
-            this.TextBoxCircuitSpeed.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TextBoxCircuitSpeed.Location = new System.Drawing.Point(688, 32);
-            this.TextBoxCircuitSpeed.Name = "TextBoxCircuitSpeed";
-            this.TextBoxCircuitSpeed.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxCircuitSpeed.TabIndex = 4;
-            this.TextBoxCircuitSpeed.Text = "65";
-            this.TextBoxCircuitSpeed.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxCircuitSpeed, "Cruise speed between gates 1 and 8 in knots");
-            this.TextBoxCircuitSpeed.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
+            TextBoxCircuitSpeed.Anchor = AnchorStyles.None;
+            TextBoxCircuitSpeed.Location = new Point(688, 32);
+            TextBoxCircuitSpeed.Name = "TextBoxCircuitSpeed";
+            TextBoxCircuitSpeed.Size = new Size(100, 23);
+            TextBoxCircuitSpeed.TabIndex = 4;
+            TextBoxCircuitSpeed.Text = "65";
+            TextBoxCircuitSpeed.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitSpeed, "Cruise speed between gates 1 and 8 in knots");
+            TextBoxCircuitSpeed.Validating += TextBoxDouble_Validating;
             // 
             // label3
             // 
-            this.label3.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(151, 7);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(31, 15);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Base";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            label3.Anchor = AnchorStyles.None;
+            label3.AutoSize = true;
+            label3.Location = new Point(151, 7);
+            label3.Name = "label3";
+            label3.Size = new Size(31, 15);
+            label3.TabIndex = 6;
+            label3.Text = "Base";
+            label3.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // label10
             // 
-            this.label10.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(349, 7);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(87, 15);
-            this.label10.TabIndex = 16;
-            this.label10.Text = "Height (Gate 1)";
+            label10.Anchor = AnchorStyles.None;
+            label10.AutoSize = true;
+            label10.Location = new Point(349, 7);
+            label10.Name = "label10";
+            label10.Size = new Size(87, 15);
+            label10.TabIndex = 16;
+            label10.Text = "Height (Gate 1)";
             // 
             // TextBoxCircuitHeightBase
             // 
-            this.TextBoxCircuitHeightBase.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TextBoxCircuitHeightBase.Location = new System.Drawing.Point(576, 32);
-            this.TextBoxCircuitHeightBase.Name = "TextBoxCircuitHeightBase";
-            this.TextBoxCircuitHeightBase.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxCircuitHeightBase.TabIndex = 12;
-            this.TextBoxCircuitHeightBase.Text = "500";
-            this.TextBoxCircuitHeightBase.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxCircuitHeightBase, "Height of circuit above runway in feet (gate 8)");
-            this.TextBoxCircuitHeightBase.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
+            TextBoxCircuitHeightBase.Anchor = AnchorStyles.None;
+            TextBoxCircuitHeightBase.Location = new Point(576, 32);
+            TextBoxCircuitHeightBase.Name = "TextBoxCircuitHeightBase";
+            TextBoxCircuitHeightBase.Size = new Size(100, 23);
+            TextBoxCircuitHeightBase.TabIndex = 12;
+            TextBoxCircuitHeightBase.Text = "500";
+            TextBoxCircuitHeightBase.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCircuitHeightBase, "Height of circuit above runway in feet (gate 8)");
+            TextBoxCircuitHeightBase.Validating += TextBoxDouble_Validating;
             // 
             // ButtonCircuitDefault
             // 
-            this.ButtonCircuitDefault.Location = new System.Drawing.Point(469, 15);
-            this.ButtonCircuitDefault.Name = "ButtonCircuitDefault";
-            this.ButtonCircuitDefault.Size = new System.Drawing.Size(75, 23);
-            this.ButtonCircuitDefault.TabIndex = 11;
-            this.ButtonCircuitDefault.Text = "Default";
-            this.ButtonCircuitDefault.UseVisualStyleBackColor = true;
-            this.ButtonCircuitDefault.Click += new System.EventHandler(this.ButtonCircuitDefault_Click);
+            ButtonCircuitDefault.Location = new Point(469, 15);
+            ButtonCircuitDefault.Name = "ButtonCircuitDefault";
+            ButtonCircuitDefault.Size = new Size(75, 23);
+            ButtonCircuitDefault.TabIndex = 11;
+            ButtonCircuitDefault.Text = "Default";
+            ButtonCircuitDefault.UseVisualStyleBackColor = true;
+            ButtonCircuitDefault.Click += ButtonCircuitDefault_Click;
             // 
             // PictureBoxCircuit
             // 
-            this.PictureBoxCircuit.Location = new System.Drawing.Point(15, 15);
-            this.PictureBoxCircuit.Name = "PictureBoxCircuit";
-            this.PictureBoxCircuit.Size = new System.Drawing.Size(783, 325);
-            this.PictureBoxCircuit.TabIndex = 0;
-            this.PictureBoxCircuit.TabStop = false;
+            PictureBoxCircuit.Location = new Point(15, 15);
+            PictureBoxCircuit.Name = "PictureBoxCircuit";
+            PictureBoxCircuit.Size = new Size(783, 325);
+            PictureBoxCircuit.TabIndex = 0;
+            PictureBoxCircuit.TabStop = false;
             // 
             // TabPagePhoto
             // 
-            this.TabPagePhoto.Controls.Add(this.label18);
-            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoHotspotRadius);
-            this.TabPagePhoto.Controls.Add(this.label17);
-            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMaxBearingChange);
-            this.TabPagePhoto.Controls.Add(this.label15);
-            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoWindowSize);
-            this.TabPagePhoto.Controls.Add(this.label14);
-            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMinLegDist);
-            this.TabPagePhoto.Controls.Add(this.label13);
-            this.TabPagePhoto.Controls.Add(this.label12);
-            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMaxNoLegs);
-            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMinNoLegs);
-            this.TabPagePhoto.Controls.Add(this.ButtonPhotoTourDefault);
-            this.TabPagePhoto.Controls.Add(this.label11);
-            this.TabPagePhoto.Controls.Add(this.TextBoxPhotoMaxLegDist);
-            this.TabPagePhoto.Location = new System.Drawing.Point(4, 24);
-            this.TabPagePhoto.Name = "TabPagePhoto";
-            this.TabPagePhoto.Size = new System.Drawing.Size(812, 438);
-            this.TabPagePhoto.TabIndex = 2;
-            this.TabPagePhoto.Text = "Photo Tour";
-            this.TabPagePhoto.UseVisualStyleBackColor = true;
+            TabPagePhoto.Controls.Add(label18);
+            TabPagePhoto.Controls.Add(TextBoxPhotoHotspotRadius);
+            TabPagePhoto.Controls.Add(label17);
+            TabPagePhoto.Controls.Add(TextBoxPhotoMaxBearingChange);
+            TabPagePhoto.Controls.Add(label15);
+            TabPagePhoto.Controls.Add(TextBoxPhotoWindowSize);
+            TabPagePhoto.Controls.Add(label14);
+            TabPagePhoto.Controls.Add(TextBoxPhotoMinLegDist);
+            TabPagePhoto.Controls.Add(label13);
+            TabPagePhoto.Controls.Add(label12);
+            TabPagePhoto.Controls.Add(TextBoxPhotoMaxNoLegs);
+            TabPagePhoto.Controls.Add(TextBoxPhotoMinNoLegs);
+            TabPagePhoto.Controls.Add(ButtonPhotoTourDefault);
+            TabPagePhoto.Controls.Add(label11);
+            TabPagePhoto.Controls.Add(TextBoxPhotoMaxLegDist);
+            TabPagePhoto.Location = new Point(4, 24);
+            TabPagePhoto.Name = "TabPagePhoto";
+            TabPagePhoto.Size = new Size(812, 438);
+            TabPagePhoto.TabIndex = 2;
+            TabPagePhoto.Text = "Photo Tour";
+            TabPagePhoto.UseVisualStyleBackColor = true;
             // 
             // label18
             // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(16, 314);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(88, 15);
-            this.label18.TabIndex = 26;
-            this.label18.Text = "Hotspot Radius";
+            label18.AutoSize = true;
+            label18.Location = new Point(16, 314);
+            label18.Name = "label18";
+            label18.Size = new Size(88, 15);
+            label18.TabIndex = 26;
+            label18.Text = "Hotspot Radius";
             // 
             // TextBoxPhotoHotspotRadius
             // 
-            this.TextBoxPhotoHotspotRadius.Location = new System.Drawing.Point(148, 306);
-            this.TextBoxPhotoHotspotRadius.Name = "TextBoxPhotoHotspotRadius";
-            this.TextBoxPhotoHotspotRadius.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxPhotoHotspotRadius.TabIndex = 25;
-            this.TextBoxPhotoHotspotRadius.Text = "1000";
-            this.TextBoxPhotoHotspotRadius.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxPhotoHotspotRadius, "Radius of photo hotspot location in feet");
-            this.TextBoxPhotoHotspotRadius.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxPhotoHotspotRadius.Location = new Point(148, 306);
+            TextBoxPhotoHotspotRadius.Name = "TextBoxPhotoHotspotRadius";
+            TextBoxPhotoHotspotRadius.Size = new Size(119, 23);
+            TextBoxPhotoHotspotRadius.TabIndex = 25;
+            TextBoxPhotoHotspotRadius.Text = "1000";
+            TextBoxPhotoHotspotRadius.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoHotspotRadius, "Radius of photo hotspot location in feet");
+            TextBoxPhotoHotspotRadius.Validating += TextBoxInteger_Validating;
             // 
             // label17
             // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(16, 266);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(117, 15);
-            this.label17.TabIndex = 24;
-            this.label17.Text = "Max Bearing Change";
+            label17.AutoSize = true;
+            label17.Location = new Point(16, 266);
+            label17.Name = "label17";
+            label17.Size = new Size(117, 15);
+            label17.TabIndex = 24;
+            label17.Text = "Max Bearing Change";
             // 
             // TextBoxPhotoMaxBearingChange
             // 
-            this.TextBoxPhotoMaxBearingChange.Location = new System.Drawing.Point(148, 258);
-            this.TextBoxPhotoMaxBearingChange.Name = "TextBoxPhotoMaxBearingChange";
-            this.TextBoxPhotoMaxBearingChange.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxPhotoMaxBearingChange.TabIndex = 23;
-            this.TextBoxPhotoMaxBearingChange.Text = "135";
-            this.TextBoxPhotoMaxBearingChange.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxPhotoMaxBearingChange, "Maximum bearing change left or right each leg in degrees");
-            this.TextBoxPhotoMaxBearingChange.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxPhotoMaxBearingChange.Location = new Point(148, 258);
+            TextBoxPhotoMaxBearingChange.Name = "TextBoxPhotoMaxBearingChange";
+            TextBoxPhotoMaxBearingChange.Size = new Size(119, 23);
+            TextBoxPhotoMaxBearingChange.TabIndex = 23;
+            TextBoxPhotoMaxBearingChange.Text = "135";
+            TextBoxPhotoMaxBearingChange.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoMaxBearingChange, "Maximum bearing change left or right each leg in degrees");
+            TextBoxPhotoMaxBearingChange.Validating += TextBoxInteger_Validating;
             // 
             // label15
             // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(16, 221);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(74, 15);
-            this.label15.TabIndex = 21;
-            this.label15.Text = "Window Size";
+            label15.AutoSize = true;
+            label15.Location = new Point(16, 221);
+            label15.Name = "label15";
+            label15.Size = new Size(74, 15);
+            label15.TabIndex = 21;
+            label15.Text = "Window Size";
             // 
             // TextBoxPhotoWindowSize
             // 
-            this.TextBoxPhotoWindowSize.Location = new System.Drawing.Point(148, 213);
-            this.TextBoxPhotoWindowSize.Name = "TextBoxPhotoWindowSize";
-            this.TextBoxPhotoWindowSize.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxPhotoWindowSize.TabIndex = 19;
-            this.TextBoxPhotoWindowSize.Text = "500";
-            this.TextBoxPhotoWindowSize.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxPhotoWindowSize, "Size of leg route window in pixels");
-            this.TextBoxPhotoWindowSize.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxPhotoWindowSize.Location = new Point(148, 213);
+            TextBoxPhotoWindowSize.Name = "TextBoxPhotoWindowSize";
+            TextBoxPhotoWindowSize.Size = new Size(119, 23);
+            TextBoxPhotoWindowSize.TabIndex = 19;
+            TextBoxPhotoWindowSize.Text = "500";
+            TextBoxPhotoWindowSize.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoWindowSize, "Size of leg route window in pixels");
+            TextBoxPhotoWindowSize.Validating += TextBoxInteger_Validating;
             // 
             // label14
             // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(16, 34);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(73, 15);
-            this.label14.TabIndex = 18;
-            this.label14.Text = "Min Leg Dist";
+            label14.AutoSize = true;
+            label14.Location = new Point(16, 34);
+            label14.Name = "label14";
+            label14.Size = new Size(73, 15);
+            label14.TabIndex = 18;
+            label14.Text = "Min Leg Dist";
             // 
             // TextBoxPhotoMinLegDist
             // 
-            this.TextBoxPhotoMinLegDist.Location = new System.Drawing.Point(148, 26);
-            this.TextBoxPhotoMinLegDist.Name = "TextBoxPhotoMinLegDist";
-            this.TextBoxPhotoMinLegDist.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxPhotoMinLegDist.TabIndex = 17;
-            this.TextBoxPhotoMinLegDist.Text = "3";
-            this.TextBoxPhotoMinLegDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxPhotoMinLegDist, "Minimum leg distance in miles to next photo");
-            this.TextBoxPhotoMinLegDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
+            TextBoxPhotoMinLegDist.Location = new Point(148, 26);
+            TextBoxPhotoMinLegDist.Name = "TextBoxPhotoMinLegDist";
+            TextBoxPhotoMinLegDist.Size = new Size(119, 23);
+            TextBoxPhotoMinLegDist.TabIndex = 17;
+            TextBoxPhotoMinLegDist.Text = "3";
+            TextBoxPhotoMinLegDist.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoMinLegDist, "Minimum leg distance in miles to next photo");
+            TextBoxPhotoMinLegDist.Validating += TextBoxDouble_Validating;
             // 
             // label13
             // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(16, 174);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(79, 15);
-            this.label13.TabIndex = 16;
-            this.label13.Text = "Max No. Legs";
+            label13.AutoSize = true;
+            label13.Location = new Point(16, 174);
+            label13.Name = "label13";
+            label13.Size = new Size(79, 15);
+            label13.TabIndex = 16;
+            label13.Text = "Max No. Legs";
             // 
             // label12
             // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(16, 126);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(77, 15);
-            this.label12.TabIndex = 15;
-            this.label12.Text = "Min No. Legs";
+            label12.AutoSize = true;
+            label12.Location = new Point(16, 126);
+            label12.Name = "label12";
+            label12.Size = new Size(77, 15);
+            label12.TabIndex = 15;
+            label12.Text = "Min No. Legs";
             // 
             // TextBoxPhotoMaxNoLegs
             // 
-            this.TextBoxPhotoMaxNoLegs.Location = new System.Drawing.Point(148, 166);
-            this.TextBoxPhotoMaxNoLegs.Name = "TextBoxPhotoMaxNoLegs";
-            this.TextBoxPhotoMaxNoLegs.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxPhotoMaxNoLegs.TabIndex = 14;
-            this.TextBoxPhotoMaxNoLegs.Text = "7";
-            this.TextBoxPhotoMaxNoLegs.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxPhotoMaxNoLegs, "Maximum leg distance in miles to next photo");
-            this.TextBoxPhotoMaxNoLegs.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxPhotoMaxNoLegs.Location = new Point(148, 166);
+            TextBoxPhotoMaxNoLegs.Name = "TextBoxPhotoMaxNoLegs";
+            TextBoxPhotoMaxNoLegs.Size = new Size(119, 23);
+            TextBoxPhotoMaxNoLegs.TabIndex = 14;
+            TextBoxPhotoMaxNoLegs.Text = "7";
+            TextBoxPhotoMaxNoLegs.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoMaxNoLegs, "Maximum leg distance in miles to next photo");
+            TextBoxPhotoMaxNoLegs.Validating += TextBoxInteger_Validating;
             // 
             // TextBoxPhotoMinNoLegs
             // 
-            this.TextBoxPhotoMinNoLegs.Location = new System.Drawing.Point(148, 118);
-            this.TextBoxPhotoMinNoLegs.Name = "TextBoxPhotoMinNoLegs";
-            this.TextBoxPhotoMinNoLegs.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxPhotoMinNoLegs.TabIndex = 13;
-            this.TextBoxPhotoMinNoLegs.Text = "3";
-            this.TextBoxPhotoMinNoLegs.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxPhotoMinNoLegs, "Maximum leg distance in miles to next photo");
-            this.TextBoxPhotoMinNoLegs.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxPhotoMinNoLegs.Location = new Point(148, 118);
+            TextBoxPhotoMinNoLegs.Name = "TextBoxPhotoMinNoLegs";
+            TextBoxPhotoMinNoLegs.Size = new Size(119, 23);
+            TextBoxPhotoMinNoLegs.TabIndex = 13;
+            TextBoxPhotoMinNoLegs.Text = "3";
+            TextBoxPhotoMinNoLegs.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoMinNoLegs, "Maximum leg distance in miles to next photo");
+            TextBoxPhotoMinNoLegs.Validating += TextBoxInteger_Validating;
             // 
             // ButtonPhotoTourDefault
             // 
-            this.ButtonPhotoTourDefault.Location = new System.Drawing.Point(469, 15);
-            this.ButtonPhotoTourDefault.Name = "ButtonPhotoTourDefault";
-            this.ButtonPhotoTourDefault.Size = new System.Drawing.Size(75, 23);
-            this.ButtonPhotoTourDefault.TabIndex = 12;
-            this.ButtonPhotoTourDefault.Text = "Default";
-            this.ButtonPhotoTourDefault.UseVisualStyleBackColor = true;
-            this.ButtonPhotoTourDefault.Click += new System.EventHandler(this.ButtonPhotoTourDefault_Click);
+            ButtonPhotoTourDefault.Location = new Point(469, 15);
+            ButtonPhotoTourDefault.Name = "ButtonPhotoTourDefault";
+            ButtonPhotoTourDefault.Size = new Size(75, 23);
+            ButtonPhotoTourDefault.TabIndex = 12;
+            ButtonPhotoTourDefault.Text = "Default";
+            ButtonPhotoTourDefault.UseVisualStyleBackColor = true;
+            ButtonPhotoTourDefault.Click += ButtonPhotoTourDefault_Click;
             // 
             // label11
             // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(16, 79);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(75, 15);
-            this.label11.TabIndex = 4;
-            this.label11.Text = "Max Leg Dist";
+            label11.AutoSize = true;
+            label11.Location = new Point(16, 79);
+            label11.Name = "label11";
+            label11.Size = new Size(75, 15);
+            label11.TabIndex = 4;
+            label11.Text = "Max Leg Dist";
             // 
             // TextBoxPhotoMaxLegDist
             // 
-            this.TextBoxPhotoMaxLegDist.Location = new System.Drawing.Point(148, 71);
-            this.TextBoxPhotoMaxLegDist.Name = "TextBoxPhotoMaxLegDist";
-            this.TextBoxPhotoMaxLegDist.Size = new System.Drawing.Size(119, 23);
-            this.TextBoxPhotoMaxLegDist.TabIndex = 3;
-            this.TextBoxPhotoMaxLegDist.Text = "10";
-            this.TextBoxPhotoMaxLegDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxPhotoMaxLegDist, "Maximum leg distance in miles to next photo");
-            this.TextBoxPhotoMaxLegDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxDouble_Validating);
+            TextBoxPhotoMaxLegDist.Location = new Point(148, 71);
+            TextBoxPhotoMaxLegDist.Name = "TextBoxPhotoMaxLegDist";
+            TextBoxPhotoMaxLegDist.Size = new Size(119, 23);
+            TextBoxPhotoMaxLegDist.TabIndex = 3;
+            TextBoxPhotoMaxLegDist.Text = "10";
+            TextBoxPhotoMaxLegDist.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoMaxLegDist, "Maximum leg distance in miles to next photo");
+            TextBoxPhotoMaxLegDist.Validating += TextBoxDouble_Validating;
             // 
             // TabPageSign
             // 
-            this.TabPageSign.Controls.Add(this.TextBoxSignSegmentRadius);
-            this.TabPageSign.Controls.Add(this.TextBoxSignSegmentLength);
-            this.TabPageSign.Controls.Add(this.label24);
-            this.TabPageSign.Controls.Add(this.label23);
-            this.TabPageSign.Controls.Add(this.TextBoxSignGateHeight);
-            this.TabPageSign.Controls.Add(this.label22);
-            this.TabPageSign.Controls.Add(this.PictureBoxSignWriting);
-            this.TabPageSign.Controls.Add(this.TextBoxSignWindowWidth);
-            this.TabPageSign.Controls.Add(this.TextBoxSignFont);
-            this.TabPageSign.Controls.Add(this.label21);
-            this.TabPageSign.Controls.Add(this.label20);
-            this.TabPageSign.Controls.Add(this.TextBoxSignTilt);
-            this.TabPageSign.Controls.Add(this.label19);
-            this.TabPageSign.Controls.Add(this.TextBoxSignMessage);
-            this.TabPageSign.Controls.Add(this.label16);
-            this.TabPageSign.Location = new System.Drawing.Point(4, 24);
-            this.TabPageSign.Name = "TabPageSign";
-            this.TabPageSign.Size = new System.Drawing.Size(812, 438);
-            this.TabPageSign.TabIndex = 3;
-            this.TabPageSign.Text = "Sign Writing";
-            this.TabPageSign.UseVisualStyleBackColor = true;
+            TabPageSign.Controls.Add(TextBoxSignSegmentRadius);
+            TabPageSign.Controls.Add(TextBoxSignSegmentLength);
+            TabPageSign.Controls.Add(label24);
+            TabPageSign.Controls.Add(label23);
+            TabPageSign.Controls.Add(TextBoxSignGateHeight);
+            TabPageSign.Controls.Add(label22);
+            TabPageSign.Controls.Add(PictureBoxSignWriting);
+            TabPageSign.Controls.Add(TextBoxSignWindowWidth);
+            TabPageSign.Controls.Add(TextBoxSignFont);
+            TabPageSign.Controls.Add(label21);
+            TabPageSign.Controls.Add(label20);
+            TabPageSign.Controls.Add(TextBoxSignTilt);
+            TabPageSign.Controls.Add(label19);
+            TabPageSign.Controls.Add(TextBoxSignMessage);
+            TabPageSign.Controls.Add(label16);
+            TabPageSign.Location = new Point(4, 24);
+            TabPageSign.Name = "TabPageSign";
+            TabPageSign.Size = new Size(812, 438);
+            TabPageSign.TabIndex = 3;
+            TabPageSign.Text = "Sign Writing";
+            TabPageSign.UseVisualStyleBackColor = true;
             // 
             // TextBoxSignSegmentRadius
             // 
-            this.TextBoxSignSegmentRadius.Location = new System.Drawing.Point(148, 312);
-            this.TextBoxSignSegmentRadius.Name = "TextBoxSignSegmentRadius";
-            this.TextBoxSignSegmentRadius.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxSignSegmentRadius.TabIndex = 14;
-            this.TextBoxSignSegmentRadius.Text = "500";
-            this.TextBoxSignSegmentRadius.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxSignSegmentRadius, "Radius of space between segment ends in feet");
-            this.TextBoxSignSegmentRadius.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxSignSegmentRadius.Location = new Point(148, 312);
+            TextBoxSignSegmentRadius.Name = "TextBoxSignSegmentRadius";
+            TextBoxSignSegmentRadius.Size = new Size(100, 23);
+            TextBoxSignSegmentRadius.TabIndex = 14;
+            TextBoxSignSegmentRadius.Text = "500";
+            TextBoxSignSegmentRadius.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxSignSegmentRadius, "Radius of space between segment ends in feet");
+            TextBoxSignSegmentRadius.Validating += TextBoxInteger_Validating;
             // 
             // TextBoxSignSegmentLength
             // 
-            this.TextBoxSignSegmentLength.Location = new System.Drawing.Point(148, 262);
-            this.TextBoxSignSegmentLength.Name = "TextBoxSignSegmentLength";
-            this.TextBoxSignSegmentLength.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxSignSegmentLength.TabIndex = 13;
-            this.TextBoxSignSegmentLength.Text = "5000";
-            this.TextBoxSignSegmentLength.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxSignSegmentLength, "Length of segment in feet");
-            this.TextBoxSignSegmentLength.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxSignSegmentLength.Location = new Point(148, 262);
+            TextBoxSignSegmentLength.Name = "TextBoxSignSegmentLength";
+            TextBoxSignSegmentLength.Size = new Size(100, 23);
+            TextBoxSignSegmentLength.TabIndex = 13;
+            TextBoxSignSegmentLength.Text = "5000";
+            TextBoxSignSegmentLength.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxSignSegmentLength, "Length of segment in feet");
+            TextBoxSignSegmentLength.Validating += TextBoxInteger_Validating;
             // 
             // label24
             // 
-            this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(16, 315);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(92, 15);
-            this.label24.TabIndex = 12;
-            this.label24.Text = "Segment Radius";
+            label24.AutoSize = true;
+            label24.Location = new Point(16, 315);
+            label24.Name = "label24";
+            label24.Size = new Size(92, 15);
+            label24.TabIndex = 12;
+            label24.Text = "Segment Radius";
             // 
             // label23
             // 
-            this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(16, 265);
-            this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(94, 15);
-            this.label23.TabIndex = 11;
-            this.label23.Text = "Segment Length";
+            label23.AutoSize = true;
+            label23.Location = new Point(16, 265);
+            label23.Name = "label23";
+            label23.Size = new Size(94, 15);
+            label23.TabIndex = 11;
+            label23.Text = "Segment Length";
             // 
             // TextBoxSignGateHeight
             // 
-            this.TextBoxSignGateHeight.Location = new System.Drawing.Point(148, 214);
-            this.TextBoxSignGateHeight.Name = "TextBoxSignGateHeight";
-            this.TextBoxSignGateHeight.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxSignGateHeight.TabIndex = 10;
-            this.TextBoxSignGateHeight.Text = "1000";
-            this.TextBoxSignGateHeight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxSignGateHeight, "Above ground (feet)");
-            this.TextBoxSignGateHeight.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxSignGateHeight.Location = new Point(148, 214);
+            TextBoxSignGateHeight.Name = "TextBoxSignGateHeight";
+            TextBoxSignGateHeight.Size = new Size(100, 23);
+            TextBoxSignGateHeight.TabIndex = 10;
+            TextBoxSignGateHeight.Text = "1000";
+            TextBoxSignGateHeight.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxSignGateHeight, "Above ground (feet)");
+            TextBoxSignGateHeight.Validating += TextBoxInteger_Validating;
             // 
             // label22
             // 
-            this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(16, 217);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(70, 15);
-            this.label22.TabIndex = 9;
-            this.label22.Text = "Gate Height";
+            label22.AutoSize = true;
+            label22.Location = new Point(16, 217);
+            label22.Name = "label22";
+            label22.Size = new Size(70, 15);
+            label22.TabIndex = 9;
+            label22.Text = "Gate Height";
             // 
             // PictureBoxSignWriting
             // 
-            this.PictureBoxSignWriting.Location = new System.Drawing.Point(279, 71);
-            this.PictureBoxSignWriting.Name = "PictureBoxSignWriting";
-            this.PictureBoxSignWriting.Size = new System.Drawing.Size(500, 241);
-            this.PictureBoxSignWriting.TabIndex = 8;
-            this.PictureBoxSignWriting.TabStop = false;
+            PictureBoxSignWriting.Location = new Point(279, 71);
+            PictureBoxSignWriting.Name = "PictureBoxSignWriting";
+            PictureBoxSignWriting.Size = new Size(500, 241);
+            PictureBoxSignWriting.TabIndex = 8;
+            PictureBoxSignWriting.TabStop = false;
             // 
             // TextBoxSignWindowWidth
             // 
-            this.TextBoxSignWindowWidth.Location = new System.Drawing.Point(148, 166);
-            this.TextBoxSignWindowWidth.Name = "TextBoxSignWindowWidth";
-            this.TextBoxSignWindowWidth.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxSignWindowWidth.TabIndex = 7;
-            this.TextBoxSignWindowWidth.Text = "1000";
-            this.TextBoxSignWindowWidth.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.TextBoxSignWindowWidth.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxSignWindowWidth.Location = new Point(148, 166);
+            TextBoxSignWindowWidth.Name = "TextBoxSignWindowWidth";
+            TextBoxSignWindowWidth.Size = new Size(100, 23);
+            TextBoxSignWindowWidth.TabIndex = 7;
+            TextBoxSignWindowWidth.Text = "1000";
+            TextBoxSignWindowWidth.TextAlign = HorizontalAlignment.Center;
+            TextBoxSignWindowWidth.Validating += TextBoxInteger_Validating;
             // 
             // TextBoxSignFont
             // 
-            this.TextBoxSignFont.Enabled = false;
-            this.TextBoxSignFont.Location = new System.Drawing.Point(148, 118);
-            this.TextBoxSignFont.Name = "TextBoxSignFont";
-            this.TextBoxSignFont.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxSignFont.TabIndex = 6;
-            this.TextBoxSignFont.Text = "Segment 22";
-            this.TextBoxSignFont.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            TextBoxSignFont.Enabled = false;
+            TextBoxSignFont.Location = new Point(148, 118);
+            TextBoxSignFont.Name = "TextBoxSignFont";
+            TextBoxSignFont.Size = new Size(100, 23);
+            TextBoxSignFont.TabIndex = 6;
+            TextBoxSignFont.Text = "Segment 22";
+            TextBoxSignFont.TextAlign = HorizontalAlignment.Center;
             // 
             // label21
             // 
-            this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(16, 175);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(86, 15);
-            this.label21.TabIndex = 5;
-            this.label21.Text = "Window Width";
+            label21.AutoSize = true;
+            label21.Location = new Point(16, 175);
+            label21.Name = "label21";
+            label21.Size = new Size(86, 15);
+            label21.TabIndex = 5;
+            label21.Text = "Window Width";
             // 
             // label20
             // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(16, 126);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(31, 15);
-            this.label20.TabIndex = 4;
-            this.label20.Text = "Font";
+            label20.AutoSize = true;
+            label20.Location = new Point(16, 126);
+            label20.Name = "label20";
+            label20.Size = new Size(31, 15);
+            label20.TabIndex = 4;
+            label20.Text = "Font";
             // 
             // TextBoxSignTilt
             // 
-            this.TextBoxSignTilt.Location = new System.Drawing.Point(148, 71);
-            this.TextBoxSignTilt.Name = "TextBoxSignTilt";
-            this.TextBoxSignTilt.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxSignTilt.TabIndex = 3;
-            this.TextBoxSignTilt.Text = "10";
-            this.TextBoxSignTilt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.TextBoxSignTilt.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxSignTilt.Location = new Point(148, 71);
+            TextBoxSignTilt.Name = "TextBoxSignTilt";
+            TextBoxSignTilt.Size = new Size(100, 23);
+            TextBoxSignTilt.TabIndex = 3;
+            TextBoxSignTilt.Text = "10";
+            TextBoxSignTilt.TextAlign = HorizontalAlignment.Center;
+            TextBoxSignTilt.Validating += TextBoxInteger_Validating;
             // 
             // label19
             // 
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(16, 79);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(57, 15);
-            this.label19.TabIndex = 2;
-            this.label19.Text = "Tilt Angle";
-            this.toolTip1.SetToolTip(this.label19, "Tilt Angle in degrees from horizontal");
+            label19.AutoSize = true;
+            label19.Location = new Point(16, 79);
+            label19.Name = "label19";
+            label19.Size = new Size(57, 15);
+            label19.TabIndex = 2;
+            label19.Text = "Tilt Angle";
+            toolTip1.SetToolTip(label19, "Tilt Angle in degrees from horizontal");
             // 
             // TextBoxSignMessage
             // 
-            this.TextBoxSignMessage.Location = new System.Drawing.Point(148, 26);
-            this.TextBoxSignMessage.Name = "TextBoxSignMessage";
-            this.TextBoxSignMessage.Size = new System.Drawing.Size(631, 23);
-            this.TextBoxSignMessage.TabIndex = 1;
-            this.TextBoxSignMessage.Text = "FNQ Kid";
-            this.toolTip1.SetToolTip(this.TextBoxSignMessage, "Message consisting only of alphabetic characters");
-            this.TextBoxSignMessage.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxString_Validating);
+            TextBoxSignMessage.Location = new Point(148, 26);
+            TextBoxSignMessage.Name = "TextBoxSignMessage";
+            TextBoxSignMessage.Size = new Size(631, 23);
+            TextBoxSignMessage.TabIndex = 1;
+            TextBoxSignMessage.Text = "FNQ Kid";
+            toolTip1.SetToolTip(TextBoxSignMessage, "Message consisting only of alphabetic characters");
+            TextBoxSignMessage.Validating += TextBoxString_Validating;
             // 
             // label16
             // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(16, 34);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(53, 15);
-            this.label16.TabIndex = 0;
-            this.label16.Text = "Message";
+            label16.AutoSize = true;
+            label16.Location = new Point(16, 34);
+            label16.Name = "label16";
+            label16.Size = new Size(53, 15);
+            label16.TabIndex = 0;
+            label16.Text = "Message";
             // 
             // TabPageCelestial
             // 
-            this.TabPageCelestial.Controls.Add(this.TextBoxCelestialMaxDist);
-            this.TabPageCelestial.Controls.Add(this.TextBoxCelestialMinDist);
-            this.TabPageCelestial.Controls.Add(this.label26);
-            this.TabPageCelestial.Controls.Add(this.label25);
-            this.TabPageCelestial.Location = new System.Drawing.Point(4, 24);
-            this.TabPageCelestial.Name = "TabPageCelestial";
-            this.TabPageCelestial.Size = new System.Drawing.Size(812, 438);
-            this.TabPageCelestial.TabIndex = 4;
-            this.TabPageCelestial.Text = "Celestial Navigation";
-            this.TabPageCelestial.UseVisualStyleBackColor = true;
+            TabPageCelestial.Controls.Add(TextBoxCelestialMaxDist);
+            TabPageCelestial.Controls.Add(TextBoxCelestialMinDist);
+            TabPageCelestial.Controls.Add(label26);
+            TabPageCelestial.Controls.Add(label25);
+            TabPageCelestial.Location = new Point(4, 24);
+            TabPageCelestial.Name = "TabPageCelestial";
+            TabPageCelestial.Size = new Size(812, 438);
+            TabPageCelestial.TabIndex = 4;
+            TabPageCelestial.Text = "Celestial Navigation";
+            TabPageCelestial.UseVisualStyleBackColor = true;
             // 
             // TextBoxCelestialMaxDist
             // 
-            this.TextBoxCelestialMaxDist.Location = new System.Drawing.Point(148, 71);
-            this.TextBoxCelestialMaxDist.Name = "TextBoxCelestialMaxDist";
-            this.TextBoxCelestialMaxDist.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxCelestialMaxDist.TabIndex = 3;
-            this.TextBoxCelestialMaxDist.Text = "30";
-            this.TextBoxCelestialMaxDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxCelestialMaxDist, "Max run home from starting position (miles)");
-            this.TextBoxCelestialMaxDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxCelestialMaxDist.Location = new Point(148, 71);
+            TextBoxCelestialMaxDist.Name = "TextBoxCelestialMaxDist";
+            TextBoxCelestialMaxDist.Size = new Size(100, 23);
+            TextBoxCelestialMaxDist.TabIndex = 3;
+            TextBoxCelestialMaxDist.Text = "30";
+            TextBoxCelestialMaxDist.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCelestialMaxDist, "Max run home from starting position (miles)");
+            TextBoxCelestialMaxDist.Validating += TextBoxInteger_Validating;
             // 
             // TextBoxCelestialMinDist
             // 
-            this.TextBoxCelestialMinDist.Location = new System.Drawing.Point(148, 26);
-            this.TextBoxCelestialMinDist.Name = "TextBoxCelestialMinDist";
-            this.TextBoxCelestialMinDist.Size = new System.Drawing.Size(100, 23);
-            this.TextBoxCelestialMinDist.TabIndex = 2;
-            this.TextBoxCelestialMinDist.Text = "20";
-            this.TextBoxCelestialMinDist.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.TextBoxCelestialMinDist, "Min run home from starting position (miles)");
-            this.TextBoxCelestialMinDist.Validating += new System.ComponentModel.CancelEventHandler(this.TextBoxInteger_Validating);
+            TextBoxCelestialMinDist.Location = new Point(148, 26);
+            TextBoxCelestialMinDist.Name = "TextBoxCelestialMinDist";
+            TextBoxCelestialMinDist.Size = new Size(100, 23);
+            TextBoxCelestialMinDist.TabIndex = 2;
+            TextBoxCelestialMinDist.Text = "20";
+            TextBoxCelestialMinDist.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCelestialMinDist, "Min run home from starting position (miles)");
+            TextBoxCelestialMinDist.Validating += TextBoxInteger_Validating;
             // 
             // label26
             // 
-            this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(16, 79);
-            this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(109, 15);
-            this.label26.TabIndex = 1;
-            this.label26.Text = "Maximum distance";
+            label26.AutoSize = true;
+            label26.Location = new Point(16, 79);
+            label26.Name = "label26";
+            label26.Size = new Size(109, 15);
+            label26.TabIndex = 1;
+            label26.Text = "Maximum distance";
             // 
             // label25
             // 
-            this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(16, 34);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(107, 15);
-            this.label25.TabIndex = 0;
-            this.label25.Text = "Minimum distance";
+            label25.AutoSize = true;
+            label25.Location = new Point(16, 34);
+            label25.Name = "label25";
+            label25.Size = new Size(107, 15);
+            label25.TabIndex = 0;
+            label25.Text = "Minimum distance";
             // 
             // ButtonGenerateScenario
             // 
-            this.ButtonGenerateScenario.ImageAlign = System.Drawing.ContentAlignment.BottomLeft;
-            this.ButtonGenerateScenario.Location = new System.Drawing.Point(343, 493);
-            this.ButtonGenerateScenario.Name = "ButtonGenerateScenario";
-            this.ButtonGenerateScenario.Size = new System.Drawing.Size(152, 43);
-            this.ButtonGenerateScenario.TabIndex = 1;
-            this.ButtonGenerateScenario.Text = "Generate Scenario";
-            this.ButtonGenerateScenario.UseVisualStyleBackColor = true;
-            this.ButtonGenerateScenario.Click += new System.EventHandler(this.ButtonGenerateScenario_Click);
+            ButtonGenerateScenario.ImageAlign = ContentAlignment.BottomLeft;
+            ButtonGenerateScenario.Location = new Point(343, 493);
+            ButtonGenerateScenario.Name = "ButtonGenerateScenario";
+            ButtonGenerateScenario.Size = new Size(152, 43);
+            ButtonGenerateScenario.TabIndex = 1;
+            ButtonGenerateScenario.Text = "Generate Scenario";
+            ButtonGenerateScenario.UseVisualStyleBackColor = true;
+            ButtonGenerateScenario.Click += ButtonGenerateScenario_Click;
             // 
             // ButtonHelp
             // 
-            this.ButtonHelp.Location = new System.Drawing.Point(753, 513);
-            this.ButtonHelp.Name = "ButtonHelp";
-            this.ButtonHelp.Size = new System.Drawing.Size(75, 23);
-            this.ButtonHelp.TabIndex = 2;
-            this.ButtonHelp.Text = "Help";
-            this.ButtonHelp.UseVisualStyleBackColor = true;
-            this.ButtonHelp.Click += new System.EventHandler(this.ButtonHelp_Click);
+            ButtonHelp.Location = new Point(753, 513);
+            ButtonHelp.Name = "ButtonHelp";
+            ButtonHelp.Size = new Size(75, 23);
+            ButtonHelp.TabIndex = 2;
+            ButtonHelp.Text = "Help";
+            ButtonHelp.UseVisualStyleBackColor = true;
+            ButtonHelp.Click += ButtonHelp_Click;
             // 
             // Form
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(844, 553);
-            this.Controls.Add(this.ButtonHelp);
-            this.Controls.Add(this.ButtonGenerateScenario);
-            this.Controls.Add(this.TabControl);
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.Name = "Form";
-            this.Text = "P3D Scenario Generator";
-            this.TabControl.ResumeLayout(false);
-            this.TabPageGeneral.ResumeLayout(false);
-            this.TabPageGeneral.PerformLayout();
-            this.TabPageCircuit.ResumeLayout(false);
-            this.TabPageCircuit.PerformLayout();
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.PictureBoxCircuit)).EndInit();
-            this.TabPagePhoto.ResumeLayout(false);
-            this.TabPagePhoto.PerformLayout();
-            this.TabPageSign.ResumeLayout(false);
-            this.TabPageSign.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.PictureBoxSignWriting)).EndInit();
-            this.TabPageCelestial.ResumeLayout(false);
-            this.TabPageCelestial.PerformLayout();
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(844, 553);
+            Controls.Add(ButtonHelp);
+            Controls.Add(ButtonGenerateScenario);
+            Controls.Add(TabControl);
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "Form";
+            Text = "P3D Scenario Generator";
+            Load += Init;
+            TabControl.ResumeLayout(false);
+            TabPageGeneral.ResumeLayout(false);
+            TabPageGeneral.PerformLayout();
+            TabPageCircuit.ResumeLayout(false);
+            TabPageCircuit.PerformLayout();
+            tableLayoutPanel1.ResumeLayout(false);
+            tableLayoutPanel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)PictureBoxCircuit).EndInit();
+            TabPagePhoto.ResumeLayout(false);
+            TabPagePhoto.PerformLayout();
+            TabPageSign.ResumeLayout(false);
+            TabPageSign.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)PictureBoxSignWriting).EndInit();
+            TabPageCelestial.ResumeLayout(false);
+            TabPageCelestial.PerformLayout();
+            ResumeLayout(false);
         }
 
         private void TabControl_SelectedIndexChanged(object sender, EventArgs e)
