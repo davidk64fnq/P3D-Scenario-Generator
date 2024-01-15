@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Drawing.Imaging;
+﻿using System.Drawing.Imaging;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace P3D_Scenario_Generator

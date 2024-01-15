@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace P3D_Scenario_Generator
+﻿namespace P3D_Scenario_Generator
 {
     internal class SignWriting
     {

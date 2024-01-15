@@ -1,6 +1,3 @@
-using System;
-using System.Windows.Forms;
-
 namespace P3D_Scenario_Generator
 {
     internal static class Program
