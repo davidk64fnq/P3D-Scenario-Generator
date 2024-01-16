@@ -195,5 +195,11 @@ namespace P3D_Scenario_Generator
             }
             navStarNames.Sort();
         }
+
+        static internal double GetCelestialDistance()
+        {
+            // Runway.AirportLat is where plane starts in air a random distance from destination runway which is Runway.Lat
+            return MathRoutines.CalcDistance(Runway.AirportLat, Runway.AirportLon, Runway.Lat, Runway.Lon);
+        }
     }
 }

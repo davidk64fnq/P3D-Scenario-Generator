@@ -70,7 +70,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
                     overview.Briefing += $"{Runway.City}, {Runway.Country}.";
                     overview.Objective = "Take off and fly through the eight gates before landing on the same runway.";
-                    overview.Tips = "Each pair of gates marks the start and finish of a standard rate left turn of 90 degrees. ";
+                    overview.Tips = "Each pair of gates marks the start and finish of a 90 degree turn. ";
                     break;
                 case nameof(ScenarioTypes.PhotoTour):
                     overview.Title = "Photo Tour";
@@ -116,7 +116,7 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.IcaoName} ({Runway.IcaoId}) {Runway.City}, {Runway.Country}";
                     overview.Difficulty = "Advanced";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = 0 / Aircraft.CruiseSpeed * 60;
+                    duration = CelestialNav.GetCelestialDistance() / Aircraft.CruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{Parameters.SelectedAircraft}";
                     overview.Briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
