@@ -5,7 +5,7 @@ namespace P3D_Scenario_Generator
     internal class Aircraft
     {
         static internal string Path { get; private set; }
-        static internal double CruiseSpeed { get; private set; }
+        static internal double CruiseSpeed { get; set; }
         static internal List<string[]> uiVariations = [];
 
         static internal List<string> GetUIvariations()

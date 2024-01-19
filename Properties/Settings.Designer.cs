@@ -34,5 +34,41 @@ namespace P3D_Scenario_Generator.Properties {
                 this["Prepar3Dv5Files"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Piper Cub")]
+        public string SelectedAircraft {
+            get {
+                return ((string)(this["SelectedAircraft"]));
+            }
+            set {
+                this["SelectedAircraft"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("thumbnail.jpg")]
+        public string AircraftImage {
+            get {
+                return ((string)(this["AircraftImage"]));
+            }
+            set {
+                this["AircraftImage"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("63")]
+        public double CruiseSpeed {
+            get {
+                return ((double)(this["CruiseSpeed"]));
+            }
+            set {
+                this["CruiseSpeed"] = value;
+            }
+        }
     }
 }

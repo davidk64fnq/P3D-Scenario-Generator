@@ -121,7 +121,7 @@ namespace P3D_Scenario_Generator
                     overview.Aircraft = $"{Parameters.SelectedAircraft}";
                     overview.Briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
                     overview.Briefing += $"as you test your navigation skills flying a {Parameters.SelectedAircraft}.";
-                    overview.Briefing += "The scenario begins on runway ";
+                    overview.Briefing += " The scenario begins on runway ";
                     overview.Briefing += $"{Runway.Id} at {Runway.IcaoName} ({Runway.IcaoId}) in ";
                     overview.Briefing += $"{Runway.City}, {Runway.Country}.";
                     //words = Parameters.DestRunway.Split('\t');

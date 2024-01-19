@@ -51,6 +51,7 @@ namespace P3D_Scenario_Generator
                 ListBoxRunways.Enabled = false;
                 TextBoxSearchRunway.Enabled = false;
                 ButtonRandRunway.Enabled = false;
+                TextBoxSelectedRunway.Text = "";
                 SetDefaultPhotoTourParams();
             }
             else
@@ -118,10 +119,17 @@ namespace P3D_Scenario_Generator
             List<string> uiVariations = Aircraft.GetUIvariations();
             if (uiVariations.Count > 0)
             {
+                Properties.Settings.Default.CruiseSpeed = Aircraft.CruiseSpeed;
                 ListBoxAircraft.DataSource = uiVariations;
                 ListBoxAircraft.SelectedIndex = 0;
                 SetDefaultCircuitParams();
             }
+        }
+        private void ListBoxAircraft_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.SelectedAircraft = ListBoxAircraft.Text;
+            Properties.Settings.Default.AircraftImage = Aircraft.GetImagename(ListBoxAircraft.Text);
+            Properties.Settings.Default.Save();
         }
 
         #endregion
@@ -369,6 +377,11 @@ namespace P3D_Scenario_Generator
 
         private void Init(object sender, EventArgs e)
         {
+            string[] newUIvariation = [Properties.Settings.Default.SelectedAircraft, Properties.Settings.Default.AircraftImage];
+            Aircraft.uiVariations.Add(newUIvariation);
+            List<string> aircraftList = [Properties.Settings.Default.SelectedAircraft];
+            ListBoxAircraft.DataSource = aircraftList;
+            Aircraft.CruiseSpeed = Properties.Settings.Default.CruiseSpeed;
             TextBoxP3Dv5Files.Text = Properties.Settings.Default.Prepar3Dv5Files;
         }
         #endregion

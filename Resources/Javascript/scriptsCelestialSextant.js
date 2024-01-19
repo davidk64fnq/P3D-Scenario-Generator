@@ -103,7 +103,7 @@ function update(timestamp)
 	
 	
 	// Calculate local position of stars
-	ptsList = calcLocalStarPositions(planeLat, planeLon, planeHeadDeg);
+	ptsList = calcLocalStarPositions(planeLat, planeLon);
 	
 	// Clear star map from last update
 	context.fillStyle = "black";
@@ -441,8 +441,13 @@ function takeSighting() {
 		DecArray[curIndex].innerHTML = formatLatDeg(starDEC);
 
 		// Calc Hc and Zn indirectly using formulae from here http://www.stargazing.net/kepler/altaz.html
-		var ptsList = calcLocalStarPositions(toRadians(assumedLat[fixNumber]), toRadians(assumedLon[fixNumber]), planeHeadDeg);
+		var ptsList = calcLocalStarPositions(toRadians(assumedLat[fixNumber]), toRadians(assumedLon[fixNumber]));
 		var starNameIndex = ptsList.findIndex(x => x == selectStarNameArray[curIndex].value);
+		if (starNameIndex == -1) {
+			VarSet("S:errorMsgNo", "NUMBER", 1);
+			HsArray[curIndex].innerHTML = "";
+			return;
+		}
 		var ptsListIndex = starNameIndex - 5; // star name is 6th item of 7 items stored for each star
 		var HcZn = calcHcZn(ptsList, ptsListIndex);
 		Zn.push(HcZn[1]);

@@ -230,6 +230,7 @@ namespace P3D_Scenario_Generator
             ListBoxAircraft.Name = "ListBoxAircraft";
             ListBoxAircraft.Size = new Size(250, 94);
             ListBoxAircraft.TabIndex = 12;
+            ListBoxAircraft.SelectedIndexChanged += ListBoxAircraft_SelectedIndexChanged;
             // 
             // buttonAircraft
             // 

@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Security.AccessControl;
 using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator
@@ -41,11 +44,11 @@ namespace P3D_Scenario_Generator
 			SetGoal();
 			SetLibraryObject();
 			SetOneShotSoundAction();
-			SetRealismOverrides();
+			SetOnScreenText();
+            SetRealismOverrides();
 			SetRectangleArea();
 			SetScaleformPanelWindow();
 			SetScenarioMetadata();
-			SetScenarioVariable();
 			SetScriptAction();
 		}
 
@@ -61,7 +64,8 @@ namespace P3D_Scenario_Generator
         {
 			SetAirportLandingTrigger();
 			SetPointOfInterestActivationAction();
-			SetTimerTrigger();
+            SetScenarioVariable();
+            SetTimerTrigger();
 		}
 
 		static private void SetFourthPassObjects()
@@ -82,9 +86,9 @@ namespace P3D_Scenario_Generator
 			SetTimerTriggerFirstEvent();
         }
 
-		#region First pass object creation
+        #region First pass object creation
 
-		static private void SetCylinderArea()
+        static private void SetCylinderArea()
 		{
 			List<SimMissionCylinderArea> caList = [];
 			switch (Parameters.SelectedScenario)
@@ -176,9 +180,23 @@ namespace P3D_Scenario_Generator
 					break;
 			}
 			simBaseDocumentXML.WorldBaseFlight.SimMissionOneShotSoundAction = saList;
-		}
+        }
 
-		static private void SetRealismOverrides()
+        static private void SetOnScreenText()
+        {
+            List<SimMissionOnScreenText> ostList = [];
+            switch (Parameters.SelectedScenario)
+            {
+                case nameof(ScenarioTypes.Celestial):
+                    ostList.Add(new SimMissionOnScreenText("Celestial error message", "Star not in FOV", "Center", "0.000000,0.000000,0.000000,255.000000", "False", "White", GetGUID()));
+                    break;
+                default:
+                    break;
+            }
+            simBaseDocumentXML.WorldBaseFlight.SimMissionOnScreenText = ostList;
+        }
+
+        static private void SetRealismOverrides()
 		{
 			SimMissionRealismOverrides ro = new()
             {
@@ -251,20 +269,6 @@ namespace P3D_Scenario_Generator
 			simBaseDocumentXML.WorldBaseFlight.SimMissionUIScenarioMetadata = md;
 		}
 
-		static private void SetScenarioVariable()
-		{
-			List<SimMissionScenarioVariable> svList = [];
-			switch (Parameters.SelectedScenario)
-			{
-				case nameof(ScenarioTypes.SignWriting):
-					SetSignWritingScenarioVariables(svList);
-					break;
-				default:
-					break;
-			}
-			simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable = svList;
-		}
-
 		static private void SetScriptAction()
 		{
 			List<SimMissionScriptAction> saList = [];
@@ -273,7 +277,10 @@ namespace P3D_Scenario_Generator
 				case nameof(ScenarioTypes.SignWriting):
 					SetSignWritingScriptActions(saList);
 					break;
-				default:
+                case nameof(ScenarioTypes.Celestial):
+                    SetCelestialScriptActions(saList);
+                    break;
+                default:
 					break;
 			}
 			simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction = saList;
@@ -312,8 +319,8 @@ namespace P3D_Scenario_Generator
 			simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction = graList;
 		}
 
-		// Requires 1st pass SetLibraryObject()
-		static private void SetObjectActivationAction()
+        // Requires 1st pass SetLibraryObject() or SetOnScreenText()
+        static private void SetObjectActivationAction()
 		{
 			List<SimMissionObjectActivationAction> oaaList = [];
 			switch (Parameters.SelectedScenario)
@@ -325,7 +332,10 @@ namespace P3D_Scenario_Generator
 					SetGateObjectActivations(Constants.genGameHoopNumInactiveDesc, oaaList, "Activate_Hoop_Inactive_0", "True");
 					SetGateObjectActivations(Constants.genGameHoopNumInactiveDesc, oaaList, "Deactivate_Hoop_Inactive_0", "False");
 					break;
-				default:
+                case nameof(ScenarioTypes.Celestial):
+					SetCelestialObjectActivations(oaaList);
+                    break;
+                default:
 					break;
 			}
 			simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction = oaaList;
@@ -441,8 +451,26 @@ namespace P3D_Scenario_Generator
 			simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction = paaList;
 		}
 
-		// Requires 2nd pass SetObjectActivationAction()
-		static private void SetTimerTrigger()
+        // Requires 2nd pass SetObjectActivationAction() for Celestial Scenario
+        static private void SetScenarioVariable()
+        {
+            List<SimMissionScenarioVariable> svList = [];
+            switch (Parameters.SelectedScenario)
+            {
+                case nameof(ScenarioTypes.SignWriting):
+                    SetSignWritingScenarioVariables(svList);
+                    break;
+                case nameof(ScenarioTypes.Celestial):
+                    SetCelestialScenarioVariables(svList);
+                    break;
+                default:
+                    break;
+            }
+            simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable = svList;
+        }
+
+        // Requires 2nd pass SetObjectActivationAction()
+        static private void SetTimerTrigger()
 		{
 			List<SimMissionTimerTrigger> ttList = [];
 			switch (Parameters.SelectedScenario)
@@ -509,7 +537,18 @@ namespace P3D_Scenario_Generator
 						Actions = new Actions(orCelestialList)
 					};
 					ttList.Add(celestialTT);
-					break;
+					orCelestialList.Clear();
+                    SetObjectActivationReference("Reset Celestial onscreen text error message state", 2, orCelestialList);
+                    SimMissionTimerTrigger celestialTT1 = new()
+                    {
+                        InstanceId = GetGUID(),
+                        Descr = "Timer_Trigger_02",
+                        StopTime = 1.0,
+                        Activated = "True",
+                        Actions = new Actions(orCelestialList)
+                    };
+                    ttList.Add(celestialTT1);
+                    break;
 				default:
 					break;
 			}
@@ -736,7 +775,7 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
-		// Requires 4th pass SetProximityTriggerActivationAction()
+		// Requires 5th pass SetProximityTriggerActivationAction()
 		static private void SetTimerTriggerFirstEvent()
 		{
 			switch (Parameters.SelectedScenario)
@@ -781,7 +820,47 @@ namespace P3D_Scenario_Generator
 			cwaList.Add(cwa);
 		}
 
-		static private void SetCelestialOpenWindowActionObjects(List<SimMissionOpenWindowAction> owaList)
+        static private void SetCelestialObjectActivations(List<SimMissionObjectActivationAction> oaaList)
+        {
+			// Display onscreen text error message
+            string search = "Celestial error message";
+            int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionOnScreenText.FindIndex(lo => lo.Descr == search);
+            List<ObjectReference> orList =
+            [
+                new ObjectReference(simBaseDocumentXML.WorldBaseFlight.SimMissionOnScreenText[idIndex].InstanceId)
+            ];
+            SimMissionObjectActivationAction oaa1 = new()
+            {
+                InstanceId = GetGUID(),
+                Descr = "Display Celestial error message",
+                NewObjectState = "True",
+                ObjectReferenceList = new ObjectReferenceList(orList)
+            };
+            oaaList.Add(oaa1);
+
+            // Reset onscreen text error message state to false
+            SimMissionObjectActivationAction oaa2 = new()
+            {
+                InstanceId = GetGUID(),
+                Descr = "Reset Celestial onscreen text error message state",
+                NewObjectState = "False",
+                ObjectReferenceList = new ObjectReferenceList(orList)
+            };
+            oaaList.Add(oaa2);
+
+            // Reset error message scenario variable
+            List<ObjectReference> orList1 = [];
+			SetScriptActionReference("Celestial reset errorMsgNo script", orList1);
+            SimMissionObjectActivationAction oaa3 = new()
+            {
+                InstanceId = GetGUID(),
+                Descr = "Reset Celestial error message scenario variable",
+                ObjectReferenceList = new ObjectReferenceList(orList1)
+            };
+            oaaList.Add(oaa3);
+        }
+
+        static private void SetCelestialOpenWindowActionObjects(List<SimMissionOpenWindowAction> owaList)
 		{
 			string search = $"Scaleform_Panel_Window_CelestialSextant";
 			int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(spw => spw.Descr == search);
@@ -795,9 +874,38 @@ namespace P3D_Scenario_Generator
 				InstanceId = GetGUID()
 			};
 			owaList.Add(owa);
-		}
+        }
 
-		static private void SetCelestialSextantScaleformPanelWindow(List<SimMissionScaleformPanelWindow> spwList)
+        static private void SetCelestialScenarioVariables(List<SimMissionScenarioVariable> svList)
+        {
+            string search = "Display Celestial error message";
+            int idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(oaa => oaa.Descr == search);
+            ObjectReference or = new(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
+            search = "Reset Celestial error message scenario variable";
+            idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(oaa => oaa.Descr == search);
+            ObjectReference or1 = new(simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
+			List<ObjectReference> orList = [or, or1];
+            Actions a = new(orList);
+            List<Actions> aList = [];
+			aList.Add(a);
+			Constant constant = new(1.0);
+			TriggerValue tv = new(constant);
+            List<TriggerCondition> tcList = [];
+			TriggerCondition tc = new()
+			{
+				Actions = aList,
+				TriggerValue = tv
+			};
+            tcList.Add(tc);
+            svList.Add(new SimMissionScenarioVariable(tcList, GetGUID(), "", "Celestial error message number", "errorMsgNo", "0"));
+        }
+        
+		static private void SetCelestialScriptActions(List<SimMissionScriptAction> saList)
+        {
+            saList.Add(new SimMissionScriptAction("Celestial reset errorMsgNo script", "!lua varset(\"S:errorMsgNo\", \"NUMBER\", 0)", GetGUID(), ""));
+        }
+
+        static private void SetCelestialSextantScaleformPanelWindow(List<SimMissionScaleformPanelWindow> spwList)
 		{
 			string descr = $"Scaleform_Panel_Window_CelestialSextant";
 			string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\htmlCelestialSextant.html";
@@ -1074,7 +1182,7 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
-		static private void SetGatePOIactivationActions(List<SimMissionPointOfInterestActivationAction> paaList, string descr, string newObjectState)
+        static private void SetGatePOIactivationActions(List<SimMissionPointOfInterestActivationAction> paaList, string descr, string newObjectState)
         {
 			for (int index = 0; index < Gates.GateCount; index++)
 			{
@@ -1619,9 +1727,16 @@ namespace P3D_Scenario_Generator
 
 	[XmlRoot(ElementName = "Constant")]
 	public class Constant
-	{
+    {
+        public Constant(double v1)
+        {
+            Double = v1;
+        }
+        public Constant()
+        {
+        }
 
-		[XmlElement(ElementName = "Double")]
+        [XmlElement(ElementName = "Double")]
 		public double Double { get; set; }
 	}
 
@@ -2170,9 +2285,49 @@ namespace P3D_Scenario_Generator
 
 		[XmlAttribute(AttributeName = "InstanceId")]
 		public string InstanceId { get; set; }
-	}
+    }
 
-	[XmlRoot(ElementName = "SimMission.OpenWindowAction")]
+    [XmlRoot(ElementName = "SimMission.OnScreenText")]
+    public class SimMissionOnScreenText
+    {
+        public SimMissionOnScreenText(string v1, string v2, string v3, string v4, string v5, string v6, string v7)
+        {
+            Descr = v1;
+            Text = v2;
+            OnScreenTextDisplayLocation = v3;
+            RGBColor = v4;
+            Activated = v5;
+            OnScreenTextBackgroundColor = v6;
+            InstanceId = v7;
+        }
+
+        public SimMissionOnScreenText()
+        {
+        }
+
+        [XmlElement(ElementName = "Descr")]
+        public string Descr { get; set; }
+
+        [XmlElement(ElementName = "Text")]
+        public string Text { get; set; }
+
+        [XmlElement(ElementName = "OnScreenTextDisplayLocation")]
+        public string OnScreenTextDisplayLocation { get; set; }
+
+        [XmlElement(ElementName = "RGBColor")]
+        public string RGBColor { get; set; }
+
+        [XmlElement(ElementName = "Activated")]
+        public string Activated { get; set; }
+
+        [XmlElement(ElementName = "OnScreenTextBackgroundColor")]
+        public string OnScreenTextBackgroundColor { get; set; }
+
+        [XmlAttribute(AttributeName = "InstanceId")]
+        public string InstanceId { get; set; }
+    }
+
+    [XmlRoot(ElementName = "SimMission.OpenWindowAction")]
 	public class SimMissionOpenWindowAction
 	{
 		public SimMissionOpenWindowAction(string v1, SetWindowSize v2, ObjectReference v3, string v4)
@@ -2591,10 +2746,19 @@ namespace P3D_Scenario_Generator
 
 	[XmlRoot(ElementName = "TriggerCondition")]
 	public class TriggerCondition
-	{
+    {
+        public TriggerCondition(List<Actions> v1, TriggerValue v2)
+        {
+            Actions = v1;
+            TriggerValue = v2;
+        }
 
-		[XmlElement(ElementName = "Actions")]
-		public Actions Actions { get; set; }
+        public TriggerCondition()
+        {
+        }
+
+        [XmlElement(ElementName = "Actions")]
+		public List<Actions> Actions { get; set; }
 
 		[XmlElement(ElementName = "TriggerValue")]
 		public TriggerValue TriggerValue { get; set; }
@@ -2602,9 +2766,17 @@ namespace P3D_Scenario_Generator
 
 	[XmlRoot(ElementName = "TriggerValue")]
 	public class TriggerValue
-	{
+    {
+        public TriggerValue(Constant v1)
+        {
+            Constant = v1;
+        }
 
-		[XmlElement(ElementName = "Constant")]
+        public TriggerValue()
+        {
+        }
+
+        [XmlElement(ElementName = "Constant")]
 		public Constant Constant { get; set; }
 	}
 
@@ -2645,8 +2817,11 @@ namespace P3D_Scenario_Generator
 		[XmlElement(ElementName = "SimMission.ObjectActivationAction")]
 		public List<SimMissionObjectActivationAction> SimMissionObjectActivationAction { get; set; }
 
-		[XmlElement(ElementName = "SimMission.OneShotSoundAction")]
-		public List<SimMissionOneShotSoundAction> SimMissionOneShotSoundAction { get; set; }
+        [XmlElement(ElementName = "SimMission.OneShotSoundAction")]
+        public List<SimMissionOneShotSoundAction> SimMissionOneShotSoundAction { get; set; }
+
+        [XmlElement(ElementName = "SimMission.OnScreenText")]
+		public List<SimMissionOnScreenText> SimMissionOnScreenText { get; set; }
 
 		[XmlElement(ElementName = "SimMission.OpenWindowAction")]
 		public List<SimMissionOpenWindowAction> SimMissionOpenWindowAction { get; set; }

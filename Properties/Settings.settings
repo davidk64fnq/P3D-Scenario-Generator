@@ -5,5 +5,14 @@
     <Setting Name="Prepar3Dv5Files" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\Users\david\OneDrive\Documents\Prepar3D v5 Files</Value>
     </Setting>
+    <Setting Name="SelectedAircraft" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Piper Cub</Value>
+    </Setting>
+    <Setting Name="AircraftImage" Type="System.String" Scope="User">
+      <Value Profile="(Default)">thumbnail.jpg</Value>
+    </Setting>
+    <Setting Name="CruiseSpeed" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">63</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -12,7 +12,7 @@ function calcHcZn(ptsList, ptsListIndex) {
 	return HcZnIndirect;
 }
 
-function calcLocalStarPositions(latitude, longitude, planeHeadDeg) {
+function calcLocalStarPositions(latitude, longitude) {
 	var ptsList = new Array(); // Pixel positions for stars in current sextant FOV
 
 	for (let starIndex = 0; starIndex < raH.length; starIndex++) {
@@ -33,7 +33,6 @@ function calcLocalStarPositions(latitude, longitude, planeHeadDeg) {
 			updatePtsList(starIndex, ptsList, left, top);
 		}
 	}
-
 	return ptsList;
 }
 
