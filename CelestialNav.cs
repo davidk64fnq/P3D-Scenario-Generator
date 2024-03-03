@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Microsoft.VisualBasic.Logging;
 using OfficeOpenXml;
 
 
@@ -33,6 +34,11 @@ namespace P3D_Scenario_Generator
         internal static double[] starsSHAm = new double[57];
         internal static double[] starsDECd = new double[57];
         internal static double[] starsDECm = new double[57];
+        internal static double midairStartHdg;
+        internal static double midairStartLat;
+        internal static double midairStartLon;
+        internal static double destinationLat;
+        internal static double destinationLon;
 
         static internal void CreateStarsDat()
         {
@@ -198,8 +204,220 @@ namespace P3D_Scenario_Generator
 
         static internal double GetCelestialDistance()
         {
-            // Runway.AirportLat is where plane starts in air a random distance from destination runway which is Runway.Lat
-            return MathRoutines.CalcDistance(Runway.AirportLat, Runway.AirportLon, Runway.Lat, Runway.Lon);
+            return MathRoutines.CalcDistance(midairStartLat, midairStartLon, destinationLat, destinationLon);
+        }
+
+        static internal void SetCelestialStartLocation()
+        {
+            Random random = new();
+            midairStartHdg = -180 + random.Next(0, 360);
+
+            // Position plane in random direction from destination runway between min/max distance parameter
+            double randomAngle = random.Next(0, 90) * Math.PI / 180.0;
+            double randomRadius = Parameters.CelestialMinDistance + random.Next(0, (int)(Parameters.CelestialMaxDistance - Parameters.CelestialMinDistance));
+            double randomLatAdj = randomRadius * Con.feetInKnot / Con.degreeLatFeet * Math.Cos(randomAngle) * (random.Next(0, 2) * 2 - 1);
+            double randomLonAdj = randomRadius * Con.feetInKnot / Con.degreeLatFeet * Math.Sin(randomAngle) * (random.Next(0, 2) * 2 - 1);
+            midairStartLat = Runway.destRwy.AirportLat + randomLatAdj;
+            if (midairStartLat > 90)
+            {
+                midairStartLat -= 180;
+            }
+            else if (midairStartLat < -90)
+            {
+                midairStartLat += 180;
+            }
+            midairStartLon = Runway.destRwy.AirportLon + randomLonAdj;
+            if (midairStartLon > 180)
+            {
+                midairStartLon -= 360;
+            }
+            else if (midairStartLon < -180)
+            {
+                midairStartLon += 360;
+            }
+        }
+
+        static internal void SetCelestialSextantHTML(string saveLocation)
+        {
+            string celestialHTML;
+
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.CelestialSextant.html");
+            StreamReader reader = new(stream);
+            celestialHTML = reader.ReadToEnd();
+            string starOptions = "<option>Select Star</option>";
+            for (int index = 0; index < CelestialNav.navStarNames.Count; index++)
+            {
+                starOptions += $"<option>{CelestialNav.navStarNames[index]}</option>";
+            }
+            celestialHTML = celestialHTML.Replace("starOptionsX", starOptions);
+            File.WriteAllText(saveLocation, celestialHTML);
+            stream.Dispose();
+        }
+
+        static internal void SetCelestialSextantJS(string saveLocation)
+        {
+            string celestialJS;
+
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsCelestialSextant.js");
+            StreamReader reader = new(stream);
+            celestialJS = reader.ReadToEnd();
+            string constellation = "";
+            string id = "";
+            string starNumber = "";
+            string starName = "";
+            string bayer = "";
+            string raH = "";
+            string raM = "";
+            string raS = "";
+            string decD = "";
+            string decM = "";
+            string decS = "";
+            string visMag = "";
+            string lines = "";
+            Star star;
+            for (int index = 0; index < CelestialNav.noStars; index++)
+            {
+                star = CelestialNav.GetStar(index);
+                constellation += $"\"{star.constellation}\"";
+                id += $"\"{star.id}\"";
+                starNumber += $"\"{star.starNumber}\"";
+                starName += $"\"{star.starName}\"";
+                bayer += $"\"{star.bayer}\"";
+                raH += star.raH.ToString();
+                raM += star.raM.ToString();
+                raS += star.raS.ToString();
+                decD += star.decD.ToString();
+                decM += star.decM.ToString();
+                decS += star.decS.ToString();
+                visMag += star.visMag.ToString();
+                if (star.connectedId != "")
+                {
+                    if (lines != "")
+                    {
+                        lines += ", ";
+                    }
+                    lines += $"\"{star.id}\", \"{star.connectedId}\"";
+                }
+                if (index < CelestialNav.noStars - 1)
+                {
+                    constellation += ",";
+                    id += ",";
+                    starNumber += ",";
+                    starName += ",";
+                    bayer += ",";
+                    raH += ",";
+                    raM += ",";
+                    raS += ",";
+                    decD += ",";
+                    decM += ",";
+                    decS += ",";
+                    visMag += ",";
+                }
+            }
+            celestialJS = celestialJS.Replace("constellationX", constellation);
+            celestialJS = celestialJS.Replace("idX", id);
+            celestialJS = celestialJS.Replace("starNumberX", starNumber);
+            celestialJS = celestialJS.Replace("starNameX", starName);
+            celestialJS = celestialJS.Replace("bayerX", bayer);
+            celestialJS = celestialJS.Replace("raHX", raH);
+            celestialJS = celestialJS.Replace("raMX", raM);
+            celestialJS = celestialJS.Replace("raSX", raS);
+            celestialJS = celestialJS.Replace("decDX", decD);
+            celestialJS = celestialJS.Replace("decMX", decM);
+            celestialJS = celestialJS.Replace("decSX", decS);
+            celestialJS = celestialJS.Replace("visMagX", visMag);
+            celestialJS = celestialJS.Replace("linesX", lines);
+            celestialJS = celestialJS.Replace("destLatX", CelestialNav.destinationLat.ToString());
+            celestialJS = celestialJS.Replace("destLonX", CelestialNav.destinationLon.ToString());
+            string ariesGHAd = "";
+            string ariesGHAm = "";
+            for (int day = 0; day < 3; day++)
+            {
+                ariesGHAd += "[";
+                ariesGHAm += "[";
+                for (int hour = 0; hour < 24; hour++)
+                {
+                    ariesGHAd += CelestialNav.ariesGHAd[day, hour];
+                    ariesGHAm += CelestialNav.ariesGHAm[day, hour];
+                    if (hour < 23)
+                    {
+                        ariesGHAd += ",";
+                        ariesGHAm += ",";
+                    }
+                }
+                ariesGHAd += "]";
+                ariesGHAm += "]";
+                if (day < 2)
+                {
+                    ariesGHAd += ",";
+                    ariesGHAm += ",";
+                }
+            }
+            celestialJS = celestialJS.Replace("ariesGHAdX", ariesGHAd);
+            celestialJS = celestialJS.Replace("ariesGHAmX", ariesGHAm);
+            string starsSHAd = "";
+            string starsSHAm = "";
+            for (int starIndex = 0; starIndex < CelestialNav.starsSHAd.Length; starIndex++)
+            {
+                starsSHAd += CelestialNav.starsSHAd[starIndex];
+                starsSHAm += CelestialNav.starsSHAm[starIndex];
+                if (starIndex < CelestialNav.starsSHAd.Length - 1)
+                {
+                    starsSHAd += ",";
+                    starsSHAm += ",";
+                }
+            }
+            celestialJS = celestialJS.Replace("starsSHAdX", starsSHAd);
+            celestialJS = celestialJS.Replace("starsSHAmX", starsSHAm);
+            string starsDECd = "";
+            string starsDECm = "";
+            for (int starIndex = 0; starIndex < CelestialNav.starsDECd.Length; starIndex++)
+            {
+                starsDECd += CelestialNav.starsDECd[starIndex];
+                starsDECm += CelestialNav.starsDECm[starIndex];
+                if (starIndex < CelestialNav.starsDECd.Length - 1)
+                {
+                    starsDECd += ",";
+                    starsDECm += ",";
+                }
+            }
+            celestialJS = celestialJS.Replace("starsDECdX", starsDECd);
+            celestialJS = celestialJS.Replace("starsDECmX", starsDECm);
+            string starNameList = "";
+            for (int starIndex = 0; starIndex < CelestialNav.navStarNames.Count; starIndex++)
+            {
+                starNameList += $"\"{CelestialNav.navStarNames[starIndex]}\"";
+                if (starIndex < CelestialNav.navStarNames.Count - 1)
+                {
+                    starNameList += ",";
+                }
+            }
+            celestialJS = celestialJS.Replace("starNameListX", starNameList);
+            string startDate = $"\"{Parameters.Month}/{Parameters.Day}/{Parameters.Year}\"";
+            celestialJS = celestialJS.Replace("startDateX", startDate);
+            celestialJS = celestialJS.Replace("northEdgeX", Parameters.CelestialImageNorth.ToString());
+            celestialJS = celestialJS.Replace("eastEdgeX", Parameters.CelestialImageEast.ToString());
+            celestialJS = celestialJS.Replace("southEdgeX", Parameters.CelestialImageSouth.ToString());
+            celestialJS = celestialJS.Replace("westEdgeX", Parameters.CelestialImageWest.ToString());
+            File.WriteAllText($"{saveLocation}scriptsCelestialSextant.js", celestialJS);
+            stream.Dispose();
+
+            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsCelestialAstroCalcs.js");
+            reader = new StreamReader(stream);
+            celestialJS = reader.ReadToEnd();
+            File.WriteAllText($"{saveLocation}scriptsCelestialAstroCalcs.js", celestialJS);
+            stream.Dispose();
+        }
+
+        static internal void SetCelestialSextantCSS(string saveLocation)
+        {
+            string signWritingCSS;
+
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleCelestialSextant.css");
+            StreamReader reader = new(stream);
+            signWritingCSS = reader.ReadToEnd();
+            File.WriteAllText(saveLocation, signWritingCSS);
+            stream.Dispose();
         }
     }
 }

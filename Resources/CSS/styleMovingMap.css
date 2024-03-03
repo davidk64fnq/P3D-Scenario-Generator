@@ -1,12 +1,12 @@
 body {
-    background-color: rgb(240, 248, 255);
-	margin: 0; 
+	background-color: rgb(240, 248, 255);
+	margin: 0;
 	padding: 0;
+	overflow: hidden;
 }
 #mapDiv {
 	height: mapHeightXpx;
 	width: mapWidthXpx;
-	overflow: hidden;
 }
 #buttonDiv {
 	padding: 10px;

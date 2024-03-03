@@ -33,14 +33,14 @@
             double orientation;
 
             // Turn radius based on standard turn rate of 360 degrees in 2 minutes
-            double turnCircumference = Parameters.Speed * Constants.feetInKnot * Parameters.TurnRate / 60;      // Speed kts/hr * no. of feet in a knot * turn rate mins of an hour
+            double turnCircumference = Parameters.Speed * Con.feetInKnot * Parameters.TurnRate / 60;      // Speed kts/hr * no. of feet in a knot * turn rate mins of an hour
             double turnRadius = turnCircumference / (2 * Math.PI);                                              // Radius = Circumference / 2Pi
             // Climb rate angle from gate 1 to 3 approx given by solving tan(angle) = opposite(height change) / adjacent(over ground distance)
-            double gate1to3AngleRad = Math.Atan((Parameters.HeightDown - Parameters.HeightUpwind) / (turnRadius + Parameters.BaseLeg * Constants.feetInKnot));
+            double gate1to3AngleRad = Math.Atan((Parameters.HeightDown - Parameters.HeightUpwind) / (turnRadius + Parameters.BaseLeg * Con.feetInKnot));
             // Gate 1 height adj relative to gate 2 approx given by solving tan(gate2to3AngleDeg) = height adj / turnRadius
             double gate1to2heightDif = Math.Tan(gate1to3AngleRad) * turnRadius;
             // Descend rate angle from gate 6 to 8 approx given by solving tan(angle) = opposite(height change) / adjacent(over ground distance)
-            double gate6to8AngleRad = Math.Atan((Parameters.HeightDown - Parameters.HeightBase) / (turnRadius + Parameters.BaseLeg * Constants.feetInKnot));
+            double gate6to8AngleRad = Math.Atan((Parameters.HeightDown - Parameters.HeightBase) / (turnRadius + Parameters.BaseLeg * Con.feetInKnot));
             // Gate 8 height adj relative to gate 7 approx given by solving tan(gate6to7AngleDeg) = height adj / turnRadius
             double gate7to8heightDif = Math.Tan(gate6to8AngleRad) * turnRadius;
 
@@ -48,29 +48,29 @@
             switch (Parameters.SelectedScenario)
             {
                 case nameof(ScenarioTypes.Circuit):
-                    double baseHeading = Runway.Hdg + Runway.MagVar + 360;
-                    legParams.Add(new LegParams(baseHeading % 360, Runway.Len + (Parameters.UpwindLeg * Constants.feetInKnot), Runway.Altitude + Parameters.HeightUpwind));
-                    legParams.Add(new LegParams((baseHeading - 45) % 360, turnRadius, Runway.Altitude + Parameters.HeightUpwind + gate1to2heightDif));
-                    legParams.Add(new LegParams((baseHeading - 90) % 360, Parameters.BaseLeg * Constants.feetInKnot, Runway.Altitude + Parameters.HeightDown));
-                    legParams.Add(new LegParams((baseHeading - 135) % 360, turnRadius, Runway.Altitude + Parameters.HeightDown));
-                    legParams.Add(new LegParams((baseHeading - 180) % 360, (Parameters.FinalLeg * Constants.feetInKnot) + Runway.Len + (Parameters.UpwindLeg * Constants.feetInKnot), Runway.Altitude + Parameters.HeightDown));
-                    legParams.Add(new LegParams((baseHeading - 225) % 360, turnRadius, Runway.Altitude + Parameters.HeightDown));
-                    legParams.Add(new LegParams((baseHeading - 270) % 360, Parameters.BaseLeg * Constants.feetInKnot, Runway.Altitude + Parameters.HeightBase + gate7to8heightDif));
-                    legParams.Add(new LegParams((baseHeading - 315) % 360, turnRadius, Runway.Altitude + Parameters.HeightBase));
+                    double baseHeading = Runway.startRwy.Hdg + Runway.startRwy.MagVar + 360;
+                    legParams.Add(new LegParams(baseHeading % 360, Runway.startRwy.Len + (Parameters.UpwindLeg * Con.feetInKnot), Runway.startRwy.Altitude + Parameters.HeightUpwind));
+                    legParams.Add(new LegParams((baseHeading - 45) % 360, turnRadius, Runway.startRwy.Altitude + Parameters.HeightUpwind + gate1to2heightDif));
+                    legParams.Add(new LegParams((baseHeading - 90) % 360, Parameters.BaseLeg * Con.feetInKnot, Runway.startRwy.Altitude + Parameters.HeightDown));
+                    legParams.Add(new LegParams((baseHeading - 135) % 360, turnRadius, Runway.startRwy.Altitude + Parameters.HeightDown));
+                    legParams.Add(new LegParams((baseHeading - 180) % 360, (Parameters.FinalLeg * Con.feetInKnot) + Runway.startRwy.Len + (Parameters.UpwindLeg * Con.feetInKnot), Runway.startRwy.Altitude + Parameters.HeightDown));
+                    legParams.Add(new LegParams((baseHeading - 225) % 360, turnRadius, Runway.startRwy.Altitude + Parameters.HeightDown));
+                    legParams.Add(new LegParams((baseHeading - 270) % 360, Parameters.BaseLeg * Con.feetInKnot, Runway.startRwy.Altitude + Parameters.HeightBase + gate7to8heightDif));
+                    legParams.Add(new LegParams((baseHeading - 315) % 360, turnRadius, Runway.startRwy.Altitude + Parameters.HeightBase));
                     break;
                 default:
                     break;
             }
 
-            double dStartLat = Runway.Lat;
-            double dStartLon = Runway.Lon;
+            double dStartLat = Runway.startRwy.ThresholdStartLat;
+            double dStartLon = Runway.startRwy.ThresholdStartLon;
             double dFinishLat = 0;
             double dFinishLon = 0;
             gates.Clear();
             for (int index = 0; index < legParams.Count; index++)
             {
                 MathRoutines.AdjCoords(dStartLat, dStartLon, legParams[index].heading, legParams[index].distance, ref dFinishLat, ref dFinishLon);
-                orientation = (Runway.Hdg + Runway.MagVar + circuitHeadingAdj[index]) % 360;
+                orientation = (Runway.startRwy.Hdg + Runway.startRwy.MagVar + circuitHeadingAdj[index]) % 360;
                 gates.Add(new Gate(dFinishLat, dFinishLon, legParams[index].amsl, 0, orientation, 0, 0));
                 dStartLat = dFinishLat;
                 dStartLon = dFinishLon;
@@ -103,7 +103,7 @@
                 }
             }
             TiltGates(0, GateCount);
-            TranslateGates(0, GateCount, Runway.AirportLat, Runway.AirportLon, Runway.Altitude + Parameters.GateHeight);
+            TranslateGates(0, GateCount, Runway.startRwy.AirportLat, Runway.startRwy.AirportLon, Runway.startRwy.Altitude + Parameters.GateHeight);
         }
 
         internal static void SetSegmentGate(double latCoef, double latOffsetCoef, double lonCoef, double lonOffsetCoef, double orientation, double topPixels, double leftPixels, int gateNo, int letterIndex)
@@ -198,7 +198,7 @@
             for (int index = startGateIndex; index < startGateIndex + noGates; index++)
             {
                 // do altitude change first before adjusting latitude, tilt is on longitude axis
-                gates[index].amsl += Math.Abs(gates[index].lat) * Math.Sin(Parameters.TiltAngle * Math.PI / 180) * Constants.degreeLatFeet;
+                gates[index].amsl += Math.Abs(gates[index].lat) * Math.Sin(Parameters.TiltAngle * Math.PI / 180) * Con.degreeLatFeet;
                 gates[index].lat = gates[index].lat * Math.Cos(Parameters.TiltAngle * Math.PI / 180);
             }
         }
@@ -215,7 +215,7 @@
 
         static internal Gate GetGate(int index)
         {
-            return gates[index];
+            return gates[index - 1];
         }
     }
 }

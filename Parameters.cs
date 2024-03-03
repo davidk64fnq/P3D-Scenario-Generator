@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using static P3D_Scenario_Generator.Runway;
 
 namespace P3D_Scenario_Generator
 {
@@ -82,7 +83,7 @@ namespace P3D_Scenario_Generator
                 SelectedAircraft = form.ListBoxAircraft.Items[form.ListBoxAircraft.SelectedIndex].ToString();
             }
             SelectedRunway = form.TextBoxSelectedRunway.Text;
-            int index = Array.FindIndex(Constants.scenarioNames, s => s == form.TextBoxSelectedScenario.Text);
+            int index = Array.FindIndex(Con.scenarioNames, s => s == form.TextBoxSelectedScenario.Text);
             SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
             Second = form.DatePicker.Value.Second;
             Minute = form.DatePicker.Value.Minute;
@@ -128,8 +129,8 @@ namespace P3D_Scenario_Generator
                 TiltAngle = Convert.ToDouble(form.TextBoxSignTilt.Text);
                 MessageWindowWidth = Convert.ToDouble(form.TextBoxSignWindowWidth.Text);
                 GateHeight = Convert.ToDouble(form.TextBoxSignGateHeight.Text);
-                SegmentLengthDeg = Convert.ToDouble(form.TextBoxSignSegmentLength.Text) / Constants.degreeLatFeet;
-                SegmentRadiusDeg = Convert.ToDouble(form.TextBoxSignSegmentRadius.Text) / Constants.degreeLatFeet;
+                SegmentLengthDeg = Convert.ToDouble(form.TextBoxSignSegmentLength.Text) / Con.degreeLatFeet;
+                SegmentRadiusDeg = Convert.ToDouble(form.TextBoxSignSegmentRadius.Text) / Con.degreeLatFeet;
             }
 
             // Celestial Navigation
@@ -141,7 +142,7 @@ namespace P3D_Scenario_Generator
 
             if (errorMsg != "")
             {
-                MessageBox.Show($"Please attend to the following:\n{errorMsg}", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Please attend to the following:\n{errorMsg}", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             else
@@ -163,13 +164,13 @@ namespace P3D_Scenario_Generator
                 if (Directory.Exists(saveFolder))
                 {
                     string message = $"A scenario with the same title already exists. Either delete the folder \"{saveFolder}\" (you'll need to shut down Prepar3D first if it's running) or choose a different scenario title.";
-                    MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
             }
             else
             {
-                MessageBox.Show($"Invalid scenario title", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Invalid scenario title", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             return true;

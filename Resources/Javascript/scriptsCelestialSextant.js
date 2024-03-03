@@ -329,15 +329,15 @@ function getBearingDif(AZ, sexAZ)
 		return 360 - absDelta;
 }
 
-function getRelativeAZ(AZ, relSexAZ, fovH)
+function getRelativeAZ(AZ, sexAZ, fovH)
 {
-	var left = relSexAZ - fovH / 2;
-	if (left < 0)
-		left += 360;
-	if (AZ > left)
-		return AZ - left;
+	var leftDeg = sexAZ - fovH / 2;
+	if (leftDeg < 0)
+		leftDeg += 360;
+	if (AZ > leftDeg)
+		return AZ - leftDeg;
 	else 
-		return 360 - left + AZ;
+		return 360 - leftDeg + AZ;
 }
 
 // Button onClick functions for handling info buttons
@@ -444,7 +444,7 @@ function takeSighting() {
 		var ptsList = calcLocalStarPositions(toRadians(assumedLat[fixNumber]), toRadians(assumedLon[fixNumber]));
 		var starNameIndex = ptsList.findIndex(x => x == selectStarNameArray[curIndex].value);
 		if (starNameIndex == -1) {
-			VarSet("S:errorMsgNo", "NUMBER", 1);
+			VarSet("S:errorMsgVar", "NUMBER", 1);
 			HsArray[curIndex].innerHTML = "";
 			return;
 		}

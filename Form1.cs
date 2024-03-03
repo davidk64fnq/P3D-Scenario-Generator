@@ -46,7 +46,7 @@ namespace P3D_Scenario_Generator
         private void ListBoxScenarioType_SelectedIndexChanged(object sender, EventArgs e)
         {
             TextBoxSelectedScenario.Text = ListBoxScenarioType.SelectedItem.ToString();
-            if ((TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour]) || (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.Celestial]))
+            if ((TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour]) || (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial]))
             {
                 ListBoxRunways.Enabled = false;
                 TextBoxSearchRunway.Enabled = false;
@@ -70,29 +70,40 @@ namespace P3D_Scenario_Generator
             }
             string message = $"Creating scenario files in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - will confirm when complete";
             Cursor.Current = Cursors.WaitCursor;
-            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour])
+            MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
                 PhotoTour.SetRandomPhotoTour();
             }
-            else if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.SignWriting])
+            else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.SignWriting])
             {
                 SignWriting.InitLetterPaths();
             }
-            else if (TextBoxSelectedScenario.Text == Constants.scenarioNames[(int)ScenarioTypes.Celestial])
+            else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial])
             {
                 CelestialNav.GetAlmanacData();
                 CelestialNav.InitStars();
                 CelestialNav.CreateStarsDat();
             }
-            Runway.SetRunway();
+            Runway.SetRunway(Runway.startRwy, "start");
+            Runway.SetRunway(Runway.destRwy, "destination");
+            Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
+            if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial])
+            {
+                string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\htmlCelestialSextant.html";
+                CelestialNav.SetCelestialSextantHTML(saveLocation);
+                saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
+                CelestialNav.SetCelestialSextantJS(saveLocation);
+                saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleCelestialSextant.css";
+                CelestialNav.SetCelestialSextantCSS(saveLocation);
+            }
             Gates.SetGates();
             ScenarioFXML.GenerateFXMLfile();
             ScenarioHTML.GenerateHTMLfiles();
             ScenarioXML.GenerateXMLfile();
             Cursor.Current = Cursors.Default;
             message = $"Scenario files created in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - enjoy your flight!";
-            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ButtonP3Dv5Files_Click(object sender, EventArgs e)
@@ -147,7 +158,7 @@ namespace P3D_Scenario_Generator
         {
             if (ListBoxAircraft.Items.Count == 0)
             {
-                MessageBox.Show($"Select an aircraft to calculate default values", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Select an aircraft to calculate default values", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
@@ -210,6 +221,11 @@ namespace P3D_Scenario_Generator
             if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) > 15)
             {
                 MessageBox.Show($"Minimum number of legs must be less than 16", "Photo Tour Scenario: minimum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) < 3)
+            {
+                MessageBox.Show($"Minimum number of legs must be greater than 2", "Photo Tour Scenario: minimum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
             if (Convert.ToInt32(form.TextBoxPhotoMaxNoLegs.Text) > 15)
@@ -275,7 +291,7 @@ namespace P3D_Scenario_Generator
         {
             // General tab
             ListBoxRunways.DataSource = Runway.GetICAOids();
-            ListBoxScenarioType.DataSource = Constants.scenarioNames;
+            ListBoxScenarioType.DataSource = Con.scenarioNames;
 
             // Circuit tab
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.circuitTab.jpg");

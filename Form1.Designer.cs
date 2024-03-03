@@ -34,23 +34,24 @@ namespace P3D_Scenario_Generator
             components = new System.ComponentModel.Container();
             TabControl = new TabControl();
             TabPageGeneral = new TabPage();
-            button1 = new Button();
-            TextBoxP3Dv5Files = new TextBox();
-            label27 = new Label();
-            TimePicker = new DateTimePicker();
-            DatePicker = new DateTimePicker();
-            label8 = new Label();
-            TextBoxScenarioTitle = new TextBox();
-            ListBoxAircraft = new ListBox();
-            buttonAircraft = new Button();
+            tableLayoutPanelGeneral = new TableLayoutPanel();
             TextBoxSelectedScenario = new TextBox();
+            ListBoxRunways = new ListBox();
             ListBoxScenarioType = new ListBox();
-            ButtonRandRunway = new Button();
-            label2 = new Label();
+            tableLayoutPanel1 = new TableLayoutPanel();
             label1 = new Label();
             TextBoxSearchRunway = new TextBox();
+            label2 = new Label();
             TextBoxSelectedRunway = new TextBox();
-            ListBoxRunways = new ListBox();
+            ButtonRandRunway = new Button();
+            ListBoxAircraft = new ListBox();
+            buttonAircraft = new Button();
+            DatePicker = new DateTimePicker();
+            TimePicker = new DateTimePicker();
+            tableLayoutPanel3 = new TableLayoutPanel();
+            label8 = new Label();
+            TextBoxScenarioTitle = new TextBox();
+            label27 = new Label();
             TabPageCircuit = new TabPage();
             tableLayoutPanelCircuit = new TableLayoutPanel();
             label7 = new Label();
@@ -108,11 +109,19 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMinDist = new TextBox();
             label26 = new Label();
             label25 = new Label();
+            TabPageSettings = new TabPage();
+            tableLayoutPanelSettings = new TableLayoutPanel();
+            TextBoxP3Dv5Files = new TextBox();
+            button1 = new Button();
             ButtonGenerateScenario = new Button();
             toolTip1 = new ToolTip(components);
             ButtonHelp = new Button();
+            pictureBoxAircraft = new PictureBox();
             TabControl.SuspendLayout();
             TabPageGeneral.SuspendLayout();
+            tableLayoutPanelGeneral.SuspendLayout();
+            tableLayoutPanel1.SuspendLayout();
+            tableLayoutPanel3.SuspendLayout();
             TabPageCircuit.SuspendLayout();
             tableLayoutPanelCircuit.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)PictureBoxCircuit).BeginInit();
@@ -120,6 +129,9 @@ namespace P3D_Scenario_Generator
             TabPageSign.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)PictureBoxSignWriting).BeginInit();
             TabPageCelestial.SuspendLayout();
+            TabPageSettings.SuspendLayout();
+            tableLayoutPanelSettings.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxAircraft).BeginInit();
             SuspendLayout();
             // 
             // TabControl
@@ -129,6 +141,7 @@ namespace P3D_Scenario_Generator
             TabControl.Controls.Add(TabPagePhoto);
             TabControl.Controls.Add(TabPageSign);
             TabControl.Controls.Add(TabPageCelestial);
+            TabControl.Controls.Add(TabPageSettings);
             TabControl.Location = new Point(12, 12);
             TabControl.Name = "TabControl";
             TabControl.SelectedIndex = 0;
@@ -138,23 +151,8 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageGeneral
             // 
-            TabPageGeneral.Controls.Add(button1);
-            TabPageGeneral.Controls.Add(TextBoxP3Dv5Files);
+            TabPageGeneral.Controls.Add(tableLayoutPanelGeneral);
             TabPageGeneral.Controls.Add(label27);
-            TabPageGeneral.Controls.Add(TimePicker);
-            TabPageGeneral.Controls.Add(DatePicker);
-            TabPageGeneral.Controls.Add(label8);
-            TabPageGeneral.Controls.Add(TextBoxScenarioTitle);
-            TabPageGeneral.Controls.Add(ListBoxAircraft);
-            TabPageGeneral.Controls.Add(buttonAircraft);
-            TabPageGeneral.Controls.Add(TextBoxSelectedScenario);
-            TabPageGeneral.Controls.Add(ListBoxScenarioType);
-            TabPageGeneral.Controls.Add(ButtonRandRunway);
-            TabPageGeneral.Controls.Add(label2);
-            TabPageGeneral.Controls.Add(label1);
-            TabPageGeneral.Controls.Add(TextBoxSearchRunway);
-            TabPageGeneral.Controls.Add(TextBoxSelectedRunway);
-            TabPageGeneral.Controls.Add(ListBoxRunways);
             TabPageGeneral.Location = new Point(4, 24);
             TabPageGeneral.Name = "TabPageGeneral";
             TabPageGeneral.Padding = new Padding(3);
@@ -163,78 +161,134 @@ namespace P3D_Scenario_Generator
             TabPageGeneral.Text = "General";
             TabPageGeneral.UseVisualStyleBackColor = true;
             // 
-            // button1
+            // tableLayoutPanelGeneral
             // 
-            button1.Location = new Point(343, 399);
-            button1.Name = "button1";
-            button1.Size = new Size(120, 23);
-            button1.TabIndex = 19;
-            button1.Text = "Prepar3D v5 Files";
-            toolTip1.SetToolTip(button1, "Select the Prepar3D v5 Files location where scenario will be stored");
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += ButtonP3Dv5Files_Click;
+            tableLayoutPanelGeneral.ColumnCount = 3;
+            tableLayoutPanelGeneral.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelGeneral.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelGeneral.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 375F));
+            tableLayoutPanelGeneral.Controls.Add(TextBoxSelectedScenario, 1, 1);
+            tableLayoutPanelGeneral.Controls.Add(ListBoxRunways, 0, 0);
+            tableLayoutPanelGeneral.Controls.Add(ListBoxScenarioType, 1, 0);
+            tableLayoutPanelGeneral.Controls.Add(tableLayoutPanel1, 0, 1);
+            tableLayoutPanelGeneral.Controls.Add(DatePicker, 2, 2);
+            tableLayoutPanelGeneral.Controls.Add(TimePicker, 1, 2);
+            tableLayoutPanelGeneral.Controls.Add(tableLayoutPanel3, 0, 2);
+            tableLayoutPanelGeneral.Controls.Add(ListBoxAircraft, 2, 1);
+            tableLayoutPanelGeneral.Controls.Add(pictureBoxAircraft, 2, 0);
+            tableLayoutPanelGeneral.Location = new Point(19, 15);
+            tableLayoutPanelGeneral.Name = "tableLayoutPanelGeneral";
+            tableLayoutPanelGeneral.RowCount = 3;
+            tableLayoutPanelGeneral.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelGeneral.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelGeneral.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
+            tableLayoutPanelGeneral.Size = new Size(775, 403);
+            tableLayoutPanelGeneral.TabIndex = 17;
             // 
-            // TextBoxP3Dv5Files
+            // TextBoxSelectedScenario
             // 
-            TextBoxP3Dv5Files.Enabled = false;
-            TextBoxP3Dv5Files.Location = new Point(488, 399);
-            TextBoxP3Dv5Files.Name = "TextBoxP3Dv5Files";
-            TextBoxP3Dv5Files.Size = new Size(302, 23);
-            TextBoxP3Dv5Files.TabIndex = 18;
+            TextBoxSelectedScenario.Enabled = false;
+            TextBoxSelectedScenario.Location = new Point(203, 178);
+            TextBoxSelectedScenario.Name = "TextBoxSelectedScenario";
+            TextBoxSelectedScenario.Size = new Size(119, 23);
+            TextBoxSelectedScenario.TabIndex = 7;
             // 
-            // label27
+            // ListBoxRunways
             // 
-            label27.Location = new Point(0, 0);
-            label27.Name = "label27";
-            label27.Size = new Size(100, 23);
-            label27.TabIndex = 0;
+            ListBoxRunways.FormattingEnabled = true;
+            ListBoxRunways.ItemHeight = 15;
+            ListBoxRunways.Location = new Point(3, 3);
+            ListBoxRunways.Name = "ListBoxRunways";
+            ListBoxRunways.Size = new Size(120, 94);
+            ListBoxRunways.TabIndex = 0;
+            ListBoxRunways.SelectedIndexChanged += ListBoxRunways_SelectedIndexChanged;
             // 
-            // TimePicker
+            // ListBoxScenarioType
             // 
-            TimePicker.Format = DateTimePickerFormat.Time;
-            TimePicker.Location = new Point(112, 303);
-            TimePicker.Name = "TimePicker";
-            TimePicker.ShowUpDown = true;
-            TimePicker.Size = new Size(119, 23);
-            TimePicker.TabIndex = 16;
+            ListBoxScenarioType.FormattingEnabled = true;
+            ListBoxScenarioType.ItemHeight = 15;
+            ListBoxScenarioType.Location = new Point(203, 3);
+            ListBoxScenarioType.Name = "ListBoxScenarioType";
+            ListBoxScenarioType.Size = new Size(120, 94);
+            ListBoxScenarioType.TabIndex = 6;
+            ListBoxScenarioType.SelectedIndexChanged += ListBoxScenarioType_SelectedIndexChanged;
             // 
-            // DatePicker
+            // tableLayoutPanel1
             // 
-            DatePicker.CustomFormat = "";
-            DatePicker.Location = new Point(112, 350);
-            DatePicker.Name = "DatePicker";
-            DatePicker.Size = new Size(206, 23);
-            DatePicker.TabIndex = 15;
+            tableLayoutPanel1.ColumnCount = 2;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(label1, 0, 0);
+            tableLayoutPanel1.Controls.Add(TextBoxSearchRunway, 1, 0);
+            tableLayoutPanel1.Controls.Add(label2, 0, 1);
+            tableLayoutPanel1.Controls.Add(TextBoxSelectedRunway, 1, 1);
+            tableLayoutPanel1.Controls.Add(ButtonRandRunway, 0, 2);
+            tableLayoutPanel1.Location = new Point(3, 178);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 3;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 45F));
+            tableLayoutPanel1.Size = new Size(194, 138);
+            tableLayoutPanel1.TabIndex = 7;
             // 
-            // label8
+            // label1
             // 
-            label8.AutoSize = true;
-            label8.Location = new Point(16, 402);
-            label8.Name = "label8";
-            label8.Size = new Size(77, 15);
-            label8.TabIndex = 14;
-            label8.Text = "Scenario Title";
+            label1.AutoSize = true;
+            label1.Location = new Point(3, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(42, 15);
+            label1.TabIndex = 3;
+            label1.Text = "Search";
             // 
-            // TextBoxScenarioTitle
+            // TextBoxSearchRunway
             // 
-            TextBoxScenarioTitle.Location = new Point(112, 399);
-            TextBoxScenarioTitle.Name = "TextBoxScenarioTitle";
-            TextBoxScenarioTitle.Size = new Size(206, 23);
-            TextBoxScenarioTitle.TabIndex = 13;
+            TextBoxSearchRunway.Location = new Point(100, 3);
+            TextBoxSearchRunway.Name = "TextBoxSearchRunway";
+            TextBoxSearchRunway.Size = new Size(91, 23);
+            TextBoxSearchRunway.TabIndex = 2;
+            TextBoxSearchRunway.TextChanged += TextBoxSearchRunway_TextChanged;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(3, 46);
+            label2.Name = "label2";
+            label2.Size = new Size(51, 15);
+            label2.TabIndex = 4;
+            label2.Text = "Selected";
+            // 
+            // TextBoxSelectedRunway
+            // 
+            TextBoxSelectedRunway.Enabled = false;
+            TextBoxSelectedRunway.Location = new Point(100, 49);
+            TextBoxSelectedRunway.Name = "TextBoxSelectedRunway";
+            TextBoxSelectedRunway.Size = new Size(91, 23);
+            TextBoxSelectedRunway.TabIndex = 1;
+            // 
+            // ButtonRandRunway
+            // 
+            ButtonRandRunway.Location = new Point(3, 95);
+            ButtonRandRunway.Name = "ButtonRandRunway";
+            ButtonRandRunway.Size = new Size(91, 23);
+            ButtonRandRunway.TabIndex = 5;
+            ButtonRandRunway.Text = "Random Runway";
+            ButtonRandRunway.UseVisualStyleBackColor = true;
+            ButtonRandRunway.Click += ButtonRandRunway_Click;
             // 
             // ListBoxAircraft
             // 
             ListBoxAircraft.FormattingEnabled = true;
             ListBoxAircraft.ItemHeight = 15;
-            ListBoxAircraft.Location = new Point(488, 24);
+            ListBoxAircraft.Location = new Point(403, 178);
             ListBoxAircraft.Name = "ListBoxAircraft";
-            ListBoxAircraft.Size = new Size(250, 94);
+            ListBoxAircraft.Size = new Size(231, 94);
             ListBoxAircraft.TabIndex = 12;
             ListBoxAircraft.SelectedIndexChanged += ListBoxAircraft_SelectedIndexChanged;
             // 
             // buttonAircraft
             // 
-            buttonAircraft.Location = new Point(488, 135);
+            buttonAircraft.Location = new Point(556, 503);
             buttonAircraft.Name = "buttonAircraft";
             buttonAircraft.Size = new Size(120, 23);
             buttonAircraft.TabIndex = 11;
@@ -243,77 +297,59 @@ namespace P3D_Scenario_Generator
             buttonAircraft.UseVisualStyleBackColor = true;
             buttonAircraft.Click += ButtonAircraft_Click;
             // 
-            // TextBoxSelectedScenario
+            // DatePicker
             // 
-            TextBoxSelectedScenario.Enabled = false;
-            TextBoxSelectedScenario.Location = new Point(300, 136);
-            TextBoxSelectedScenario.Name = "TextBoxSelectedScenario";
-            TextBoxSelectedScenario.Size = new Size(119, 23);
-            TextBoxSelectedScenario.TabIndex = 7;
+            DatePicker.CustomFormat = "";
+            DatePicker.Location = new Point(403, 353);
+            DatePicker.Name = "DatePicker";
+            DatePicker.Size = new Size(206, 23);
+            DatePicker.TabIndex = 15;
             // 
-            // ListBoxScenarioType
+            // TimePicker
             // 
-            ListBoxScenarioType.FormattingEnabled = true;
-            ListBoxScenarioType.ItemHeight = 15;
-            ListBoxScenarioType.Location = new Point(300, 24);
-            ListBoxScenarioType.Name = "ListBoxScenarioType";
-            ListBoxScenarioType.Size = new Size(120, 94);
-            ListBoxScenarioType.TabIndex = 6;
-            ListBoxScenarioType.SelectedIndexChanged += ListBoxScenarioType_SelectedIndexChanged;
+            TimePicker.Format = DateTimePickerFormat.Time;
+            TimePicker.Location = new Point(203, 353);
+            TimePicker.Name = "TimePicker";
+            TimePicker.ShowUpDown = true;
+            TimePicker.Size = new Size(119, 23);
+            TimePicker.TabIndex = 16;
             // 
-            // ButtonRandRunway
+            // tableLayoutPanel3
             // 
-            ButtonRandRunway.Location = new Point(112, 233);
-            ButtonRandRunway.Name = "ButtonRandRunway";
-            ButtonRandRunway.Size = new Size(119, 23);
-            ButtonRandRunway.TabIndex = 5;
-            ButtonRandRunway.Text = "Random Runway";
-            ButtonRandRunway.UseVisualStyleBackColor = true;
-            ButtonRandRunway.Click += ButtonRandRunway_Click;
+            tableLayoutPanel3.ColumnCount = 2;
+            tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 162F));
+            tableLayoutPanel3.Controls.Add(label8, 0, 0);
+            tableLayoutPanel3.Controls.Add(TextBoxScenarioTitle, 1, 0);
+            tableLayoutPanel3.Location = new Point(3, 353);
+            tableLayoutPanel3.Name = "tableLayoutPanel3";
+            tableLayoutPanel3.RowCount = 1;
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel3.Size = new Size(194, 43);
+            tableLayoutPanel3.TabIndex = 17;
             // 
-            // label2
+            // label8
             // 
-            label2.AutoSize = true;
-            label2.Location = new Point(16, 191);
-            label2.Name = "label2";
-            label2.Size = new Size(51, 15);
-            label2.TabIndex = 4;
-            label2.Text = "Selected";
+            label8.AutoSize = true;
+            label8.Location = new Point(3, 0);
+            label8.Name = "label8";
+            label8.Size = new Size(25, 43);
+            label8.TabIndex = 14;
+            label8.Text = "Scenario Title";
             // 
-            // label1
+            // TextBoxScenarioTitle
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(16, 144);
-            label1.Name = "label1";
-            label1.Size = new Size(42, 15);
-            label1.TabIndex = 3;
-            label1.Text = "Search";
+            TextBoxScenarioTitle.Location = new Point(35, 3);
+            TextBoxScenarioTitle.Name = "TextBoxScenarioTitle";
+            TextBoxScenarioTitle.Size = new Size(156, 23);
+            TextBoxScenarioTitle.TabIndex = 13;
             // 
-            // TextBoxSearchRunway
+            // label27
             // 
-            TextBoxSearchRunway.Location = new Point(112, 136);
-            TextBoxSearchRunway.Name = "TextBoxSearchRunway";
-            TextBoxSearchRunway.Size = new Size(119, 23);
-            TextBoxSearchRunway.TabIndex = 2;
-            TextBoxSearchRunway.TextChanged += TextBoxSearchRunway_TextChanged;
-            // 
-            // TextBoxSelectedRunway
-            // 
-            TextBoxSelectedRunway.Enabled = false;
-            TextBoxSelectedRunway.Location = new Point(112, 183);
-            TextBoxSelectedRunway.Name = "TextBoxSelectedRunway";
-            TextBoxSelectedRunway.Size = new Size(119, 23);
-            TextBoxSelectedRunway.TabIndex = 1;
-            // 
-            // ListBoxRunways
-            // 
-            ListBoxRunways.FormattingEnabled = true;
-            ListBoxRunways.ItemHeight = 15;
-            ListBoxRunways.Location = new Point(112, 24);
-            ListBoxRunways.Name = "ListBoxRunways";
-            ListBoxRunways.Size = new Size(120, 94);
-            ListBoxRunways.TabIndex = 0;
-            ListBoxRunways.SelectedIndexChanged += ListBoxRunways_SelectedIndexChanged;
+            label27.Location = new Point(0, 0);
+            label27.Name = "label27";
+            label27.Size = new Size(100, 23);
+            label27.TabIndex = 0;
             // 
             // TabPageCircuit
             // 
@@ -691,7 +727,6 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMaxNoLegs.TabIndex = 14;
             TextBoxPhotoMaxNoLegs.Text = "7";
             TextBoxPhotoMaxNoLegs.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoMaxNoLegs, "Maximum leg distance in miles to next photo");
             TextBoxPhotoMaxNoLegs.Validating += TextBoxInteger_Validating;
             // 
             // TextBoxPhotoMinNoLegs
@@ -702,7 +737,6 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMinNoLegs.TabIndex = 13;
             TextBoxPhotoMinNoLegs.Text = "3";
             TextBoxPhotoMinNoLegs.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoMinNoLegs, "Maximum leg distance in miles to next photo");
             TextBoxPhotoMinNoLegs.Validating += TextBoxInteger_Validating;
             // 
             // ButtonPhotoTourDefault
@@ -957,6 +991,51 @@ namespace P3D_Scenario_Generator
             label25.TabIndex = 0;
             label25.Text = "Minimum distance";
             // 
+            // TabPageSettings
+            // 
+            TabPageSettings.Controls.Add(tableLayoutPanelSettings);
+            TabPageSettings.Location = new Point(4, 24);
+            TabPageSettings.Name = "TabPageSettings";
+            TabPageSettings.Padding = new Padding(3);
+            TabPageSettings.Size = new Size(812, 438);
+            TabPageSettings.TabIndex = 5;
+            TabPageSettings.Text = "Settings";
+            TabPageSettings.UseVisualStyleBackColor = true;
+            // 
+            // tableLayoutPanelSettings
+            // 
+            tableLayoutPanelSettings.ColumnCount = 2;
+            tableLayoutPanelSettings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelSettings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelSettings.Controls.Add(TextBoxP3Dv5Files, 1, 0);
+            tableLayoutPanelSettings.Controls.Add(button1, 0, 0);
+            tableLayoutPanelSettings.Location = new Point(16, 16);
+            tableLayoutPanelSettings.Name = "tableLayoutPanelSettings";
+            tableLayoutPanelSettings.RowCount = 2;
+            tableLayoutPanelSettings.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelSettings.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelSettings.Size = new Size(760, 100);
+            tableLayoutPanelSettings.TabIndex = 0;
+            // 
+            // TextBoxP3Dv5Files
+            // 
+            TextBoxP3Dv5Files.Enabled = false;
+            TextBoxP3Dv5Files.Location = new Point(383, 3);
+            TextBoxP3Dv5Files.Name = "TextBoxP3Dv5Files";
+            TextBoxP3Dv5Files.Size = new Size(302, 23);
+            TextBoxP3Dv5Files.TabIndex = 18;
+            // 
+            // button1
+            // 
+            button1.Location = new Point(3, 3);
+            button1.Name = "button1";
+            button1.Size = new Size(120, 23);
+            button1.TabIndex = 19;
+            button1.Text = "Prepar3D v5 Files";
+            toolTip1.SetToolTip(button1, "Select the Prepar3D v5 Files location where scenario will be stored");
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += ButtonP3Dv5Files_Click;
+            // 
             // ButtonGenerateScenario
             // 
             ButtonGenerateScenario.ImageAlign = ContentAlignment.BottomLeft;
@@ -978,6 +1057,14 @@ namespace P3D_Scenario_Generator
             ButtonHelp.UseVisualStyleBackColor = true;
             ButtonHelp.Click += ButtonHelp_Click;
             // 
+            // pictureBoxAircraft
+            // 
+            pictureBoxAircraft.Location = new Point(403, 3);
+            pictureBoxAircraft.Name = "pictureBoxAircraft";
+            pictureBoxAircraft.Size = new Size(256, 128);
+            pictureBoxAircraft.TabIndex = 18;
+            pictureBoxAircraft.TabStop = false;
+            // 
             // Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -986,6 +1073,7 @@ namespace P3D_Scenario_Generator
             Controls.Add(ButtonHelp);
             Controls.Add(ButtonGenerateScenario);
             Controls.Add(TabControl);
+            Controls.Add(buttonAircraft);
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "Form";
@@ -993,7 +1081,12 @@ namespace P3D_Scenario_Generator
             Load += Init;
             TabControl.ResumeLayout(false);
             TabPageGeneral.ResumeLayout(false);
-            TabPageGeneral.PerformLayout();
+            tableLayoutPanelGeneral.ResumeLayout(false);
+            tableLayoutPanelGeneral.PerformLayout();
+            tableLayoutPanel1.ResumeLayout(false);
+            tableLayoutPanel1.PerformLayout();
+            tableLayoutPanel3.ResumeLayout(false);
+            tableLayoutPanel3.PerformLayout();
             TabPageCircuit.ResumeLayout(false);
             tableLayoutPanelCircuit.ResumeLayout(false);
             tableLayoutPanelCircuit.PerformLayout();
@@ -1005,6 +1098,10 @@ namespace P3D_Scenario_Generator
             ((System.ComponentModel.ISupportInitialize)PictureBoxSignWriting).EndInit();
             TabPageCelestial.ResumeLayout(false);
             TabPageCelestial.PerformLayout();
+            TabPageSettings.ResumeLayout(false);
+            tableLayoutPanelSettings.ResumeLayout(false);
+            tableLayoutPanelSettings.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxAircraft).EndInit();
             ResumeLayout(false);
         }
 
@@ -1094,6 +1191,12 @@ namespace P3D_Scenario_Generator
         internal System.Windows.Forms.TextBox TextBoxP3Dv5Files;
         internal TextBox TextBoxCircuitTurnRate;
         private Label label28;
+        private TabPage TabPageSettings;
+        private TableLayoutPanel tableLayoutPanelSettings;
+        private TableLayoutPanel tableLayoutPanelGeneral;
+        private TableLayoutPanel tableLayoutPanel1;
+        private TableLayoutPanel tableLayoutPanel3;
+        private PictureBox pictureBoxAircraft;
     }
 }
 

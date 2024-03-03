@@ -27,13 +27,13 @@ namespace P3D_Scenario_Generator
                 // Check user has selected a file "aircraft.cfg"
                 if (!System.IO.Path.GetFileName(openFileDialog1.FileName).Equals("aircraft.cfg", StringComparison.OrdinalIgnoreCase))
                 {
-                    MessageBox.Show("Please select an \"aircraft.cfg\" file.", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Please select an \"aircraft.cfg\" file.", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return uiName;
                 }
                 // Check whether user has selected AI aircraft
                 if (Directory.GetDirectories($"{System.IO.Path.GetDirectoryName(openFileDialog1.FileName)}", "panel*").Length == 0)
                 {
-                    MessageBox.Show("This is an AI aircraft", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("This is an AI aircraft", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return uiName;
                 }
                 Path = openFileDialog1.FileName;

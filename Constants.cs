@@ -17,7 +17,7 @@ namespace P3D_Scenario_Generator
         Celestial
     };
 
-    public static class Constants
+    public static class Con
     {
         public static readonly string appTitle = "P3D Scenario Generator";
         public static readonly double feetInKnot = 6076.12;
@@ -26,8 +26,9 @@ namespace P3D_Scenario_Generator
         public static readonly string[] scenarioNames = ["Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation"];
         public static readonly string heightAMSL = "False";
 
-        public static readonly string[] genGameNumBlueMDLguid =
+        public static readonly string[] numBlueGuid =
         [
+            "",
             "{6079F842-015B-4017-A391-7C0F23BCBCD1}",
             "{3D49D581-9163-4A7A-B957-3CB7B7D4BAF4}",
             "{7826e942-b632-4a73-8822-c25242334730}",
@@ -37,16 +38,16 @@ namespace P3D_Scenario_Generator
             "{2ff37e91-d532-4315-8a7a-56facc312dc7}",
             "{77e93a1a-dcb3-49ed-8fca-12e6237904e4}"
         ];
-        public static readonly double genGameNumBlueVertOffset = 110;
-        public static readonly string genGameNumBlueDesc = "GEN_game_X_blue";
+        public static readonly double numBlueVertOffset = 110;
+        public static readonly string numBlue = "GEN_game_blue";
 
-        public static readonly string genGameHoopNumActiveDesc = "GEN_game_hoop_0X_ACTIVE";
-        public static readonly string genGameHoopNumActiveMDLguid = "{00985a24-4af0-4f5e-ba64-32f165a7fe55}";
-        public static readonly double genGameHoopNumActiveVertOffset = 10;
+        public static readonly string hoopAct = "GEN_game_hoop_ACTIVE";
+        public static readonly string hoopActGuid = "{00985a24-4af0-4f5e-ba64-32f165a7fe55}";
+        public static readonly double hoopActVertOffset = 10;
 
-        public static readonly string genGameHoopNumInactiveDesc = "GEN_game_hoop_0X_INACTIVE";
-        public static readonly string genGameHoopNumInactiveMDLguid = "{f76e810d-41b8-4990-9390-679a2dce81f1}";
-        public static readonly double genGameHoopNumInactiveVertOffset = 10;
+        public static readonly string hoopInact = "GEN_game_hoop_INACTIVE";
+        public static readonly string hoopInactGuid = "{f76e810d-41b8-4990-9390-679a2dce81f1}";
+        public static readonly double hoopInactVertOffset = 10;
 
     }
 }
