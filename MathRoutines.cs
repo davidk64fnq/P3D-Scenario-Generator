@@ -91,5 +91,14 @@
             else 
                 return heading + 180;
         }
+
+        static internal double ConvertHeadingAbsoluteToRelative(double absoluteHdg)
+        {
+            if (absoluteHdg > 180)
+            {
+                absoluteHdg -= 360;
+            }
+            return absoluteHdg;
+        }
     }
 }

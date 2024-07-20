@@ -10,7 +10,7 @@
         </Section>
         <Section Name="Options">
             <Property Name="Sound" Value="True" />
-            <Property Name="Pause" Value="False" />
+            <Property Name="Pause" Value="True" />
         </Section>
         <Section Name="DateTimeSeason">
             <Property Name="Season" Value="Fall" />

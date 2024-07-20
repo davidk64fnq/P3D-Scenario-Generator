@@ -206,7 +206,19 @@ namespace P3D_Scenario_Generator
             // Copy selected aircraft thumbnail image from P3D instal
             string aircraftImageSource = $"{Aircraft.GetImagename(Parameters.SelectedAircraft)}";
             string aircraftImageDest = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\Overview_01.jpg";
-            File.Copy(aircraftImageSource, aircraftImageDest, true);
+            if (File.Exists(aircraftImageSource))
+            {
+                File.Copy(aircraftImageSource, aircraftImageDest, true);
+            }
+            else
+            {
+                Stream thumbnailStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.thumbnail.jpg");
+                using (FileStream outputFileStream = new(aircraftImageDest, FileMode.Create))
+                {
+                    thumbnailStream.CopyTo(outputFileStream);
+                }
+                thumbnailStream.Dispose();
+            }
 
             // Copy style files
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.style_kneeboard.css"); 

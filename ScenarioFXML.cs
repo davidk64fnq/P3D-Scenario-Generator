@@ -38,11 +38,6 @@ namespace P3D_Scenario_Generator
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Description");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Con.appTitle} - {Parameters.SelectedScenario}";
 
-			// Options section
-			sectionIndex = fs.Section.FindIndex(s => s.Name == "Options");
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Pause");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
-
 			// DateTimeSeason section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "DateTimeSeason");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Season");
@@ -65,34 +60,14 @@ namespace P3D_Scenario_Generator
             sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
 			// Convert format of runway heading from magnetic North nearest degree to plus/minus 180 degrees true North
-			double convertHdg = 0;
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
-                convertHdg = CelestialNav.midairStartHdg + Runway.startRwy.MagVar;
-            else
-                convertHdg = Runway.startRwy.Hdg + Runway.startRwy.MagVar;
-            if (convertHdg > 180)
-            {
-				convertHdg -= 360;
-            }
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{convertHdg}";
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
-            {
-                propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
-                formattedLatitude = FormatCoordXML(CelestialNav.midairStartLat, "N", "S", false);
-                fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
-                propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
-                formattedLongitude = FormatCoordXML(CelestialNav.midairStartLon, "E", "W", false);
-                fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
-            }
-			else
-            {
-                propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
-                formattedLatitude = FormatCoordXML(Runway.startRwy.ThresholdStartLat, "N", "S", false);
-                fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
-                propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
-                formattedLongitude = FormatCoordXML(Runway.startRwy.ThresholdStartLon, "E", "W", false);
-                fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
-            }
+			double absTrueHdg = absTrueHdg = Runway.startRwy.Hdg + Runway.startRwy.MagVar;
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{MathRoutines.ConvertHeadingAbsoluteToRelative(absTrueHdg)}";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
+            formattedLatitude = FormatCoordXML(Runway.startRwy.ThresholdStartLat, "N", "S", false);
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
+            formattedLongitude = FormatCoordXML(Runway.startRwy.ThresholdStartLon, "E", "W", false);
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "+0";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "SimOnGround");
@@ -117,7 +92,17 @@ namespace P3D_Scenario_Generator
 
 			// Simvars.0 section
 			int sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
-			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
+            int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
+            // Convert format of runway heading from magnetic North nearest degree to plus/minus 180 degrees true North
+            double absTrueHdg = absTrueHdg = CelestialNav.midairStartHdg + Runway.startRwy.MagVar;
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{MathRoutines.ConvertHeadingAbsoluteToRelative(absTrueHdg)}";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
+            formattedLatitude = FormatCoordXML(CelestialNav.midairStartLat, "N", "S", false);
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
+            formattedLongitude = FormatCoordXML(CelestialNav.midairStartLon, "E", "W", false);
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "+3000";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "SimOnGround");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "False";

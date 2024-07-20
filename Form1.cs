@@ -15,7 +15,7 @@ namespace P3D_Scenario_Generator
             PrepareFormFields();
         }
 
-        #region General Tab
+        #region Menu Tab
 
         #region Runway selection
 
@@ -58,7 +58,8 @@ namespace P3D_Scenario_Generator
             {
                 ListBoxRunways.Enabled = true;
                 TextBoxSearchRunway.Enabled = true;
-                ButtonRandRunway.Enabled = true;
+                ButtonRandRunway.Enabled = true; 
+                TextBoxSelectedRunway.Text = ListBoxRunways.SelectedItem.ToString();
             }
         }
 

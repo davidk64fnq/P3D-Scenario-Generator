@@ -27,6 +27,7 @@
     <None Remove="Resources\Excel\CelestialNavStars.xlsx" />
     <None Remove="Resources\Help\aircraft.htm" />
     <None Remove="Resources\Help\circuit.htm" />
+    <None Remove="Resources\Help\dateTime.htm" />
     <None Remove="Resources\Help\images\circuitTab.jpg" />
     <None Remove="Resources\Help\images\introduction-objects.jpg" />
     <None Remove="Resources\Help\images\legRoute.jpg" />
@@ -43,7 +44,6 @@
     <None Remove="Resources\Help\introduction.htm" />
     <None Remove="Resources\Help\photoTour.htm" />
     <None Remove="Resources\Help\runway.htm" />
-    <None Remove="Resources\Help\scenarioTitle.htm" />
     <None Remove="Resources\Help\style.css" />
     <None Remove="Resources\HTML\CelestialSextant.html" />
     <None Remove="Resources\HTML\MissionBriefSource.htm" />
@@ -75,6 +75,7 @@
     <None Remove="style_load_flight.css" />
     <None Remove="success-icon.png" />
     <None Remove="ThruHoop.wav" />
+    <None Remove="thumbnail.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -138,7 +139,7 @@
     <EmbeddedResource Include="Resources\Help\runway.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\scenarioTitle.htm">
+    <EmbeddedResource Include="Resources\Help\dateTime.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\style.css">
@@ -162,6 +163,7 @@
     <EmbeddedResource Include="Resources\Sounds\ThruHoop.wav" />
     <EmbeddedResource Include="Resources\XML\runways.xml" />
     <EmbeddedResource Include="Resources\XML\source.fxml" />
+    <EmbeddedResource Include="Resources\Images\thumbnail.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -169,6 +171,7 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.11.57" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.0-preview.5.24306.7" />
     <PackageReference Include="UwpDesktop-Updated" Version="10.0.17763.132" />
     <PackageReference Include="WindowsAPICodePack" Version="7.0.4" />
   </ItemGroup>

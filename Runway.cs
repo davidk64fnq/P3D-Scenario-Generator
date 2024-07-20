@@ -104,6 +104,7 @@ namespace P3D_Scenario_Generator
             double curDistance;
             Params minAirport = new();
             Params curAirport = new();
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             Stream stream = GetRunwayXMLstream();
             XmlReader reader = XmlReader.Create(stream);
             while (reader.Read())
