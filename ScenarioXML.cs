@@ -241,9 +241,9 @@ namespace P3D_Scenario_Generator
 
             // Create airport landing trigger which does goal resolution and closes last leg window
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Parameters.PhotoDestRunway.Split("\t")[0]);
-            SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindowLeg{PhotoTour.PhotoCount - 2:00}", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindowPhoto{PhotoTour.PhotoCount - 2:00}", "AirportLandingTrigger01");
+            SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
@@ -387,8 +387,8 @@ namespace P3D_Scenario_Generator
             // Create airport landing trigger and activation action 
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoId);
             SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
-            SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
+            SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger
@@ -1014,7 +1014,7 @@ namespace P3D_Scenario_Generator
                 topPixels += gate.topPixels.ToString();
                 leftPixels += gate.leftPixels.ToString();
                 bearings += gate.orientation.ToString();
-                if (index < Gates.GateCount - 1)
+                if (index <= Gates.GateCount - 1)
                 {
                     topPixels += ",";
                     leftPixels += ",";

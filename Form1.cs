@@ -189,9 +189,9 @@ namespace P3D_Scenario_Generator
 
         static private bool ValidatePhotoDoubleParameters()
         {
-            if (Convert.ToDouble(form.TextBoxPhotoMaxLegDist.Text) < Convert.ToDouble(form.TextBoxPhotoMinLegDist.Text))
+            if (Convert.ToDouble(form.TextBoxPhotoMaxLegDist.Text) < Convert.ToDouble(form.TextBoxPhotoMinLegDist.Text) + 1)
             {
-                MessageBox.Show($"Maximum leg distance to be greater than or equal to minimum leg distance", "Photo Tour Scenario: leg distances", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Maximum leg distance to be 1 mile greater than minimum leg distance", "Photo Tour Scenario: leg distances", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
             return true;

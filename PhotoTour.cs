@@ -86,7 +86,7 @@ namespace P3D_Scenario_Generator
                     if (airportLeg != null)
                     {
                         int headingChange = MathRoutines.CalcHeadingChange(photoLegs[^2].forwardBearing, airportLeg.forwardBearing);
-                        if (Math.Abs(headingChange) < Parameters.MaxBearingChange)
+                        if ((Math.Abs(headingChange) < Parameters.MaxBearingChange) || (Parameters.MaxNoLegs == 3))
                         {
                             Parameters.PhotoDestRunway = $"{airportLeg.icao}\t({airportLeg.id})";
                             Runway.SetRunway(Runway.destRwy, "destination");
