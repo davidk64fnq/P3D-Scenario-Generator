@@ -91,7 +91,7 @@ namespace P3D_Scenario_Generator
                 SetProximityTriggerArea(gateNo, "RectangleArea", $"RectangleArea{gateNo:00}", "ProximityTrigger");
                 SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "ActHoopInact", gateNo, "ProximityTrigger");
                 SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "DeactHoopAct", gateNo, "ProximityTrigger");
-                SetProximityTriggerOnEnterAction(gateNo, "PointOfInterestActivationAction", $"DeactPOI", gateNo, "ProximityTrigger");
+                SetProximityTriggerOnEnterAction(gateNo, "PointOfInterestActivationAction", "DeactPOI", gateNo, "ProximityTrigger");
                 SetProximityTriggerOnEnterAction(gateNo, "OneShotSoundAction", "ThruHoop", gateNo, "ProximityTrigger");
 
                 // Create proximity trigger actions to activate and deactivate as required
@@ -110,7 +110,7 @@ namespace P3D_Scenario_Generator
                 {
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActHoopAct", gateNo, "ProximityTrigger");
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "DeactHoopInact", gateNo, "ProximityTrigger");
-                    SetProximityTriggerOnEnterAction(gateNo + 1, "PointOfInterestActivationAction", $"ActPOI", gateNo, "ProximityTrigger");
+                    SetProximityTriggerOnEnterAction(gateNo + 1, "PointOfInterestActivationAction", "ActPOI", gateNo, "ProximityTrigger");
                 }
 
                 // Add activate next gate proximity trigger action as event to proximity trigger
@@ -124,7 +124,7 @@ namespace P3D_Scenario_Generator
             SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
             SetTimerTriggerAction("ObjectActivationAction", "ActHoopAct01", "TimerTrigger01");
             SetTimerTriggerAction("ObjectActivationAction", "DeactHoopInact01", "TimerTrigger01");
-            SetTimerTriggerAction("PointOfInterestActivationAction", $"ActPOI01", "TimerTrigger01");
+            SetTimerTriggerAction("PointOfInterestActivationAction", "ActPOI01", "TimerTrigger01");
             SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
             // Create airport landing trigger and activation action 
@@ -286,8 +286,8 @@ namespace P3D_Scenario_Generator
                 SetPointOfInterest(gateNo, "LibraryObject", Con.hoopAct, "0, 80, 0, 0", "False", "False", "Gate ");
 
                 // Create activate/deactivate POI object actions
-                SetPOIactivationAction(gateNo, "PointOfInterest", $"POI", $"ActPOI", "True");
-                SetPOIactivationAction(gateNo, "PointOfInterest", $"POI", $"DeactPOI", "False");
+                SetPOIactivationAction(gateNo, "PointOfInterest", "POI", "ActPOI", "True");
+                SetPOIactivationAction(gateNo, "PointOfInterest", "POI", "DeactPOI", "False");
 
                 // Create activate/deactivate gate object actions (hoop active and hoop inactive)
                 SetObjectActivationAction(gateNo, "LibraryObject", Con.hoopAct, "ActHoopAct", "True");
@@ -312,7 +312,7 @@ namespace P3D_Scenario_Generator
                     // Make segment start gate inactive
                     SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "ActHoopInact", gateNo, "ProximityTrigger");
                     SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "DeactHoopAct", gateNo, "ProximityTrigger");
-                    SetProximityTriggerOnEnterAction(gateNo, "PointOfInterestActivationAction", $"DeactPOI", gateNo, "ProximityTrigger");
+                    SetProximityTriggerOnEnterAction(gateNo, "PointOfInterestActivationAction", "DeactPOI", gateNo, "ProximityTrigger");
                 }
                 else // Second of gate pair marking a segment
                 {
@@ -322,7 +322,7 @@ namespace P3D_Scenario_Generator
                     SetProximityTriggerOnEnterAction(gateNo - 1, "ObjectActivationAction", "DeactHoopInact", gateNo, "ProximityTrigger");
                     // Hide current active segment end gate
                     SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "DeactHoopAct", gateNo, "ProximityTrigger");
-                    SetProximityTriggerOnEnterAction(gateNo, "PointOfInterestActivationAction", $"DeactPOI", gateNo, "ProximityTrigger");
+                    SetProximityTriggerOnEnterAction(gateNo, "PointOfInterestActivationAction", "DeactPOI", gateNo, "ProximityTrigger");
                 }
                 SetProximityTriggerOnEnterAction(gateNo, "OneShotSoundAction", "ThruHoop", gateNo, "ProximityTrigger");
 
@@ -342,7 +342,7 @@ namespace P3D_Scenario_Generator
                     // Make segment end gate active
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActHoopAct", gateNo, "ProximityTrigger");
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "DeactHoopInact", gateNo, "ProximityTrigger");
-                    SetProximityTriggerOnEnterAction(gateNo + 1, "PointOfInterestActivationAction", $"ActPOI", gateNo, "ProximityTrigger");
+                    SetProximityTriggerOnEnterAction(gateNo + 1, "PointOfInterestActivationAction", "ActPOI", gateNo, "ProximityTrigger");
                 }
                 else // Second of gate pair marking a segment
                 {
@@ -350,7 +350,7 @@ namespace P3D_Scenario_Generator
                     {
                         // Make next segment start gate active
                         SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActHoopAct", gateNo, "ProximityTrigger");
-                        SetProximityTriggerOnEnterAction(gateNo + 1, "PointOfInterestActivationAction", $"ActPOI", gateNo, "ProximityTrigger");
+                        SetProximityTriggerOnEnterAction(gateNo + 1, "PointOfInterestActivationAction", "ActPOI", gateNo, "ProximityTrigger");
                         // Show next segment end gate as inactive
                         SetProximityTriggerOnEnterAction(gateNo + 2, "ObjectActivationAction", "ActHoopInact", gateNo, "ProximityTrigger");
                     }
@@ -362,7 +362,7 @@ namespace P3D_Scenario_Generator
             }
 
             // Create  window object 
-            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", "", $"images\\htmlSignWriting.html", "False", "False");
+            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", "", "images\\htmlSignWriting.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for window object
             SetSignWritingHTML();
@@ -387,7 +387,7 @@ namespace P3D_Scenario_Generator
             // Create airport landing trigger and activation action 
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoId);
             SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
-            SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
+            SetAirportLandingTriggerAction("CloseWindowAction", "CloseUIpanelWindow01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
@@ -408,6 +408,7 @@ namespace P3D_Scenario_Generator
             // Create sextant window object
             SetUIPanelWindow(1, "CelestialSextant", "False", "True", "", "images\\htmlCelestialSextant.html", "False", "True");
 			SetOpenWindowAction(1, "UIPanelWindow", "CelestialSextant", ["986", "755"]);
+            SetCloseWindowAction(1, "UIPanelWindow", "CelestialSextant");
 
             // Create onscreen text object for displaying error message from sextant
             SetOnScreenText("CelestialErrorMessage01", "Star not in FOV", "Center", "0.000000,0.000000,0.000000,255.000000", "False", "White");
@@ -433,6 +434,7 @@ namespace P3D_Scenario_Generator
 
             // Create airport landing trigger which does goal resolution - starts activated
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "True", Runway.destRwy.IcaoId);
+            SetAirportLandingTriggerAction("CloseWindowAction", "CloseCelestialSextant01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
         }

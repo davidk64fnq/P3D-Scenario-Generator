@@ -1,9 +1,26 @@
 ﻿using System.Net;
+using HtmlAgilityPack;
 
 namespace P3D_Scenario_Generator
 {
     internal class HttpRoutines
     {
+        internal static HtmlAgilityPack.HtmlDocument GetWebDoc(string url)
+        {
+            HtmlAgilityPack.HtmlDocument htmlDoc = null;
+            try
+            {
+                HtmlWeb web = new HtmlWeb();
+                htmlDoc = web.Load(url);
+            }
+            catch
+            {
+                string errorMessage = "Encountered issues obtaining web doc, try generating a new scenario";
+                MessageBox.Show(errorMessage, "Web document download", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            return htmlDoc;
+        }
+
         internal static void GetWebDoc(string url, string saveFolder, string saveFile)
         {
             try

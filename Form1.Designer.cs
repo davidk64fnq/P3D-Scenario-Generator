@@ -116,6 +116,17 @@ namespace P3D_Scenario_Generator
             TextBoxSearchRunway = new TextBox();
             label2 = new Label();
             TabControl = new TabControl();
+            TabPageWikiList = new TabPage();
+            ListBoxWikiCellName = new ListBox();
+            ListBoxWikiAttribute = new ListBox();
+            LabelWikiAttribute = new Label();
+            LabelWikiCellName = new Label();
+            ListBoxWikiTableNames = new ListBox();
+            LabelWikiTableNames = new Label();
+            LabelWikiURL = new Label();
+            TextBoxWikiURL = new TextBox();
+            LabelWikiRoute = new Label();
+            TextBoxWikiRoute = new TextBox();
             TabPageSettings.SuspendLayout();
             tableLayoutPanelSettings.SuspendLayout();
             TabPageCelestial.SuspendLayout();
@@ -131,6 +142,7 @@ namespace P3D_Scenario_Generator
             GroupBoxScenario.SuspendLayout();
             GroupBoxRunway.SuspendLayout();
             TabControl.SuspendLayout();
+            TabPageWikiList.SuspendLayout();
             SuspendLayout();
             // 
             // ButtonGenerateScenario
@@ -1040,6 +1052,7 @@ namespace P3D_Scenario_Generator
             TabControl.Controls.Add(TabPagePhoto);
             TabControl.Controls.Add(TabPageSign);
             TabControl.Controls.Add(TabPageCelestial);
+            TabControl.Controls.Add(TabPageWikiList);
             TabControl.Controls.Add(TabPageSettings);
             TabControl.Location = new Point(12, 12);
             TabControl.Name = "TabControl";
@@ -1047,6 +1060,116 @@ namespace P3D_Scenario_Generator
             TabControl.Size = new Size(820, 466);
             TabControl.TabIndex = 0;
             TabControl.SelectedIndexChanged += TabControl_SelectedIndexChanged;
+            // 
+            // TabPageWikiList
+            // 
+            TabPageWikiList.Controls.Add(TextBoxWikiRoute);
+            TabPageWikiList.Controls.Add(LabelWikiRoute);
+            TabPageWikiList.Controls.Add(ListBoxWikiCellName);
+            TabPageWikiList.Controls.Add(ListBoxWikiAttribute);
+            TabPageWikiList.Controls.Add(LabelWikiAttribute);
+            TabPageWikiList.Controls.Add(LabelWikiCellName);
+            TabPageWikiList.Controls.Add(ListBoxWikiTableNames);
+            TabPageWikiList.Controls.Add(LabelWikiTableNames);
+            TabPageWikiList.Controls.Add(LabelWikiURL);
+            TabPageWikiList.Controls.Add(TextBoxWikiURL);
+            TabPageWikiList.Location = new Point(4, 24);
+            TabPageWikiList.Name = "TabPageWikiList";
+            TabPageWikiList.Padding = new Padding(3);
+            TabPageWikiList.Size = new Size(812, 438);
+            TabPageWikiList.TabIndex = 7;
+            TabPageWikiList.Text = "Wikipedia List";
+            TabPageWikiList.UseVisualStyleBackColor = true;
+            // 
+            // ListBoxWikiCellName
+            // 
+            ListBoxWikiCellName.FormattingEnabled = true;
+            ListBoxWikiCellName.ItemHeight = 15;
+            ListBoxWikiCellName.Items.AddRange(new object[] { "td", "th" });
+            ListBoxWikiCellName.Location = new Point(230, 74);
+            ListBoxWikiCellName.Name = "ListBoxWikiCellName";
+            ListBoxWikiCellName.Size = new Size(120, 34);
+            ListBoxWikiCellName.TabIndex = 8;
+            // 
+            // ListBoxWikiAttribute
+            // 
+            ListBoxWikiAttribute.FormattingEnabled = true;
+            ListBoxWikiAttribute.ItemHeight = 15;
+            ListBoxWikiAttribute.Items.AddRange(new object[] { "|", "scope|row" });
+            ListBoxWikiAttribute.Location = new Point(525, 74);
+            ListBoxWikiAttribute.Name = "ListBoxWikiAttribute";
+            ListBoxWikiAttribute.Size = new Size(120, 34);
+            ListBoxWikiAttribute.TabIndex = 7;
+            // 
+            // LabelWikiAttribute
+            // 
+            LabelWikiAttribute.AutoSize = true;
+            LabelWikiAttribute.Location = new Point(405, 77);
+            LabelWikiAttribute.Name = "LabelWikiAttribute";
+            LabelWikiAttribute.Size = new Size(54, 15);
+            LabelWikiAttribute.TabIndex = 6;
+            LabelWikiAttribute.Text = "Attribute";
+            // 
+            // LabelWikiCellName
+            // 
+            LabelWikiCellName.AutoSize = true;
+            LabelWikiCellName.Location = new Point(146, 77);
+            LabelWikiCellName.Name = "LabelWikiCellName";
+            LabelWikiCellName.Size = new Size(62, 15);
+            LabelWikiCellName.TabIndex = 4;
+            LabelWikiCellName.Text = "Cell Name";
+            // 
+            // ListBoxWikiTableNames
+            // 
+            ListBoxWikiTableNames.FormattingEnabled = true;
+            ListBoxWikiTableNames.ItemHeight = 15;
+            ListBoxWikiTableNames.Location = new Point(146, 132);
+            ListBoxWikiTableNames.Name = "ListBoxWikiTableNames";
+            ListBoxWikiTableNames.Size = new Size(613, 49);
+            ListBoxWikiTableNames.TabIndex = 3;
+            ListBoxWikiTableNames.SelectedIndexChanged += ListBoxWikiTableNames_SelectedIndexChanged;
+            // 
+            // LabelWikiTableNames
+            // 
+            LabelWikiTableNames.AutoSize = true;
+            LabelWikiTableNames.Location = new Point(37, 132);
+            LabelWikiTableNames.Name = "LabelWikiTableNames";
+            LabelWikiTableNames.Size = new Size(74, 15);
+            LabelWikiTableNames.TabIndex = 2;
+            LabelWikiTableNames.Text = "Table Names";
+            // 
+            // LabelWikiURL
+            // 
+            LabelWikiURL.AutoSize = true;
+            LabelWikiURL.Location = new Point(37, 37);
+            LabelWikiURL.Name = "LabelWikiURL";
+            LabelWikiURL.Size = new Size(83, 15);
+            LabelWikiURL.TabIndex = 1;
+            LabelWikiURL.Text = "Wikipedia URL";
+            // 
+            // TextBoxWikiURL
+            // 
+            TextBoxWikiURL.Location = new Point(146, 29);
+            TextBoxWikiURL.Name = "TextBoxWikiURL";
+            TextBoxWikiURL.Size = new Size(613, 23);
+            TextBoxWikiURL.TabIndex = 0;
+            TextBoxWikiURL.TextChanged += TextBoxWikiURL_TextChanged;
+            // 
+            // LabelWikiRoute
+            // 
+            LabelWikiRoute.AutoSize = true;
+            LabelWikiRoute.Location = new Point(37, 219);
+            LabelWikiRoute.Name = "LabelWikiRoute";
+            LabelWikiRoute.Size = new Size(83, 15);
+            LabelWikiRoute.TabIndex = 9;
+            LabelWikiRoute.Text = "Visit Sequence";
+            // 
+            // TextBoxWikiRoute
+            // 
+            TextBoxWikiRoute.Location = new Point(146, 211);
+            TextBoxWikiRoute.Name = "TextBoxWikiRoute";
+            TextBoxWikiRoute.Size = new Size(613, 23);
+            TextBoxWikiRoute.TabIndex = 10;
             // 
             // Form
             // 
@@ -1084,6 +1207,8 @@ namespace P3D_Scenario_Generator
             GroupBoxRunway.ResumeLayout(false);
             GroupBoxRunway.PerformLayout();
             TabControl.ResumeLayout(false);
+            TabPageWikiList.ResumeLayout(false);
+            TabPageWikiList.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -1177,6 +1302,17 @@ namespace P3D_Scenario_Generator
         private TextBox TextBoxSearchRunway;
         private Label label2;
         private TabControl TabControl;
+        private TabPage TabPageWikiList;
+        private Label LabelWikiURL;
+        internal TextBox TextBoxWikiURL;
+        private ListBox ListBoxWikiTableNames;
+        private Label LabelWikiTableNames;
+        private Label LabelWikiCellName;
+        private ListBox ListBoxWikiAttribute;
+        private Label LabelWikiAttribute;
+        private ListBox ListBoxWikiCellName;
+        private TextBox TextBoxWikiRoute;
+        private Label LabelWikiRoute;
     }
 }
 

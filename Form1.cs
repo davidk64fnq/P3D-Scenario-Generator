@@ -46,7 +46,9 @@ namespace P3D_Scenario_Generator
         private void ListBoxScenarioType_SelectedIndexChanged(object sender, EventArgs e)
         {
             TextBoxSelectedScenario.Text = ListBoxScenarioType.SelectedItem.ToString();
-            if ((TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour]) || (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial]))
+            if ((TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
+                || (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial])
+                || (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList]))
             {
                 ListBoxRunways.Enabled = false;
                 TextBoxSearchRunway.Enabled = false;
@@ -58,7 +60,7 @@ namespace P3D_Scenario_Generator
             {
                 ListBoxRunways.Enabled = true;
                 TextBoxSearchRunway.Enabled = true;
-                ButtonRandRunway.Enabled = true; 
+                ButtonRandRunway.Enabled = true;
                 TextBoxSelectedRunway.Text = ListBoxRunways.SelectedItem.ToString();
             }
         }
@@ -85,6 +87,10 @@ namespace P3D_Scenario_Generator
                 CelestialNav.GetAlmanacData();
                 CelestialNav.InitStars();
                 CelestialNav.CreateStarsDat();
+            }
+            else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
+            {
+                WikiList.SetWikiTour();
             }
             Runway.SetRunway(Runway.startRwy, "start");
             Runway.SetRunway(Runway.destRwy, "destination");
@@ -281,6 +287,27 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
+        #region Wikipedia Lists Tab
+        private void TextBoxWikiURL_TextChanged(object sender, EventArgs e)
+        {
+            if (TextBoxWikiURL.Text != null)
+            {
+                var attributePair = ListBoxWikiAttribute.Text.Split('|');
+                WikiList.SetWikiPage(TextBoxWikiURL.Text, ListBoxWikiCellName.Text, attributePair);
+                ListBoxWikiTableNames.DataSource = WikiList.GetWikiTableList();
+            }
+        }
+
+        private void ListBoxWikiTableNames_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ListBoxWikiTableNames.Items.Count > 0)
+            {
+                TextBoxWikiRoute.Text = WikiList.SortWikiTable(ListBoxWikiTableNames.SelectedIndex);
+            }
+        }
+
+        #endregion
+
         #region Utilities
 
         private void ButtonHelp_Click(object sender, EventArgs e)
@@ -402,6 +429,5 @@ namespace P3D_Scenario_Generator
             TextBoxP3Dv5Files.Text = Properties.Settings.Default.Prepar3Dv5Files;
         }
         #endregion
-
     }
 }

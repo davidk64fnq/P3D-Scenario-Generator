@@ -7,12 +7,14 @@ const mapHeight = mapHeightX;
 var zoomN, zoomE, zoomS, zoomW; // adjusted map edges allowing for different zoom factor of 1, 2, or 4
 const imagePixels = 1500;
 var zoomFactor = 1;
+var zoomToggle = 0;
 var curMap = "aerialLabelsMap";
 var planeTopPixels, planeLeftPixels;
 var clipTop, clipRight, clipBottom, clipLeft;
 
 function update(timestamp)
 {
+	handleButtonChoices();
 	var plane = document.getElementById("plane");
 	var planeHeadingDeg = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI;
 	var planeLonDeg = VarGet("A:PLANE LONGITUDE" ,"Radians") * 180 / Math.PI; // x
@@ -59,6 +61,20 @@ function update(timestamp)
 	window.requestAnimationFrame(update);
 }
 window.requestAnimationFrame(update);
+
+function handleButtonChoices() {
+	var changeZoom = VarGet("A:ALTERNATE STATIC SOURCE OPEN" ,"Bool"); 
+	if (changeZoom != zoomToggle){
+		zoomToggle = changeZoom;
+		if (zoomFactor == 1){
+			showZoom2Map()
+		} else if (zoomFactor == 2){
+			showZoom4Map()
+		} else{
+			showZoom1Map()
+		}
+	}
+}
 
 function hidePlane() {
 	document.getElementById('plane').style.display = 'none';

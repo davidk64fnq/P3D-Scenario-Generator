@@ -167,8 +167,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CoordinateSharp" Version="2.24.2.1" />
     <PackageReference Include="EPPlus" Version="7.0.5" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.57" />
+    <PackageReference Include="HungarianAlgorithm" Version="2.3.1" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.0-preview.5.24306.7" />

@@ -60,6 +60,9 @@ namespace P3D_Scenario_Generator
         internal static double CelestialImageSouth { get; set; }
         internal static double CelestialImageWest { get; set; }
 
+        // Wikipedia List
+        internal static string WikiListURL { get; set; }
+
         static private bool IsValidFilename(string fileName)
         {
             return !string.IsNullOrEmpty(fileName) &&
@@ -138,6 +141,12 @@ namespace P3D_Scenario_Generator
             {
                 CelestialMinDistance = Convert.ToDouble(form.TextBoxCelestialMinDist.Text);
                 CelestialMaxDistance = Convert.ToDouble(form.TextBoxCelestialMaxDist.Text);
+            }
+
+            // Wikipedia List
+            if (SelectedScenario == nameof(ScenarioTypes.WikiList))
+            {
+                WikiListURL = form.TextBoxWikiURL.Text;
             }
 
             if (errorMsg != "")

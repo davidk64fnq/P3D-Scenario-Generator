@@ -14,7 +14,8 @@ namespace P3D_Scenario_Generator
         Circuit,
         PhotoTour,
         SignWriting,
-        Celestial
+        Celestial,
+        WikiList
     };
 
     public static class Con
@@ -23,7 +24,7 @@ namespace P3D_Scenario_Generator
         public static readonly double feetInKnot = 6076.12;
         public static readonly double degreeLatFeet = 364000;
         public static readonly double radiusEarth = 20902230.971129; // Radius of earth at equator in feet
-        public static readonly string[] scenarioNames = ["Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation"];
+        public static readonly string[] scenarioNames = ["Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation", "Wikipedia List"];
         public static readonly string heightAMSL = "False";
 
         public static readonly string[] numBlueGuid =
