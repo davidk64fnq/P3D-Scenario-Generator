@@ -90,7 +90,8 @@ namespace P3D_Scenario_Generator
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
             {
-                WikiList.SetWikiTour();
+                WikiList.SetWikiTour(ListBoxWikiTableNames.SelectedIndex, ListBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedIndex, 
+                    ComboBoxWikiFinishingItem.SelectedIndex, TextBoxWikiDistance.Text);
             }
             Runway.SetRunway(Runway.startRwy, "start");
             Runway.SetRunway(Runway.destRwy, "destination");
@@ -300,10 +301,76 @@ namespace P3D_Scenario_Generator
 
         private void ListBoxWikiTableNames_SelectedIndexChanged(object sender, EventArgs e)
         {
+            TextBoxWikiDistance.Text = "";
             if (ListBoxWikiTableNames.Items.Count > 0)
             {
-                TextBoxWikiRoute.Text = WikiList.SortWikiTable(ListBoxWikiTableNames.SelectedIndex);
+                ListBoxWikiRoute.DataSource = WikiList.SortWikiTable(ListBoxWikiTableNames.SelectedIndex);
+                List<string> itemList = [];
+                for (int index = 0; index < ListBoxWikiRoute.Items.Count; index++)
+                {
+                    itemList.Add(GetWikiRouteLegFirstItem(ListBoxWikiRoute.Items[index].ToString()));
+                }
+                if (!itemList.Contains(GetWikiRouteLegLastItem(ListBoxWikiRoute.Items[^1].ToString())))
+                {
+                    itemList.Add(GetWikiRouteLegLastItem(ListBoxWikiRoute.Items[^1].ToString()));
+                }
+                ComboBoxWikiStartingItem.DataSource = itemList;
+                ComboBoxWikiStartingItem.SelectedIndex = 0;
+                List<string> clonedItemList = new(itemList);
+                ComboBoxWikiFinishingItem.DataSource = clonedItemList;
+                ComboBoxWikiFinishingItem.SelectedIndex = ComboBoxWikiFinishingItem.Items.Count - 1;
             }
+        }
+
+        private void ComboBoxWikiStartingItem_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ComboBoxWikiStartingItem.SelectedIndex > ComboBoxWikiFinishingItem.SelectedIndex && ComboBoxWikiFinishingItem.SelectedIndex >= 0)
+            {
+                (ComboBoxWikiFinishingItem.SelectedIndex, ComboBoxWikiStartingItem.SelectedIndex) = 
+                    (ComboBoxWikiStartingItem.SelectedIndex, ComboBoxWikiFinishingItem.SelectedIndex);
+            }
+            else
+            {
+                TextBoxWikiDistance.Text = GetWikiDistance();
+            }
+        }
+
+        private string GetWikiDistance()
+        {
+            if (ComboBoxWikiFinishingItem.SelectedIndex > ListBoxWikiRoute.Items.Count)
+            {
+                return "";
+            }
+            TextBoxWikiDistance.Text = "";
+            if (ComboBoxWikiStartingItem.SelectedIndex == ComboBoxWikiFinishingItem.SelectedIndex)
+            {
+                return "0 miles";
+            }
+            int distStrStart, distStrFinish, legDistance, routeDistance = 0;
+            for (int legNo = ComboBoxWikiStartingItem.SelectedIndex + 1; legNo <= ComboBoxWikiFinishingItem.SelectedIndex; legNo++)
+            {
+                distStrStart = ListBoxWikiRoute.Items[legNo - 1].ToString().IndexOf('(') + 1;
+                distStrFinish = ListBoxWikiRoute.Items[legNo - 1].ToString().IndexOf(" miles)");
+                legDistance = int.Parse(ListBoxWikiRoute.Items[legNo - 1].ToString()[distStrStart..distStrFinish]);
+                routeDistance += legDistance;
+            }
+            return routeDistance.ToString() + " miles";
+        }
+
+        private static string GetWikiRouteLegFirstItem(string route)
+        {
+            int stringBegin, stringEnd;
+            stringBegin = route.IndexOf('[');
+            stringEnd = route.IndexOf("...") - 1;
+            return route[stringBegin..stringEnd];
+        }
+
+        private static string GetWikiRouteLegLastItem(string route)
+        {
+            int stringBegin, stringEnd;
+            stringBegin = route.IndexOf("...") + 4;
+            stringEnd = route.IndexOf('(') - 1;
+            return route[stringBegin..stringEnd];
         }
 
         #endregion
@@ -328,6 +395,10 @@ namespace P3D_Scenario_Generator
             // Signwriting tab
             stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.signTabSegment22Font.jpg");
             PictureBoxSignWriting.Image = new Bitmap(stream);
+
+            // Wikipedia Lists tab
+            ListBoxWikiCellName.SetSelected(0, true);
+            ListBoxWikiAttribute.SetSelected(0, true);
         }
 
         private void TextBoxDouble_Validating(object sender, CancelEventArgs e)

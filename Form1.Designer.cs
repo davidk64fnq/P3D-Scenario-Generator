@@ -117,6 +117,14 @@ namespace P3D_Scenario_Generator
             label2 = new Label();
             TabControl = new TabControl();
             TabPageWikiList = new TabPage();
+            TextBoxWikiDistance = new TextBox();
+            LabelWikiDistance = new Label();
+            ComboBoxWikiFinishingItem = new ComboBox();
+            LabelWikiFinishingItem = new Label();
+            ComboBoxWikiStartingItem = new ComboBox();
+            LabelWikiStartItem = new Label();
+            ListBoxWikiRoute = new ListBox();
+            LabelWikiRoute = new Label();
             ListBoxWikiCellName = new ListBox();
             ListBoxWikiAttribute = new ListBox();
             LabelWikiAttribute = new Label();
@@ -125,8 +133,6 @@ namespace P3D_Scenario_Generator
             LabelWikiTableNames = new Label();
             LabelWikiURL = new Label();
             TextBoxWikiURL = new TextBox();
-            LabelWikiRoute = new Label();
-            TextBoxWikiRoute = new TextBox();
             TabPageSettings.SuspendLayout();
             tableLayoutPanelSettings.SuspendLayout();
             TabPageCelestial.SuspendLayout();
@@ -1063,7 +1069,13 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageWikiList
             // 
-            TabPageWikiList.Controls.Add(TextBoxWikiRoute);
+            TabPageWikiList.Controls.Add(TextBoxWikiDistance);
+            TabPageWikiList.Controls.Add(LabelWikiDistance);
+            TabPageWikiList.Controls.Add(ComboBoxWikiFinishingItem);
+            TabPageWikiList.Controls.Add(LabelWikiFinishingItem);
+            TabPageWikiList.Controls.Add(ComboBoxWikiStartingItem);
+            TabPageWikiList.Controls.Add(LabelWikiStartItem);
+            TabPageWikiList.Controls.Add(ListBoxWikiRoute);
             TabPageWikiList.Controls.Add(LabelWikiRoute);
             TabPageWikiList.Controls.Add(ListBoxWikiCellName);
             TabPageWikiList.Controls.Add(ListBoxWikiAttribute);
@@ -1080,6 +1092,78 @@ namespace P3D_Scenario_Generator
             TabPageWikiList.TabIndex = 7;
             TabPageWikiList.Text = "Wikipedia List";
             TabPageWikiList.UseVisualStyleBackColor = true;
+            // 
+            // TextBoxWikiDistance
+            // 
+            TextBoxWikiDistance.Enabled = false;
+            TextBoxWikiDistance.Location = new Point(681, 340);
+            TextBoxWikiDistance.Name = "TextBoxWikiDistance";
+            TextBoxWikiDistance.Size = new Size(78, 23);
+            TextBoxWikiDistance.TabIndex = 18;
+            // 
+            // LabelWikiDistance
+            // 
+            LabelWikiDistance.AutoSize = true;
+            LabelWikiDistance.Location = new Point(623, 343);
+            LabelWikiDistance.Name = "LabelWikiDistance";
+            LabelWikiDistance.Size = new Size(52, 15);
+            LabelWikiDistance.TabIndex = 17;
+            LabelWikiDistance.Text = "Distance";
+            // 
+            // ComboBoxWikiFinishingItem
+            // 
+            ComboBoxWikiFinishingItem.FormattingEnabled = true;
+            ComboBoxWikiFinishingItem.Location = new Point(420, 340);
+            ComboBoxWikiFinishingItem.Name = "ComboBoxWikiFinishingItem";
+            ComboBoxWikiFinishingItem.Size = new Size(185, 23);
+            ComboBoxWikiFinishingItem.TabIndex = 16;
+            ComboBoxWikiFinishingItem.SelectedIndexChanged += ComboBoxWikiStartingItem_SelectedIndexChanged;
+            // 
+            // LabelWikiFinishingItem
+            // 
+            LabelWikiFinishingItem.AutoSize = true;
+            LabelWikiFinishingItem.Location = new Point(376, 343);
+            LabelWikiFinishingItem.Name = "LabelWikiFinishingItem";
+            LabelWikiFinishingItem.Size = new Size(38, 15);
+            LabelWikiFinishingItem.TabIndex = 15;
+            LabelWikiFinishingItem.Text = "Finish";
+            // 
+            // ComboBoxWikiStartingItem
+            // 
+            ComboBoxWikiStartingItem.FormattingEnabled = true;
+            ComboBoxWikiStartingItem.Location = new Point(183, 340);
+            ComboBoxWikiStartingItem.Name = "ComboBoxWikiStartingItem";
+            ComboBoxWikiStartingItem.Size = new Size(185, 23);
+            ComboBoxWikiStartingItem.TabIndex = 14;
+            ComboBoxWikiStartingItem.SelectedIndexChanged += ComboBoxWikiStartingItem_SelectedIndexChanged;
+            // 
+            // LabelWikiStartItem
+            // 
+            LabelWikiStartItem.AutoSize = true;
+            LabelWikiStartItem.Location = new Point(146, 343);
+            LabelWikiStartItem.Name = "LabelWikiStartItem";
+            LabelWikiStartItem.Size = new Size(31, 15);
+            LabelWikiStartItem.TabIndex = 13;
+            LabelWikiStartItem.Text = "Start";
+            // 
+            // ListBoxWikiRoute
+            // 
+            ListBoxWikiRoute.FormattingEnabled = true;
+            ListBoxWikiRoute.ItemHeight = 15;
+            ListBoxWikiRoute.Location = new Point(146, 219);
+            ListBoxWikiRoute.Name = "ListBoxWikiRoute";
+            ListBoxWikiRoute.SelectionMode = SelectionMode.None;
+            ListBoxWikiRoute.Size = new Size(613, 94);
+            ListBoxWikiRoute.TabIndex = 12;
+            // 
+            // LabelWikiRoute
+            // 
+            LabelWikiRoute.AutoSize = true;
+            LabelWikiRoute.Location = new Point(37, 219);
+            LabelWikiRoute.Name = "LabelWikiRoute";
+            LabelWikiRoute.Size = new Size(83, 15);
+            LabelWikiRoute.TabIndex = 9;
+            LabelWikiRoute.Text = "Visit Sequence";
             // 
             // ListBoxWikiCellName
             // 
@@ -1154,22 +1238,6 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURL.Size = new Size(613, 23);
             TextBoxWikiURL.TabIndex = 0;
             TextBoxWikiURL.TextChanged += TextBoxWikiURL_TextChanged;
-            // 
-            // LabelWikiRoute
-            // 
-            LabelWikiRoute.AutoSize = true;
-            LabelWikiRoute.Location = new Point(37, 219);
-            LabelWikiRoute.Name = "LabelWikiRoute";
-            LabelWikiRoute.Size = new Size(83, 15);
-            LabelWikiRoute.TabIndex = 9;
-            LabelWikiRoute.Text = "Visit Sequence";
-            // 
-            // TextBoxWikiRoute
-            // 
-            TextBoxWikiRoute.Location = new Point(146, 211);
-            TextBoxWikiRoute.Name = "TextBoxWikiRoute";
-            TextBoxWikiRoute.Size = new Size(613, 23);
-            TextBoxWikiRoute.TabIndex = 10;
             // 
             // Form
             // 
@@ -1311,8 +1379,14 @@ namespace P3D_Scenario_Generator
         private ListBox ListBoxWikiAttribute;
         private Label LabelWikiAttribute;
         private ListBox ListBoxWikiCellName;
-        private TextBox TextBoxWikiRoute;
         private Label LabelWikiRoute;
+        private ListBox ListBoxWikiRoute;
+        private ComboBox ComboBoxWikiFinishingItem;
+        private Label LabelWikiFinishingItem;
+        private ComboBox ComboBoxWikiStartingItem;
+        private Label LabelWikiStartItem;
+        internal TextBox TextBoxWikiDistance;
+        private Label LabelWikiDistance;
     }
 }
 

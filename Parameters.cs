@@ -60,9 +60,6 @@ namespace P3D_Scenario_Generator
         internal static double CelestialImageSouth { get; set; }
         internal static double CelestialImageWest { get; set; }
 
-        // Wikipedia List
-        internal static string WikiListURL { get; set; }
-
         static private bool IsValidFilename(string fileName)
         {
             return !string.IsNullOrEmpty(fileName) &&
@@ -146,7 +143,10 @@ namespace P3D_Scenario_Generator
             // Wikipedia List
             if (SelectedScenario == nameof(ScenarioTypes.WikiList))
             {
-                WikiListURL = form.TextBoxWikiURL.Text;
+                if (form.TextBoxWikiDistance.Text == "")
+                {
+                    errorMsg += "\n\tSelect a list of Wikipedia items first";
+                };
             }
 
             if (errorMsg != "")
