@@ -39,6 +39,9 @@ namespace P3D_Scenario_Generator
                 case nameof(ScenarioTypes.Celestial):
                     SetCelestialWorldBaseFlightXML();
                     break;
+                case nameof(ScenarioTypes.WikiList):
+                    SetWikiListWorldBaseFlightXML();
+                    break;
                 default:
                     break;
             }
@@ -227,7 +230,7 @@ namespace P3D_Scenario_Generator
                 SetProximityTriggerOnEnterAction(photoNo, "OneShotSoundAction", "ThruHoop", photoNo, "ProximityTrigger");
 
                 // Add activate next gate proximity trigger action as event to proximity trigger
-                // photoNo + 1 is next photo location, PhotoTour.PhotoCount - 1 is destination airport
+                // itemNo + 1 is next photo location, PhotoTour.PhotoCount - 1 is destination airport
                 if (photoNo + 1 < PhotoTour.PhotoCount - 1)
                     SetProximityTriggerOnEnterAction(photoNo + 1, "ObjectActivationAction", "ActProximityTrigger", photoNo, "ProximityTrigger");
             }
@@ -437,6 +440,39 @@ namespace P3D_Scenario_Generator
             SetAirportLandingTriggerAction("CloseWindowAction", "CloseCelestialSextant01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
+        }
+
+        static private void SetWikiListWorldBaseFlightXML()
+        {
+            SetDisabledTrafficAirports($"{Runway.startRwy.IcaoId}");
+            SetRealismOverrides();
+            SetScenarioMetadata();
+            SetDialogAction("Intro01", ScenarioHTML.overview.Briefing, "2", "Text-To-Speech");
+            SetDialogAction("Intro02", ScenarioHTML.overview.Tips, "2", "Text-To-Speech");
+            SetGoal("Goal01", ScenarioHTML.overview.Objective);
+            SetGoalResolutionAction("Goal01");
+
+            // Pass 1 - setup leg route windows, WikiList.WikiCount includes start and finish airports
+            // There is a leg route window to fly to each Wiki list item location and then to destination airport
+            // The leg route windows display at the start of each leg, index 0 is the start airport, index WikiCount - 1
+            // is the destination airport
+            // LegRoute_00 is the route to first item, LegRoute_WikiList.WikiCount - 2 is the route to destination airport
+            for (int itemNo = 0; itemNo <= WikiList.WikiCount - 2; itemNo++)
+            {
+                // Create leg window object 
+                SetUIPanelWindow(itemNo, "UIpanelWindowLeg", "False", "True", "", $"images\\LegRoute_{itemNo:00}.html", "False", "False");
+
+                // Create HTML, JavaScript and CSS files for leg window objects
+                SetPhotoTourLegRouteHTML(itemNo);
+                SetPhotoTourLegRouteJS(itemNo);
+                SetPhotoTourLegRouteCSS();
+
+                // Create leg window open/close actions
+                SetOpenWindowAction(itemNo, "UIPanelWindow", "UIpanelWindowLeg", GetPhotoLegDimensions());
+                SetCloseWindowAction(itemNo, "UIPanelWindow", "UIpanelWindowLeg");
+            }
+
+
         }
 
         static private void WriteXML()

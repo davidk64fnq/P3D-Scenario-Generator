@@ -127,6 +127,25 @@ namespace P3D_Scenario_Generator
                     overview.Objective = "Navigate using celestial navigation before landing at the destination runway";
                     overview.Tips = "Never go to bed mad. Stay up and fight.";
                     break;
+                case nameof(ScenarioTypes.WikiList):
+                    overview.Title = "Wikipedia List Tour";
+                    overview.Heading1 = "Wikipedia List Tour";
+                    overview.Location = $"{Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) {Runway.destRwy.City}, {Runway.destRwy.Country}";
+                    overview.Difficulty = "Intermediate";
+                    // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
+                    duration = WikiList.WikiDistance / Aircraft.CruiseSpeed * 60;
+                    overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
+                    overview.Aircraft = $"{Parameters.SelectedAircraft}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
+                    overview.Briefing += " as you navigate from one Wikipedia list location to the next using IFR (I follow roads) ";
+                    overview.Briefing += "You'll take off, fly to a series of list locations, ";
+                    overview.Briefing += "and land at another airport. The scenario begins on runway ";
+                    overview.Briefing += $"{Runway.destRwy.Id} at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
+                    overview.Briefing += $"{Runway.destRwy.City}, {Runway.destRwy.Country}.";
+                    overview.Objective = "Take off and visit a series of photo locations before landing ";
+                    overview.Objective += $"at {WikiList.WikiFinishAirport.IcaoId}, runway {WikiList.WikiFinishAirport.Id}";
+                    overview.Tips = "The early bird gets the worm, but the second mouse gets the cheese.";
+                    break;
                 default:
                     break;
             }

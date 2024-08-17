@@ -4,6 +4,9 @@ using CoordinateSharp;
 using Microsoft.VisualBasic;
 using System.Linq;
 using System.Web;
+using BruTile;
+using BruTile.Web;
+using BruTile.Predefined;
 
 namespace P3D_Scenario_Generator
 {
@@ -15,35 +18,112 @@ namespace P3D_Scenario_Generator
     {
         internal static int WikiCount { get; private set; }
         internal static int WikiDistance { get; private set; }
+        internal static Params WikiStartAirport { get; private set; }
+        internal static Params WikiFinishAirport { get; private set; }
         internal static List<List<List<string>>> wikiPage = [];
         internal static int title = 0, link = 1, latitude = 2, longitude = 3;
-        internal static List<List<string>> wikiItemList = [];
+        internal static List<List<string>> wikiTourList = [];
 
-        static internal void SetWikiTour(int tableNo, ListBox.ObjectCollection route, object startLeg, object finishLeg, string distance)
+        // tableRoute is a list of legs to get from first item in table to last item in table, each leg is a string containing start and end items,
+        // the start and end items are only the same in the special case of a one item table, the number of legs in tableRoute is always
+        // one less than the the number of table items (except where only one item).
+        // tourStartItem is the first item of user specified subset of items
+        // tourFinishItem is the last item of user specified subset of items
+        // To get a list of items corresponding to the user specified subset of items, step through the tableRoute legs and:
+        // 1. Find the first leg that has the tourStartItem as first leg item or tourFinishItem as last leg item
+        // 2. If tourStartItem is the same as tourFinishItem tour list is complete - case where tour consists of one item only
+        // 3. If first leg finish item is the same as tourFinishItem tour list is complete - case where tour consists of two items only
+        // 4. For subsequent legs add leg start item to tour list, then:
+        // 5. Check whether leg finish item is the same as tourFinishItem, if so, add leg finish item to the tour list. Tour list is complete.
+        static internal void SetWikiTourList(int tableNo, ListBox.ObjectCollection tableRoute, object tourStartItem, object tourFinishItem, string tourDistance)
         {
-            int startLegIndex = int.Parse(startLeg.ToString());
-            int finishLegIndex = int.Parse(finishLeg.ToString());
-            var routeLegs = route.GetEnumerator();
-            int itemNo;
-            wikiItemList.Clear();
-            for (int legNo = 0; legNo < wikiPage[tableNo].Count - 1; legNo++)
+            int tourStartItemNo = GetWikiRouteLegFirstItemNo(tourStartItem.ToString());
+            int tourFinishItemNo = GetWikiRouteLegFirstItemNo(tourFinishItem.ToString());
+            var routeLegs = tableRoute.GetEnumerator();
+            int legStartItemNo, legFinishItemNo;
+            wikiTourList.Clear();
+            bool checkNextLeg = true;
+            // Steps 1 and 2 and 3
+            int legCount = 1;
+            if (wikiPage[tableNo].Count > 1)
             {
-                //Error in this code
-
+                legCount = wikiPage[tableNo].Count - 1;
+            }
+            for (int legNo = 0; legNo < legCount; legNo++)
+            {
                 routeLegs.MoveNext();
-                if (legNo >= startLegIndex && legNo <= finishLegIndex)
+                legStartItemNo = GetWikiRouteLegFirstItemNo(routeLegs.Current.ToString());
+                legFinishItemNo = GetWikiRouteLegLastItemNo(routeLegs.Current.ToString());
+                if (legStartItemNo == tourStartItemNo || legFinishItemNo == tourFinishItemNo) // Step 1
                 {
-                    itemNo = GetWikiRouteLegFirstItemNo(routeLegs.Current.ToString());
-                    wikiItemList.Add(SetWikiItem(tableNo, itemNo));
-                }
-                if (legNo == finishLegIndex)
-                {
-                    itemNo = GetWikiRouteLegLastItemNo(routeLegs.Current.ToString());
-                    wikiItemList.Add(SetWikiItem(tableNo, itemNo));
+                    if (tourStartItemNo == tourFinishItemNo && tourStartItemNo == legStartItemNo) // Step 2 - tour of one item, leg start
+                    {
+                        wikiTourList.Add(SetWikiItem(tableNo, legStartItemNo));
+                        checkNextLeg = false;
+                    } 
+                    else if (tourStartItemNo == tourFinishItemNo && tourStartItemNo == legFinishItemNo) // Step 2 - tour of one item, leg finish
+                    {
+                        wikiTourList.Add(SetWikiItem(tableNo, legFinishItemNo));
+                        checkNextLeg = false;
+                    }
+                    else if (legStartItemNo == tourStartItemNo && legFinishItemNo == tourFinishItemNo) //Step 3 - tour of two items, one leg
+                    {
+                        wikiTourList.Add(SetWikiItem(tableNo, tourStartItemNo));
+                        wikiTourList.Add(SetWikiItem(tableNo, tourFinishItemNo));
+                        checkNextLeg = false;
+                    }
+                    else if (legStartItemNo == tourStartItemNo) // Step 1 - tour of three or more items and tour started
+                    {
+                        wikiTourList.Add(SetWikiItem(tableNo, tourStartItemNo));
+                        checkNextLeg = true;
+                    }
+                    else // Step 1 - tour of three or more items but tour not started yet
+                    {
+                        checkNextLeg = true;
+                    }
+                    break;
                 }
             }
-            WikiCount = wikiItemList.Count;
-            WikiDistance = int.Parse(distance.Split(' ')[0]);
+            // Steps 4 and 5
+            while (checkNextLeg)
+            {
+                routeLegs.MoveNext();
+                legStartItemNo = GetWikiRouteLegFirstItemNo(routeLegs.Current.ToString());
+                wikiTourList.Add(SetWikiItem(tableNo, legStartItemNo)); // Step 4
+                legFinishItemNo = GetWikiRouteLegLastItemNo(routeLegs.Current.ToString());
+                if (legFinishItemNo == tourFinishItemNo) // Step 5
+                {
+                    wikiTourList.Add(SetWikiItem(tableNo, legFinishItemNo));
+                    checkNextLeg = false;
+                }
+            }
+            WikiCount = wikiTourList.Count + 2; // Wiki tour items plus two airports
+            WikiDistance = int.Parse(tourDistance.Split(' ')[0]);
+        }
+
+        static internal void SetWikiTour()
+        {
+            SetWikiAirports();
+            SetWikiOSMtiles();
+        }
+
+        static internal void SetWikiOSMtiles()
+        {
+            Coordinate coord = Coordinate.Parse($"{WikiStartAirport.AirportLat} {WikiStartAirport.AirportLon}");
+            string url = OSM.GetOSMtileURL(coord.Longitude.DecimalDegree, coord.Latitude.DecimalDegree, 18, out int xOffset, out int yOffset);
+        }
+
+        static internal void SetWikiAirports()
+        {
+            Coordinate coordFirstItem = Coordinate.Parse($"{wikiTourList[0][latitude]} {wikiTourList[0][longitude]}");
+            WikiStartAirport = Runway.GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble());
+            Coordinate coordStartAirport = Coordinate.Parse($"{WikiStartAirport.AirportLat} {WikiStartAirport.AirportLon}");
+            WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
+
+            Coordinate coordLastItem = Coordinate.Parse($"{wikiTourList[^1][latitude]} {wikiTourList[^1][longitude]}");
+            WikiFinishAirport = Runway.GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble());
+            Coordinate coordFinishAirport = Coordinate.Parse($"{WikiFinishAirport.AirportLat} {WikiFinishAirport.AirportLon}");
+            WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
         }
 
         static internal List<string> SetWikiItem(int tableNo, int itemNo)
@@ -56,6 +136,7 @@ namespace P3D_Scenario_Generator
             return wikiItem;
         }
 
+        // Used to extract first item number from leg route string and item list string
         static internal int GetWikiRouteLegFirstItemNo(string routeLeg)
         {
             int stringBegin, stringEnd;
@@ -64,6 +145,7 @@ namespace P3D_Scenario_Generator
             return int.Parse(routeLeg[stringBegin..stringEnd]);
         }
 
+        // Used to extract second item number from leg route string
         static internal int GetWikiRouteLegLastItemNo(string routeLeg)
         {
             int stringBegin, stringEnd;
@@ -252,8 +334,8 @@ namespace P3D_Scenario_Generator
             {
                 for (int col = 0; col < wikiPage[tableNo].Count; col++)
                 {
-                    Coordinate coord1 = Coordinate.Parse($"{wikiPage[tableNo][row][2]} {wikiPage[tableNo][row][3]}");
-                    Coordinate coord2 = Coordinate.Parse($"{wikiPage[tableNo][col][2]} {wikiPage[tableNo][col][3]}");
+                    Coordinate coord1 = Coordinate.Parse($"{wikiPage[tableNo][row][latitude]} {wikiPage[tableNo][row][longitude]}");
+                    Coordinate coord2 = Coordinate.Parse($"{wikiPage[tableNo][col][latitude]} {wikiPage[tableNo][col][longitude]}");
                     wikiTableCost[row, col] = (int)coord1.Get_Distance_From_Coordinate(coord2).Miles;
                     if (wikiTableCost[row, col] > maxCost)
                     {

@@ -180,7 +180,7 @@ namespace P3D_Scenario_Generator
 
         static internal string[] SetICAOwords(string rwyType)
         {
-            string[] words = [];
+            string[] words = ["", ""];
             Params airport;
             switch (Parameters.SelectedScenario)
             {
@@ -201,6 +201,18 @@ namespace P3D_Scenario_Generator
                         airport = GetNearestAirport(-60 + random.Next(0, 120), -180 + random.Next(0, 360));
                         Parameters.CelestialDestRunway = $"{airport.IcaoId}\t({airport.Id})";
                         words = Parameters.CelestialDestRunway.Split("\t");
+                    }
+                    break;
+                case nameof(ScenarioTypes.WikiList):
+                    if (rwyType == "start")
+                    {
+                        words[0] = WikiList.WikiStartAirport.IcaoId;
+                        words[1] = WikiList.WikiStartAirport.Id;
+                    }
+                    else
+                    {
+                        words[0] = WikiList.WikiFinishAirport.IcaoId;
+                        words[1] = WikiList.WikiFinishAirport.Id;
                     }
                     break;
                 default:
@@ -246,7 +258,7 @@ namespace P3D_Scenario_Generator
                     {
                         reader.Read();
                     }
-                    while (!(reader.Name == "Runway" && reader.MoveToAttribute("id") && $"({reader.Value})" == icaoWords[1]));
+                    while (!(reader.Name == "Runway" && reader.MoveToAttribute("id") && reader.Value == icaoWords[1]));
                     SetRunwayId(rwyParams, reader.Value);
                     reader.ReadToFollowing("Len");
                     rwyParams.Len = reader.ReadElementContentAsInt();
