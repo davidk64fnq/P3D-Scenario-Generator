@@ -22,6 +22,7 @@ namespace P3D_Scenario_Generator
         internal static Params WikiFinishAirport { get; private set; }
         internal static List<List<List<string>>> wikiPage = [];
         internal static int title = 0, link = 1, latitude = 2, longitude = 3;
+        internal static int xAxis = 0, yAxis = 1;
         internal static List<List<string>> wikiTourList = [];
 
         // tableRoute is a list of legs to get from first item in table to last item in table, each leg is a string containing start and end items,
@@ -109,8 +110,46 @@ namespace P3D_Scenario_Generator
 
         static internal void SetWikiOSMtiles()
         {
-            Coordinate coord = Coordinate.Parse($"{WikiStartAirport.AirportLat} {WikiStartAirport.AirportLon}");
-            string url = OSM.GetOSMtileURL(coord.Longitude.DecimalDegree, coord.Latitude.DecimalDegree, 18, out int xOffset, out int yOffset);
+            SetWikiOSMtilesOverview();
+        }
+
+        static internal void SetWikiOSMtilesOverview()
+        {
+            List<List<int>> tiles = [];
+            List<List<int>> boundingBox = [];
+            int zoom = GetBoundingBoxZoom(tiles);
+            tiles = SetWikiOSMtiles(zoom);
+            OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
+        }
+
+        static internal int GetBoundingBoxZoom(List<List<int>> tiles)
+        {
+            List<List<int>> boundingBox = [];
+            for (int zoom = 2; zoom <= 18; zoom++)
+            {
+                tiles.Clear();
+                tiles = SetWikiOSMtiles(zoom);
+                boundingBox.Clear();
+                OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
+                if ((boundingBox[xAxis].Count > 3) || (boundingBox[yAxis].Count > 2))
+                {
+                    return zoom - 1;
+                }
+            }
+            return 0;
+        }
+
+        // Finds OSM tile numbers and offsets for a Wiki list (items plus airports) 
+        static internal List<List<int>> SetWikiOSMtiles(int zoom)
+        {
+            List<List<int>> Tiles = [];
+            Tiles.Add(OSM.SetOSMtile(WikiStartAirport.AirportLon.ToString(), WikiStartAirport.AirportLat.ToString(), zoom));
+            for (int itemNo = 0; itemNo < wikiTourList.Count; itemNo++)
+            {
+                Tiles.Add(OSM.SetOSMtile(wikiTourList[itemNo][longitude], wikiTourList[itemNo][latitude], zoom));
+            }
+            Tiles.Add(OSM.SetOSMtile(WikiFinishAirport.AirportLon.ToString(), WikiFinishAirport.AirportLat.ToString(), zoom));
+            return Tiles;
         }
 
         static internal void SetWikiAirports()
