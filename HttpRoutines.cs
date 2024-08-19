@@ -10,7 +10,7 @@ namespace P3D_Scenario_Generator
             HtmlAgilityPack.HtmlDocument htmlDoc = null;
             try
             {
-                HtmlWeb web = new HtmlWeb();
+                HtmlWeb web = new();
                 htmlDoc = web.Load(url);
             }
             catch

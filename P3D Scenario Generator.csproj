@@ -167,10 +167,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BruTile" Version="6.0.0-beta.3" />
     <PackageReference Include="CoordinateSharp" Version="2.24.2.1" />
     <PackageReference Include="EPPlus" Version="7.0.5" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.57" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.10.0" />
+    <PackageReference Include="Magick.NET.SystemDrawing" Version="7.3.0" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.0-preview.5.24306.7" />

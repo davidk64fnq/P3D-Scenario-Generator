@@ -1,139 +1,237 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CoordinateSharp;
+﻿using CoordinateSharp;
+using ImageMagick;
 
 namespace P3D_Scenario_Generator
 {
     internal class OSM
     {
-        readonly static string tileServer = "https://maptiles.p.rapidapi.com/en/map/v1/";
-        readonly static string rapidapiKey = "rapidapi-key=d9de94c22emsh6dc07cd7103e683p12be01jsn7014f38e1975";
         internal static int xAxis = 0, yAxis = 1;
         internal static int xTile = 0, yTile = 1, xOffset = 2, yOffset = 3;
+        internal static int boundingBoxTrimMargin = 15;
+        readonly static string tileServer = "https://maptiles.p.rapidapi.com/en/map/v1/";
+        readonly static string rapidapiKey = "?rapidapi-key=d9de94c22emsh6dc07cd7103e683p12be01jsn7014f38e1975";
+        internal static int tileSize = 256;
 
+
+        static internal void MontageTiles(List<List<int>> boundingBox, int zoom, string filename)
+        {
+            string imagePath = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
+
+            // Download the tile images from OSM
+            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            {
+                for (int yIndex = 0; yIndex < boundingBox[yAxis].Count; yIndex++)
+                {
+                    string url = $"{tileServer}{zoom}/{boundingBox[xAxis][xIndex]}/{boundingBox[yAxis][yIndex]}.png{rapidapiKey}";
+                    HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"{imagePath}{filename}_{xIndex}_{yIndex}.png");
+                }
+            }
+
+            using var images = new MagickImageCollection();
+            var settings = new MontageSettings
+            {
+                Geometry = new MagickGeometry($"{tileSize}x{tileSize}"),
+                TileGeometry = new MagickGeometry($"1x{boundingBox[yAxis].Count}"),
+            };
+            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            {
+                for (int yIndex = 0; yIndex < boundingBox[yAxis].Count; yIndex++)
+                {
+                    var tileImage = new MagickImage($"{imagePath}{filename}_{xIndex}_{yIndex}.png");
+                    images.Add(tileImage);
+                }
+                using var result = images.Montage(settings);
+                result.Write($"{imagePath}_{xIndex}.png");
+            }
+
+            images.Clear();
+            settings.Geometry = new MagickGeometry($"{tileSize}x{tileSize * boundingBox[yAxis].Count}");
+            settings.TileGeometry = new MagickGeometry($"{boundingBox[xAxis].Count}x1");
+            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            {
+                var tileImage = new MagickImage($"{imagePath}{filename}_{xIndex}.png");
+                images.Add(tileImage);
+            }
+            using var colResult = images.Montage(settings);
+            colResult.Write($"{imagePath}.png");
+
+            foreach (string f in Directory.EnumerateFiles(imagePath, $"{filename}_*.png"))
+            {
+                File.Delete(f);
+            }
+        }
+
+        // Go through list of tiles and for those tiles that are on an edge of the bounding box
+        // check that the offset values of tile coordinate are not too close to the bounding box edge
+        static internal void CheckBoundingBoxEdges(List<List<int>> tiles, List<List<int>> boundingBox, int zoom)
+        {
+            int newTileNo;
+            for (int tileNo = 0; tileNo < tiles.Count; tileNo++) 
+            {
+                // Check North edge of bounding box
+                if (tiles[tileNo][yAxis] == boundingBox[yAxis][0])
+                {
+                    if ((tiles[tileNo][yOffset] < boundingBoxTrimMargin) && (tiles[tileNo][yAxis] > 0))
+                    {
+                        boundingBox[yAxis].Insert(0, tiles[tileNo][yAxis] - 1);
+                    }
+                }
+
+                // Check East edge of bounding box
+                if (tiles[tileNo][xAxis] == boundingBox[xAxis][^1])
+                {
+                    if (tiles[tileNo][xOffset] > tileSize - boundingBoxTrimMargin)
+                    {
+                        newTileNo = tiles[tileNo][xAxis] + 1;
+                        if (newTileNo == Convert.ToInt32(Math.Pow(2, zoom)))
+                        {
+                            newTileNo = 0;
+                        }
+                        boundingBox[xAxis].Add(newTileNo);
+                    }
+                }
+
+                // Check South edge of bounding box
+                if (tiles[tileNo][yAxis] == boundingBox[yAxis][^1])
+                {
+                    if ((tiles[tileNo][yOffset] > tileSize - boundingBoxTrimMargin) && (tiles[tileNo][yAxis] < Convert.ToInt32(Math.Pow(2, zoom)) - 1))
+                    {
+                        boundingBox[yAxis].Add(tiles[tileNo][yAxis] + 1);
+                    }
+                }
+
+                // Check West edge of bounding box
+                if (tiles[tileNo][xAxis] == boundingBox[xAxis][0])
+                {
+                    if (tiles[tileNo][xOffset] < tileSize)
+                    {
+                        newTileNo = tiles[tileNo][xAxis] - 1;
+                        if (newTileNo == -1)
+                        {
+                            newTileNo = Convert.ToInt32(Math.Pow(2, zoom)) - 1;
+                        }
+                        boundingBox[xAxis].Insert(0, newTileNo);
+                    }
+                }
+            }
+        }
 
         // The bounding box is two lists of tile numbers, one for x axis the other y axis. The tile numbers
         // will usually be consecutive within the bounds 0 .. (2 to exp zoom - 1). However it's possible for tiles grouped 
         // across the meridian to have a sequence of x axis tile numbers that goes up to (2 to exp zoom - 1) and then continues
         // from 0
-        static internal void GetTilesBoundingBox(List<List<int>> tiles, List<List<int>> BoundingBox, int zoom)
+        static internal void GetTilesBoundingBox(List<List<int>> tiles, List<List<int>> boundingBox, int zoom)
         {
-            // Initialise BoundingBox to the first tile
+            // Initialise boundingBox to the first tile
+            boundingBox.Clear();
             List<int> xAxis = [tiles[0][xTile]];
-            BoundingBox.Add(xAxis);
+            boundingBox.Add(xAxis);
             List<int> yAxis = [tiles[0][yTile]];
-            BoundingBox.Add(yAxis);
+            boundingBox.Add(yAxis);
 
-            // Adjust BoundingBox as needed to include remaining tiles
+            // Adjust boundingBox as needed to include remaining tiles
             for (int tileNo = 1; tileNo < tiles.Count; tileNo++)
             {
-                AddTileToBoundingBox(tiles[tileNo], BoundingBox, zoom);
+                AddTileToBoundingBox(tiles[tileNo], boundingBox, zoom);
             }
+
+            // Add extra tiles if any tile coordinates are too close to bounding box edge
+            CheckBoundingBoxEdges(tiles, boundingBox, zoom);
         }
 
-        static internal void AddTileToBoundingBox(List<int> newTile, List<List<int>> BoundingBox, int zoom)
+        static internal void AddTileToBoundingBox(List<int> newTile, List<List<int>> boundingBox, int zoom)
         {
-            // New tile is above BB i.e. tileNo < BoundingBox[yAxis][0]
-            if (newTile[yTile] < BoundingBox[yAxis][0])
+            // New tile is above BB i.e. tileNo < boundingBox[yAxis][0]
+            if (newTile[yTile] < boundingBox[yAxis][0])
             {
                 // Insert extra tile No's at beginning of yAxis list
-                for (int tileNo = BoundingBox[yAxis][0] - 1; tileNo >= newTile[yTile]; tileNo--)
+                for (int tileNo = boundingBox[yAxis][0] - 1; tileNo >= newTile[yTile]; tileNo--)
                 {
-                    BoundingBox[yAxis].Insert(0, tileNo);
+                    boundingBox[yAxis].Insert(0, tileNo);
                 }
             }
 
-            // New tile is below BB i.e. tileNo > BoundingBox[yAxis][^1]
-            if (newTile[yTile] > BoundingBox[yAxis][^1])
+            // New tile is below BB i.e. tileNo > boundingBox[yAxis][^1]
+            if (newTile[yTile] > boundingBox[yAxis][^1])
             {
                 // Append extra tileNo's at end of yAxis list
-                for (int tileNo = BoundingBox[yAxis][^1] + 1; tileNo <= newTile[yTile]; tileNo++)
+                for (int tileNo = boundingBox[yAxis][^1] + 1; tileNo <= newTile[yTile]; tileNo++)
                 {
-                    BoundingBox[yAxis].Add(tileNo);
+                    boundingBox[yAxis].Add(tileNo);
                 }
             }
 
-            // New tile is right of BB i.e. tileNo > BoundingBox[xAxis][^1], determine whether to move righthand
+            // New tile is right of BB i.e. tileNo > boundingBox[xAxis][^1], determine whether to move righthand
             // side of bounding box further to the right (usual case) or lefthand side further to the left (across meridian)
             int distEast, distWest;
-            if (newTile[xTile] > BoundingBox[xAxis][^1])
+            if (newTile[xTile] > boundingBox[xAxis][^1])
             {
-                distEast = newTile[xTile] - BoundingBox[xAxis][^1];
-                distWest = BoundingBox[xAxis][0] + Convert.ToInt32(Math.Pow(2, zoom)) - newTile[xTile];
+                distEast = newTile[xTile] - boundingBox[xAxis][^1];
+                distWest = boundingBox[xAxis][0] + Convert.ToInt32(Math.Pow(2, zoom)) - newTile[xTile];
                 if (distEast <= distWest)
                 {
                     // Append extra tileNo's at end of xAxis list
-                    for (int tileNo = BoundingBox[xAxis][^1] + 1; tileNo <= newTile[xTile]; tileNo++)
+                    for (int tileNo = boundingBox[xAxis][^1] + 1; tileNo <= newTile[xTile]; tileNo++)
                     {
-                        BoundingBox[xAxis].Add(tileNo);
+                        boundingBox[xAxis].Add(tileNo);
                     }
                 }
                 else
                 {
                     // Insert extra tileNo's at beginning of xAxis list
-                    for (int tileNo = BoundingBox[xAxis][0] - 1; tileNo >= 0; tileNo--)
+                    for (int tileNo = boundingBox[xAxis][0] - 1; tileNo >= 0; tileNo--)
                     {
-                        BoundingBox[xAxis].Insert(0, tileNo);
+                        boundingBox[xAxis].Insert(0, tileNo);
                     }
                     for (int tileNo = Convert.ToInt32(Math.Pow(2, zoom)) - 1; tileNo >= newTile[xTile]; tileNo--)
                     {
-                        BoundingBox[xAxis].Insert(0, tileNo);
+                        boundingBox[xAxis].Insert(0, tileNo);
                     }
                 }
             }
 
-            // New tile is left of BB i.e. tileNo < BoundingBox[xAxis][0], determine whether to move lefthand
+            // New tile is left of BB i.e. tileNo < boundingBox[xAxis][0], determine whether to move lefthand
             // side of bounding box further to the left (usual case) or righthand side further to the right (across meridian)
-            if (newTile[xTile] < BoundingBox[xAxis][0])
+            if (newTile[xTile] < boundingBox[xAxis][0])
             {
-                distWest = BoundingBox[xAxis][0] - newTile[xTile];
-                distEast = Convert.ToInt32(Math.Pow(2, zoom)) - BoundingBox[xAxis][0] + newTile[xTile];
+                distWest = boundingBox[xAxis][0] - newTile[xTile];
+                distEast = Convert.ToInt32(Math.Pow(2, zoom)) - boundingBox[xAxis][0] + newTile[xTile];
                 if (distWest <= distEast)
                 {
                     // Insert extra tileNo's at front of xAxis list
-                    for (int tileNo = BoundingBox[xAxis][0] - 1; tileNo >= newTile[xTile]; tileNo--)
+                    for (int tileNo = boundingBox[xAxis][0] - 1; tileNo >= newTile[xTile]; tileNo--)
                     {
-                        BoundingBox[xAxis].Insert(0, tileNo);
+                        boundingBox[xAxis].Insert(0, tileNo);
                     }
                 }
                 else
                 {
                     // Append extra tileNo's at end of xAxis list
-                    for (int tileNo = BoundingBox[xAxis][^1] + 1; tileNo < Convert.ToInt32(Math.Pow(2, zoom)); tileNo++)
+                    for (int tileNo = boundingBox[xAxis][^1] + 1; tileNo < Convert.ToInt32(Math.Pow(2, zoom)); tileNo++)
                     {
-                        BoundingBox[xAxis].Add(tileNo);
+                        boundingBox[xAxis].Add(tileNo);
                     }
                     for (int tileNo = 0; tileNo <= newTile[xTile]; tileNo++)
                     {
-                        BoundingBox[xAxis].Add(tileNo);
+                        boundingBox[xAxis].Add(tileNo);
                     }
                 }
             }
         }
 
         // Finds OSM tile numbers and offsets for a sinle coordinate for one zoom level
-        static internal List<int> SetOSMtile(string lon, string lat, int zoom)
+        // Tile number calculated using https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
+        // $"{tileServer}{zoom}/{xTile}/{yTile}.png?{rapidapiKey}"
+        static internal List<int> GetOSMtile(string sLon, string sLat, int zoom)
         {
-            if (GetOSMtileURL(lon, lat, zoom, out int xTile, out int yTile, out int xOffset, out int yOffset) != null)
+            int xTile, yTile;
+            if (LonToDecimalDegree(sLon, out double dLon) && LatToDecimalDegree(sLat, out double dLat))
             {
+                xTile = LonToTileX(dLon, zoom, out int xOffset);
+                yTile = LatToTileY(dLat, zoom, out int yOffset);
                 return [xTile, yTile, xOffset, yOffset];
             }
             return null;
-        }
-
-        internal static string GetOSMtileURL(string sLon, string sLat, int zoom, out int xTile, out int yTile, out int xOffset, out int yOffset)
-        {
-            if (LonToDecimalDegree(sLon, out double dLon) && LatToDecimalDegree(sLat, out double dLat))
-            {
-                xTile = Long2tileX(dLon, zoom, out xOffset);
-                yTile = Lat2tileY(dLat, zoom, out yOffset);
-                return $"{tileServer}{zoom}/{xTile}/{yTile}.png?{rapidapiKey}";
-            }
-            xTile = 0; yTile = 0; xOffset = 0; yOffset = 0;
-            return "";
         }
 
         internal static bool LonToDecimalDegree(string sLon, out double dLon)
@@ -158,7 +256,7 @@ namespace P3D_Scenario_Generator
             return false;
         }
 
-        internal static int Long2tileX(double dLon, int z, out int xOffset)
+        internal static int LonToTileX(double dLon, int z, out int xOffset)
         {
             double doubleTileX = (dLon + 180.0) / 360.0 * (1 << z);
             int intTileX = Convert.ToInt32(Math.Floor(doubleTileX));
@@ -166,7 +264,7 @@ namespace P3D_Scenario_Generator
             return Convert.ToInt32(Math.Floor(doubleTileX));
         }
 
-        internal static int Lat2tileY(double dLat, int z, out int yOffset)
+        internal static int LatToTileY(double dLat, int z, out int yOffset)
         {
             var latRad = dLat / 180 * Math.PI;
             double doubleTileY = (1 - Math.Log(Math.Tan(latRad) + 1 / Math.Cos(latRad)) / Math.PI) / 2 * (1 << z);

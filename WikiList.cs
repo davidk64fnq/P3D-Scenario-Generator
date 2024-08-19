@@ -1,12 +1,5 @@
-﻿using HtmlAgilityPack;
-using System.Globalization;
-using CoordinateSharp;
-using Microsoft.VisualBasic;
-using System.Linq;
+﻿using CoordinateSharp;
 using System.Web;
-using BruTile;
-using BruTile.Web;
-using BruTile.Predefined;
 
 namespace P3D_Scenario_Generator
 {
@@ -117,39 +110,40 @@ namespace P3D_Scenario_Generator
         {
             List<List<int>> tiles = [];
             List<List<int>> boundingBox = [];
-            int zoom = GetBoundingBoxZoom(tiles);
-            tiles = SetWikiOSMtiles(zoom);
+            int zoom = GetBoundingBoxZoom(tiles, 2, 2);
+            SetWikiOSMtiles(tiles, zoom);
             OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
+            OSM.MontageTiles(boundingBox, zoom, "Overview");
+            Drawing.DrawRoute(tiles, boundingBox, "Overview");
         }
 
-        static internal int GetBoundingBoxZoom(List<List<int>> tiles)
+        static internal int GetBoundingBoxZoom(List<List<int>> tiles, int tilesWidth, int tilesHeight)
         {
             List<List<int>> boundingBox = [];
             for (int zoom = 2; zoom <= 18; zoom++)
             {
                 tiles.Clear();
-                tiles = SetWikiOSMtiles(zoom);
+                SetWikiOSMtiles(tiles, zoom);
                 boundingBox.Clear();
                 OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
-                if ((boundingBox[xAxis].Count > 3) || (boundingBox[yAxis].Count > 2))
+                if ((boundingBox[xAxis].Count > tilesWidth) || (boundingBox[yAxis].Count > tilesHeight))
                 {
                     return zoom - 1;
                 }
             }
-            return 0;
+            return 18;
         }
 
         // Finds OSM tile numbers and offsets for a Wiki list (items plus airports) 
-        static internal List<List<int>> SetWikiOSMtiles(int zoom)
+        static internal void SetWikiOSMtiles(List<List<int>> tiles, int zoom)
         {
-            List<List<int>> Tiles = [];
-            Tiles.Add(OSM.SetOSMtile(WikiStartAirport.AirportLon.ToString(), WikiStartAirport.AirportLat.ToString(), zoom));
+            tiles.Clear();
+            tiles.Add(OSM.GetOSMtile(WikiStartAirport.AirportLon.ToString(), WikiStartAirport.AirportLat.ToString(), zoom));
             for (int itemNo = 0; itemNo < wikiTourList.Count; itemNo++)
             {
-                Tiles.Add(OSM.SetOSMtile(wikiTourList[itemNo][longitude], wikiTourList[itemNo][latitude], zoom));
+                tiles.Add(OSM.GetOSMtile(wikiTourList[itemNo][longitude], wikiTourList[itemNo][latitude], zoom));
             }
-            Tiles.Add(OSM.SetOSMtile(WikiFinishAirport.AirportLon.ToString(), WikiFinishAirport.AirportLat.ToString(), zoom));
-            return Tiles;
+            tiles.Add(OSM.GetOSMtile(WikiFinishAirport.AirportLon.ToString(), WikiFinishAirport.AirportLat.ToString(), zoom));
         }
 
         static internal void SetWikiAirports()

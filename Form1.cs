@@ -74,6 +74,7 @@ namespace P3D_Scenario_Generator
             string message = $"Creating scenario files in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - will confirm when complete";
             Cursor.Current = Cursors.WaitCursor;
             MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
             if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
                 PhotoTour.SetRandomPhotoTour();
@@ -96,7 +97,6 @@ namespace P3D_Scenario_Generator
             }
             Runway.SetRunway(Runway.startRwy, "start");
             Runway.SetRunway(Runway.destRwy, "destination");
-            Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
             if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial])
             {
                 string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\htmlCelestialSextant.html";
