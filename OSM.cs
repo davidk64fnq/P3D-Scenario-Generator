@@ -11,55 +11,100 @@ namespace P3D_Scenario_Generator
         readonly static string tileServer = "https://maptiles.p.rapidapi.com/en/map/v1/";
         readonly static string rapidapiKey = "?rapidapi-key=d9de94c22emsh6dc07cd7103e683p12be01jsn7014f38e1975";
         internal static int tileSize = 256;
+        internal static string imagePath = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
 
-
-        static internal void MontageTiles(List<List<int>> boundingBox, int zoom, string filename)
+        static internal int IncXtileNo(int tileNo, int zoom)
         {
-            string imagePath = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
-
-            // Download the tile images from OSM
-            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            int newTileNo = tileNo + 1;
+            if (newTileNo == Convert.ToInt32(Math.Pow(2, zoom)))
             {
-                for (int yIndex = 0; yIndex < boundingBox[yAxis].Count; yIndex++)
+                newTileNo = 0;
+            }
+            return newTileNo;
+        }
+        static internal int IncYtileNo(int tileNo, int zoom)
+        {
+            int newTileNo = -1;
+            if (tileNo + 1 < Convert.ToInt32(Math.Pow(2, zoom)) - 1)
+            {
+                newTileNo = tileNo + 1;
+            }
+            return newTileNo;
+        }
+
+        static internal int DecXtileNo(int tileNo, int zoom)
+        {
+            int newTileNo = tileNo - 1;
+            if (newTileNo == -1)
+            {
+                newTileNo = Convert.ToInt32(Math.Pow(2, zoom)) - 1;
+            }
+            return newTileNo;
+        }
+
+        static internal int DecYtileNo(int tileNo)
+        {
+            int newTileNo = -1;
+            if (tileNo - 1 > 0)
+            {
+                newTileNo = tileNo - 1;
+            }
+            return newTileNo;
+        }
+
+        static internal void MakeSquare(List<List<int>> boundingBox, string filename, int zoom)
+        {
+            if (boundingBox[xAxis].Count < boundingBox[yAxis].Count) // Padding on the x axis
+            {
+                // Get next tile East and West - allow for possibile wrap around meridian
+                int newTileEast = IncXtileNo(boundingBox[xAxis][^1], zoom);
+                int newTileWest = DecXtileNo(boundingBox[xAxis][0], zoom);
+                Drawing.PadWestEast(boundingBox, newTileWest, newTileEast, filename, zoom);
+            }
+            else if (boundingBox[yAxis].Count < boundingBox[xAxis].Count) // Padding on the y axis
+            {
+                // Get next tile South and North - don't go below bottom or top edge of map, -1 means no tile added that direction
+                int newTileSouth = IncYtileNo(boundingBox[yAxis][^1], zoom);
+                int newTileNorth = DecYtileNo(boundingBox[yAxis][0]);
+                if (newTileSouth < 0)
                 {
-                    string url = $"{tileServer}{zoom}/{boundingBox[xAxis][xIndex]}/{boundingBox[yAxis][yIndex]}.png{rapidapiKey}";
-                    HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"{imagePath}{filename}_{xIndex}_{yIndex}.png");
+                    //Drawing.PadNorth();
                 }
-            }
-
-            using var images = new MagickImageCollection();
-            var settings = new MontageSettings
-            {
-                Geometry = new MagickGeometry($"{tileSize}x{tileSize}"),
-                TileGeometry = new MagickGeometry($"1x{boundingBox[yAxis].Count}"),
-            };
-            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
-            {
-                for (int yIndex = 0; yIndex < boundingBox[yAxis].Count; yIndex++)
+                else if (newTileNorth < 0)
                 {
-                    var tileImage = new MagickImage($"{imagePath}{filename}_{xIndex}_{yIndex}.png");
-                    images.Add(tileImage);
+                    //Drawing.PadSouth();
                 }
-                using var result = images.Montage(settings);
-                result.Write($"{imagePath}_{xIndex}.png");
-            }
-
-            images.Clear();
-            settings.Geometry = new MagickGeometry($"{tileSize}x{tileSize * boundingBox[yAxis].Count}");
-            settings.TileGeometry = new MagickGeometry($"{boundingBox[xAxis].Count}x1");
-            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
-            {
-                var tileImage = new MagickImage($"{imagePath}{filename}_{xIndex}.png");
-                images.Add(tileImage);
-            }
-            using var colResult = images.Montage(settings);
-            colResult.Write($"{imagePath}.png");
-
-            foreach (string f in Directory.EnumerateFiles(imagePath, $"{filename}_*.png"))
-            {
-                File.Delete(f);
+                else
+                {
+                    Drawing.PadNorthSouth(boundingBox, newTileNorth, newTileSouth, filename, zoom);
+                }
             }
         }
+
+        static internal void DownloadOSMtile(int xTileNo, int yTileNo, int zoom, string filename)
+        {
+            string imagePath = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
+            string url = $"{tileServer}{zoom}/{xTileNo}/{yTileNo}.png{rapidapiKey}";
+            HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"{imagePath}{filename}");
+        }
+
+        static internal void DownloadOSMtileColumn(int xTileNo, int xIndex, List<List<int>> boundingBox, int zoom, string filename)
+        {
+            for (int yIndex = 0; yIndex < boundingBox[yAxis].Count; yIndex++)
+            {
+                DownloadOSMtile(xTileNo, boundingBox[yAxis][yIndex], zoom, $"{filename}_{xIndex}_{yIndex}.png");
+            }
+        }
+
+        static internal void DownloadOSMtileRow(int yTileNo, int yIndex, List<List<int>> boundingBox, int zoom, string filename)
+        {
+            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            {
+                DownloadOSMtile(boundingBox[xAxis][xIndex], yTileNo, zoom, $"{filename}_{xIndex}_{yIndex}.png");
+            }
+        }
+
+        
 
         // Go through list of tiles and for those tiles that are on an edge of the bounding box
         // check that the offset values of tile coordinate are not too close to the bounding box edge
@@ -73,7 +118,7 @@ namespace P3D_Scenario_Generator
                 {
                     if ((tiles[tileNo][yOffset] < boundingBoxTrimMargin) && (tiles[tileNo][yAxis] > 0))
                     {
-                        boundingBox[yAxis].Insert(0, tiles[tileNo][yAxis] - 1);
+                        boundingBox[yAxis].Insert(0, tiles[tileNo][yAxis] - 1); // Only extend as far as xTile = 0
                     }
                 }
 
@@ -82,12 +127,11 @@ namespace P3D_Scenario_Generator
                 {
                     if (tiles[tileNo][xOffset] > tileSize - boundingBoxTrimMargin)
                     {
-                        newTileNo = tiles[tileNo][xAxis] + 1;
-                        if (newTileNo == Convert.ToInt32(Math.Pow(2, zoom)))
+                        newTileNo = IncXtileNo(tiles[tileNo][xAxis], zoom); 
+                        if (newTileNo != boundingBox[xAxis][0])
                         {
-                            newTileNo = 0;
+                            boundingBox[xAxis].Add(newTileNo); // Only extend if not already using all tiles available in x axis
                         }
-                        boundingBox[xAxis].Add(newTileNo);
                     }
                 }
 
@@ -96,21 +140,20 @@ namespace P3D_Scenario_Generator
                 {
                     if ((tiles[tileNo][yOffset] > tileSize - boundingBoxTrimMargin) && (tiles[tileNo][yAxis] < Convert.ToInt32(Math.Pow(2, zoom)) - 1))
                     {
-                        boundingBox[yAxis].Add(tiles[tileNo][yAxis] + 1);
+                        boundingBox[yAxis].Add(tiles[tileNo][yAxis] + 1); // Only extend as far as xTile = Math.Pow(2, zoom) - 1
                     }
                 }
 
                 // Check West edge of bounding box
                 if (tiles[tileNo][xAxis] == boundingBox[xAxis][0])
                 {
-                    if (tiles[tileNo][xOffset] < tileSize)
+                    if (tiles[tileNo][xOffset] < boundingBoxTrimMargin)
                     {
-                        newTileNo = tiles[tileNo][xAxis] - 1;
-                        if (newTileNo == -1)
+                        newTileNo = DecXtileNo(tiles[tileNo][xAxis], zoom);
+                        if (newTileNo != boundingBox[xAxis][^1])
                         {
-                            newTileNo = Convert.ToInt32(Math.Pow(2, zoom)) - 1;
+                            boundingBox[xAxis].Insert(0, newTileNo); // Only extend if not already using all tiles available in x axis
                         }
-                        boundingBox[xAxis].Insert(0, newTileNo);
                     }
                 }
             }
