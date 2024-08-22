@@ -28,8 +28,10 @@ namespace P3D_Scenario_Generator
             DeleteTempOSMfiles(filename);
 
             using MagickImage image = new($"{imagePath}{filename}.png");
-            image.Crop(tileSize / 2, tileSize, Gravity.West);
-            image.Crop(tileSize / 2, tileSize, Gravity.East);
+            IMagickGeometry geometry = new MagickGeometry($"{tileSize * 2},{tileSize * 2}, 0, {tileSize / 2}");
+            image.Crop(geometry);
+            image.RePage();
+            image.Write($"{imagePath}{filename}.png");
         }
 
         // The file to be padded is 2w x 1h tileSize. Create a row of tiles above and below 2w x 1h,
@@ -51,12 +53,50 @@ namespace P3D_Scenario_Generator
             DeleteTempOSMfiles(filename);
 
             using MagickImage image = new($"{imagePath}{filename}.png");
-            IMagickGeometry geometry = new MagickGeometry($"{tileSize * 2},{tileSize / 2}");
-            image.Crop(geometry);
-            geometry = new MagickGeometry($"{tileSize * 2},{tileSize / 2}, 0, {-tileSize / 2}");
+            IMagickGeometry geometry = new MagickGeometry($"{tileSize * 2},{tileSize * 2}, 0, {tileSize / 2}");
             image.Crop(geometry);
             image.RePage();
             image.Write($"{imagePath}{filename}.png");
+        }
+
+        // The file to be padded is 2w x 1h tileSize. Create a row of tiles above 2w x 1h, montage them together.
+        // Resulting image is 2w x 2h tileSize with original image at bottom vertically.
+        static internal void PadNorth(List<List<int>> boundingBox, int newTileNorth, string filename, int zoom)
+        {
+            OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename);
+            MontageTilesToRow(boundingBox[xAxis].Count, 0, filename);
+            DeleteTempOSMfiles($"{filename}_?");
+
+            File.Move($"{imagePath}{filename}.png", $"{imagePath}{filename}_1.png");
+
+            MontageRows(boundingBox[xAxis].Count, 2, filename);
+            DeleteTempOSMfiles(filename);
+        }
+
+        // The file to be padded is 2w x 1h tileSize. Create a row of tiles below 2w x 1h, montage them together.
+        // Resulting image is 2w x 2h tileSize with original image at top vertically.
+        static internal void PadSouth(List<List<int>> boundingBox, int newTileSouth, string filename, int zoom)
+        {
+            File.Move($"{imagePath}{filename}.png", $"{imagePath}{filename}_0.png");
+
+            OSM.DownloadOSMtileRow(newTileSouth, 1, boundingBox, zoom, filename);
+            MontageTilesToRow(boundingBox[xAxis].Count, 1, filename);
+            DeleteTempOSMfiles($"{filename}_?");
+
+            MontageRows(boundingBox[xAxis].Count, 2, filename);
+            DeleteTempOSMfiles(filename);
+        }
+
+        static internal void ConvertImageformat(string filename, string oldExt, string newExt)
+        {
+            using MagickImage image = new($"{imagePath}{filename}.{oldExt}");
+            switch (newExt)
+            {
+                case "jpg":
+                    image.Quality = 100;
+                    break;
+            }
+            image.Write($"{imagePath}{filename}.{newExt}");
         }
 
         static internal void DrawRoute(List<List<int>> tiles, List<List<int>> boundingBox, string filename)
@@ -71,8 +111,6 @@ namespace P3D_Scenario_Generator
             {
                 int centreX = (boundingBox[xAxis].IndexOf(tiles[tileNo][xTile]) * tileSize) + tiles[tileNo][xOffset];
                 int centreY = (boundingBox[yAxis].IndexOf(tiles[tileNo][yTile]) * tileSize) + tiles[tileNo][yOffset];
-                DrawableCircle circle = new(centreX, centreY, centreX, centreY + 10);
-                image.Draw(strokeColor, stokeWidth, fillColor, circle);
                 if (tileNo > 0)
                 {
                     DrawableLine line = new(centrePrevX, centrePrevY, centreX, centreY);

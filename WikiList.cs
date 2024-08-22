@@ -116,6 +116,7 @@ namespace P3D_Scenario_Generator
             Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
             Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
             OSM.MakeSquare(boundingBox, "Charts_01", zoom);
+            Drawing.ConvertImageformat("Charts_01", "png", "jpg");
         }
 
         static internal int GetBoundingBoxZoom(List<List<int>> tiles, int tilesWidth, int tilesHeight)

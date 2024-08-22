@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using static P3D_Scenario_Generator.Runway;
 
 namespace P3D_Scenario_Generator
 {
