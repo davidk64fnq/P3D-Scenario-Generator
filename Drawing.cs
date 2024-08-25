@@ -4,10 +4,52 @@ namespace P3D_Scenario_Generator
 {
     internal class Drawing
     {
-        internal static int xAxis = 0, yAxis = 1;
-        internal static int xTile = 0, yTile = 1, xOffset = 2, yOffset = 3;
-        internal static int tileSize = 256;
+        internal static int xAxis = 0, yAxis = 1; // Used in bounding box to denote lists that store xTile and yTile reference numbers
+        internal static int xTile = 0, yTile = 1, xOffset = 2, yOffset = 3; // Used to define OSM tile, x and y numbers plus position of coord
+        internal static int tileSize = 256; // All OSM tiles used in this program are 256x256 pixels
         internal static string imagePath = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
+
+        #region Pad tiles region
+
+        static internal void MakeSquare(List<List<int>> boundingBox, string filename, int zoom, int size)
+        {
+            // Get next tile East and West - allow for possibile wrap around meridian
+            int newTileEast = IncXtileNo(boundingBox[xAxis][^1], zoom);
+            int newTileWest = DecXtileNo(boundingBox[xAxis][0], zoom);
+            // Get next tile South and North - don't go below bottom or top edge of map, -1 means no tile added that direction
+            int newTileSouth = IncYtileNo(boundingBox[yAxis][^1], zoom);
+            int newTileNorth = DecYtileNo(boundingBox[yAxis][0]);
+
+            if (boundingBox[xAxis].Count < boundingBox[yAxis].Count) // Padding on the x axis
+            {
+                PadWestEast(boundingBox, newTileWest, newTileEast, filename, zoom);
+            }
+            else if (boundingBox[yAxis].Count < boundingBox[xAxis].Count) // Padding on the y axis
+            {
+                if (newTileSouth < 0)
+                {
+                    PadNorth(boundingBox, newTileNorth, filename, zoom);
+                }
+                else if (newTileNorth < 0)
+                {
+                    PadSouth(boundingBox, newTileSouth, filename, zoom);
+                }
+                else
+                {
+                    PadNorthSouth(boundingBox, newTileNorth, newTileSouth, filename, zoom);
+                }
+            }
+            else if (boundingBox[yAxis].Count < size) // Padding on both axis 
+            {
+                PadNorthSouthWestEast(boundingBox, newTileNorth, newTileSouth, newTileWest, newTileEast, filename, zoom);
+            }
+        }
+
+        static internal void PadNorthSouthWestEast(List<List<int>> boundingBox, int newTileNorth, int newTileSouth,
+            int newTileWest, int newTileEast, string filename, int zoom)
+        {
+
+        }
 
         // The file to be padded is 1w x 2h tileSize. Create a column of tiles on left and right side 1w x 2h,
         // montage them together (3w x 2h) then crop a column 0.5w x 2h from outside edges. Resulting image is 2w x 2h tileSize
@@ -16,19 +58,19 @@ namespace P3D_Scenario_Generator
         {
             OSM.DownloadOSMtileColumn(newTileWest, 0, boundingBox, zoom, filename);
             MontageTilesToColumn(boundingBox[yAxis].Count, 0, filename);
-            DeleteTempOSMfiles(filename);
+            DeleteTempOSMfiles($"{filename}_?");
 
             File.Move($"{imagePath}{filename}.png", $"{imagePath}{filename}_1.png");
 
             OSM.DownloadOSMtileColumn(newTileEast, 2, boundingBox, zoom, filename);
             MontageTilesToColumn(boundingBox[yAxis].Count, 2, filename);
-            DeleteTempOSMfiles(filename);
+            DeleteTempOSMfiles($"{filename}_?");
 
             MontageColumns(3, boundingBox[yAxis].Count, filename);
             DeleteTempOSMfiles(filename);
 
             using MagickImage image = new($"{imagePath}{filename}.png");
-            IMagickGeometry geometry = new MagickGeometry($"{tileSize * 2},{tileSize * 2}, 0, {tileSize / 2}");
+            IMagickGeometry geometry = new MagickGeometry($"{tileSize * 2},{tileSize * 2}, {tileSize / 2}, 0");
             image.Crop(geometry);
             image.RePage();
             image.Write($"{imagePath}{filename}.png");
@@ -87,17 +129,9 @@ namespace P3D_Scenario_Generator
             DeleteTempOSMfiles(filename);
         }
 
-        static internal void ConvertImageformat(string filename, string oldExt, string newExt)
-        {
-            using MagickImage image = new($"{imagePath}{filename}.{oldExt}");
-            switch (newExt)
-            {
-                case "jpg":
-                    image.Quality = 100;
-                    break;
-            }
-            image.Write($"{imagePath}{filename}.{newExt}");
-        }
+        #endregion
+
+        #region Drawing routines region
 
         static internal void DrawRoute(List<List<int>> tiles, List<List<int>> boundingBox, string filename)
         {
@@ -122,6 +156,10 @@ namespace P3D_Scenario_Generator
 
             image.Write($"{imagePath}{filename}.png");
         }
+
+        #endregion
+
+        #region Montage tiles region
 
         static internal void MontageTilesToColumn(int yCount, int xIndex, string filename)
         {
@@ -206,6 +244,23 @@ namespace P3D_Scenario_Generator
             DeleteTempOSMfiles(filename);
         }
 
+        #endregion
+
+        #region Utilities section
+
+        static internal void ConvertImageformat(string filename, string oldExt, string newExt)
+        {
+            using MagickImage image = new($"{imagePath}{filename}.{oldExt}");
+            switch (newExt)
+            {
+                case "jpg":
+                    image.Quality = 100;
+                    break;
+            }
+            image.Write($"{imagePath}{filename}.{newExt}");
+            File.Delete($"{imagePath}{filename}.{oldExt}");
+        }
+
         static internal void DeleteTempOSMfiles(string filename)
         {
             foreach (string f in Directory.EnumerateFiles(imagePath, $"{filename}_*.png"))
@@ -213,5 +268,47 @@ namespace P3D_Scenario_Generator
                 File.Delete(f);
             }
         }
+
+        static internal int DecXtileNo(int tileNo, int zoom)
+        {
+            int newTileNo = tileNo - 1;
+            if (newTileNo == -1)
+            {
+                newTileNo = Convert.ToInt32(Math.Pow(2, zoom)) - 1;
+            }
+            return newTileNo;
+        }
+
+        static internal int DecYtileNo(int tileNo)
+        {
+            int newTileNo = -1;
+            if (tileNo - 1 > 0)
+            {
+                newTileNo = tileNo - 1;
+            }
+            return newTileNo;
+        }
+
+        static internal int IncXtileNo(int tileNo, int zoom)
+        {
+            int newTileNo = tileNo + 1;
+            if (newTileNo == Convert.ToInt32(Math.Pow(2, zoom)))
+            {
+                newTileNo = 0;
+            }
+            return newTileNo;
+        }
+
+        static internal int IncYtileNo(int tileNo, int zoom)
+        {
+            int newTileNo = -1;
+            if (tileNo + 1 < Convert.ToInt32(Math.Pow(2, zoom)) - 1)
+            {
+                newTileNo = tileNo + 1;
+            }
+            return newTileNo;
+        }
+
+        #endregion
     }
 }

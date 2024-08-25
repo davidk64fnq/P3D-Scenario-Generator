@@ -6,10 +6,10 @@ namespace P3D_Scenario_Generator
     internal class OSM
     {
         internal static int xAxis = 0, yAxis = 1; // Used in bounding box to denote lists that store xTile and yTile reference numbers
-        internal static int xTile = 0, yTile = 1, xOffset = 2, yOffset = 3; // Used to define OSM tile, x and y numbers plus position of coordinate
+        internal static int xTile = 0, yTile = 1, xOffset = 2, yOffset = 3; // Used to define OSM tile, x and y numbers plus position of coord
         readonly static string tileServer = "https://maptiles.p.rapidapi.com/en/map/v1/";
         readonly static string rapidapiKey = "?rapidapi-key=d9de94c22emsh6dc07cd7103e683p12be01jsn7014f38e1975";
-        internal static int tileSize = 256; // All OSM tiles used in thisprogram are 256x256 pixels
+        internal static int tileSize = 256; // All OSM tiles used in this program are 256x256 pixels
         internal static int boundingBoxTrimMargin = 15; // If tile coordinate is within this many pixels of bounding box edge, extra tiles added
 
         // The bounding box is two lists of tile numbers, one for x axis the other y axis. The tile numbers
@@ -190,7 +190,7 @@ namespace P3D_Scenario_Generator
 
             if (tiles[tileNo][xOffset] > tileSize - boundingBoxTrimMargin)
             {
-                newTileNo = IncXtileNo(tiles[tileNo][xAxis], zoom);
+                newTileNo = Drawing.IncXtileNo(tiles[tileNo][xAxis], zoom);
                 if (newTileNo != boundingBox[xAxis][0])
                 {
                     boundingBox[xAxis].Add(newTileNo); // Only extend if not already using all tiles available in x axis
@@ -212,7 +212,7 @@ namespace P3D_Scenario_Generator
 
             if (tiles[tileNo][xOffset] < boundingBoxTrimMargin)
             {
-                newTileNo = DecXtileNo(tiles[tileNo][xAxis], zoom);
+                newTileNo = Drawing.DecXtileNo(tiles[tileNo][xAxis], zoom);
                 if (newTileNo != boundingBox[xAxis][^1])
                 {
                     boundingBox[xAxis].Insert(0, newTileNo); // Only extend if not already using all tiles available in x axis
@@ -221,35 +221,6 @@ namespace P3D_Scenario_Generator
         }
 
         #endregion
-
-        static internal void MakeSquare(List<List<int>> boundingBox, string filename, int zoom)
-        {
-            if (boundingBox[xAxis].Count < boundingBox[yAxis].Count) // Padding on the x axis
-            {
-                // Get next tile East and West - allow for possibile wrap around meridian
-                int newTileEast = IncXtileNo(boundingBox[xAxis][^1], zoom);
-                int newTileWest = DecXtileNo(boundingBox[xAxis][0], zoom);
-                Drawing.PadWestEast(boundingBox, newTileWest, newTileEast, filename, zoom);
-            }
-            else if (boundingBox[yAxis].Count < boundingBox[xAxis].Count) // Padding on the y axis
-            {
-                // Get next tile South and North - don't go below bottom or top edge of map, -1 means no tile added that direction
-                int newTileSouth = IncYtileNo(boundingBox[yAxis][^1], zoom);
-                int newTileNorth = DecYtileNo(boundingBox[yAxis][0]);
-                if (newTileSouth < 0)
-                {
-                    Drawing.PadNorth(boundingBox, newTileNorth, filename, zoom);
-                }
-                else if (newTileNorth < 0)
-                {
-                    Drawing.PadSouth(boundingBox, newTileSouth, filename, zoom);
-                }
-                else
-                {
-                    Drawing.PadNorthSouth(boundingBox, newTileNorth, newTileSouth, filename, zoom);
-                }
-            }
-        }
 
         #region Download OSM tiles region
 
@@ -294,46 +265,6 @@ namespace P3D_Scenario_Generator
         #endregion
 
         #region Utilities region
-
-        static internal int DecXtileNo(int tileNo, int zoom)
-        {
-            int newTileNo = tileNo - 1;
-            if (newTileNo == -1)
-            {
-                newTileNo = Convert.ToInt32(Math.Pow(2, zoom)) - 1;
-            }
-            return newTileNo;
-        }
-
-        static internal int DecYtileNo(int tileNo)
-        {
-            int newTileNo = -1;
-            if (tileNo - 1 > 0)
-            {
-                newTileNo = tileNo - 1;
-            }
-            return newTileNo;
-        }
-
-        static internal int IncXtileNo(int tileNo, int zoom)
-        {
-            int newTileNo = tileNo + 1;
-            if (newTileNo == Convert.ToInt32(Math.Pow(2, zoom)))
-            {
-                newTileNo = 0;
-            }
-            return newTileNo;
-        }
-
-        static internal int IncYtileNo(int tileNo, int zoom)
-        {
-            int newTileNo = -1;
-            if (tileNo + 1 < Convert.ToInt32(Math.Pow(2, zoom)) - 1)
-            {
-                newTileNo = tileNo + 1;
-            }
-            return newTileNo;
-        }
 
         internal static bool LonToDecimalDegree(string sLon, out double dLon)
         {
