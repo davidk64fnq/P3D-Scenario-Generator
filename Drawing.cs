@@ -45,15 +45,36 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        // Currently all points are on one tile but we want them on four tiles. Adjust boundingBox to include surrounding
+        // eight tiles then download and montage them with current tile. Then crop centre area of four tiles.
         static internal void PadNorthSouthWestEast(List<List<int>> boundingBox, int newTileNorth, int newTileSouth,
             int newTileWest, int newTileEast, string filename, int zoom)
         {
+            boundingBox[yAxis].Insert(0, newTileNorth);
+            boundingBox[xAxis].Insert(0, newTileWest);
+            boundingBox[xAxis].Add(newTileEast);
+            boundingBox[yAxis].Add(newTileSouth);
+
+            OSM.DownloadOSMtileRow(newTileSouth, 0, boundingBox, zoom, filename);
+            OSM.DownloadOSMtile(newTileWest, boundingBox[yAxis][1], zoom, $"{filename}_0_1.png");
+            File.Move($"{imagePath}{filename}.png", $"{imagePath}{filename}_1_1.png");
+            OSM.DownloadOSMtile(newTileEast, boundingBox[yAxis][1], zoom, $"{filename}_2_1.png");
+            OSM.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename);
+
+            MontageTiles(boundingBox, zoom, filename);
+            DeleteTempOSMfiles(filename);
+
+            using MagickImage image = new($"{imagePath}{filename}.png");
+            IMagickGeometry geometry = new MagickGeometry($"{tileSize * 2},{tileSize * 2}, {tileSize / 2}, {tileSize / 2}");
+            image.Crop(geometry);
+            image.RePage();
+            image.Write($"{imagePath}{filename}.png");
 
         }
 
         // The file to be padded is 1w x 2h tileSize. Create a column of tiles on left and right side 1w x 2h,
         // montage them together (3w x 2h) then crop a column 0.5w x 2h from outside edges. Resulting image is 2w x 2h tileSize
-        // with original image in middle horizontally.
+        // with original image in middle horizontally.)
         static internal void PadWestEast(List<List<int>> boundingBox, int newTileWest, int newTileEast, string filename, int zoom)
         {
             OSM.DownloadOSMtileColumn(newTileWest, 0, boundingBox, zoom, filename);

@@ -371,10 +371,15 @@ namespace P3D_Scenario_Generator
             int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemNo, finishItemNo, incStartAirport, incFinishAirport);
             SetWikiOSMtiles(tiles, zoom, startItemNo, finishItemNo, incStartAirport, incFinishAirport);
             OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
-            Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{finishItemNo:00}");
-            Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{finishItemNo:00}");
-            Drawing.MakeSquare(boundingBox, $"LegRoute_{finishItemNo:00}", zoom, 2);
-            Drawing.ConvertImageformat($"LegRoute_{finishItemNo:00}", "png", "jpg");
+            int legNo = 1;
+            if (!incStartAirport)
+            {
+                legNo = startItemNo + 2;
+            }
+            Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}");
+            Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}");
+            Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}", zoom, 2);
+            Drawing.ConvertImageformat($"LegRoute_{legNo:00}", "png", "jpg");
         }
 
         static internal int GetBoundingBoxZoom(List<List<int>> tiles, int tilesWidth, int tilesHeight, 
