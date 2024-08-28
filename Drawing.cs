@@ -8,6 +8,7 @@ namespace P3D_Scenario_Generator
         internal static int xTile = 0, yTile = 1, xOffset = 2, yOffset = 3; // Used to define OSM tile, x and y numbers plus position of coord
         internal static int tileSize = 256; // All OSM tiles used in this program are 256x256 pixels
         internal static string imagePath = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
+        internal static int topLeft = 0, topRight = 1, bottomLeft = 2, bottomRight = 3; // Used to reference four subtiles of a tile
 
         #region Pad tiles region
 
@@ -69,7 +70,6 @@ namespace P3D_Scenario_Generator
             image.Crop(geometry);
             image.RePage();
             image.Write($"{imagePath}{filename}.png");
-
         }
 
         // The file to be padded is 1w x 2h tileSize. Create a column of tiles on left and right side 1w x 2h,

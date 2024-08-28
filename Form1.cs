@@ -296,7 +296,7 @@ namespace P3D_Scenario_Generator
             {
                 var attributePair = ListBoxWikiAttribute.Text.Split('|');
                 WikiList.SetWikiPage(TextBoxWikiURL.Text, ListBoxWikiCellName.Text, attributePair);
-                ListBoxWikiTableNames.DataSource = WikiList.GetWikiTableList();
+                ListBoxWikiTableNames.DataSource = WikiList.CreateWikiTablesDesc();
             }
         }
 
@@ -305,7 +305,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiDistance.Text = "";
             if (ListBoxWikiTableNames.Items.Count > 0)
             {
-                ListBoxWikiRoute.DataSource = WikiList.SortWikiTable(ListBoxWikiTableNames.SelectedIndex);
+                ListBoxWikiRoute.DataSource = WikiList.CreateWikiTableRoute(ListBoxWikiTableNames.SelectedIndex);
                 List<string> itemList = [];
                 for (int index = 0; index < ListBoxWikiRoute.Items.Count; index++)
                 {

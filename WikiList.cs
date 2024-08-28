@@ -10,13 +10,18 @@ namespace P3D_Scenario_Generator
         internal static Params WikiStartAirport { get; private set; }
         internal static Params WikiFinishAirport { get; private set; }
         internal static List<List<List<string>>> wikiPage = []; // Table(s) of items scraped from user supplied Wikipedia URL
-        internal static List<List<string>> wikiTourList = []; // List of user selected Wikipedia items
+        internal static List<List<string>> wikiTour = []; // List of user selected Wikipedia items
         internal static int title = 0, link = 1, latitude = 2, longitude = 3; // Wikipedia item list indexes
-        internal static int xAxis = 0, yAxis = 1; // Used in bounding box to denote lists that store xTile and yTile reference numbers
+        internal static int xAxis = 0, yAxis = 1; // Used in bounding box to denote lists that store OSM xTile and yTile reference numbers
 
         #region Form routines - populate UI
 
-        static internal List<string> GetWikiTableList()
+        /// <summary>
+        /// Creates a summary string for each table in <see cref="wikiPage"/> in the form:
+        /// <para>[0] first item description ... [^1] last item description (number of items)</para>
+        /// </summary>
+        /// <returns>List of table summary strings</returns>
+        static internal List<string> CreateWikiTablesDesc()
         {
             var list = new List<string>();
             for (int tableNo = 0; tableNo < wikiPage.Count; tableNo++)
@@ -27,63 +32,81 @@ namespace P3D_Scenario_Generator
             return list;
         }
 
-        static internal List<string> SortWikiTable(int tableNo)
+        /// <summary>
+        /// Creates a route (non-optimal) for a table in <see cref="wikiPage"/> 
+        /// </summary>
+        /// <param name="tableNo">The table in <see cref="wikiPage"/></param>
+        /// <returns>List of route leg summary strings</returns>
+        static internal List<string> CreateWikiTableRoute(int tableNo)
         {
-            int[,] wikiTableCost = new int[wikiPage[tableNo].Count, wikiPage[tableNo].Count];
+            int[,] wikiTableCost = new int[wikiPage[tableNo].Count, wikiPage[tableNo].Count]; // Matrix of distances between items in miles
+            List<string> route = []; // Route leg summary strings
+            bool[] itemsVisited = new bool[wikiPage[tableNo].Count]; // Track addition of items to route as it's built
+            int firstRouteItem = 0; // Track first item of route as it's built
+            int lastRouteItem = 0; // Track last item of route as it's built
+            int itemVisitedCount = 0; // Track how many items have been added to route as it's built
 
             SetWikiTableCosts(tableNo, wikiTableCost);
 
-            // Initialise route as first item
-            List<string> route = [];
-            int[] itemsVisited = new int[wikiPage[tableNo].Count];
-            itemsVisited[0] = 1;
-            int firstEndItem = 0;
+            // Initialise route as first item to first item if only one item else first item to it's nearest item
             if (wikiPage[tableNo].Count == 1)
             {
-                route.Add($"[0] {wikiPage[tableNo][0][title]} ... [0] {wikiPage[tableNo][0][title]} ({wikiTableCost[0, 0]} miles)");
-                return route;
+                AddItemToRoute(route, tableNo, wikiTableCost, 0, firstRouteItem, lastRouteItem, itemsVisited, 0, ref itemVisitedCount);
+            }
+            else
+            {
+                itemsVisited[0] = true;
+                itemVisitedCount = 1;
+                lastRouteItem = GetNearesetWikiItem(0, wikiTableCost, itemsVisited);
+                AddItemToRoute(route, tableNo, wikiTableCost, 0, firstRouteItem, lastRouteItem, itemsVisited, lastRouteItem, ref itemVisitedCount);
             }
 
-            // Find closest item to first item and append to route
-            int nearestItem = GetNearesetWikiItem(0, wikiTableCost, itemsVisited);
-            route.Add($"[0] {wikiPage[tableNo][0][title]} ... [{nearestItem}] {wikiPage[tableNo][nearestItem][title]} " +
-                $"({wikiTableCost[0, nearestItem]} miles)");
-            itemsVisited[nearestItem] = 1;
-            int secondEndItem = nearestItem;
-
-            int itemVisitedCount = 2;
             while (itemVisitedCount < wikiPage[tableNo].Count)
             {
-                // Find closest item to either end of current route and append to route
-                int nearestFirstEndItem = GetNearesetWikiItem(firstEndItem, wikiTableCost, itemsVisited);
-                int nearestSecondEndItem = GetNearesetWikiItem(secondEndItem, wikiTableCost, itemsVisited);
-                if (wikiTableCost[firstEndItem, nearestFirstEndItem] <= wikiTableCost[secondEndItem, nearestSecondEndItem])
+                // Find closest item to either end of current route and include in route, either as a new first leg or new last leg
+                int nearestToFirstRouteItem = GetNearesetWikiItem(firstRouteItem, wikiTableCost, itemsVisited);
+                int nearestToSecondRouteItem = GetNearesetWikiItem(lastRouteItem, wikiTableCost, itemsVisited);
+                if (wikiTableCost[firstRouteItem, nearestToFirstRouteItem] <= wikiTableCost[lastRouteItem, nearestToSecondRouteItem])
                 {
-                    route.Insert(0, $"[{nearestFirstEndItem}] {wikiPage[tableNo][nearestFirstEndItem][title]} ... " +
-                        $"[{firstEndItem}] {wikiPage[tableNo][firstEndItem][title]} ({wikiTableCost[nearestFirstEndItem, firstEndItem]} miles)");
-                    itemsVisited[nearestFirstEndItem] = 1;
-                    firstEndItem = nearestFirstEndItem;
+                    AddItemToRoute(route, tableNo, wikiTableCost, 0, nearestToFirstRouteItem, firstRouteItem, itemsVisited, 
+                        nearestToFirstRouteItem, ref itemVisitedCount);
+                    firstRouteItem = nearestToFirstRouteItem;
                 }
                 else
                 {
-                    route.Add($"[{secondEndItem}] {wikiPage[tableNo][secondEndItem][title]} ... " +
-                        $"[{nearestSecondEndItem}] {wikiPage[tableNo][nearestSecondEndItem][title]} ({wikiTableCost[secondEndItem, nearestSecondEndItem]} miles)");
-                    itemsVisited[nearestSecondEndItem] = 1;
-                    secondEndItem = nearestSecondEndItem;
+                    AddItemToRoute(route, tableNo, wikiTableCost, itemVisitedCount, lastRouteItem, nearestToSecondRouteItem, 
+                        itemsVisited, nearestToSecondRouteItem, ref itemVisitedCount);
+                    lastRouteItem = nearestToSecondRouteItem;
                 }
-                itemVisitedCount++;
             }
 
             return route;
         }
 
-        static internal int GetNearesetWikiItem(int curItem, int[,] wikiTableCost, int[] itemsVisited)
+        static internal void AddItemToRoute(List<string> route, int tableNo, int[,] wikiTableCost, int insertionPt, 
+            int firstItem, int secondItem, bool[] itemsVisited, int newItem, ref int itemVisitedCount)
+        {
+            if (insertionPt > route.Count - 1)
+            {
+                route.Add($"[{firstItem}] {wikiPage[tableNo][firstItem][title]} ... [{secondItem}] {wikiPage[tableNo][secondItem][title]} " +
+                    $"({wikiTableCost[firstItem, secondItem]} miles)");
+            }
+            else
+            {
+                route.Insert(insertionPt, $"[{firstItem}] {wikiPage[tableNo][firstItem][title]} ... " +
+                    $"[{secondItem}] {wikiPage[tableNo][secondItem][title]} ({wikiTableCost[firstItem, secondItem]} miles)");
+            }
+            itemVisitedCount++;
+            itemsVisited[newItem] = true;
+        }
+
+        static internal int GetNearesetWikiItem(int curItem, int[,] wikiTableCost, bool[] itemsVisited)
         {
             int minDistance = int.MaxValue;
             int nearestWikiItem = -1;
             for (int itemIndex = 0; itemIndex < itemsVisited.Length; itemIndex++)
             {
-                if (itemIndex != curItem && wikiTableCost[curItem, itemIndex] < minDistance && itemsVisited[itemIndex] == 0)
+                if (itemIndex != curItem && wikiTableCost[curItem, itemIndex] < minDistance && itemsVisited[itemIndex] == false)
                 {
                     minDistance = wikiTableCost[curItem, itemIndex];
                     nearestWikiItem = itemIndex;
@@ -218,7 +241,7 @@ namespace P3D_Scenario_Generator
             int tourFinishItemNo = GetWikiRouteLegFirstItemNo(tourFinishItem.ToString());
             var routeLegs = tableRoute.GetEnumerator();
             int legStartItemNo, legFinishItemNo;
-            wikiTourList.Clear();
+            wikiTour.Clear();
             bool checkNextLeg = true;
             // Steps 1 and 2 and 3
             int legCount = 1;
@@ -235,23 +258,23 @@ namespace P3D_Scenario_Generator
                 {
                     if (tourStartItemNo == tourFinishItemNo && tourStartItemNo == legStartItemNo) // Step 2 - tour of one item, leg start
                     {
-                        wikiTourList.Add(SetWikiItem(tableNo, legStartItemNo));
+                        wikiTour.Add(SetWikiItem(tableNo, legStartItemNo));
                         checkNextLeg = false;
                     }
                     else if (tourStartItemNo == tourFinishItemNo && tourStartItemNo == legFinishItemNo) // Step 2 - tour of one item, leg finish
                     {
-                        wikiTourList.Add(SetWikiItem(tableNo, legFinishItemNo));
+                        wikiTour.Add(SetWikiItem(tableNo, legFinishItemNo));
                         checkNextLeg = false;
                     }
                     else if (legStartItemNo == tourStartItemNo && legFinishItemNo == tourFinishItemNo) //Step 3 - tour of two items, one leg
                     {
-                        wikiTourList.Add(SetWikiItem(tableNo, tourStartItemNo));
-                        wikiTourList.Add(SetWikiItem(tableNo, tourFinishItemNo));
+                        wikiTour.Add(SetWikiItem(tableNo, tourStartItemNo));
+                        wikiTour.Add(SetWikiItem(tableNo, tourFinishItemNo));
                         checkNextLeg = false;
                     }
                     else if (legStartItemNo == tourStartItemNo) // Step 1 - tour of three or more items and tour started
                     {
-                        wikiTourList.Add(SetWikiItem(tableNo, tourStartItemNo));
+                        wikiTour.Add(SetWikiItem(tableNo, tourStartItemNo));
                         checkNextLeg = true;
                     }
                     else // Step 1 - tour of three or more items but tour not started yet
@@ -266,15 +289,15 @@ namespace P3D_Scenario_Generator
             {
                 routeLegs.MoveNext();
                 legStartItemNo = GetWikiRouteLegFirstItemNo(routeLegs.Current.ToString());
-                wikiTourList.Add(SetWikiItem(tableNo, legStartItemNo)); // Step 4
+                wikiTour.Add(SetWikiItem(tableNo, legStartItemNo)); // Step 4
                 legFinishItemNo = GetWikiRouteLegLastItemNo(routeLegs.Current.ToString());
                 if (legFinishItemNo == tourFinishItemNo) // Step 5
                 {
-                    wikiTourList.Add(SetWikiItem(tableNo, legFinishItemNo));
+                    wikiTour.Add(SetWikiItem(tableNo, legFinishItemNo));
                     checkNextLeg = false;
                 }
             }
-            WikiCount = wikiTourList.Count + 2; // Wiki tour items plus two airports
+            WikiCount = wikiTour.Count + 2; // Wiki tour items plus two airports
             WikiDistance = int.Parse(tourDistance.Split(' ')[0]);
         }
 
@@ -318,12 +341,12 @@ namespace P3D_Scenario_Generator
 
         static internal void SetWikiAirports()
         {
-            Coordinate coordFirstItem = Coordinate.Parse($"{wikiTourList[0][latitude]} {wikiTourList[0][longitude]}");
+            Coordinate coordFirstItem = Coordinate.Parse($"{wikiTour[0][latitude]} {wikiTour[0][longitude]}");
             WikiStartAirport = Runway.GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble());
             Coordinate coordStartAirport = Coordinate.Parse($"{WikiStartAirport.AirportLat} {WikiStartAirport.AirportLon}");
             WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
 
-            Coordinate coordLastItem = Coordinate.Parse($"{wikiTourList[^1][latitude]} {wikiTourList[^1][longitude]}");
+            Coordinate coordLastItem = Coordinate.Parse($"{wikiTour[^1][latitude]} {wikiTour[^1][longitude]}");
             WikiFinishAirport = Runway.GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble());
             Coordinate coordFinishAirport = Coordinate.Parse($"{WikiFinishAirport.AirportLat} {WikiFinishAirport.AirportLon}");
             WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
@@ -339,8 +362,8 @@ namespace P3D_Scenario_Generator
         {
             List<List<int>> tiles = [];
             List<List<int>> boundingBox = [];
-            int zoom = GetBoundingBoxZoom(tiles, 2, 2, 0, wikiTourList.Count - 1, true, true);
-            SetWikiOSMtiles(tiles, zoom, 0, wikiTourList.Count - 1, true, true);
+            int zoom = GetBoundingBoxZoom(tiles, 2, 2, 0, wikiTour.Count - 1, true, true);
+            SetWikiOSMtiles(tiles, zoom, 0, wikiTour.Count - 1, true, true);
             OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
             Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
@@ -354,13 +377,13 @@ namespace P3D_Scenario_Generator
             SetWikiLegRouteImages(0, 0, true, false);
 
             // Middle legs which may be zero if only one item
-            for (int itemNo = 0; itemNo <= wikiTourList.Count - 2; itemNo++)
+            for (int itemNo = 0; itemNo <= wikiTour.Count - 2; itemNo++)
             {
                 SetWikiLegRouteImages(itemNo, itemNo + 1, false, false);
             }
 
             // Last leg is from last item to finish airport
-            SetWikiLegRouteImages(wikiTourList.Count - 1, wikiTourList.Count - 1, false, true);
+            SetWikiLegRouteImages(wikiTour.Count - 1, wikiTour.Count - 1, false, true);
         }
 
         static internal void SetWikiLegRouteImages(int startItemNo, int finishItemNo, bool incStartAirport, bool incFinishAirport)
@@ -411,7 +434,7 @@ namespace P3D_Scenario_Generator
             }
             for (int itemNo = startItemNo; itemNo <= finishItemNo; itemNo++)
             {
-                tiles.Add(OSM.GetOSMtile(wikiTourList[itemNo][longitude], wikiTourList[itemNo][latitude], zoom));
+                tiles.Add(OSM.GetOSMtile(wikiTour[itemNo][longitude], wikiTour[itemNo][latitude], zoom));
             }
             if (incFinishAirport)
             {
