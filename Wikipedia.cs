@@ -1,11 +1,15 @@
 ﻿using CoordinateSharp;
+using HtmlAgilityPack;
 using System.Web;
 
 namespace P3D_Scenario_Generator
 {
-    internal class WikiList()
+    /// <summary>
+    /// Provides routines for the Wikipedia scenario type
+    /// </summary>
+    internal class Wikipedia()
     {
-        internal static int WikiCount { get; private set; } // The wiki list items plus start and finish airports
+        internal static int WikiCount { get; private set; } // The wikipedia list items plus start and finish airports
         internal static int WikiDistance { get; private set; } // From start to finish airport
         internal static Params WikiStartAirport { get; private set; }
         internal static Params WikiFinishAirport { get; private set; }
@@ -13,6 +17,102 @@ namespace P3D_Scenario_Generator
         internal static List<List<string>> wikiTour = []; // List of user selected Wikipedia items
         internal static int title = 0, link = 1, latitude = 2, longitude = 3; // Wikipedia item list indexes
         internal static int xAxis = 0, yAxis = 1; // Used in bounding box to denote lists that store OSM xTile and yTile reference numbers
+
+        #region Form routines - populating wikiPage
+
+        /// <summary>
+        /// Parses user supplied URL for table(s) identified by class='sortable wikitable'.
+        /// Using specified column extracts items that have a title and link. The link must
+        /// supply latitude and longitude. Stores items in <see cref="wikiPage"/>.
+        /// </summary>
+        /// <param name="wikiURL">User supplied Wikipedia URL</param>
+        /// <param name="columnNo">User supplied column number of items in table</param>
+        static internal void PopulateWikiPage(string wikiURL, int columnNo)
+        {
+            string message = $"Reading {wikiURL} and column {columnNo}, will advise when complete";
+            MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            wikiPage.Clear();
+            HtmlAgilityPack.HtmlDocument htmlDoc = HttpRoutines.GetWebDoc(wikiURL);
+            HtmlNodeCollection tables = null;
+            HtmlNodeCollection rows = null;
+            HtmlNodeCollection cells = null;
+            string tableSelection = "//table[@class='sortable wikitable' or @class='wikitable sortable']";
+            if (htmlDoc != null && HttpRoutines.GetNodeCollection(htmlDoc.DocumentNode, ref tables, tableSelection, true))
+            {
+                foreach (var table in tables)
+                {
+                    List<List<string>> curTable = [];
+                    if (HttpRoutines.GetNodeCollection(table, ref rows, ".//tr", true))
+                    {
+                        foreach (var row in rows)
+                        {
+                            if (HttpRoutines.GetNodeCollection(row, ref cells, ".//th | .//td", true) && cells.Count >= columnNo)
+                            {
+                                ReadWikiCell(cells[columnNo - 1], curTable);
+                            }
+                        }
+                    }
+                    if (curTable.Count > 0)
+                    {
+                        wikiPage.Add(curTable);
+                    }
+                }
+            }
+            message = $"Finished reading {wikiURL} and column {columnNo}.";
+            MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// Stores one item in a table of <see cref="wikiPage"/>. Item includes a title, URL to Wikipedia item page 
+        /// and latitude and longitude.
+        /// </summary>
+        /// <param name="cell">The cell in a table row containing item title and hyperlink</param>
+        /// <param name="curTable">The current table being populated in <see cref="wikiPage"/></param>
+        static internal void ReadWikiCell(HtmlNode cell, List<List<string>> curTable)
+        {
+            List<string> wikiItem = [];
+            List<HtmlNode> cellDescendants = cell.Descendants("a").ToList();
+            string title = "", link = "";
+            if (cellDescendants.Count > 0)
+            {
+                title = cellDescendants[0].GetAttributeValue("title", "");
+                link = cellDescendants[0].GetAttributeValue("href", "");
+            }
+            if (title != "" && link != "")
+            {
+                wikiItem.Add(HttpUtility.HtmlDecode(title));
+                wikiItem.Add(link);
+                if (GetWikiItemCoordinates(wikiItem))
+                {
+                    curTable.Add(wikiItem);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks that the item hyperlink is pointing to a page with lat/long coordinate in expected place
+        /// and retrieves them for storage in a table in <see cref="wikiPage"/>.
+        /// </summary>
+        /// <param name="curRow">The current row in table being populated in <see cref="wikiPage"/></param>
+        /// <returns></returns>
+        static internal bool GetWikiItemCoordinates(List<string> curRow)
+        {
+            var htmlDoc = HttpRoutines.GetWebDoc($"https://en.wikipedia.org/{curRow[link]}");
+            HtmlNodeCollection spans = null;
+            if (htmlDoc != null && HttpRoutines.GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='latitude']", false))
+            {
+                if (spans != null && spans.Count > 0)
+                {
+                    curRow.Add(ConvertWikiCoOrd(spans[0].InnerText));
+                    HttpRoutines.GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='longitude']", false);
+                    curRow.Add(ConvertWikiCoOrd(spans[0].InnerText));
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        #endregion
 
         #region Form routines - populate UI
 
@@ -24,9 +124,17 @@ namespace P3D_Scenario_Generator
         static internal List<string> CreateWikiTablesDesc()
         {
             var list = new List<string>();
+            string tableDesc;
             for (int tableNo = 0; tableNo < wikiPage.Count; tableNo++)
             {
-                string tableDesc = $"{wikiPage[tableNo][0][title]} ... {wikiPage[tableNo][^1][title]} ({wikiPage[tableNo].Count} items)";
+                if (wikiPage[tableNo].Count == 1)
+                {
+                    tableDesc = $"{wikiPage[tableNo][0][title]} (one item)";
+                }
+                else 
+                {
+                    tableDesc = $"{wikiPage[tableNo][0][title]} ... {wikiPage[tableNo][^1][title]} ({wikiPage[tableNo].Count} items)";
+                }
                 list.Add(tableDesc);
             }
             return list;
@@ -43,23 +151,16 @@ namespace P3D_Scenario_Generator
             List<string> route = []; // Route leg summary strings
             bool[] itemsVisited = new bool[wikiPage[tableNo].Count]; // Track addition of items to route as it's built
             int firstRouteItem = 0; // Track first item of route as it's built
-            int lastRouteItem = 0; // Track last item of route as it's built
-            int itemVisitedCount = 0; // Track how many items have been added to route as it's built
+            int lastRouteItem; // Track last item of route as it's built
+            int itemVisitedCount; // Track how many items have been added to route as it's built
 
             SetWikiTableCosts(tableNo, wikiTableCost);
 
-            // Initialise route as first item to first item if only one item else first item to it's nearest item
-            if (wikiPage[tableNo].Count == 1)
-            {
-                AddItemToRoute(route, tableNo, wikiTableCost, 0, firstRouteItem, lastRouteItem, itemsVisited, 0, ref itemVisitedCount);
-            }
-            else
-            {
-                itemsVisited[0] = true;
-                itemVisitedCount = 1;
-                lastRouteItem = GetNearesetWikiItem(0, wikiTableCost, itemsVisited);
-                AddItemToRoute(route, tableNo, wikiTableCost, 0, firstRouteItem, lastRouteItem, itemsVisited, lastRouteItem, ref itemVisitedCount);
-            }
+            // Initialise route with first leg (handles special case where only one item)
+            itemsVisited[0] = true;
+            itemVisitedCount = 1;
+            lastRouteItem = GetNearesetWikiItem(0, wikiTableCost, itemsVisited);
+            AddLegToRoute(route, tableNo, wikiTableCost, 0, firstRouteItem, lastRouteItem, itemsVisited, lastRouteItem, ref itemVisitedCount);
 
             while (itemVisitedCount < wikiPage[tableNo].Count)
             {
@@ -68,13 +169,13 @@ namespace P3D_Scenario_Generator
                 int nearestToSecondRouteItem = GetNearesetWikiItem(lastRouteItem, wikiTableCost, itemsVisited);
                 if (wikiTableCost[firstRouteItem, nearestToFirstRouteItem] <= wikiTableCost[lastRouteItem, nearestToSecondRouteItem])
                 {
-                    AddItemToRoute(route, tableNo, wikiTableCost, 0, nearestToFirstRouteItem, firstRouteItem, itemsVisited, 
+                    AddLegToRoute(route, tableNo, wikiTableCost, 0, nearestToFirstRouteItem, firstRouteItem, itemsVisited, 
                         nearestToFirstRouteItem, ref itemVisitedCount);
                     firstRouteItem = nearestToFirstRouteItem;
                 }
                 else
                 {
-                    AddItemToRoute(route, tableNo, wikiTableCost, itemVisitedCount, lastRouteItem, nearestToSecondRouteItem, 
+                    AddLegToRoute(route, tableNo, wikiTableCost, itemVisitedCount, lastRouteItem, nearestToSecondRouteItem, 
                         itemsVisited, nearestToSecondRouteItem, ref itemVisitedCount);
                     lastRouteItem = nearestToSecondRouteItem;
                 }
@@ -83,27 +184,47 @@ namespace P3D_Scenario_Generator
             return route;
         }
 
-        static internal void AddItemToRoute(List<string> route, int tableNo, int[,] wikiTableCost, int insertionPt, 
-            int firstItem, int secondItem, bool[] itemsVisited, int newItem, ref int itemVisitedCount)
+        /// <summary>
+        /// Creates a route leg string and adds it to route in the form:
+        /// <para>[startItem] startItem description ... [finishItem] finishItem description (number of miles)</para>
+        /// </summary>
+        /// <param name="route">Route leg summary strings</param>
+        /// <param name="tableNo">The table in <see cref="wikiPage"/></param>
+        /// <param name="wikiTableCost">Matrix of distances between items in miles</param>
+        /// <param name="insertionPt">New leg is inserted at front or added to end of route</param>
+        /// <param name="startItem">Start item for new leg</param>
+        /// <param name="finishItem">Finish item for new leg</param>
+        /// <param name="itemsVisited">Tracks addition of items to route as it's built</param>
+        /// <param name="newItem">Will be either the startItem or finishItem depending on which end of route</param>
+        /// <param name="itemVisitedCount">Tracks how many items have been added to route as it's built</param>
+        static internal void AddLegToRoute(List<string> route, int tableNo, int[,] wikiTableCost, int insertionPt, 
+            int startItem, int finishItem, bool[] itemsVisited, int newItem, ref int itemVisitedCount)
         {
             if (insertionPt > route.Count - 1)
             {
-                route.Add($"[{firstItem}] {wikiPage[tableNo][firstItem][title]} ... [{secondItem}] {wikiPage[tableNo][secondItem][title]} " +
-                    $"({wikiTableCost[firstItem, secondItem]} miles)");
+                route.Add($"[{startItem}] {wikiPage[tableNo][startItem][title]} ... [{finishItem}] {wikiPage[tableNo][finishItem][title]} " +
+                    $"({wikiTableCost[startItem, finishItem]} miles)");
             }
             else
             {
-                route.Insert(insertionPt, $"[{firstItem}] {wikiPage[tableNo][firstItem][title]} ... " +
-                    $"[{secondItem}] {wikiPage[tableNo][secondItem][title]} ({wikiTableCost[firstItem, secondItem]} miles)");
+                route.Insert(insertionPt, $"[{startItem}] {wikiPage[tableNo][startItem][title]} ... " +
+                    $"[{finishItem}] {wikiPage[tableNo][finishItem][title]} ({wikiTableCost[startItem, finishItem]} miles)");
             }
             itemVisitedCount++;
             itemsVisited[newItem] = true;
         }
 
+        /// <summary>
+        /// Searches items not yet added to route and returns closest to curItem
+        /// </summary>
+        /// <param name="curItem">The item for which distances to be measured</param>
+        /// <param name="wikiTableCost">Matrix of distances between items in miles</param>
+        /// <param name="itemsVisited">Tracks addition of items to route as it's built</param>
+        /// <returns></returns>
         static internal int GetNearesetWikiItem(int curItem, int[,] wikiTableCost, bool[] itemsVisited)
         {
             int minDistance = int.MaxValue;
-            int nearestWikiItem = -1;
+            int nearestWikiItem = 0;
             for (int itemIndex = 0; itemIndex < itemsVisited.Length; itemIndex++)
             {
                 if (itemIndex != curItem && wikiTableCost[curItem, itemIndex] < minDistance && itemsVisited[itemIndex] == false)
@@ -115,9 +236,13 @@ namespace P3D_Scenario_Generator
             return nearestWikiItem;
         }
 
+        /// <summary>
+        /// Creates a matrix of distances between items in measured in miles
+        /// </summary>
+        /// <param name="tableNo">The table in <see cref="wikiPage"/></param>
+        /// <param name="wikiTableCost">Matrix of distances between items in miles</param>
         static internal void SetWikiTableCosts(int tableNo, int[,] wikiTableCost)
         {
-            int maxCost = 0;
             for (int row = 0; row < wikiPage[tableNo].Count; row++)
             {
                 for (int col = 0; col < wikiPage[tableNo].Count; col++)
@@ -125,99 +250,8 @@ namespace P3D_Scenario_Generator
                     Coordinate coord1 = Coordinate.Parse($"{wikiPage[tableNo][row][latitude]} {wikiPage[tableNo][row][longitude]}");
                     Coordinate coord2 = Coordinate.Parse($"{wikiPage[tableNo][col][latitude]} {wikiPage[tableNo][col][longitude]}");
                     wikiTableCost[row, col] = (int)coord1.Get_Distance_From_Coordinate(coord2).Miles;
-                    if (wikiTableCost[row, col] > maxCost)
-                    {
-                        maxCost = wikiTableCost[row, col];
-                    }
                 }
             }
-            for (int row = 0; row < wikiPage[tableNo].Count; row++)
-            {
-                for (int col = 0; col < wikiPage[tableNo].Count; col++)
-                {
-                    if (row == col && wikiPage[tableNo].Count > 1)
-                    {
-                        wikiTableCost[row, col] = maxCost + 1;
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        #region Form routines - creating wikiPage
-
-        // Populate wikiPage from user supplied URL
-        static internal void SetWikiPage(string wikiListURL, string cellName, string[] attribute)
-        {
-            var htmlDoc = HttpRoutines.GetWebDoc(wikiListURL);
-            if (htmlDoc == null)
-            {
-                return;
-            }
-            wikiPage.Clear();
-            string[] refIncList = ["href", "title"];
-            string[] refExcList = ["latitude", "redlink", "span style"];
-            foreach (var table in htmlDoc.DocumentNode.SelectNodes("//table[@class='sortable wikitable' or @class='wikitable sortable']"))
-            {
-                List<List<string>> curTable = [];
-                var rows = table.SelectNodes(".//tr");
-                foreach (var row in rows)
-                {
-                    List<string> curRow = [];
-                    var cells = row.SelectNodes(".//th | .//td");
-                    if (cells == null)
-                    {
-                        continue;
-                    }
-                    foreach (var cell in cells)
-                    {
-                        if (refIncList.All(cell.InnerHtml.Contains) && (cell.Name == cellName)
-                            && (cell.GetAttributeValue(attribute[0], "") == attribute[1]))
-                        {
-                            if (refExcList.Any(cell.InnerHtml.Contains))
-                            {
-                                break;
-                            }
-                            var title = cell.Descendants("a").ToList()[0].GetAttributeValue("title", null);
-                            var link = cell.Descendants("a").ToList()[0].GetAttributeValue("href", null);
-                            if (title != null && link != null)
-                            {
-                                curRow.Add(HttpUtility.HtmlDecode(title));
-                                curRow.Add(link);
-                                if (GetWikiItemCoordinates(curRow))
-                                {
-                                    curTable.Add(curRow);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (curTable.Count > 0)
-                {
-                    wikiPage.Add(curTable);
-                }
-            }
-        }
-
-        // Checks that the wiki list item hyperlink on wiki list page is pointing to a page with lat/long coordinate in expected place
-        static internal bool GetWikiItemCoordinates(List<string> curRow)
-        {
-            var htmlDoc = HttpRoutines.GetWebDoc($"https://en.wikipedia.org/{curRow[link]}");
-            if (htmlDoc == null)
-            {
-                return false;
-            }
-            var latSpans = htmlDoc.DocumentNode.SelectNodes(".//span[@class='latitude']");
-            if (latSpans != null)
-            {
-                curRow.Add(ConvertWikiCoOrd(latSpans[0].InnerText));
-                var lonSpans = htmlDoc.DocumentNode.SelectNodes(".//span[@class='longitude']");
-                curRow.Add(ConvertWikiCoOrd(lonSpans[0].InnerText));
-                return true;
-            }
-            return false;
         }
 
         #endregion

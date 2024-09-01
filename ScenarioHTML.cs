@@ -133,7 +133,7 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) {Runway.destRwy.City}, {Runway.destRwy.Country}";
                     overview.Difficulty = "Intermediate";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = WikiList.WikiDistance / Aircraft.CruiseSpeed * 60;
+                    duration = Wikipedia.WikiDistance / Aircraft.CruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{Parameters.SelectedAircraft}";
                     overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
@@ -143,7 +143,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += $"{Runway.destRwy.Id} at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.destRwy.City}, {Runway.destRwy.Country}.";
                     overview.Objective = "Take off and visit a series of photo locations before landing ";
-                    overview.Objective += $"at {WikiList.WikiFinishAirport.IcaoId}, runway {WikiList.WikiFinishAirport.Id}";
+                    overview.Objective += $"at {Wikipedia.WikiFinishAirport.IcaoId}, runway {Wikipedia.WikiFinishAirport.Id}";
                     overview.Tips = "The early bird gets the worm, but the second mouse gets the cheese.";
                     break;
                 default:

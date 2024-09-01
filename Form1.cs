@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
+using CoordinateSharp;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace P3D_Scenario_Generator
@@ -91,9 +92,9 @@ namespace P3D_Scenario_Generator
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
             {
-                WikiList.SetWikiTourList(ListBoxWikiTableNames.SelectedIndex, ListBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem, 
+                Wikipedia.SetWikiTourList(ListBoxWikiTableNames.SelectedIndex, ListBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem, 
                     ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text);
-                WikiList.SetWikiTour();
+                Wikipedia.SetWikiTour();
             }
             Runway.SetRunway(Runway.startRwy, "start");
             Runway.SetRunway(Runway.destRwy, "destination");
@@ -294,9 +295,8 @@ namespace P3D_Scenario_Generator
         {
             if (TextBoxWikiURL.Text != null)
             {
-                var attributePair = ListBoxWikiAttribute.Text.Split('|');
-                WikiList.SetWikiPage(TextBoxWikiURL.Text, ListBoxWikiCellName.Text, attributePair);
-                ListBoxWikiTableNames.DataSource = WikiList.CreateWikiTablesDesc();
+                Wikipedia.PopulateWikiPage(TextBoxWikiURL.Text, int.Parse(ListBoxWikiColumn.Text));
+                ListBoxWikiTableNames.DataSource = Wikipedia.CreateWikiTablesDesc();
             }
         }
 
@@ -305,7 +305,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiDistance.Text = "";
             if (ListBoxWikiTableNames.Items.Count > 0)
             {
-                ListBoxWikiRoute.DataSource = WikiList.CreateWikiTableRoute(ListBoxWikiTableNames.SelectedIndex);
+                ListBoxWikiRoute.DataSource = Wikipedia.CreateWikiTableRoute(ListBoxWikiTableNames.SelectedIndex);
                 List<string> itemList = [];
                 for (int index = 0; index < ListBoxWikiRoute.Items.Count; index++)
                 {
@@ -370,7 +370,7 @@ namespace P3D_Scenario_Generator
         {
             int stringBegin, stringEnd;
             stringBegin = route.IndexOf("...") + 4;
-            stringEnd = route.IndexOf('(') - 1;
+            stringEnd = route.LastIndexOf('(') - 1;
             return route[stringBegin..stringEnd];
         }
 
@@ -398,8 +398,7 @@ namespace P3D_Scenario_Generator
             PictureBoxSignWriting.Image = new Bitmap(stream);
 
             // Wikipedia Lists tab
-            ListBoxWikiCellName.SetSelected(0, true);
-            ListBoxWikiAttribute.SetSelected(0, true);
+            ListBoxWikiColumn.SetSelected(0, true);
         }
 
         private void TextBoxDouble_Validating(object sender, CancelEventArgs e)

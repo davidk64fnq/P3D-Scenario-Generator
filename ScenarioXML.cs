@@ -452,12 +452,12 @@ namespace P3D_Scenario_Generator
             SetGoal("Goal01", ScenarioHTML.overview.Objective);
             SetGoalResolutionAction("Goal01");
 
-            // Pass 1 - setup leg route windows, WikiList.WikiCount includes start and finish airports
+            // Pass 1 - setup leg route windows, Wikipedia.WikiCount includes start and finish airports
             // There is a leg route window to fly to each Wiki list item location and then to destination airport
             // The leg route windows display at the start of each leg, index 0 is the start airport, index WikiCount - 1
             // is the destination airport
             // LegRoute_00 is the route to first item, LegRoute_WikiList.WikiCount - 2 is the route to destination airport
-            for (int itemNo = 0; itemNo <= WikiList.WikiCount - 2; itemNo++)
+            for (int itemNo = 0; itemNo <= Wikipedia.WikiCount - 2; itemNo++)
             {
                 // Create leg window object 
                 SetUIPanelWindow(itemNo, "UIpanelWindowLeg", "False", "True", "", $"images\\LegRoute_{itemNo:00}.html", "False", "False");

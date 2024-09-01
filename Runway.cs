@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace P3D_Scenario_Generator
@@ -206,18 +207,20 @@ namespace P3D_Scenario_Generator
                 case nameof(ScenarioTypes.WikiList):
                     if (rwyType == "start")
                     {
-                        words[0] = WikiList.WikiStartAirport.IcaoId;
-                        words[1] = WikiList.WikiStartAirport.Id;
+                        words[0] = Wikipedia.WikiStartAirport.IcaoId;
+                        words[1] = Wikipedia.WikiStartAirport.Id;
                     }
                     else
                     {
-                        words[0] = WikiList.WikiFinishAirport.IcaoId;
-                        words[1] = WikiList.WikiFinishAirport.Id;
+                        words[0] = Wikipedia.WikiFinishAirport.IcaoId;
+                        words[1] = Wikipedia.WikiFinishAirport.Id;
                     }
                     break;
                 default:
                     break;
             }
+            words[1] = words[1].Trim('(');
+            words[1] = words[1].Trim(')');
             return words;
         }
 
