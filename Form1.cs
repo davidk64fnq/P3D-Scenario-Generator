@@ -92,7 +92,7 @@ namespace P3D_Scenario_Generator
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
             {
-                Wikipedia.SetWikiTourList(ListBoxWikiTableNames.SelectedIndex, ListBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem, 
+                Wikipedia.PopulateWikiTour(ListBoxWikiTableNames.SelectedIndex, ListBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem, 
                     ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text);
                 Wikipedia.SetWikiTour();
             }
