@@ -92,9 +92,8 @@ namespace P3D_Scenario_Generator
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
             {
-                Wikipedia.PopulateWikiTour(ListBoxWikiTableNames.SelectedIndex, ListBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem, 
+                Wikipedia.SetWikiTour(ListBoxWikiTableNames.SelectedIndex, ListBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem,
                     ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text);
-                Wikipedia.SetWikiTour();
             }
             Runway.SetRunway(Runway.startRwy, "start");
             Runway.SetRunway(Runway.destRwy, "destination");

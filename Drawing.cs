@@ -12,7 +12,7 @@ namespace P3D_Scenario_Generator
 
         #region Pad tiles region
 
-        static internal void MakeSquare(List<List<int>> boundingBox, string filename, int zoom, int size)
+        static internal List<List<int>> MakeSquare(List<List<int>> boundingBox, string filename, int zoom, int size)
         {
             // Get next tile East and West - allow for possibile wrap around meridian
             int newTileEast = IncXtileNo(boundingBox[xAxis][^1], zoom);
@@ -23,32 +23,33 @@ namespace P3D_Scenario_Generator
 
             if (boundingBox[xAxis].Count < boundingBox[yAxis].Count) // Padding on the x axis
             {
-                PadWestEast(boundingBox, newTileWest, newTileEast, filename, zoom);
+                return PadWestEast(boundingBox, newTileWest, newTileEast, filename, zoom);
             }
             else if (boundingBox[yAxis].Count < boundingBox[xAxis].Count) // Padding on the y axis
             {
                 if (newTileSouth < 0)
                 {
-                    PadNorth(boundingBox, newTileNorth, filename, zoom);
+                    return PadNorth(boundingBox, newTileNorth, filename, zoom);
                 }
                 else if (newTileNorth < 0)
                 {
-                    PadSouth(boundingBox, newTileSouth, filename, zoom);
+                    return PadSouth(boundingBox, newTileSouth, filename, zoom);
                 }
                 else
                 {
-                    PadNorthSouth(boundingBox, newTileNorth, newTileSouth, filename, zoom);
+                    return PadNorthSouth(boundingBox, newTileNorth, newTileSouth, filename, zoom);
                 }
             }
             else if (boundingBox[yAxis].Count < size) // Padding on both axis 
             {
-                PadNorthSouthWestEast(boundingBox, newTileNorth, newTileSouth, newTileWest, newTileEast, filename, zoom);
+                return PadNorthSouthWestEast(boundingBox, newTileNorth, newTileSouth, newTileWest, newTileEast, filename, zoom);
             }
+            return ZoomIn(boundingBox);
         }
 
         // Currently all points are on one tile but we want them on four tiles. Adjust boundingBox to include surrounding
         // eight tiles then download and montage them with current tile. Then crop centre area of four tiles.
-        static internal void PadNorthSouthWestEast(List<List<int>> boundingBox, int newTileNorth, int newTileSouth,
+        static internal List<List<int>> PadNorthSouthWestEast(List<List<int>> boundingBox, int newTileNorth, int newTileSouth,
             int newTileWest, int newTileEast, string filename, int zoom)
         {
             boundingBox[yAxis].Insert(0, newTileNorth);
@@ -70,12 +71,35 @@ namespace P3D_Scenario_Generator
             image.Crop(geometry);
             image.RePage();
             image.Write($"{imagePath}{filename}.png");
+
+            return ZoomInNorthSouthWestEast(boundingBox);
+        }
+
+        static internal List<List<int>> ZoomInNorthSouthWestEast(List<List<int>> boundingBox)
+        {
+            List<List<int>> zoomInBoundingBox = [];
+            zoomInBoundingBox[xAxis][0] = 2 * boundingBox[xAxis][0] + 1;
+            for (int xIndex = 1; xIndex < boundingBox[xAxis].Count - 1; xIndex++)
+            {
+                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex]);
+                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex] + 1);
+            }
+            zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][^1]);
+
+            zoomInBoundingBox[yAxis][0] = 2 * boundingBox[yAxis][0] + 1;
+            for (int xIndex = 1; xIndex < boundingBox[yAxis].Count - 1; xIndex++)
+            {
+                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex]);
+                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex] + 1);
+            }
+            zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][^1]);
+            return zoomInBoundingBox;
         }
 
         // The file to be padded is 1w x 2h tileSize. Create a column of tiles on left and right side 1w x 2h,
         // montage them together (3w x 2h) then crop a column 0.5w x 2h from outside edges. Resulting image is 2w x 2h tileSize
         // with original image in middle horizontally.)
-        static internal void PadWestEast(List<List<int>> boundingBox, int newTileWest, int newTileEast, string filename, int zoom)
+        static internal List<List<int>> PadWestEast(List<List<int>> boundingBox, int newTileWest, int newTileEast, string filename, int zoom)
         {
             OSM.DownloadOSMtileColumn(newTileWest, 0, boundingBox, zoom, filename);
             MontageTilesToColumn(boundingBox[yAxis].Count, 0, filename);
@@ -95,12 +119,33 @@ namespace P3D_Scenario_Generator
             image.Crop(geometry);
             image.RePage();
             image.Write($"{imagePath}{filename}.png");
+
+            return ZoomInWestEast(boundingBox);
+        }
+
+        static internal List<List<int>> ZoomInWestEast(List<List<int>> boundingBox)
+        {
+            List<List<int>> zoomInBoundingBox = [];
+            zoomInBoundingBox[xAxis][0] = 2 * boundingBox[xAxis][0] + 1;
+            for (int xIndex = 1; xIndex < boundingBox[xAxis].Count - 1; xIndex++)
+            {
+                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex]);
+                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex] + 1);
+            }
+            zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][^1]);
+
+            for (int xIndex = 0; xIndex < boundingBox[yAxis].Count; xIndex++)
+            {
+                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex]);
+                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex] + 1);
+            }
+            return zoomInBoundingBox;
         }
 
         // The file to be padded is 2w x 1h tileSize. Create a row of tiles above and below 2w x 1h,
         // montage them together (2w x 3h) then crop a row 2w x 0.5h from outside edges. Resulting image is 2w x 2h tileSize
         // with original image in middle vertically.
-        static internal void PadNorthSouth(List<List<int>> boundingBox, int newTileNorth, int newTileSouth, string filename, int zoom)
+        static internal List<List<int>> PadNorthSouth(List<List<int>> boundingBox, int newTileNorth, int newTileSouth, string filename, int zoom)
         {
             OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename);
             MontageTilesToRow(boundingBox[xAxis].Count, 0, filename);
@@ -120,11 +165,32 @@ namespace P3D_Scenario_Generator
             image.Crop(geometry);
             image.RePage();
             image.Write($"{imagePath}{filename}.png");
+
+            return ZoomInNorthSouth(boundingBox);
+        }
+
+        static internal List<List<int>> ZoomInNorthSouth(List<List<int>> boundingBox)
+        {
+            List<List<int>> zoomInBoundingBox = [];
+            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            {
+                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex]);
+                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex] + 1);
+            }
+
+            zoomInBoundingBox[yAxis][0] = 2 * boundingBox[yAxis][0] + 1;
+            for (int xIndex = 1; xIndex < boundingBox[yAxis].Count - 1; xIndex++)
+            {
+                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex]);
+                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex] + 1);
+            }
+            zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][^1]);
+            return zoomInBoundingBox;
         }
 
         // The file to be padded is 2w x 1h tileSize. Create a row of tiles above 2w x 1h, montage them together.
         // Resulting image is 2w x 2h tileSize with original image at bottom vertically.
-        static internal void PadNorth(List<List<int>> boundingBox, int newTileNorth, string filename, int zoom)
+        static internal List<List<int>> PadNorth(List<List<int>> boundingBox, int newTileNorth, string filename, int zoom)
         {
             OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename);
             MontageTilesToRow(boundingBox[xAxis].Count, 0, filename);
@@ -134,11 +200,30 @@ namespace P3D_Scenario_Generator
 
             MontageRows(boundingBox[xAxis].Count, 2, filename);
             DeleteTempOSMfiles(filename);
+
+            return ZoomInNorthOrSouth(boundingBox);
+        }
+
+        static internal List<List<int>> ZoomInNorthOrSouth(List<List<int>> boundingBox)
+        {
+            List<List<int>> zoomInBoundingBox = [];
+            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            {
+                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex]);
+                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex] + 1);
+            }
+
+            for (int xIndex = 0; xIndex < boundingBox[yAxis].Count; xIndex++)
+            {
+                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex]);
+                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex] + 1);
+            }
+            return zoomInBoundingBox;
         }
 
         // The file to be padded is 2w x 1h tileSize. Create a row of tiles below 2w x 1h, montage them together.
         // Resulting image is 2w x 2h tileSize with original image at top vertically.
-        static internal void PadSouth(List<List<int>> boundingBox, int newTileSouth, string filename, int zoom)
+        static internal List<List<int>> PadSouth(List<List<int>> boundingBox, int newTileSouth, string filename, int zoom)
         {
             File.Move($"{imagePath}{filename}.png", $"{imagePath}{filename}_0.png");
 
@@ -148,6 +233,25 @@ namespace P3D_Scenario_Generator
 
             MontageRows(boundingBox[xAxis].Count, 2, filename);
             DeleteTempOSMfiles(filename);
+
+            return ZoomInNorthOrSouth(boundingBox);
+        }
+
+        static internal List<List<int>> ZoomIn(List<List<int>> boundingBox)
+        {
+            List<List<int>> zoomInBoundingBox = [];
+            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            {
+                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex]);
+                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex] + 1);
+            }
+
+            for (int xIndex = 0; xIndex < boundingBox[yAxis].Count; xIndex++)
+            {
+                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex]);
+                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex] + 1);
+            }
+            return zoomInBoundingBox;
         }
 
         #endregion

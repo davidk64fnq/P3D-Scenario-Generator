@@ -281,6 +281,160 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
+        #region SetWikiTour region
+
+        static internal void SetWikiTour(int tableNo, ListBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance)
+        {
+            PopulateWikiTour(tableNo, route, tourStartItem, tourFinishItem, tourDistance);
+            SetWikiAirports();
+            SetWikiOSMImages();
+        }
+
+        /// <summary>
+        /// Finds and sets <see cref="WikiStartAirport"/> and <see cref="WikiFinishAirport"/>. Adjusts <see cref="WikiDistance"/> 
+        /// to include airport legs
+        /// </summary>
+        static internal void SetWikiAirports()
+        {
+            Coordinate coordFirstItem = Coordinate.Parse($"{wikiTour[0][latitude]} {wikiTour[0][longitude]}");
+            WikiStartAirport = Runway.GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble());
+            Coordinate coordStartAirport = Coordinate.Parse($"{WikiStartAirport.AirportLat} {WikiStartAirport.AirportLon}");
+            WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
+
+            Coordinate coordLastItem = Coordinate.Parse($"{wikiTour[^1][latitude]} {wikiTour[^1][longitude]}");
+            WikiFinishAirport = Runway.GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble());
+            Coordinate coordFinishAirport = Coordinate.Parse($"{WikiFinishAirport.AirportLat} {WikiFinishAirport.AirportLon}");
+            WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
+        }
+
+        static internal void SetWikiOSMImages()
+        {
+            SetWikiOverviewImage();
+            SetAllWikiLegRoutesImages();
+        }
+
+        /// <summary>
+        /// Creates "Charts_01.jpg" using a montage of OSM tiles that covers both airports and all items in <see cref="WikiTour"/>
+        /// </summary>
+        static internal void SetWikiOverviewImage()
+        {
+            List<List<int>> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
+            List<List<int>> boundingBox = []; // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
+            int zoom = GetBoundingBoxZoom(tiles, 2, 2, 0, wikiTour.Count - 1, true, true);
+            SetWikiOSMtiles(tiles, zoom, 0, wikiTour.Count - 1, true, true);
+            OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
+            Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
+            Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
+            Drawing.MakeSquare(boundingBox, "Charts_01", zoom, 2);
+            Drawing.ConvertImageformat("Charts_01", "png", "jpg");
+        }
+
+        /// <summary>
+        /// Works out most zoomed in level that includes all items specified by startItemIndex and finishItemIndex, 
+        /// where the montage of OSM tiles doesn't exceed tilesWidth and tilesHeight in size
+        /// </summary>
+        /// <param name="tiles">List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile</param>
+        /// <param name="tilesWidth">Maximum number of tiles allowed for x axis</param>
+        /// <param name="tilesHeight">Maximum number of tiles allowed for x axis</param>
+        /// <param name="startItemIndex">Index of start item in <see cref="WikiTour"/></param>
+        /// <param name="finishItemIndex">Index of finish item in <see cref="WikiTour"/></param>
+        /// <param name="incStartAirport">Whether to include <see cref="WikiStartAirport"/></param>
+        /// <param name="incFinishAirport">Whether to include <see cref="WikiFinishAirport"/></param>
+        /// <returns>The maximum zoom level that meets constraints</returns>
+        static internal int GetBoundingBoxZoom(List<List<int>> tiles, int tilesWidth, int tilesHeight,
+            int startItemIndex, int finishItemIndex, bool incStartAirport, bool incFinishAirport)
+        {
+            List<List<int>> boundingBox = [];
+            for (int zoom = 2; zoom <= 18; zoom++)
+            {
+                tiles.Clear();
+                SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex, incStartAirport, incFinishAirport);
+                boundingBox.Clear();
+                OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
+                if ((boundingBox[xAxis].Count > tilesWidth) || (boundingBox[yAxis].Count > tilesHeight))
+                {
+                    return zoom - 1;
+                }
+            }
+            return 18;
+        }
+
+        /// <summary>
+        /// Finds OSM tile numbers and offsets for a <see cref="WikiTour"/> (all items plus airports, or a pair of items)
+        /// </summary>
+        /// <param name="tiles">List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile</param>
+        /// <param name="zoom">The zoom level to get OSM tiles at</param>
+        /// <param name="startItemIndex">Index of start item in <see cref="WikiTour"/></param>
+        /// <param name="finishItemIndex">Index of finish item in <see cref="WikiTour"/></param>
+        /// <param name="incStartAirport">Whether to include <see cref="WikiStartAirport"/></param>
+        /// <param name="incFinishAirport">Whether to include <see cref="WikiFinishAirport"/></param>
+        static internal void SetWikiOSMtiles(List<List<int>> tiles, int zoom, int startItemIndex, int finishItemIndex,
+            bool incStartAirport, bool incFinishAirport)
+        {
+            tiles.Clear();
+            if (incStartAirport)
+            {
+                tiles.Add(OSM.GetOSMtile(WikiStartAirport.AirportLon.ToString(), WikiStartAirport.AirportLat.ToString(), zoom));
+            }
+            for (int itemNo = startItemIndex; itemNo <= finishItemIndex; itemNo++)
+            {
+                tiles.Add(OSM.GetOSMtile(wikiTour[itemNo][longitude], wikiTour[itemNo][latitude], zoom));
+            }
+            if (incFinishAirport)
+            {
+                tiles.Add(OSM.GetOSMtile(WikiFinishAirport.AirportLon.ToString(), WikiFinishAirport.AirportLat.ToString(), zoom));
+            }
+        }
+
+        /// <summary>
+        /// Creates "LegRoute_XX.jpg" images for all legs using a montage of OSM tiles that covers the start and finish leg items
+        /// </summary>
+        static internal void SetAllWikiLegRoutesImages()
+        {
+            // First leg is from start airport to first item
+            SetOneWikiLegRouteImages(0, 0, true, false);
+
+            // Middle legs which may be zero if only one item
+            for (int itemNo = 0; itemNo <= wikiTour.Count - 2; itemNo++)
+            {
+                SetOneWikiLegRouteImages(itemNo, itemNo + 1, false, false);
+            }
+
+            // Last leg is from last item to finish airport
+            SetOneWikiLegRouteImages(wikiTour.Count - 1, wikiTour.Count - 1, false, true);
+        }
+
+        /// <summary>
+        /// Creates "LegRoute_XX.jpg" images for one leg using a montage of OSM tiles that covers the start and finish leg items 
+        /// </summary>
+        /// <param name="startItemIndex">Index of start item in <see cref="WikiTour"/></param>
+        /// <param name="finishItemIndex">Index of finish item in <see cref="WikiTour"/></param>
+        /// <param name="incStartAirport">Whether to include <see cref="WikiStartAirport"/></param>
+        /// <param name="incFinishAirport">Whether to include <see cref="WikiFinishAirport"/></param>
+        static internal void SetOneWikiLegRouteImages(int startItemIndex, int finishItemIndex, bool incStartAirport, bool incFinishAirport)
+        {
+            List<List<int>> tiles = [];
+            List<List<int>> boundingBox = [];
+            List<List<int>> zoomInBoundingBox;
+
+            int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex, incStartAirport, incFinishAirport);
+            SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex, incStartAirport, incFinishAirport);
+            OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
+            int legNo = 1;
+            if (!incStartAirport)
+            {
+                legNo = startItemIndex + 2; // start airort leg is 1, next leg is 2 (startItemIndex = 0 + 2)
+            }
+            Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}");
+            Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}");
+            zoomInBoundingBox = Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}", zoom, 2);
+            Drawing.ConvertImageformat($"LegRoute_{legNo:00}", "png", "jpg");
+
+            Drawing.MontageTiles(zoomInBoundingBox, zoom, $"LegRoute_zoom1_{legNo:00}");
+        }
+
+        #endregion
+
         #region Populating wikiTour
 
         /// <summary>
@@ -294,7 +448,7 @@ namespace P3D_Scenario_Generator
         static internal void PopulateWikiTour(int tableNo, ListBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance)
         {
             wikiTour.Clear();
-            bool finished = PopulateWikiTourOneItem(tableNo, route, tourStartItem, tourFinishItem);
+            bool finished = PopulateWikiTourOneItem(tableNo, tourStartItem, tourFinishItem);
             if (!finished)
             {
                 PopulateWikiTourMultipleItems(tableNo, route, tourStartItem, tourFinishItem);
@@ -311,7 +465,7 @@ namespace P3D_Scenario_Generator
         /// <param name="tourStartItem">User specified first item of tour</param>
         /// <param name="tourFinishItem">User specified last item of tour</param>
         /// <returns>True if this case applies</returns>
-        static internal bool PopulateWikiTourOneItem(int tableNo, ListBox.ObjectCollection route, object tourStartItem, object tourFinishItem)
+        static internal bool PopulateWikiTourOneItem(int tableNo, object tourStartItem, object tourFinishItem)
         {
             int tourStartItemNo = GetWikiRouteLegFirstItemNo(tourStartItem.ToString());
             int tourFinishItemNo = GetWikiRouteLegFirstItemNo(tourFinishItem.ToString());
@@ -413,119 +567,6 @@ namespace P3D_Scenario_Generator
             wikiItem.Add(wikiPage[tableNo][itemNo][latitude]);
             wikiItem.Add(wikiPage[tableNo][itemNo][longitude]);
             return wikiItem;
-        }
-
-        #endregion
-
-        #region SetWikiTour region
-
-        static internal void SetWikiTour()
-        {
-            SetWikiAirports();
-            SetWikiOSMImages();
-        }
-
-        static internal void SetWikiAirports()
-        {
-            Coordinate coordFirstItem = Coordinate.Parse($"{wikiTour[0][latitude]} {wikiTour[0][longitude]}");
-            WikiStartAirport = Runway.GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble());
-            Coordinate coordStartAirport = Coordinate.Parse($"{WikiStartAirport.AirportLat} {WikiStartAirport.AirportLon}");
-            WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
-
-            Coordinate coordLastItem = Coordinate.Parse($"{wikiTour[^1][latitude]} {wikiTour[^1][longitude]}");
-            WikiFinishAirport = Runway.GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble());
-            Coordinate coordFinishAirport = Coordinate.Parse($"{WikiFinishAirport.AirportLat} {WikiFinishAirport.AirportLon}");
-            WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
-        }
-
-        static internal void SetWikiOSMImages()
-        {
-            SetWikiOverviewImage();
-            SetWikiLegRoutesImages();
-        }
-
-        static internal void SetWikiOverviewImage()
-        {
-            List<List<int>> tiles = [];
-            List<List<int>> boundingBox = [];
-            int zoom = GetBoundingBoxZoom(tiles, 2, 2, 0, wikiTour.Count - 1, true, true);
-            SetWikiOSMtiles(tiles, zoom, 0, wikiTour.Count - 1, true, true);
-            OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
-            Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
-            Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
-            Drawing.MakeSquare(boundingBox, "Charts_01", zoom, 2);
-            Drawing.ConvertImageformat("Charts_01", "png", "jpg");
-        }
-
-        static internal void SetWikiLegRoutesImages()
-        {
-            // First leg is from start airport to first item
-            SetWikiLegRouteImages(0, 0, true, false);
-
-            // Middle legs which may be zero if only one item
-            for (int itemNo = 0; itemNo <= wikiTour.Count - 2; itemNo++)
-            {
-                SetWikiLegRouteImages(itemNo, itemNo + 1, false, false);
-            }
-
-            // Last leg is from last item to finish airport
-            SetWikiLegRouteImages(wikiTour.Count - 1, wikiTour.Count - 1, false, true);
-        }
-
-        static internal void SetWikiLegRouteImages(int startItemNo, int finishItemNo, bool incStartAirport, bool incFinishAirport)
-        {
-            List<List<int>> tiles = [];
-            List<List<int>> boundingBox = [];
-
-            int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemNo, finishItemNo, incStartAirport, incFinishAirport);
-            SetWikiOSMtiles(tiles, zoom, startItemNo, finishItemNo, incStartAirport, incFinishAirport);
-            OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
-            int legNo = 1;
-            if (!incStartAirport)
-            {
-                legNo = startItemNo + 2;
-            }
-            Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}");
-            Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}");
-            Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}", zoom, 2);
-            Drawing.ConvertImageformat($"LegRoute_{legNo:00}", "png", "jpg");
-        }
-
-        static internal int GetBoundingBoxZoom(List<List<int>> tiles, int tilesWidth, int tilesHeight, 
-            int startItemNo, int finishItemNo, bool incStartAirport, bool incFinishAirport)
-        {
-            List<List<int>> boundingBox = [];
-            for (int zoom = 2; zoom <= 18; zoom++)
-            {
-                tiles.Clear();
-                SetWikiOSMtiles(tiles, zoom, startItemNo, finishItemNo, incStartAirport, incFinishAirport);
-                boundingBox.Clear();
-                OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
-                if ((boundingBox[xAxis].Count > tilesWidth) || (boundingBox[yAxis].Count > tilesHeight))
-                {
-                    return zoom - 1;
-                }
-            }
-            return 18;
-        }
-
-        // Finds OSM tile numbers and offsets for a Wiki list (all items plus airports, or a pair of items) 
-        static internal void SetWikiOSMtiles(List<List<int>> tiles, int zoom, int startItemNo, int finishItemNo, 
-            bool incStartAirport, bool incFinishAirport)
-        {
-            tiles.Clear();
-            if (incStartAirport)
-            {
-                tiles.Add(OSM.GetOSMtile(WikiStartAirport.AirportLon.ToString(), WikiStartAirport.AirportLat.ToString(), zoom));
-            }
-            for (int itemNo = startItemNo; itemNo <= finishItemNo; itemNo++)
-            {
-                tiles.Add(OSM.GetOSMtile(wikiTour[itemNo][longitude], wikiTour[itemNo][latitude], zoom));
-            }
-            if (incFinishAirport)
-            {
-                tiles.Add(OSM.GetOSMtile(WikiFinishAirport.AirportLon.ToString(), WikiFinishAirport.AirportLat.ToString(), zoom));
-            }
         }
 
         #endregion
