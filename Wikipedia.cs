@@ -13,6 +13,8 @@ namespace P3D_Scenario_Generator
         internal static int WikiDistance { get; private set; } // From start to finish airport
         internal static Params WikiStartAirport { get; private set; }
         internal static Params WikiFinishAirport { get; private set; }
+        internal static List<List<double>> WikiLegMapEdges { get; private set; } // Lat/Lon boundaries for each OSM montage leg image
+        internal static int north = 0, east = 1, south = 2, west = 3; // Used with WikiLegMapEdges to identify leg boundaries
         internal static List<List<List<string>>> wikiPage = []; // Table(s) of items scraped from user supplied Wikipedia URL
         internal static List<List<string>> wikiTour = []; // List of user selected Wikipedia items
         internal static int title = 0, link = 1, latitude = 2, longitude = 3; // Wikipedia item list indexes
@@ -423,14 +425,40 @@ namespace P3D_Scenario_Generator
             int legNo = 1;
             if (!incStartAirport)
             {
-                legNo = startItemIndex + 2; // start airort leg is 1, next leg is 2 (startItemIndex = 0 + 2)
+                legNo = startItemIndex + 2; // start airport leg is 1, next leg is 2 (startItemIndex = 0 + 2)
             }
             Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}");
             Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}");
-            zoomInBoundingBox = Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}", zoom, 2);
+            zoomInBoundingBox = Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, 2);
             Drawing.ConvertImageformat($"LegRoute_{legNo:00}", "png", "jpg");
 
-            Drawing.MontageTiles(zoomInBoundingBox, zoom, $"LegRoute_zoom1_{legNo:00}");
+            for (int inc = 1; inc <= 2; inc++)
+            {
+                SetWikiOSMtiles(tiles, zoom + inc, startItemIndex, finishItemIndex, incStartAirport, incFinishAirport);
+                Drawing.MontageTiles(zoomInBoundingBox, zoom + inc, $"LegRoute_{legNo:00}_zoom{inc + 1}");
+                Drawing.DrawRoute(tiles, zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}");
+                zoomInBoundingBox = Drawing.MakeSquare(zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}", zoom + inc, (int)Math.Pow(2, inc + 1));
+                Drawing.ConvertImageformat($"LegRoute_{legNo:00}_zoom{inc + 1}", "png", "jpg");
+            }
+
+            SetLegImageBoundaries(legNo, zoomInBoundingBox, zoom + 3);
+        }
+
+        /// <summary>
+        /// Calculates leg map image lat/lon boundaries 
+        /// </summary>
+        /// <param name="legNo">Leg numbers run from 0</param>
+        /// <param name="boundingBox">The OSM tile numbers for x and y axis that cover the set of coordinates depicted in an image</param>
+        /// <param name="zoom">The OSM tile zoom level for the boundingBox</param>
+        static internal void SetLegImageBoundaries(int legNo, List<List<int>> boundingBox, int zoom)
+        {
+            var latLonList = new List<double>();
+            int latitude = 0, longitude = 1;
+
+            // Get the lat/lon coordinates of top left corner of bounding box
+            latLonList = OSM.TileNoToLatLon(boundingBox[xAxis][0], boundingBox[yAxis][0], zoom);
+
+            // Get the lat/lon coordinates of top left corner of tile immediately below and right of bottom right corner of bounding box
         }
 
         #endregion

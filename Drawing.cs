@@ -78,21 +78,25 @@ namespace P3D_Scenario_Generator
         static internal List<List<int>> ZoomInNorthSouthWestEast(List<List<int>> boundingBox)
         {
             List<List<int>> zoomInBoundingBox = [];
-            zoomInBoundingBox[xAxis][0] = 2 * boundingBox[xAxis][0] + 1;
+            List<int> ewAxis = [];
+            ewAxis[0] = 2 * boundingBox[xAxis][0] + 1;
             for (int xIndex = 1; xIndex < boundingBox[xAxis].Count - 1; xIndex++)
             {
-                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex]);
-                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex] + 1);
+                ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
+                ewAxis.Add(2 * boundingBox[xAxis][xIndex] + 1);
             }
-            zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][^1]);
+            ewAxis.Add(2 * boundingBox[xAxis][^1]);
+            zoomInBoundingBox.Add(ewAxis);
 
-            zoomInBoundingBox[yAxis][0] = 2 * boundingBox[yAxis][0] + 1;
+            List<int> nsAxis = [];
+            nsAxis[0] = 2 * boundingBox[yAxis][0] + 1;
             for (int xIndex = 1; xIndex < boundingBox[yAxis].Count - 1; xIndex++)
             {
-                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex]);
-                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex] + 1);
+                nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
+                nsAxis.Add(2 * boundingBox[yAxis][xIndex] + 1);
             }
-            zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][^1]);
+            nsAxis.Add(2 * boundingBox[yAxis][^1]);
+            zoomInBoundingBox.Add(nsAxis);
             return zoomInBoundingBox;
         }
 
@@ -126,19 +130,23 @@ namespace P3D_Scenario_Generator
         static internal List<List<int>> ZoomInWestEast(List<List<int>> boundingBox)
         {
             List<List<int>> zoomInBoundingBox = [];
-            zoomInBoundingBox[xAxis][0] = 2 * boundingBox[xAxis][0] + 1;
+            List<int> ewAxis = [];
+            ewAxis[0] = 2 * boundingBox[xAxis][0] + 1;
             for (int xIndex = 1; xIndex < boundingBox[xAxis].Count - 1; xIndex++)
             {
-                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex]);
-                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex] + 1);
+                ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
+                ewAxis.Add(2 * boundingBox[xAxis][xIndex] + 1);
             }
-            zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][^1]);
+            ewAxis.Add(2 * boundingBox[xAxis][^1]);
+            zoomInBoundingBox.Add(ewAxis);
 
+            List<int> nsAxis = [];
             for (int xIndex = 0; xIndex < boundingBox[yAxis].Count; xIndex++)
             {
-                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex]);
-                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex] + 1);
+                nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
+                nsAxis.Add(2 * boundingBox[yAxis][xIndex] + 1);
             }
+            zoomInBoundingBox.Add(nsAxis);
             return zoomInBoundingBox;
         }
 
@@ -172,19 +180,23 @@ namespace P3D_Scenario_Generator
         static internal List<List<int>> ZoomInNorthSouth(List<List<int>> boundingBox)
         {
             List<List<int>> zoomInBoundingBox = [];
+            List<int> ewAxis = [];
             for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
             {
-                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex]);
-                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex] + 1);
+                ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
+                ewAxis.Add(2 * boundingBox[xAxis][xIndex] + 1);
             }
+            zoomInBoundingBox.Add(ewAxis);
 
-            zoomInBoundingBox[yAxis][0] = 2 * boundingBox[yAxis][0] + 1;
+            List<int> nsAxis = [];
+            nsAxis[0] = 2 * boundingBox[yAxis][0] + 1;
             for (int xIndex = 1; xIndex < boundingBox[yAxis].Count - 1; xIndex++)
             {
-                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex]);
-                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex] + 1);
+                nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
+                nsAxis.Add(2 * boundingBox[yAxis][xIndex] + 1);
             }
-            zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][^1]);
+            nsAxis.Add(2 * boundingBox[yAxis][^1]);
+            zoomInBoundingBox.Add(nsAxis);
             return zoomInBoundingBox;
         }
 
@@ -207,17 +219,21 @@ namespace P3D_Scenario_Generator
         static internal List<List<int>> ZoomInNorthOrSouth(List<List<int>> boundingBox)
         {
             List<List<int>> zoomInBoundingBox = [];
+            List<int> ewAxis = [];
             for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
             {
-                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex]);
-                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex] + 1);
+                ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
+                ewAxis.Add(2 * boundingBox[xAxis][xIndex] + 1);
             }
+            zoomInBoundingBox.Add(ewAxis);
 
+            List<int> nsAxis = [];
             for (int xIndex = 0; xIndex < boundingBox[yAxis].Count; xIndex++)
             {
-                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex]);
-                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex] + 1);
+                nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
+                nsAxis.Add(2 * boundingBox[yAxis][xIndex] + 1);
             }
+            zoomInBoundingBox.Add(nsAxis);
             return zoomInBoundingBox;
         }
 
@@ -240,17 +256,21 @@ namespace P3D_Scenario_Generator
         static internal List<List<int>> ZoomIn(List<List<int>> boundingBox)
         {
             List<List<int>> zoomInBoundingBox = [];
+            List<int> ewAxis = [];
             for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
             {
-                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex]);
-                zoomInBoundingBox[xAxis].Add(2 * boundingBox[xAxis][xIndex] + 1);
+                ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
+                ewAxis.Add(2 * boundingBox[xAxis][xIndex] + 1);
             }
+            zoomInBoundingBox.Add(ewAxis);
 
+            List<int> nsAxis = [];
             for (int xIndex = 0; xIndex < boundingBox[yAxis].Count; xIndex++)
             {
-                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex]);
-                zoomInBoundingBox[yAxis].Add(2 * boundingBox[yAxis][xIndex] + 1);
+                nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
+                nsAxis.Add(2 * boundingBox[yAxis][xIndex] + 1);
             }
+            zoomInBoundingBox.Add(nsAxis);
             return zoomInBoundingBox;
         }
 

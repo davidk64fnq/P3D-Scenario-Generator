@@ -304,6 +304,26 @@ namespace P3D_Scenario_Generator
             yOffset = Convert.ToInt32(256 * (doubleTileY - intTileY));
             return Convert.ToInt32(Math.Floor(doubleTileY));
         }
+
+        /// <summary>
+        /// Converts xTile/yTile/zoom combination to a latitude and longitude 
+        /// </summary>
+        /// <param name="xTile">The OSM xTile number</param>
+        /// <param name="yTile">The OSM yTile number</param>
+        /// <param name="zoom">The OSM zoom level</param>
+        /// <returns>Latitude and longitude for top left corner of tile reference as +/- decimal degrees</returns>
+        internal static List<double> TileNoToLatLon(int xTile, int yTile, int zoom)
+        {
+            // using formula from https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
+            var latLonList = new List<double>();
+            int latitude = 0, longitude = 1;
+            int n = (int)Math.Pow(2, zoom);
+            latLonList[longitude] = xTile / n * 360.0 - 180.0;
+            double latitudeRadians = Math.Atan(Math.Sinh(Math.PI * (1 - 2 * yTile / n)));
+            latLonList[latitude] = latitudeRadians * 180.0 / Math.PI;
+            return latLonList;
+        }
+
         #endregion
     }
 }
