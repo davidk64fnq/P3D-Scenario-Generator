@@ -452,27 +452,48 @@ namespace P3D_Scenario_Generator
             SetGoal("Goal01", ScenarioHTML.overview.Objective);
             SetGoalResolutionAction("Goal01");
 
-            // Pass 1 - setup leg route windows, Wikipedia.WikiCount includes start and finish airports
-            // There is a leg route window to fly to each Wiki list item location and then to destination airport
-            // The leg route windows display at the start of each leg, index 0 is the start airport, index WikiCount - 1
-            // is the destination airport
-            // LegRoute_00 is the route to first item, LegRoute_WikiList.WikiCount - 2 is the route to destination airport
-            for (int itemNo = 0; itemNo <= Wikipedia.WikiCount - 2; itemNo++)
+            // Setup leg route window, Wikipedia.WikiCount includes start and finish airports
+            // There are leg route images to fly to each Wiki list item location and then to destination airport
+            // The leg route images display at the start of each leg, index 0 is the start airport, index WikiCount - 1
+            // is the destination airport. LegRoute_01 is the route to first item, LegRoute_WikiList.WikiCount - 1
+            // is the route to destination airport.
+            // Create leg window object 
+            SetUIPanelWindow(0, "UIpanelWindowLeg", "False", "True", "", $"images\\Wikipedia.html", "False", "False");
+
+            // Create HTML, JavaScript and CSS files for leg window objects
+            SetWikiTourHTML();
+            SetWikiTourJS();
+            SetWikiTourCSS();
+
+            // Create leg window open/close actions
+            string[] windowDimensions = ["515", "585"];
+            SetOpenWindowAction(0, "UIPanelWindow", "UIpanelWindowLeg", windowDimensions);
+            SetCloseWindowAction(0, "UIPanelWindow", "UIpanelWindowLeg");
+
+            // Pass 1 - setup proximity triggers, there is a trigger for each wiki item location
+            // Each trigger updates leg route images. ProximityTrigger01 is the first wiki item trigger,
+            // Wikipedia.WikiCount - 2 is the last wiki item trigger
+            for (int legNo = 1; legNo <= Wikipedia.WikiCount - 2; legNo++)
             {
-                // Create leg window object 
-                SetUIPanelWindow(itemNo, "UIpanelWindowLeg", "False", "True", "", $"images\\LegRoute_{itemNo:00}.html", "False", "False");
+                // Create cylinder area objects to put over each photo location
+                SetCylinderArea(legNo, "CylinderArea", "0.0,0.0,0.0", "300", "18520.0", "None");
+                string pwp = GetWikiItemWorldPosition(legNo - 1);
+                AttachedWorldPosition awp = GetAttachedWorldPosition(pwp, "True");
+                SetAttachedWorldPosition("CylinderArea", $"CylinderArea{legNo:00}", awp);
 
-                // Create HTML, JavaScript and CSS files for leg window objects
-                SetPhotoTourLegRouteHTML(itemNo);
-                SetPhotoTourLegRouteJS(itemNo);
-                SetPhotoTourLegRouteCSS();
+                // Create proximity trigger 
+                SetProximityTrigger(legNo, "ProximityTrigger", "False");
+                SetProximityTriggerArea(legNo, "CylinderArea", $"CylinderArea{legNo:00}", "ProximityTrigger");
 
-                // Create leg window open/close actions
-                SetOpenWindowAction(itemNo, "UIPanelWindow", "UIpanelWindowLeg", GetPhotoLegDimensions());
-                SetCloseWindowAction(itemNo, "UIPanelWindow", "UIpanelWindowLeg");
+                // Create proximity trigger actions to activate and deactivate as required
+                SetObjectActivationAction(legNo, "ProximityTrigger", "ProximityTrigger", "ActProximityTrigger", "True");
+                SetObjectActivationAction(legNo, "ProximityTrigger", "ProximityTrigger", "DeactProximityTrigger", "False");
+
+                // Add deactivate proximity trigger action as on enter event to proximity trigger
+                SetProximityTriggerOnEnterAction(legNo, "ObjectActivationAction", "DeactProximityTrigger", legNo, "ProximityTrigger");
             }
 
-
+            
         }
 
         static private void WriteXML()
@@ -621,6 +642,12 @@ namespace P3D_Scenario_Generator
                 windowWidth = Parameters.MessageWindowWidth;
             double windowHeight = Gates.cellPixels * 4 + 1 + Gates.cellCapExtraPixels * 2 + 40 + 60;
 			return [windowWidth.ToString(), windowHeight.ToString()];
+        }
+
+        static private string GetWikiItemWorldPosition(int legNo)
+        {
+            int latitude = 2, longitude = 3; // Wikipedia item list indexes
+            return $"{Wikipedia.WikiTour[legNo][latitude]},{Wikipedia.WikiTour[legNo][longitude]},+0.0";
         }
 
         static private void SetAirportLandingTrigger(string descr, string landingType, string activated, string airportIdent)
@@ -1119,6 +1146,57 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow.Add(upw);
             else
                 simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow = [upw];
+        }
+
+        static private void SetWikiTourCSS()
+        {
+            string legRouteCSS;
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleWikipedia.css";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleWikipedia.css");
+            StreamReader reader = new(stream);
+            legRouteCSS = reader.ReadToEnd();
+            File.WriteAllText(saveLocation, legRouteCSS);
+            stream.Dispose();
+        }
+
+        static private void SetWikiTourJS()
+        {
+            string wikipediaJS;
+            int north = 0, east = 1, south = 2, west = 3; // Used with WikiLegMapEdges to identify leg boundaries
+
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsWikipedia.js";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipedia.js");
+            StreamReader reader = new(stream);
+            wikipediaJS = reader.ReadToEnd();
+            string mapNorth = Wikipedia.WikiLegMapEdges[0][north].ToString();
+            string mapEast = Wikipedia.WikiLegMapEdges[0][east].ToString();
+            string mapSouth = Wikipedia.WikiLegMapEdges[0][south].ToString();
+            string mapWest = Wikipedia.WikiLegMapEdges[0][west].ToString();
+            for (int legNo = 1; legNo < Wikipedia.WikiCount - 1; legNo++)
+            {
+                mapNorth += ", " + Wikipedia.WikiLegMapEdges[legNo][north].ToString();
+                mapEast += ", " + Wikipedia.WikiLegMapEdges[legNo][east].ToString();
+                mapSouth += ", " + Wikipedia.WikiLegMapEdges[legNo][south].ToString();
+                mapWest += ", " + Wikipedia.WikiLegMapEdges[legNo][west].ToString();
+            }
+            wikipediaJS = wikipediaJS.Replace("mapNorthX", mapNorth);
+            wikipediaJS = wikipediaJS.Replace("mapEastX", mapEast);
+            wikipediaJS = wikipediaJS.Replace("mapSouthX", mapSouth);
+            wikipediaJS = wikipediaJS.Replace("mapWestX", mapWest);
+            File.WriteAllText(saveLocation, wikipediaJS);
+            stream.Dispose();
+        }
+
+        static private void SetWikiTourHTML()
+        {
+            string wikipediaHTML;
+
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\Wikipedia.html";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.Wikipedia.html");
+            StreamReader reader = new(stream);
+            wikipediaHTML = reader.ReadToEnd();
+            File.WriteAllText(saveLocation, wikipediaHTML);
+            stream.Dispose();
         }
 
         #endregion

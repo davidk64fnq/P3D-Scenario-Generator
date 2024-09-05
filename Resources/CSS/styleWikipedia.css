@@ -1,0 +1,19 @@
+body {
+	background-color: rgb(240, 248, 255);
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+#mapDiv {
+	height: 500;
+	width: 500;
+}
+#buttonDiv {
+	padding: 10px;
+}
+#roadMapZoom2, #roadMapZoom4, #showButton, #zoom1Button {
+	display: none;
+}
+#plane {
+	position: absolute;
+}

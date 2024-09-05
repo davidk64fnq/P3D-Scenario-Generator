@@ -14,18 +14,17 @@ namespace P3D_Scenario_Generator
         internal static Params WikiStartAirport { get; private set; }
         internal static Params WikiFinishAirport { get; private set; }
         internal static List<List<double>> WikiLegMapEdges { get; private set; } // Lat/Lon boundaries for each OSM montage leg image
-        internal static int north = 0, east = 1, south = 2, west = 3; // Used with WikiLegMapEdges to identify leg boundaries
-        internal static List<List<List<string>>> wikiPage = []; // Table(s) of items scraped from user supplied Wikipedia URL
-        internal static List<List<string>> wikiTour = []; // List of user selected Wikipedia items
+        internal static List<List<List<string>>> WikiPage { get; private set; } // Table(s) of items scraped from user supplied Wikipedia URL
+        internal static List<List<string>> WikiTour { get; private set; } // List of user selected Wikipedia items
         internal static int title = 0, link = 1, latitude = 2, longitude = 3; // Wikipedia item list indexes
         internal static int xAxis = 0, yAxis = 1; // Used in bounding box to denote lists that store OSM xTile and yTile reference numbers
 
-        #region Populating wikiPage
+        #region Populating WikiPage
 
         /// <summary>
         /// Parses user supplied URL for table(s) identified by class='sortable wikitable'.
         /// Using specified column extracts items that have a title and link. The link must
-        /// supply latitude and longitude. Stores items in <see cref="wikiPage"/>.
+        /// supply latitude and longitude. Stores items in <see cref="WikiPage"/>.
         /// </summary>
         /// <param name="wikiURL">User supplied Wikipedia URL</param>
         /// <param name="columnNo">User supplied column number of items in table</param>
@@ -33,7 +32,7 @@ namespace P3D_Scenario_Generator
         {
             string message = $"Reading {wikiURL} and column {columnNo}, will advise when complete";
             MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            wikiPage.Clear();
+            WikiPage = [];
             HtmlAgilityPack.HtmlDocument htmlDoc = HttpRoutines.GetWebDoc(wikiURL);
             HtmlNodeCollection tables = null;
             HtmlNodeCollection rows = null;
@@ -56,7 +55,7 @@ namespace P3D_Scenario_Generator
                     }
                     if (curTable.Count > 0)
                     {
-                        wikiPage.Add(curTable);
+                        WikiPage.Add(curTable);
                     }
                 }
             }
@@ -65,11 +64,11 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Stores one item in a table of <see cref="wikiPage"/>. Item includes a title, URL to Wikipedia item page 
+        /// Stores one item in a table of <see cref="WikiPage"/>. Item includes a title, URL to Wikipedia item page 
         /// and latitude and longitude.
         /// </summary>
         /// <param name="cell">The cell in a table row containing item title and hyperlink</param>
-        /// <param name="curTable">The current table being populated in <see cref="wikiPage"/></param>
+        /// <param name="curTable">The current table being populated in <see cref="WikiPage"/></param>
         static internal void ReadWikiCell(HtmlNode cell, List<List<string>> curTable)
         {
             List<string> wikiItem = [];
@@ -93,9 +92,9 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Checks that the item hyperlink is pointing to a page with lat/long coordinate in expected place
-        /// and retrieves them for storage in a table in <see cref="wikiPage"/>.
+        /// and retrieves them for storage in a table in <see cref="WikiPage"/>.
         /// </summary>
-        /// <param name="curRow">The current row in table being populated in <see cref="wikiPage"/></param>
+        /// <param name="curRow">The current row in table being populated in <see cref="WikiPage"/></param>
         /// <returns></returns>
         static internal bool GetWikiItemCoordinates(List<string> curRow)
         {
@@ -144,7 +143,7 @@ namespace P3D_Scenario_Generator
         #region Form routines - populate UI, list of tables and route for selected table
 
         /// <summary>
-        /// Creates a summary string for each table in <see cref="wikiPage"/> in the form:
+        /// Creates a summary string for each table in <see cref="WikiPage"/> in the form:
         /// <para>[0] first item description ... [^1] last item description (number of items)</para>
         /// </summary>
         /// <returns>List of table summary strings</returns>
@@ -152,15 +151,15 @@ namespace P3D_Scenario_Generator
         {
             var list = new List<string>();
             string tableDesc;
-            for (int tableNo = 0; tableNo < wikiPage.Count; tableNo++)
+            for (int tableNo = 0; tableNo < WikiPage.Count; tableNo++)
             {
-                if (wikiPage[tableNo].Count == 1)
+                if (WikiPage[tableNo].Count == 1)
                 {
-                    tableDesc = $"{wikiPage[tableNo][0][title]} (one item)";
+                    tableDesc = $"{WikiPage[tableNo][0][title]} (one item)";
                 }
                 else 
                 {
-                    tableDesc = $"{wikiPage[tableNo][0][title]} ... {wikiPage[tableNo][^1][title]} ({wikiPage[tableNo].Count} items)";
+                    tableDesc = $"{WikiPage[tableNo][0][title]} ... {WikiPage[tableNo][^1][title]} ({WikiPage[tableNo].Count} items)";
                 }
                 list.Add(tableDesc);
             }
@@ -168,15 +167,15 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Creates a route (non-optimal) for a table in <see cref="wikiPage"/> 
+        /// Creates a route (non-optimal) for a table in <see cref="WikiPage"/> 
         /// </summary>
-        /// <param name="tableNo">The table in <see cref="wikiPage"/></param>
+        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
         /// <returns>List of route leg summary strings</returns>
         static internal List<string> CreateWikiTableRoute(int tableNo)
         {
-            int[,] wikiTableCost = new int[wikiPage[tableNo].Count, wikiPage[tableNo].Count]; // Matrix of distances between items in miles
+            int[,] wikiTableCost = new int[WikiPage[tableNo].Count, WikiPage[tableNo].Count]; // Matrix of distances between items in miles
             List<string> route = []; // Route leg summary strings
-            bool[] itemsVisited = new bool[wikiPage[tableNo].Count]; // Track addition of items to route as it's built
+            bool[] itemsVisited = new bool[WikiPage[tableNo].Count]; // Track addition of items to route as it's built
             int firstRouteItem = 0; // Track first item of route as it's built
             int lastRouteItem; // Track last item of route as it's built
             int itemVisitedCount; // Track how many items have been added to route as it's built
@@ -189,7 +188,7 @@ namespace P3D_Scenario_Generator
             lastRouteItem = GetNearesetWikiItem(0, wikiTableCost, itemsVisited);
             AddLegToRoute(route, tableNo, wikiTableCost, 0, firstRouteItem, lastRouteItem, itemsVisited, lastRouteItem, ref itemVisitedCount);
 
-            while (itemVisitedCount < wikiPage[tableNo].Count)
+            while (itemVisitedCount < WikiPage[tableNo].Count)
             {
                 // Find closest item to either end of current route and include in route, either as a new first leg or new last leg
                 int nearestToFirstRouteItem = GetNearesetWikiItem(firstRouteItem, wikiTableCost, itemsVisited);
@@ -216,7 +215,7 @@ namespace P3D_Scenario_Generator
         /// <para>[startItem] startItem description ... [finishItem] finishItem description (number of miles)</para>
         /// </summary>
         /// <param name="route">Route leg summary strings</param>
-        /// <param name="tableNo">The table in <see cref="wikiPage"/></param>
+        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
         /// <param name="wikiTableCost">Matrix of distances between items in miles</param>
         /// <param name="insertionPt">New leg is inserted at front or added to end of route</param>
         /// <param name="startItem">Start item for new leg</param>
@@ -229,13 +228,13 @@ namespace P3D_Scenario_Generator
         {
             if (insertionPt > route.Count - 1)
             {
-                route.Add($"[{startItem}] {wikiPage[tableNo][startItem][title]} ... [{finishItem}] {wikiPage[tableNo][finishItem][title]} " +
+                route.Add($"[{startItem}] {WikiPage[tableNo][startItem][title]} ... [{finishItem}] {WikiPage[tableNo][finishItem][title]} " +
                     $"({wikiTableCost[startItem, finishItem]} miles)");
             }
             else
             {
-                route.Insert(insertionPt, $"[{startItem}] {wikiPage[tableNo][startItem][title]} ... " +
-                    $"[{finishItem}] {wikiPage[tableNo][finishItem][title]} ({wikiTableCost[startItem, finishItem]} miles)");
+                route.Insert(insertionPt, $"[{startItem}] {WikiPage[tableNo][startItem][title]} ... " +
+                    $"[{finishItem}] {WikiPage[tableNo][finishItem][title]} ({wikiTableCost[startItem, finishItem]} miles)");
             }
             itemVisitedCount++;
             itemsVisited[newItem] = true;
@@ -266,16 +265,16 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Creates a matrix of distances between items in measured in miles
         /// </summary>
-        /// <param name="tableNo">The table in <see cref="wikiPage"/></param>
+        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
         /// <param name="wikiTableCost">Matrix of distances between items in miles</param>
         static internal void SetWikiTableCosts(int tableNo, int[,] wikiTableCost)
         {
-            for (int row = 0; row < wikiPage[tableNo].Count; row++)
+            for (int row = 0; row < WikiPage[tableNo].Count; row++)
             {
-                for (int col = 0; col < wikiPage[tableNo].Count; col++)
+                for (int col = 0; col < WikiPage[tableNo].Count; col++)
                 {
-                    Coordinate coord1 = Coordinate.Parse($"{wikiPage[tableNo][row][latitude]} {wikiPage[tableNo][row][longitude]}");
-                    Coordinate coord2 = Coordinate.Parse($"{wikiPage[tableNo][col][latitude]} {wikiPage[tableNo][col][longitude]}");
+                    Coordinate coord1 = Coordinate.Parse($"{WikiPage[tableNo][row][latitude]} {WikiPage[tableNo][row][longitude]}");
+                    Coordinate coord2 = Coordinate.Parse($"{WikiPage[tableNo][col][latitude]} {WikiPage[tableNo][col][longitude]}");
                     wikiTableCost[row, col] = (int)coord1.Get_Distance_From_Coordinate(coord2).Miles;
                 }
             }
@@ -298,12 +297,12 @@ namespace P3D_Scenario_Generator
         /// </summary>
         static internal void SetWikiAirports()
         {
-            Coordinate coordFirstItem = Coordinate.Parse($"{wikiTour[0][latitude]} {wikiTour[0][longitude]}");
+            Coordinate coordFirstItem = Coordinate.Parse($"{WikiTour[0][latitude]} {WikiTour[0][longitude]}");
             WikiStartAirport = Runway.GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble());
             Coordinate coordStartAirport = Coordinate.Parse($"{WikiStartAirport.AirportLat} {WikiStartAirport.AirportLon}");
             WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
 
-            Coordinate coordLastItem = Coordinate.Parse($"{wikiTour[^1][latitude]} {wikiTour[^1][longitude]}");
+            Coordinate coordLastItem = Coordinate.Parse($"{WikiTour[^1][latitude]} {WikiTour[^1][longitude]}");
             WikiFinishAirport = Runway.GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble());
             Coordinate coordFinishAirport = Coordinate.Parse($"{WikiFinishAirport.AirportLat} {WikiFinishAirport.AirportLon}");
             WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
@@ -322,8 +321,8 @@ namespace P3D_Scenario_Generator
         {
             List<List<int>> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
             List<List<int>> boundingBox = []; // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
-            int zoom = GetBoundingBoxZoom(tiles, 2, 2, 0, wikiTour.Count - 1, true, true);
-            SetWikiOSMtiles(tiles, zoom, 0, wikiTour.Count - 1, true, true);
+            int zoom = GetBoundingBoxZoom(tiles, 2, 2, 0, WikiTour.Count - 1, true, true);
+            SetWikiOSMtiles(tiles, zoom, 0, WikiTour.Count - 1, true, true);
             OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
             Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
@@ -380,7 +379,7 @@ namespace P3D_Scenario_Generator
             }
             for (int itemNo = startItemIndex; itemNo <= finishItemIndex; itemNo++)
             {
-                tiles.Add(OSM.GetOSMtile(wikiTour[itemNo][longitude], wikiTour[itemNo][latitude], zoom));
+                tiles.Add(OSM.GetOSMtile(WikiTour[itemNo][longitude], WikiTour[itemNo][latitude], zoom));
             }
             if (incFinishAirport)
             {
@@ -393,17 +392,18 @@ namespace P3D_Scenario_Generator
         /// </summary>
         static internal void SetAllWikiLegRoutesImages()
         {
+            WikiLegMapEdges = [];
             // First leg is from start airport to first item
             SetOneWikiLegRouteImages(0, 0, true, false);
 
             // Middle legs which may be zero if only one item
-            for (int itemNo = 0; itemNo <= wikiTour.Count - 2; itemNo++)
+            for (int itemNo = 0; itemNo <= WikiTour.Count - 2; itemNo++)
             {
                 SetOneWikiLegRouteImages(itemNo, itemNo + 1, false, false);
             }
 
             // Last leg is from last item to finish airport
-            SetOneWikiLegRouteImages(wikiTour.Count - 1, wikiTour.Count - 1, false, true);
+            SetOneWikiLegRouteImages(WikiTour.Count - 1, WikiTour.Count - 1, false, true);
         }
 
         /// <summary>
@@ -427,10 +427,10 @@ namespace P3D_Scenario_Generator
             {
                 legNo = startItemIndex + 2; // start airport leg is 1, next leg is 2 (startItemIndex = 0 + 2)
             }
-            Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}");
-            Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}");
+            Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1");
+            Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
             zoomInBoundingBox = Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, 2);
-            Drawing.ConvertImageformat($"LegRoute_{legNo:00}", "png", "jpg");
+            Drawing.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg");
 
             for (int inc = 1; inc <= 2; inc++)
             {
@@ -441,24 +441,34 @@ namespace P3D_Scenario_Generator
                 Drawing.ConvertImageformat($"LegRoute_{legNo:00}_zoom{inc + 1}", "png", "jpg");
             }
 
-            SetLegImageBoundaries(legNo, zoomInBoundingBox, zoom + 3);
+            SetLegImageBoundaries(zoomInBoundingBox, zoom + 3);
         }
 
         /// <summary>
-        /// Calculates leg map image lat/lon boundaries 
+        /// Calculates leg map image lat/lon boundaries, assumes called in leg number sequence starting with first leg
         /// </summary>
         /// <param name="legNo">Leg numbers run from 0</param>
         /// <param name="boundingBox">The OSM tile numbers for x and y axis that cover the set of coordinates depicted in an image</param>
         /// <param name="zoom">The OSM tile zoom level for the boundingBox</param>
-        static internal void SetLegImageBoundaries(int legNo, List<List<int>> boundingBox, int zoom)
+        static internal void SetLegImageBoundaries(List<List<int>> boundingBox, int zoom)
         {
-            var latLonList = new List<double>();
+            List<double> legEdges = new(new double[4]);
+            int north = 0, east = 1, south = 2, west = 3; // Used with WikiLegMapEdges to identify leg boundaries
+            List<double> latLonList;
             int latitude = 0, longitude = 1;
 
             // Get the lat/lon coordinates of top left corner of bounding box
             latLonList = OSM.TileNoToLatLon(boundingBox[xAxis][0], boundingBox[yAxis][0], zoom);
+            legEdges[north] = latLonList[latitude];
+            legEdges[west] = latLonList[longitude];
 
             // Get the lat/lon coordinates of top left corner of tile immediately below and right of bottom right corner of bounding box
+            latLonList = OSM.TileNoToLatLon(boundingBox[xAxis][^1] + 1, boundingBox[yAxis][^1] + 1, zoom);
+            legEdges[south] = latLonList[latitude];
+            legEdges[east] = latLonList[longitude];
+
+            // Assumes this method called in leg number sequence starting with first leg
+            WikiLegMapEdges.Add(legEdges);
         }
 
         #endregion
@@ -466,29 +476,29 @@ namespace P3D_Scenario_Generator
         #region Populating wikiTour
 
         /// <summary>
-        /// Populates wikiTour for selected table based on user specified start and finish items and current route
+        /// Populates WikiTour for selected table based on user specified start and finish items and current route
         /// </summary>
-        /// <param name="tableNo">The table in <see cref="wikiPage"/></param>
+        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
         /// <param name="route">Route leg summary strings</param>
         /// <param name="tourStartItem">User specified first item of tour</param>
         /// <param name="tourFinishItem">User specified last item of tour</param>
         /// <param name="tourDistance">The distance from first to last item in miles</param>
         static internal void PopulateWikiTour(int tableNo, ListBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance)
         {
-            wikiTour.Clear();
+            WikiTour = [];
             bool finished = PopulateWikiTourOneItem(tableNo, tourStartItem, tourFinishItem);
             if (!finished)
             {
                 PopulateWikiTourMultipleItems(tableNo, route, tourStartItem, tourFinishItem);
             }
-            WikiCount = wikiTour.Count + 2; // Wiki tour items plus two airports
+            WikiCount = WikiTour.Count + 2; // Wiki tour items plus two airports
             WikiDistance = int.Parse(tourDistance.Split(' ')[0]);
         }
 
         /// <summary>
         /// Handles case where user has selected a single item.
         /// </summary>
-        /// <param name="tableNo">The table in <see cref="wikiPage"/></param>
+        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
         /// <param name="route">Route leg summary strings</param>
         /// <param name="tourStartItem">User specified first item of tour</param>
         /// <param name="tourFinishItem">User specified last item of tour</param>
@@ -499,7 +509,7 @@ namespace P3D_Scenario_Generator
             int tourFinishItemNo = GetWikiRouteLegFirstItemNo(tourFinishItem.ToString());
             if (tourStartItemNo == tourFinishItemNo)
             {
-                wikiTour.Add(SetWikiItem(tableNo, tourStartItemNo));
+                WikiTour.Add(SetWikiItem(tableNo, tourStartItemNo));
                 return true;
             }
             return false;
@@ -508,14 +518,13 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Handles case where user has selected two or more items.
         /// </summary>
-        /// <param name="tableNo">The table in <see cref="wikiPage"/></param>
+        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
         /// <param name="route">Route leg summary strings</param>
         /// <param name="tourStartItem">User specified first item of tour</param>
         /// <param name="tourFinishItem">User specified last item of tour</param>
         /// <returns>True if this case applies</returns>
         static internal bool PopulateWikiTourMultipleItems(int tableNo, ListBox.ObjectCollection route, object tourStartItem, object tourFinishItem)
         {
-            wikiTour.Clear();
             int tourStartItemNo = GetWikiRouteLegFirstItemNo(tourStartItem.ToString());
             int tourFinishItemNo = GetWikiRouteLegFirstItemNo(tourFinishItem.ToString());
             int legStartItemNo, legFinishItemNo, startLegNo = 0;
@@ -529,11 +538,11 @@ namespace P3D_Scenario_Generator
                 legFinishItemNo = GetWikiRouteLegLastItemNo(routeLegs.Current.ToString());
                 if (tourStartItemNo == legStartItemNo)
                 {
-                    wikiTour.Add(SetWikiItem(tableNo, tourStartItemNo));
+                    WikiTour.Add(SetWikiItem(tableNo, tourStartItemNo));
                     startLegNo = legNo;
                     if (tourFinishItemNo == legFinishItemNo)
                     {
-                        wikiTour.Add(SetWikiItem(tableNo, tourFinishItemNo)); // tourStartItemNo and tourFinishItemNo were in same leg
+                        WikiTour.Add(SetWikiItem(tableNo, tourFinishItemNo)); // tourStartItemNo and tourFinishItemNo were in same leg
                         return false;
                     }
                     break;
@@ -546,10 +555,10 @@ namespace P3D_Scenario_Generator
                 routeLegs.MoveNext();
                 legStartItemNo = GetWikiRouteLegFirstItemNo(routeLegs.Current.ToString());
                 legFinishItemNo = GetWikiRouteLegLastItemNo(routeLegs.Current.ToString());
-                wikiTour.Add(SetWikiItem(tableNo, legStartItemNo));
+                WikiTour.Add(SetWikiItem(tableNo, legStartItemNo));
                 if (tourFinishItemNo == legFinishItemNo)
                 {
-                    wikiTour.Add(SetWikiItem(tableNo, tourFinishItemNo));
+                    WikiTour.Add(SetWikiItem(tableNo, tourFinishItemNo));
                     return false;
                 }
             }
@@ -581,19 +590,20 @@ namespace P3D_Scenario_Generator
             stringEnd = routeLeg.IndexOf('(') - 1;
             return GetWikiRouteLegFirstItemNo(routeLeg[stringBegin..stringEnd]);
         }
+
         /// <summary>
         /// Populates an item with title, link, latitude and longitude
         /// </summary>
-        /// <param name="tableNo">The table in <see cref="wikiPage"/></param>
-        /// <param name="itemNo">The item no reference in <see cref="wikiPage"/></param>
+        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
+        /// <param name="itemNo">The item no reference in <see cref="WikiPage"/></param>
         /// <returns>A populated item</returns>
         static internal List<string> SetWikiItem(int tableNo, int itemNo)
         {
             List<string> wikiItem = [];
-            wikiItem.Add(wikiPage[tableNo][itemNo][title]);
-            wikiItem.Add(wikiPage[tableNo][itemNo][link]);
-            wikiItem.Add(wikiPage[tableNo][itemNo][latitude]);
-            wikiItem.Add(wikiPage[tableNo][itemNo][longitude]);
+            wikiItem.Add(WikiPage[tableNo][itemNo][title]);
+            wikiItem.Add(WikiPage[tableNo][itemNo][link]);
+            wikiItem.Add(WikiPage[tableNo][itemNo][latitude]);
+            wikiItem.Add(WikiPage[tableNo][itemNo][longitude]);
             return wikiItem;
         }
 

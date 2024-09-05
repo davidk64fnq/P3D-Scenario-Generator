@@ -315,12 +315,13 @@ namespace P3D_Scenario_Generator
         internal static List<double> TileNoToLatLon(int xTile, int yTile, int zoom)
         {
             // using formula from https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
-            var latLonList = new List<double>();
-            int latitude = 0, longitude = 1;
-            int n = (int)Math.Pow(2, zoom);
-            latLonList[longitude] = xTile / n * 360.0 - 180.0;
+            // note tile numbers run from 0 .. (2 pow zoom - 1), passing 2 pow zoom, 2 pow zoom gives bottom right of tile
+            // (2 pow zoom - 1), (2 pow zoom - 1)
+            List<double> latLonList = [];
+            double n = Math.Pow(2, zoom);
             double latitudeRadians = Math.Atan(Math.Sinh(Math.PI * (1 - 2 * yTile / n)));
-            latLonList[latitude] = latitudeRadians * 180.0 / Math.PI;
+            latLonList.Add(latitudeRadians * 180.0 / Math.PI);
+            latLonList.Add(xTile / n * 360.0 - 180.0);
             return latLonList;
         }
 

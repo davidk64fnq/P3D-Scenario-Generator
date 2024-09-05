@@ -79,7 +79,7 @@ namespace P3D_Scenario_Generator
         {
             List<List<int>> zoomInBoundingBox = [];
             List<int> ewAxis = [];
-            ewAxis[0] = 2 * boundingBox[xAxis][0] + 1;
+            ewAxis.Add(2 * boundingBox[xAxis][0] + 1);
             for (int xIndex = 1; xIndex < boundingBox[xAxis].Count - 1; xIndex++)
             {
                 ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
@@ -89,7 +89,7 @@ namespace P3D_Scenario_Generator
             zoomInBoundingBox.Add(ewAxis);
 
             List<int> nsAxis = [];
-            nsAxis[0] = 2 * boundingBox[yAxis][0] + 1;
+            nsAxis.Add(2 * boundingBox[yAxis][0] + 1);
             for (int xIndex = 1; xIndex < boundingBox[yAxis].Count - 1; xIndex++)
             {
                 nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
@@ -131,13 +131,13 @@ namespace P3D_Scenario_Generator
         {
             List<List<int>> zoomInBoundingBox = [];
             List<int> ewAxis = [];
-            ewAxis[0] = 2 * boundingBox[xAxis][0] + 1;
-            for (int xIndex = 1; xIndex < boundingBox[xAxis].Count - 1; xIndex++)
+            ewAxis.Add(2 * boundingBox[xAxis][0] - 1);
+            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
             {
                 ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
                 ewAxis.Add(2 * boundingBox[xAxis][xIndex] + 1);
             }
-            ewAxis.Add(2 * boundingBox[xAxis][^1]);
+            ewAxis.Add(2 * boundingBox[xAxis][^1] + 2);
             zoomInBoundingBox.Add(ewAxis);
 
             List<int> nsAxis = [];
@@ -189,13 +189,13 @@ namespace P3D_Scenario_Generator
             zoomInBoundingBox.Add(ewAxis);
 
             List<int> nsAxis = [];
-            nsAxis[0] = 2 * boundingBox[yAxis][0] + 1;
-            for (int xIndex = 1; xIndex < boundingBox[yAxis].Count - 1; xIndex++)
+            nsAxis.Add(2 * boundingBox[yAxis][0] - 1);
+            for (int xIndex = 0; xIndex < boundingBox[yAxis].Count; xIndex++)
             {
                 nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
                 nsAxis.Add(2 * boundingBox[yAxis][xIndex] + 1);
             }
-            nsAxis.Add(2 * boundingBox[yAxis][^1]);
+            nsAxis.Add(2 * boundingBox[yAxis][^1] + 2);
             zoomInBoundingBox.Add(nsAxis);
             return zoomInBoundingBox;
         }
