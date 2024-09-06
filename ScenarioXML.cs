@@ -452,23 +452,25 @@ namespace P3D_Scenario_Generator
             SetGoal("Goal01", ScenarioHTML.overview.Objective);
             SetGoalResolutionAction("Goal01");
 
-            // Setup leg route window, Wikipedia.WikiCount includes start and finish airports
-            // There are leg route images to fly to each Wiki list item location and then to destination airport
-            // The leg route images display at the start of each leg, index 0 is the start airport, index WikiCount - 1
-            // is the destination airport. LegRoute_01 is the route to first item, LegRoute_WikiList.WikiCount - 1
-            // is the route to destination airport.
-            // Create leg window object 
-            SetUIPanelWindow(0, "UIpanelWindowLeg", "False", "True", "", $"images\\Wikipedia.html", "False", "False");
+            // Create scenario variable
+            SetScenarioVariable("ScenarioVariable01", "currentLegNo", "1");
+            SetScenarioVariableTriggerValue(0.0, 0, "ScenarioVariable01");
 
-            // Create HTML, JavaScript and CSS files for leg window objects
+            // Create script actions which reference scenario variable
+            SetWikiTourScriptActions();
+
+            // Create window object 
+            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", "", $"images\\Wikipedia.html", "False", "False");
+
+            // Create HTML, JavaScript and CSS files for window
             SetWikiTourHTML();
             SetWikiTourJS();
             SetWikiTourCSS();
 
-            // Create leg window open/close actions
-            string[] windowDimensions = ["515", "585"];
-            SetOpenWindowAction(0, "UIPanelWindow", "UIpanelWindowLeg", windowDimensions);
-            SetCloseWindowAction(0, "UIPanelWindow", "UIpanelWindowLeg");
+            // Create window open/close actions
+            string[] windowDimensions = ["527", "597"]; // 512 + 15/85
+            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions);
+            SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
 
             // Pass 1 - setup proximity triggers, there is a trigger for each wiki item location
             // Each trigger updates leg route images. ProximityTrigger01 is the first wiki item trigger,
@@ -493,7 +495,34 @@ namespace P3D_Scenario_Generator
                 SetProximityTriggerOnEnterAction(legNo, "ObjectActivationAction", "DeactProximityTrigger", legNo, "ProximityTrigger");
             }
 
-            
+            // Pass 2 - setup proximity triggers on enter actions, each trigger increments leg number scenario variable 
+            for (int legNo = 1; legNo <= Wikipedia.WikiCount - 2; legNo++)
+            {
+                // Add activate next gate proximity trigger action as event to proximity trigger
+                // legNo + 1 is next wiki item location, Wikipedia.WikiCount - 1 is destination airport
+                if (legNo + 1 < Wikipedia.WikiCount - 1)
+                    SetProximityTriggerOnEnterAction(legNo + 1, "ObjectActivationAction", "ActProximityTrigger", legNo, "ProximityTrigger");
+
+                // Increment gate number
+                SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", legNo, "ProximityTrigger");
+            }
+
+            // Create timer trigger to play audio introductions and open window when scenario starts
+            SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
+            SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
+            SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
+            SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
+            SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
+
+            // Create airport landing trigger which does goal resolution and closes window
+            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Wikipedia.WikiFinishAirport.IcaoId);
+            SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
+            SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
+            SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
+            SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
+
+            // Add activate airport landing trigger action as event to last proximity trigger 
+            SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", Wikipedia.WikiCount - 2, "ProximityTrigger");
         }
 
         static private void WriteXML()
@@ -647,7 +676,7 @@ namespace P3D_Scenario_Generator
         static private string GetWikiItemWorldPosition(int legNo)
         {
             int latitude = 2, longitude = 3; // Wikipedia item list indexes
-            return $"{Wikipedia.WikiTour[legNo][latitude]},{Wikipedia.WikiTour[legNo][longitude]},+0.0";
+            return $"{Wikipedia.WikiTour[legNo][latitude]}, {Wikipedia.WikiTour[legNo][longitude]},+0.0";
         }
 
         static private void SetAirportLandingTrigger(string descr, string landingType, string activated, string airportIdent)
@@ -1197,6 +1226,14 @@ namespace P3D_Scenario_Generator
             wikipediaHTML = reader.ReadToEnd();
             File.WriteAllText(saveLocation, wikipediaHTML);
             stream.Dispose();
+        }
+
+        static private void SetWikiTourScriptActions()
+        {
+            List<SimMissionScriptAction> saList = [];
+            saList.Add(new SimMissionScriptAction("ScriptAction01", "!lua local var currentLegNo = varget(\"S:currentLegNo\", \"NUMBER\") " +
+                "currentLegNo = currentLegNo + 1 varset(\"S:currentLegNo\", \"NUMBER\", currentLegNo)", GetGUID(), ""));
+            simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction = saList;
         }
 
         #endregion

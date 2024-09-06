@@ -5,13 +5,13 @@ body {
 	overflow: hidden;
 }
 #mapDiv {
-	height: 500;
-	width: 500;
+	height: 512px;
+	width: 512px;
 }
 #buttonDiv {
 	padding: 10px;
 }
-#roadMapZoom2, #roadMapZoom4, #showButton, #zoom1Button {
+#roadMapZoom2, #roadMapZoom3, #showButton {
 	display: none;
 }
 #plane {
