@@ -459,10 +459,11 @@ namespace P3D_Scenario_Generator
             // Create script actions which reference scenario variable
             SetWikiTourScriptActions();
 
-            // Create window object 
-            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", "", $"images\\Wikipedia.html", "False", "False");
+            // Create window objects 
+            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", "", $"images\\WikipediaOSM.html", "False", "False");
+            SetUIPanelWindow(2, "UIpanelWindow", "False", "True", "", $"images\\WikipediaItem.html", "False", "False");
 
-            // Create HTML, JavaScript and CSS files for window
+            // Create HTML, JavaScript and CSS files for windows
             SetWikiTourHTML();
             SetWikiTourJS();
             SetWikiTourCSS();
@@ -470,7 +471,10 @@ namespace P3D_Scenario_Generator
             // Create window open/close actions
             string[] windowDimensions = ["527", "597"]; // 512 + 15/85
             SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions);
-            SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
+            SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow"); 
+            windowDimensions = ["1020", "1000"]; // width and height
+            SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", windowDimensions);
+            SetCloseWindowAction(2, "UIPanelWindow", "UIpanelWindow");
 
             // Pass 1 - setup proximity triggers, there is a trigger for each wiki item location
             // Each trigger updates leg route images. ProximityTrigger01 is the first wiki item trigger,
@@ -510,6 +514,7 @@ namespace P3D_Scenario_Generator
             // Create timer trigger to play audio introductions and open window when scenario starts
             SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
             SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
+            SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow02", "TimerTrigger01");
             SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
             SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
             SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
@@ -517,6 +522,7 @@ namespace P3D_Scenario_Generator
             // Create airport landing trigger which does goal resolution and closes window
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Wikipedia.WikiFinishAirport.IcaoId);
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
+            SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow02", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
@@ -1190,13 +1196,12 @@ namespace P3D_Scenario_Generator
 
         static private void SetWikiTourJS()
         {
-            string wikipediaJS;
             int north = 0, east = 1, south = 2, west = 3; // Used with WikiLegMapEdges to identify leg boundaries
 
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsWikipedia.js";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipedia.js");
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsWikipediaOSM.js";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaOSM.js");
             StreamReader reader = new(stream);
-            wikipediaJS = reader.ReadToEnd();
+            string wikipediaJS = reader.ReadToEnd();
             string mapNorth = Wikipedia.WikiLegMapEdges[0][north].ToString();
             string mapEast = Wikipedia.WikiLegMapEdges[0][east].ToString();
             string mapSouth = Wikipedia.WikiLegMapEdges[0][south].ToString();
@@ -1214,15 +1219,27 @@ namespace P3D_Scenario_Generator
             wikipediaJS = wikipediaJS.Replace("mapWestX", mapWest);
             File.WriteAllText(saveLocation, wikipediaJS);
             stream.Dispose();
+
+            saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsWikipediaItem.js";
+            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaItem.js");
+            reader = new(stream);
+            wikipediaJS = reader.ReadToEnd();
+            File.WriteAllText(saveLocation, wikipediaJS);
+            stream.Dispose();
         }
 
         static private void SetWikiTourHTML()
         {
-            string wikipediaHTML;
-
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\Wikipedia.html";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.Wikipedia.html");
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\WikipediaItem.html";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.WikipediaItem.html");
             StreamReader reader = new(stream);
+            string wikipediaHTML = reader.ReadToEnd();
+            File.WriteAllText(saveLocation, wikipediaHTML);
+            stream.Dispose();
+
+            saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\WikipediaOSM.html";
+            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.WikipediaOSM.html");
+            reader = new(stream);
             wikipediaHTML = reader.ReadToEnd();
             File.WriteAllText(saveLocation, wikipediaHTML);
             stream.Dispose();

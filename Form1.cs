@@ -12,8 +12,8 @@ namespace P3D_Scenario_Generator
         public Form()
         {
             InitializeComponent();
-
             PrepareFormFields();
+            Cache.CheckCacheMonth();
         }
 
         #region Menu Tab

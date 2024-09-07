@@ -14,5 +14,11 @@
     <Setting Name="CruiseSpeed" Type="System.Double" Scope="User">
       <Value Profile="(Default)">63</Value>
     </Setting>
+    <Setting Name="CacheMonth" Type="System.String" Scope="User">
+      <Value Profile="(Default)">9-2024</Value>
+    </Setting>
+    <Setting Name="CacheMonthlyTotal" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">464</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

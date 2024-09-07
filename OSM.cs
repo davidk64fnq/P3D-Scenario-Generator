@@ -228,7 +228,7 @@ namespace P3D_Scenario_Generator
         {
             string imagePath = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
             string url = $"{tileServer}{zoom}/{xTileNo}/{yTileNo}.png{rapidapiKey}";
-            HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"{imagePath}{filename}");
+            Cache.GetOrCopyWebDoc($"{zoom}-{xTileNo}-{yTileNo}.png", url, Path.GetDirectoryName(Parameters.SaveLocation), $"{imagePath}{filename}");
         }
 
         static internal void DownloadOSMtileColumn(int xTileNo, int xIndex, List<List<int>> boundingBox, int zoom, string filename)
