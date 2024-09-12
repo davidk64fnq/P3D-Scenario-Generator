@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator
@@ -133,7 +134,7 @@ namespace P3D_Scenario_Generator
             // Create airport landing trigger and activation action 
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoId);
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
-            SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
+            SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger
@@ -158,7 +159,7 @@ namespace P3D_Scenario_Generator
             for (int photoNo = 0; photoNo <= PhotoTour.PhotoCount - 2; photoNo++)
             {
                 // Create leg window object 
-                SetUIPanelWindow(photoNo, "UIpanelWindowLeg", "False", "True", "", $"images\\LegRoute_{photoNo:00}.html", "False", "False");
+                SetUIPanelWindow(photoNo, "UIpanelWindowLeg", "False", "True", $"images\\LegRoute_{photoNo:00}.html", "False", "False");
 
                 // Create HTML, JavaScript and CSS files for leg window objects
                 SetPhotoTourLegRouteHTML(photoNo);
@@ -179,7 +180,7 @@ namespace P3D_Scenario_Generator
                 SetOneShotSoundAction(photoNo, "ThruHoop", "ThruHoop.wav");
 
                 // Create photo window object 
-                SetUIPanelWindow(photoNo, "UIpanelWindowPhoto", "False", "True", "", $"images\\Photo_{photoNo:00}.html", "False", "False");
+                SetUIPanelWindow(photoNo, "UIpanelWindowPhoto", "False", "True", $"images\\Photo_{photoNo:00}.html", "False", "False");
 
                 // Create HTML file for photo window object
                 SetPhotoTourPhotoHTML(photoNo);
@@ -247,7 +248,7 @@ namespace P3D_Scenario_Generator
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindowLeg{PhotoTour.PhotoCount - 2:00}", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindowPhoto{PhotoTour.PhotoCount - 2:00}", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
-            SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
+            SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger 
@@ -365,7 +366,7 @@ namespace P3D_Scenario_Generator
             }
 
             // Create  window object 
-            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", "", "images\\htmlSignWriting.html", "False", "False");
+            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", "images\\htmlSignWriting.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for window object
             SetSignWritingHTML();
@@ -389,7 +390,7 @@ namespace P3D_Scenario_Generator
 
             // Create airport landing trigger and activation action 
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoId);
-            SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
+            SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", "CloseUIpanelWindow01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
@@ -409,7 +410,7 @@ namespace P3D_Scenario_Generator
             SetGoalResolutionAction("Goal01");
 
             // Create sextant window object
-            SetUIPanelWindow(1, "CelestialSextant", "False", "True", "", "images\\htmlCelestialSextant.html", "False", "True");
+            SetUIPanelWindow(1, "CelestialSextant", "False", "True", "images\\htmlCelestialSextant.html", "False", "True");
 			SetOpenWindowAction(1, "UIPanelWindow", "CelestialSextant", ["986", "755"]);
             SetCloseWindowAction(1, "UIPanelWindow", "CelestialSextant");
 
@@ -439,7 +440,7 @@ namespace P3D_Scenario_Generator
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "True", Runway.destRwy.IcaoId);
             SetAirportLandingTriggerAction("CloseWindowAction", "CloseCelestialSextant01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
-            SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
+            SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
         }
 
         static private void SetWikiListWorldBaseFlightXML()
@@ -460,8 +461,8 @@ namespace P3D_Scenario_Generator
             SetWikiTourScriptActions();
 
             // Create window objects 
-            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", "", $"images\\WikipediaOSM.html", "False", "False");
-            SetUIPanelWindow(2, "UIpanelWindow", "False", "True", "", $"images\\WikipediaItem.html", "False", "False");
+            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\WikipediaOSM.html", "False", "False");
+            SetUIPanelWindow(2, "UIpanelWindow", "False", "True", $"images\\WikipediaItem.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for windows
             SetWikiTourHTML();
@@ -524,7 +525,7 @@ namespace P3D_Scenario_Generator
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow02", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
-            SetAirportLandingTriggerRunwayFilter("RunwayFilter01", Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
+            SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger 
@@ -537,6 +538,44 @@ namespace P3D_Scenario_Generator
 
             using StreamWriter writer = new(Parameters.SaveLocation.Replace("fxml", "xml"));
             xmlSerializer.Serialize(writer, simBaseDocumentXML);
+            writer.Close();
+
+            RemoveXMLNSattributes(Parameters.SaveLocation.Replace("fxml", "xml"));
+        }
+
+        /// <summary>
+        /// Removes xmlns:xsi and xmlns:xsd attributes from XML file, assumed to be on second line and in that order.
+        /// </summary>
+        /// <param name="filePath">The XML file to be processed</param>
+        static internal void RemoveXMLNSattributes(string filePath)
+        {
+            string attributeXSI = "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
+            string attributeXSD = "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"";
+            StreamReader sr = new(filePath);
+            StreamWriter sw = new(filePath + ".tmp");
+
+            // Leave first line unchanged
+            string line = sr.ReadLine();
+            sw.WriteLine(line);
+
+            // Remove attributes from second line
+            line = sr.ReadLine();
+            int indexXSI = line.IndexOf(attributeXSI);
+            int indexXSD = line.IndexOf(attributeXSD);
+            string newLine = line[0..indexXSI]; // Content before attributeXSI
+            newLine += line[(indexXSD + attributeXSD.Length)..]; // Add content after attributeXSD
+            sw.WriteLine(newLine);
+
+            // Leave remaining lines unchanged
+            while (line != null)
+            {
+                line = sr.ReadLine();
+                sw.WriteLine(line);
+            }
+            sr.Close();
+            sw.Close();
+            File.Copy(filePath + ".tmp", filePath, true);
+            File.Delete(filePath + ".tmp");
         }
 
         #region Object creation/editing utilities
@@ -707,9 +746,9 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].Actions = new Actions([or]);
         }
 
-		static private void SetAirportLandingTriggerRunwayFilter(string descr, string rwyNumber, string rwyDesignator, string tSearch)
+		static private void SetAirportLandingTriggerRunwayFilter(string rwyNumber, string rwyDesignator, string tSearch)
 		{
-			RunwayFilter rf = new(descr, rwyNumber, rwyDesignator);
+			RunwayFilter rf = new(rwyNumber, rwyDesignator);
 			int idIndex;
 			idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.FindIndex(o => o.Descr == tSearch);
 			simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].RunwayFilter = rf;
@@ -986,7 +1025,6 @@ namespace P3D_Scenario_Generator
             SimMissionRealismOverrides ro = new()
             {
                 Descr = "RealismOverrides",
-                UserTips = "UserSpecified",
                 CrashBehavior = "UserSpecified",
                 ATCMenuDisabled = "False",
                 FlightRealism = "UserSpecified",
@@ -1173,10 +1211,10 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions = new Actions([or]);
         }
 
-        static private void SetUIPanelWindow(int index, string descr, string locked, string mouseI, string flash, string panel, string docked, string keyboardI)
+        static private void SetUIPanelWindow(int index, string descr, string locked, string mouseI, string panel, string docked, string keyboardI)
         {
             descr = $"{descr}{index:00}";
-            SimMissionUIPanelWindow upw = new(descr, locked, mouseI, flash, GetGUID(), panel, docked, keyboardI);
+            SimMissionUIPanelWindow upw = new(descr, locked, mouseI, GetGUID(), panel, docked, keyboardI);
             if (simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow != null)
                 simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow.Add(upw);
             else
@@ -1197,8 +1235,9 @@ namespace P3D_Scenario_Generator
         static private void SetWikiTourJS()
         {
             int north = 0, east = 1, south = 2, west = 3; // Used with WikiLegMapEdges to identify leg boundaries
+            int link = 1; // Wikipedia item list indexes
 
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsWikipediaOSM.js";
+        string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsWikipediaOSM.js";
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaOSM.js");
             StreamReader reader = new(stream);
             string wikipediaJS = reader.ReadToEnd();
@@ -1224,6 +1263,14 @@ namespace P3D_Scenario_Generator
             stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaItem.js");
             reader = new(stream);
             wikipediaJS = reader.ReadToEnd();
+            string itemURLs = "\"https://en.wikipedia.org" + Wikipedia.WikiTour[0][link] + "\"";
+            for (int legNo = 1; legNo < Wikipedia.WikiCount - 2; legNo++)
+            {
+                itemURLs += ", " + "\"https://en.wikipedia.org" + Wikipedia.WikiTour[legNo][link] + "\"";
+            }
+            // double up last url to display while travelling from last item to destination airport
+            itemURLs += ", " + "\"https://en.wikipedia.org" + Wikipedia.WikiTour[Wikipedia.WikiCount - 3][link] + "\"";
+            wikipediaJS = wikipediaJS.Replace("itemURLsX", itemURLs);
             File.WriteAllText(saveLocation, wikipediaJS);
             stream.Dispose();
         }
@@ -2097,11 +2144,10 @@ namespace P3D_Scenario_Generator
 	[XmlRoot(ElementName = "SimMission.RunwayFilter")]
 	public class RunwayFilter
 	{
-		public RunwayFilter(string v1, string v2, string v3)
+		public RunwayFilter(string v1, string v2)
 		{
-			Descr = v1;
-			RunwayNumber = v2;
-			RunwayDesignator = v3;
+			RunwayNumber = v1;
+			RunwayDesignator = v2;
 		}
 
 		public RunwayFilter()
@@ -2121,16 +2167,15 @@ namespace P3D_Scenario_Generator
     [XmlRoot(ElementName = "SimMission.UIPanelWindow")]
     public class SimMissionUIPanelWindow
     {
-        public SimMissionUIPanelWindow(string v1, string v2, string v3, string v4, string v5, string v6, string v7, string v8)
+        public SimMissionUIPanelWindow(string v1, string v2, string v3, string v4, string v5, string v6, string v7)
         {
             Descr = v1;
             Locked = v2;
             HasMouseInteractivity = v3;
-            FlashFileName = v4;
-            InstanceId = v5;
-            UIPanelFileName = v6;
-            Docked = v7;
-            HasKeyboardInteractivity = v8;
+            InstanceId = v4;
+            UIPanelFileName = v5;
+            Docked = v6;
+            HasKeyboardInteractivity = v7;
         }
 
         public SimMissionUIPanelWindow()

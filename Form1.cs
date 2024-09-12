@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
-using CoordinateSharp;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace P3D_Scenario_Generator
@@ -68,14 +67,29 @@ namespace P3D_Scenario_Generator
 
         private void ButtonGenerateScenario_Click(object sender, EventArgs e)
         {
-            if (Parameters.SetParams() == false)
+            if (Parameters.SetParams())
             {
-                return;
+                DisplayStartMessage();
+                DoScenarioSpecificTasks();
+                Runway.SetRunway(Runway.startRwy, "start");
+                Runway.SetRunway(Runway.destRwy, "destination");
+                Gates.SetGates();
+                ScenarioFXML.GenerateFXMLfile();
+                ScenarioHTML.GenerateHTMLfiles();
+                ScenarioXML.GenerateXMLfile();
+                DisplayFinishMessage();
             }
-            string message = $"Creating scenario files in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - will confirm when complete";
+        }
+
+        private static void DisplayStartMessage()
+        {
             Cursor.Current = Cursors.WaitCursor;
+            string message = $"Creating scenario files in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - will confirm when complete";
             MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
+        }
+
+        private void DoScenarioSpecificTasks()
+        {
             if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
                 PhotoTour.SetRandomPhotoTour();
@@ -89,16 +103,6 @@ namespace P3D_Scenario_Generator
                 CelestialNav.GetAlmanacData();
                 CelestialNav.InitStars();
                 CelestialNav.CreateStarsDat();
-            }
-            else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
-            {
-                Wikipedia.SetWikiTour(ListBoxWikiTableNames.SelectedIndex, ListBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem,
-                    ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text);
-            }
-            Runway.SetRunway(Runway.startRwy, "start");
-            Runway.SetRunway(Runway.destRwy, "destination");
-            if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial])
-            {
                 string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\htmlCelestialSextant.html";
                 CelestialNav.SetCelestialSextantHTML(saveLocation);
                 saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
@@ -106,12 +110,17 @@ namespace P3D_Scenario_Generator
                 saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleCelestialSextant.css";
                 CelestialNav.SetCelestialSextantCSS(saveLocation);
             }
-            Gates.SetGates();
-            ScenarioFXML.GenerateFXMLfile();
-            ScenarioHTML.GenerateHTMLfiles();
-            ScenarioXML.GenerateXMLfile();
+            else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
+            {
+                Wikipedia.SetWikiTour(ListBoxWikiTableNames.SelectedIndex, ListBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem,
+                    ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text);
+            }
+        }
+
+        private static void DisplayFinishMessage()
+        {
             Cursor.Current = Cursors.Default;
-            message = $"Scenario files created in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - enjoy your flight!";
+            string message = $"Scenario files created in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - enjoy your flight!";
             MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -349,7 +358,7 @@ namespace P3D_Scenario_Generator
             int distStrStart, distStrFinish, legDistance, routeDistance = 0;
             for (int legNo = ComboBoxWikiStartingItem.SelectedIndex + 1; legNo <= ComboBoxWikiFinishingItem.SelectedIndex; legNo++)
             {
-                distStrStart = ListBoxWikiRoute.Items[legNo - 1].ToString().IndexOf('(') + 1;
+                distStrStart = ListBoxWikiRoute.Items[legNo - 1].ToString().LastIndexOf('(') + 1;
                 distStrFinish = ListBoxWikiRoute.Items[legNo - 1].ToString().IndexOf(" miles)");
                 legDistance = int.Parse(ListBoxWikiRoute.Items[legNo - 1].ToString()[distStrStart..distStrFinish]);
                 routeDistance += legDistance;

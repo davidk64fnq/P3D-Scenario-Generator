@@ -65,6 +65,11 @@ namespace P3D_Scenario_Generator
               fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
         }
 
+        /// <summary>
+        /// Copies form fields for chosen scenario into Parameter class fields for ease of access, 
+        /// some error checking, and creates scenario and images directories
+        /// </summary>
+        /// <returns>True if parameters okay and directories created</returns>
         static internal bool SetParams()
         {
             // General tab
@@ -158,6 +163,7 @@ namespace P3D_Scenario_Generator
                 string saveFolder = $"{form.TextBoxP3Dv5Files.Text}\\{form.TextBoxScenarioTitle.Text}";
                 SaveLocation = saveFolder + $"\\{form.TextBoxScenarioTitle.Text}.fxml";
                 Directory.CreateDirectory(saveFolder);
+                Directory.CreateDirectory($"{saveFolder}\\images");
                 return true;
             }
 

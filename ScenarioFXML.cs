@@ -171,6 +171,9 @@ namespace P3D_Scenario_Generator
 
             using StreamWriter writer = new(Parameters.SaveLocation);
             xmlSerializer.Serialize(writer, simBaseDocument);
+			writer.Close();
+
+            ScenarioXML.RemoveXMLNSattributes(Parameters.SaveLocation);
         }
 
 	}

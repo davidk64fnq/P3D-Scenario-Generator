@@ -53,11 +53,11 @@ function handleButtonChoices() {
 	if (changeZoom != zoomToggle){
 		zoomToggle = changeZoom;
 		if (zoomFactor == 1){
-			showZoom1Map()
-		} else if (zoomFactor == 2){
 			showZoom2Map()
-		} else{
+		} else if (zoomFactor == 2){
 			showZoom3Map()
+		} else{
+			showZoom1Map()
 		}
 	}
 }
