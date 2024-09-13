@@ -11,7 +11,7 @@ body {
 #buttonDiv {
 	padding: 10px;
 }
-#roadMapZoom2, #roadMapZoom3, #showButton {
+#roadMapZoom2, #roadMapZoom3 {
 	display: none;
 }
 #plane {
