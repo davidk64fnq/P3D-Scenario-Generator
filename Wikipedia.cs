@@ -16,6 +16,7 @@ namespace P3D_Scenario_Generator
         internal static List<List<double>> WikiLegMapEdges { get; private set; } // Lat/Lon boundaries for each OSM montage leg image
         internal static List<List<List<string>>> WikiPage { get; private set; } // Table(s) of items scraped from user supplied Wikipedia URL
         internal static List<List<string>> WikiTour { get; private set; } // List of user selected Wikipedia items
+
         internal static int title = 0, link = 1, latitude = 2, longitude = 3; // Wikipedia item list indexes
         internal static int xAxis = 0, yAxis = 1; // Used in bounding box to denote lists that store OSM xTile and yTile reference numbers
 
@@ -311,6 +312,7 @@ namespace P3D_Scenario_Generator
         static internal void SetWikiOSMImages()
         {
             SetWikiOverviewImage();
+            SetWikiLocationImage();
             SetAllWikiLegRoutesImages();
         }
 
@@ -327,7 +329,19 @@ namespace P3D_Scenario_Generator
             Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
             Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
             Drawing.MakeSquare(boundingBox, "Charts_01", zoom, 2);
-            Drawing.ConvertImageformat("Charts_01", "png", "jpg");
+        }
+
+        /// <summary>
+        /// Creates "chart_thumb.jpg" using an OSM tile that covers the starting airport
+        /// </summary>
+        static internal void SetWikiLocationImage()
+        {
+            List<List<int>> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
+            List<List<int>> boundingBox = []; // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
+            int zoom = 15;
+            SetWikiOSMtiles(tiles, zoom, 0, -1, true, false);
+            OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
+            Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
         }
 
         /// <summary>
@@ -587,7 +601,7 @@ namespace P3D_Scenario_Generator
         {
             int stringBegin, stringEnd;
             stringBegin = routeLeg.IndexOf("...") + 4;
-            stringEnd = routeLeg.IndexOf('(') - 1;
+            stringEnd = routeLeg.LastIndexOf('(') - 1;
             return GetWikiRouteLegFirstItemNo(routeLeg[stringBegin..stringEnd]);
         }
 

@@ -69,10 +69,17 @@ BODY
     width: 250px;
 }
 
-.SubSectionImage
+.SubSectionImageLocation
 {
-    height: 150px;
-    width: 250px;
+    height: 256px;
+    width: 256px;
+    border: 1px solid white;
+}
+
+.SubSectionImagePlane
+{
+    height: 128px;
+    width: 256px;
     border: 1px solid white;
 }
 

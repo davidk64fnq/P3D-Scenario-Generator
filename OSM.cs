@@ -1,8 +1,11 @@
 ﻿using CoordinateSharp;
-using ImageMagick;
 
 namespace P3D_Scenario_Generator
 {
+    /// <summary>
+    /// Provides methods for working with OSM map tiles, working out what square array of tiles are needed
+    /// to include a set of coordinates at maximum zoom, and downloading those tiles.
+    /// </summary>
     internal class OSM
     {
         internal static int xAxis = 0, yAxis = 1; // Used in bounding box to denote lists that store xTile and yTile reference numbers
@@ -12,10 +15,16 @@ namespace P3D_Scenario_Generator
         internal static int tileSize = 256; // All OSM tiles used in this program are 256x256 pixels
         internal static int boundingBoxTrimMargin = 15; // If tile coordinate is within this many pixels of bounding box edge, extra tiles added
 
-        // The bounding box is two lists of tile numbers, one for x axis the other y axis. The tile numbers
-        // will usually be consecutive within the bounds 0 .. (2 to exp zoom - 1). However it's possible for tiles grouped 
-        // across the meridian to have a sequence of x axis tile numbers that goes up to (2 to exp zoom - 1) and then continues
-        // from 0
+        /// <summary>
+        /// Creates bounding box of tiles needed at given zoom level to include all tiles in list. Each tile
+        /// coordinate must be more than boundingBoxTrimMargin pixels from any edge of the bounding box.
+        /// </summary>
+        /// <param name="tiles">A list of OSM tile references and their associated coordinate</param>
+        /// <param name="boundingBox">The bounding box is two lists of tile numbers, one for x axis the other y axis. 
+        /// The tile numbers will usually be consecutive within the bounds 0 .. (2 to exp zoom - 1). However it's 
+        /// possible for tiles grouped across the meridian to have a sequence of x axis tile numbers that goes up 
+        /// to (2 to exp zoom - 1) and then continues from 0</param>
+        /// <param name="zoom">The zoom level required for the bounding box</param>
         static internal void GetTilesBoundingBox(List<List<int>> tiles, List<List<int>> boundingBox, int zoom)
         {
             // Initialise boundingBox to the first tile
@@ -37,6 +46,12 @@ namespace P3D_Scenario_Generator
 
         #region Adding tiles to bounding box region
 
+        /// <summary>
+        /// Extends bounding box if newTile is not already included. 
+        /// </summary>
+        /// <param name="newTile">The tile to be added to bounding box</param>
+        /// <param name="boundingBox">The bounding box is two lists of tile numbers, one for x axis the other y axis</param>
+        /// <param name="zoom">The zoom level of the bounding box</param>
         static internal void AddTileToBoundingBox(List<int> newTile, List<List<int>> boundingBox, int zoom)
         {
             // New tile is above BB i.e. tileNo < boundingBox[yAxis][0]
@@ -66,6 +81,11 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// New tile is above BB i.e. tileNo less than boundingBox[yAxis][0]
+        /// </summary>
+        /// <param name="newTile">The tile to be added to bounding box</param>
+        /// <param name="boundingBox">The bounding box is two lists of tile numbers, one for x axis the other y axis</param>
         static internal void AddTileToBBnorth(List<int> newTile, List<List<int>> boundingBox)
         {
             // Insert extra tile No's at beginning of yAxis list
@@ -75,6 +95,11 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// New tile is below BB i.e. tileNo > boundingBox[yAxis][^1]
+        /// </summary>
+        /// <param name="newTile">The tile to be added to bounding box</param>
+        /// <param name="boundingBox">The bounding box is two lists of tile numbers, one for x axis the other y axis</param>
         static internal void AddTileToBBsouth(List<int> newTile, List<List<int>> boundingBox)
         {
             // Append extra tileNo's at end of yAxis list
@@ -84,6 +109,13 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// New tile is right of BB i.e. tileNo > boundingBox[xAxis][^1], determine whether to move righthand
+        /// side of bounding box further to the right (usual case) or lefthand side further to the left (across meridian)
+        /// </summary>
+        /// <param name="newTile">The tile to be added to bounding box</param>
+        /// <param name="boundingBox">The bounding box is two lists of tile numbers, one for x axis the other y axis</param>
+        /// <param name="zoom">The zoom level of the bounding box</param>
         static internal void AddTileToBBeast(List<int> newTile, List<List<int>> boundingBox, int zoom)
         {
             int distEast, distWest;
@@ -112,6 +144,13 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// New tile is left of BB i.e. tileNo less than boundingBox[xAxis][0], determine whether to move lefthand
+        /// side of bounding box further to the left (usual case) or righthand side further to the right (across meridian)
+        /// </summary>
+        /// <param name="newTile">The tile to be added to bounding box</param>
+        /// <param name="boundingBox">The bounding box is two lists of tile numbers, one for x axis the other y axis</param>
+        /// <param name="zoom">The zoom level of the bounding box</param>
         static internal void AddTileToBBwest(List<int> newTile, List<List<int>> boundingBox, int zoom)
         {
             int distEast, distWest;

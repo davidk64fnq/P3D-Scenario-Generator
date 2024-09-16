@@ -42,7 +42,10 @@ namespace P3D_Scenario_Generator
             string missionBriefHTML = SetMissionBriefHTML(missionBrief);
             File.WriteAllText($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}.htm", missionBriefHTML);
 
-            BingImages.CreateHTMLImages();
+            if (Parameters.SelectedScenario != nameof(ScenarioTypes.WikiList))
+            {
+                BingImages.CreateHTMLImages();
+            }
 
             CopyFiles();
         }
@@ -142,7 +145,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
                     overview.Briefing += $"{Runway.destRwy.Id} at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.destRwy.City}, {Runway.destRwy.Country}.";
-                    overview.Objective = "Take off and visit a series of photo locations before landing ";
+                    overview.Objective = "Take off and visit a series of Wikipedia list locations before landing ";
                     overview.Objective += $"at {Wikipedia.WikiFinishAirport.IcaoId}, runway {Wikipedia.WikiFinishAirport.Id}";
                     overview.Tips = "The early bird gets the worm, but the second mouse gets the cheese.";
                     break;
@@ -266,13 +269,25 @@ namespace P3D_Scenario_Generator
             }
             stream.Dispose();
 
-            // Copy PhotoTour leg route html aircraft image
+            // Copy aircraft image used in moving maps
             if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
             {
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
             }
             stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.aircraft.png");
             using (FileStream outputFileStream = new($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\aircraft.png", FileMode.Create))
+            {
+                stream.CopyTo(outputFileStream);
+            }
+            stream.Dispose();
+
+            // Copy header banner image
+            if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
+            {
+                Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
+            }
+            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.header.png");
+            using (FileStream outputFileStream = new($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\header.png", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
