@@ -42,7 +42,7 @@ namespace P3D_Scenario_Generator
             string missionBriefHTML = SetMissionBriefHTML(missionBrief);
             File.WriteAllText($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}.htm", missionBriefHTML);
 
-            if (Parameters.SelectedScenario != nameof(ScenarioTypes.WikiList))
+            if (Parameters.SelectedScenario != nameof(ScenarioTypes.WikiList) && Parameters.SelectedScenario != nameof(ScenarioTypes.Circuit))
             {
                 BingImages.CreateHTMLImages();
             }
@@ -164,6 +164,9 @@ namespace P3D_Scenario_Generator
             {
                 case nameof(ScenarioTypes.Circuit):
                 case nameof(ScenarioTypes.PhotoTour):
+                case nameof(ScenarioTypes.SignWriting):
+                case nameof(ScenarioTypes.Celestial):
+                case nameof(ScenarioTypes.WikiList):
                     missionBrief.title = overview.Title;
                     missionBrief.h1 = overview.Title;
                     missionBrief.h2Location = overview.Location;

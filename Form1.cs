@@ -90,7 +90,11 @@ namespace P3D_Scenario_Generator
 
         private void DoScenarioSpecificTasks()
         {
-            if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
+            if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Circuit])
+            {
+                Circuit.SetCircuit();
+            }
+            else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
                 PhotoTour.SetRandomPhotoTour();
             }

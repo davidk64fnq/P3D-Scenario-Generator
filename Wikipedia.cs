@@ -342,6 +342,14 @@ namespace P3D_Scenario_Generator
             SetWikiOSMtiles(tiles, zoom, 0, -1, true, false);
             OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
+            if (boundingBox[xAxis].Count != boundingBox[yAxis].Count)
+            {
+                Drawing.MakeSquare(boundingBox, "chart_thumb", zoom, 2);
+            }
+            if (boundingBox[xAxis].Count == 2)
+            {
+                Drawing.Resize("chart_thumb", 256);
+            }
         }
 
         /// <summary>

@@ -454,6 +454,13 @@ namespace P3D_Scenario_Generator
             return newTileNo;
         }
 
+        static internal void Resize(string filename, int size)
+        {
+            using MagickImage image = new($"{imagePath}{filename}");
+            image.Resize(256, 256);
+            image.Write($"{imagePath}{filename}");
+        }
+
         #endregion
     }
 }
