@@ -70,7 +70,7 @@ namespace P3D_Scenario_Generator
                 // Get meta data
                 GetBingMetadata(url, celestialImage);
 
-                // Check whether start position is in Bing image
+                // Check whether start position is in Bing imageURL
                 double lonDelta = celestialImage.eastEdge - celestialImage.westEdge;
                 double latDelta = celestialImage.northEdge - celestialImage.southEdge;
                 if ((CelestialNav.midairStartLon < (celestialImage.westEdge + lonDelta * 0.1)) || (CelestialNav.midairStartLon > (celestialImage.eastEdge - lonDelta * 0.1)) ||

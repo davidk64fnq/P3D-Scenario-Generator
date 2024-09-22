@@ -56,6 +56,7 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitHeightBase = new TextBox();
             TextBoxCircuitUpwind = new TextBox();
             buttonAircraft = new Button();
+            ListBoxWikiColumn = new ListBox();
             ButtonHelp = new Button();
             TabPageSettings = new TabPage();
             tableLayoutPanelSettings = new TableLayoutPanel();
@@ -125,7 +126,6 @@ namespace P3D_Scenario_Generator
             LabelWikiStartItem = new Label();
             ListBoxWikiRoute = new ListBox();
             LabelWikiRoute = new Label();
-            ListBoxWikiColumn = new ListBox();
             LabelWikiColumn = new Label();
             ListBoxWikiTableNames = new ListBox();
             LabelWikiTableNames = new Label();
@@ -407,6 +407,17 @@ namespace P3D_Scenario_Generator
             buttonAircraft.UseVisualStyleBackColor = true;
             buttonAircraft.Click += ButtonAircraft_Click;
             // 
+            // ListBoxWikiColumn
+            // 
+            ListBoxWikiColumn.FormattingEnabled = true;
+            ListBoxWikiColumn.ItemHeight = 15;
+            ListBoxWikiColumn.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
+            ListBoxWikiColumn.Location = new Point(662, 29);
+            ListBoxWikiColumn.Name = "ListBoxWikiColumn";
+            ListBoxWikiColumn.Size = new Size(97, 19);
+            ListBoxWikiColumn.TabIndex = 8;
+            toolTip1.SetToolTip(ListBoxWikiColumn, "Column in table(s) containing name of items");
+            // 
             // ButtonHelp
             // 
             ButtonHelp.Location = new Point(721, 513);
@@ -639,6 +650,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMaxNoLegs.TabIndex = 14;
             TextBoxPhotoMaxNoLegs.Text = "7";
             TextBoxPhotoMaxNoLegs.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoMaxNoLegs, "Maximum number of legs must between 2 and 18 inclusive and greater then or equal to minimum number of legs. Two legs would be starting airport to a single photo location then return to airport.\r\n");
             TextBoxPhotoMaxNoLegs.Validating += TextBoxInteger_Validating;
             // 
             // TextBoxPhotoMinNoLegs
@@ -649,6 +661,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMinNoLegs.TabIndex = 13;
             TextBoxPhotoMinNoLegs.Text = "3";
             TextBoxPhotoMinNoLegs.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoMinNoLegs, "Minimum number of legs must between 2 and 18 inclusive and less than or equal to maximum number of legs. Two legs would be starting airport to a single photo location then return to airport.");
             TextBoxPhotoMinNoLegs.Validating += TextBoxInteger_Validating;
             // 
             // label17
@@ -1160,17 +1173,6 @@ namespace P3D_Scenario_Generator
             LabelWikiRoute.Size = new Size(83, 15);
             LabelWikiRoute.TabIndex = 9;
             LabelWikiRoute.Text = "Visit Sequence";
-            // 
-            // ListBoxWikiColumn
-            // 
-            ListBoxWikiColumn.FormattingEnabled = true;
-            ListBoxWikiColumn.ItemHeight = 15;
-            ListBoxWikiColumn.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
-            ListBoxWikiColumn.Location = new Point(662, 29);
-            ListBoxWikiColumn.Name = "ListBoxWikiColumn";
-            ListBoxWikiColumn.Size = new Size(97, 19);
-            ListBoxWikiColumn.TabIndex = 8;
-            toolTip1.SetToolTip(ListBoxWikiColumn, "Column in table(s) containing name of items");
             // 
             // LabelWikiColumn
             // 

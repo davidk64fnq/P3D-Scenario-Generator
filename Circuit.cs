@@ -88,8 +88,8 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="tiles">List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile</param>
         /// <param name="zoom">The zoom level to get OSM tiles at</param>
-        /// <param name="startGateIndex">Index of first gate in circuit</param>
-        /// <param name="finishGateIndex">Index of last gate in circuit</param>
+        /// <param name="startItemIndex">Index of first gate in circuit</param>
+        /// <param name="finishItemIndex">Index of last gate in circuit</param>
         /// <param name="incStartAirport">Whether to include the start airport</param>
         /// <param name="incFinishAirport">Whether to include the finish airport</param>
         static internal void SetCircuitOSMtiles(List<List<int>> tiles, int zoom, int startItemIndex, int finishItemIndex, 

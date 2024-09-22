@@ -70,6 +70,7 @@ namespace P3D_Scenario_Generator
             if (Parameters.SetParams())
             {
                 DisplayStartMessage();
+                Drawing.DrawScenarioImages();
                 DoScenarioSpecificTasks();
                 Runway.SetRunway(Runway.startRwy, "start");
                 Runway.SetRunway(Runway.destRwy, "destination");
@@ -96,7 +97,7 @@ namespace P3D_Scenario_Generator
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
-                PhotoTour.SetRandomPhotoTour();
+                PhotoTour.SetPhotoTour();
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.SignWriting])
             {
@@ -233,26 +234,26 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMaxLegDist.Text = "10";
             TextBoxPhotoMinNoLegs.Text = "3";
             TextBoxPhotoMaxNoLegs.Text = "7";
-            TextBoxPhotoWindowSize.Text = "500";
+            TextBoxPhotoWindowSize.Text = "512";
             TextBoxPhotoMaxBearingChange.Text = "135";
             TextBoxPhotoHotspotRadius.Text = "1000";
         }
 
         static private bool ValidatePhotoIntegerParameters()
         {
-            if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) > 15)
+            if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) > 18)
             {
-                MessageBox.Show($"Minimum number of legs must be less than 16", "Photo Tour Scenario: minimum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Minimum number of legs must be less than 18", "Photo Tour Scenario: minimum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
-            if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) < 3)
+            if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) < 2)
             {
-                MessageBox.Show($"Minimum number of legs must be greater than 2", "Photo Tour Scenario: minimum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Minimum number of legs must be greater than 1", "Photo Tour Scenario: minimum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
-            if (Convert.ToInt32(form.TextBoxPhotoMaxNoLegs.Text) > 15)
+            if (Convert.ToInt32(form.TextBoxPhotoMaxNoLegs.Text) > 18)
             {
-                MessageBox.Show($"Maximum number of legs must be less than 16", "Photo Tour Scenario: maximum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Maximum number of legs must be less than 18", "Photo Tour Scenario: maximum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
             if (Convert.ToInt32(form.TextBoxPhotoMaxNoLegs.Text) < Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text))

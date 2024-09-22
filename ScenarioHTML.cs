@@ -228,7 +228,7 @@ namespace P3D_Scenario_Generator
 
         static private void CopyFiles()
         {
-            // Copy selected aircraft thumbnail image from P3D instal
+            // Copy selected aircraft thumbnail imageURL from P3D instal
             string aircraftImageSource = $"{Aircraft.GetImagename(Parameters.SelectedAircraft)}";
             string aircraftImageDest = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\Overview_01.jpg";
             if (File.Exists(aircraftImageSource))
@@ -272,7 +272,7 @@ namespace P3D_Scenario_Generator
             }
             stream.Dispose();
 
-            // Copy aircraft image used in moving maps
+            // Copy aircraft imageURL used in moving maps
             if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
             {
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
@@ -284,7 +284,7 @@ namespace P3D_Scenario_Generator
             }
             stream.Dispose();
 
-            // Copy header banner image
+            // Copy header banner imageURL
             if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
             {
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");

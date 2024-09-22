@@ -13,7 +13,7 @@ namespace P3D_Scenario_Generator
         internal static int WikiDistance { get; private set; } // From start to finish airport
         internal static Params WikiStartAirport { get; private set; }
         internal static Params WikiFinishAirport { get; private set; }
-        internal static List<List<double>> WikiLegMapEdges { get; private set; } // Lat/Lon boundaries for each OSM montage leg image
+        internal static List<List<double>> WikiLegMapEdges { get; private set; } // Lat/Lon boundaries for each OSM montage leg imageURL
         internal static List<List<List<string>>> WikiPage { get; private set; } // Table(s) of items scraped from user supplied Wikipedia URL
         internal static List<List<string>> WikiTour { get; private set; } // List of user selected Wikipedia items
 
@@ -38,7 +38,7 @@ namespace P3D_Scenario_Generator
             HtmlNodeCollection tables = null;
             HtmlNodeCollection rows = null;
             HtmlNodeCollection cells = null;
-            string tableSelection = "//table[@class='sortable wikitable' or @class='wikitable sortable']";
+            string tableSelection = "//table[contains(@class, 'sortable wikitable') or contains(@class, 'wikitable sortable')]";
             if (htmlDoc != null && HttpRoutines.GetNodeCollection(htmlDoc.DocumentNode, ref tables, tableSelection, true))
             {
                 foreach (var table in tables)
@@ -467,10 +467,10 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Calculates leg map image lat/lon boundaries, assumes called in leg number sequence starting with first leg
+        /// Calculates leg map imageURL lat/lon boundaries, assumes called in leg number sequence starting with first leg
         /// </summary>
         /// <param name="legNo">Leg numbers run from 0</param>
-        /// <param name="boundingBox">The OSM tile numbers for x and y axis that cover the set of coordinates depicted in an image</param>
+        /// <param name="boundingBox">The OSM tile numbers for x and y axis that cover the set of coordinates depicted in an imageURL</param>
         /// <param name="zoom">The OSM tile zoom level for the boundingBox</param>
         static internal void SetLegImageBoundaries(List<List<int>> boundingBox, int zoom)
         {

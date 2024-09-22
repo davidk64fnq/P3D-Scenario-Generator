@@ -1,4 +1,5 @@
 ﻿using ImageMagick;
+using System.Reflection;
 
 namespace P3D_Scenario_Generator
 {
@@ -101,8 +102,8 @@ namespace P3D_Scenario_Generator
         }
 
         // The file to be padded is 1w x 2h tileSize. Create a column of tiles on left and right side 1w x 2h,
-        // montage them together (3w x 2h) then crop a column 0.5w x 2h from outside edges. Resulting image is 2w x 2h tileSize
-        // with original image in middle horizontally.)
+        // montage them together (3w x 2h) then crop a column 0.5w x 2h from outside edges. Resulting imageURL is 2w x 2h tileSize
+        // with original imageURL in middle horizontally.)
         static internal List<List<int>> PadWestEast(List<List<int>> boundingBox, int newTileWest, int newTileEast, string filename, int zoom)
         {
             OSM.DownloadOSMtileColumn(newTileWest, 0, boundingBox, zoom, filename);
@@ -151,8 +152,8 @@ namespace P3D_Scenario_Generator
         }
 
         // The file to be padded is 2w x 1h tileSize. Create a row of tiles above and below 2w x 1h,
-        // montage them together (2w x 3h) then crop a row 2w x 0.5h from outside edges. Resulting image is 2w x 2h tileSize
-        // with original image in middle vertically.
+        // montage them together (2w x 3h) then crop a row 2w x 0.5h from outside edges. Resulting imageURL is 2w x 2h tileSize
+        // with original imageURL in middle vertically.
         static internal List<List<int>> PadNorthSouth(List<List<int>> boundingBox, int newTileNorth, int newTileSouth, string filename, int zoom)
         {
             OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename);
@@ -201,7 +202,7 @@ namespace P3D_Scenario_Generator
         }
 
         // The file to be padded is 2w x 1h tileSize. Create a row of tiles above 2w x 1h, montage them together.
-        // Resulting image is 2w x 2h tileSize with original image at bottom vertically.
+        // Resulting imageURL is 2w x 2h tileSize with original imageURL at bottom vertically.
         static internal List<List<int>> PadNorth(List<List<int>> boundingBox, int newTileNorth, string filename, int zoom)
         {
             OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename);
@@ -238,7 +239,7 @@ namespace P3D_Scenario_Generator
         }
 
         // The file to be padded is 2w x 1h tileSize. Create a row of tiles below 2w x 1h, montage them together.
-        // Resulting image is 2w x 2h tileSize with original image at top vertically.
+        // Resulting imageURL is 2w x 2h tileSize with original imageURL at top vertically.
         static internal List<List<int>> PadSouth(List<List<int>> boundingBox, int newTileSouth, string filename, int zoom)
         {
             File.Move($"{imagePath}{filename}.png", $"{imagePath}{filename}_0.png");
@@ -300,6 +301,60 @@ namespace P3D_Scenario_Generator
             }
 
             image.Write($"{imagePath}{filename}.png");
+        }
+
+        /// <summary>
+        /// Draw the complete and incomplete images that display in the load scenario dialog
+        /// </summary>
+        static internal void DrawScenarioImages()
+        {
+            DrawScenarioLoadImage("success-icon", "imgM_c");
+            DrawScenarioLoadImage("failure-icon", "imgM_i");
+        }
+
+        /// <summary>
+        /// Draw an imageURL that displays in the load scenario dialog, result extension is bmp
+        /// </summary>
+        /// <param name="iconName">The name of the icon resource file to be overlayed (no extension)</param>
+        /// <param name="outputName">The name of the base resource imageURL file (no extension)</param>
+        static internal void DrawScenarioLoadImage(string iconName, string outputName)
+        {
+            // Make a copy of the base imageURL file
+            string sourceFile = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.imgM.png";
+            using (Stream sourceStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(sourceFile))
+            {
+                using FileStream outputFileStream = new($"{imagePath}{outputName}.png", FileMode.Create);
+                    sourceStream.CopyTo(outputFileStream);
+            }
+
+
+#pragma warning disable IDE0063
+            using (MagickImage image = new($"{imagePath}{outputName}.png"))
+#pragma warning restore IDE0063
+            {
+                // Write the scenario type on the base imageURL
+                int boundingBoxHeight = image.Height / 2;
+                int boundingBoxWidth = image.Width;
+                int boundingBoxYoffset = Convert.ToInt32(image.Height * 0.4);
+                MagickGeometry geometry = new(0, boundingBoxHeight, boundingBoxWidth, boundingBoxYoffset);
+                image.Settings.Font = "SegoeUI";
+                image.Settings.FontPointsize = 36;
+                image.Annotate(Parameters.SelectedScenario, geometry, Gravity.Center);
+
+                // Overlay the icon imageURL on the base imageURL
+                string iconFile = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.{iconName}.png";
+                using (Stream successIconStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(iconFile))
+                {
+                    using MagickImage imageIcon = new(successIconStream);
+                    {
+                        int iconXoffset = image.Width - imageIcon.Width * 2;
+                        int iconYoffset = image.Height / 2 - imageIcon.Height / 2;
+                        image.Composite(imageIcon, iconXoffset, iconYoffset, CompositeOperator.Over);
+                    }
+                }
+                image.Write($"{imagePath}{outputName}.png");
+                ConvertImageformat(outputName, "png", "bmp");
+            }
         }
 
         #endregion
@@ -383,7 +438,7 @@ namespace P3D_Scenario_Generator
                 MontageTilesToColumn(boundingBox[yAxis].Count, xIndex, filename);
             }
 
-            // Montage the OSM column strips to form the final image
+            // Montage the OSM column strips to form the final imageURL
             MontageColumns(boundingBox[xAxis].Count, boundingBox[yAxis].Count, filename);
 
             DeleteTempOSMfiles(filename);
@@ -457,7 +512,7 @@ namespace P3D_Scenario_Generator
         static internal void Resize(string filename, int size)
         {
             using MagickImage image = new($"{imagePath}{filename}");
-            image.Resize(256, 256);
+            image.Resize(size, size);
             image.Write($"{imagePath}{filename}");
         }
 
