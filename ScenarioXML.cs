@@ -162,9 +162,9 @@ namespace P3D_Scenario_Generator
                 SetUIPanelWindow(photoNo, "UIpanelWindowLeg", "False", "True", $"images\\LegRoute_{photoNo:00}.html", "False", "False");
 
                 // Create HTML, JavaScript and CSS files for leg window objects
-                SetPhotoTourLegRouteHTML(photoNo);
-                SetPhotoTourLegRouteJS(photoNo);
-                SetPhotoTourLegRouteCSS();
+                SetMovingMapHTML();
+                SetMovingMapJS(PhotoTour.PhotoTourLegMapEdges, PhotoTour.PhotoCount);
+                SetMovingMapCSS();
 
                 // Create leg window open/close actions
                 SetOpenWindowAction(photoNo, "UIPanelWindow", "UIpanelWindowLeg", GetPhotoLegDimensions());
@@ -197,7 +197,7 @@ namespace P3D_Scenario_Generator
             {
                 // Create cylinder area objects to put over each photo location
                 SetCylinderArea(photoNo, "CylinderArea", "0.0,0.0,0.0", Parameters.HotspotRadius.ToString(), "18520.0", "None");
-                string pwp = GetPhotoWorldPosition(PhotoTour.GetPhotoLeg(photoNo));
+                string pwp = GetPhotoWorldPosition(PhotoTour.GetPhotoLocation(photoNo));
                 AttachedWorldPosition awp = GetAttachedWorldPosition(pwp, "True");
                 SetAttachedWorldPosition("CylinderArea", $"CylinderArea{photoNo:00}", awp);
 
@@ -467,7 +467,7 @@ namespace P3D_Scenario_Generator
             // Create HTML, JavaScript and CSS files for windows
             SetWikiTourHTML();
             SetWikiTourJS();
-            SetWikiTourCSS();
+            SetMovingMapCSS();
 
             // Create window open/close actions
             string[] windowDimensions = ["527", "597"]; // 512 + 15/85
@@ -703,7 +703,7 @@ namespace P3D_Scenario_Generator
             return [(Parameters.PhotoLegWindowSize + 15).ToString(), (Parameters.PhotoLegWindowSize + 85).ToString()];
         }
 
-        static private string GetPhotoWorldPosition(PhotoLegParams photoLegParams)
+        static private string GetPhotoWorldPosition(PhotoLocationParams photoLegParams)
         {
             return $"{ScenarioFXML.FormatCoordXML(photoLegParams.latitude, "N", "S", true)}, " +
 				$"{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W", true)},+0.0";
@@ -851,6 +851,57 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject = [lo];
         }
 
+        static private void SetMovingMapCSS()
+        {
+            string movingMapCSS;
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleMovingMap.css";
+            string resourceString = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleMovingMap.css";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceString);
+            StreamReader reader = new(stream);
+            movingMapCSS = reader.ReadToEnd();
+            File.WriteAllText(saveLocation, movingMapCSS);
+            stream.Dispose();
+        }
+
+        static private void SetMovingMapJS(List<List<double>> mapEdges, int count)
+        {
+            int north = 0, east = 1, south = 2, west = 3; // Used with mapEdges to identify leg boundaries
+
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsMovingMap.js";
+            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsMovingMap.js";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
+            StreamReader reader = new(stream);
+            string movingMapJS = reader.ReadToEnd();
+            string mapNorth = mapEdges[0][north].ToString();
+            string mapEast = mapEdges[0][east].ToString();
+            string mapSouth = mapEdges[0][south].ToString();
+            string mapWest = mapEdges[0][west].ToString();
+            for (int legNo = 1; legNo < count - 1; legNo++)
+            {
+                mapNorth += ", " + mapEdges[legNo][north].ToString();
+                mapEast += ", " + mapEdges[legNo][east].ToString();
+                mapSouth += ", " + mapEdges[legNo][south].ToString();
+                mapWest += ", " + mapEdges[legNo][west].ToString();
+            }
+            movingMapJS = movingMapJS.Replace("mapNorthX", mapNorth);
+            movingMapJS = movingMapJS.Replace("mapEastX", mapEast);
+            movingMapJS = movingMapJS.Replace("mapSouthX", mapSouth);
+            movingMapJS = movingMapJS.Replace("mapWestX", mapWest);
+            File.WriteAllText(saveLocation, movingMapJS);
+            stream.Dispose();
+        }
+
+        static private void SetMovingMapHTML()
+        {
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\MovingMap.html";
+            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.MovingMap.html";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
+            StreamReader reader = new(stream);
+            string movingMapHTML = reader.ReadToEnd();
+            File.WriteAllText(saveLocation, movingMapHTML);
+            stream.Dispose();
+        }
+
         static private void SetObjectActivationAction(int index, string objName, string search, string descr, string newObjectState)
         {
             search = $"{search}{index:00}";
@@ -893,61 +944,6 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction.Add(owa);
             else
                 simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction = [owa];
-        }
-
-        static private void SetPhotoTourLegRouteCSS()
-        {
-            string legRouteCSS;
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleMovingMap.css";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleMovingMap.css");
-            StreamReader reader = new(stream);
-            legRouteCSS = reader.ReadToEnd();
-            legRouteCSS = legRouteCSS.Replace("mapWidthX", Parameters.PhotoLegWindowSize.ToString());
-            legRouteCSS = legRouteCSS.Replace("mapHeightX", Parameters.PhotoLegWindowSize.ToString());
-            File.WriteAllText(saveLocation, legRouteCSS);
-            stream.Dispose();
-        }
-
-        static private void SetPhotoTourLegRouteJS(int photoNo)
-        {
-            string legRouteJS;
-
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsMovingMap_{photoNo:00}.js";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsMovingMap.js");
-            StreamReader reader = new(stream);
-            legRouteJS = reader.ReadToEnd();
-            PhotoLegParams photoLeg = PhotoTour.GetPhotoLeg(photoNo);
-            legRouteJS = legRouteJS.Replace("mapNorthX", photoLeg.northEdge.ToString());
-            legRouteJS = legRouteJS.Replace("mapEastX", photoLeg.eastEdge.ToString());
-            legRouteJS = legRouteJS.Replace("mapSouthX", photoLeg.southEdge.ToString());
-            legRouteJS = legRouteJS.Replace("mapWestX", photoLeg.westEdge.ToString());
-            legRouteJS = legRouteJS.Replace("mapWestX", photoLeg.westEdge.ToString());
-            legRouteJS = legRouteJS.Replace("mapWidthX", Parameters.PhotoLegWindowSize.ToString());
-            legRouteJS = legRouteJS.Replace("mapHeightX", Parameters.PhotoLegWindowSize.ToString());
-            File.WriteAllText(saveLocation, legRouteJS);
-            stream.Dispose();
-        }
-
-        static private void SetPhotoTourLegRouteHTML(int photoNo)
-        {
-            string legRouteHTML;
-
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\LegRoute_{photoNo:00}.html";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.PhotoTour_LegRoute.html");
-            StreamReader reader = new(stream);
-            legRouteHTML = reader.ReadToEnd();
-            legRouteHTML = legRouteHTML.Replace("scriptsMovingMap_X.js", $"scriptsMovingMap_{photoNo:00}.js");
-            legRouteHTML = legRouteHTML.Replace("LegRoute_X_1_zoom1", $"LegRoute_{photoNo:00}_1_zoom1");
-            legRouteHTML = legRouteHTML.Replace("LegRoute_X_2_zoom1", $"LegRoute_{photoNo:00}_2_zoom1");
-            legRouteHTML = legRouteHTML.Replace("LegRoute_X_3_zoom1", $"LegRoute_{photoNo:00}_3_zoom1");
-            legRouteHTML = legRouteHTML.Replace("LegRoute_X_1_zoom2", $"LegRoute_{photoNo:00}_1_zoom2");
-            legRouteHTML = legRouteHTML.Replace("LegRoute_X_2_zoom2", $"LegRoute_{photoNo:00}_2_zoom2");
-            legRouteHTML = legRouteHTML.Replace("LegRoute_X_3_zoom2", $"LegRoute_{photoNo:00}_3_zoom2");
-            legRouteHTML = legRouteHTML.Replace("LegRoute_X_1_zoom4", $"LegRoute_{photoNo:00}_1_zoom4");
-            legRouteHTML = legRouteHTML.Replace("LegRoute_X_2_zoom4", $"LegRoute_{photoNo:00}_2_zoom4");
-            legRouteHTML = legRouteHTML.Replace("LegRoute_X_3_zoom4", $"LegRoute_{photoNo:00}_3_zoom4");
-            File.WriteAllText(saveLocation, legRouteHTML);
-            stream.Dispose();
         }
 
         static private void SetPhotoTourPhotoHTML(int photoNo)
@@ -1056,7 +1052,6 @@ namespace P3D_Scenario_Generator
                 EstimatedTime = ScenarioHTML.GetDuration(),
                 UncompletedImage = "images\\imgM_i.bmp",
                 CompletedImage = "images\\imgM_c.bmp",
-                ExitMissionImage = "images\\exitMission.bmp",
                 MissionBrief = "Overview.htm",
                 AbbreviatedMissionBrief = $"{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}.htm",
                 SuccessMessage = $"Success! You completed the \"{Parameters.SelectedScenario}\" scenario objectives.",
@@ -1221,48 +1216,15 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow = [upw];
         }
 
-        static private void SetWikiTourCSS()
-        {
-            string legRouteCSS;
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleWikipedia.css";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleWikipedia.css");
-            StreamReader reader = new(stream);
-            legRouteCSS = reader.ReadToEnd();
-            File.WriteAllText(saveLocation, legRouteCSS);
-            stream.Dispose();
-        }
-
         static private void SetWikiTourJS()
         {
-            int north = 0, east = 1, south = 2, west = 3; // Used with WikiLegMapEdges to identify leg boundaries
-            int link = 1; // Wikipedia item list indexes
+            SetMovingMapJS(Wikipedia.WikiLegMapEdges, Wikipedia.WikiCount);
 
-        string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsWikipediaOSM.js";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaOSM.js");
+            int link = 1; // Wikipedia item list indexes
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsWikipediaItem.js";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaItem.js");
             StreamReader reader = new(stream);
             string wikipediaJS = reader.ReadToEnd();
-            string mapNorth = Wikipedia.WikiLegMapEdges[0][north].ToString();
-            string mapEast = Wikipedia.WikiLegMapEdges[0][east].ToString();
-            string mapSouth = Wikipedia.WikiLegMapEdges[0][south].ToString();
-            string mapWest = Wikipedia.WikiLegMapEdges[0][west].ToString();
-            for (int legNo = 1; legNo < Wikipedia.WikiCount - 1; legNo++)
-            {
-                mapNorth += ", " + Wikipedia.WikiLegMapEdges[legNo][north].ToString();
-                mapEast += ", " + Wikipedia.WikiLegMapEdges[legNo][east].ToString();
-                mapSouth += ", " + Wikipedia.WikiLegMapEdges[legNo][south].ToString();
-                mapWest += ", " + Wikipedia.WikiLegMapEdges[legNo][west].ToString();
-            }
-            wikipediaJS = wikipediaJS.Replace("mapNorthX", mapNorth);
-            wikipediaJS = wikipediaJS.Replace("mapEastX", mapEast);
-            wikipediaJS = wikipediaJS.Replace("mapSouthX", mapSouth);
-            wikipediaJS = wikipediaJS.Replace("mapWestX", mapWest);
-            File.WriteAllText(saveLocation, wikipediaJS);
-            stream.Dispose();
-
-            saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsWikipediaItem.js";
-            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaItem.js");
-            reader = new(stream);
-            wikipediaJS = reader.ReadToEnd();
             string itemURLs = "\"https://en.wikipedia.org" + Wikipedia.WikiTour[0][link] + "\"";
             for (int legNo = 1; legNo < Wikipedia.WikiCount - 2; legNo++)
             {
@@ -1277,17 +1239,13 @@ namespace P3D_Scenario_Generator
 
         static private void SetWikiTourHTML()
         {
+            SetMovingMapHTML();
+
             string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\WikipediaItem.html";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.WikipediaItem.html");
+            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.WikipediaItem.html";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
             StreamReader reader = new(stream);
             string wikipediaHTML = reader.ReadToEnd();
-            File.WriteAllText(saveLocation, wikipediaHTML);
-            stream.Dispose();
-
-            saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\WikipediaOSM.html";
-            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.WikipediaOSM.html");
-            reader = new(stream);
-            wikipediaHTML = reader.ReadToEnd();
             File.WriteAllText(saveLocation, wikipediaHTML);
             stream.Dispose();
         }

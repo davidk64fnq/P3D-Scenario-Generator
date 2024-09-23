@@ -24,11 +24,6 @@ namespace P3D_Scenario_Generator
                 HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\{urlFilename[index]}");
             }
 
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
-            {
-                GetPhotoTourOverviewImage();
-            }
-
             // Create completion and exit images
             for (int index = 3; index < urlZoom.Length; index++)
             {
@@ -60,7 +55,7 @@ namespace P3D_Scenario_Generator
             {
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
             }
-            PhotoLegParams celestialImage = new();
+            PhotoLocationParams celestialImage = new();
             bool startInImage = true;
             while (startInImage)
             {
@@ -97,151 +92,7 @@ namespace P3D_Scenario_Generator
             Parameters.CelestialImageWest = celestialImage.westEdge;
         }
 
-        internal static void GetPhotoTourLegImages()
-        {
-            string url;
-            string mapArea, mapCentre, mapZoom;
-            string[] imageryTypes = ["Aerial", "AerialWithLabels", "Road"];
-
-            if (!Directory.Exists($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images"))
-            {
-                Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
-            }
-
-            // For photo tour get Bing route images for each leg
-            for (int index = 0; index < PhotoTour.PhotoCount - 1; index++)
-            {
-                PhotoLegParams curPhoto = PhotoTour.GetPhotoLeg(index);
-                mapArea = GetMapBoundingBox(curPhoto, index);
-                url = $"{urlBingBase}Aerial?{mapArea}&mapSize=375,375{urlKey}";
-                GetBingMetadata(url, PhotoTour.GetPhotoLeg(index));
-                mapCentre = $"/{curPhoto.centreLat},{curPhoto.centreLon}";
-                for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
-                {
-                    mapZoom = $"/{curPhoto.zoom}";
-                    url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize={Parameters.PhotoLegWindowSize},{Parameters.PhotoLegWindowSize}{urlKey}";
-                    HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\LegRoute_{index:00}_{typeIndex + 1}_zoom1.jpg");
-                }
-                for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
-                {
-                    mapZoom = $"/{curPhoto.zoom + 1}";
-                    url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize=1500,1500{urlKey}";
-                    HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\LegRoute_{index:00}_{typeIndex + 1}_zoom2.jpg");
-                }
-                for (int typeIndex = 0; typeIndex < imageryTypes.Length; typeIndex++)
-                {
-                    mapZoom = $"/{curPhoto.zoom + 2}";
-                    url = $"{urlBingBase}{imageryTypes[typeIndex]}{mapCentre}{mapZoom}?mapSize=1500,1500{urlKey}";
-                    HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\LegRoute_{index:00}_{typeIndex + 1}_zoom4.jpg");
-                }
-            }
-        }
-
-        private static string GetMapBoundingBox(PhotoLegParams curPhoto, int legIndex)
-        {
-            string mapArea = "&mapArea=";
-            PhotoLegParams nextPhoto = PhotoTour.GetPhotoLeg(legIndex + 1);
-
-            double deltaLat = Math.Abs(curPhoto.latitude - nextPhoto.latitude);
-            double deltaLon = Math.Abs(curPhoto.longitude - nextPhoto.longitude);
-            double tenPercent;
-            double eastEdge, westEdge, northEdge, southEdge, latMiddle, lonMiddle;
-
-            if (deltaLat >= deltaLon) 
-            {
-                tenPercent = deltaLat * 0.1;
-                if (curPhoto.latitude >= nextPhoto.latitude)
-                {
-                    northEdge = curPhoto.latitude + tenPercent;
-                    southEdge = nextPhoto.latitude - tenPercent;
-                }
-                else
-                {
-                    northEdge = nextPhoto.latitude + tenPercent;
-                    southEdge = curPhoto.latitude - tenPercent;
-                }
-                if (curPhoto.longitude >= nextPhoto.longitude)
-                {
-                    lonMiddle = nextPhoto.longitude + (curPhoto.longitude - nextPhoto.longitude) / 2;
-                }
-                else
-                {
-                    lonMiddle = curPhoto.longitude + (nextPhoto.longitude - curPhoto.longitude) / 2;
-                }
-                eastEdge = lonMiddle + deltaLat * 0.5;
-                westEdge = lonMiddle - deltaLat * 0.5;
-            }
-            else 
-            {
-                tenPercent = deltaLon * 0.1;
-                if (curPhoto.longitude >= nextPhoto.longitude)
-                {
-                    eastEdge = curPhoto.longitude + tenPercent;
-                    westEdge = nextPhoto.longitude - tenPercent;
-                }
-                else
-                {
-                    eastEdge = nextPhoto.longitude + tenPercent;
-                    westEdge = curPhoto.longitude - tenPercent;
-                }
-                if (curPhoto.latitude >= nextPhoto.latitude)
-                {
-                    latMiddle = nextPhoto.latitude + (curPhoto.latitude - nextPhoto.latitude) / 2;
-                }
-                else
-                {
-                    latMiddle = curPhoto.latitude + (nextPhoto.latitude - curPhoto.latitude) / 2;
-                }
-                northEdge = latMiddle + deltaLon * 0.5;
-                southEdge = latMiddle - deltaLon * 0.5;
-            }
-
-            // Handle east/west calculated points exceeding +180/-180 degrees
-            if (eastEdge > 180)
-            {
-                eastEdge -= 360;
-            }
-            if (westEdge < -180)
-            {
-                westEdge += 360;
-            }
-
-            // Handle north/south calculated points exceeding +90/-90 degrees
-            if (northEdge > 90)
-            {
-                northEdge = 90;
-            }
-            if (southEdge < -90)
-            {
-                southEdge = -90;
-            }
-
-            return mapArea += $"{southEdge},{westEdge},{northEdge},{eastEdge}";
-        }
-
-        internal static void GetPhotoTourOverviewImage()
-        {
-            string url;
-
-            // For photo tour do pushpin version of Charts_01.jpg
-            PhotoLegParams curPhoto;
-            string[] words = Parameters.SelectedRunway.Split("\t");
-            curPhoto = PhotoTour.GetPhotoLeg(0);
-            string pushpins = $"pp={curPhoto.latitude},{curPhoto.longitude};1;{words[0]}&";
-            for (int index = 1; index < PhotoTour.PhotoCount - 1; index++)
-            {
-                curPhoto = PhotoTour.GetPhotoLeg(index);
-                pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{index}&";
-            }
-            words = Parameters.PhotoDestRunway.Split("\t");
-            curPhoto = PhotoTour.GetPhotoLeg(PhotoTour.PhotoCount - 1);
-            pushpins += $"pp={curPhoto.latitude},{curPhoto.longitude};1;{words[0]}";
-
-            url = $"{urlBingBase}Aerial?{pushpins}&mapSize={urlMapSize[2]}{urlKey}";
-            HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\{urlFilename[2]}");
-        }
-
-        private static void GetBingMetadata(string url, PhotoLegParams curPhoto)
+        private static void GetBingMetadata(string url, PhotoLocationParams curPhoto)
         {
             url += "&mapMetadata=1&o=xml";
             HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), "images\\temp.xml");

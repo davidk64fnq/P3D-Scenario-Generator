@@ -21,7 +21,6 @@
     <None Remove="Resources\CSS\styleCelestialSextant.css" />
     <None Remove="Resources\CSS\styleMovingMap.css" />
     <None Remove="Resources\CSS\styleSignWriting.css" />
-    <None Remove="Resources\CSS\styleWikipedia.css" />
     <None Remove="Resources\CSS\style_kneeboard.css" />
     <None Remove="Resources\CSS\style_load_flight.css" />
     <None Remove="Resources\Excel\Celestial Nav Stars.xlsx" />
@@ -48,11 +47,10 @@
     <None Remove="Resources\Help\style.css" />
     <None Remove="Resources\HTML\CelestialSextant.html" />
     <None Remove="Resources\HTML\MissionBriefSource.htm" />
+    <None Remove="Resources\HTML\MovingMap.html" />
     <None Remove="Resources\HTML\OverviewSource.htm" />
-    <None Remove="Resources\HTML\PhotoTour_LegRoute.html" />
     <None Remove="Resources\HTML\SignWriting.html" />
     <None Remove="Resources\HTML\WikipediaItem.html" />
-    <None Remove="Resources\HTML\WikipediaOSM.html" />
     <None Remove="Resources\Images\aircraft.png" />
     <None Remove="Resources\Images\circuitTab.jpg" />
     <None Remove="Resources\Images\exit-icon.png" />
@@ -66,7 +64,6 @@
     <None Remove="Resources\Javascript\scriptsMovingMap.js" />
     <None Remove="Resources\Javascript\scriptsSignWriting.js" />
     <None Remove="Resources\Javascript\scriptsWikipediaItem.js" />
-    <None Remove="Resources\Javascript\scriptsWikipediaOSM.js" />
     <None Remove="Resources\Sounds\ThruHoop.wav" />
     <None Remove="Resources\XML\runways.xml" />
     <None Remove="Resources\XML\source.fxml" />
@@ -87,9 +84,8 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\CSS\styleCelestialSextant.css" />
-    <EmbeddedResource Include="Resources\CSS\styleMovingMap.css" />
     <EmbeddedResource Include="Resources\CSS\styleSignWriting.css" />
-    <EmbeddedResource Include="Resources\CSS\styleWikipedia.css" />
+    <EmbeddedResource Include="Resources\CSS\styleMovingMap.css" />
     <EmbeddedResource Include="Resources\CSS\style_kneeboard.css" />
     <EmbeddedResource Include="Resources\CSS\style_load_flight.css" />
     <EmbeddedResource Include="Resources\Excel\CelestialNavStars.xlsx" />
@@ -156,10 +152,9 @@
     <EmbeddedResource Include="Resources\HTML\CelestialSextant.html" />
     <EmbeddedResource Include="Resources\HTML\MissionBriefSource.htm" />
     <EmbeddedResource Include="Resources\HTML\OverviewSource.htm" />
-    <EmbeddedResource Include="Resources\HTML\PhotoTour_LegRoute.html" />
     <EmbeddedResource Include="Resources\HTML\SignWriting.html" />
     <EmbeddedResource Include="Resources\HTML\WikipediaItem.html" />
-    <EmbeddedResource Include="Resources\HTML\WikipediaOSM.html" />
+    <EmbeddedResource Include="Resources\HTML\MovingMap.html" />
     <EmbeddedResource Include="Resources\Images\aircraft.png" />
     <EmbeddedResource Include="Resources\Images\circuitTab.jpg" />
     <EmbeddedResource Include="Resources\Images\exit-icon.png" />
@@ -170,10 +165,9 @@
     <EmbeddedResource Include="Resources\Images\success-icon.png" />
     <EmbeddedResource Include="Resources\Javascript\scriptsCelestialAstroCalcs.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsCelestialSextant.js" />
-    <EmbeddedResource Include="Resources\Javascript\scriptsMovingMap.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsSignWriting.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsWikipediaItem.js" />
-    <EmbeddedResource Include="Resources\Javascript\scriptsWikipediaOSM.js" />
+    <EmbeddedResource Include="Resources\Javascript\scriptsMovingMap.js" />
     <EmbeddedResource Include="Resources\Sounds\ThruHoop.wav" />
     <EmbeddedResource Include="Resources\XML\runways.xml" />
     <EmbeddedResource Include="Resources\XML\source.fxml" />
