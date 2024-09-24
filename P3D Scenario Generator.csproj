@@ -62,6 +62,7 @@
     <None Remove="Resources\Javascript\scriptsCelestialAstroCalcs.js" />
     <None Remove="Resources\Javascript\scriptsCelestialSextant.js" />
     <None Remove="Resources\Javascript\scriptsMovingMap.js" />
+    <None Remove="Resources\Javascript\scriptsPhotoTour.js" />
     <None Remove="Resources\Javascript\scriptsSignWriting.js" />
     <None Remove="Resources\Javascript\scriptsWikipediaItem.js" />
     <None Remove="Resources\Sounds\ThruHoop.wav" />
@@ -163,6 +164,7 @@
     <EmbeddedResource Include="Resources\Images\imgM.png" />
     <EmbeddedResource Include="Resources\Images\signTabSegment22Font.jpg" />
     <EmbeddedResource Include="Resources\Images\success-icon.png" />
+    <EmbeddedResource Include="Resources\Javascript\scriptsPhotoTour.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsCelestialAstroCalcs.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsCelestialSextant.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsSignWriting.js" />

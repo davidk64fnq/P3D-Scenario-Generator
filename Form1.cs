@@ -54,7 +54,6 @@ namespace P3D_Scenario_Generator
                 TextBoxSearchRunway.Enabled = false;
                 ButtonRandRunway.Enabled = false;
                 TextBoxSelectedRunway.Text = "";
-                SetDefaultPhotoTourParams();
             }
             else
             {

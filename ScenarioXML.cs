@@ -151,50 +151,40 @@ namespace P3D_Scenario_Generator
             SetGoal("Goal01", ScenarioHTML.overview.Objective);
             SetGoalResolutionAction("Goal01");
 
-            // Pass 1 - setup leg route windows, PhotoTour.PhotoCount includes start and finish airports
-            // There is a leg route window to fly to each photo location and then to destination airport
-            // The leg route windows display at the start of each leg, index 0 is the start airport, index PhotoCount - 1
-			// is the destination airport
-            // LegRoute_00 is the route to first photo, LegRoute_PhotoTour.PhotoCount - 2 is the route to destination airport
-            for (int photoNo = 0; photoNo <= PhotoTour.PhotoCount - 2; photoNo++)
-            {
-                // Create leg window object 
-                SetUIPanelWindow(photoNo, "UIpanelWindowLeg", "False", "True", $"images\\LegRoute_{photoNo:00}.html", "False", "False");
+            // Create scenario variable
+            SetScenarioVariable("ScenarioVariable01", "currentLegNo", "1");
+            SetScenarioVariableTriggerValue(0.0, 0, "ScenarioVariable01");
 
-                // Create HTML, JavaScript and CSS files for leg window objects
-                SetMovingMapHTML();
-                SetMovingMapJS(PhotoTour.PhotoTourLegMapEdges, PhotoTour.PhotoCount);
-                SetMovingMapCSS();
+            // Create script actions which reference scenario variable
+            SetTourScriptActions();
 
-                // Create leg window open/close actions
-                SetOpenWindowAction(photoNo, "UIPanelWindow", "UIpanelWindowLeg", GetPhotoLegDimensions());
-                SetCloseWindowAction(photoNo, "UIPanelWindow", "UIpanelWindowLeg");
-            }
+            // Create window objects 
+            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
+            SetUIPanelWindow(2, "UIpanelWindow", "False", "True", $"images\\PhotoTour.html", "False", "False");
 
-            // Pass 2 - setup photo windows, there is a photo window displayed at each photo location 
-            // Photo_01 is the first photo, Photo_PhotoTour.PhotoCount - 2 is the last photo
-            for (int photoNo = 1; photoNo <= PhotoTour.PhotoCount - 2; photoNo++)
-            {
+            // Create HTML, JavaScript and CSS files for windows
+            SetResourcesFile("HTML", "MovingMap.html");
+            SetResourcesFile("HTML", "PhotoTour.html");
+            SetMovingMapJS(PhotoTour.PhotoTourLegMapEdges, PhotoTour.PhotoCount);
+            SetResourcesFile("Javascript", "scriptsPhotoTour.js");
+            SetResourcesFile("CSS", "styleMovingMap.css");
 
-                // Create sound action to play when each new photo location entered
-                SetOneShotSoundAction(photoNo, "ThruHoop", "ThruHoop.wav");
+            // Create window open/close actions
+            string[] windowDimensions = ["527", "597"]; // 512 + 15/85
+            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions);
+            SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
+            windowDimensions = ["1020", "1000"]; // width and height
+            SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", windowDimensions);
+            SetCloseWindowAction(2, "UIPanelWindow", "UIpanelWindow");
 
-                // Create photo window object 
-                SetUIPanelWindow(photoNo, "UIpanelWindowPhoto", "False", "True", $"images\\Photo_{photoNo:00}.html", "False", "False");
-
-                // Create HTML file for photo window object
-                SetPhotoTourPhotoHTML(photoNo);
-
-                // Create photo window open/close actions
-                SetOpenWindowAction(photoNo, "UIPanelWindow", "UIpanelWindowPhoto", GetPhotoDimensions(photoNo));
-                SetCloseWindowAction(photoNo, "UIPanelWindow", "UIpanelWindowPhoto");
-            }
-
-            // Pass 3 - setup proximity triggers, there is a trigger for each photo location
+            // Pass 1 - setup proximity triggers, there is a trigger for each photo location
             // Each trigger closes last leg/photo windows and opens new leg/photo windows 
             // ProximityTrigger01 is the first photo trigger, Photo_PhotoTour.PhotoCount - 2 is the last photo trigger
             for (int photoNo = 1; photoNo <= PhotoTour.PhotoCount - 2; photoNo++)
             {
+                // Create sound action to play when each new photo location entered
+                SetOneShotSoundAction(photoNo, "ThruHoop", "ThruHoop.wav");
+
                 // Create cylinder area objects to put over each photo location
                 SetCylinderArea(photoNo, "CylinderArea", "0.0,0.0,0.0", Parameters.HotspotRadius.ToString(), "18520.0", "None");
                 string pwp = GetPhotoWorldPosition(PhotoTour.GetPhotoLocation(photoNo));
@@ -213,20 +203,11 @@ namespace P3D_Scenario_Generator
                 SetProximityTriggerOnEnterAction(photoNo, "ObjectActivationAction", "DeactProximityTrigger", photoNo, "ProximityTrigger");
             }
 
-            // Pass 4 - setup proximity triggers on enter actions
+            // Pass 2 - setup proximity triggers on enter actions
             // Each trigger closes last leg/photo windows and opens new leg/photo windows 
             // ProximityTrigger01 is the first photo trigger, Photo_PhotoTour.PhotoCount - 2 is the last photo trigger
             for (int photoNo = 1; photoNo <= PhotoTour.PhotoCount - 2; photoNo++)
             {
-				// Close current windows
-                if (photoNo > 1)
-                    SetProximityTriggerOnEnterAction(photoNo - 1, "CloseWindowAction", "CloseUIpanelWindowPhoto", photoNo, "ProximityTrigger");
-                SetProximityTriggerOnEnterAction(photoNo - 1, "CloseWindowAction", "CloseUIpanelWindowLeg", photoNo, "ProximityTrigger");
-
-				// Open new windows
-                SetProximityTriggerOnEnterAction(photoNo, "OpenWindowAction", "OpenUIpanelWindowPhoto", photoNo, "ProximityTrigger");
-                SetProximityTriggerOnEnterAction(photoNo, "OpenWindowAction", "OpenUIpanelWindowLeg", photoNo, "ProximityTrigger");
-
 				// Play sound
                 SetProximityTriggerOnEnterAction(photoNo, "OneShotSoundAction", "ThruHoop", photoNo, "ProximityTrigger");
 
@@ -234,19 +215,23 @@ namespace P3D_Scenario_Generator
                 // itemNo + 1 is next photo location, PhotoTour.PhotoCount - 1 is destination airport
                 if (photoNo + 1 < PhotoTour.PhotoCount - 1)
                     SetProximityTriggerOnEnterAction(photoNo + 1, "ObjectActivationAction", "ActProximityTrigger", photoNo, "ProximityTrigger");
+
+                // Increment gate number
+                SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", photoNo, "ProximityTrigger");
             }
 
             // Create timer trigger to play audio introductions and open 1st leg window when scenario starts
             SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
-            SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindowLeg00", "TimerTrigger01");
+            SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
+            SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow02", "TimerTrigger01");
             SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
             SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
             SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
             // Create airport landing trigger which does goal resolution and closes last leg window
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Parameters.PhotoDestRunway.Split("\t")[0]);
-            SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindowLeg{PhotoTour.PhotoCount - 2:00}", "AirportLandingTrigger01");
-            SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindowPhoto{PhotoTour.PhotoCount - 2:00}", "AirportLandingTrigger01");
+            SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
+            SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow02", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
@@ -458,16 +443,17 @@ namespace P3D_Scenario_Generator
             SetScenarioVariableTriggerValue(0.0, 0, "ScenarioVariable01");
 
             // Create script actions which reference scenario variable
-            SetWikiTourScriptActions();
+            SetTourScriptActions();
 
             // Create window objects 
             SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\WikipediaOSM.html", "False", "False");
             SetUIPanelWindow(2, "UIpanelWindow", "False", "True", $"images\\WikipediaItem.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for windows
-            SetWikiTourHTML();
+            SetResourcesFile("HTML", "MovingMap.html");
+            SetResourcesFile("HTML", "WikipediaItem.html");
             SetWikiTourJS();
-            SetMovingMapCSS();
+            SetResourcesFile("CSS", "styleMovingMap.css");
 
             // Create window open/close actions
             string[] windowDimensions = ["527", "597"]; // 512 + 15/85
@@ -851,18 +837,6 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject = [lo];
         }
 
-        static private void SetMovingMapCSS()
-        {
-            string movingMapCSS;
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleMovingMap.css";
-            string resourceString = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleMovingMap.css";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceString);
-            StreamReader reader = new(stream);
-            movingMapCSS = reader.ReadToEnd();
-            File.WriteAllText(saveLocation, movingMapCSS);
-            stream.Dispose();
-        }
-
         static private void SetMovingMapJS(List<List<double>> mapEdges, int count)
         {
             int north = 0, east = 1, south = 2, west = 3; // Used with mapEdges to identify leg boundaries
@@ -888,17 +862,6 @@ namespace P3D_Scenario_Generator
             movingMapJS = movingMapJS.Replace("mapSouthX", mapSouth);
             movingMapJS = movingMapJS.Replace("mapWestX", mapWest);
             File.WriteAllText(saveLocation, movingMapJS);
-            stream.Dispose();
-        }
-
-        static private void SetMovingMapHTML()
-        {
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\MovingMap.html";
-            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.MovingMap.html";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
-            StreamReader reader = new(stream);
-            string movingMapHTML = reader.ReadToEnd();
-            File.WriteAllText(saveLocation, movingMapHTML);
             stream.Dispose();
         }
 
@@ -944,25 +907,6 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction.Add(owa);
             else
                 simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction = [owa];
-        }
-
-        static private void SetPhotoTourPhotoHTML(int photoNo)
-        {
-            string html = 
-				$$"""
-				<!DOCTYPE HTML> 
-					<html>
-						<head>
-							<style>
-								body {margin: 0; padding: 0; overflow: hidden;}
-							</style>
-						</head>
-						<body> 
-							<img src="photo_{{photoNo:00}}.jpg"
-						</body>
-					</html>
-				""";
-            File.WriteAllText($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\photo_{photoNo:00}.html", html);
         }
 
         static private void SetPOIactivationAction(int index, string objName, string search, string descr, string newObjectState)
@@ -1039,6 +983,17 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.Add(ra);
             else
                 simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea = [ra];
+        }
+
+        static private void SetResourcesFile(string resourceFolder, string resourceFileName)
+        {
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{resourceFileName}";
+            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.{resourceFolder}.{resourceFileName}";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
+            StreamReader reader = new(stream);
+            string streamContents = reader.ReadToEnd();
+            File.WriteAllText(saveLocation, streamContents);
+            stream.Dispose();
         }
 
         static private void SetScenarioMetadata()
@@ -1206,6 +1161,14 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions = new Actions([or]);
         }
 
+        static private void SetTourScriptActions()
+        {
+            List<SimMissionScriptAction> saList = [];
+            saList.Add(new SimMissionScriptAction("ScriptAction01", "!lua local var currentLegNo = varget(\"S:currentLegNo\", \"NUMBER\") " +
+                "currentLegNo = currentLegNo + 1 varset(\"S:currentLegNo\", \"NUMBER\", currentLegNo)", GetGUID(), ""));
+            simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction = saList;
+        }
+
         static private void SetUIPanelWindow(int index, string descr, string locked, string mouseI, string panel, string docked, string keyboardI)
         {
             descr = $"{descr}{index:00}";
@@ -1235,27 +1198,6 @@ namespace P3D_Scenario_Generator
             wikipediaJS = wikipediaJS.Replace("itemURLsX", itemURLs);
             File.WriteAllText(saveLocation, wikipediaJS);
             stream.Dispose();
-        }
-
-        static private void SetWikiTourHTML()
-        {
-            SetMovingMapHTML();
-
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\WikipediaItem.html";
-            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.WikipediaItem.html";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
-            StreamReader reader = new(stream);
-            string wikipediaHTML = reader.ReadToEnd();
-            File.WriteAllText(saveLocation, wikipediaHTML);
-            stream.Dispose();
-        }
-
-        static private void SetWikiTourScriptActions()
-        {
-            List<SimMissionScriptAction> saList = [];
-            saList.Add(new SimMissionScriptAction("ScriptAction01", "!lua local var currentLegNo = varget(\"S:currentLegNo\", \"NUMBER\") " +
-                "currentLegNo = currentLegNo + 1 varset(\"S:currentLegNo\", \"NUMBER\", currentLegNo)", GetGUID(), ""));
-            simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction = saList;
         }
 
         #endregion
