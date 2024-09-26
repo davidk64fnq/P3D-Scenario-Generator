@@ -4,6 +4,16 @@ using System.Web;
 
 namespace P3D_Scenario_Generator
 {
+    public class WikiItemParams
+    {
+        public string title;            //  Wiki item HTML title tag value
+        public string itemURL;          //  Wiki item page URL
+        public string latitude;         //  Latitude for this Wiki item
+        public string longitude;        //  Longitude for this Wiki item
+        public string airportICAO;      //  Only used for start and destination airport instances
+        public string airportID;        //  Only used for start and destination airport instances
+    }
+
     /// <summary>
     /// Provides routines for the Wikipedia scenario type
     /// </summary>
@@ -11,13 +21,10 @@ namespace P3D_Scenario_Generator
     {
         internal static int WikiCount { get; private set; } // The wikipedia list items plus start and finish airports
         internal static int WikiDistance { get; private set; } // From start to finish airport
-        internal static Params WikiStartAirport { get; private set; }
-        internal static Params WikiFinishAirport { get; private set; }
         internal static List<List<double>> WikiLegMapEdges { get; private set; } // Lat/Lon boundaries for each OSM montage leg image
-        internal static List<List<List<string>>> WikiPage { get; private set; } // Table(s) of items scraped from user supplied Wikipedia URL
-        internal static List<List<string>> WikiTour { get; private set; } // List of user selected Wikipedia items
+        internal static List<List<WikiItemParams>> WikiPage { get; private set; } // Table(s) of items scraped from user supplied Wikipedia URL
+        internal static List<WikiItemParams> WikiTour { get; private set; } // List of user selected Wikipedia items
 
-        internal static int title = 0, link = 1, latitude = 2, longitude = 3; // Wikipedia item list indexes
         internal static int xAxis = 0, yAxis = 1; // Used in bounding box to denote lists that store OSM xTile and yTile reference numbers
 
         #region Populating WikiPage
@@ -43,7 +50,7 @@ namespace P3D_Scenario_Generator
             {
                 foreach (var table in tables)
                 {
-                    List<List<string>> curTable = [];
+                    List<WikiItemParams> curTable = [];
                     if (HttpRoutines.GetNodeCollection(table, ref rows, ".//tr", true))
                     {
                         foreach (var row in rows)
@@ -70,9 +77,9 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="cell">The cell in a table row containing item title and hyperlink</param>
         /// <param name="curTable">The current table being populated in <see cref="WikiPage"/></param>
-        static internal void ReadWikiCell(HtmlNode cell, List<List<string>> curTable)
+        static internal void ReadWikiCell(HtmlNode cell, List<WikiItemParams> curTable)
         {
-            List<string> wikiItem = [];
+            WikiItemParams wikiItem = new();
             List<HtmlNode> cellDescendants = cell.Descendants("a").ToList();
             string title = "", link = "";
             if (cellDescendants.Count > 0)
@@ -82,8 +89,8 @@ namespace P3D_Scenario_Generator
             }
             if (title != "" && link != "")
             {
-                wikiItem.Add(HttpUtility.HtmlDecode(title));
-                wikiItem.Add(link);
+                wikiItem.title = HttpUtility.HtmlDecode(title);
+                wikiItem.itemURL = link;
                 if (GetWikiItemCoordinates(wikiItem))
                 {
                     curTable.Add(wikiItem);
@@ -95,19 +102,19 @@ namespace P3D_Scenario_Generator
         /// Checks that the item hyperlink is pointing to a page with lat/long coordinate in expected place
         /// and retrieves them for storage in a table in <see cref="WikiPage"/>.
         /// </summary>
-        /// <param name="curRow">The current row in table being populated in <see cref="WikiPage"/></param>
+        /// <param name="wikiItem">The current row in table being populated in <see cref="WikiPage"/></param>
         /// <returns></returns>
-        static internal bool GetWikiItemCoordinates(List<string> curRow)
+        static internal bool GetWikiItemCoordinates(WikiItemParams wikiItem)
         {
-            var htmlDoc = HttpRoutines.GetWebDoc($"https://en.wikipedia.org/{curRow[link]}");
+            var htmlDoc = HttpRoutines.GetWebDoc($"https://en.wikipedia.org/{wikiItem.itemURL}");
             HtmlNodeCollection spans = null;
             if (htmlDoc != null && HttpRoutines.GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='latitude']", false))
             {
                 if (spans != null && spans.Count > 0)
                 {
-                    curRow.Add(ConvertWikiCoOrd(spans[0].InnerText));
+                    wikiItem.latitude = ConvertWikiCoOrd(spans[0].InnerText);
                     HttpRoutines.GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='longitude']", false);
-                    curRow.Add(ConvertWikiCoOrd(spans[0].InnerText));
+                    wikiItem.longitude = ConvertWikiCoOrd(spans[0].InnerText);
                     return true;
                 }
             }
@@ -156,11 +163,11 @@ namespace P3D_Scenario_Generator
             {
                 if (WikiPage[tableNo].Count == 1)
                 {
-                    tableDesc = $"{WikiPage[tableNo][0][title]} (one item)";
+                    tableDesc = $"{WikiPage[tableNo][0].title} (one item)";
                 }
                 else 
                 {
-                    tableDesc = $"{WikiPage[tableNo][0][title]} ... {WikiPage[tableNo][^1][title]} ({WikiPage[tableNo].Count} items)";
+                    tableDesc = $"{WikiPage[tableNo][0].title} ... {WikiPage[tableNo][^1].title} ({WikiPage[tableNo].Count} items)";
                 }
                 list.Add(tableDesc);
             }
@@ -229,13 +236,13 @@ namespace P3D_Scenario_Generator
         {
             if (insertionPt > route.Count - 1)
             {
-                route.Add($"[{startItem}] {WikiPage[tableNo][startItem][title]} ... [{finishItem}] {WikiPage[tableNo][finishItem][title]} " +
+                route.Add($"[{startItem}] {WikiPage[tableNo][startItem].title} ... [{finishItem}] {WikiPage[tableNo][finishItem].title} " +
                     $"({wikiTableCost[startItem, finishItem]} miles)");
             }
             else
             {
-                route.Insert(insertionPt, $"[{startItem}] {WikiPage[tableNo][startItem][title]} ... " +
-                    $"[{finishItem}] {WikiPage[tableNo][finishItem][title]} ({wikiTableCost[startItem, finishItem]} miles)");
+                route.Insert(insertionPt, $"[{startItem}] {WikiPage[tableNo][startItem].title} ... " +
+                    $"[{finishItem}] {WikiPage[tableNo][finishItem].title} ({wikiTableCost[startItem, finishItem]} miles)");
             }
             itemVisitedCount++;
             itemsVisited[newItem] = true;
@@ -274,8 +281,8 @@ namespace P3D_Scenario_Generator
             {
                 for (int col = 0; col < WikiPage[tableNo].Count; col++)
                 {
-                    Coordinate coord1 = Coordinate.Parse($"{WikiPage[tableNo][row][latitude]} {WikiPage[tableNo][row][longitude]}");
-                    Coordinate coord2 = Coordinate.Parse($"{WikiPage[tableNo][col][latitude]} {WikiPage[tableNo][col][longitude]}");
+                    Coordinate coord1 = Coordinate.Parse($"{WikiPage[tableNo][row].latitude} {WikiPage[tableNo][row].longitude}");
+                    Coordinate coord2 = Coordinate.Parse($"{WikiPage[tableNo][col].latitude} {WikiPage[tableNo][col].longitude}");
                     wikiTableCost[row, col] = (int)coord1.Get_Distance_From_Coordinate(coord2).Miles;
                 }
             }
@@ -289,31 +296,46 @@ namespace P3D_Scenario_Generator
         {
             PopulateWikiTour(tableNo, route, tourStartItem, tourFinishItem, tourDistance);
             SetWikiAirports();
-            SetWikiOSMImages();
+            SetWikiOverviewImage();
+            SetWikiLocationImage();
+            SetAllWikiLegRouteImages();
         }
 
         /// <summary>
-        /// Finds and sets <see cref="WikiStartAirport"/> and <see cref="WikiFinishAirport"/>. Adjusts <see cref="WikiDistance"/> 
+        /// Finds and inserts/appends wiki tour start and finish airports. Adjusts <see cref="WikiDistance"/> 
         /// to include airport legs
         /// </summary>
         static internal void SetWikiAirports()
         {
-            Coordinate coordFirstItem = Coordinate.Parse($"{WikiTour[0][latitude]} {WikiTour[0][longitude]}");
-            WikiStartAirport = Runway.GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble());
-            Coordinate coordStartAirport = Coordinate.Parse($"{WikiStartAirport.AirportLat} {WikiStartAirport.AirportLon}");
+            Coordinate coordFirstItem = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
+            WikiTour.Insert(0, GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble()));
+            Coordinate coordStartAirport = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
             WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
 
-            Coordinate coordLastItem = Coordinate.Parse($"{WikiTour[^1][latitude]} {WikiTour[^1][longitude]}");
-            WikiFinishAirport = Runway.GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble());
-            Coordinate coordFinishAirport = Coordinate.Parse($"{WikiFinishAirport.AirportLat} {WikiFinishAirport.AirportLon}");
+            Coordinate coordLastItem = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
+            WikiTour.Add(GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble()));
+            Coordinate coordFinishAirport = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
             WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
         }
 
-        static internal void SetWikiOSMImages()
+        /// <summary>
+        /// Calls GetNearestAirport method in Runway class to look for closest airport. Populates an instance of WikiItemParams 
+        /// with the airport information
+        /// </summary>
+        /// <param name="queryLat">The wiki item latitude</param>
+        /// <param name="queryLon">The wiki item longitude</param>
+        /// <returns></returns>
+        static internal WikiItemParams GetNearestAirport(double queryLat, double queryLon)
         {
-            SetWikiOverviewImage();
-            SetWikiLocationImage();
-            SetAllWikiLegRouteImages();
+            WikiItemParams wikiItemParams = new();
+            Params nearestAirport = Runway.GetNearestAirport(queryLat, queryLon);
+            if (nearestAirport == null)
+                return null;
+            wikiItemParams.airportICAO = nearestAirport.IcaoId;
+            wikiItemParams.airportID = nearestAirport.Id;
+            wikiItemParams.latitude = nearestAirport.AirportLat.ToString();
+            wikiItemParams.longitude = nearestAirport.AirportLon.ToString();
+            return wikiItemParams;
         }
 
         /// <summary>
@@ -323,8 +345,8 @@ namespace P3D_Scenario_Generator
         {
             List<List<int>> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
             List<List<int>> boundingBox = []; // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
-            int zoom = GetBoundingBoxZoom(tiles, 2, 2, 0, WikiTour.Count - 1, true, true);
-            SetWikiOSMtiles(tiles, zoom, 0, WikiTour.Count - 1, true, true);
+            int zoom = GetBoundingBoxZoom(tiles, 2, 2, 0, WikiTour.Count - 1);
+            SetWikiOSMtiles(tiles, zoom, 0, WikiTour.Count - 1);
             OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
             Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
@@ -339,7 +361,7 @@ namespace P3D_Scenario_Generator
             List<List<int>> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
             List<List<int>> boundingBox = []; // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = 15;
-            SetWikiOSMtiles(tiles, zoom, 0, -1, true, false);
+            SetWikiOSMtiles(tiles, zoom, 0, 0);
             OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
             if (boundingBox[xAxis].Count != boundingBox[yAxis].Count)
@@ -361,17 +383,15 @@ namespace P3D_Scenario_Generator
         /// <param name="tilesHeight">Maximum number of tiles allowed for x axis</param>
         /// <param name="startItemIndex">Index of start item in <see cref="WikiTour"/></param>
         /// <param name="finishItemIndex">Index of finish item in <see cref="WikiTour"/></param>
-        /// <param name="incStartAirport">Whether to include <see cref="WikiStartAirport"/></param>
-        /// <param name="incFinishAirport">Whether to include <see cref="WikiFinishAirport"/></param>
         /// <returns>The maximum zoom level that meets constraints</returns>
         static internal int GetBoundingBoxZoom(List<List<int>> tiles, int tilesWidth, int tilesHeight,
-            int startItemIndex, int finishItemIndex, bool incStartAirport, bool incFinishAirport)
+            int startItemIndex, int finishItemIndex)
         {
             List<List<int>> boundingBox = [];
             for (int zoom = 2; zoom <= 18; zoom++)
             {
                 tiles.Clear();
-                SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex, incStartAirport, incFinishAirport);
+                SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
                 boundingBox.Clear();
                 OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
                 if ((boundingBox[xAxis].Count > tilesWidth) || (boundingBox[yAxis].Count > tilesHeight))
@@ -389,23 +409,12 @@ namespace P3D_Scenario_Generator
         /// <param name="zoom">The zoom level to get OSM tiles at</param>
         /// <param name="startItemIndex">Index of start item in <see cref="WikiTour"/></param>
         /// <param name="finishItemIndex">Index of finish item in <see cref="WikiTour"/></param>
-        /// <param name="incStartAirport">Whether to include <see cref="WikiStartAirport"/></param>
-        /// <param name="incFinishAirport">Whether to include <see cref="WikiFinishAirport"/></param>
-        static internal void SetWikiOSMtiles(List<List<int>> tiles, int zoom, int startItemIndex, int finishItemIndex,
-            bool incStartAirport, bool incFinishAirport)
+        static internal void SetWikiOSMtiles(List<List<int>> tiles, int zoom, int startItemIndex, int finishItemIndex)
         {
             tiles.Clear();
-            if (incStartAirport)
-            {
-                tiles.Add(OSM.GetOSMtile(WikiStartAirport.AirportLon.ToString(), WikiStartAirport.AirportLat.ToString(), zoom));
-            }
             for (int itemNo = startItemIndex; itemNo <= finishItemIndex; itemNo++)
             {
-                tiles.Add(OSM.GetOSMtile(WikiTour[itemNo][longitude], WikiTour[itemNo][latitude], zoom));
-            }
-            if (incFinishAirport)
-            {
-                tiles.Add(OSM.GetOSMtile(WikiFinishAirport.AirportLon.ToString(), WikiFinishAirport.AirportLat.ToString(), zoom));
+                tiles.Add(OSM.GetOSMtile(WikiTour[itemNo].longitude, WikiTour[itemNo].latitude, zoom));
             }
         }
 
@@ -415,17 +424,10 @@ namespace P3D_Scenario_Generator
         static internal void SetAllWikiLegRouteImages()
         {
             WikiLegMapEdges = [];
-            // First leg is from start airport to first item
-            SetOneWikiLegRouteImages(0, 0, true, false);
-
-            // Middle legs which may be zero if only one item
             for (int itemNo = 0; itemNo <= WikiTour.Count - 2; itemNo++)
             {
-                SetOneWikiLegRouteImages(itemNo, itemNo + 1, false, false);
+                SetOneWikiLegRouteImages(itemNo, itemNo + 1);
             }
-
-            // Last leg is from last item to finish airport
-            SetOneWikiLegRouteImages(WikiTour.Count - 1, WikiTour.Count - 1, false, true);
         }
 
         /// <summary>
@@ -433,22 +435,16 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="startItemIndex">Index of start item in <see cref="WikiTour"/></param>
         /// <param name="finishItemIndex">Index of finish item in <see cref="WikiTour"/></param>
-        /// <param name="incStartAirport">Whether to include <see cref="WikiStartAirport"/></param>
-        /// <param name="incFinishAirport">Whether to include <see cref="WikiFinishAirport"/></param>
-        static internal void SetOneWikiLegRouteImages(int startItemIndex, int finishItemIndex, bool incStartAirport, bool incFinishAirport)
+        static internal void SetOneWikiLegRouteImages(int startItemIndex, int finishItemIndex)
         {
             List<List<int>> tiles = [];
             List<List<int>> boundingBox = [];
             List<List<int>> zoomInBoundingBox;
 
-            int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex, incStartAirport, incFinishAirport);
-            SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex, incStartAirport, incFinishAirport);
+            int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex);
+            SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
-            int legNo = 1;
-            if (!incStartAirport)
-            {
-                legNo = startItemIndex + 2; // start airport leg is 1, next leg is 2 (startItemIndex = 0 + 2)
-            }
+            int legNo = startItemIndex + 1; 
             Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1");
             Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
             zoomInBoundingBox = Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, 2);
@@ -456,7 +452,7 @@ namespace P3D_Scenario_Generator
 
             for (int inc = 1; inc <= 2; inc++)
             {
-                SetWikiOSMtiles(tiles, zoom + inc, startItemIndex, finishItemIndex, incStartAirport, incFinishAirport);
+                SetWikiOSMtiles(tiles, zoom + inc, startItemIndex, finishItemIndex);
                 Drawing.MontageTiles(zoomInBoundingBox, zoom + inc, $"LegRoute_{legNo:00}_zoom{inc + 1}");
                 Drawing.DrawRoute(tiles, zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}");
                 zoomInBoundingBox = Drawing.MakeSquare(zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}", zoom + inc, (int)Math.Pow(2, inc + 1));
@@ -619,13 +615,15 @@ namespace P3D_Scenario_Generator
         /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
         /// <param name="itemNo">The item no reference in <see cref="WikiPage"/></param>
         /// <returns>A populated item</returns>
-        static internal List<string> SetWikiItem(int tableNo, int itemNo)
+        static internal WikiItemParams SetWikiItem(int tableNo, int itemNo)
         {
-            List<string> wikiItem = [];
-            wikiItem.Add(WikiPage[tableNo][itemNo][title]);
-            wikiItem.Add(WikiPage[tableNo][itemNo][link]);
-            wikiItem.Add(WikiPage[tableNo][itemNo][latitude]);
-            wikiItem.Add(WikiPage[tableNo][itemNo][longitude]);
+            WikiItemParams wikiItem = new()
+            {
+                title = WikiPage[tableNo][itemNo].title,
+                itemURL = WikiPage[tableNo][itemNo].itemURL,
+                latitude = WikiPage[tableNo][itemNo].latitude,
+                longitude = WikiPage[tableNo][itemNo].longitude
+            };
             return wikiItem;
         }
 

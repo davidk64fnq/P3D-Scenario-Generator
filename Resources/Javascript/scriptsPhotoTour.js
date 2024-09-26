@@ -12,7 +12,7 @@ function refreshLegPhoto() {
 	if (legNo != oldLegNo) {
 		oldLegNo = legNo;
 		const element = document.getElementById("content");
-		legNoStr = String(legNo).padStart(2, '0'); // Assuming <= 99 legs
+		legNoStr = String(legNo - 1).padStart(2, '0'); // Assuming <= 99 legs
 		element.src='photo_' + legNoStr + '.jpg';
 	}
 }

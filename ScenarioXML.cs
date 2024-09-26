@@ -178,7 +178,6 @@ namespace P3D_Scenario_Generator
             SetCloseWindowAction(2, "UIPanelWindow", "UIpanelWindow");
 
             // Pass 1 - setup proximity triggers, there is a trigger for each photo location
-            // Each trigger closes last leg/photo windows and opens new leg/photo windows 
             // ProximityTrigger01 is the first photo trigger, Photo_PhotoTour.PhotoCount - 2 is the last photo trigger
             for (int photoNo = 1; photoNo <= PhotoTour.PhotoCount - 2; photoNo++)
             {
@@ -204,7 +203,7 @@ namespace P3D_Scenario_Generator
             }
 
             // Pass 2 - setup proximity triggers on enter actions
-            // Each trigger closes last leg/photo windows and opens new leg/photo windows 
+            // Each trigger increments leg number scenario variable which leads to updates in html window contents 
             // ProximityTrigger01 is the first photo trigger, Photo_PhotoTour.PhotoCount - 2 is the last photo trigger
             for (int photoNo = 1; photoNo <= PhotoTour.PhotoCount - 2; photoNo++)
             {
@@ -216,6 +215,10 @@ namespace P3D_Scenario_Generator
                 if (photoNo + 1 < PhotoTour.PhotoCount - 1)
                     SetProximityTriggerOnEnterAction(photoNo + 1, "ObjectActivationAction", "ActProximityTrigger", photoNo, "ProximityTrigger");
 
+                // Open photo window when first photo location reached
+                if (photoNo == 1)
+                    SetProximityTriggerOnEnterAction(2, "OpenWindowAction", "OpenUIpanelWindow", photoNo, "ProximityTrigger");
+
                 // Increment gate number
                 SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", photoNo, "ProximityTrigger");
             }
@@ -223,12 +226,11 @@ namespace P3D_Scenario_Generator
             // Create timer trigger to play audio introductions and open 1st leg window when scenario starts
             SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
             SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
-            SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow02", "TimerTrigger01");
             SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
             SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
             SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
-            // Create airport landing trigger which does goal resolution and closes last leg window
+            // Create airport landing trigger which does goal resolution and closes windows
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Parameters.PhotoDestRunway.Split("\t")[0]);
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow02", "AirportLandingTrigger01");
@@ -446,7 +448,7 @@ namespace P3D_Scenario_Generator
             SetTourScriptActions();
 
             // Create window objects 
-            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\WikipediaOSM.html", "False", "False");
+            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
             SetUIPanelWindow(2, "UIpanelWindow", "False", "True", $"images\\WikipediaItem.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for windows
@@ -470,7 +472,7 @@ namespace P3D_Scenario_Generator
             {
                 // Create cylinder area objects to put over each photo location
                 SetCylinderArea(legNo, "CylinderArea", "0.0,0.0,0.0", "300", "18520.0", "None");
-                string pwp = GetWikiItemWorldPosition(legNo - 1);
+                string pwp = GetWikiItemWorldPosition(legNo);
                 AttachedWorldPosition awp = GetAttachedWorldPosition(pwp, "True");
                 SetAttachedWorldPosition("CylinderArea", $"CylinderArea{legNo:00}", awp);
 
@@ -507,7 +509,7 @@ namespace P3D_Scenario_Generator
             SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
             // Create airport landing trigger which does goal resolution and closes window
-            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Wikipedia.WikiFinishAirport.IcaoId);
+            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Wikipedia.WikiTour[^1].airportICAO);
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow02", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
@@ -689,7 +691,7 @@ namespace P3D_Scenario_Generator
             return [(Parameters.PhotoLegWindowSize + 15).ToString(), (Parameters.PhotoLegWindowSize + 85).ToString()];
         }
 
-        static private string GetPhotoWorldPosition(PhotoLocationParams photoLegParams)
+        static private string GetPhotoWorldPosition(PhotoLocParams photoLegParams)
         {
             return $"{ScenarioFXML.FormatCoordXML(photoLegParams.latitude, "N", "S", true)}, " +
 				$"{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W", true)},+0.0";
@@ -706,8 +708,7 @@ namespace P3D_Scenario_Generator
 
         static private string GetWikiItemWorldPosition(int legNo)
         {
-            int latitude = 2, longitude = 3; // Wikipedia item list indexes
-            return $"{Wikipedia.WikiTour[legNo][latitude]}, {Wikipedia.WikiTour[legNo][longitude]},+0.0";
+            return $"{Wikipedia.WikiTour[legNo].latitude}, {Wikipedia.WikiTour[legNo].longitude},+0.0";
         }
 
         static private void SetAirportLandingTrigger(string descr, string landingType, string activated, string airportIdent)
@@ -1183,18 +1184,18 @@ namespace P3D_Scenario_Generator
         {
             SetMovingMapJS(Wikipedia.WikiLegMapEdges, Wikipedia.WikiCount);
 
-            int link = 1; // Wikipedia item list indexes
             string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsWikipediaItem.js";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaItem.js");
+            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaItem.js";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
             StreamReader reader = new(stream);
             string wikipediaJS = reader.ReadToEnd();
-            string itemURLs = "\"https://en.wikipedia.org" + Wikipedia.WikiTour[0][link] + "\"";
-            for (int legNo = 1; legNo < Wikipedia.WikiCount - 2; legNo++)
+            string itemURLs = "\"https://en.wikipedia.org" + Wikipedia.WikiTour[1].itemURL + "\"";
+            for (int legNo = 2; legNo < Wikipedia.WikiCount - 1; legNo++)
             {
-                itemURLs += ", " + "\"https://en.wikipedia.org" + Wikipedia.WikiTour[legNo][link] + "\"";
+                itemURLs += ", " + "\"https://en.wikipedia.org" + Wikipedia.WikiTour[legNo].itemURL + "\"";
             }
             // double up last url to display while travelling from last item to destination airport
-            itemURLs += ", " + "\"https://en.wikipedia.org" + Wikipedia.WikiTour[Wikipedia.WikiCount - 3][link] + "\"";
+            itemURLs += ", " + "\"https://en.wikipedia.org" + Wikipedia.WikiTour[Wikipedia.WikiCount - 2].itemURL + "\"";
             wikipediaJS = wikipediaJS.Replace("itemURLsX", itemURLs);
             File.WriteAllText(saveLocation, wikipediaJS);
             stream.Dispose();

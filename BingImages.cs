@@ -55,7 +55,7 @@ namespace P3D_Scenario_Generator
             {
                 Directory.CreateDirectory($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images");
             }
-            PhotoLocationParams celestialImage = new();
+            PhotoLocParams celestialImage = new();
             bool startInImage = true;
             while (startInImage)
             {
@@ -92,7 +92,7 @@ namespace P3D_Scenario_Generator
             Parameters.CelestialImageWest = celestialImage.westEdge;
         }
 
-        private static void GetBingMetadata(string url, PhotoLocationParams curPhoto)
+        private static void GetBingMetadata(string url, PhotoLocParams curPhoto)
         {
             url += "&mapMetadata=1&o=xml";
             HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), "images\\temp.xml");

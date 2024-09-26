@@ -207,13 +207,13 @@ namespace P3D_Scenario_Generator
                 case nameof(ScenarioTypes.WikiList):
                     if (rwyType == "start")
                     {
-                        words[0] = Wikipedia.WikiStartAirport.IcaoId;
-                        words[1] = Wikipedia.WikiStartAirport.Id;
+                        words[0] = Wikipedia.WikiTour[0].airportICAO;
+                        words[1] = Wikipedia.WikiTour[0].airportID;
                     }
                     else
                     {
-                        words[0] = Wikipedia.WikiFinishAirport.IcaoId;
-                        words[1] = Wikipedia.WikiFinishAirport.Id;
+                        words[0] = Wikipedia.WikiTour[^1].airportICAO;
+                        words[1] = Wikipedia.WikiTour[^1].airportID;
                     }
                     break;
                 default:

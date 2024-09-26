@@ -158,6 +158,7 @@ namespace P3D_Scenario_Generator
                 SetDefaultCircuitParams();
             }
         }
+
         private void ListBoxAircraft_SelectedIndexChanged(object sender, EventArgs e)
         {
             Properties.Settings.Default.SelectedAircraft = ListBoxAircraft.Text;

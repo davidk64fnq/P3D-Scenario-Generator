@@ -147,7 +147,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += $"{Runway.destRwy.Id} at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.destRwy.City}, {Runway.destRwy.Country}.";
                     overview.Objective = "Take off and visit a series of Wikipedia list locations before landing ";
-                    overview.Objective += $"at {Wikipedia.WikiFinishAirport.IcaoId}, runway {Wikipedia.WikiFinishAirport.Id}";
+                    overview.Objective += $"at {Wikipedia.WikiTour[^1].airportICAO}, runway {Wikipedia.WikiTour[^1].airportID}";
                     overview.Tips = "The early bird gets the worm, but the second mouse gets the cheese.";
                     break;
                 default:

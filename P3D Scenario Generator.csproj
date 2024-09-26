@@ -49,6 +49,7 @@
     <None Remove="Resources\HTML\MissionBriefSource.htm" />
     <None Remove="Resources\HTML\MovingMap.html" />
     <None Remove="Resources\HTML\OverviewSource.htm" />
+    <None Remove="Resources\HTML\PhotoTour.html" />
     <None Remove="Resources\HTML\SignWriting.html" />
     <None Remove="Resources\HTML\WikipediaItem.html" />
     <None Remove="Resources\Images\aircraft.png" />
@@ -153,6 +154,7 @@
     <EmbeddedResource Include="Resources\HTML\CelestialSextant.html" />
     <EmbeddedResource Include="Resources\HTML\MissionBriefSource.htm" />
     <EmbeddedResource Include="Resources\HTML\OverviewSource.htm" />
+    <EmbeddedResource Include="Resources\HTML\PhotoTour.html" />
     <EmbeddedResource Include="Resources\HTML\SignWriting.html" />
     <EmbeddedResource Include="Resources\HTML\WikipediaItem.html" />
     <EmbeddedResource Include="Resources\HTML\MovingMap.html" />

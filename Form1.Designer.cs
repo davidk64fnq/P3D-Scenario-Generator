@@ -57,6 +57,8 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitUpwind = new TextBox();
             buttonAircraft = new Button();
             ListBoxWikiColumn = new ListBox();
+            TextBoxPhotoMaxNoLegs = new TextBox();
+            TextBoxPhotoMinNoLegs = new TextBox();
             ButtonHelp = new Button();
             TabPageSettings = new TabPage();
             tableLayoutPanelSettings = new TableLayoutPanel();
@@ -77,8 +79,6 @@ namespace P3D_Scenario_Generator
             label16 = new Label();
             TabPagePhoto = new TabPage();
             label18 = new Label();
-            TextBoxPhotoMaxNoLegs = new TextBox();
-            TextBoxPhotoMinNoLegs = new TextBox();
             label17 = new Label();
             label15 = new Label();
             label14 = new Label();
@@ -254,7 +254,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMaxLegDist.TabIndex = 3;
             TextBoxPhotoMaxLegDist.Text = "10";
             TextBoxPhotoMaxLegDist.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoMaxLegDist, "Maximum leg distance in miles to next photo");
+            toolTip1.SetToolTip(TextBoxPhotoMaxLegDist, "Maximum leg distance in miles to next photo, must be atleast 1 mile greater than minimum leg distance.");
             TextBoxPhotoMaxLegDist.Validating += TextBoxDouble_Validating;
             // 
             // TextBoxPhotoMinLegDist
@@ -417,6 +417,28 @@ namespace P3D_Scenario_Generator
             ListBoxWikiColumn.Size = new Size(97, 19);
             ListBoxWikiColumn.TabIndex = 8;
             toolTip1.SetToolTip(ListBoxWikiColumn, "Column in table(s) containing name of items");
+            // 
+            // TextBoxPhotoMaxNoLegs
+            // 
+            TextBoxPhotoMaxNoLegs.Location = new Point(148, 166);
+            TextBoxPhotoMaxNoLegs.Name = "TextBoxPhotoMaxNoLegs";
+            TextBoxPhotoMaxNoLegs.Size = new Size(119, 23);
+            TextBoxPhotoMaxNoLegs.TabIndex = 14;
+            TextBoxPhotoMaxNoLegs.Text = "7";
+            TextBoxPhotoMaxNoLegs.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoMaxNoLegs, "Maximum number of legs must between 2 and 18 inclusive and greater then or equal to minimum number of legs. Two legs would be starting airport to a single photo location then return to airport.\r\n");
+            TextBoxPhotoMaxNoLegs.Validating += TextBoxInteger_Validating;
+            // 
+            // TextBoxPhotoMinNoLegs
+            // 
+            TextBoxPhotoMinNoLegs.Location = new Point(148, 118);
+            TextBoxPhotoMinNoLegs.Name = "TextBoxPhotoMinNoLegs";
+            TextBoxPhotoMinNoLegs.Size = new Size(119, 23);
+            TextBoxPhotoMinNoLegs.TabIndex = 13;
+            TextBoxPhotoMinNoLegs.Text = "3";
+            TextBoxPhotoMinNoLegs.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoMinNoLegs, "Minimum number of legs must between 2 and 18 inclusive and less than or equal to maximum number of legs. Two legs would be starting airport to a single photo location then return to airport.");
+            TextBoxPhotoMinNoLegs.Validating += TextBoxInteger_Validating;
             // 
             // ButtonHelp
             // 
@@ -641,28 +663,6 @@ namespace P3D_Scenario_Generator
             label18.Size = new Size(88, 15);
             label18.TabIndex = 26;
             label18.Text = "Hotspot Radius";
-            // 
-            // TextBoxPhotoMaxNoLegs
-            // 
-            TextBoxPhotoMaxNoLegs.Location = new Point(148, 166);
-            TextBoxPhotoMaxNoLegs.Name = "TextBoxPhotoMaxNoLegs";
-            TextBoxPhotoMaxNoLegs.Size = new Size(119, 23);
-            TextBoxPhotoMaxNoLegs.TabIndex = 14;
-            TextBoxPhotoMaxNoLegs.Text = "7";
-            TextBoxPhotoMaxNoLegs.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoMaxNoLegs, "Maximum number of legs must between 2 and 18 inclusive and greater then or equal to minimum number of legs. Two legs would be starting airport to a single photo location then return to airport.\r\n");
-            TextBoxPhotoMaxNoLegs.Validating += TextBoxInteger_Validating;
-            // 
-            // TextBoxPhotoMinNoLegs
-            // 
-            TextBoxPhotoMinNoLegs.Location = new Point(148, 118);
-            TextBoxPhotoMinNoLegs.Name = "TextBoxPhotoMinNoLegs";
-            TextBoxPhotoMinNoLegs.Size = new Size(119, 23);
-            TextBoxPhotoMinNoLegs.TabIndex = 13;
-            TextBoxPhotoMinNoLegs.Text = "3";
-            TextBoxPhotoMinNoLegs.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoMinNoLegs, "Minimum number of legs must between 2 and 18 inclusive and less than or equal to maximum number of legs. Two legs would be starting airport to a single photo location then return to airport.");
-            TextBoxPhotoMinNoLegs.Validating += TextBoxInteger_Validating;
             // 
             // label17
             // 
