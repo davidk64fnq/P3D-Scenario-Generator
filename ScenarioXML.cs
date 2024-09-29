@@ -65,9 +65,9 @@ namespace P3D_Scenario_Generator
 				string hwp = GetGateWorldPosition(Gates.GetGate(gateNo), Con.hoopActVertOffset);
                 string nwp = GetGateWorldPosition(Gates.GetGate(gateNo), Con.numBlueVertOffset);
                 string go = GetGateOrientation(Gates.GetGate(gateNo));
-                SetLibraryObject(gateNo, Con.hoopAct, Con.hoopActGuid, hwp, go, Con.heightAMSL, "1", "False");
-                SetLibraryObject(gateNo, Con.hoopInact, Con.hoopInactGuid, hwp, go, Con.heightAMSL, "1", "True");
-                SetLibraryObject(gateNo, Con.numBlue, Con.numBlueGuid[gateNo], nwp, go, Con.heightAMSL, "1", "True");
+                SetLibraryObject(gateNo, Con.hoopAct, Con.hoopActGuid, hwp, go, "False", "1", "False");
+                SetLibraryObject(gateNo, Con.hoopInact, Con.hoopInactGuid, hwp, go, "False", "1", "True");
+                SetLibraryObject(gateNo, Con.numBlue, Con.numBlueGuid[gateNo], nwp, go, "False", "1", "True");
 
                 // Create sound action to play when each new gate entered
                 SetOneShotSoundAction(gateNo, "ThruHoop", "ThruHoop.wav");
@@ -87,7 +87,7 @@ namespace P3D_Scenario_Generator
 
                 // Create rectangle area object to put over gate
                 SetRectangleArea($"RectangleArea{gateNo:00}", go, "100.0", "25.0", "100.0");
-                AttachedWorldPosition awp = GetAttachedWorldPosition(hwp, Con.heightAMSL);
+                AttachedWorldPosition awp = GetAttachedWorldPosition(hwp, "False");
                 SetAttachedWorldPosition("RectangleArea", $"RectangleArea{gateNo:00}", awp);
 
                 // Create proximity trigger and actions to deactivate gate and POI, and play hoop sound as each gate entered
@@ -267,8 +267,8 @@ namespace P3D_Scenario_Generator
                 // Create gate objects (hoop active, hoop inactive and number)
                 string hwp = GetGateWorldPosition(Gates.GetGate(gateNo), Con.hoopActVertOffset);
                 string go = GetGateOrientation(Gates.GetGate(gateNo));
-                SetLibraryObject(gateNo, Con.hoopAct, Con.hoopActGuid, hwp, go, Con.heightAMSL, "1", "False");
-                SetLibraryObject(gateNo, Con.hoopInact, Con.hoopInactGuid, hwp, go, Con.heightAMSL, "1", "False");
+                SetLibraryObject(gateNo, Con.hoopAct, Con.hoopActGuid, hwp, go, "False", "1", "False");
+                SetLibraryObject(gateNo, Con.hoopInact, Con.hoopInactGuid, hwp, go, "False", "1", "False");
 
                 // Create sound action to play when each new gate entered
                 SetOneShotSoundAction(gateNo, "ThruHoop", "ThruHoop.wav");
@@ -288,7 +288,7 @@ namespace P3D_Scenario_Generator
 
                 // Create rectangle area object to put over gate
                 SetRectangleArea($"RectangleArea{gateNo:00}", go, "100.0", "25.0", "100.0");
-                AttachedWorldPosition awp = GetAttachedWorldPosition(hwp, Con.heightAMSL);
+                AttachedWorldPosition awp = GetAttachedWorldPosition(hwp, "False");
                 SetAttachedWorldPosition("RectangleArea", $"RectangleArea{gateNo:00}", awp);
 
                 // Create proximity trigger and actions 
@@ -838,25 +838,23 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject = [lo];
         }
 
-        static private void SetMovingMapJS(List<List<double>> mapEdges, int count)
+        static private void SetMovingMapJS(List<MapEdges> mapEdges, int count)
         {
-            int north = 0, east = 1, south = 2, west = 3; // Used with mapEdges to identify leg boundaries
-
             string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsMovingMap.js";
             string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsMovingMap.js";
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
             StreamReader reader = new(stream);
             string movingMapJS = reader.ReadToEnd();
-            string mapNorth = mapEdges[0][north].ToString();
-            string mapEast = mapEdges[0][east].ToString();
-            string mapSouth = mapEdges[0][south].ToString();
-            string mapWest = mapEdges[0][west].ToString();
+            string mapNorth = mapEdges[0].north.ToDouble().ToString();
+            string mapEast = mapEdges[0].east.ToDouble().ToString();
+            string mapSouth = mapEdges[0].south.ToDouble().ToString();
+            string mapWest = mapEdges[0].west.ToDouble().ToString();
             for (int legNo = 1; legNo < count - 1; legNo++)
             {
-                mapNorth += ", " + mapEdges[legNo][north].ToString();
-                mapEast += ", " + mapEdges[legNo][east].ToString();
-                mapSouth += ", " + mapEdges[legNo][south].ToString();
-                mapWest += ", " + mapEdges[legNo][west].ToString();
+                mapNorth += ", " + mapEdges[legNo].north.ToDouble().ToString();
+                mapEast += ", " + mapEdges[legNo].east.ToDouble().ToString();
+                mapSouth += ", " + mapEdges[legNo].south.ToDouble().ToString();
+                mapWest += ", " + mapEdges[legNo].west.ToDouble().ToString();
             }
             movingMapJS = movingMapJS.Replace("mapNorthX", mapNorth);
             movingMapJS = movingMapJS.Replace("mapEastX", mapEast);

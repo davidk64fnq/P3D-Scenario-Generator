@@ -1,4 +1,5 @@
-﻿using HtmlDocument = HtmlAgilityPack.HtmlDocument;
+﻿using CoordinateSharp;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace P3D_Scenario_Generator
 {
@@ -24,11 +25,22 @@ namespace P3D_Scenario_Generator
         public double centreLon;
     }
 
+    /// <summary>
+    /// Stores latitude and longitude boundaries of OSM image depicting coordinates, used by HTML Javascript moving map code
+    /// </summary>
+    public class MapEdges
+    {
+        public CoordinatePart north;
+        public CoordinatePart east;
+        public CoordinatePart south;
+        public CoordinatePart west;
+    }
+
     internal class PhotoTour
     {
-        private static readonly List<PhotoLocParams> photoLocations = [];
-        internal static int xAxis = 0, yAxis = 1; // Used in bounding box to denote lists that store OSM xTile and yTile reference numbers
-        internal static List<List<double>> PhotoTourLegMapEdges { get; private set; } // Lat/Lon boundaries for each OSM montage leg image
+        private static readonly List<PhotoLocParams> PhotoLocations = [];
+
+        internal static List<MapEdges> PhotoTourLegMapEdges { get; private set; } // Lat/Lon boundaries for each OSM montage leg image
 
         /// <summary>
         /// Includes start and finish airports
@@ -48,11 +60,11 @@ namespace P3D_Scenario_Generator
         /// </summary>
         static internal void SetPhotoTourOverviewImage()
         {
-            List<List<int>> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
-            List<List<int>> boundingBox = []; // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
+            List<Tile> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
+            BoundingBox boundingBox; // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = GetBoundingBoxZoom(tiles, 2, 2, 0, PhotoCount - 1);
             SetPhotoTourOSMtiles(tiles, zoom, 0, PhotoCount - 1);
-            OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
+            boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
             Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
             Drawing.MakeSquare(boundingBox, "Charts_01", zoom, 2);
@@ -63,17 +75,17 @@ namespace P3D_Scenario_Generator
         /// </summary>
         static internal void SetPhotoTourLocationImage()
         {
-            List<List<int>> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
-            List<List<int>> boundingBox = []; // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
+            List<Tile> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
+            BoundingBox boundingBox; // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = 15;
             SetPhotoTourOSMtiles(tiles, zoom, 0, 0);
-            OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
+            boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
-            if (boundingBox[xAxis].Count != boundingBox[yAxis].Count)
+            if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
             {
                 Drawing.MakeSquare(boundingBox, "chart_thumb", zoom, 2);
             }
-            if (boundingBox[xAxis].Count == 2)
+            if (boundingBox.xAxis.Count == 2)
             {
                 Drawing.Resize("chart_thumb.png", 256);
             }
@@ -91,16 +103,15 @@ namespace P3D_Scenario_Generator
         /// <param name="incStartAirport">Whether to include the start airport</param>
         /// <param name="incFinishAirport">Whether to include the finish airport</param>
         /// <returns>The maximum zoom level that meets constraints</returns>
-        static internal int GetBoundingBoxZoom(List<List<int>> tiles, int tilesWidth, int tilesHeight, int startPhotoIndex, int finishPhotoIndex)
+        static internal int GetBoundingBoxZoom(List<Tile> tiles, int tilesWidth, int tilesHeight, int startPhotoIndex, int finishPhotoIndex)
         {
-            List<List<int>> boundingBox = [];
+            BoundingBox boundingBox;
             for (int zoom = 2; zoom <= 18; zoom++)
             {
                 tiles.Clear();
                 SetPhotoTourOSMtiles(tiles, zoom, startPhotoIndex, finishPhotoIndex);
-                boundingBox.Clear();
-                OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
-                if ((boundingBox[xAxis].Count > tilesWidth) || (boundingBox[yAxis].Count > tilesHeight))
+                boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
+                if ((boundingBox.xAxis.Count > tilesWidth) || (boundingBox.yAxis.Count > tilesHeight))
                 {
                     return zoom - 1;
                 }
@@ -115,7 +126,7 @@ namespace P3D_Scenario_Generator
         /// <param name="zoom">The zoom level to get OSM tiles at</param>
         /// <param name="startItemIndex">Index of first photo in photo tour</param>
         /// <param name="finishItemIndex">Index of last photo in photo tour</param>
-        static internal void SetPhotoTourOSMtiles(List<List<int>> tiles, int zoom, int startItemIndex, int finishItemIndex)
+        static internal void SetPhotoTourOSMtiles(List<Tile> tiles, int zoom, int startItemIndex, int finishItemIndex)
         {
             tiles.Clear();
             for (int photoIndex = startItemIndex; photoIndex <= finishItemIndex; photoIndex++)
@@ -139,19 +150,19 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Creates "LegRoute_XX.jpg" images for one leg using a montage of OSM tiles that covers the start and finish leg items 
         /// </summary>
-        /// <param name="startItemIndex">Index of start item in <see cref="photoLocations"/></param>
-        /// <param name="finishItemIndex">Index of finish item in <see cref="photoLocations"/></param>
+        /// <param name="startItemIndex">Index of start item in <see cref="PhotoLocations"/></param>
+        /// <param name="finishItemIndex">Index of finish item in <see cref="PhotoLocations"/></param>
         /// <param name="incStartAirport">Whether to include start airport</param>
         /// <param name="incFinishAirport">Whether to include finish airport</param>
         static internal void SetOnePhotoLegRouteImages(int startItemIndex, int finishItemIndex)
         {
-            List<List<int>> tiles = [];
-            List<List<int>> boundingBox = [];
-            List<List<int>> zoomInBoundingBox;
+            List<Tile> tiles = [];
+            BoundingBox boundingBox;
+            BoundingBox zoomInBoundingBox;
 
             int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex);
             SetPhotoTourOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
-            OSM.GetTilesBoundingBox(tiles, boundingBox, zoom);
+            boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
             int legNo = startItemIndex + 1; 
 
             // zoom 1 image
@@ -179,22 +190,20 @@ namespace P3D_Scenario_Generator
         /// <param name="legNo">Leg numbers run from 0</param>
         /// <param name="boundingBox">The OSM tile numbers for x and y axis that cover the set of coordinates depicted in an image</param>
         /// <param name="zoom">The OSM tile zoom level for the boundingBox</param>
-        static internal void SetLegImageBoundaries(List<List<int>> boundingBox, int zoom)
+        static internal void SetLegImageBoundaries(BoundingBox boundingBox, int zoom)
         {
-            List<double> legEdges = new(new double[4]);
-            int north = 0, east = 1, south = 2, west = 3; // Used with PhotoTourMapEdges to identify leg boundaries
-            List<double> latLonList;
-            int latitude = 0, longitude = 1;
+            MapEdges legEdges = new();
+            Coordinate c;
 
             // Get the lat/lon coordinates of top left corner of bounding box
-            latLonList = OSM.TileNoToLatLon(boundingBox[xAxis][0], boundingBox[yAxis][0], zoom);
-            legEdges[north] = latLonList[latitude];
-            legEdges[west] = latLonList[longitude];
+            c = OSM.TileNoToLatLon(boundingBox.xAxis[0], boundingBox.yAxis[0], zoom);
+            legEdges.north = c.Latitude;
+            legEdges.west = c.Longitude;
 
             // Get the lat/lon coordinates of top left corner of tile immediately below and right of bottom right corner of bounding box
-            latLonList = OSM.TileNoToLatLon(boundingBox[xAxis][^1] + 1, boundingBox[yAxis][^1] + 1, zoom);
-            legEdges[south] = latLonList[latitude];
-            legEdges[east] = latLonList[longitude];
+            c = OSM.TileNoToLatLon(boundingBox.xAxis[^1] + 1, boundingBox.yAxis[^1] + 1, zoom);
+            legEdges.south = c.Latitude;
+            legEdges.east = c.Longitude;
 
             // Assumes this method called in leg number sequence starting with first leg
             PhotoTourLegMapEdges.Add(legEdges);
@@ -214,13 +223,13 @@ namespace P3D_Scenario_Generator
                 bool legAdded = SetFirstLeg();
 
                 // Try to add more photos up to Parameters.MaxNoLegs in total 
-                while (legAdded && photoLocations.Count < Parameters.MaxNoLegs)
+                while (legAdded && PhotoLocations.Count < Parameters.MaxNoLegs)
                 {
                     legAdded = SetNextLeg();
                 }
 
                 // If candidate route has enough legs try to locate a destination airport
-                if (photoLocations.Count >= Parameters.MinNoLegs)
+                if (PhotoLocations.Count >= Parameters.MinNoLegs)
                 {
                     continueSearching = SetLastLeg();
                 }
@@ -239,7 +248,7 @@ namespace P3D_Scenario_Generator
             string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html";
 
             // Clear last attempt
-            photoLocations.Clear();
+            PhotoLocations.Clear();
 
             // Get starting random photo page
             HttpRoutines.GetWebDoc("https://www.pic2map.com/random.php", Path.GetDirectoryName(Parameters.SaveLocation), "random_pic2map.html");
@@ -252,8 +261,8 @@ namespace P3D_Scenario_Generator
             Parameters.SelectedRunway = $"{airportLocation.airportICAO}\t({airportLocation.airportID})";
             Runway.SetRunway(Runway.startRwy, "start");
             airportLocation.forwardBearing = MathRoutines.GetReciprocalHeading(airportLocation.forwardBearing);
-            photoLocations.Add(airportLocation);
-            photoLocations.Add(photoLocation);
+            PhotoLocations.Add(airportLocation);
+            PhotoLocations.Add(photoLocation);
             return true;
         }
 
@@ -276,14 +285,14 @@ namespace P3D_Scenario_Generator
                 return false;
 
             // Add forward distance and bearing for this next nearest unselected photo to last selected photo location
-            photoLocations[^1].forwardDist = distance;
-            photoLocations[^1].forwardBearing = bearing;
+            PhotoLocations[^1].forwardDist = distance;
+            PhotoLocations[^1].forwardBearing = bearing;
 
             // Extract next nearest unselected photo location parameters
             File.Delete(saveLocation);
             HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), "random_pic2map.html");
             photoLocation = ExtractPhotoParams(saveLocation);
-            photoLocations.Add(photoLocation);
+            PhotoLocations.Add(photoLocation);
             return true;
         }
 
@@ -297,19 +306,19 @@ namespace P3D_Scenario_Generator
             PhotoLocParams airportLocation;
 
             // Find nearby airport to last photo
-            airportLocation = GetNearbyAirport(photoLocations[^1].latitude, photoLocations[^1].longitude, 
+            airportLocation = GetNearbyAirport(PhotoLocations[^1].latitude, PhotoLocations[^1].longitude, 
                 Parameters.MinLegDist, Parameters.MaxLegDist);
             File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html"); // no longer needed
             if (airportLocation != null)
             {
-                int headingChange = MathRoutines.CalcHeadingChange(photoLocations[^2].forwardBearing, airportLocation.forwardBearing);
+                int headingChange = MathRoutines.CalcHeadingChange(PhotoLocations[^2].forwardBearing, airportLocation.forwardBearing);
                 // Ignore bearing constraint if only one photo, allows backtrack to starting airport
                 if ((Math.Abs(headingChange) < Parameters.MaxBearingChange) || (Parameters.MaxNoLegs == 2)) 
                 {
                     Parameters.PhotoDestRunway = $"{airportLocation.airportICAO}\t({airportLocation.airportID})";
                     Runway.SetRunway(Runway.destRwy, "destination");
-                    photoLocations.Add(airportLocation);
-                    PhotoCount = photoLocations.Count;
+                    PhotoLocations.Add(airportLocation);
+                    PhotoCount = PhotoLocations.Count;
                     GetPhotos();
                     return false;
                 }
@@ -383,7 +392,7 @@ namespace P3D_Scenario_Generator
         static internal double GetPhotoTourDistance()
         {
             double distance = 0;
-            foreach (PhotoLocParams location in photoLocations)
+            foreach (PhotoLocParams location in PhotoLocations)
             {
                 distance += location.forwardDist;
             }
@@ -425,15 +434,15 @@ namespace P3D_Scenario_Generator
                 double nextLat = 0;
                 double nextLon = 0;
                 ExtractNextPhotoCoords(htmlDoc, id, ref nextLat, ref nextLon);
-                bearing = MathRoutines.CalcBearing(photoLocations[^1].latitude, photoLocations[^1].longitude, nextLat, nextLon);
+                bearing = MathRoutines.CalcBearing(PhotoLocations[^1].latitude, PhotoLocations[^1].longitude, nextLat, nextLon);
 
                 // Calculate candidate next photo bearing change from current photo location
-                int headingChange = MathRoutines.CalcHeadingChange(photoLocations[^2].forwardBearing, bearing);
+                int headingChange = MathRoutines.CalcHeadingChange(PhotoLocations[^2].forwardBearing, bearing);
 
                 // Does candidate next photo satisfy distance and bearing constraints and has not already been included
                 if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist && 
                     Math.Abs(headingChange) < Parameters.MaxBearingChange && 
-                    photoLocations.FindIndex(leg => nextPhotoURL.Contains(leg.legId)) == -1)
+                    PhotoLocations.FindIndex(leg => nextPhotoURL.Contains(leg.legId)) == -1)
                 {
                     return nextPhotoURL;
                 }
@@ -444,14 +453,14 @@ namespace P3D_Scenario_Generator
         
         static internal PhotoLocParams GetPhotoLocation(int index)
         {
-            return photoLocations[index];
+            return PhotoLocations[index];
         }
        
         static private void GetPhotos()
         {
-            for (int index = 1; index < photoLocations.Count - 1; index++)
+            for (int index = 1; index < PhotoLocations.Count - 1; index++)
             {
-                HttpRoutines.GetWebDoc(photoLocations[index].photoURL, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\photo_{index:00}.jpg");
+                HttpRoutines.GetWebDoc(PhotoLocations[index].photoURL, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\photo_{index:00}.jpg");
             }
         }
     }

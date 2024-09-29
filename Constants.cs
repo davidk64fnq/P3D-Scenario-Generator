@@ -20,12 +20,46 @@ namespace P3D_Scenario_Generator
 
     public static class Con
     {
+        /// <summary>
+        /// The application title for display purposes
+        /// </summary>
         public static readonly string appTitle = "P3D Scenario Generator";
+        /// <summary>
+        /// The number of feet in one nautical mile
+        /// </summary>
         public static readonly double feetInKnot = 6076.12;
+        /// <summary>
+        /// The number of feet in one degree of latitude
+        /// </summary>
         public static readonly double degreeLatFeet = 364000;
-        public static readonly double radiusEarth = 20902230.971129; // Radius of earth at equator in feet
+        /// <summary>
+        /// Radius of earth at equator in feet
+        /// </summary>
+        public static readonly double radiusEarth = 20902230.971129; 
+        /// <summary>
+        /// The scenario type names for display purposes
+        /// </summary>
         public static readonly string[] scenarioNames = ["Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation", "Wikipedia List"];
-        public static readonly string heightAMSL = "False";
+        /// <summary>
+        /// All OSM tiles used in this program are 256x256 pixels
+        /// </summary>
+        public static readonly int tileSize = 256; 
+        /// <summary>
+        /// Location of scenario specific html, css, javascript, image files
+        /// </summary>
+        public static readonly string imagePath = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
+        /// <summary>
+        /// Tile server for OSM tiles
+        /// </summary>
+        public static readonly string tileServer = "https://maptiles.p.rapidapi.com/en/map/v1/";
+        /// <summary>
+        /// Developers access key to OSM tile server
+        /// </summary>
+        public static readonly string rapidApiKey = "?rapidapi-key=d9de94c22emsh6dc07cd7103e683p12be01jsn7014f38e1975";
+        /// <summary>
+        /// If OSM tile coordinate is within this many pixels of bounding box edge, extra tiles are added to the bounding box
+        /// </summary>
+        public static readonly int boundingBoxTrimMargin = 15;
 
         public static readonly string[] numBlueGuid =
         [

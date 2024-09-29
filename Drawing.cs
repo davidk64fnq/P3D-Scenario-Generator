@@ -5,28 +5,22 @@ namespace P3D_Scenario_Generator
 {
     internal class Drawing
     {
-        internal static int xAxis = 0, yAxis = 1; // Used in bounding box to denote lists that store xTile and yTile reference numbers
-        internal static int xTile = 0, yTile = 1, xOffset = 2, yOffset = 3; // Used to define OSM tile, x and y numbers plus position of coord
-        internal static int tileSize = 256; // All OSM tiles used in this program are 256x256 pixels
-        internal static string imagePath = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
-        internal static int topLeft = 0, topRight = 1, bottomLeft = 2, bottomRight = 3; // Used to reference four subtiles of a tile
-
         #region Pad tiles region
 
-        static internal List<List<int>> MakeSquare(List<List<int>> boundingBox, string filename, int zoom, int size)
+        static internal BoundingBox MakeSquare(BoundingBox boundingBox, string filename, int zoom, int size)
         {
             // Get next tile East and West - allow for possibile wrap around meridian
-            int newTileEast = IncXtileNo(boundingBox[xAxis][^1], zoom);
-            int newTileWest = DecXtileNo(boundingBox[xAxis][0], zoom);
+            int newTileEast = IncXtileNo(boundingBox.xAxis[^1], zoom);
+            int newTileWest = DecXtileNo(boundingBox.xAxis[0], zoom);
             // Get next tile South and North - don't go below bottom or top edge of map, -1 means no tile added that direction
-            int newTileSouth = IncYtileNo(boundingBox[yAxis][^1], zoom);
-            int newTileNorth = DecYtileNo(boundingBox[yAxis][0]);
+            int newTileSouth = IncYtileNo(boundingBox.yAxis[^1], zoom);
+            int newTileNorth = DecYtileNo(boundingBox.yAxis[0]);
 
-            if (boundingBox[xAxis].Count < boundingBox[yAxis].Count) // Padding on the x axis
+            if (boundingBox.xAxis.Count < boundingBox.yAxis.Count) // Padding on the x axis
             {
                 return PadWestEast(boundingBox, newTileWest, newTileEast, filename, zoom);
             }
-            else if (boundingBox[yAxis].Count < boundingBox[xAxis].Count) // Padding on the y axis
+            else if (boundingBox.yAxis.Count < boundingBox.xAxis.Count) // Padding on the y axis
             {
                 if (newTileSouth < 0)
                 {
@@ -41,7 +35,7 @@ namespace P3D_Scenario_Generator
                     return PadNorthSouth(boundingBox, newTileNorth, newTileSouth, filename, zoom);
                 }
             }
-            else if (boundingBox[yAxis].Count < size) // Padding on both axis 
+            else if (boundingBox.yAxis.Count < size) // Padding on both axis 
             {
                 return PadNorthSouthWestEast(boundingBox, newTileNorth, newTileSouth, newTileWest, newTileEast, filename, zoom);
             }
@@ -50,228 +44,228 @@ namespace P3D_Scenario_Generator
 
         // Currently all points are on one tile but we want them on four tiles. Adjust boundingBox to include surrounding
         // eight tiles then download and montage them with current tile. Then crop centre area of four tiles.
-        static internal List<List<int>> PadNorthSouthWestEast(List<List<int>> boundingBox, int newTileNorth, int newTileSouth,
+        static internal BoundingBox PadNorthSouthWestEast(BoundingBox boundingBox, int newTileNorth, int newTileSouth,
             int newTileWest, int newTileEast, string filename, int zoom)
         {
-            boundingBox[yAxis].Insert(0, newTileNorth);
-            boundingBox[xAxis].Insert(0, newTileWest);
-            boundingBox[xAxis].Add(newTileEast);
-            boundingBox[yAxis].Add(newTileSouth);
+            boundingBox.yAxis.Insert(0, newTileNorth);
+            boundingBox.xAxis.Insert(0, newTileWest);
+            boundingBox.xAxis.Add(newTileEast);
+            boundingBox.yAxis.Add(newTileSouth);
 
             OSM.DownloadOSMtileRow(newTileSouth, 0, boundingBox, zoom, filename);
-            OSM.DownloadOSMtile(newTileWest, boundingBox[yAxis][1], zoom, $"{filename}_0_1.png");
-            File.Move($"{imagePath}{filename}.png", $"{imagePath}{filename}_1_1.png");
-            OSM.DownloadOSMtile(newTileEast, boundingBox[yAxis][1], zoom, $"{filename}_2_1.png");
+            OSM.DownloadOSMtile(newTileWest, boundingBox.yAxis[1], zoom, $"{filename}_0_1.png");
+            File.Move($"{Con.imagePath}{filename}.png", $"{Con.imagePath}{filename}_1_1.png");
+            OSM.DownloadOSMtile(newTileEast, boundingBox.yAxis[1], zoom, $"{filename}_2_1.png");
             OSM.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename);
 
             MontageTiles(boundingBox, zoom, filename);
             DeleteTempOSMfiles(filename);
 
-            using MagickImage image = new($"{imagePath}{filename}.png");
-            IMagickGeometry geometry = new MagickGeometry($"{tileSize * 2},{tileSize * 2}, {tileSize / 2}, {tileSize / 2}");
+            using MagickImage image = new($"{Con.imagePath}{filename}.png");
+            IMagickGeometry geometry = new MagickGeometry($"{Con.tileSize * 2},{Con.tileSize * 2}, {Con.tileSize / 2}, {Con.tileSize / 2}");
             image.Crop(geometry);
             image.RePage();
-            image.Write($"{imagePath}{filename}.png");
+            image.Write($"{Con.imagePath}{filename}.png");
 
             return ZoomInNorthSouthWestEast(boundingBox);
         }
 
-        static internal List<List<int>> ZoomInNorthSouthWestEast(List<List<int>> boundingBox)
+        static internal BoundingBox ZoomInNorthSouthWestEast(BoundingBox boundingBox)
         {
-            List<List<int>> zoomInBoundingBox = [];
+            BoundingBox zoomInBoundingBox = new();
             List<int> ewAxis = [];
-            ewAxis.Add(2 * boundingBox[xAxis][0] + 1);
-            for (int xIndex = 1; xIndex < boundingBox[xAxis].Count - 1; xIndex++)
+            ewAxis.Add(2 * boundingBox.xAxis[0] + 1);
+            for (int xIndex = 1; xIndex < boundingBox.xAxis.Count - 1; xIndex++)
             {
-                ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
-                ewAxis.Add(2 * boundingBox[xAxis][xIndex] + 1);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
             }
-            ewAxis.Add(2 * boundingBox[xAxis][^1]);
-            zoomInBoundingBox.Add(ewAxis);
+            ewAxis.Add(2 * boundingBox.xAxis[^1]);
+            zoomInBoundingBox.xAxis = ewAxis;
 
             List<int> nsAxis = [];
-            nsAxis.Add(2 * boundingBox[yAxis][0] + 1);
-            for (int xIndex = 1; xIndex < boundingBox[yAxis].Count - 1; xIndex++)
+            nsAxis.Add(2 * boundingBox.yAxis[0] + 1);
+            for (int xIndex = 1; xIndex < boundingBox.yAxis.Count - 1; xIndex++)
             {
-                nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
-                nsAxis.Add(2 * boundingBox[yAxis][xIndex] + 1);
+                nsAxis.Add(2 * boundingBox.yAxis[xIndex]);
+                nsAxis.Add(2 * boundingBox.yAxis[xIndex] + 1);
             }
-            nsAxis.Add(2 * boundingBox[yAxis][^1]);
-            zoomInBoundingBox.Add(nsAxis);
+            nsAxis.Add(2 * boundingBox.yAxis[^1]);
+            zoomInBoundingBox.yAxis = nsAxis;
             return zoomInBoundingBox;
         }
 
-        // The file to be padded is 1w x 2h tileSize. Create a column of tiles on left and right side 1w x 2h,
-        // montage them together (3w x 2h) then crop a column 0.5w x 2h from outside edges. Resulting imageURL is 2w x 2h tileSize
+        // The file to be padded is 1w x 2h Con.tileSize. Create a column of tiles on left and right side 1w x 2h,
+        // montage them together (3w x 2h) then crop a column 0.5w x 2h from outside edges. Resulting imageURL is 2w x 2h Con.tileSize
         // with original imageURL in middle horizontally.)
-        static internal List<List<int>> PadWestEast(List<List<int>> boundingBox, int newTileWest, int newTileEast, string filename, int zoom)
+        static internal BoundingBox PadWestEast(BoundingBox boundingBox, int newTileWest, int newTileEast, string filename, int zoom)
         {
             OSM.DownloadOSMtileColumn(newTileWest, 0, boundingBox, zoom, filename);
-            MontageTilesToColumn(boundingBox[yAxis].Count, 0, filename);
+            MontageTilesToColumn(boundingBox.yAxis.Count, 0, filename);
             DeleteTempOSMfiles($"{filename}_?");
 
-            File.Move($"{imagePath}{filename}.png", $"{imagePath}{filename}_1.png");
+            File.Move($"{Con.imagePath}{filename}.png", $"{Con.imagePath}{filename}_1.png");
 
             OSM.DownloadOSMtileColumn(newTileEast, 2, boundingBox, zoom, filename);
-            MontageTilesToColumn(boundingBox[yAxis].Count, 2, filename);
+            MontageTilesToColumn(boundingBox.yAxis.Count, 2, filename);
             DeleteTempOSMfiles($"{filename}_?");
 
-            MontageColumns(3, boundingBox[yAxis].Count, filename);
+            MontageColumns(3, boundingBox.yAxis.Count, filename);
             DeleteTempOSMfiles(filename);
 
-            using MagickImage image = new($"{imagePath}{filename}.png");
-            IMagickGeometry geometry = new MagickGeometry($"{tileSize * 2},{tileSize * 2}, {tileSize / 2}, 0");
+            using MagickImage image = new($"{Con.imagePath}{filename}.png");
+            IMagickGeometry geometry = new MagickGeometry($"{Con.tileSize * 2},{Con.tileSize * 2}, {Con.tileSize / 2}, 0");
             image.Crop(geometry);
             image.RePage();
-            image.Write($"{imagePath}{filename}.png");
+            image.Write($"{Con.imagePath}{filename}.png");
 
             return ZoomInWestEast(boundingBox);
         }
 
-        static internal List<List<int>> ZoomInWestEast(List<List<int>> boundingBox)
+        static internal BoundingBox ZoomInWestEast(BoundingBox boundingBox)
         {
-            List<List<int>> zoomInBoundingBox = [];
+            BoundingBox zoomInBoundingBox = new();
             List<int> ewAxis = [];
-            ewAxis.Add(2 * boundingBox[xAxis][0] - 1);
-            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            ewAxis.Add(2 * boundingBox.xAxis[0] - 1);
+            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
             {
-                ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
-                ewAxis.Add(2 * boundingBox[xAxis][xIndex] + 1);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
             }
-            ewAxis.Add(2 * boundingBox[xAxis][^1] + 2);
-            zoomInBoundingBox.Add(ewAxis);
+            ewAxis.Add(2 * boundingBox.xAxis[^1] + 2);
+            zoomInBoundingBox.xAxis = ewAxis;
 
             List<int> nsAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox[yAxis].Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.yAxis.Count; xIndex++)
             {
-                nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
-                nsAxis.Add(2 * boundingBox[yAxis][xIndex] + 1);
+                nsAxis.Add(2 * boundingBox.yAxis[xIndex]);
+                nsAxis.Add(2 * boundingBox.yAxis[xIndex] + 1);
             }
-            zoomInBoundingBox.Add(nsAxis);
+            zoomInBoundingBox.yAxis = nsAxis;
             return zoomInBoundingBox;
         }
 
-        // The file to be padded is 2w x 1h tileSize. Create a row of tiles above and below 2w x 1h,
-        // montage them together (2w x 3h) then crop a row 2w x 0.5h from outside edges. Resulting imageURL is 2w x 2h tileSize
+        // The file to be padded is 2w x 1h Con.tileSize. Create a row of tiles above and below 2w x 1h,
+        // montage them together (2w x 3h) then crop a row 2w x 0.5h from outside edges. Resulting imageURL is 2w x 2h Con.tileSize
         // with original imageURL in middle vertically.
-        static internal List<List<int>> PadNorthSouth(List<List<int>> boundingBox, int newTileNorth, int newTileSouth, string filename, int zoom)
+        static internal BoundingBox PadNorthSouth(BoundingBox boundingBox, int newTileNorth, int newTileSouth, string filename, int zoom)
         {
             OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename);
-            MontageTilesToRow(boundingBox[xAxis].Count, 0, filename);
+            MontageTilesToRow(boundingBox.xAxis.Count, 0, filename);
             DeleteTempOSMfiles($"{filename}_?");
 
-            File.Move($"{imagePath}{filename}.png", $"{imagePath}{filename}_1.png");
+            File.Move($"{Con.imagePath}{filename}.png", $"{Con.imagePath}{filename}_1.png");
 
             OSM.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename);
-            MontageTilesToRow(boundingBox[xAxis].Count, 2, filename);
+            MontageTilesToRow(boundingBox.xAxis.Count, 2, filename);
             DeleteTempOSMfiles($"{filename}_?");
 
-            MontageRows(boundingBox[xAxis].Count, 3, filename);
+            MontageRows(boundingBox.xAxis.Count, 3, filename);
             DeleteTempOSMfiles(filename);
 
-            using MagickImage image = new($"{imagePath}{filename}.png");
-            IMagickGeometry geometry = new MagickGeometry($"{tileSize * 2},{tileSize * 2}, 0, {tileSize / 2}");
+            using MagickImage image = new($"{Con.imagePath}{filename}.png");
+            IMagickGeometry geometry = new MagickGeometry($"{Con.tileSize * 2},{Con.tileSize * 2}, 0, {Con.tileSize / 2}");
             image.Crop(geometry);
             image.RePage();
-            image.Write($"{imagePath}{filename}.png");
+            image.Write($"{Con.imagePath}{filename}.png");
 
             return ZoomInNorthSouth(boundingBox);
         }
 
-        static internal List<List<int>> ZoomInNorthSouth(List<List<int>> boundingBox)
+        static internal BoundingBox ZoomInNorthSouth(BoundingBox boundingBox)
         {
-            List<List<int>> zoomInBoundingBox = [];
+            BoundingBox zoomInBoundingBox = new();
             List<int> ewAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
             {
-                ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
-                ewAxis.Add(2 * boundingBox[xAxis][xIndex] + 1);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
             }
-            zoomInBoundingBox.Add(ewAxis);
+            zoomInBoundingBox.xAxis = ewAxis;
 
             List<int> nsAxis = [];
-            nsAxis.Add(2 * boundingBox[yAxis][0] - 1);
-            for (int xIndex = 0; xIndex < boundingBox[yAxis].Count; xIndex++)
+            nsAxis.Add(2 * boundingBox.yAxis[0] - 1);
+            for (int xIndex = 0; xIndex < boundingBox.yAxis.Count; xIndex++)
             {
-                nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
-                nsAxis.Add(2 * boundingBox[yAxis][xIndex] + 1);
+                nsAxis.Add(2 * boundingBox.yAxis[xIndex]);
+                nsAxis.Add(2 * boundingBox.yAxis[xIndex] + 1);
             }
-            nsAxis.Add(2 * boundingBox[yAxis][^1] + 2);
-            zoomInBoundingBox.Add(nsAxis);
+            nsAxis.Add(2 * boundingBox.yAxis[^1] + 2);
+            zoomInBoundingBox.yAxis = nsAxis;
             return zoomInBoundingBox;
         }
 
-        // The file to be padded is 2w x 1h tileSize. Create a row of tiles above 2w x 1h, montage them together.
-        // Resulting imageURL is 2w x 2h tileSize with original imageURL at bottom vertically.
-        static internal List<List<int>> PadNorth(List<List<int>> boundingBox, int newTileNorth, string filename, int zoom)
+        // The file to be padded is 2w x 1h Con.tileSize. Create a row of tiles above 2w x 1h, montage them together.
+        // Resulting imageURL is 2w x 2h Con.tileSize with original imageURL at bottom vertically.
+        static internal BoundingBox PadNorth(BoundingBox boundingBox, int newTileNorth, string filename, int zoom)
         {
             OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename);
-            MontageTilesToRow(boundingBox[xAxis].Count, 0, filename);
+            MontageTilesToRow(boundingBox.xAxis.Count, 0, filename);
             DeleteTempOSMfiles($"{filename}_?");
 
-            File.Move($"{imagePath}{filename}.png", $"{imagePath}{filename}_1.png");
+            File.Move($"{Con.imagePath}{filename}.png", $"{Con.imagePath}{filename}_1.png");
 
-            MontageRows(boundingBox[xAxis].Count, 2, filename);
+            MontageRows(boundingBox.xAxis.Count, 2, filename);
             DeleteTempOSMfiles(filename);
 
             return ZoomInNorthOrSouth(boundingBox);
         }
 
-        static internal List<List<int>> ZoomInNorthOrSouth(List<List<int>> boundingBox)
+        static internal BoundingBox ZoomInNorthOrSouth(BoundingBox boundingBox)
         {
-            List<List<int>> zoomInBoundingBox = [];
+            BoundingBox zoomInBoundingBox = new();
             List<int> ewAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
             {
-                ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
-                ewAxis.Add(2 * boundingBox[xAxis][xIndex] + 1);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
             }
-            zoomInBoundingBox.Add(ewAxis);
+            zoomInBoundingBox.xAxis = ewAxis;
 
             List<int> nsAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox[yAxis].Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.yAxis.Count; xIndex++)
             {
-                nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
-                nsAxis.Add(2 * boundingBox[yAxis][xIndex] + 1);
+                nsAxis.Add(2 * boundingBox.yAxis[xIndex]);
+                nsAxis.Add(2 * boundingBox.yAxis[xIndex] + 1);
             }
-            zoomInBoundingBox.Add(nsAxis);
+            zoomInBoundingBox.yAxis = nsAxis;
             return zoomInBoundingBox;
         }
 
-        // The file to be padded is 2w x 1h tileSize. Create a row of tiles below 2w x 1h, montage them together.
-        // Resulting imageURL is 2w x 2h tileSize with original imageURL at top vertically.
-        static internal List<List<int>> PadSouth(List<List<int>> boundingBox, int newTileSouth, string filename, int zoom)
+        // The file to be padded is 2w x 1h Con.tileSize. Create a row of tiles below 2w x 1h, montage them together.
+        // Resulting imageURL is 2w x 2h Con.tileSize with original imageURL at top vertically.
+        static internal BoundingBox PadSouth(BoundingBox boundingBox, int newTileSouth, string filename, int zoom)
         {
-            File.Move($"{imagePath}{filename}.png", $"{imagePath}{filename}_0.png");
+            File.Move($"{Con.imagePath}{filename}.png", $"{Con.imagePath}{filename}_0.png");
 
             OSM.DownloadOSMtileRow(newTileSouth, 1, boundingBox, zoom, filename);
-            MontageTilesToRow(boundingBox[xAxis].Count, 1, filename);
+            MontageTilesToRow(boundingBox.xAxis.Count, 1, filename);
             DeleteTempOSMfiles($"{filename}_?");
 
-            MontageRows(boundingBox[xAxis].Count, 2, filename);
+            MontageRows(boundingBox.xAxis.Count, 2, filename);
             DeleteTempOSMfiles(filename);
 
             return ZoomInNorthOrSouth(boundingBox);
         }
 
-        static internal List<List<int>> ZoomIn(List<List<int>> boundingBox)
+        static internal BoundingBox ZoomIn(BoundingBox boundingBox)
         {
-            List<List<int>> zoomInBoundingBox = [];
+            BoundingBox zoomInBoundingBox = new();
             List<int> ewAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
             {
-                ewAxis.Add(2 * boundingBox[xAxis][xIndex]);
-                ewAxis.Add(2 * boundingBox[xAxis][xIndex] + 1);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
             }
-            zoomInBoundingBox.Add(ewAxis);
+            zoomInBoundingBox.xAxis = ewAxis;
 
             List<int> nsAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox[yAxis].Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.yAxis.Count; xIndex++)
             {
-                nsAxis.Add(2 * boundingBox[yAxis][xIndex]);
-                nsAxis.Add(2 * boundingBox[yAxis][xIndex] + 1);
+                nsAxis.Add(2 * boundingBox.yAxis[xIndex]);
+                nsAxis.Add(2 * boundingBox.yAxis[xIndex] + 1);
             }
-            zoomInBoundingBox.Add(nsAxis);
+            zoomInBoundingBox.yAxis = nsAxis;
             return zoomInBoundingBox;
         }
 
@@ -279,9 +273,9 @@ namespace P3D_Scenario_Generator
 
         #region Drawing routines region
 
-        static internal void DrawRoute(List<List<int>> tiles, List<List<int>> boundingBox, string filename)
+        static internal void DrawRoute(List<Tile> tiles, BoundingBox boundingBox, string filename)
         {
-            using MagickImage image = new($"{imagePath}{filename}.png");
+            using MagickImage image = new($"{Con.imagePath}{filename}.png");
             DrawableStrokeColor strokeColor = new(new MagickColor("blue"));
             DrawableStrokeWidth stokeWidth = new(1);
             DrawableFillColor fillColor = new(MagickColors.Transparent);
@@ -289,8 +283,8 @@ namespace P3D_Scenario_Generator
             int centrePrevX = 0, centrePrevY = 0;
             for (int tileNo = 0; tileNo < tiles.Count; tileNo++)
             {
-                int centreX = (boundingBox[xAxis].IndexOf(tiles[tileNo][xTile]) * tileSize) + tiles[tileNo][xOffset];
-                int centreY = (boundingBox[yAxis].IndexOf(tiles[tileNo][yTile]) * tileSize) + tiles[tileNo][yOffset];
+                int centreX = (boundingBox.xAxis.IndexOf(tiles[tileNo].xIndex) * Con.tileSize) + tiles[tileNo].xOffset;
+                int centreY = (boundingBox.yAxis.IndexOf(tiles[tileNo].yIndex) * Con.tileSize) + tiles[tileNo].yOffset;
                 if (tileNo > 0)
                 {
                     DrawableLine line = new(centrePrevX, centrePrevY, centreX, centreY);
@@ -300,7 +294,7 @@ namespace P3D_Scenario_Generator
                 centrePrevY = centreY;
             }
 
-            image.Write($"{imagePath}{filename}.png");
+            image.Write($"{Con.imagePath}{filename}.png");
         }
 
         /// <summary>
@@ -323,13 +317,13 @@ namespace P3D_Scenario_Generator
             string sourceFile = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.imgM.png";
             using (Stream sourceStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(sourceFile))
             {
-                using FileStream outputFileStream = new($"{imagePath}{outputName}.png", FileMode.Create);
+                using FileStream outputFileStream = new($"{Con.imagePath}{outputName}.png", FileMode.Create);
                     sourceStream.CopyTo(outputFileStream);
             }
 
 
 #pragma warning disable IDE0063
-            using (MagickImage image = new($"{imagePath}{outputName}.png"))
+            using (MagickImage image = new($"{Con.imagePath}{outputName}.png"))
 #pragma warning restore IDE0063
             {
                 // Write the scenario type on the base imageURL
@@ -352,7 +346,7 @@ namespace P3D_Scenario_Generator
                         image.Composite(imageIcon, iconXoffset, iconYoffset, CompositeOperator.Over);
                     }
                 }
-                image.Write($"{imagePath}{outputName}.png");
+                image.Write($"{Con.imagePath}{outputName}.png");
                 ConvertImageformat(outputName, "png", "bmp");
             }
         }
@@ -366,16 +360,16 @@ namespace P3D_Scenario_Generator
             using var images = new MagickImageCollection();
             var settings = new MontageSettings
             {
-                Geometry = new MagickGeometry($"{tileSize}x{tileSize}"),
+                Geometry = new MagickGeometry($"{Con.tileSize}x{Con.tileSize}"),
                 TileGeometry = new MagickGeometry($"1x{yCount}"),
             };
             for (int yIndex = 0; yIndex < yCount; yIndex++)
             {
-                var tileImage = new MagickImage($"{imagePath}{filename}_{xIndex}_{yIndex}.png");
+                var tileImage = new MagickImage($"{Con.imagePath}{filename}_{xIndex}_{yIndex}.png");
                 images.Add(tileImage);
             }
             using var result = images.Montage(settings);
-            result.Write($"{imagePath}{filename}_{xIndex}.png");
+            result.Write($"{Con.imagePath}{filename}_{xIndex}.png");
         }
 
         static internal void MontageTilesToRow(int xCount, int yIndex, string filename)
@@ -383,16 +377,16 @@ namespace P3D_Scenario_Generator
             using var images = new MagickImageCollection();
             var settings = new MontageSettings
             {
-                Geometry = new MagickGeometry($"{tileSize}x{tileSize}"),
+                Geometry = new MagickGeometry($"{Con.tileSize}x{Con.tileSize}"),
                 TileGeometry = new MagickGeometry($"{xCount}x1"),
             };
             for (int xIndex = 0; xIndex < xCount; xIndex++)
             {
-                var tileImage = new MagickImage($"{imagePath}{filename}_{xIndex}_{yIndex}.png");
+                var tileImage = new MagickImage($"{Con.imagePath}{filename}_{xIndex}_{yIndex}.png");
                 images.Add(tileImage);
             }
             using var result = images.Montage(settings);
-            result.Write($"{imagePath}{filename}_{yIndex}.png");
+            result.Write($"{Con.imagePath}{filename}_{yIndex}.png");
         }
 
         static internal void MontageColumns(int xCount, int yCount, string filename)
@@ -400,16 +394,16 @@ namespace P3D_Scenario_Generator
             using var images = new MagickImageCollection();
             var settings = new MontageSettings
             {
-                Geometry = new MagickGeometry($"{tileSize}x{tileSize * yCount}"),
+                Geometry = new MagickGeometry($"{Con.tileSize}x{Con.tileSize * yCount}"),
                 TileGeometry = new MagickGeometry($"{xCount}x1"),
             };
             for (int xIndex = 0; xIndex < xCount; xIndex++)
             {
-                var tileImage = new MagickImage($"{imagePath}{filename}_{xIndex}.png");
+                var tileImage = new MagickImage($"{Con.imagePath}{filename}_{xIndex}.png");
                 images.Add(tileImage);
             }
             using var result = images.Montage(settings);
-            result.Write($"{imagePath}{filename}.png");
+            result.Write($"{Con.imagePath}{filename}.png");
         }
 
         static internal void MontageRows(int xCount, int yCount, string filename)
@@ -417,29 +411,29 @@ namespace P3D_Scenario_Generator
             using var images = new MagickImageCollection();
             var settings = new MontageSettings
             {
-                Geometry = new MagickGeometry($"{tileSize * xCount}x{tileSize}"),
+                Geometry = new MagickGeometry($"{Con.tileSize * xCount}x{Con.tileSize}"),
                 TileGeometry = new MagickGeometry($"1x{yCount}"),
             };
             for (int yIndex = 0; yIndex < yCount; yIndex++)
             {
-                var tileImage = new MagickImage($"{imagePath}{filename}_{yIndex}.png");
+                var tileImage = new MagickImage($"{Con.imagePath}{filename}_{yIndex}.png");
                 images.Add(tileImage);
             }
             using var result = images.Montage(settings);
-            result.Write($"{imagePath}{filename}.png");
+            result.Write($"{Con.imagePath}{filename}.png");
         }
 
-        static internal void MontageTiles(List<List<int>> boundingBox, int zoom, string filename)
+        static internal void MontageTiles(BoundingBox boundingBox, int zoom, string filename)
         {
             // Download the tile images from OSM in columns and montage into strips
-            for (int xIndex = 0; xIndex < boundingBox[xAxis].Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
             {
-                OSM.DownloadOSMtileColumn(boundingBox[xAxis][xIndex], xIndex, boundingBox, zoom, $"{filename}");
-                MontageTilesToColumn(boundingBox[yAxis].Count, xIndex, filename);
+                OSM.DownloadOSMtileColumn(boundingBox.xAxis[xIndex], xIndex, boundingBox, zoom, $"{filename}");
+                MontageTilesToColumn(boundingBox.yAxis.Count, xIndex, filename);
             }
 
             // Montage the OSM column strips to form the final imageURL
-            MontageColumns(boundingBox[xAxis].Count, boundingBox[yAxis].Count, filename);
+            MontageColumns(boundingBox.xAxis.Count, boundingBox.yAxis.Count, filename);
 
             DeleteTempOSMfiles(filename);
         }
@@ -450,20 +444,20 @@ namespace P3D_Scenario_Generator
 
         static internal void ConvertImageformat(string filename, string oldExt, string newExt)
         {
-            using MagickImage image = new($"{imagePath}{filename}.{oldExt}");
+            using MagickImage image = new($"{Con.imagePath}{filename}.{oldExt}");
             switch (newExt)
             {
                 case "jpg":
                     image.Quality = 100;
                     break;
             }
-            image.Write($"{imagePath}{filename}.{newExt}");
-            File.Delete($"{imagePath}{filename}.{oldExt}");
+            image.Write($"{Con.imagePath}{filename}.{newExt}");
+            File.Delete($"{Con.imagePath}{filename}.{oldExt}");
         }
 
         static internal void DeleteTempOSMfiles(string filename)
         {
-            foreach (string f in Directory.EnumerateFiles(imagePath, $"{filename}_*.png"))
+            foreach (string f in Directory.EnumerateFiles(Con.imagePath, $"{filename}_*.png"))
             {
                 File.Delete(f);
             }
@@ -511,9 +505,9 @@ namespace P3D_Scenario_Generator
 
         static internal void Resize(string filename, int size)
         {
-            using MagickImage image = new($"{imagePath}{filename}");
+            using MagickImage image = new($"{Con.imagePath}{filename}");
             image.Resize(size, size);
-            image.Write($"{imagePath}{filename}");
+            image.Write($"{Con.imagePath}{filename}");
         }
 
         #endregion
