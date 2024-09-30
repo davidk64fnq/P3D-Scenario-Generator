@@ -71,9 +71,12 @@ namespace P3D_Scenario_Generator
                 DisplayStartMessage();
                 Drawing.DrawScenarioImages();
                 DoScenarioSpecificTasks();
-                Runway.SetRunway(Runway.startRwy, "start");
-                Runway.SetRunway(Runway.destRwy, "destination");
+
+                // Delete next three lines once re-write complete
+                Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+                Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
                 Gates.SetGates();
+
                 ScenarioFXML.GenerateFXMLfile();
                 ScenarioHTML.GenerateHTMLfiles();
                 ScenarioXML.GenerateXMLfile();

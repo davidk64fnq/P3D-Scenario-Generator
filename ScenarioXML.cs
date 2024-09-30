@@ -65,25 +65,25 @@ namespace P3D_Scenario_Generator
 				string hwp = GetGateWorldPosition(Gates.GetGate(gateNo), Con.hoopActVertOffset);
                 string nwp = GetGateWorldPosition(Gates.GetGate(gateNo), Con.numBlueVertOffset);
                 string go = GetGateOrientation(Gates.GetGate(gateNo));
-                SetLibraryObject(gateNo, Con.hoopAct, Con.hoopActGuid, hwp, go, "False", "1", "False");
-                SetLibraryObject(gateNo, Con.hoopInact, Con.hoopInactGuid, hwp, go, "False", "1", "True");
-                SetLibraryObject(gateNo, Con.numBlue, Con.numBlueGuid[gateNo], nwp, go, "False", "1", "True");
+                SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Con.hoopActGuid, hwp, go, "False", "1", "False");
+                SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Con.hoopInactGuid, hwp, go, "False", "1", "True");
+                SetLibraryObject(gateNo, "GEN_game_blue", Con.numBlueGuid[gateNo], nwp, go, "False", "1", "True");
 
                 // Create sound action to play when each new gate entered
                 SetOneShotSoundAction(gateNo, "ThruHoop", "ThruHoop.wav");
 
                 // Create POI object corresponding to the gate number object
-                SetPointOfInterest(gateNo, "LibraryObject", Con.hoopAct, "0, 80, 0, 0", "False", "False", "Gate ");
+                SetPointOfInterest(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "0, 80, 0, 0", "False", "False", "Gate ");
 
                 // Create activate/deactivate POI object actions
                 SetPOIactivationAction(gateNo, "PointOfInterest", $"POI", $"ActPOI", "True");
                 SetPOIactivationAction(gateNo, "PointOfInterest", $"POI", $"DeactPOI", "False");
 
                 // Create activate/deactivate gate object actions (hoop active and hoop inactive)
-                SetObjectActivationAction(gateNo, "LibraryObject", Con.hoopAct, "ActHoopAct", "True");
-                SetObjectActivationAction(gateNo, "LibraryObject", Con.hoopAct, "DeactHoopAct", "False");
-                SetObjectActivationAction(gateNo, "LibraryObject", Con.hoopInact, "ActHoopInact", "True");
-                SetObjectActivationAction(gateNo, "LibraryObject", Con.hoopInact, "DeactHoopInact", "False");
+                SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "ActHoopAct", "True");
+                SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "DeactHoopAct", "False");
+                SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_INACTIVE", "ActHoopInact", "True");
+                SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_INACTIVE", "DeactHoopInact", "False");
 
                 // Create rectangle area object to put over gate
                 SetRectangleArea($"RectangleArea{gateNo:00}", go, "100.0", "25.0", "100.0");
@@ -231,7 +231,7 @@ namespace P3D_Scenario_Generator
             SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
             // Create airport landing trigger which does goal resolution and closes windows
-            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Parameters.PhotoDestRunway.Split("\t")[0]);
+            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoName);
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow02", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
@@ -267,24 +267,24 @@ namespace P3D_Scenario_Generator
                 // Create gate objects (hoop active, hoop inactive and number)
                 string hwp = GetGateWorldPosition(Gates.GetGate(gateNo), Con.hoopActVertOffset);
                 string go = GetGateOrientation(Gates.GetGate(gateNo));
-                SetLibraryObject(gateNo, Con.hoopAct, Con.hoopActGuid, hwp, go, "False", "1", "False");
-                SetLibraryObject(gateNo, Con.hoopInact, Con.hoopInactGuid, hwp, go, "False", "1", "False");
+                SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Con.hoopActGuid, hwp, go, "False", "1", "False");
+                SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Con.hoopInactGuid, hwp, go, "False", "1", "False");
 
                 // Create sound action to play when each new gate entered
                 SetOneShotSoundAction(gateNo, "ThruHoop", "ThruHoop.wav");
 
                 // Create POI object corresponding to the hoop object
-                SetPointOfInterest(gateNo, "LibraryObject", Con.hoopAct, "0, 80, 0, 0", "False", "False", "Gate ");
+                SetPointOfInterest(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "0, 80, 0, 0", "False", "False", "Gate ");
 
                 // Create activate/deactivate POI object actions
                 SetPOIactivationAction(gateNo, "PointOfInterest", "POI", "ActPOI", "True");
                 SetPOIactivationAction(gateNo, "PointOfInterest", "POI", "DeactPOI", "False");
 
                 // Create activate/deactivate gate object actions (hoop active and hoop inactive)
-                SetObjectActivationAction(gateNo, "LibraryObject", Con.hoopAct, "ActHoopAct", "True");
-                SetObjectActivationAction(gateNo, "LibraryObject", Con.hoopAct, "DeactHoopAct", "False");
-                SetObjectActivationAction(gateNo, "LibraryObject", Con.hoopInact, "ActHoopInact", "True");
-                SetObjectActivationAction(gateNo, "LibraryObject", Con.hoopInact, "DeactHoopInact", "False");
+                SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "ActHoopAct", "True");
+                SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "DeactHoopAct", "False");
+                SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_INACTIVE", "ActHoopInact", "True");
+                SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_INACTIVE", "DeactHoopInact", "False");
 
                 // Create rectangle area object to put over gate
                 SetRectangleArea($"RectangleArea{gateNo:00}", go, "100.0", "25.0", "100.0");

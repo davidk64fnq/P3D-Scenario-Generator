@@ -67,7 +67,7 @@ namespace P3D_Scenario_Generator
             boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
             Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
-            Drawing.MakeSquare(boundingBox, "Charts_01", zoom, 2);
+            Drawing.MakeSquare(boundingBox, "Charts_01", zoom, Con.tileFactor);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace P3D_Scenario_Generator
             Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
             if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
             {
-                Drawing.MakeSquare(boundingBox, "chart_thumb", zoom, 2);
+                Drawing.MakeSquare(boundingBox, "chart_thumb", zoom, Con.locTileFactor);
             }
             if (boundingBox.xAxis.Count == 2)
             {
@@ -168,7 +168,7 @@ namespace P3D_Scenario_Generator
             // zoom 1 image
             Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1");
             Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
-            zoomInBoundingBox = Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, 2);
+            zoomInBoundingBox = Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Con.tileFactor);
             Drawing.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg");
 
             // zoom 2 and 3 images
@@ -258,8 +258,9 @@ namespace P3D_Scenario_Generator
             airportLocation = GetNearbyAirport(photoLocation.latitude, photoLocation.longitude, Parameters.MinLegDist, Parameters.MaxLegDist);
             if (airportLocation == null)
                 return false;
-            Parameters.SelectedRunway = $"{airportLocation.airportICAO}\t({airportLocation.airportID})";
-            Runway.SetRunway(Runway.startRwy, "start");
+            Parameters.SelectedAirportICAO = airportLocation.airportICAO;
+            Parameters.SelectedAirportID = airportLocation.airportID;
+            Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
             airportLocation.forwardBearing = MathRoutines.GetReciprocalHeading(airportLocation.forwardBearing);
             PhotoLocations.Add(airportLocation);
             PhotoLocations.Add(photoLocation);
@@ -315,8 +316,7 @@ namespace P3D_Scenario_Generator
                 // Ignore bearing constraint if only one photo, allows backtrack to starting airport
                 if ((Math.Abs(headingChange) < Parameters.MaxBearingChange) || (Parameters.MaxNoLegs == 2)) 
                 {
-                    Parameters.PhotoDestRunway = $"{airportLocation.airportICAO}\t({airportLocation.airportID})";
-                    Runway.SetRunway(Runway.destRwy, "destination");
+                    Runway.SetRunway(Runway.destRwy, airportLocation.airportICAO, airportLocation.airportID);
                     PhotoLocations.Add(airportLocation);
                     PhotoCount = PhotoLocations.Count;
                     GetPhotos();

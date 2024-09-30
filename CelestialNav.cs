@@ -215,8 +215,8 @@ namespace P3D_Scenario_Generator
             // Position plane in random direction from destination runway between min/max distance parameter
             double randomAngle = random.Next(0, 90) * Math.PI / 180.0;
             double randomRadius = Parameters.CelestialMinDistance + random.Next(0, (int)(Parameters.CelestialMaxDistance - Parameters.CelestialMinDistance));
-            double randomLatAdj = randomRadius * Con.feetInKnot / Con.degreeLatFeet * Math.Cos(randomAngle) * (random.Next(0, 2) * 2 - 1);
-            double randomLonAdj = randomRadius * Con.feetInKnot / Con.degreeLatFeet * Math.Sin(randomAngle) * (random.Next(0, 2) * 2 - 1);
+            double randomLatAdj = randomRadius * Con.feetInNM / Con.degreeLatFeet * Math.Cos(randomAngle) * (random.Next(0, 2) * 2 - 1);
+            double randomLonAdj = randomRadius * Con.feetInNM / Con.degreeLatFeet * Math.Sin(randomAngle) * (random.Next(0, 2) * 2 - 1);
             midairStartLat = Runway.destRwy.AirportLat + randomLatAdj;
             if (midairStartLat > 90)
             {

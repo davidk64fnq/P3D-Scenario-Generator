@@ -39,7 +39,7 @@
             double dLat2 = dFinishLat * (Math.PI / 180);     // Convert dFinishLat from degrees to radians
             double dLon1 = dStartLon * (Math.PI / 180);     // Convert dStartLon from degrees to radians
             double dLon2 = dFinishLon * (Math.PI / 180);     // Convert dFinishLon from degrees to radians
-            return Math.Acos(Math.Sin(dLat1) * Math.Sin(dLat2) + Math.Cos(dLat1) * Math.Cos(dLat2) * Math.Cos(dLon2 - dLon1)) * Con.radiusEarth / Con.feetInKnot;
+            return Math.Acos(Math.Sin(dLat1) * Math.Sin(dLat2) + Math.Cos(dLat1) * Math.Cos(dLat2) * Math.Cos(dLon2 - dLon1)) * Con.radiusEarth / Con.feetInNM;
         }
 
         static internal int CalcHeadingChange(double oldHeading, double newHeading)

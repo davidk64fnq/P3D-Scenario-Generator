@@ -7,7 +7,8 @@ namespace P3D_Scenario_Generator
         private static readonly Form form = (Form)Application.OpenForms[0];
 
         // General tab
-        internal static string SelectedRunway { get; set; }
+        internal static string SelectedAirportICAO { get; set; }
+        internal static string SelectedAirportID { get; set; }
         internal static string SaveLocation { get; private set; }
         internal static string SelectedAircraft { get; private set; }
         internal static string SelectedScenario { get; private set; }
@@ -24,12 +25,41 @@ namespace P3D_Scenario_Generator
 
         // Circuit tab
         internal static double UpwindLeg { get; private set; }
+
+        /// <summary>
+        /// Distance from gate 2 to gate 3 and from gate 6 to gate 7
+        /// </summary>
         internal static double BaseLeg { get; private set; }
+
+        /// <summary>
+        /// Distance from gate 5 to gate 6
+        /// </summary>
         internal static double FinalLeg { get; private set; }
+
+        /// <summary>
+        /// User specified height of gate 1
+        /// </summary>
         internal static double HeightUpwind { get; private set; }
+
+        /// <summary>
+        /// User specified height of gates 3 to 6
+        /// </summary>
         internal static double HeightDown { get; private set; }
+
+        /// <summary>
+        /// User specified height of gate 8
+        /// </summary>
         internal static double HeightBase { get; private set; }
+
+        /// <summary>
+        /// User specified cruise speed of <see cref="SelectedAircraft"/> in knots nm/hr (default value read from aircraft.cfg)
+        /// </summary>
         internal static double Speed { get; private set; }
+
+        /// <summary>
+        /// User specified turn rate of <see cref="SelectedAircraft"/> in minutes (standard turn rate is 360 degrees in 2 minutes 
+        /// but default value of 4 minutes seems to work better)
+        /// </summary>
         internal static double TurnRate { get; private set; }
 
         // Photo Tour
@@ -37,7 +67,6 @@ namespace P3D_Scenario_Generator
         internal static double MinLegDist { get; private set; }
         internal static double MinNoLegs { get; private set; }
         internal static double MaxNoLegs { get; private set; }
-        internal static string PhotoDestRunway { get; set; }
         internal static double PhotoLegWindowSize { get; set; }
         internal static double MaxBearingChange { get; set; }
         internal static double HotspotRadius { get; set; }
@@ -86,7 +115,8 @@ namespace P3D_Scenario_Generator
             {
                 SelectedAircraft = form.ListBoxAircraft.Items[form.ListBoxAircraft.SelectedIndex].ToString();
             }
-            SelectedRunway = form.TextBoxSelectedRunway.Text;
+            SelectedAirportICAO = form.TextBoxSelectedRunway.Text.Split("\t")[0];
+            SelectedAirportID = form.TextBoxSelectedRunway.Text.Split("\t")[1];
             int index = Array.FindIndex(Con.scenarioNames, s => s == form.TextBoxSelectedScenario.Text);
             SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
             Second = form.DatePicker.Value.Second;

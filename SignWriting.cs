@@ -93,7 +93,7 @@
         // plus 50% for flying between segments.
         static internal double GetSignWritingDistance()
         {
-            return Gates.GateCount / 2 * Parameters.SegmentLengthDeg * Con.degreeLatFeet / Con.feetInKnot * 1.5;
+            return Gates.GateCount / 2 * Parameters.SegmentLengthDeg * Con.degreeLatFeet / Con.feetInNM * 1.5;
         }
     }
 }

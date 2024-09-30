@@ -54,7 +54,6 @@ namespace P3D_Scenario_Generator
         static private Overview SetOverviewStruct()
         {
             Overview overview = new();
-            string[] words;
 
             switch (Parameters.SelectedScenario)
             {
@@ -64,7 +63,7 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
                     overview.Difficulty = "Beginner";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    double duration = ((Parameters.FinalLeg + (Runway.startRwy.Len / Con.feetInKnot) + Parameters.UpwindLeg) * 2 + (Parameters.BaseLeg * 2)) / Parameters.Speed * 60;
+                    double duration = ((Parameters.FinalLeg + (Runway.startRwy.Len / Con.feetInNM) + Parameters.UpwindLeg) * 2 + (Parameters.BaseLeg * 2)) / Parameters.Speed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{Parameters.SelectedAircraft}";
                     overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
@@ -91,9 +90,8 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
                     overview.Briefing += $"{Runway.startRwy.Id} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
-                    words = Parameters.PhotoDestRunway.Split('\t');
                     overview.Objective = "Take off and visit a series of photo locations before landing ";
-                    overview.Objective += $"at {words[0]}, runway {words[1]}";
+                    overview.Objective += $"at {Runway.destRwy.IcaoName}, runway {Runway.destRwy.IcaoId}";
                     overview.Tips = "Never do today what you can put off till tomorrow";
                     break;
                 case nameof(ScenarioTypes.SignWriting):

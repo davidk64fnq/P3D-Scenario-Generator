@@ -187,13 +187,13 @@ namespace P3D_Scenario_Generator
             {
                 case nameof(ScenarioTypes.Circuit):
                 case nameof(ScenarioTypes.SignWriting):
-                    words = Parameters.SelectedRunway.Split("\t");
+            //        words = Parameters.SelectedRunway.Split("\t");
                     break;
                 case nameof(ScenarioTypes.PhotoTour):
-                    if (rwyType == "start")
-                        words = Parameters.SelectedRunway.Split("\t");
-                    else
-                        words = Parameters.PhotoDestRunway.Split("\t");
+            //        if (rwyType == "start")
+            //            words = Parameters.SelectedRunway.Split("\t");
+            //        else
+            //            words = Parameters.PhotoDestRunway.Split("\t");
                     break;
                 case nameof(ScenarioTypes.Celestial):
                     if (rwyType == "destination")
@@ -224,22 +224,17 @@ namespace P3D_Scenario_Generator
             return words;
         }
 
-        static internal void SetRunway(Params rwyParams, string rwyType)
+        static internal void SetRunway(Params rwyParams, string airportICAO, string airportID)
         {
             Stream stream = GetRunwayXMLstream();
             XmlReader reader = XmlReader.Create(stream);
-            string[] icaoWords = SetICAOwords(rwyType);
-            if (icaoWords.Length > 0)
-                rwyParams.IcaoId = icaoWords[0];
-            else
-                return;
             SetQuadrantStrings();
 
             bool runwaySet = false;
             while (reader.ReadToFollowing("ICAO") && runwaySet == false)
             {
                 // Check we have located selected airport
-                if (reader.MoveToAttribute("id") && reader.Value == rwyParams.IcaoId)
+                if (reader.MoveToAttribute("id") && reader.Value == airportICAO)
                 {
                     reader.ReadToFollowing("ICAOName");
                     rwyParams.IcaoName = reader.ReadElementContentAsString();
@@ -261,7 +256,7 @@ namespace P3D_Scenario_Generator
                     {
                         reader.Read();
                     }
-                    while (!(reader.Name == "Runway" && reader.MoveToAttribute("id") && reader.Value == icaoWords[1]));
+                    while (!(reader.Name == "Runway" && reader.MoveToAttribute("id") && reader.Value == airportID));
                     SetRunwayId(rwyParams, reader.Value);
                     reader.ReadToFollowing("Len");
                     rwyParams.Len = reader.ReadElementContentAsInt();
