@@ -1,31 +1,50 @@
-﻿namespace P3D_Scenario_Generator
+﻿using CoordinateSharp;
+
+namespace P3D_Scenario_Generator
 {
 
-    public struct LegParams(double d1, double d2, double d3)
+    /// <summary>
+    /// Temporary data structure used for storing intermediate calculation parameters relating to each gate of the circuit,
+    /// eight entries for the eight gates in the circuit. These give point to point path for the gates starting at takeoff threshold.
+    /// </summary>
+    /// <param name="heading">Magnetic bearing to travel to gate from previous gate</param>
+    /// <param name="distance">Distance from previous gate in feet (start threshold for gate 1)</param>
+    /// <param name="amsl">Height of the gate in feet</param>
+    public struct LegParams(double heading, double distance, double amsl)
     {
-        public double heading = d1;
-        public double distance = d2;
-        public double amsl = d3;
+        public double heading = heading;
+        public double amsl = amsl;
+        public Distance distance = new(distance, DistanceType.Feet);
     }
 
-    public class Gate(double d1, double d2, double d3, double d4, double d5, double d6, double d7)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="lat"></param>
+    /// <param name="lon"></param>
+    /// <param name="amsl"></param>
+    /// <param name="pitch"></param>
+    /// <param name="orientation"></param>
+    /// <param name="topPixels"></param>
+    /// <param name="leftPixels"></param>
+    public class Gate(double lat, double lon, double amsl, double pitch, double orientation, double topPixels, double leftPixels)
     {
-        public double lat = d1;
-        public double lon = d2;
-        public double amsl = d3;
-        public double pitch = d4;
-        public double orientation = d5;
-        public double topPixels = d6;
-        public double leftPixels = d7;
+        public double lat = lat;
+        public double lon = lon;
+        public double amsl = amsl;
+        public double pitch = pitch;
+        public double orientation = orientation;
+        public double topPixels = topPixels;
+        public double leftPixels = leftPixels;
     }
 
     internal class Gates
     {
-        private static readonly List<Gate> gates = [];
+        private static readonly List<Gate> gates = []; // Can delete when rewrite finished
         internal static readonly double cellPixels = 35;
         internal static readonly double cellCapExtraPixels = 5;
 
-        internal static int GateCount { get; private set; }
+        internal static int GateCount { get; private set; } // Can delete when rewrite finished
 
         /// <summary>
         /// Circuit consists of four turns. Calculates turn radius.
@@ -87,27 +106,44 @@
             return gate7to8heightDif;
         }
 
+        /// <summary>
+        /// Store intermediate calculation parameters relating to each gate of the circuit, eight entries for 
+        /// the eight gates in the circuit. These give point to point path for the gates starting at takeoff threshold.
+        /// </summary>
+        /// <param name="turnRadius">The turn radius of plane based on it's cruise speed and turn rate</param>
+        /// <param name="gate1to2heightDif">The absolute height difference between gates 1 and 2 in feet</param>
+        /// <param name="gate7to8heightDif">The absolute height difference between gates 7 and 8 in feet</param>
+        /// <returns>List of eight gate leg parameters</returns>
         internal static List<LegParams> SetLegParams(double turnRadius, double gate1to2heightDif, double gate7to8heightDif)
         {
             List<LegParams> legParams = [];
             double baseHeading = Runway.startRwy.Hdg + Runway.startRwy.MagVar + 360;
+            double turnDistance = turnRadius * Math.Sqrt(2.0);
+            // Start theshold to gate 1
             legParams.Add(new LegParams(baseHeading % 360, 
                 Runway.startRwy.Len + (Parameters.UpwindLeg * Con.feetInNM), Runway.startRwy.Altitude + Parameters.HeightUpwind));
-            legParams.Add(new LegParams((baseHeading - 45) % 360, 
-                turnRadius, Runway.startRwy.Altitude + Parameters.HeightUpwind + gate1to2heightDif));
+            // Gate 1 to gate 2
+            legParams.Add(new LegParams((baseHeading - 45) % 360,
+                turnDistance, Runway.startRwy.Altitude + Parameters.HeightUpwind + gate1to2heightDif));
+            // Gate 2 to gate 3
             legParams.Add(new LegParams((baseHeading - 90) % 360, 
                 Parameters.BaseLeg * Con.feetInNM, Runway.startRwy.Altitude + Parameters.HeightDown));
-            legParams.Add(new LegParams((baseHeading - 135) % 360, 
-                turnRadius, Runway.startRwy.Altitude + Parameters.HeightDown));
+            // Gate 3 to gate 4
+            legParams.Add(new LegParams((baseHeading - 135) % 360,
+                turnDistance, Runway.startRwy.Altitude + Parameters.HeightDown));
+            // Gate 4 to gate 5
             legParams.Add(new LegParams((baseHeading - 180) % 360, 
                 (Parameters.FinalLeg * Con.feetInNM) + Runway.startRwy.Len + (Parameters.UpwindLeg * Con.feetInNM), 
                 Runway.startRwy.Altitude + Parameters.HeightDown));
-            legParams.Add(new LegParams((baseHeading - 225) % 360, 
-                turnRadius, Runway.startRwy.Altitude + Parameters.HeightDown));
+            // Gate 5 to gate 6
+            legParams.Add(new LegParams((baseHeading - 225) % 360,
+                turnDistance, Runway.startRwy.Altitude + Parameters.HeightDown));
+            // Gate 6 to gate 7
             legParams.Add(new LegParams((baseHeading - 270) % 360, 
                 Parameters.BaseLeg * Con.feetInNM, Runway.startRwy.Altitude + Parameters.HeightBase + gate7to8heightDif));
-            legParams.Add(new LegParams((baseHeading - 315) % 360, 
-                turnRadius, Runway.startRwy.Altitude + Parameters.HeightBase));
+            // Gate 7 to gate 8
+            legParams.Add(new LegParams((baseHeading - 315) % 360,
+                turnDistance, Runway.startRwy.Altitude + Parameters.HeightBase));
             return legParams;
         }
 
@@ -116,39 +152,21 @@
             List<Gate> gates = [];
             // Amount each gate is rotated from initial runway heading, e.g. 1st gate not at all, 2nd and 3rd gates 90 degrees
             double[] circuitHeadingAdj = [360, 90, 90, 180, 180, 270, 270, 360];    
-            double orientation; // Of each gate as a magnetic compass heading
+            double gateOrientation; 
 
             double turnRadius = CalcTurnRadius();
             double gate1to2heightDif = CalcGate1to2HeightDif(turnRadius);
             double gate7to8heightDif = CalcGate7to8HeightDif(turnRadius);
             List<LegParams> legParams = SetLegParams(turnRadius, gate1to2heightDif, gate7to8heightDif);
 
-            double dStartLat = Runway.startRwy.ThresholdStartLat;
-            double dStartLon = Runway.startRwy.ThresholdStartLon;
-            double dFinishLat = 0;
-            double dFinishLon = 0;
+            Coordinate start = new(Runway.startRwy.ThresholdStartLat, Runway.startRwy.ThresholdStartLon);
             for (int index = 0; index < legParams.Count; index++)
             {
-                MathRoutines.AdjCoords(dStartLat, dStartLon, legParams[index].heading, legParams[index].distance, ref dFinishLat, ref dFinishLon);
-                orientation = (Runway.startRwy.Hdg + Runway.startRwy.MagVar + circuitHeadingAdj[index]) % 360;
-                gates.Add(new Gate(dFinishLat, dFinishLon, legParams[index].amsl, 0, orientation, 0, 0));
-                dStartLat = dFinishLat;
-                dStartLon = dFinishLon;
+                start.Move(legParams[index].distance, legParams[index].heading, Shape.Ellipsoid);
+                gateOrientation = (Runway.startRwy.Hdg + Runway.startRwy.MagVar + circuitHeadingAdj[index]) % 360;
+                gates.Add(new Gate(start.Latitude.DecimalDegree, start.Longitude.DecimalDegree, legParams[index].amsl, 0, gateOrientation, 0, 0));
             }
-            GateCount = legParams.Count;
             return gates;
-        }
-
-        internal static void SetGates()
-        {
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Circuit))
-            {
-                SetCircuitGates();
-            }
-            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.SignWriting))
-            {
-                SetSignGatesMessage();
-            }
         }
 
         internal static void SetSignGatesMessage()

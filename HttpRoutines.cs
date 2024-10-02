@@ -21,13 +21,13 @@ namespace P3D_Scenario_Generator
             return htmlDoc;
         }
 
-        internal static void GetWebDoc(string url, string saveFolder, string saveFile)
+        internal static void GetWebDoc(string url, string saveFile)
         {
             try
             {
 #pragma warning disable SYSLIB0014
                 WebClient webClient = new();
-                webClient.DownloadFile(url, Path.Combine(saveFolder, saveFile));
+                webClient.DownloadFile(url, saveFile);
                 webClient.Dispose();
 #pragma warning restore SYSLIB0014
             }

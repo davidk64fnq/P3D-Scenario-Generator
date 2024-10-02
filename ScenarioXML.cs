@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
 using System.Reflection;
 using System.Xml.Serialization;
 
@@ -59,12 +59,12 @@ namespace P3D_Scenario_Generator
             SetGoalResolutionAction("Goal01");
 
 			// First pass
-			for (int gateNo = 1; gateNo <= Gates.GateCount; gateNo++)
+			for (int gateNo = 1; gateNo <= Circuit.gates.Count; gateNo++)
             {
 				// Create gate objects (hoop active, hoop inactive and number)
-				string hwp = GetGateWorldPosition(Gates.GetGate(gateNo), Con.hoopActVertOffset);
-                string nwp = GetGateWorldPosition(Gates.GetGate(gateNo), Con.numBlueVertOffset);
-                string go = GetGateOrientation(Gates.GetGate(gateNo));
+				string hwp = GetGateWorldPosition(Circuit.GetGate(gateNo - 1), Con.hoopActVertOffset);
+                string nwp = GetGateWorldPosition(Circuit.GetGate(gateNo - 1), Con.numBlueVertOffset);
+                string go = GetGateOrientation(Circuit.GetGate(gateNo - 1));
                 SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Con.hoopActGuid, hwp, go, "False", "1", "False");
                 SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Con.hoopInactGuid, hwp, go, "False", "1", "True");
                 SetLibraryObject(gateNo, "GEN_game_blue", Con.numBlueGuid[gateNo], nwp, go, "False", "1", "True");
@@ -107,10 +107,10 @@ namespace P3D_Scenario_Generator
             }
 
             // Second pass
-            for (int gateNo = 1; gateNo <= Gates.GateCount; gateNo++)
+            for (int gateNo = 1; gateNo <= Circuit.gates.Count; gateNo++)
             {
                 // Create proximity trigger actions to activate next gate and POI as each gate entered
-                if (gateNo + 1 <= Gates.GateCount)
+                if (gateNo + 1 <= Circuit.gates.Count)
                 {
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActHoopAct", gateNo, "ProximityTrigger");
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "DeactHoopInact", gateNo, "ProximityTrigger");
@@ -118,7 +118,7 @@ namespace P3D_Scenario_Generator
                 }
 
                 // Add activate next gate proximity trigger action as event to proximity trigger
-                if (gateNo + 1 <= Gates.GateCount)
+                if (gateNo + 1 <= Circuit.gates.Count)
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActProximityTrigger", gateNo, "ProximityTrigger");
             }
 
@@ -138,7 +138,7 @@ namespace P3D_Scenario_Generator
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger
-            SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", Gates.GateCount, "ProximityTrigger");
+            SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", Circuit.gates.Count, "ProximityTrigger");
         }
 
         static private void SetPhotoTourWorldBaseFlightXML()
@@ -524,11 +524,11 @@ namespace P3D_Scenario_Generator
         {
             XmlSerializer xmlSerializer = new(simBaseDocumentXML.GetType());
 
-            using StreamWriter writer = new(Parameters.SaveLocation.Replace("fxml", "xml"));
+            using StreamWriter writer = new($"{Parameters.ScenarioFolder}{Parameters.ScenarioTitle}.xml");
             xmlSerializer.Serialize(writer, simBaseDocumentXML);
             writer.Close();
 
-            RemoveXMLNSattributes(Parameters.SaveLocation.Replace("fxml", "xml"));
+            RemoveXMLNSattributes($"{Parameters.ScenarioFolder}{Parameters.ScenarioTitle}.xml");
         }
 
         /// <summary>
@@ -681,7 +681,7 @@ namespace P3D_Scenario_Generator
 
         static private string[] GetPhotoDimensions(int photoNo)
         {
-            string bitmapFilename = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\photo_{photoNo:00}.jpg";
+            string bitmapFilename = $"{Parameters.ImageFolder}photo_{photoNo:00}.jpg";
             Bitmap drawing = new(bitmapFilename);
 			return [drawing.Width.ToString(), drawing.Height.ToString()];
         }
@@ -840,7 +840,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetMovingMapJS(List<MapEdges> mapEdges, int count)
         {
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsMovingMap.js";
+            string saveLocation = $"{Parameters.ImageFolder}scriptsMovingMap.js";
             string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsMovingMap.js";
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
             StreamReader reader = new(stream);
@@ -986,7 +986,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetResourcesFile(string resourceFolder, string resourceFileName)
         {
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\{resourceFileName}";
+            string saveLocation = $"{Path.GetDirectoryName(Parameters.ScenarioFolder)}\\images\\{resourceFileName}";
             string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.{resourceFolder}.{resourceFileName}";
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
             StreamReader reader = new(stream);
@@ -1007,7 +1007,7 @@ namespace P3D_Scenario_Generator
                 UncompletedImage = "images\\imgM_i.bmp",
                 CompletedImage = "images\\imgM_c.bmp",
                 MissionBrief = "Overview.htm",
-                AbbreviatedMissionBrief = $"{Path.GetFileNameWithoutExtension(Parameters.SaveLocation)}.htm",
+                AbbreviatedMissionBrief = $"{Parameters.ScenarioTitle}.htm",
                 SuccessMessage = $"Success! You completed the \"{Parameters.SelectedScenario}\" scenario objectives.",
                 FailureMessage = $"Better luck next time! You failed to complete the \"{Parameters.SelectedScenario}\" scenario objectives.",
                 UserCrashMessage = $"Yikes! You crashed and therefore failed the \"{Parameters.SelectedScenario}\" scenario objectives."
@@ -1062,7 +1062,7 @@ namespace P3D_Scenario_Generator
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleSignWriting.css");
             StreamReader reader = new(stream);
             signWritingCSS = reader.ReadToEnd();
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleSignWriting.css";
+            string saveLocation = $"{Parameters.ImageFolder}styleSignWriting.css";
             File.WriteAllText(saveLocation, signWritingCSS);
             stream.Dispose();
         }
@@ -1111,7 +1111,7 @@ namespace P3D_Scenario_Generator
             signWritingHTML = signWritingHTML.Replace("gateTopPixelsX", topPixels);
             signWritingHTML = signWritingHTML.Replace("gateLeftPixelsX", leftPixels);
             signWritingHTML = signWritingHTML.Replace("gateBearingsX", bearings);
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\htmlSignWriting.html";
+            string saveLocation = $"{Parameters.ImageFolder}htmlSignWriting.html";
             File.WriteAllText(saveLocation, signWritingHTML);
             stream.Dispose();
         }
@@ -1123,7 +1123,7 @@ namespace P3D_Scenario_Generator
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsSignWriting.js");
             StreamReader reader = new(stream);
             signWritingJS = reader.ReadToEnd();
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsSignWriting.js";
+            string saveLocation = $"{Parameters.ImageFolder}scriptsSignWriting.js";
             File.WriteAllText(saveLocation, signWritingJS);
             stream.Dispose();
         }
@@ -1182,7 +1182,7 @@ namespace P3D_Scenario_Generator
         {
             SetMovingMapJS(Wikipedia.WikiLegMapEdges, Wikipedia.WikiCount);
 
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\scriptsWikipediaItem.js";
+            string saveLocation = $"{Parameters.ImageFolder}scriptsWikipediaItem.js";
             string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaItem.js";
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
             StreamReader reader = new(stream);

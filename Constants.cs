@@ -27,7 +27,7 @@ namespace P3D_Scenario_Generator
     /// <summary>
     /// Program constants
     /// </summary>
-    public static class Con
+    public class Con
     {
         #region Display related constants
 
@@ -68,11 +68,6 @@ namespace P3D_Scenario_Generator
         /// If OSM tile coordinate is within this many pixels of bounding box edge, extra tiles are added to the bounding box
         /// </summary>
         public static readonly int boundingBoxTrimMargin = 15;
-
-        /// <summary>
-        /// Location of scenario specific html, css, javascript, image files
-        /// </summary>
-        public static readonly string imagePath = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
 
         /// <summary>
         /// <see cref="tileSize"/> multiplier for location image

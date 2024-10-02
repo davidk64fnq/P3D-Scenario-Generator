@@ -236,6 +236,7 @@ namespace P3D_Scenario_Generator
                 // Check we have located selected airport
                 if (reader.MoveToAttribute("id") && reader.Value == airportICAO)
                 {
+                    rwyParams.IcaoId = reader.Value;
                     reader.ReadToFollowing("ICAOName");
                     rwyParams.IcaoName = reader.ReadElementContentAsString();
                     reader.ReadToFollowing("Country");

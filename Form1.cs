@@ -73,9 +73,9 @@ namespace P3D_Scenario_Generator
                 DoScenarioSpecificTasks();
 
                 // Delete next three lines once re-write complete
-                Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
-                Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
-                Gates.SetGates();
+            //    Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+            //    Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+            //    Gates.SetGates();
 
                 ScenarioFXML.GenerateFXMLfile();
                 ScenarioHTML.GenerateHTMLfiles();
@@ -87,7 +87,7 @@ namespace P3D_Scenario_Generator
         private static void DisplayStartMessage()
         {
             Cursor.Current = Cursors.WaitCursor;
-            string message = $"Creating scenario files in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - will confirm when complete";
+            string message = $"Creating scenario files in \"{Parameters.ImageFolder}\" - will confirm when complete";
             MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -110,11 +110,11 @@ namespace P3D_Scenario_Generator
                 CelestialNav.GetAlmanacData();
                 CelestialNav.InitStars();
                 CelestialNav.CreateStarsDat();
-                string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\htmlCelestialSextant.html";
+                string saveLocation = $"{Parameters.ImageFolder}htmlCelestialSextant.html";
                 CelestialNav.SetCelestialSextantHTML(saveLocation);
-                saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\";
+                saveLocation = $"{Parameters.ImageFolder}images\\";
                 CelestialNav.SetCelestialSextantJS(saveLocation);
-                saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\images\\styleCelestialSextant.css";
+                saveLocation = $"{Parameters.ImageFolder}styleCelestialSextant.css";
                 CelestialNav.SetCelestialSextantCSS(saveLocation);
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
@@ -127,7 +127,7 @@ namespace P3D_Scenario_Generator
         private static void DisplayFinishMessage()
         {
             Cursor.Current = Cursors.Default;
-            string message = $"Scenario files created in \"{Path.GetDirectoryName(Parameters.SaveLocation)}\" - enjoy your flight!";
+            string message = $"Scenario files created in \"{Parameters.ImageFolder}\" - enjoy your flight!";
             MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -198,7 +198,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitBase.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 0.5 / 60);
                 // Final distance (miles) approx by speed (knots) * number of minutes / 60 (assume 1.25 minutes to descend 1000ft at 800ft/min)
                 TextBoxCircuitFinal.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 1.25 / 60);
-                TextBoxCircuitTurnRate.Text = "4.0";
+                TextBoxCircuitTurnRate.Text = "2.0";
             }
         }
 
@@ -403,7 +403,6 @@ namespace P3D_Scenario_Generator
         {
             // General tab
             ListBoxRunways.DataSource = Runway.GetICAOids();
-            ListBoxScenarioType.DataSource = Con.scenarioNames;
 
             // Circuit tab
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.circuitTab.jpg");

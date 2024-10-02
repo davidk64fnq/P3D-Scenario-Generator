@@ -320,7 +320,7 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitTurnRate.Name = "TextBoxCircuitTurnRate";
             TextBoxCircuitTurnRate.Size = new Size(80, 23);
             TextBoxCircuitTurnRate.TabIndex = 17;
-            TextBoxCircuitTurnRate.Text = "4.0";
+            TextBoxCircuitTurnRate.Text = "2.0";
             TextBoxCircuitTurnRate.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitTurnRate, "360 degrees turn rate in minutes");
             // 
@@ -978,6 +978,7 @@ namespace P3D_Scenario_Generator
             // 
             ListBoxScenarioType.FormattingEnabled = true;
             ListBoxScenarioType.ItemHeight = 15;
+            ListBoxScenarioType.Items.AddRange(new object[] { "Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation", "Wikipedia List" });
             ListBoxScenarioType.Location = new Point(30, 47);
             ListBoxScenarioType.Name = "ListBoxScenarioType";
             ListBoxScenarioType.Size = new Size(120, 94);

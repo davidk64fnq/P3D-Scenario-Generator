@@ -4,20 +4,19 @@ namespace P3D_Scenario_Generator
 {
     internal class Cache
     {
-        static internal void GetOrCopyWebDoc(string key, string url, string saveFolder, string saveFile)
+        static internal void GetOrCopyWebDoc(string key, string url, string saveFile)
         {
-            string scenarioPath = Path.Combine(saveFolder, saveFile);
             string cachePath = "";
             if (DoesKeyExist(key, ref cachePath))
             {
-                File.Copy(cachePath, scenarioPath, true);
+                File.Copy(cachePath, saveFile, true);
             }
             else
             {
-                HttpRoutines.GetWebDoc(url, saveFolder, saveFile);
-                if (File.Exists(scenarioPath)) {
+                HttpRoutines.GetWebDoc(url, saveFile);
+                if (File.Exists(saveFile)) {
                     Properties.Settings.Default.CacheMonthlyTotal += 1;
-                    File.Copy(scenarioPath, cachePath, true);
+                    File.Copy(saveFile, cachePath, true);
                 }
             }
         }

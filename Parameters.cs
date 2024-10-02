@@ -9,7 +9,9 @@ namespace P3D_Scenario_Generator
         // General tab
         internal static string SelectedAirportICAO { get; set; }
         internal static string SelectedAirportID { get; set; }
-        internal static string SaveLocation { get; private set; }
+        internal static string ScenarioTitle { get; private set; }
+        internal static string ScenarioFolder { get; private set; }
+        internal static string ImageFolder { get; private set; }
         internal static string SelectedAircraft { get; private set; }
         internal static string SelectedScenario { get; private set; }
         internal static int Second { get; private set; }
@@ -24,6 +26,10 @@ namespace P3D_Scenario_Generator
         internal static int Minutes { get; private set; }
 
         // Circuit tab
+
+        /// <summary>
+        /// Distance between runway and gate 1 in miles
+        /// </summary>
         internal static double UpwindLeg { get; private set; }
 
         /// <summary>
@@ -32,7 +38,7 @@ namespace P3D_Scenario_Generator
         internal static double BaseLeg { get; private set; }
 
         /// <summary>
-        /// Distance from gate 5 to gate 6
+        /// Distance between gate 8 and runway in miles
         /// </summary>
         internal static double FinalLeg { get; private set; }
 
@@ -116,7 +122,7 @@ namespace P3D_Scenario_Generator
                 SelectedAircraft = form.ListBoxAircraft.Items[form.ListBoxAircraft.SelectedIndex].ToString();
             }
             SelectedAirportICAO = form.TextBoxSelectedRunway.Text.Split("\t")[0];
-            SelectedAirportID = form.TextBoxSelectedRunway.Text.Split("\t")[1];
+            SelectedAirportID = form.TextBoxSelectedRunway.Text.Split("\t")[1][1..^1]; // Strip '(' and ')'
             int index = Array.FindIndex(Con.scenarioNames, s => s == form.TextBoxSelectedScenario.Text);
             SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
             Second = form.DatePicker.Value.Second;
@@ -190,10 +196,11 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                string saveFolder = $"{form.TextBoxP3Dv5Files.Text}\\{form.TextBoxScenarioTitle.Text}";
-                SaveLocation = saveFolder + $"\\{form.TextBoxScenarioTitle.Text}.fxml";
-                Directory.CreateDirectory(saveFolder);
-                Directory.CreateDirectory($"{saveFolder}\\images");
+                ScenarioTitle = form.TextBoxScenarioTitle.Text;
+                ScenarioFolder = $"{form.TextBoxP3Dv5Files.Text}\\{form.TextBoxScenarioTitle.Text}\\";
+                Directory.CreateDirectory(ScenarioFolder);
+                ImageFolder = $"{ScenarioFolder}\\images\\";
+                Directory.CreateDirectory(ImageFolder);
                 return true;
             }
 

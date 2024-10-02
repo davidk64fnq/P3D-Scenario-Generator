@@ -245,13 +245,13 @@ namespace P3D_Scenario_Generator
         {
             PhotoLocParams photoLocation;
             PhotoLocParams airportLocation;
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html";
+            string saveLocation = $"{Parameters.ScenarioFolder}random_pic2map.html";
 
             // Clear last attempt
             PhotoLocations.Clear();
 
             // Get starting random photo page
-            HttpRoutines.GetWebDoc("https://www.pic2map.com/random.php", Path.GetDirectoryName(Parameters.SaveLocation), "random_pic2map.html");
+            HttpRoutines.GetWebDoc("https://www.pic2map.com/random.php", $"{Parameters.ImageFolder}\\random_pic2map.html");
             photoLocation = ExtractPhotoParams(saveLocation);
 
             // Find nearby airport to starting random photo
@@ -276,7 +276,7 @@ namespace P3D_Scenario_Generator
         {
             double distance = 9999;
             double bearing = 0;
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html";
+            string saveLocation = $"{Parameters.ScenarioFolder}random_pic2map.html";
             string url;
             PhotoLocParams photoLocation;
 
@@ -291,7 +291,7 @@ namespace P3D_Scenario_Generator
 
             // Extract next nearest unselected photo location parameters
             File.Delete(saveLocation);
-            HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SaveLocation), "random_pic2map.html");
+            HttpRoutines.GetWebDoc(url, $"{Parameters.ImageFolder}\\random_pic2map.html");
             photoLocation = ExtractPhotoParams(saveLocation);
             PhotoLocations.Add(photoLocation);
             return true;
@@ -309,7 +309,7 @@ namespace P3D_Scenario_Generator
             // Find nearby airport to last photo
             airportLocation = GetNearbyAirport(PhotoLocations[^1].latitude, PhotoLocations[^1].longitude, 
                 Parameters.MinLegDist, Parameters.MaxLegDist);
-            File.Delete($"{Path.GetDirectoryName(Parameters.SaveLocation)}\\random_pic2map.html"); // no longer needed
+            File.Delete($"{Parameters.ScenarioFolder}random_pic2map.html"); // no longer needed
             if (airportLocation != null)
             {
                 int headingChange = MathRoutines.CalcHeadingChange(PhotoLocations[^2].forwardBearing, airportLocation.forwardBearing);
@@ -460,7 +460,7 @@ namespace P3D_Scenario_Generator
         {
             for (int index = 1; index < PhotoLocations.Count - 1; index++)
             {
-                HttpRoutines.GetWebDoc(PhotoLocations[index].photoURL, Path.GetDirectoryName(Parameters.SaveLocation), $"images\\photo_{index:00}.jpg");
+                HttpRoutines.GetWebDoc(PhotoLocations[index].photoURL, $"{Parameters.ImageFolder}\\photo_{index:00}.jpg");
             }
         }
     }
