@@ -182,22 +182,23 @@ namespace P3D_Scenario_Generator
 
         private void SetDefaultCircuitParams()
         {
-            if (ListBoxAircraft.Items.Count == 0)
+            if (Properties.Settings.Default.CruiseSpeed <= 0)
             {
                 MessageBox.Show($"Select an aircraft to calculate default values", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed);
+                double cruiseSpeed = Properties.Settings.Default.CruiseSpeed;
+                TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", cruiseSpeed);
                 TextBoxCircuitHeightDown.Text = "1000";
                 TextBoxCircuitHeightUpwind.Text = "500";
                 TextBoxCircuitHeightBase.Text = "500";
                 // Upwind distance (miles) approx by speed (knots) * number of minutes / 60 (assume 1.25 minutes to climb 1000ft at 800ft/min)
-                TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 1.25 / 60);
+                TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", cruiseSpeed * 1.25 / 60);
                 // Base distance (miles) approx by speed (knots) * number of minutes / 60 (assume 30 seconds to prepare for next gate after completing turn)
-                TextBoxCircuitBase.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 0.5 / 60);
+                TextBoxCircuitBase.Text = string.Format("{0:0.0}", cruiseSpeed * 0.5 / 60);
                 // Final distance (miles) approx by speed (knots) * number of minutes / 60 (assume 1.25 minutes to descend 1000ft at 800ft/min)
-                TextBoxCircuitFinal.Text = string.Format("{0:0.0}", Aircraft.CruiseSpeed * 1.25 / 60);
+                TextBoxCircuitFinal.Text = string.Format("{0:0.0}", cruiseSpeed * 1.25 / 60);
                 TextBoxCircuitTurnRate.Text = "2.0";
             }
         }
@@ -407,6 +408,7 @@ namespace P3D_Scenario_Generator
             // Circuit tab
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.circuitTab.jpg");
             PictureBoxCircuit.Image = new Bitmap(stream);
+            SetDefaultCircuitParams();
 
             // Signwriting tab
             stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.signTabSegment22Font.jpg");

@@ -16,8 +16,20 @@ namespace P3D_Scenario_Generator
             Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
             Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
             gates = Gates.SetCircuitGates();
+            SetCircuitAirport(gates);
             SetCircuitOverviewImage(gates);
             SetCircuitLocationImage(gates);
+        }
+
+        /// <summary>
+        /// Insert circuit airport at start and end of gates list
+        /// </summary>
+        /// <param name="gates">The list inserted into</param>
+        static internal void SetCircuitAirport(List<Gate> gates)
+        {
+            Gate circuitAirport = new(Runway.startRwy.ThresholdStartLat, Runway.startRwy.ThresholdStartLon, 0, 0, 0, 0, 0);
+            gates.Insert(0, circuitAirport);
+            gates.Add(circuitAirport);
         }
 
         /// <summary>
@@ -25,8 +37,8 @@ namespace P3D_Scenario_Generator
         /// </summary>
         static internal void SetCircuitOverviewImage(List<Gate> gates)
         {
-            int zoom = GetBoundingBoxZoom(gates, 0, gates.Count - 1, true, true);
-            List<Tile> tiles = SetCircuitOSMtiles(gates, zoom, 0, gates.Count - 1, true, true);
+            int zoom = GetBoundingBoxZoom(gates, 0, gates.Count - 1);
+            List<Tile> tiles = SetCircuitOSMtiles(gates, zoom, 0, gates.Count - 1);
             BoundingBox boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
             Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
@@ -39,7 +51,7 @@ namespace P3D_Scenario_Generator
         static internal void SetCircuitLocationImage(List<Gate> gates)
         {
             int zoom = 15;
-            List<Tile> tiles = SetCircuitOSMtiles(gates, zoom, 0, -1, true, false);
+            List<Tile> tiles = SetCircuitOSMtiles(gates, zoom, 0, 0);
             BoundingBox boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
             if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
@@ -58,16 +70,14 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="startGateIndex">Index of first gate in circuit</param>
         /// <param name="finishGateIndex">Index of last gate in circuit</param>
-        /// <param name="incStartAirport">Whether to include the start airport</param>
-        /// <param name="incFinishAirport">Whether to include the finish airport</param>
         /// <returns>The maximum zoom level that meets constraints</returns>
-        static internal int GetBoundingBoxZoom(List<Gate> gates, int startGateIndex, int finishGateIndex, bool incStartAirport, bool incFinishAirport)
+        static internal int GetBoundingBoxZoom(List<Gate> gates, int startGateIndex, int finishGateIndex)
         {
             List<Tile> tiles;
             BoundingBox boundingBox;
             for (int zoom = 2; zoom <= Con.maxZoomLevel; zoom++) // zoom of 1 is map of the world!
             {
-                tiles = SetCircuitOSMtiles(gates, zoom, startGateIndex, finishGateIndex, incStartAirport, incFinishAirport);
+                tiles = SetCircuitOSMtiles(gates, zoom, startGateIndex, finishGateIndex);
                 boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
                 if ((boundingBox.xAxis.Count > Con.tileFactor) || (boundingBox.yAxis.Count > Con.tileFactor))
                 {
@@ -83,24 +93,13 @@ namespace P3D_Scenario_Generator
         /// <param name="zoom">The zoom level to get OSM tiles at</param>
         /// <param name="startItemIndex">Index of first gate in circuit</param>
         /// <param name="finishItemIndex">Index of last gate in circuit</param>
-        /// <param name="incStartAirport">Whether to include the start airport</param>
-        /// <param name="incFinishAirport">Whether to include the finish airport</param>
         /// <returns>The list of tiles</returns>
-        static internal List<Tile> SetCircuitOSMtiles(List<Gate> gates, int zoom, int startItemIndex, int finishItemIndex, 
-            bool incStartAirport, bool incFinishAirport)
+        static internal List<Tile> SetCircuitOSMtiles(List<Gate> gates, int zoom, int startItemIndex, int finishItemIndex)
         {
             List<Tile> tiles = [];
-            if (incStartAirport)
-            {
-                tiles.Add(OSM.GetOSMtile(Runway.startRwy.AirportLon.ToString(), Runway.startRwy.AirportLat.ToString(), zoom));
-            }
             for (int gateIndex = startItemIndex; gateIndex <= finishItemIndex; gateIndex++)
             {
                 tiles.Add(OSM.GetOSMtile(gates[gateIndex].lon.ToString(), gates[gateIndex].lat.ToString(), zoom));
-            }
-            if (incFinishAirport)
-            {
-                tiles.Add(OSM.GetOSMtile(Runway.startRwy.AirportLon.ToString(), Runway.startRwy.AirportLat.ToString(), zoom));
             }
             return tiles;
         }

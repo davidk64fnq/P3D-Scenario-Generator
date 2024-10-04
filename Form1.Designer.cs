@@ -308,7 +308,6 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitSpeed.Name = "TextBoxCircuitSpeed";
             TextBoxCircuitSpeed.Size = new Size(80, 23);
             TextBoxCircuitSpeed.TabIndex = 4;
-            TextBoxCircuitSpeed.Text = "65";
             TextBoxCircuitSpeed.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitSpeed, "Cruise speed between gates 1 and 8 in knots");
             TextBoxCircuitSpeed.Validating += TextBoxDouble_Validating;

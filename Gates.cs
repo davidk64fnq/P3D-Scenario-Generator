@@ -147,6 +147,13 @@ namespace P3D_Scenario_Generator
             return legParams;
         }
 
+        /// <summary>
+        /// There are 8 gates, 2 for each right angle turn. Gates 1, 3 to 6, and 8 are at heights specified by three user parameters.
+        /// The length of the upwind, base and final legs is user supplied. The program calculates the downwind based on runway
+        /// length and user parameters. Program calculates height of gates 2 and 7 by interpolation between gates 1 and 3, and 
+        /// 6 and 8 respectively taking into account user supplied turn rate and cruise speed of selected aircraft.
+        /// </summary>
+        /// <returns>List of eight gates with data needed to place gate objects into simulation</returns>
         internal static List<Gate> SetCircuitGates()
         {
             List<Gate> gates = [];

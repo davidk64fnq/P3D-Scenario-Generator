@@ -59,12 +59,12 @@ namespace P3D_Scenario_Generator
             SetGoalResolutionAction("Goal01");
 
 			// First pass
-			for (int gateNo = 1; gateNo <= Circuit.gates.Count; gateNo++)
+			for (int gateNo = 1; gateNo < Circuit.gates.Count - 1; gateNo++)
             {
 				// Create gate objects (hoop active, hoop inactive and number)
-				string hwp = GetGateWorldPosition(Circuit.GetGate(gateNo - 1), Con.hoopActVertOffset);
-                string nwp = GetGateWorldPosition(Circuit.GetGate(gateNo - 1), Con.numBlueVertOffset);
-                string go = GetGateOrientation(Circuit.GetGate(gateNo - 1));
+				string hwp = GetGateWorldPosition(Circuit.GetGate(gateNo), Con.hoopActVertOffset);
+                string nwp = GetGateWorldPosition(Circuit.GetGate(gateNo), Con.numBlueVertOffset);
+                string go = GetGateOrientation(Circuit.GetGate(gateNo));
                 SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Con.hoopActGuid, hwp, go, "False", "1", "False");
                 SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Con.hoopInactGuid, hwp, go, "False", "1", "True");
                 SetLibraryObject(gateNo, "GEN_game_blue", Con.numBlueGuid[gateNo], nwp, go, "False", "1", "True");
@@ -107,10 +107,10 @@ namespace P3D_Scenario_Generator
             }
 
             // Second pass
-            for (int gateNo = 1; gateNo <= Circuit.gates.Count; gateNo++)
+            for (int gateNo = 1; gateNo < Circuit.gates.Count - 1; gateNo++)
             {
                 // Create proximity trigger actions to activate next gate and POI as each gate entered
-                if (gateNo + 1 <= Circuit.gates.Count)
+                if (gateNo + 1 < Circuit.gates.Count - 1)
                 {
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActHoopAct", gateNo, "ProximityTrigger");
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "DeactHoopInact", gateNo, "ProximityTrigger");
@@ -118,7 +118,7 @@ namespace P3D_Scenario_Generator
                 }
 
                 // Add activate next gate proximity trigger action as event to proximity trigger
-                if (gateNo + 1 <= Circuit.gates.Count)
+                if (gateNo + 1 < Circuit.gates.Count - 1)
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActProximityTrigger", gateNo, "ProximityTrigger");
             }
 
@@ -138,7 +138,7 @@ namespace P3D_Scenario_Generator
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger
-            SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", Circuit.gates.Count, "ProximityTrigger");
+            SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", Circuit.gates.Count - 2, "ProximityTrigger");
         }
 
         static private void SetPhotoTourWorldBaseFlightXML()
