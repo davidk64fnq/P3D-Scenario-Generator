@@ -399,13 +399,13 @@ namespace P3D_Scenario_Generator
             celestialJS = celestialJS.Replace("eastEdgeX", Parameters.CelestialImageEast.ToString());
             celestialJS = celestialJS.Replace("southEdgeX", Parameters.CelestialImageSouth.ToString());
             celestialJS = celestialJS.Replace("westEdgeX", Parameters.CelestialImageWest.ToString());
-            File.WriteAllText($"{saveLocation}scriptsCelestialSextant.js", celestialJS);
+            File.WriteAllText($"{saveLocation}\\scriptsCelestialSextant.js", celestialJS);
             stream.Dispose();
 
             stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsCelestialAstroCalcs.js");
             reader = new StreamReader(stream);
             celestialJS = reader.ReadToEnd();
-            File.WriteAllText($"{saveLocation}scriptsCelestialAstroCalcs.js", celestialJS);
+            File.WriteAllText($"{saveLocation}\\scriptsCelestialAstroCalcs.js", celestialJS);
             stream.Dispose();
         }
 

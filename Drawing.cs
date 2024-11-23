@@ -1,4 +1,6 @@
 ﻿using ImageMagick;
+using ImageMagick.Drawing;
+using ImageMagick.Colors;
 using System.Reflection;
 
 namespace P3D_Scenario_Generator
@@ -54,18 +56,18 @@ namespace P3D_Scenario_Generator
 
             OSM.DownloadOSMtileRow(newTileSouth, 0, boundingBox, zoom, filename);
             OSM.DownloadOSMtile(newTileWest, boundingBox.yAxis[1], zoom, $"{filename}_0_1.png");
-            File.Move($"{Parameters.ImageFolder}{filename}.png", $"{Parameters.ImageFolder}{filename}_1_1.png");
+            File.Move($"{Parameters.ImageFolder}\\{filename}.png", $"{Parameters.ImageFolder}\\{filename}_1_1.png");
             OSM.DownloadOSMtile(newTileEast, boundingBox.yAxis[1], zoom, $"{filename}_2_1.png");
             OSM.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename);
 
             MontageTiles(boundingBox, zoom, filename);
             DeleteTempOSMfiles(filename);
 
-            using MagickImage image = new($"{Parameters.ImageFolder}{filename}.png");
+            using MagickImage image = new($"{Parameters.ImageFolder}\\{filename}.png");
             IMagickGeometry geometry = new MagickGeometry($"{Con.tileSize * 2},{Con.tileSize * 2}, {Con.tileSize / 2}, {Con.tileSize / 2}");
             image.Crop(geometry);
-            image.RePage();
-            image.Write($"{Parameters.ImageFolder}{filename}.png");
+            image.ResetPage();
+            image.Write($"{Parameters.ImageFolder}\\{filename}.png");
 
             return ZoomInNorthSouthWestEast(boundingBox);
         }
@@ -104,7 +106,7 @@ namespace P3D_Scenario_Generator
             MontageTilesToColumn(boundingBox.yAxis.Count, 0, filename);
             DeleteTempOSMfiles($"{filename}_?");
 
-            File.Move($"{Parameters.ImageFolder}{filename}.png", $"{Parameters.ImageFolder}{filename}_1.png");
+            File.Move($"{Parameters.ImageFolder}\\{filename}.png", $"{Parameters.ImageFolder}\\{filename}_1.png");
 
             OSM.DownloadOSMtileColumn(newTileEast, 2, boundingBox, zoom, filename);
             MontageTilesToColumn(boundingBox.yAxis.Count, 2, filename);
@@ -113,11 +115,11 @@ namespace P3D_Scenario_Generator
             MontageColumns(3, boundingBox.yAxis.Count, filename);
             DeleteTempOSMfiles(filename);
 
-            using MagickImage image = new($"{Parameters.ImageFolder}{filename}.png");
+            using MagickImage image = new($"{Parameters.ImageFolder}\\{filename}.png");
             IMagickGeometry geometry = new MagickGeometry($"{Con.tileSize * 2},{Con.tileSize * 2}, {Con.tileSize / 2}, 0");
             image.Crop(geometry);
-            image.RePage();
-            image.Write($"{Parameters.ImageFolder}{filename}.png");
+            image.ResetPage();
+            image.Write($"{Parameters.ImageFolder}\\{filename}.png");
 
             return ZoomInWestEast(boundingBox);
         }
@@ -154,7 +156,7 @@ namespace P3D_Scenario_Generator
             MontageTilesToRow(boundingBox.xAxis.Count, 0, filename);
             DeleteTempOSMfiles($"{filename}_?");
 
-            File.Move($"{Parameters.ImageFolder}{filename}.png", $"{Parameters.ImageFolder}{filename}_1.png");
+            File.Move($"{Parameters.ImageFolder}\\{filename}.png", $"{Parameters.ImageFolder}\\{filename}_1.png");
 
             OSM.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename);
             MontageTilesToRow(boundingBox.xAxis.Count, 2, filename);
@@ -163,11 +165,11 @@ namespace P3D_Scenario_Generator
             MontageRows(boundingBox.xAxis.Count, 3, filename);
             DeleteTempOSMfiles(filename);
 
-            using MagickImage image = new($"{Parameters.ImageFolder}{filename}.png");
+            using MagickImage image = new($"{Parameters.ImageFolder}\\{filename}.png");
             IMagickGeometry geometry = new MagickGeometry($"{Con.tileSize * 2},{Con.tileSize * 2}, 0, {Con.tileSize / 2}");
             image.Crop(geometry);
-            image.RePage();
-            image.Write($"{Parameters.ImageFolder}{filename}.png");
+            image.ResetPage();
+            image.Write($"{Parameters.ImageFolder}\\{filename}.png");
 
             return ZoomInNorthSouth(boundingBox);
         }
@@ -203,7 +205,7 @@ namespace P3D_Scenario_Generator
             MontageTilesToRow(boundingBox.xAxis.Count, 0, filename);
             DeleteTempOSMfiles($"{filename}_?");
 
-            File.Move($"{Parameters.ImageFolder}{filename}.png", $"{Parameters.ImageFolder}{filename}_1.png");
+            File.Move($"{Parameters.ImageFolder}\\{filename}.png", $"{Parameters.ImageFolder}\\{filename}_1.png");
 
             MontageRows(boundingBox.xAxis.Count, 2, filename);
             DeleteTempOSMfiles(filename);
@@ -236,7 +238,7 @@ namespace P3D_Scenario_Generator
         // Resulting imageURL is 2w x 2h Con.tileSize with original imageURL at top vertically.
         static internal BoundingBox PadSouth(BoundingBox boundingBox, int newTileSouth, string filename, int zoom)
         {
-            File.Move($"{Parameters.ImageFolder}{filename}.png", $"{Parameters.ImageFolder}{filename}_0.png");
+            File.Move($"{Parameters.ImageFolder}\\{filename}.png", $"{Parameters.ImageFolder}\\{filename}_0.png");
 
             OSM.DownloadOSMtileRow(newTileSouth, 1, boundingBox, zoom, filename);
             MontageTilesToRow(boundingBox.xAxis.Count, 1, filename);
@@ -275,7 +277,7 @@ namespace P3D_Scenario_Generator
 
         static internal void DrawRoute(List<Tile> tiles, BoundingBox boundingBox, string filename)
         {
-            using MagickImage image = new($"{Parameters.ImageFolder}{filename}.png");
+            using MagickImage image = new($"{Parameters.ImageFolder}\\{filename}.png");
             DrawableStrokeColor strokeColor = new(new MagickColor("blue"));
             DrawableStrokeWidth stokeWidth = new(1);
             DrawableFillColor fillColor = new(MagickColors.Transparent);
@@ -294,7 +296,7 @@ namespace P3D_Scenario_Generator
                 centrePrevY = centreY;
             }
 
-            image.Write($"{Parameters.ImageFolder}{filename}.png");
+            image.Write($"{Parameters.ImageFolder}\\{filename}.png");
         }
 
         /// <summary>
@@ -317,20 +319,20 @@ namespace P3D_Scenario_Generator
             string sourceFile = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.imgM.png";
             using (Stream sourceStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(sourceFile))
             {
-                using FileStream outputFileStream = new($"{Parameters.ImageFolder}{outputName}.png", FileMode.Create);
+                using FileStream outputFileStream = new($"{Parameters.ImageFolder}\\{outputName}.png", FileMode.Create);
                     sourceStream.CopyTo(outputFileStream);
             }
 
 
 #pragma warning disable IDE0063
-            using (MagickImage image = new($"{Parameters.ImageFolder}{outputName}.png"))
+            using (MagickImage image = new($"{Parameters.ImageFolder}\\{outputName}.png"))
 #pragma warning restore IDE0063
             {
                 // Write the scenario type on the base imageURL
-                int boundingBoxHeight = image.Height / 2;
-                int boundingBoxWidth = image.Width;
+                uint boundingBoxHeight = Convert.ToUInt32(image.Height / 2);
+                uint boundingBoxWidth = image.Width;
                 int boundingBoxYoffset = Convert.ToInt32(image.Height * 0.4);
-                MagickGeometry geometry = new(0, boundingBoxHeight, boundingBoxWidth, boundingBoxYoffset);
+                MagickGeometry geometry = new(0, boundingBoxYoffset, boundingBoxHeight, boundingBoxWidth);
                 image.Settings.Font = "SegoeUI";
                 image.Settings.FontPointsize = 36;
                 image.Annotate(Parameters.SelectedScenario, geometry, Gravity.Center);
@@ -341,12 +343,12 @@ namespace P3D_Scenario_Generator
                 {
                     using MagickImage imageIcon = new(successIconStream);
                     {
-                        int iconXoffset = image.Width - imageIcon.Width * 2;
-                        int iconYoffset = image.Height / 2 - imageIcon.Height / 2;
+                        int iconXoffset = Convert.ToInt32(image.Width - imageIcon.Width * 2);
+                        int iconYoffset = Convert.ToInt32(image.Height / 2 - imageIcon.Height / 2);
                         image.Composite(imageIcon, iconXoffset, iconYoffset, CompositeOperator.Over);
                     }
                 }
-                image.Write($"{Parameters.ImageFolder}{outputName}.png");
+                image.Write($"{Parameters.ImageFolder}\\{outputName}.png");
                 ConvertImageformat(outputName, "png", "bmp");
             }
         }
@@ -365,11 +367,11 @@ namespace P3D_Scenario_Generator
             };
             for (int yIndex = 0; yIndex < yCount; yIndex++)
             {
-                var tileImage = new MagickImage($"{Parameters.ImageFolder}{filename}_{xIndex}_{yIndex}.png");
+                var tileImage = new MagickImage($"{Parameters.ImageFolder}\\{filename}_{xIndex}_{yIndex}.png");
                 images.Add(tileImage);
             }
             using var result = images.Montage(settings);
-            result.Write($"{Parameters.ImageFolder}{filename}_{xIndex}.png");
+            result.Write($"{Parameters.ImageFolder}\\{filename}_{xIndex}.png");
         }
 
         static internal void MontageTilesToRow(int xCount, int yIndex, string filename)
@@ -382,11 +384,11 @@ namespace P3D_Scenario_Generator
             };
             for (int xIndex = 0; xIndex < xCount; xIndex++)
             {
-                var tileImage = new MagickImage($"{Parameters.ImageFolder}{filename}_{xIndex}_{yIndex}.png");
+                var tileImage = new MagickImage($"{Parameters.ImageFolder}\\{filename}_{xIndex}_{yIndex}.png");
                 images.Add(tileImage);
             }
             using var result = images.Montage(settings);
-            result.Write($"{Parameters.ImageFolder}{filename}_{yIndex}.png");
+            result.Write($"{Parameters.ImageFolder}\\{filename}_{yIndex}.png");
         }
 
         static internal void MontageColumns(int xCount, int yCount, string filename)
@@ -399,11 +401,11 @@ namespace P3D_Scenario_Generator
             };
             for (int xIndex = 0; xIndex < xCount; xIndex++)
             {
-                var tileImage = new MagickImage($"{Parameters.ImageFolder}{filename}_{xIndex}.png");
+                var tileImage = new MagickImage($"{Parameters.ImageFolder}\\{filename}_{xIndex}.png");
                 images.Add(tileImage);
             }
             using var result = images.Montage(settings);
-            result.Write($"{Parameters.ImageFolder}{filename}.png");
+            result.Write($"{Parameters.ImageFolder}\\{filename}.png");
         }
 
         static internal void MontageRows(int xCount, int yCount, string filename)
@@ -416,11 +418,11 @@ namespace P3D_Scenario_Generator
             };
             for (int yIndex = 0; yIndex < yCount; yIndex++)
             {
-                var tileImage = new MagickImage($"{Parameters.ImageFolder}{filename}_{yIndex}.png");
+                var tileImage = new MagickImage($"{Parameters.ImageFolder}\\{filename}_{yIndex}.png");
                 images.Add(tileImage);
             }
             using var result = images.Montage(settings);
-            result.Write($"{Parameters.ImageFolder}{filename}.png");
+            result.Write($"{Parameters.ImageFolder}\\{filename}.png");
         }
 
         static internal void MontageTiles(BoundingBox boundingBox, int zoom, string filename)
@@ -444,15 +446,15 @@ namespace P3D_Scenario_Generator
 
         static internal void ConvertImageformat(string filename, string oldExt, string newExt)
         {
-            using MagickImage image = new($"{Parameters.ImageFolder}{filename}.{oldExt}");
+            using MagickImage image = new($"{Parameters.ImageFolder}\\{filename}.{oldExt}");
             switch (newExt)
             {
                 case "jpg":
                     image.Quality = 100;
                     break;
             }
-            image.Write($"{Parameters.ImageFolder}{filename}.{newExt}");
-            File.Delete($"{Parameters.ImageFolder}{filename}.{oldExt}");
+            image.Write($"{Parameters.ImageFolder}\\{filename}.{newExt}");
+            File.Delete($"{Parameters.ImageFolder}\\{filename}.{oldExt}");
         }
 
         static internal void DeleteTempOSMfiles(string filename)
@@ -505,9 +507,10 @@ namespace P3D_Scenario_Generator
 
         static internal void Resize(string filename, int size)
         {
-            using MagickImage image = new($"{Parameters.ImageFolder}{filename}");
-            image.Resize(size, size);
-            image.Write($"{Parameters.ImageFolder}{filename}");
+            uint sizeUint = Convert.ToUInt32(size);
+            using MagickImage image = new($"{Parameters.ImageFolder}\\{filename}");
+            image.Resize(sizeUint, sizeUint);
+            image.Write($"{Parameters.ImageFolder}\\{filename}");
         }
 
         #endregion

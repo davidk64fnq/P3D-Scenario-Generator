@@ -72,6 +72,21 @@ namespace P3D_Scenario_Generator
                 if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.Element)
                 {
                     curAirport.IcaoId = reader.GetAttribute("id");
+                    reader.ReadToFollowing("Country");
+                    curAirport.Country = reader.ReadElementContentAsString();
+                    // State not always present betweeen Country and City elements
+                    reader.Read();
+                    if (reader.Name == "State")
+                    {
+                        curAirport.State = reader.ReadElementContentAsString();
+                        reader.ReadToFollowing("City");
+                        curAirport.City = reader.ReadElementContentAsString();
+                    }
+                    else
+                    {
+                        reader.ReadToFollowing("City");
+                        curAirport.City = reader.ReadElementContentAsString();
+                    }
                     while (reader.Read())
                     {
                         if (reader.Name == "Runway" && reader.NodeType == XmlNodeType.Element)

@@ -21,7 +21,8 @@ namespace P3D_Scenario_Generator
         PhotoTour,
         SignWriting,
         Celestial,
-        WikiList
+        WikiList,
+        Testing
     };
 
     /// <summary>
@@ -39,7 +40,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// The scenario type names for display purposes
         /// </summary>
-        public static readonly string[] scenarioNames = ["Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation", "Wikipedia List"];
+        public static readonly string[] scenarioNames = ["Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation", "Wikipedia List", "Testing"];
 
         #endregion
 

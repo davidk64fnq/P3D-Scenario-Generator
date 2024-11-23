@@ -43,6 +43,9 @@ namespace P3D_Scenario_Generator
                 case nameof(ScenarioTypes.WikiList):
                     SetWikiListWorldBaseFlightXML();
                     break;
+                case nameof(ScenarioTypes.Testing):
+                    SetTestingWorldBaseFlightXML();
+                    break;
                 default:
                     break;
             }
@@ -171,10 +174,11 @@ namespace P3D_Scenario_Generator
 
             // Create window open/close actions
             string[] windowDimensions = ["527", "597"]; // 512 + 15/85
-            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions);
+            string[] windowOffsets = [$"{Parameters.PhotoLocationWidth}", $"{Parameters.PhotoLocationHeight}"];
+            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions, windowOffsets, "3");
             SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
             windowDimensions = ["1020", "1000"]; // width and height
-            SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", windowDimensions);
+            SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", windowDimensions, windowOffsets, "0");
             SetCloseWindowAction(2, "UIPanelWindow", "UIpanelWindow");
 
             // Pass 1 - setup proximity triggers, there is a trigger for each photo location
@@ -231,7 +235,7 @@ namespace P3D_Scenario_Generator
             SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
             // Create airport landing trigger which does goal resolution and closes windows
-            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoName);
+            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoId);
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow02", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
@@ -361,7 +365,7 @@ namespace P3D_Scenario_Generator
             SetSignWritingCSS();
 
             // Create  window open/close actions
-            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", GetSignWritingWindowDimensions());
+//            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", GetSignWritingWindowDimensions());
             SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
 
             // Create timer trigger to play audio introductions, activate first gate and POI, activate first proximity trigger when scenario starts
@@ -398,7 +402,7 @@ namespace P3D_Scenario_Generator
 
             // Create sextant window object
             SetUIPanelWindow(1, "CelestialSextant", "False", "True", "images\\htmlCelestialSextant.html", "False", "True");
-			SetOpenWindowAction(1, "UIPanelWindow", "CelestialSextant", ["986", "755"]);
+//			SetOpenWindowAction(1, "UIPanelWindow", "CelestialSextant", ["986", "755"]);
             SetCloseWindowAction(1, "UIPanelWindow", "CelestialSextant");
 
             // Create onscreen text object for displaying error message from sextant
@@ -459,10 +463,10 @@ namespace P3D_Scenario_Generator
 
             // Create window open/close actions
             string[] windowDimensions = ["527", "597"]; // 512 + 15/85
-            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions);
+//            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions);
             SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow"); 
             windowDimensions = ["1020", "1000"]; // width and height
-            SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", windowDimensions);
+//            SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", windowDimensions);
             SetCloseWindowAction(2, "UIPanelWindow", "UIpanelWindow");
 
             // Pass 1 - setup proximity triggers, there is a trigger for each wiki item location
@@ -520,15 +524,25 @@ namespace P3D_Scenario_Generator
             SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", Wikipedia.WikiCount - 2, "ProximityTrigger");
         }
 
+        static private void SetTestingWorldBaseFlightXML()
+        {
+            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\PhotoTour.html", "False", "False");
+            string[] windowDimensions = ["1020", "1000"]; // width and height
+            string[] windowOffsets = [$"{Parameters.PhotoLocationWidth}", $"{Parameters.PhotoLocationHeight}"];
+            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions, windowOffsets, Parameters.PhotoWindowNumber.ToString());
+            SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
+            SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
+        }
+
         static private void WriteXML()
         {
             XmlSerializer xmlSerializer = new(simBaseDocumentXML.GetType());
 
-            using StreamWriter writer = new($"{Parameters.ScenarioFolder}{Parameters.ScenarioTitle}.xml");
+            using StreamWriter writer = new($"{Parameters.ScenarioFolder}\\{Parameters.ScenarioTitle}.xml");
             xmlSerializer.Serialize(writer, simBaseDocumentXML);
             writer.Close();
 
-            RemoveXMLNSattributes($"{Parameters.ScenarioFolder}{Parameters.ScenarioTitle}.xml");
+            RemoveXMLNSattributes($"{Parameters.ScenarioFolder}\\{Parameters.ScenarioTitle}.xml");
         }
 
         /// <summary>
@@ -681,7 +695,7 @@ namespace P3D_Scenario_Generator
 
         static private string[] GetPhotoDimensions(int photoNo)
         {
-            string bitmapFilename = $"{Parameters.ImageFolder}photo_{photoNo:00}.jpg";
+            string bitmapFilename = $"{Parameters.ImageFolder}\\photo_{photoNo:00}.jpg";
             Bitmap drawing = new(bitmapFilename);
 			return [drawing.Width.ToString(), drawing.Height.ToString()];
         }
@@ -840,7 +854,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetMovingMapJS(List<MapEdges> mapEdges, int count)
         {
-            string saveLocation = $"{Parameters.ImageFolder}scriptsMovingMap.js";
+            string saveLocation = $"{Parameters.ImageFolder}\\scriptsMovingMap.js";
             string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsMovingMap.js";
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
             StreamReader reader = new(stream);
@@ -896,12 +910,13 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionOnScreenText = [ost];
         }
 
-        static private void SetOpenWindowAction(int index, string objName, string search, string[] dimensions)
+        static private void SetOpenWindowAction(int index, string objName, string search, string[] dimensions, string[] offsets, string monitorNo)
         {
             search = $"{search}{index:00}";
             SetWindowSize sws = new(dimensions[0], dimensions[1]);
-			ObjectReference or = GetObjectReference(objName, search);
-			SimMissionOpenWindowAction owa = new($"Open{search}", sws, or, GetGUID());
+            SetWindowLocation swl = new(offsets[0], offsets[1]);
+            ObjectReference or = GetObjectReference(objName, search);
+			SimMissionOpenWindowAction owa = new($"Open{search}", sws, swl, monitorNo, or, GetGUID());
             if (simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction != null)
                 simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction.Add(owa);
             else
@@ -986,7 +1001,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetResourcesFile(string resourceFolder, string resourceFileName)
         {
-            string saveLocation = $"{Path.GetDirectoryName(Parameters.ScenarioFolder)}\\images\\{resourceFileName}";
+            string saveLocation = $"{Parameters.ScenarioFolder}\\images\\{resourceFileName}";
             string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.{resourceFolder}.{resourceFileName}";
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
             StreamReader reader = new(stream);
@@ -1062,7 +1077,7 @@ namespace P3D_Scenario_Generator
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleSignWriting.css");
             StreamReader reader = new(stream);
             signWritingCSS = reader.ReadToEnd();
-            string saveLocation = $"{Parameters.ImageFolder}styleSignWriting.css";
+            string saveLocation = $"{Parameters.ImageFolder}\\styleSignWriting.css";
             File.WriteAllText(saveLocation, signWritingCSS);
             stream.Dispose();
         }
@@ -1111,7 +1126,7 @@ namespace P3D_Scenario_Generator
             signWritingHTML = signWritingHTML.Replace("gateTopPixelsX", topPixels);
             signWritingHTML = signWritingHTML.Replace("gateLeftPixelsX", leftPixels);
             signWritingHTML = signWritingHTML.Replace("gateBearingsX", bearings);
-            string saveLocation = $"{Parameters.ImageFolder}htmlSignWriting.html";
+            string saveLocation = $"{Parameters.ImageFolder}\\htmlSignWriting.html";
             File.WriteAllText(saveLocation, signWritingHTML);
             stream.Dispose();
         }
@@ -1123,7 +1138,7 @@ namespace P3D_Scenario_Generator
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsSignWriting.js");
             StreamReader reader = new(stream);
             signWritingJS = reader.ReadToEnd();
-            string saveLocation = $"{Parameters.ImageFolder}scriptsSignWriting.js";
+            string saveLocation = $"{Parameters.ImageFolder}\\scriptsSignWriting.js";
             File.WriteAllText(saveLocation, signWritingJS);
             stream.Dispose();
         }
@@ -1182,7 +1197,7 @@ namespace P3D_Scenario_Generator
         {
             SetMovingMapJS(Wikipedia.WikiLegMapEdges, Wikipedia.WikiCount);
 
-            string saveLocation = $"{Parameters.ImageFolder}scriptsWikipediaItem.js";
+            string saveLocation = $"{Parameters.ImageFolder}\\scriptsWikipediaItem.js";
             string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaItem.js";
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
             StreamReader reader = new(stream);
@@ -1461,9 +1476,28 @@ namespace P3D_Scenario_Generator
 
 		[XmlElement(ElementName = "Constant")]
 		public Constant Constant { get; set; }
-	}
+    }
 
-	[XmlRoot(ElementName = "SetWindowSize")]
+    [XmlRoot(ElementName = "SetWindowLocation")]
+    public class SetWindowLocation
+    {
+        public SetWindowLocation(string v1, string v2)
+        {
+            LocationX = v1;
+            LocationY = v2;
+        }
+        public SetWindowLocation()
+        {
+        }
+
+        [XmlElement(ElementName = "LocationX")]
+        public string LocationX { get; set; }
+
+        [XmlElement(ElementName = "LocationY")]
+        public string LocationY { get; set; }
+    }
+
+    [XmlRoot(ElementName = "SetWindowSize")]
 	public class SetWindowSize
 	{
 		public SetWindowSize(string v1, string v2)
@@ -1944,12 +1978,14 @@ namespace P3D_Scenario_Generator
     [XmlRoot(ElementName = "SimMission.OpenWindowAction")]
 	public class SimMissionOpenWindowAction
 	{
-		public SimMissionOpenWindowAction(string v1, SetWindowSize v2, ObjectReference v3, string v4)
+		public SimMissionOpenWindowAction(string v1, SetWindowSize v2, SetWindowLocation v3, string v4, ObjectReference v5, string v6)
 		{
 			Descr = v1;
 			SetWindowSize = v2;
-			ObjectReference = v3;
-			InstanceId = v4;
+            SetWindowLocation = v3;
+            RelativeTo = v4;
+			ObjectReference = v5;
+			InstanceId = v6;
 		}
 
 		public SimMissionOpenWindowAction()
@@ -1962,7 +1998,13 @@ namespace P3D_Scenario_Generator
 		[XmlElement(ElementName = "SetWindowSize")]
 		public SetWindowSize SetWindowSize { get; set; }
 
-		[XmlElement(ElementName = "ObjectReference")]
+        [XmlElement(ElementName = "SetWindowLocation")]
+        public SetWindowLocation SetWindowLocation { get; set; }
+
+        [XmlElement(ElementName = "RelativeTo")]
+        public string RelativeTo { get; set; }
+
+        [XmlElement(ElementName = "ObjectReference")]
 		public ObjectReference ObjectReference { get; set; }
 
 		[XmlAttribute(AttributeName = "InstanceId")]

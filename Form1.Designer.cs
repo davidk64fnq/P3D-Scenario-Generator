@@ -32,6 +32,7 @@ namespace P3D_Scenario_Generator
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form));
             ButtonGenerateScenario = new Button();
             toolTip1 = new ToolTip(components);
             button1 = new Button();
@@ -59,6 +60,10 @@ namespace P3D_Scenario_Generator
             ListBoxWikiColumn = new ListBox();
             TextBoxPhotoMaxNoLegs = new TextBox();
             TextBoxPhotoMinNoLegs = new TextBox();
+            TextBoxPhotoLocation = new TextBox();
+            TextBoxPhotoLocationHeight = new TextBox();
+            TextBoxPhotoLocationWidth = new TextBox();
+            TextBoxPhotoWindowNumber = new TextBox();
             ButtonHelp = new Button();
             TabPageSettings = new TabPage();
             tableLayoutPanelSettings = new TableLayoutPanel();
@@ -78,6 +83,10 @@ namespace P3D_Scenario_Generator
             label20 = new Label();
             label16 = new Label();
             TabPagePhoto = new TabPage();
+            label31 = new Label();
+            label30 = new Label();
+            label29 = new Label();
+            label27 = new Label();
             label18 = new Label();
             label17 = new Label();
             label15 = new Label();
@@ -439,6 +448,44 @@ namespace P3D_Scenario_Generator
             toolTip1.SetToolTip(TextBoxPhotoMinNoLegs, "Minimum number of legs must between 2 and 18 inclusive and less than or equal to maximum number of legs. Two legs would be starting airport to a single photo location then return to airport.");
             TextBoxPhotoMinNoLegs.Validating += TextBoxInteger_Validating;
             // 
+            // TextBoxPhotoLocation
+            // 
+            TextBoxPhotoLocation.Location = new Point(148, 360);
+            TextBoxPhotoLocation.Name = "TextBoxPhotoLocation";
+            TextBoxPhotoLocation.Size = new Size(119, 23);
+            TextBoxPhotoLocation.TabIndex = 28;
+            toolTip1.SetToolTip(TextBoxPhotoLocation, "Starting airport city/state/country filter");
+            // 
+            // TextBoxPhotoLocationHeight
+            // 
+            TextBoxPhotoLocationHeight.Location = new Point(507, 118);
+            TextBoxPhotoLocationHeight.Name = "TextBoxPhotoLocationHeight";
+            TextBoxPhotoLocationHeight.Size = new Size(100, 23);
+            TextBoxPhotoLocationHeight.TabIndex = 34;
+            TextBoxPhotoLocationHeight.Text = "10";
+            toolTip1.SetToolTip(TextBoxPhotoLocationHeight, "Photo window number of pixels down from top lefthand corner of Window Number monitor");
+            TextBoxPhotoLocationHeight.Validating += TextBoxInteger_Validating;
+            // 
+            // TextBoxPhotoLocationWidth
+            // 
+            TextBoxPhotoLocationWidth.Location = new Point(507, 71);
+            TextBoxPhotoLocationWidth.Name = "TextBoxPhotoLocationWidth";
+            TextBoxPhotoLocationWidth.Size = new Size(100, 23);
+            TextBoxPhotoLocationWidth.TabIndex = 33;
+            TextBoxPhotoLocationWidth.Text = "10";
+            toolTip1.SetToolTip(TextBoxPhotoLocationWidth, "Photo window number of pixels across from top lefthand corner of Window Number monitor");
+            TextBoxPhotoLocationWidth.Validating += TextBoxInteger_Validating;
+            // 
+            // TextBoxPhotoWindowNumber
+            // 
+            TextBoxPhotoWindowNumber.Location = new Point(507, 26);
+            TextBoxPhotoWindowNumber.Name = "TextBoxPhotoWindowNumber";
+            TextBoxPhotoWindowNumber.Size = new Size(100, 23);
+            TextBoxPhotoWindowNumber.TabIndex = 32;
+            TextBoxPhotoWindowNumber.Text = "0";
+            toolTip1.SetToolTip(TextBoxPhotoWindowNumber, "Monitor window number to display photos in");
+            TextBoxPhotoWindowNumber.Validating += TextBoxInteger_Validating;
+            // 
             // ButtonHelp
             // 
             ButtonHelp.Location = new Point(721, 513);
@@ -451,6 +498,7 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageSettings
             // 
+            TabPageSettings.BackColor = Color.FromArgb(255, 192, 128);
             TabPageSettings.Controls.Add(tableLayoutPanelSettings);
             TabPageSettings.Location = new Point(4, 24);
             TabPageSettings.Name = "TabPageSettings";
@@ -458,7 +506,6 @@ namespace P3D_Scenario_Generator
             TabPageSettings.Size = new Size(812, 438);
             TabPageSettings.TabIndex = 5;
             TabPageSettings.Text = "Settings";
-            TabPageSettings.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanelSettings
             // 
@@ -485,6 +532,7 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageCelestial
             // 
+            TabPageCelestial.BackColor = Color.FromArgb(255, 192, 128);
             TabPageCelestial.Controls.Add(TextBoxCelestialMaxDist);
             TabPageCelestial.Controls.Add(TextBoxCelestialMinDist);
             TabPageCelestial.Controls.Add(label26);
@@ -494,7 +542,6 @@ namespace P3D_Scenario_Generator
             TabPageCelestial.Size = new Size(812, 438);
             TabPageCelestial.TabIndex = 4;
             TabPageCelestial.Text = "Celestial Navigation";
-            TabPageCelestial.UseVisualStyleBackColor = true;
             // 
             // label26
             // 
@@ -516,6 +563,7 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageSign
             // 
+            TabPageSign.BackColor = Color.FromArgb(255, 192, 128);
             TabPageSign.Controls.Add(TextBoxSignSegmentRadius);
             TabPageSign.Controls.Add(TextBoxSignSegmentLength);
             TabPageSign.Controls.Add(TextBoxSignGateHeight);
@@ -536,7 +584,6 @@ namespace P3D_Scenario_Generator
             TabPageSign.Size = new Size(812, 438);
             TabPageSign.TabIndex = 3;
             TabPageSign.Text = "Sign Writing";
-            TabPageSign.UseVisualStyleBackColor = true;
             // 
             // TextBoxSignWindowWidth
             // 
@@ -632,6 +679,15 @@ namespace P3D_Scenario_Generator
             // 
             // TabPagePhoto
             // 
+            TabPagePhoto.BackColor = Color.FromArgb(255, 192, 128);
+            TabPagePhoto.Controls.Add(TextBoxPhotoLocationHeight);
+            TabPagePhoto.Controls.Add(TextBoxPhotoLocationWidth);
+            TabPagePhoto.Controls.Add(TextBoxPhotoWindowNumber);
+            TabPagePhoto.Controls.Add(label31);
+            TabPagePhoto.Controls.Add(label30);
+            TabPagePhoto.Controls.Add(label29);
+            TabPagePhoto.Controls.Add(TextBoxPhotoLocation);
+            TabPagePhoto.Controls.Add(label27);
             TabPagePhoto.Controls.Add(label18);
             TabPagePhoto.Controls.Add(TextBoxPhotoHotspotRadius);
             TabPagePhoto.Controls.Add(TextBoxPhotoMaxBearingChange);
@@ -652,7 +708,42 @@ namespace P3D_Scenario_Generator
             TabPagePhoto.Size = new Size(812, 438);
             TabPagePhoto.TabIndex = 2;
             TabPagePhoto.Text = "Photo Tour";
-            TabPagePhoto.UseVisualStyleBackColor = true;
+            // 
+            // label31
+            // 
+            label31.AutoSize = true;
+            label31.Location = new Point(360, 126);
+            label31.Name = "label31";
+            label31.Size = new Size(92, 15);
+            label31.TabIndex = 31;
+            label31.Text = "Location Height";
+            // 
+            // label30
+            // 
+            label30.AutoSize = true;
+            label30.Location = new Point(360, 79);
+            label30.Name = "label30";
+            label30.Size = new Size(88, 15);
+            label30.TabIndex = 30;
+            label30.Text = "Location Width";
+            // 
+            // label29
+            // 
+            label29.AutoSize = true;
+            label29.Location = new Point(360, 34);
+            label29.Name = "label29";
+            label29.Size = new Size(98, 15);
+            label29.TabIndex = 29;
+            label29.Text = "Window Number";
+            // 
+            // label27
+            // 
+            label27.AutoSize = true;
+            label27.Location = new Point(16, 363);
+            label27.Name = "label27";
+            label27.Size = new Size(53, 15);
+            label27.TabIndex = 27;
+            label27.Text = "Location";
             // 
             // label18
             // 
@@ -710,7 +801,7 @@ namespace P3D_Scenario_Generator
             // 
             // ButtonPhotoTourDefault
             // 
-            ButtonPhotoTourDefault.Location = new Point(469, 15);
+            ButtonPhotoTourDefault.Location = new Point(705, 383);
             ButtonPhotoTourDefault.Name = "ButtonPhotoTourDefault";
             ButtonPhotoTourDefault.Size = new Size(75, 23);
             ButtonPhotoTourDefault.TabIndex = 12;
@@ -729,6 +820,7 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageCircuit
             // 
+            TabPageCircuit.BackColor = Color.FromArgb(255, 192, 128);
             TabPageCircuit.Controls.Add(tableLayoutPanelCircuit);
             TabPageCircuit.Controls.Add(ButtonCircuitDefault);
             TabPageCircuit.Controls.Add(PictureBoxCircuit);
@@ -738,7 +830,6 @@ namespace P3D_Scenario_Generator
             TabPageCircuit.Size = new Size(812, 438);
             TabPageCircuit.TabIndex = 1;
             TabPageCircuit.Text = "Circuit";
-            TabPageCircuit.UseVisualStyleBackColor = true;
             // 
             // tableLayoutPanelCircuit
             // 
@@ -880,6 +971,7 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageMenu
             // 
+            TabPageMenu.BackColor = Color.FromArgb(64, 64, 64);
             TabPageMenu.Controls.Add(GroupBoxDateTime);
             TabPageMenu.Controls.Add(GroupBoxAircraft);
             TabPageMenu.Controls.Add(GroupBoxScenario);
@@ -890,11 +982,10 @@ namespace P3D_Scenario_Generator
             TabPageMenu.Size = new Size(812, 438);
             TabPageMenu.TabIndex = 6;
             TabPageMenu.Text = "Menu";
-            TabPageMenu.UseVisualStyleBackColor = true;
             // 
             // GroupBoxDateTime
             // 
-            GroupBoxDateTime.BackColor = Color.FromArgb(192, 192, 255);
+            GroupBoxDateTime.BackColor = Color.FromArgb(255, 192, 128);
             GroupBoxDateTime.Controls.Add(DatePicker);
             GroupBoxDateTime.Controls.Add(TextBoxScenarioTitle);
             GroupBoxDateTime.Controls.Add(TimePicker);
@@ -941,7 +1032,7 @@ namespace P3D_Scenario_Generator
             // 
             // GroupBoxAircraft
             // 
-            GroupBoxAircraft.BackColor = Color.FromArgb(192, 255, 192);
+            GroupBoxAircraft.BackColor = Color.FromArgb(255, 192, 128);
             GroupBoxAircraft.Controls.Add(ListBoxAircraft);
             GroupBoxAircraft.Controls.Add(buttonAircraft);
             GroupBoxAircraft.Location = new Point(515, 23);
@@ -963,7 +1054,7 @@ namespace P3D_Scenario_Generator
             // 
             // GroupBoxScenario
             // 
-            GroupBoxScenario.BackColor = Color.FromArgb(192, 255, 255);
+            GroupBoxScenario.BackColor = Color.FromArgb(255, 192, 128);
             GroupBoxScenario.Controls.Add(ListBoxScenarioType);
             GroupBoxScenario.Controls.Add(TextBoxSelectedScenario);
             GroupBoxScenario.Location = new Point(302, 23);
@@ -977,7 +1068,7 @@ namespace P3D_Scenario_Generator
             // 
             ListBoxScenarioType.FormattingEnabled = true;
             ListBoxScenarioType.ItemHeight = 15;
-            ListBoxScenarioType.Items.AddRange(new object[] { "Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation", "Wikipedia List" });
+            ListBoxScenarioType.Items.AddRange(new object[] { "Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation", "Wikipedia List", "Testing" });
             ListBoxScenarioType.Location = new Point(30, 47);
             ListBoxScenarioType.Name = "ListBoxScenarioType";
             ListBoxScenarioType.Size = new Size(120, 94);
@@ -1080,6 +1171,7 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageWikiList
             // 
+            TabPageWikiList.BackColor = Color.FromArgb(255, 192, 128);
             TabPageWikiList.Controls.Add(TextBoxWikiDistance);
             TabPageWikiList.Controls.Add(LabelWikiDistance);
             TabPageWikiList.Controls.Add(ComboBoxWikiFinishingItem);
@@ -1100,7 +1192,6 @@ namespace P3D_Scenario_Generator
             TabPageWikiList.Size = new Size(812, 438);
             TabPageWikiList.TabIndex = 7;
             TabPageWikiList.Text = "Wikipedia List";
-            TabPageWikiList.UseVisualStyleBackColor = true;
             // 
             // TextBoxWikiDistance
             // 
@@ -1223,10 +1314,12 @@ namespace P3D_Scenario_Generator
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(844, 553);
             Controls.Add(ButtonHelp);
             Controls.Add(ButtonGenerateScenario);
             Controls.Add(TabControl);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "Form";
@@ -1365,6 +1458,14 @@ namespace P3D_Scenario_Generator
         private Label LabelWikiStartItem;
         internal TextBox TextBoxWikiDistance;
         private Label LabelWikiDistance;
+        private Label label27;
+        internal TextBox TextBoxPhotoLocation;
+        private Label label31;
+        private Label label30;
+        private Label label29;
+        internal TextBox TextBoxPhotoLocationHeight;
+        internal TextBox TextBoxPhotoLocationWidth;
+        internal TextBox TextBoxPhotoWindowNumber;
     }
 }
 

@@ -76,6 +76,10 @@ namespace P3D_Scenario_Generator
         internal static double PhotoLegWindowSize { get; set; }
         internal static double MaxBearingChange { get; set; }
         internal static double HotspotRadius { get; set; }
+        internal static string PhotoLocation { get; set; }
+        internal static int PhotoWindowNumber { get; set; }
+        internal static int PhotoLocationWidth { get; set; }
+        internal static int PhotoLocationHeight { get; set; }
 
         // Sign Writing
         internal static string Message { get; private set; }
@@ -122,7 +126,10 @@ namespace P3D_Scenario_Generator
                 SelectedAircraft = form.ListBoxAircraft.Items[form.ListBoxAircraft.SelectedIndex].ToString();
             }
             SelectedAirportICAO = form.TextBoxSelectedRunway.Text.Split("\t")[0];
-            SelectedAirportID = form.TextBoxSelectedRunway.Text.Split("\t")[1][1..^1]; // Strip '(' and ')'
+            if (form.TextBoxSelectedRunway.Text != "")
+            {
+                SelectedAirportID = form.TextBoxSelectedRunway.Text.Split("\t")[1][1..^1]; // Strip '(' and ')'
+            }
             int index = Array.FindIndex(Con.scenarioNames, s => s == form.TextBoxSelectedScenario.Text);
             SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
             Second = form.DatePicker.Value.Second;
@@ -160,6 +167,10 @@ namespace P3D_Scenario_Generator
                 PhotoLegWindowSize = Convert.ToDouble(form.TextBoxPhotoWindowSize.Text);
                 MaxBearingChange = Convert.ToDouble(form.TextBoxPhotoMaxBearingChange.Text);
                 HotspotRadius = Convert.ToDouble(form.TextBoxPhotoHotspotRadius.Text) * 0.3084; // Convert feet to metres
+                PhotoLocation = form.TextBoxPhotoLocation.Text;
+                PhotoWindowNumber = Convert.ToInt32(form.TextBoxPhotoWindowNumber.Text);
+                PhotoLocationWidth = Convert.ToInt32(form.TextBoxPhotoLocationWidth.Text);
+                PhotoLocationHeight = Convert.ToInt32(form.TextBoxPhotoLocationHeight.Text);
             }
 
             // Sign Writing
@@ -197,9 +208,9 @@ namespace P3D_Scenario_Generator
             else
             {
                 ScenarioTitle = form.TextBoxScenarioTitle.Text;
-                ScenarioFolder = $"{form.TextBoxP3Dv5Files.Text}\\{form.TextBoxScenarioTitle.Text}\\";
+                ScenarioFolder = $"{form.TextBoxP3Dv5Files.Text}\\{form.TextBoxScenarioTitle.Text}";
                 Directory.CreateDirectory(ScenarioFolder);
-                ImageFolder = $"{ScenarioFolder}\\images\\";
+                ImageFolder = $"{ScenarioFolder}\\images";
                 Directory.CreateDirectory(ImageFolder);
                 return true;
             }

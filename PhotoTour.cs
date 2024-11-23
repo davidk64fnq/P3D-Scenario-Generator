@@ -12,6 +12,7 @@ namespace P3D_Scenario_Generator
         public string legId;            //  Unique id string used by pic2map for each photo
         public string airportICAO;      //  Only used for start and destination airport instances
         public string airportID;        //  Only used for start and destination airport instances
+        public string location;         //  Used to filter on location string for starting photo in tour
         public double forwardDist;      //  Distance from this instance location to next location in photo tour
         public double latitude;         //  Latitude for this instance location
         public double longitude;        //  Longitude for this instance location
@@ -245,14 +246,16 @@ namespace P3D_Scenario_Generator
         {
             PhotoLocParams photoLocation;
             PhotoLocParams airportLocation;
-            string saveLocation = $"{Parameters.ScenarioFolder}random_pic2map.html";
+            string saveLocation = $"{Parameters.ImageFolder}\\random_pic2map.html";
 
             // Clear last attempt
             PhotoLocations.Clear();
 
             // Get starting random photo page
-            HttpRoutines.GetWebDoc("https://www.pic2map.com/random.php", $"{Parameters.ImageFolder}\\random_pic2map.html");
+            HttpRoutines.GetWebDoc("https://www.pic2map.com/random.php", saveLocation);
             photoLocation = ExtractPhotoParams(saveLocation);
+            if (!photoLocation.location.Contains(Parameters.PhotoLocation))
+                return false;
 
             // Find nearby airport to starting random photo
             airportLocation = GetNearbyAirport(photoLocation.latitude, photoLocation.longitude, Parameters.MinLegDist, Parameters.MaxLegDist);
@@ -276,7 +279,7 @@ namespace P3D_Scenario_Generator
         {
             double distance = 9999;
             double bearing = 0;
-            string saveLocation = $"{Parameters.ScenarioFolder}random_pic2map.html";
+            string saveLocation = $"{Parameters.ImageFolder}\\random_pic2map.html";
             string url;
             PhotoLocParams photoLocation;
 
@@ -291,7 +294,7 @@ namespace P3D_Scenario_Generator
 
             // Extract next nearest unselected photo location parameters
             File.Delete(saveLocation);
-            HttpRoutines.GetWebDoc(url, $"{Parameters.ImageFolder}\\random_pic2map.html");
+            HttpRoutines.GetWebDoc(url, saveLocation);
             photoLocation = ExtractPhotoParams(saveLocation);
             PhotoLocations.Add(photoLocation);
             return true;
@@ -309,7 +312,7 @@ namespace P3D_Scenario_Generator
             // Find nearby airport to last photo
             airportLocation = GetNearbyAirport(PhotoLocations[^1].latitude, PhotoLocations[^1].longitude, 
                 Parameters.MinLegDist, Parameters.MaxLegDist);
-            File.Delete($"{Parameters.ScenarioFolder}random_pic2map.html"); // no longer needed
+            File.Delete($"{Parameters.ScenarioFolder}\\random_pic2map.html"); // no longer needed
             if (airportLocation != null)
             {
                 int headingChange = MathRoutines.CalcHeadingChange(PhotoLocations[^2].forwardBearing, airportLocation.forwardBearing);
@@ -348,6 +351,7 @@ namespace P3D_Scenario_Generator
             photoLocationParams.latitude = nearbyAirport.AirportLat;
             photoLocationParams.longitude = nearbyAirport.AirportLon;
             photoLocationParams.forwardBearing = MathRoutines.CalcBearing(queryLat, queryLon, nearbyAirport.AirportLat, nearbyAirport.AirportLon);
+            photoLocationParams.location = nearbyAirport.State + nearbyAirport.City + nearbyAirport.Country;
             return photoLocationParams;
         }
 
@@ -362,7 +366,8 @@ namespace P3D_Scenario_Generator
             var htmlDoc = new HtmlDocument();
             htmlDoc.Load(saveLocation);
 
-            photoLocation.photoURL = htmlDoc.DocumentNode.SelectSingleNode("//meta[8]").GetAttributeValue("content", "");
+            photoLocation.photoURL = htmlDoc.DocumentNode.SelectSingleNode("//meta[9]").GetAttributeValue("content", "");
+            photoLocation.location = htmlDoc.DocumentNode.SelectSingleNode("//meta[2]").GetAttributeValue("content", "");
             photoLocation.legId = Path.GetFileNameWithoutExtension(photoLocation.photoURL);
             string latitudeSelection = "//ul[@class='details'][4]/li[1]/div[@class='dbox'][1]/span[@class='dvalue'][1]";
             photoLocation.latitude = Convert.ToDouble(htmlDoc.DocumentNode.SelectSingleNode(latitudeSelection).InnerText);

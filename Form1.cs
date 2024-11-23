@@ -110,17 +110,22 @@ namespace P3D_Scenario_Generator
                 CelestialNav.GetAlmanacData();
                 CelestialNav.InitStars();
                 CelestialNav.CreateStarsDat();
-                string saveLocation = $"{Parameters.ImageFolder}htmlCelestialSextant.html";
+                string saveLocation = $"{Parameters.ImageFolder}\\htmlCelestialSextant.html";
                 CelestialNav.SetCelestialSextantHTML(saveLocation);
-                saveLocation = $"{Parameters.ImageFolder}images\\";
+                saveLocation = $"{Parameters.ImageFolder}\\images";
                 CelestialNav.SetCelestialSextantJS(saveLocation);
-                saveLocation = $"{Parameters.ImageFolder}styleCelestialSextant.css";
+                saveLocation = $"{Parameters.ImageFolder}\\styleCelestialSextant.css";
                 CelestialNav.SetCelestialSextantCSS(saveLocation);
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
             {
                 Wikipedia.SetWikiTour(ListBoxWikiTableNames.SelectedIndex, ListBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem,
                     ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text);
+            }
+            else
+            {
+                Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+                Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
             }
         }
 
@@ -241,6 +246,9 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoWindowSize.Text = "512";
             TextBoxPhotoMaxBearingChange.Text = "135";
             TextBoxPhotoHotspotRadius.Text = "1000";
+            TextBoxPhotoWindowNumber.Text = "0";
+            TextBoxPhotoLocationWidth.Text = "10";
+            TextBoxPhotoLocationHeight.Text = "10";
         }
 
         static private bool ValidatePhotoIntegerParameters()
@@ -453,6 +461,7 @@ namespace P3D_Scenario_Generator
 
         private void TextBoxInteger_Validating(object sender, CancelEventArgs e)
         {
+            string validatePhotoTourIntegerFields = "TextBoxPhotoMinNoLegs TextBoxPhotoMaxNoLegs TextBoxPhotoMaxBearingChange TextBoxPhotoWindowSize";
             int paramAsInt;
             try
             {
@@ -468,7 +477,7 @@ namespace P3D_Scenario_Generator
                 MessageBox.Show($"Integer value expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 e.Cancel = true;
             }
-            if (((TextBox)sender).Name.Contains("TextBoxPhoto") && (((TextBox)sender).Name.Contains("NoLegs") || ((TextBox)sender).Name.Contains("MaxBearingChange")))
+            if (validatePhotoTourIntegerFields.Contains(((TextBox)sender).Name))
             {
                 if (e.Cancel == false && !ValidatePhotoIntegerParameters())
                 {

@@ -169,11 +169,11 @@ namespace P3D_Scenario_Generator
         {
 			XmlSerializer xmlSerializer = new(simBaseDocument.GetType());
 
-            using StreamWriter writer = new($"{Parameters.ScenarioFolder}{Parameters.ScenarioTitle}.fxml");
+            using StreamWriter writer = new($"{Parameters.ScenarioFolder}\\{Parameters.ScenarioTitle}.fxml");
             xmlSerializer.Serialize(writer, simBaseDocument);
 			writer.Close();
 
-            ScenarioXML.RemoveXMLNSattributes($"{Parameters.ScenarioFolder}{Parameters.ScenarioTitle}.fxml");
+            ScenarioXML.RemoveXMLNSattributes($"{Parameters.ScenarioFolder}\\{Parameters.ScenarioTitle}.fxml");
         }
 
 	}

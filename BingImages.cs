@@ -27,7 +27,7 @@ namespace P3D_Scenario_Generator
             // Create completion and exit images
             for (int index = 3; index < urlZoom.Length; index++)
             {
-                string imageDest = $"{Parameters.ImageFolder}{urlFilename[index]}";
+                string imageDest = $"{Parameters.ImageFolder}\\{urlFilename[index]}";
                 using Image image = Image.FromFile(imageDest);
                 using (Graphics graphic = Graphics.FromImage(image))
                 {
@@ -38,9 +38,9 @@ namespace P3D_Scenario_Generator
                     imageIcon.Dispose();
                     graphic.Dispose();
                 }
-                image.Save($"{Parameters.ImageFolder}{urlIconAdded[index]}");
+                image.Save($"{Parameters.ImageFolder}\\{urlIconAdded[index]}");
                 image.Dispose();
-                File.Delete($"{Parameters.ImageFolder}{urlFilename[index]}");
+                File.Delete($"{Parameters.ImageFolder}\\{urlFilename[index]}");
             }
         }
 
@@ -56,7 +56,7 @@ namespace P3D_Scenario_Generator
             while (startInImage)
             {
                 url = $"{urlBingBase}Road/{CelestialNav.destinationLat},{CelestialNav.destinationLon}/{zoomLevel}?mapSize=960,540{pushpins}{urlKey}";
-                HttpRoutines.GetWebDoc(url, $"{Parameters.ImageFolder}plotImage.jpg");
+                HttpRoutines.GetWebDoc(url, $"{Parameters.ImageFolder}\\plotImage.jpg");
 
                 // Get meta data
                 GetBingMetadata(url, celestialImage);
@@ -93,7 +93,7 @@ namespace P3D_Scenario_Generator
             url += "&mapMetadata=1&o=xml";
          //   HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.ScenarioFolder), "images\\temp.xml");
             XmlDocument doc = new();
-            doc.Load($"{Parameters.ImageFolder}temp.xml");
+            doc.Load($"{Parameters.ImageFolder}\\temp.xml");
             string xml = doc.OuterXml;
             string strXMLPattern = @"xmlns(:\w+)?=""([^""]+)""|xsi(:\w+)?=""([^""]+)""";
             xml = Regex.Replace(xml, strXMLPattern, "");
@@ -105,7 +105,7 @@ namespace P3D_Scenario_Generator
             curPhoto.zoom = Convert.ToDouble(doc.SelectSingleNode("/Response/ResourceSets/ResourceSet/Resources/StaticMapMetadata/Zoom/text()").Value);
             curPhoto.centreLat = Convert.ToDouble(doc.SelectSingleNode("/Response/ResourceSets/ResourceSet/Resources/StaticMapMetadata/MapCenter/Latitude/text()").Value);
             curPhoto.centreLon = Convert.ToDouble(doc.SelectSingleNode("/Response/ResourceSets/ResourceSet/Resources/StaticMapMetadata/MapCenter/Longitude/text()").Value);
-            File.Delete($"{Parameters.ImageFolder}temp.xml");
+            File.Delete($"{Parameters.ImageFolder}\\temp.xml");
         }
     }
 }
