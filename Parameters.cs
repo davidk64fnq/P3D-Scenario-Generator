@@ -77,9 +77,12 @@ namespace P3D_Scenario_Generator
         internal static double MaxBearingChange { get; set; }
         internal static double HotspotRadius { get; set; }
         internal static string PhotoLocation { get; set; }
-        internal static int PhotoWindowNumber { get; set; }
-        internal static int PhotoLocationWidth { get; set; }
-        internal static int PhotoLocationHeight { get; set; }
+        internal static int PhotoTourPhotoMonitorNumber { get; set; }
+        internal static int PhotoTourPhotoHorizontalOffset { get; set; }
+        internal static int PhotoTourPhotoVerticalOffset { get; set; }
+        internal static int PhotoTourMapMonitorNumber { get; set; }
+        internal static int PhotoTourMapHorizontalOffset { get; set; }
+        internal static int PhotoTourMapVerticalOffset { get; set; }
 
         // Sign Writing
         internal static string Message { get; private set; }
@@ -145,51 +148,42 @@ namespace P3D_Scenario_Generator
             Minutes = form.TimePicker.Value.Minute;
 
             // Circuit tab
-            if (SelectedScenario == nameof(ScenarioTypes.Circuit))
-            {
-                UpwindLeg = Convert.ToDouble(form.TextBoxCircuitUpwind.Text);
-                BaseLeg = Convert.ToDouble(form.TextBoxCircuitBase.Text);
-                FinalLeg = Convert.ToDouble(form.TextBoxCircuitFinal.Text);
-                HeightUpwind = Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text);
-                HeightDown = Convert.ToDouble(form.TextBoxCircuitHeightDown.Text);
-                HeightBase = Convert.ToDouble(form.TextBoxCircuitHeightBase.Text);
-                Speed = Convert.ToDouble(form.TextBoxCircuitSpeed.Text);
-                TurnRate = Convert.ToDouble(form.TextBoxCircuitTurnRate.Text);
-            }
+            UpwindLeg = Convert.ToDouble(form.TextBoxCircuitUpwind.Text);
+            BaseLeg = Convert.ToDouble(form.TextBoxCircuitBase.Text);
+            FinalLeg = Convert.ToDouble(form.TextBoxCircuitFinal.Text);
+            HeightUpwind = Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text);
+            HeightDown = Convert.ToDouble(form.TextBoxCircuitHeightDown.Text);
+            HeightBase = Convert.ToDouble(form.TextBoxCircuitHeightBase.Text);
+            Speed = Convert.ToDouble(form.TextBoxCircuitSpeed.Text);
+            TurnRate = Convert.ToDouble(form.TextBoxCircuitTurnRate.Text);
 
             // Photo Tour
-            if (SelectedScenario == nameof(ScenarioTypes.PhotoTour))
-            {
-                MaxLegDist = Convert.ToDouble(form.TextBoxPhotoMaxLegDist.Text);
-                MinLegDist = Convert.ToDouble(form.TextBoxPhotoMinLegDist.Text);
-                MinNoLegs = Convert.ToDouble(form.TextBoxPhotoMinNoLegs.Text);
-                MaxNoLegs = Convert.ToDouble(form.TextBoxPhotoMaxNoLegs.Text);
-                PhotoLegWindowSize = Convert.ToDouble(form.TextBoxPhotoWindowSize.Text);
-                MaxBearingChange = Convert.ToDouble(form.TextBoxPhotoMaxBearingChange.Text);
-                HotspotRadius = Convert.ToDouble(form.TextBoxPhotoHotspotRadius.Text) * 0.3084; // Convert feet to metres
-                PhotoLocation = form.TextBoxPhotoLocation.Text;
-                PhotoWindowNumber = Convert.ToInt32(form.TextBoxPhotoWindowNumber.Text);
-                PhotoLocationWidth = Convert.ToInt32(form.TextBoxPhotoLocationWidth.Text);
-                PhotoLocationHeight = Convert.ToInt32(form.TextBoxPhotoLocationHeight.Text);
-            }
+            MaxLegDist = Convert.ToDouble(form.TextBoxPhotoMaxLegDist.Text);
+            MinLegDist = Convert.ToDouble(form.TextBoxPhotoMinLegDist.Text);
+            MinNoLegs = Convert.ToDouble(form.TextBoxPhotoMinNoLegs.Text);
+            MaxNoLegs = Convert.ToDouble(form.TextBoxPhotoMaxNoLegs.Text);
+            PhotoLegWindowSize = Convert.ToDouble(form.TextBoxPhotoWindowSize.Text);
+            MaxBearingChange = Convert.ToDouble(form.TextBoxPhotoMaxBearingChange.Text);
+            HotspotRadius = Convert.ToDouble(form.TextBoxPhotoHotspotRadius.Text) * 0.3084; // Convert feet to metres
+            PhotoLocation = form.TextBoxPhotoLocation.Text;
+            PhotoTourPhotoMonitorNumber = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorNumber.Text);
+            PhotoTourPhotoHorizontalOffset = Convert.ToInt32(form.TextBoxPhotoTourPhotoHorizontalOffset.Text);
+            PhotoTourPhotoVerticalOffset = Convert.ToInt32(form.TextBoxPhotoTourPhotoVerticalOffset.Text);
+            PhotoTourMapMonitorNumber = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorNumber.Text);
+            PhotoTourMapHorizontalOffset = Convert.ToInt32(form.TextBoxPhotoTourMapHorizontalOffset.Text);
+            PhotoTourMapVerticalOffset = Convert.ToInt32(form.TextBoxPhotoTourMapVerticalOffset.Text);
 
             // Sign Writing
-            if (SelectedScenario == nameof(ScenarioTypes.SignWriting))
-            {
-                Message = form.TextBoxSignMessage.Text;
-                TiltAngle = Convert.ToDouble(form.TextBoxSignTilt.Text);
-                MessageWindowWidth = Convert.ToDouble(form.TextBoxSignWindowWidth.Text);
-                GateHeight = Convert.ToDouble(form.TextBoxSignGateHeight.Text);
-                SegmentLengthDeg = Convert.ToDouble(form.TextBoxSignSegmentLength.Text) / Con.degreeLatFeet;
-                SegmentRadiusDeg = Convert.ToDouble(form.TextBoxSignSegmentRadius.Text) / Con.degreeLatFeet;
-            }
+            Message = form.TextBoxSignMessage.Text;
+            TiltAngle = Convert.ToDouble(form.TextBoxSignTilt.Text);
+            MessageWindowWidth = Convert.ToDouble(form.TextBoxSignWindowWidth.Text);
+            GateHeight = Convert.ToDouble(form.TextBoxSignGateHeight.Text);
+            SegmentLengthDeg = Convert.ToDouble(form.TextBoxSignSegmentLength.Text) / Con.degreeLatFeet;
+            SegmentRadiusDeg = Convert.ToDouble(form.TextBoxSignSegmentRadius.Text) / Con.degreeLatFeet;
 
             // Celestial Navigation
-            if (SelectedScenario == nameof(ScenarioTypes.Celestial))
-            {
-                CelestialMinDistance = Convert.ToDouble(form.TextBoxCelestialMinDist.Text);
-                CelestialMaxDistance = Convert.ToDouble(form.TextBoxCelestialMaxDist.Text);
-            }
+            CelestialMinDistance = Convert.ToDouble(form.TextBoxCelestialMinDist.Text);
+            CelestialMaxDistance = Convert.ToDouble(form.TextBoxCelestialMaxDist.Text);
 
             // Wikipedia List
             if (SelectedScenario == nameof(ScenarioTypes.WikiList))

@@ -161,9 +161,8 @@ namespace P3D_Scenario_Generator
             // Create script actions which reference scenario variable
             SetTourScriptActions();
 
-            // Create window objects 
-            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
-            SetUIPanelWindow(2, "UIpanelWindow", "False", "True", $"images\\PhotoTour.html", "False", "False");
+            // Create map window objects
+            SetUIPanelWindow(PhotoTour.PhotoCount - 1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for windows
             SetResourcesFile("HTML", "MovingMap.html");
@@ -172,14 +171,11 @@ namespace P3D_Scenario_Generator
             SetResourcesFile("Javascript", "scriptsPhotoTour.js");
             SetResourcesFile("CSS", "styleMovingMap.css");
 
-            // Create window open/close actions
-            string[] windowDimensions = ["527", "597"]; // 512 + 15/85
-            string[] windowOffsets = [$"{Parameters.PhotoLocationWidth}", $"{Parameters.PhotoLocationHeight}"];
-            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions, windowOffsets, "3");
-            SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
-            windowDimensions = ["1020", "1000"]; // width and height
-            SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", windowDimensions, windowOffsets, "0");
-            SetCloseWindowAction(2, "UIPanelWindow", "UIpanelWindow");
+            // Create map window open/close actions
+            string[] mapWindowDimensions = ["527", "597"]; // 512 + 15/85
+            string[] mapWindowOffsets = [$"{Parameters.PhotoTourMapHorizontalOffset}", $"{Parameters.PhotoTourMapVerticalOffset}"];
+            SetOpenWindowAction(PhotoTour.PhotoCount - 1, "UIPanelWindow", "UIpanelWindow", mapWindowDimensions, mapWindowOffsets, Parameters.PhotoTourMapMonitorNumber.ToString());
+            SetCloseWindowAction(PhotoTour.PhotoCount - 1, "UIPanelWindow", "UIpanelWindow");
 
             // Pass 1 - setup proximity triggers, there is a trigger for each photo location
             // ProximityTrigger01 is the first photo trigger, Photo_PhotoTour.PhotoCount - 2 is the last photo trigger
@@ -187,6 +183,13 @@ namespace P3D_Scenario_Generator
             {
                 // Create sound action to play when each new photo location entered
                 SetOneShotSoundAction(photoNo, "ThruHoop", "ThruHoop.wav");
+
+                // Create photo window open/close actions
+                SetUIPanelWindow(photoNo, "UIpanelWindow", "False", "True", $"images\\PhotoTour.html", "False", "False");
+                string[] photoWindowDimensions = GetPhotoDimensions(photoNo);
+                string[] photoWindowOffsets = [$"{Parameters.PhotoTourPhotoHorizontalOffset}", $"{Parameters.PhotoTourPhotoVerticalOffset}"];
+                SetOpenWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow", photoWindowDimensions, photoWindowOffsets, Parameters.PhotoTourPhotoMonitorNumber.ToString());
+                SetCloseWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow");
 
                 // Create cylinder area objects to put over each photo location
                 SetCylinderArea(photoNo, "CylinderArea", "0.0,0.0,0.0", Parameters.HotspotRadius.ToString(), "18520.0", "None");
@@ -219,9 +222,12 @@ namespace P3D_Scenario_Generator
                 if (photoNo + 1 < PhotoTour.PhotoCount - 1)
                     SetProximityTriggerOnEnterAction(photoNo + 1, "ObjectActivationAction", "ActProximityTrigger", photoNo, "ProximityTrigger");
 
-                // Open photo window when first photo location reached
-                if (photoNo == 1)
-                    SetProximityTriggerOnEnterAction(2, "OpenWindowAction", "OpenUIpanelWindow", photoNo, "ProximityTrigger");
+                // Open new photo window 
+                SetProximityTriggerOnEnterAction(photoNo, "OpenWindowAction", "OpenUIpanelWindow", photoNo, "ProximityTrigger");
+
+                // Close old photo window 
+                if (photoNo > 1)
+                    SetProximityTriggerOnEnterAction(photoNo - 1, "CloseWindowAction", "CloseUIpanelWindow", photoNo - 1, "ProximityTrigger");
 
                 // Increment gate number
                 SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", photoNo, "ProximityTrigger");
@@ -229,15 +235,15 @@ namespace P3D_Scenario_Generator
 
             // Create timer trigger to play audio introductions and open 1st leg window when scenario starts
             SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
-            SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
+            SetTimerTriggerAction("OpenWindowAction", $"OpenUIpanelWindow{PhotoTour.PhotoCount - 1:00}", "TimerTrigger01");
             SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
             SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
             SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
             // Create airport landing trigger which does goal resolution and closes windows
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoId);
-            SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
-            SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow02", "AirportLandingTrigger01");
+            SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoTour.PhotoCount - 1:00}", "AirportLandingTrigger01");
+            SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoTour.PhotoCount - 2:00}", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
@@ -527,9 +533,9 @@ namespace P3D_Scenario_Generator
         static private void SetTestingWorldBaseFlightXML()
         {
             SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\PhotoTour.html", "False", "False");
-            string[] windowDimensions = ["1020", "1000"]; // width and height
-            string[] windowOffsets = [$"{Parameters.PhotoLocationWidth}", $"{Parameters.PhotoLocationHeight}"];
-            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions, windowOffsets, Parameters.PhotoWindowNumber.ToString());
+            string[] windowDimensions = GetPhotoDimensions(1);
+            string[] windowOffsets = [$"{Parameters.PhotoTourPhotoHorizontalOffset}", $"{Parameters.PhotoTourPhotoVerticalOffset}"];
+            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions, windowOffsets, Parameters.PhotoTourPhotoMonitorNumber.ToString());
             SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
             SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
         }
@@ -697,7 +703,7 @@ namespace P3D_Scenario_Generator
         {
             string bitmapFilename = $"{Parameters.ImageFolder}\\photo_{photoNo:00}.jpg";
             Bitmap drawing = new(bitmapFilename);
-			return [drawing.Width.ToString(), drawing.Height.ToString()];
+			return [(drawing.Width + 15).ToString(), (drawing.Height + 85).ToString()];
         }
 
         static private string[] GetPhotoLegDimensions()

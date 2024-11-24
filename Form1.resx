@@ -120,6 +120,23 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <data name="TextBoxPhotoTourPhotoVerticalOffset.ToolTip" xml:space="preserve">
+    <value>The default vertical position of photo window in pixels on chosen monitor. Positive values are distance to top edge of photo window from top edge of monitor window. Negative values are distance to bottom edge of photo window from bottom edge of monitor window.
+</value>
+  </data>
+  <data name="TextBoxPhotoTourPhotoHorizontalOffset.ToolTip" xml:space="preserve">
+    <value>The default horizontal position of photo window in pixels on chosen monitor. Positive values are distance to lefthand edge of photo window from lefthand edge of monitor. Negative values are distance to righthand edge of photo window from righthand edge of monitor.</value>
+  </data>
+  <data name="TextBoxPhotoTourMapVerticalOffset.ToolTip" xml:space="preserve">
+    <value>The default vertical position of map window in pixels on chosen monitor. Positive values are distance to top edge of photo window from top edge of monitor window. Negative values are distance to bottom edge of photo window from bottom edge of monitor window.
+
+
+</value>
+  </data>
+  <data name="TextBoxPhotoTourMapHorizontalOffset.ToolTip" xml:space="preserve">
+    <value>The default horizontal position of map window in pixels on chosen monitor. Positive values are distance to lefthand edge of photo window from lefthand edge of monitor. Negative values are distance to righthand edge of photo window from righthand edge of monitor.
+</value>
+  </data>
   <metadata name="TextBoxSignFont.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>

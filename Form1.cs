@@ -234,21 +234,8 @@ namespace P3D_Scenario_Generator
 
         private void ButtonPhotoTourDefault_Click(object sender, EventArgs e)
         {
-            SetDefaultPhotoTourParams();
-        }
-
-        private void SetDefaultPhotoTourParams()
-        {
-            TextBoxPhotoMinLegDist.Text = "3";
-            TextBoxPhotoMaxLegDist.Text = "10";
-            TextBoxPhotoMinNoLegs.Text = "3";
-            TextBoxPhotoMaxNoLegs.Text = "7";
-            TextBoxPhotoWindowSize.Text = "512";
-            TextBoxPhotoMaxBearingChange.Text = "135";
-            TextBoxPhotoHotspotRadius.Text = "1000";
-            TextBoxPhotoWindowNumber.Text = "0";
-            TextBoxPhotoLocationWidth.Text = "10";
-            TextBoxPhotoLocationHeight.Text = "10";
+            SetDefaultParams(((Button)sender).Parent.Controls);
+        //    SetDefaultPhotoTourParams();
         }
 
         static private bool ValidatePhotoIntegerParameters()
@@ -273,9 +260,9 @@ namespace P3D_Scenario_Generator
                 MessageBox.Show($"Maximum number of legs to be greater than or equal to minimum number of legs", "Photo Tour Scenario: number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
-            if (Convert.ToInt32(form.TextBoxPhotoMaxBearingChange.Text) > 180)
+            if (Convert.ToInt32(form.TextBoxPhotoMaxBearingChange.Text) < 0 || Convert.ToInt32(form.TextBoxPhotoMaxBearingChange.Text) > 180)
             {
-                MessageBox.Show($"Maximum bearing change is limited to 180 degress", "Photo Tour Scenario: max bearing change", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Maximum bearing change is limited to between 0 and 180 degress", "Photo Tour Scenario: max bearing change", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
             if ((Convert.ToInt32(form.TextBoxPhotoWindowSize.Text) < 375) || (Convert.ToInt32(form.TextBoxPhotoWindowSize.Text) > 1500))
@@ -418,12 +405,38 @@ namespace P3D_Scenario_Generator
             PictureBoxCircuit.Image = new Bitmap(stream);
             SetDefaultCircuitParams();
 
+            // PhotoTour tab
+            SetDefaultParams(TabPagePhotoTour.Controls);
+
             // Signwriting tab
             stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.signTabSegment22Font.jpg");
             PictureBoxSignWriting.Image = new Bitmap(stream);
 
             // Wikipedia Lists tab
             ListBoxWikiColumn.SetSelected(0, true);
+        }
+
+        /// <summary>
+        /// Recursively processes all controls to copy the default value stored in the tag field if it exists into the text field.
+        /// </summary>
+        /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
+        private static void SetDefaultParams(Control.ControlCollection controlCollection)
+        {
+            foreach (Control control in controlCollection)
+            {
+                if (control.Controls.Count == 0)
+                {
+                    if (control.Tag != null)
+                        control.Text = control.Tag.ToString().Split(',')[0];
+                }
+                else
+                {
+                    foreach (Control childControl in control.Controls)
+                    {
+                        SetDefaultParams(childControl.Controls);
+                    }
+                }
+            }
         }
 
         private void TextBoxDouble_Validating(object sender, CancelEventArgs e)
@@ -461,20 +474,24 @@ namespace P3D_Scenario_Generator
 
         private void TextBoxInteger_Validating(object sender, CancelEventArgs e)
         {
-            string validatePhotoTourIntegerFields = "TextBoxPhotoMinNoLegs TextBoxPhotoMaxNoLegs TextBoxPhotoMaxBearingChange TextBoxPhotoWindowSize";
+            string[] validatePhotoTourIntegerFields =
+            [
+                "TextBoxPhotoMinNoLegs", "TextBoxPhotoMaxNoLegs",
+                "TextBoxPhotoMaxBearingChange",
+                "TextBoxPhotoWindowSize",
+                "TextBoxPhotoTourMapMonitorNumber", "TextBoxPhotoTourMapHorizontalOffset", "TextBoxPhotoTourMapVerticalOffset",
+                "TextBoxPhotoTourMapMonitorWidth", "TextBoxPhotoTourMapMonitorHeight",
+                "TextBoxPhotoTourPhotoMonitorNumber", "TextBoxPhotoTourPhotoHorizontalOffset", "TextBoxPhotoTourPhotoVerticalOffset",
+                "TextBoxPhotoTourPhotoMonitorWidth", "TextBoxPhotoTourPhotoMonitorHeight"
+            ];
             int paramAsInt;
             try
             {
                 paramAsInt = Convert.ToInt32(((TextBox)sender).Text);
-                if (paramAsInt <= 0)
-                {
-                    MessageBox.Show($"Integer value greater than zero expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    e.Cancel = true;
-                }
             }
             catch (Exception)
             {
-                MessageBox.Show($"Integer value expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Integer value expected", ((TextBox)sender).AccessibleName, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 e.Cancel = true;
             }
             if (validatePhotoTourIntegerFields.Contains(((TextBox)sender).Name))
