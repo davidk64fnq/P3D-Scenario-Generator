@@ -78,9 +78,13 @@ namespace P3D_Scenario_Generator
         internal static double HotspotRadius { get; set; }
         internal static string PhotoLocation { get; set; }
         internal static int PhotoTourPhotoMonitorNumber { get; set; }
+        internal static int PhotoTourPhotoMonitorWidth { get; set; }
+        internal static int PhotoTourPhotoMonitorHeight { get; set; }
         internal static int PhotoTourPhotoHorizontalOffset { get; set; }
         internal static int PhotoTourPhotoVerticalOffset { get; set; }
         internal static int PhotoTourMapMonitorNumber { get; set; }
+        internal static int PhotoTourMapMonitorWidth { get; set; }
+        internal static int PhotoTourMapMonitorHeight { get; set; }
         internal static int PhotoTourMapHorizontalOffset { get; set; }
         internal static int PhotoTourMapVerticalOffset { get; set; }
 
@@ -167,9 +171,13 @@ namespace P3D_Scenario_Generator
             HotspotRadius = Convert.ToDouble(form.TextBoxPhotoHotspotRadius.Text) * 0.3084; // Convert feet to metres
             PhotoLocation = form.TextBoxPhotoLocation.Text;
             PhotoTourPhotoMonitorNumber = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorNumber.Text);
+            PhotoTourPhotoMonitorWidth = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorWidth.Text);
+            PhotoTourPhotoMonitorHeight = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorHeight.Text);
             PhotoTourPhotoHorizontalOffset = Convert.ToInt32(form.TextBoxPhotoTourPhotoHorizontalOffset.Text);
             PhotoTourPhotoVerticalOffset = Convert.ToInt32(form.TextBoxPhotoTourPhotoVerticalOffset.Text);
             PhotoTourMapMonitorNumber = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorNumber.Text);
+            PhotoTourMapMonitorWidth = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorWidth.Text);
+            PhotoTourMapMonitorHeight = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorHeight.Text);
             PhotoTourMapHorizontalOffset = Convert.ToInt32(form.TextBoxPhotoTourMapHorizontalOffset.Text);
             PhotoTourMapVerticalOffset = Convert.ToInt32(form.TextBoxPhotoTourMapVerticalOffset.Text);
 

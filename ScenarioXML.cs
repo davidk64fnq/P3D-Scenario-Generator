@@ -172,9 +172,8 @@ namespace P3D_Scenario_Generator
             SetResourcesFile("CSS", "styleMovingMap.css");
 
             // Create map window open/close actions
-            string[] mapWindowDimensions = ["527", "597"]; // 512 + 15/85
-            string[] mapWindowOffsets = [$"{Parameters.PhotoTourMapHorizontalOffset}", $"{Parameters.PhotoTourMapVerticalOffset}"];
-            SetOpenWindowAction(PhotoTour.PhotoCount - 1, "UIPanelWindow", "UIpanelWindow", mapWindowDimensions, mapWindowOffsets, Parameters.PhotoTourMapMonitorNumber.ToString());
+            string[] mapWindowParameters = GetMapWindowParameters();
+            SetOpenWindowAction(PhotoTour.PhotoCount - 1, "UIPanelWindow", "UIpanelWindow", mapWindowParameters, Parameters.PhotoTourMapMonitorNumber.ToString());
             SetCloseWindowAction(PhotoTour.PhotoCount - 1, "UIPanelWindow", "UIpanelWindow");
 
             // Pass 1 - setup proximity triggers, there is a trigger for each photo location
@@ -186,9 +185,8 @@ namespace P3D_Scenario_Generator
 
                 // Create photo window open/close actions
                 SetUIPanelWindow(photoNo, "UIpanelWindow", "False", "True", $"images\\PhotoTour.html", "False", "False");
-                string[] photoWindowDimensions = GetPhotoDimensions(photoNo);
-                string[] photoWindowOffsets = [$"{Parameters.PhotoTourPhotoHorizontalOffset}", $"{Parameters.PhotoTourPhotoVerticalOffset}"];
-                SetOpenWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow", photoWindowDimensions, photoWindowOffsets, Parameters.PhotoTourPhotoMonitorNumber.ToString());
+                string[] photoWindowParameters = GetPhotoWindowParameters(photoNo);
+                SetOpenWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow", photoWindowParameters, Parameters.PhotoTourPhotoMonitorNumber.ToString());
                 SetCloseWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow");
 
                 // Create cylinder area objects to put over each photo location
@@ -533,9 +531,8 @@ namespace P3D_Scenario_Generator
         static private void SetTestingWorldBaseFlightXML()
         {
             SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\PhotoTour.html", "False", "False");
-            string[] windowDimensions = GetPhotoDimensions(1);
-            string[] windowOffsets = [$"{Parameters.PhotoTourPhotoHorizontalOffset}", $"{Parameters.PhotoTourPhotoVerticalOffset}"];
-            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions, windowOffsets, Parameters.PhotoTourPhotoMonitorNumber.ToString());
+            string[] photoWindowParameters = GetPhotoWindowParameters(1);
+            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", photoWindowParameters, Parameters.PhotoTourPhotoMonitorNumber.ToString());
             SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
             SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
         }
@@ -699,11 +696,64 @@ namespace P3D_Scenario_Generator
             return or;
         }
 
-        static private string[] GetPhotoDimensions(int photoNo)
+        static private string[] GetMapWindowParameters()
         {
+            // Dimensions
+            int mapWindowWidth = 512 + 15;
+            int mapWindowHeight = 512 + 85;
+
+            int horizontalOffset, verticalOffset;
+            // Offsets
+            if (Parameters.PhotoTourMapHorizontalOffset >= 0)
+            {
+                horizontalOffset = Parameters.PhotoTourMapHorizontalOffset;
+            }
+            else
+            {
+                // Lefthand edge of map window = monitor width - horizontal offset to righthand edge - window width
+                horizontalOffset = Parameters.PhotoTourMapMonitorWidth - Parameters.PhotoTourMapHorizontalOffset - mapWindowWidth;
+            }
+            if (Parameters.PhotoTourMapVerticalOffset >= 0)
+            {
+                verticalOffset = Parameters.PhotoTourMapVerticalOffset;
+            }
+            else
+            {
+                // Top edge of map window = monitor height - vertical offset to bottom edge - window height
+                verticalOffset = Parameters.PhotoTourMapMonitorHeight - Parameters.PhotoTourMapVerticalOffset - mapWindowHeight;
+            }
+
+            return [mapWindowWidth.ToString(), mapWindowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
+        }
+
+        static private string[] GetPhotoWindowParameters(int photoNo)
+        {
+            // Dimensions
             string bitmapFilename = $"{Parameters.ImageFolder}\\photo_{photoNo:00}.jpg";
             Bitmap drawing = new(bitmapFilename);
-			return [(drawing.Width + 15).ToString(), (drawing.Height + 85).ToString()];
+
+            int horizontalOffset, verticalOffset;
+            // Offsets
+            if (Parameters.PhotoTourPhotoHorizontalOffset >= 0)
+            {
+                horizontalOffset = Parameters.PhotoTourPhotoHorizontalOffset;
+            }
+            else
+            {
+                // Lefthand edge of photo window = monitor width - horizontal offset to righthand edge - window width
+                horizontalOffset = Parameters.PhotoTourPhotoMonitorWidth - Parameters.PhotoTourPhotoHorizontalOffset - drawing.Width - 15;
+            }
+            if (Parameters.PhotoTourPhotoVerticalOffset >= 0)
+            {
+                verticalOffset = Parameters.PhotoTourPhotoVerticalOffset;
+            }
+            else
+            {
+                // Top edge of photo window = monitor height - vertical offset to bottom edge - window height
+                verticalOffset = Parameters.PhotoTourPhotoMonitorHeight - Parameters.PhotoTourPhotoVerticalOffset - drawing.Height - 85;
+            }
+
+            return [(drawing.Width + 15).ToString(), (drawing.Height + 85).ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
         }
 
         static private string[] GetPhotoLegDimensions()
@@ -916,11 +966,11 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionOnScreenText = [ost];
         }
 
-        static private void SetOpenWindowAction(int index, string objName, string search, string[] dimensions, string[] offsets, string monitorNo)
+        static private void SetOpenWindowAction(int index, string objName, string search, string[] windowParameters, string monitorNo)
         {
             search = $"{search}{index:00}";
-            SetWindowSize sws = new(dimensions[0], dimensions[1]);
-            SetWindowLocation swl = new(offsets[0], offsets[1]);
+            SetWindowSize sws = new(windowParameters[0], windowParameters[1]);
+            SetWindowLocation swl = new(windowParameters[2], windowParameters[3]);
             ObjectReference or = GetObjectReference(objName, search);
 			SimMissionOpenWindowAction owa = new($"Open{search}", sws, swl, monitorNo, or, GetGUID());
             if (simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction != null)

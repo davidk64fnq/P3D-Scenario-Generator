@@ -487,10 +487,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoVerticalOffset.Name = "TextBoxPhotoTourPhotoVerticalOffset";
             TextBoxPhotoTourPhotoVerticalOffset.Size = new Size(100, 23);
             TextBoxPhotoTourPhotoVerticalOffset.TabIndex = 34;
+            TextBoxPhotoTourPhotoVerticalOffset.Tag = "20, integer";
             TextBoxPhotoTourPhotoVerticalOffset.Text = "20";
             TextBoxPhotoTourPhotoVerticalOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourPhotoVerticalOffset, resources.GetString("TextBoxPhotoTourPhotoVerticalOffset.ToolTip"));
-            TextBoxPhotoTourPhotoVerticalOffset.Validating += TextBoxInteger_Validating;
+            TextBoxPhotoTourPhotoVerticalOffset.Validating += TextBox_Validating;
             // 
             // TextBoxPhotoTourPhotoHorizontalOffset
             // 
@@ -500,10 +501,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoHorizontalOffset.Name = "TextBoxPhotoTourPhotoHorizontalOffset";
             TextBoxPhotoTourPhotoHorizontalOffset.Size = new Size(100, 23);
             TextBoxPhotoTourPhotoHorizontalOffset.TabIndex = 33;
+            TextBoxPhotoTourPhotoHorizontalOffset.Tag = "20, integer";
             TextBoxPhotoTourPhotoHorizontalOffset.Text = "20";
             TextBoxPhotoTourPhotoHorizontalOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourPhotoHorizontalOffset, resources.GetString("TextBoxPhotoTourPhotoHorizontalOffset.ToolTip"));
-            TextBoxPhotoTourPhotoHorizontalOffset.Validating += TextBoxInteger_Validating;
+            TextBoxPhotoTourPhotoHorizontalOffset.Validating += TextBox_Validating;
             // 
             // TextBoxPhotoTourPhotoMonitorNumber
             // 
@@ -513,10 +515,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoMonitorNumber.Name = "TextBoxPhotoTourPhotoMonitorNumber";
             TextBoxPhotoTourPhotoMonitorNumber.Size = new Size(100, 23);
             TextBoxPhotoTourPhotoMonitorNumber.TabIndex = 32;
+            TextBoxPhotoTourPhotoMonitorNumber.Tag = "0, whole";
             TextBoxPhotoTourPhotoMonitorNumber.Text = "0";
             TextBoxPhotoTourPhotoMonitorNumber.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorNumber, "The default monitor that the photo window will display in. Experiment with values between 0 and the number of monitors minus 1.");
-            TextBoxPhotoTourPhotoMonitorNumber.Validating += TextBoxInteger_Validating;
+            TextBoxPhotoTourPhotoMonitorNumber.Validating += TextBox_Validating;
             // 
             // groupBox1
             // 
@@ -568,11 +571,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoMonitorHeight.Name = "TextBoxPhotoTourPhotoMonitorHeight";
             TextBoxPhotoTourPhotoMonitorHeight.Size = new Size(100, 23);
             TextBoxPhotoTourPhotoMonitorHeight.TabIndex = 39;
-            TextBoxPhotoTourPhotoMonitorHeight.Tag = "1080, integer";
+            TextBoxPhotoTourPhotoMonitorHeight.Tag = "1080, natural";
             TextBoxPhotoTourPhotoMonitorHeight.Text = "1080";
             TextBoxPhotoTourPhotoMonitorHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorHeight, "Resolution height in pixels of the monitor that photo window will display on. Only used when the vertical offset is negative to calculate the required top lefthand corner position of photo window.\r\n");
-            TextBoxPhotoTourPhotoMonitorHeight.Validating += TextBoxInteger_Validating;
+            TextBoxPhotoTourPhotoMonitorHeight.Validating += TextBox_Validating;
             // 
             // TextBoxPhotoTourPhotoMonitorWidth
             // 
@@ -582,10 +585,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoMonitorWidth.Name = "TextBoxPhotoTourPhotoMonitorWidth";
             TextBoxPhotoTourPhotoMonitorWidth.Size = new Size(100, 23);
             TextBoxPhotoTourPhotoMonitorWidth.TabIndex = 39;
+            TextBoxPhotoTourPhotoMonitorWidth.Tag = "1920, natural";
             TextBoxPhotoTourPhotoMonitorWidth.Text = "1920";
             TextBoxPhotoTourPhotoMonitorWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorWidth, "Resolution width in pixels of the monitor that photo window will display on. Only used when the horizontal offset is negative to calculate the required top lefthand corner position of photo window.\r\n");
-            TextBoxPhotoTourPhotoMonitorWidth.Validating += TextBoxInteger_Validating;
+            TextBoxPhotoTourPhotoMonitorWidth.Validating += TextBox_Validating;
             // 
             // label38
             // 
@@ -688,10 +692,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapVerticalOffset.Name = "TextBoxPhotoTourMapVerticalOffset";
             TextBoxPhotoTourMapVerticalOffset.Size = new Size(100, 23);
             TextBoxPhotoTourMapVerticalOffset.TabIndex = 34;
+            TextBoxPhotoTourMapVerticalOffset.Tag = "10, integer";
             TextBoxPhotoTourMapVerticalOffset.Text = "10";
             TextBoxPhotoTourMapVerticalOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourMapVerticalOffset, resources.GetString("TextBoxPhotoTourMapVerticalOffset.ToolTip"));
-            TextBoxPhotoTourMapVerticalOffset.Validating += TextBoxInteger_Validating;
+            TextBoxPhotoTourMapVerticalOffset.Validating += TextBox_Validating;
             // 
             // label32
             // 
@@ -711,10 +716,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapHorizontalOffset.Name = "TextBoxPhotoTourMapHorizontalOffset";
             TextBoxPhotoTourMapHorizontalOffset.Size = new Size(100, 23);
             TextBoxPhotoTourMapHorizontalOffset.TabIndex = 33;
+            TextBoxPhotoTourMapHorizontalOffset.Tag = "10, integer";
             TextBoxPhotoTourMapHorizontalOffset.Text = "10";
             TextBoxPhotoTourMapHorizontalOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourMapHorizontalOffset, resources.GetString("TextBoxPhotoTourMapHorizontalOffset.ToolTip"));
-            TextBoxPhotoTourMapHorizontalOffset.Validating += TextBoxInteger_Validating;
+            TextBoxPhotoTourMapHorizontalOffset.Validating += TextBox_Validating;
             // 
             // label33
             // 
@@ -734,10 +740,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapMonitorNumber.Name = "TextBoxPhotoTourMapMonitorNumber";
             TextBoxPhotoTourMapMonitorNumber.Size = new Size(100, 23);
             TextBoxPhotoTourMapMonitorNumber.TabIndex = 32;
+            TextBoxPhotoTourMapMonitorNumber.Tag = "0, whole";
             TextBoxPhotoTourMapMonitorNumber.Text = "0";
             TextBoxPhotoTourMapMonitorNumber.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourMapMonitorNumber, "The default monitor that the map window will display in. Experiment with values between 0 and the number of monitors minus 1.");
-            TextBoxPhotoTourMapMonitorNumber.Validating += TextBoxInteger_Validating;
+            TextBoxPhotoTourMapMonitorNumber.Validating += TextBox_Validating;
             // 
             // label34
             // 
@@ -777,10 +784,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapMonitorWidth.Name = "TextBoxPhotoTourMapMonitorWidth";
             TextBoxPhotoTourMapMonitorWidth.Size = new Size(100, 23);
             TextBoxPhotoTourMapMonitorWidth.TabIndex = 37;
+            TextBoxPhotoTourMapMonitorWidth.Tag = "1920, natural";
             TextBoxPhotoTourMapMonitorWidth.Text = "1920";
             TextBoxPhotoTourMapMonitorWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourMapMonitorWidth, "Resolution width in pixels of the monitor that map window will display on. Only used when the horizontal offset is negative to calculate the required top lefthand corner position of map window.");
-            TextBoxPhotoTourMapMonitorWidth.Validating += TextBoxInteger_Validating;
+            TextBoxPhotoTourMapMonitorWidth.Validating += TextBox_Validating;
             // 
             // TextBoxPhotoTourMapMonitorHeight
             // 
@@ -790,11 +798,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapMonitorHeight.Name = "TextBoxPhotoTourMapMonitorHeight";
             TextBoxPhotoTourMapMonitorHeight.Size = new Size(100, 23);
             TextBoxPhotoTourMapMonitorHeight.TabIndex = 38;
-            TextBoxPhotoTourMapMonitorHeight.Tag = "1080, integer";
+            TextBoxPhotoTourMapMonitorHeight.Tag = "1080, natural";
             TextBoxPhotoTourMapMonitorHeight.Text = "1080";
             TextBoxPhotoTourMapMonitorHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourMapMonitorHeight, "Resolution height in pixels of the monitor that map window will display on. Only used when the vertical offset is negative to calculate the required top lefthand corner position of map window.\r\n");
-            TextBoxPhotoTourMapMonitorHeight.Validating += TextBoxInteger_Validating;
+            TextBoxPhotoTourMapMonitorHeight.Validating += TextBox_Validating;
             // 
             // TabPagePhotoTour
             // 
@@ -1764,12 +1772,12 @@ namespace P3D_Scenario_Generator
         private Label label34;
         private Label label35;
         private Label label36;
-        private TextBox TextBoxPhotoTourMapMonitorWidth;
-        private TextBox TextBoxPhotoTourMapMonitorHeight;
-        private TextBox TextBoxPhotoTourPhotoMonitorHeight;
-        private TextBox TextBoxPhotoTourPhotoMonitorWidth;
         private Label label38;
         private Label label37;
+        internal TextBox TextBoxPhotoTourMapMonitorWidth;
+        internal TextBox TextBoxPhotoTourMapMonitorHeight;
+        internal TextBox TextBoxPhotoTourPhotoMonitorHeight;
+        internal TextBox TextBoxPhotoTourPhotoMonitorWidth;
     }
 }
 

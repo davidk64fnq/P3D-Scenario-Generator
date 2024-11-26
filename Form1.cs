@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace P3D_Scenario_Generator
@@ -235,7 +236,6 @@ namespace P3D_Scenario_Generator
         private void ButtonPhotoTourDefault_Click(object sender, EventArgs e)
         {
             SetDefaultParams(((Button)sender).Parent.Controls);
-        //    SetDefaultPhotoTourParams();
         }
 
         static private bool ValidatePhotoIntegerParameters()
@@ -436,6 +436,97 @@ namespace P3D_Scenario_Generator
                         SetDefaultParams(childControl.Controls);
                     }
                 }
+            }
+        }
+
+        private void TextBox_Validating(object sender, CancelEventArgs e)
+        {
+            int parameterType = 1;
+            string[] parameterTokens = ((TextBox)sender).Tag.ToString().Split(',');
+
+            // First two tokens of textbox.Tag are the default value and value type, they should always be coded by developer!
+            if (parameterTokens.Length < 2)
+            {
+                DisplayParameterValidationMsg($"Developer has incorrectly set tag field of textbox control!", ((TextBox)sender).AccessibleName, e);
+                return;
+            }
+
+            // If it's one of the integer/whole/natural types
+            string integerTypes = "integer whole natural";
+            if (integerTypes.Contains(parameterTokens[parameterType].Trim()))
+            {
+                // Check it is an integer before looking at whole and natural types
+                if (!TextboxIsInteger(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+                    return;
+
+                // Check whole type i.e. 0, 1, 2, ...
+                if (parameterTokens[parameterType].Trim().Equals("whole") && !TextboxIsWhole(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+                    return;
+
+                // Check natural type i.e. 1, 2, 3, ...
+                if (parameterTokens[parameterType].Trim().Equals("natural") && !TextboxIsNatural(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+                    return;
+            }
+        }
+
+        private static bool TextboxIsInteger(string text, string title, CancelEventArgs e)
+        {
+            try
+            {
+                int paramAsInteger = Convert.ToInt32(text);
+            }
+            catch (Exception)
+            {
+                DisplayParameterValidationMsg($"Integer value expected", title, e);
+                return false;
+            }
+            return true;
+        }
+
+        private static bool TextboxIsWhole(string text, string title, CancelEventArgs e)
+        {
+            int paramAsInteger = Convert.ToInt32(text);
+            if (paramAsInteger < 0)
+            {
+                DisplayParameterValidationMsg($"Integer value greater than or equal to zero expected", title, e);
+                return false;
+            }
+            return true;
+        }
+
+        private static bool TextboxIsNatural(string text, string title, CancelEventArgs e)
+        {
+            int paramAsInteger = Convert.ToInt32(text);
+            if (paramAsInteger <= 0)
+            {
+                DisplayParameterValidationMsg($"Integer value greater than zero expected", title, e);
+                return false;
+            }
+            return true;
+        }
+
+        private static void DisplayParameterValidationMsg(string message, string title, CancelEventArgs e)
+        {
+            MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            e.Cancel = true;
+        }
+
+        private void TextBoxNatural_Validating(object sender, CancelEventArgs e)
+        {
+            int paramAsInteger;
+            try
+            {
+                paramAsInteger = Convert.ToInt32(((TextBox)sender).Text);
+                if (paramAsInteger <= 0)
+                {
+                    MessageBox.Show($"Integer value greater than zero expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    e.Cancel = true;
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show($"Numeric value expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                e.Cancel = true;
             }
         }
 
