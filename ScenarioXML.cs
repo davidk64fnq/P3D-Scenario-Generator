@@ -225,7 +225,7 @@ namespace P3D_Scenario_Generator
 
                 // Close old photo window 
                 if (photoNo > 1)
-                    SetProximityTriggerOnEnterAction(photoNo - 1, "CloseWindowAction", "CloseUIpanelWindow", photoNo - 1, "ProximityTrigger");
+                    SetProximityTriggerOnEnterAction(photoNo - 1, "CloseWindowAction", "CloseUIpanelWindow", photoNo, "ProximityTrigger");
 
                 // Increment gate number
                 SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", photoNo, "ProximityTrigger");
@@ -699,8 +699,8 @@ namespace P3D_Scenario_Generator
         static private string[] GetMapWindowParameters()
         {
             // Dimensions
-            int mapWindowWidth = 512 + 15;
-            int mapWindowHeight = 512 + 85;
+            int mapWindowWidth = 512;
+            int mapWindowHeight = 512 + 44;
 
             int horizontalOffset, verticalOffset;
             // Offsets
@@ -711,7 +711,7 @@ namespace P3D_Scenario_Generator
             else
             {
                 // Lefthand edge of map window = monitor width - horizontal offset to righthand edge - window width
-                horizontalOffset = Parameters.PhotoTourMapMonitorWidth - Parameters.PhotoTourMapHorizontalOffset - mapWindowWidth;
+                horizontalOffset = Parameters.PhotoTourMapMonitorWidth + Parameters.PhotoTourMapHorizontalOffset - mapWindowWidth;
             }
             if (Parameters.PhotoTourMapVerticalOffset >= 0)
             {
@@ -720,7 +720,7 @@ namespace P3D_Scenario_Generator
             else
             {
                 // Top edge of map window = monitor height - vertical offset to bottom edge - window height
-                verticalOffset = Parameters.PhotoTourMapMonitorHeight - Parameters.PhotoTourMapVerticalOffset - mapWindowHeight;
+                verticalOffset = Parameters.PhotoTourMapMonitorHeight + Parameters.PhotoTourMapVerticalOffset - mapWindowHeight;
             }
 
             return [mapWindowWidth.ToString(), mapWindowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
@@ -741,7 +741,7 @@ namespace P3D_Scenario_Generator
             else
             {
                 // Lefthand edge of photo window = monitor width - horizontal offset to righthand edge - window width
-                horizontalOffset = Parameters.PhotoTourPhotoMonitorWidth - Parameters.PhotoTourPhotoHorizontalOffset - drawing.Width - 15;
+                horizontalOffset = Parameters.PhotoTourPhotoMonitorWidth + Parameters.PhotoTourPhotoHorizontalOffset - drawing.Width;
             }
             if (Parameters.PhotoTourPhotoVerticalOffset >= 0)
             {
@@ -750,15 +750,10 @@ namespace P3D_Scenario_Generator
             else
             {
                 // Top edge of photo window = monitor height - vertical offset to bottom edge - window height
-                verticalOffset = Parameters.PhotoTourPhotoMonitorHeight - Parameters.PhotoTourPhotoVerticalOffset - drawing.Height - 85;
+                verticalOffset = Parameters.PhotoTourPhotoMonitorHeight + Parameters.PhotoTourPhotoVerticalOffset - drawing.Height;
             }
 
-            return [(drawing.Width + 15).ToString(), (drawing.Height + 85).ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
-        }
-
-        static private string[] GetPhotoLegDimensions()
-        {
-            return [(Parameters.PhotoLegWindowSize + 15).ToString(), (Parameters.PhotoLegWindowSize + 85).ToString()];
+            return [(drawing.Width).ToString(), (drawing.Height).ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
         }
 
         static private string GetPhotoWorldPosition(PhotoLocParams photoLegParams)

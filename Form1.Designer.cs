@@ -283,6 +283,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMaxLegDist.Name = "TextBoxPhotoMaxLegDist";
             TextBoxPhotoMaxLegDist.Size = new Size(119, 23);
             TextBoxPhotoMaxLegDist.TabIndex = 3;
+            TextBoxPhotoMaxLegDist.Tag = "10, double";
             TextBoxPhotoMaxLegDist.Text = "10";
             TextBoxPhotoMaxLegDist.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoMaxLegDist, "Maximum leg distance in miles to next photo, must be atleast 1 mile greater than minimum leg distance.");
@@ -294,6 +295,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMinLegDist.Name = "TextBoxPhotoMinLegDist";
             TextBoxPhotoMinLegDist.Size = new Size(119, 23);
             TextBoxPhotoMinLegDist.TabIndex = 17;
+            TextBoxPhotoMinLegDist.Tag = "3, double";
             TextBoxPhotoMinLegDist.Text = "3";
             TextBoxPhotoMinLegDist.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoMinLegDist, "Minimum leg distance in miles to next photo");
@@ -305,6 +307,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoWindowSize.Name = "TextBoxPhotoWindowSize";
             TextBoxPhotoWindowSize.Size = new Size(119, 23);
             TextBoxPhotoWindowSize.TabIndex = 19;
+            TextBoxPhotoWindowSize.Tag = "500, natural";
             TextBoxPhotoWindowSize.Text = "500";
             TextBoxPhotoWindowSize.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoWindowSize, "Size of leg route window in pixels");
@@ -316,6 +319,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMaxBearingChange.Name = "TextBoxPhotoMaxBearingChange";
             TextBoxPhotoMaxBearingChange.Size = new Size(119, 23);
             TextBoxPhotoMaxBearingChange.TabIndex = 23;
+            TextBoxPhotoMaxBearingChange.Tag = "135, natural";
             TextBoxPhotoMaxBearingChange.Text = "135";
             TextBoxPhotoMaxBearingChange.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoMaxBearingChange, "Maximum bearing change left or right each leg in degrees");
@@ -327,7 +331,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoHotspotRadius.Name = "TextBoxPhotoHotspotRadius";
             TextBoxPhotoHotspotRadius.Size = new Size(119, 23);
             TextBoxPhotoHotspotRadius.TabIndex = 25;
-            TextBoxPhotoHotspotRadius.Tag = "1000, integer";
+            TextBoxPhotoHotspotRadius.Tag = "1000, natural";
             TextBoxPhotoHotspotRadius.Text = "1000";
             TextBoxPhotoHotspotRadius.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoHotspotRadius, "Radius of photo hotspot location in feet");
@@ -455,6 +459,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMaxNoLegs.Name = "TextBoxPhotoMaxNoLegs";
             TextBoxPhotoMaxNoLegs.Size = new Size(119, 23);
             TextBoxPhotoMaxNoLegs.TabIndex = 14;
+            TextBoxPhotoMaxNoLegs.Tag = "7, natural";
             TextBoxPhotoMaxNoLegs.Text = "7";
             TextBoxPhotoMaxNoLegs.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoMaxNoLegs, "Maximum number of legs must between 2 and 18 inclusive and greater then or equal to minimum number of legs. Two legs would be starting airport to a single photo location then return to airport.\r\n");
@@ -466,6 +471,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMinNoLegs.Name = "TextBoxPhotoMinNoLegs";
             TextBoxPhotoMinNoLegs.Size = new Size(119, 23);
             TextBoxPhotoMinNoLegs.TabIndex = 13;
+            TextBoxPhotoMinNoLegs.Tag = "3, natural";
             TextBoxPhotoMinNoLegs.Text = "3";
             TextBoxPhotoMinNoLegs.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoMinNoLegs, "Minimum number of legs must between 2 and 18 inclusive and less than or equal to maximum number of legs. Two legs would be starting airport to a single photo location then return to airport.");
@@ -477,6 +483,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoLocation.Name = "TextBoxPhotoLocation";
             TextBoxPhotoLocation.Size = new Size(119, 23);
             TextBoxPhotoLocation.TabIndex = 28;
+            TextBoxPhotoLocation.Tag = ", string";
             toolTip1.SetToolTip(TextBoxPhotoLocation, "Starting airport city/state/country filter");
             // 
             // TextBoxPhotoTourPhotoVerticalOffset

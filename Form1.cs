@@ -238,36 +238,36 @@ namespace P3D_Scenario_Generator
             SetDefaultParams(((Button)sender).Parent.Controls);
         }
 
-        static private bool ValidatePhotoIntegerParameters()
+        static private bool ValidatePhotoParameters(string title, CancelEventArgs e)
         {
             if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) > 18)
             {
-                MessageBox.Show($"Minimum number of legs must be less than 18", "Photo Tour Scenario: minimum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DisplayParameterValidationMsg($"Minimum number of legs must be less than 18", title, e);
                 return false;
             }
             if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) < 2)
             {
-                MessageBox.Show($"Minimum number of legs must be greater than 1", "Photo Tour Scenario: minimum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DisplayParameterValidationMsg($"Minimum number of legs must be greater than 1", title, e);
                 return false;
             }
             if (Convert.ToInt32(form.TextBoxPhotoMaxNoLegs.Text) > 18)
             {
-                MessageBox.Show($"Maximum number of legs must be less than 18", "Photo Tour Scenario: maximum number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DisplayParameterValidationMsg($"Maximum number of legs must be less than 18", title, e);
                 return false;
             }
             if (Convert.ToInt32(form.TextBoxPhotoMaxNoLegs.Text) < Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text))
             {
-                MessageBox.Show($"Maximum number of legs to be greater than or equal to minimum number of legs", "Photo Tour Scenario: number of legs", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DisplayParameterValidationMsg($"Maximum number of legs to be greater than or equal to minimum number of legs", title, e);
                 return false;
             }
-            if (Convert.ToInt32(form.TextBoxPhotoMaxBearingChange.Text) < 0 || Convert.ToInt32(form.TextBoxPhotoMaxBearingChange.Text) > 180)
+            if (Convert.ToInt32(form.TextBoxPhotoMaxBearingChange.Text) > 180)
             {
-                MessageBox.Show($"Maximum bearing change is limited to between 0 and 180 degress", "Photo Tour Scenario: max bearing change", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DisplayParameterValidationMsg($"Maximum bearing change is limited to between 0 and 180 degress", title, e);
                 return false;
             }
             if ((Convert.ToInt32(form.TextBoxPhotoWindowSize.Text) < 375) || (Convert.ToInt32(form.TextBoxPhotoWindowSize.Text) > 1500))
             {
-                MessageBox.Show($"Window size is limited to between 375 and 1500 pixels inclusive", "Photo Tour Scenario: window size", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                DisplayParameterValidationMsg($"Window size is limited to between 375 and 1500 pixels inclusive", title, e);
                 return false;
             }
             return true;
@@ -467,6 +467,36 @@ namespace P3D_Scenario_Generator
                 if (parameterTokens[parameterType].Trim().Equals("natural") && !TextboxIsNatural(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
                     return;
             }
+
+            // If it's a double
+            if (parameterTokens[parameterType].Trim().Equals("double") && !TextboxIsDouble(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+                return;
+
+            // If it's a string
+            if (parameterTokens[parameterType].Trim().Equals("string") && !TextboxIsString(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+                return;
+
+            // Do any custom checks
+            ValidatePhotoParameters(((TextBox)sender).AccessibleName, e);
+        }
+
+        private static bool TextboxIsDouble(string text, string title, CancelEventArgs e)
+        {
+            try
+            {
+                double paramAsDouble = Convert.ToDouble(text);
+                if (paramAsDouble <= 0)
+                {
+                    DisplayParameterValidationMsg($"Numeric value greater than zero expected", title, e);
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                DisplayParameterValidationMsg($"Numeric value expected", title, e);
+                return false;
+            }
+            return true;
         }
 
         private static bool TextboxIsInteger(string text, string title, CancelEventArgs e)
@@ -483,17 +513,6 @@ namespace P3D_Scenario_Generator
             return true;
         }
 
-        private static bool TextboxIsWhole(string text, string title, CancelEventArgs e)
-        {
-            int paramAsInteger = Convert.ToInt32(text);
-            if (paramAsInteger < 0)
-            {
-                DisplayParameterValidationMsg($"Integer value greater than or equal to zero expected", title, e);
-                return false;
-            }
-            return true;
-        }
-
         private static bool TextboxIsNatural(string text, string title, CancelEventArgs e)
         {
             int paramAsInteger = Convert.ToInt32(text);
@@ -505,29 +524,38 @@ namespace P3D_Scenario_Generator
             return true;
         }
 
+        private static bool TextboxIsString(string text, string title, CancelEventArgs e)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                DisplayParameterValidationMsg($"Alphabetic string expected", title, e);
+                return false;
+            }
+
+            for (int i = 0; i < text.Length; i++)
+                if (!char.IsLetter(text[i]) && text[i] != ' ' && text[i] != '@')
+                {
+                    DisplayParameterValidationMsg($"Alphabetic string expected, 'A' to 'Z' and 'a' to 'z' only", title, e);
+                    return false;
+                }
+            return true;
+        }
+
+        private static bool TextboxIsWhole(string text, string title, CancelEventArgs e)
+        {
+            int paramAsInteger = Convert.ToInt32(text);
+            if (paramAsInteger < 0)
+            {
+                DisplayParameterValidationMsg($"Integer value greater than or equal to zero expected", title, e);
+                return false;
+            }
+            return true;
+        }
+
         private static void DisplayParameterValidationMsg(string message, string title, CancelEventArgs e)
         {
             MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
             e.Cancel = true;
-        }
-
-        private void TextBoxNatural_Validating(object sender, CancelEventArgs e)
-        {
-            int paramAsInteger;
-            try
-            {
-                paramAsInteger = Convert.ToInt32(((TextBox)sender).Text);
-                if (paramAsInteger <= 0)
-                {
-                    MessageBox.Show($"Integer value greater than zero expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    e.Cancel = true;
-                }
-            }
-            catch (Exception)
-            {
-                MessageBox.Show($"Numeric value expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                e.Cancel = true;
-            }
         }
 
         private void TextBoxDouble_Validating(object sender, CancelEventArgs e)
@@ -565,16 +593,6 @@ namespace P3D_Scenario_Generator
 
         private void TextBoxInteger_Validating(object sender, CancelEventArgs e)
         {
-            string[] validatePhotoTourIntegerFields =
-            [
-                "TextBoxPhotoMinNoLegs", "TextBoxPhotoMaxNoLegs",
-                "TextBoxPhotoMaxBearingChange",
-                "TextBoxPhotoWindowSize",
-                "TextBoxPhotoTourMapMonitorNumber", "TextBoxPhotoTourMapHorizontalOffset", "TextBoxPhotoTourMapVerticalOffset",
-                "TextBoxPhotoTourMapMonitorWidth", "TextBoxPhotoTourMapMonitorHeight",
-                "TextBoxPhotoTourPhotoMonitorNumber", "TextBoxPhotoTourPhotoHorizontalOffset", "TextBoxPhotoTourPhotoVerticalOffset",
-                "TextBoxPhotoTourPhotoMonitorWidth", "TextBoxPhotoTourPhotoMonitorHeight"
-            ];
             int paramAsInt;
             try
             {
@@ -585,14 +603,7 @@ namespace P3D_Scenario_Generator
                 MessageBox.Show($"Integer value expected", ((TextBox)sender).AccessibleName, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 e.Cancel = true;
             }
-            if (validatePhotoTourIntegerFields.Contains(((TextBox)sender).Name))
-            {
-                if (e.Cancel == false && !ValidatePhotoIntegerParameters())
-                {
-                    e.Cancel = true;
-                }
-            }
-            else if (((TextBox)sender).Name.Contains("TextBoxSignTilt"))
+            if (((TextBox)sender).Name.Contains("TextBoxSignTilt"))
             {
                 if (e.Cancel == false && !ValidateSignWritingParameters())
                 {
