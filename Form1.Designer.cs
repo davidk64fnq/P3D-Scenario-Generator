@@ -61,11 +61,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoMaxNoLegs = new TextBox();
             TextBoxPhotoMinNoLegs = new TextBox();
             TextBoxPhotoLocation = new TextBox();
-            TextBoxPhotoTourPhotoVerticalOffset = new TextBox();
-            TextBoxPhotoTourPhotoHorizontalOffset = new TextBox();
+            TextBoxPhotoTourPhotoOffset = new TextBox();
             TextBoxPhotoTourPhotoMonitorNumber = new TextBox();
             groupBox1 = new GroupBox();
             tableLayoutPanelPhotoTourPhotoWindowLocation = new TableLayoutPanel();
+            ListBoxPhotoTourPhotoAlignment = new ListBox();
             TextBoxPhotoTourPhotoMonitorHeight = new TextBox();
             TextBoxPhotoTourPhotoMonitorWidth = new TextBox();
             label38 = new Label();
@@ -75,9 +75,8 @@ namespace P3D_Scenario_Generator
             label29 = new Label();
             groupBox2 = new GroupBox();
             tableLayoutPanelPhotoTourMapWindowLocation = new TableLayoutPanel();
-            TextBoxPhotoTourMapVerticalOffset = new TextBox();
             label32 = new Label();
-            TextBoxPhotoTourMapHorizontalOffset = new TextBox();
+            TextBoxPhotoTourMapOffset = new TextBox();
             label33 = new Label();
             TextBoxPhotoTourMapMonitorNumber = new TextBox();
             label34 = new Label();
@@ -85,6 +84,7 @@ namespace P3D_Scenario_Generator
             label36 = new Label();
             TextBoxPhotoTourMapMonitorWidth = new TextBox();
             TextBoxPhotoTourMapMonitorHeight = new TextBox();
+            ListBoxPhotoTourMapAlignment = new ListBox();
             TabPagePhotoTour = new TabPage();
             label27 = new Label();
             label18 = new Label();
@@ -486,33 +486,19 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoLocation.Tag = ", string";
             toolTip1.SetToolTip(TextBoxPhotoLocation, "Starting airport city/state/country filter");
             // 
-            // TextBoxPhotoTourPhotoVerticalOffset
+            // TextBoxPhotoTourPhotoOffset
             // 
-            TextBoxPhotoTourPhotoVerticalOffset.AccessibleName = "Photo Window Location: Vertical Offset";
-            TextBoxPhotoTourPhotoVerticalOffset.Anchor = AnchorStyles.None;
-            TextBoxPhotoTourPhotoVerticalOffset.Location = new Point(139, 59);
-            TextBoxPhotoTourPhotoVerticalOffset.Name = "TextBoxPhotoTourPhotoVerticalOffset";
-            TextBoxPhotoTourPhotoVerticalOffset.Size = new Size(100, 23);
-            TextBoxPhotoTourPhotoVerticalOffset.TabIndex = 34;
-            TextBoxPhotoTourPhotoVerticalOffset.Tag = "20, integer";
-            TextBoxPhotoTourPhotoVerticalOffset.Text = "20";
-            TextBoxPhotoTourPhotoVerticalOffset.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourPhotoVerticalOffset, resources.GetString("TextBoxPhotoTourPhotoVerticalOffset.ToolTip"));
-            TextBoxPhotoTourPhotoVerticalOffset.Validating += TextBox_Validating;
-            // 
-            // TextBoxPhotoTourPhotoHorizontalOffset
-            // 
-            TextBoxPhotoTourPhotoHorizontalOffset.AccessibleName = "Photo Window Location: Horizontal Offset";
-            TextBoxPhotoTourPhotoHorizontalOffset.Anchor = AnchorStyles.None;
-            TextBoxPhotoTourPhotoHorizontalOffset.Location = new Point(139, 31);
-            TextBoxPhotoTourPhotoHorizontalOffset.Name = "TextBoxPhotoTourPhotoHorizontalOffset";
-            TextBoxPhotoTourPhotoHorizontalOffset.Size = new Size(100, 23);
-            TextBoxPhotoTourPhotoHorizontalOffset.TabIndex = 33;
-            TextBoxPhotoTourPhotoHorizontalOffset.Tag = "20, integer";
-            TextBoxPhotoTourPhotoHorizontalOffset.Text = "20";
-            TextBoxPhotoTourPhotoHorizontalOffset.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourPhotoHorizontalOffset, resources.GetString("TextBoxPhotoTourPhotoHorizontalOffset.ToolTip"));
-            TextBoxPhotoTourPhotoHorizontalOffset.Validating += TextBox_Validating;
+            TextBoxPhotoTourPhotoOffset.AccessibleName = "Photo Window Location: Horizontal Offset";
+            TextBoxPhotoTourPhotoOffset.Anchor = AnchorStyles.None;
+            TextBoxPhotoTourPhotoOffset.Location = new Point(139, 31);
+            TextBoxPhotoTourPhotoOffset.Name = "TextBoxPhotoTourPhotoOffset";
+            TextBoxPhotoTourPhotoOffset.Size = new Size(100, 23);
+            TextBoxPhotoTourPhotoOffset.TabIndex = 33;
+            TextBoxPhotoTourPhotoOffset.Tag = "20, whole";
+            TextBoxPhotoTourPhotoOffset.Text = "20";
+            TextBoxPhotoTourPhotoOffset.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoTourPhotoOffset, resources.GetString("TextBoxPhotoTourPhotoOffset.ToolTip"));
+            TextBoxPhotoTourPhotoOffset.Validating += TextBox_Validating;
             // 
             // TextBoxPhotoTourPhotoMonitorNumber
             // 
@@ -548,13 +534,13 @@ namespace P3D_Scenario_Generator
             tableLayoutPanelPhotoTourPhotoWindowLocation.ColumnCount = 2;
             tableLayoutPanelPhotoTourPhotoWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanelPhotoTourPhotoWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(ListBoxPhotoTourPhotoAlignment, 1, 2);
             tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoMonitorHeight, 1, 4);
             tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoMonitorWidth, 1, 3);
             tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label38, 0, 4);
             tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label37, 0, 3);
-            tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoVerticalOffset, 1, 2);
             tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label30, 0, 1);
-            tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoHorizontalOffset, 1, 1);
+            tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoOffset, 1, 1);
             tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label31, 0, 2);
             tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoMonitorNumber, 1, 0);
             tableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label29, 0, 0);
@@ -569,6 +555,18 @@ namespace P3D_Scenario_Generator
             tableLayoutPanelPhotoTourPhotoWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
             tableLayoutPanelPhotoTourPhotoWindowLocation.Size = new Size(253, 143);
             tableLayoutPanelPhotoTourPhotoWindowLocation.TabIndex = 35;
+            // 
+            // ListBoxPhotoTourPhotoAlignment
+            // 
+            ListBoxPhotoTourPhotoAlignment.Anchor = AnchorStyles.None;
+            ListBoxPhotoTourPhotoAlignment.FormattingEnabled = true;
+            ListBoxPhotoTourPhotoAlignment.ItemHeight = 15;
+            ListBoxPhotoTourPhotoAlignment.Items.AddRange(new object[] { "Top left", "Top right", "Bottom right", "Bottom left", "Centered" });
+            ListBoxPhotoTourPhotoAlignment.Location = new Point(139, 60);
+            ListBoxPhotoTourPhotoAlignment.Name = "ListBoxPhotoTourPhotoAlignment";
+            ListBoxPhotoTourPhotoAlignment.Size = new Size(100, 19);
+            ListBoxPhotoTourPhotoAlignment.TabIndex = 40;
+            toolTip1.SetToolTip(ListBoxPhotoTourPhotoAlignment, "Default location of photo window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
             // 
             // TextBoxPhotoTourPhotoMonitorHeight
             // 
@@ -622,21 +620,21 @@ namespace P3D_Scenario_Generator
             // 
             label30.Anchor = AnchorStyles.None;
             label30.AutoSize = true;
-            label30.Location = new Point(14, 34);
+            label30.Location = new Point(43, 34);
             label30.Name = "label30";
-            label30.Size = new Size(97, 15);
+            label30.Size = new Size(39, 15);
             label30.TabIndex = 30;
-            label30.Text = "Horizontal Offset";
+            label30.Text = "Offset";
             // 
             // label31
             // 
             label31.Anchor = AnchorStyles.None;
             label31.AutoSize = true;
-            label31.Location = new Point(23, 62);
+            label31.Location = new Point(31, 62);
             label31.Name = "label31";
-            label31.Size = new Size(80, 15);
+            label31.Size = new Size(63, 15);
             label31.TabIndex = 31;
-            label31.Text = "Vertical Offset";
+            label31.Text = "Alignment";
             // 
             // label29
             // 
@@ -668,9 +666,8 @@ namespace P3D_Scenario_Generator
             tableLayoutPanelPhotoTourMapWindowLocation.ColumnCount = 2;
             tableLayoutPanelPhotoTourMapWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanelPhotoTourMapWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanelPhotoTourMapWindowLocation.Controls.Add(TextBoxPhotoTourMapVerticalOffset, 1, 2);
             tableLayoutPanelPhotoTourMapWindowLocation.Controls.Add(label32, 0, 1);
-            tableLayoutPanelPhotoTourMapWindowLocation.Controls.Add(TextBoxPhotoTourMapHorizontalOffset, 1, 1);
+            tableLayoutPanelPhotoTourMapWindowLocation.Controls.Add(TextBoxPhotoTourMapOffset, 1, 1);
             tableLayoutPanelPhotoTourMapWindowLocation.Controls.Add(label33, 0, 2);
             tableLayoutPanelPhotoTourMapWindowLocation.Controls.Add(TextBoxPhotoTourMapMonitorNumber, 1, 0);
             tableLayoutPanelPhotoTourMapWindowLocation.Controls.Add(label34, 0, 0);
@@ -678,6 +675,7 @@ namespace P3D_Scenario_Generator
             tableLayoutPanelPhotoTourMapWindowLocation.Controls.Add(label36, 0, 4);
             tableLayoutPanelPhotoTourMapWindowLocation.Controls.Add(TextBoxPhotoTourMapMonitorWidth, 1, 3);
             tableLayoutPanelPhotoTourMapWindowLocation.Controls.Add(TextBoxPhotoTourMapMonitorHeight, 1, 4);
+            tableLayoutPanelPhotoTourMapWindowLocation.Controls.Add(ListBoxPhotoTourMapAlignment, 1, 2);
             tableLayoutPanelPhotoTourMapWindowLocation.ImeMode = ImeMode.On;
             tableLayoutPanelPhotoTourMapWindowLocation.Location = new Point(17, 20);
             tableLayoutPanelPhotoTourMapWindowLocation.Name = "tableLayoutPanelPhotoTourMapWindowLocation";
@@ -691,53 +689,39 @@ namespace P3D_Scenario_Generator
             tableLayoutPanelPhotoTourMapWindowLocation.Size = new Size(253, 143);
             tableLayoutPanelPhotoTourMapWindowLocation.TabIndex = 35;
             // 
-            // TextBoxPhotoTourMapVerticalOffset
-            // 
-            TextBoxPhotoTourMapVerticalOffset.AccessibleName = "Map Window Location: Vertical Offset";
-            TextBoxPhotoTourMapVerticalOffset.Anchor = AnchorStyles.None;
-            TextBoxPhotoTourMapVerticalOffset.Location = new Point(139, 59);
-            TextBoxPhotoTourMapVerticalOffset.Name = "TextBoxPhotoTourMapVerticalOffset";
-            TextBoxPhotoTourMapVerticalOffset.Size = new Size(100, 23);
-            TextBoxPhotoTourMapVerticalOffset.TabIndex = 34;
-            TextBoxPhotoTourMapVerticalOffset.Tag = "10, integer";
-            TextBoxPhotoTourMapVerticalOffset.Text = "10";
-            TextBoxPhotoTourMapVerticalOffset.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourMapVerticalOffset, resources.GetString("TextBoxPhotoTourMapVerticalOffset.ToolTip"));
-            TextBoxPhotoTourMapVerticalOffset.Validating += TextBox_Validating;
-            // 
             // label32
             // 
             label32.Anchor = AnchorStyles.None;
             label32.AutoSize = true;
-            label32.Location = new Point(14, 34);
+            label32.Location = new Point(43, 34);
             label32.Name = "label32";
-            label32.Size = new Size(97, 15);
+            label32.Size = new Size(39, 15);
             label32.TabIndex = 30;
-            label32.Text = "Horizontal Offset";
+            label32.Text = "Offset";
             // 
-            // TextBoxPhotoTourMapHorizontalOffset
+            // TextBoxPhotoTourMapOffset
             // 
-            TextBoxPhotoTourMapHorizontalOffset.AccessibleName = "Map Window Location: Horizontal Offset";
-            TextBoxPhotoTourMapHorizontalOffset.Anchor = AnchorStyles.None;
-            TextBoxPhotoTourMapHorizontalOffset.Location = new Point(139, 31);
-            TextBoxPhotoTourMapHorizontalOffset.Name = "TextBoxPhotoTourMapHorizontalOffset";
-            TextBoxPhotoTourMapHorizontalOffset.Size = new Size(100, 23);
-            TextBoxPhotoTourMapHorizontalOffset.TabIndex = 33;
-            TextBoxPhotoTourMapHorizontalOffset.Tag = "10, integer";
-            TextBoxPhotoTourMapHorizontalOffset.Text = "10";
-            TextBoxPhotoTourMapHorizontalOffset.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourMapHorizontalOffset, resources.GetString("TextBoxPhotoTourMapHorizontalOffset.ToolTip"));
-            TextBoxPhotoTourMapHorizontalOffset.Validating += TextBox_Validating;
+            TextBoxPhotoTourMapOffset.AccessibleName = "Map Window Location: Horizontal Offset";
+            TextBoxPhotoTourMapOffset.Anchor = AnchorStyles.None;
+            TextBoxPhotoTourMapOffset.Location = new Point(139, 31);
+            TextBoxPhotoTourMapOffset.Name = "TextBoxPhotoTourMapOffset";
+            TextBoxPhotoTourMapOffset.Size = new Size(100, 23);
+            TextBoxPhotoTourMapOffset.TabIndex = 33;
+            TextBoxPhotoTourMapOffset.Tag = "20, whole";
+            TextBoxPhotoTourMapOffset.Text = "20";
+            TextBoxPhotoTourMapOffset.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxPhotoTourMapOffset, resources.GetString("TextBoxPhotoTourMapOffset.ToolTip"));
+            TextBoxPhotoTourMapOffset.Validating += TextBox_Validating;
             // 
             // label33
             // 
             label33.Anchor = AnchorStyles.None;
             label33.AutoSize = true;
-            label33.Location = new Point(23, 62);
+            label33.Location = new Point(31, 62);
             label33.Name = "label33";
-            label33.Size = new Size(80, 15);
+            label33.Size = new Size(63, 15);
             label33.TabIndex = 31;
-            label33.Text = "Vertical Offset";
+            label33.Text = "Alignment";
             // 
             // TextBoxPhotoTourMapMonitorNumber
             // 
@@ -810,6 +794,18 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapMonitorHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourMapMonitorHeight, "Resolution height in pixels of the monitor that map window will display on. Only used when the vertical offset is negative to calculate the required top lefthand corner position of map window.\r\n");
             TextBoxPhotoTourMapMonitorHeight.Validating += TextBox_Validating;
+            // 
+            // ListBoxPhotoTourMapAlignment
+            // 
+            ListBoxPhotoTourMapAlignment.Anchor = AnchorStyles.None;
+            ListBoxPhotoTourMapAlignment.FormattingEnabled = true;
+            ListBoxPhotoTourMapAlignment.ItemHeight = 15;
+            ListBoxPhotoTourMapAlignment.Items.AddRange(new object[] { "Top left", "Top right", "Bottom right", "Bottom left", "Centered" });
+            ListBoxPhotoTourMapAlignment.Location = new Point(139, 60);
+            ListBoxPhotoTourMapAlignment.Name = "ListBoxPhotoTourMapAlignment";
+            ListBoxPhotoTourMapAlignment.Size = new Size(100, 19);
+            ListBoxPhotoTourMapAlignment.TabIndex = 39;
+            toolTip1.SetToolTip(ListBoxPhotoTourMapAlignment, "Default location of map window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
             // 
             // TabPagePhotoTour
             // 
@@ -1764,16 +1760,14 @@ namespace P3D_Scenario_Generator
         private Label label31;
         private Label label30;
         private Label label29;
-        internal TextBox TextBoxPhotoTourPhotoVerticalOffset;
-        internal TextBox TextBoxPhotoTourPhotoHorizontalOffset;
+        internal TextBox TextBoxPhotoTourPhotoOffset;
         internal TextBox TextBoxPhotoTourPhotoMonitorNumber;
         private TableLayoutPanel tableLayoutPanelPhotoTourPhotoWindowLocation;
         private GroupBox groupBox1;
         private GroupBox groupBox2;
         private TableLayoutPanel tableLayoutPanelPhotoTourMapWindowLocation;
-        internal TextBox TextBoxPhotoTourMapVerticalOffset;
         private Label label32;
-        internal TextBox TextBoxPhotoTourMapHorizontalOffset;
+        internal TextBox TextBoxPhotoTourMapOffset;
         private Label label33;
         internal TextBox TextBoxPhotoTourMapMonitorNumber;
         private Label label34;
@@ -1785,6 +1779,8 @@ namespace P3D_Scenario_Generator
         internal TextBox TextBoxPhotoTourMapMonitorHeight;
         internal TextBox TextBoxPhotoTourPhotoMonitorHeight;
         internal TextBox TextBoxPhotoTourPhotoMonitorWidth;
+        internal ListBox ListBoxPhotoTourMapAlignment;
+        internal ListBox ListBoxPhotoTourPhotoAlignment;
     }
 }
 

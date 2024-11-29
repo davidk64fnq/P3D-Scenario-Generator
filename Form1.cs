@@ -262,12 +262,17 @@ namespace P3D_Scenario_Generator
             }
             if (Convert.ToInt32(form.TextBoxPhotoMaxBearingChange.Text) > 180)
             {
-                DisplayParameterValidationMsg($"Maximum bearing change is limited to between 0 and 180 degress", title, e);
+                DisplayParameterValidationMsg($"Maximum bearing change is limited to between 0 and 180 degrees", title, e);
                 return false;
             }
             if ((Convert.ToInt32(form.TextBoxPhotoWindowSize.Text) < 375) || (Convert.ToInt32(form.TextBoxPhotoWindowSize.Text) > 1500))
             {
                 DisplayParameterValidationMsg($"Window size is limited to between 375 and 1500 pixels inclusive", title, e);
+                return false;
+            }
+            if ((Convert.ToInt32(form.TextBoxPhotoTourMapOffset.Text) > 20) || (Convert.ToInt32(form.TextBoxPhotoTourPhotoOffset.Text) > 20))
+            {
+                DisplayParameterValidationMsg($"Window offset is limited to between 0 and 20 pixels", title, e);
                 return false;
             }
             return true;

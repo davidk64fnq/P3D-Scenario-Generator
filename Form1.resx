@@ -120,22 +120,12 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <data name="TextBoxPhotoTourPhotoVerticalOffset.ToolTip" xml:space="preserve">
-    <value>The default vertical position of photo window in pixels on chosen monitor. Positive values are distance to top edge of photo window from top edge of monitor window. Negative values are distance to bottom edge of photo window from bottom edge of monitor window.
+  <data name="TextBoxPhotoTourPhotoOffset.ToolTip" xml:space="preserve">
+    <value>The default position of photo window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the photo window is positioned. Ignored if default position of photo window is centered.
 </value>
   </data>
-  <data name="TextBoxPhotoTourPhotoHorizontalOffset.ToolTip" xml:space="preserve">
-    <value>The default horizontal position of photo window in pixels on chosen monitor. Positive values are distance to lefthand edge of photo window from lefthand edge of monitor. Negative values are distance to righthand edge of photo window from righthand edge of monitor.</value>
-  </data>
-  <data name="TextBoxPhotoTourMapVerticalOffset.ToolTip" xml:space="preserve">
-    <value>The default vertical position of map window in pixels on chosen monitor. Positive values are distance to top edge of photo window from top edge of monitor window. Negative values are distance to bottom edge of photo window from bottom edge of monitor window.
-
-
-</value>
-  </data>
-  <data name="TextBoxPhotoTourMapHorizontalOffset.ToolTip" xml:space="preserve">
-    <value>The default horizontal position of map window in pixels on chosen monitor. Positive values are distance to lefthand edge of photo window from lefthand edge of monitor. Negative values are distance to righthand edge of photo window from righthand edge of monitor.
-</value>
+  <data name="TextBoxPhotoTourMapOffset.ToolTip" xml:space="preserve">
+    <value>The default position of map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the map window is positioned. Ignored if default position of map window is centered.</value>
   </data>
   <metadata name="TextBoxSignFont.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>

@@ -704,23 +704,30 @@ namespace P3D_Scenario_Generator
 
             int horizontalOffset, verticalOffset;
             // Offsets
-            if (Parameters.PhotoTourMapHorizontalOffset >= 0)
+            if (Parameters.PhotoTourMapAlignment == "Top left")
             {
-                horizontalOffset = Parameters.PhotoTourMapHorizontalOffset;
+                horizontalOffset = Parameters.PhotoTourMapOffset;
+                verticalOffset = Parameters.PhotoTourMapOffset;
             }
-            else
+            else if (Parameters.PhotoTourMapAlignment == "Top right")
             {
-                // Lefthand edge of map window = monitor width - horizontal offset to righthand edge - window width
-                horizontalOffset = Parameters.PhotoTourMapMonitorWidth + Parameters.PhotoTourMapHorizontalOffset - mapWindowWidth;
+                horizontalOffset = Parameters.PhotoTourMapMonitorWidth - Parameters.PhotoTourMapOffset - mapWindowWidth;
+                verticalOffset = Parameters.PhotoTourMapOffset;
             }
-            if (Parameters.PhotoTourMapVerticalOffset >= 0)
+            else if (Parameters.PhotoTourMapAlignment == "Bottom right")
             {
-                verticalOffset = Parameters.PhotoTourMapVerticalOffset;
+                horizontalOffset = Parameters.PhotoTourMapMonitorWidth - Parameters.PhotoTourMapOffset - mapWindowWidth;
+                verticalOffset = Parameters.PhotoTourMapMonitorHeight - Parameters.PhotoTourMapOffset - mapWindowHeight;
             }
-            else
+            else if (Parameters.PhotoTourMapAlignment == "Bottom left")
             {
-                // Top edge of map window = monitor height - vertical offset to bottom edge - window height
-                verticalOffset = Parameters.PhotoTourMapMonitorHeight + Parameters.PhotoTourMapVerticalOffset - mapWindowHeight;
+                horizontalOffset = Parameters.PhotoTourMapOffset;
+                verticalOffset = Parameters.PhotoTourMapMonitorHeight - Parameters.PhotoTourMapOffset - mapWindowHeight;
+            }
+            else // Parameters.PhotoTourMapAlignment == "Centered"
+            {
+                horizontalOffset = (Parameters.PhotoTourMapMonitorWidth / 2) - (mapWindowWidth / 2);
+                verticalOffset = (Parameters.PhotoTourMapMonitorHeight / 2) - (mapWindowHeight / 2);
             }
 
             return [mapWindowWidth.ToString(), mapWindowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
@@ -730,30 +737,37 @@ namespace P3D_Scenario_Generator
         {
             // Dimensions
             string bitmapFilename = $"{Parameters.ImageFolder}\\photo_{photoNo:00}.jpg";
-            Bitmap drawing = new(bitmapFilename);
+            using Bitmap drawing = new(bitmapFilename);
 
-            int horizontalOffset, verticalOffset;
+            int horizontalOffset = 0, verticalOffset = 0;
             // Offsets
-            if (Parameters.PhotoTourPhotoHorizontalOffset >= 0)
+            if (Parameters.PhotoTourPhotoAlignment == "Top left")
             {
-                horizontalOffset = Parameters.PhotoTourPhotoHorizontalOffset;
+                horizontalOffset = Parameters.PhotoTourPhotoOffset;
+                verticalOffset = Parameters.PhotoTourPhotoOffset;
             }
-            else
+            else if (Parameters.PhotoTourPhotoAlignment == "Top right")
             {
-                // Lefthand edge of photo window = monitor width - horizontal offset to righthand edge - window width
-                horizontalOffset = Parameters.PhotoTourPhotoMonitorWidth + Parameters.PhotoTourPhotoHorizontalOffset - drawing.Width;
+                horizontalOffset = Parameters.PhotoTourPhotoMonitorWidth - Parameters.PhotoTourPhotoOffset - drawing.Width;
+                verticalOffset = Parameters.PhotoTourPhotoOffset;
             }
-            if (Parameters.PhotoTourPhotoVerticalOffset >= 0)
+            else if (Parameters.PhotoTourPhotoAlignment == "Bottom right")
             {
-                verticalOffset = Parameters.PhotoTourPhotoVerticalOffset;
+                horizontalOffset = Parameters.PhotoTourPhotoMonitorWidth - Parameters.PhotoTourPhotoOffset - drawing.Width;
+                verticalOffset = Parameters.PhotoTourPhotoMonitorHeight - Parameters.PhotoTourPhotoOffset - drawing.Height;
             }
-            else
+            else if (Parameters.PhotoTourPhotoAlignment == "Bottom left")
             {
-                // Top edge of photo window = monitor height - vertical offset to bottom edge - window height
-                verticalOffset = Parameters.PhotoTourPhotoMonitorHeight + Parameters.PhotoTourPhotoVerticalOffset - drawing.Height;
+                horizontalOffset = Parameters.PhotoTourPhotoOffset;
+                verticalOffset = Parameters.PhotoTourPhotoMonitorHeight - Parameters.PhotoTourPhotoOffset - drawing.Height;
+            }
+            else // Parameters.PhotoTourPhotoAlignment == "Centered"
+            {
+                horizontalOffset = (Parameters.PhotoTourPhotoMonitorWidth / 2) - (drawing.Width / 2);
+                verticalOffset = (Parameters.PhotoTourPhotoMonitorHeight / 2) - (drawing.Height / 2);
             }
 
-            return [(drawing.Width).ToString(), (drawing.Height).ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
+            return [drawing.Width.ToString(), drawing.Height.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
         }
 
         static private string GetPhotoWorldPosition(PhotoLocParams photoLegParams)

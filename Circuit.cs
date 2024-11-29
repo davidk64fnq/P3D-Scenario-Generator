@@ -60,7 +60,7 @@ namespace P3D_Scenario_Generator
             }
             if (boundingBox.xAxis.Count == Con.tileFactor)
             {
-                Drawing.Resize("chart_thumb.png", Con.tileSize);
+                Drawing.Resize("chart_thumb.png", Con.tileSize, 0);
             }
         }
 

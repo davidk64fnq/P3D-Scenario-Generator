@@ -88,7 +88,7 @@ namespace P3D_Scenario_Generator
             }
             if (boundingBox.xAxis.Count == 2)
             {
-                Drawing.Resize("chart_thumb.png", 256);
+                Drawing.Resize("chart_thumb.png", 256, 0);
             }
         }
 
@@ -455,17 +455,59 @@ namespace P3D_Scenario_Generator
             }
             return "";
         }
-        
+
+        /// <summary>
+        /// Retrieves instance of <see cref="PhotoLocParams"/> from PhotoTour.PhotoLocations
+        /// </summary>
+        /// <param name="index">Identifies which instance to retrieve</param>
+        /// <returns></returns>
         static internal PhotoLocParams GetPhotoLocation(int index)
         {
             return PhotoLocations[index];
         }
-       
+
+        /// <summary>
+        /// Downloads all photos to scenario images directory. Checks that each photo width/height is less than 95%
+        /// of the monitor it will initially be displayed on. If the width or height exceeds 95% the photo is proportionally
+        /// resized to be atleast 40 pixels less than either monitor dimension.
+        /// </summary>
         static private void GetPhotos()
         {
             for (int index = 1; index < PhotoLocations.Count - 1; index++)
             {
                 HttpRoutines.GetWebDoc(PhotoLocations[index].photoURL, $"{Parameters.ImageFolder}\\photo_{index:00}.jpg");
+
+                // Load the photo in order to access its width and height
+                string bitmapFilename = $"{Parameters.ImageFolder}\\photo_{index:00}.jpg";
+                using Bitmap drawing = new(bitmapFilename);
+
+                // Get percentage of photo width and height relative to monitor dimensions that the photo will be displayed on
+                double photoWidthMonitorPercent = drawing.Width / (double)Parameters.PhotoTourPhotoMonitorWidth;
+                double photoHeightMonitorPercent = drawing.Height / (double)Parameters.PhotoTourPhotoMonitorHeight;
+
+                // Determin which photo dimension is largest relative to corresponding monitor dimension
+                int newSize = 0;
+                bool newWidth = false, newHeight = false;
+                if (photoWidthMonitorPercent > photoHeightMonitorPercent && photoWidthMonitorPercent > 0.95)
+                {
+                    newSize = Parameters.PhotoTourPhotoMonitorWidth - 40 ;
+                    newWidth = true;
+                }
+                else if (photoHeightMonitorPercent > 0.95)
+                {
+                    newSize = Parameters.PhotoTourPhotoMonitorHeight - 40;
+                    newHeight = true;
+                }
+
+                // If photo is too big (within 95 percent of one of the dimensions) then resize it
+                if (newWidth)
+                {
+                    Drawing.Resize($"{Parameters.ImageFolder}\\photo_{index:00}.jpg", newSize, 0);
+                }
+                else if (newHeight)
+                {
+                    Drawing.Resize($"{Parameters.ImageFolder}\\photo_{index:00}.jpg", 0, newSize);
+                }
             }
         }
     }

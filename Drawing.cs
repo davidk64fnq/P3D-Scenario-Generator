@@ -505,11 +505,18 @@ namespace P3D_Scenario_Generator
             return newTileNo;
         }
 
-        static internal void Resize(string filename, int size)
+        /// <summary>
+        /// Uses Magick.NET to resize an image. If one of width and height is zero then resizing is proportional based on non zero parameter.
+        /// </summary>
+        /// <param name="filename">Filename including full path and file extension</param>
+        /// <param name="width">New size, if zero proportional based on height parameter</param>
+        /// <param name="height">New size, if zero proportional based on width parameter</param>
+        static internal void Resize(string filename, int width, int height)
         {
-            uint sizeUint = Convert.ToUInt32(size);
+            uint widthUint = Convert.ToUInt32(width);
+            uint heightUint = Convert.ToUInt32(height);
             using MagickImage image = new($"{Parameters.ImageFolder}\\{filename}");
-            image.Resize(sizeUint, sizeUint);
+            image.Resize(widthUint, heightUint);
             image.Write($"{Parameters.ImageFolder}\\{filename}");
         }
 
