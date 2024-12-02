@@ -124,9 +124,18 @@
     <value>The default position of photo window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the photo window is positioned. Ignored if default position of photo window is centered.
 </value>
   </data>
+  <data name="label30.ToolTip" xml:space="preserve">
+    <value>The default position of photo window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the photo window is positioned. Ignored if default position of photo window is centered.</value>
+  </data>
+  <data name="label32.ToolTip" xml:space="preserve">
+    <value>The default position of map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the map window is positioned. Ignored if default position of map window is centered.</value>
+  </data>
   <data name="TextBoxPhotoTourMapOffset.ToolTip" xml:space="preserve">
     <value>The default position of map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the map window is positioned. Ignored if default position of map window is centered.</value>
   </data>
+  <metadata name="TextBoxSignFont.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
   <metadata name="TextBoxSignFont.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>

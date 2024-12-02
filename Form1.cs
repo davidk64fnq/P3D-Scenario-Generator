@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel;
+using System.Configuration;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace P3D_Scenario_Generator
@@ -13,7 +15,6 @@ namespace P3D_Scenario_Generator
         {
             InitializeComponent();
             PrepareFormFields();
-            Cache.CheckCacheMonth();
         }
 
         #region Menu Tab
@@ -74,9 +75,9 @@ namespace P3D_Scenario_Generator
                 DoScenarioSpecificTasks();
 
                 // Delete next three lines once re-write complete
-            //    Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
-            //    Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
-            //    Gates.SetGates();
+                //    Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+                //    Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+                //    Gates.SetGates();
 
                 ScenarioFXML.GenerateFXMLfile();
                 ScenarioHTML.GenerateHTMLfiles();
@@ -101,6 +102,7 @@ namespace P3D_Scenario_Generator
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
                 PhotoTour.SetPhotoTour();
+                PhotoTour.SaveSettings();
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.SignWriting])
             {
@@ -137,21 +139,6 @@ namespace P3D_Scenario_Generator
             MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void ButtonP3Dv5Files_Click(object sender, EventArgs e)
-        {
-            CommonOpenFileDialog dialog = new()
-            {
-                InitialDirectory = "C:\\Users",
-                IsFolderPicker = true
-            };
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                TextBoxP3Dv5Files.Text = dialog.FileName;
-                Properties.Settings.Default.Prepar3Dv5Files = TextBoxP3Dv5Files.Text;
-                Properties.Settings.Default.Save();
-            }
-        }
-
         #endregion
 
         #region Aircraft selection
@@ -162,6 +149,7 @@ namespace P3D_Scenario_Generator
             if (uiVariations.Count > 0)
             {
                 Properties.Settings.Default.CruiseSpeed = Aircraft.CruiseSpeed;
+                Properties.Settings.Default.Save();
                 ListBoxAircraft.DataSource = uiVariations;
                 ListBoxAircraft.SelectedIndex = 0;
                 SetDefaultCircuitParams();
@@ -344,7 +332,7 @@ namespace P3D_Scenario_Generator
         {
             if (ComboBoxWikiStartingItem.SelectedIndex > ComboBoxWikiFinishingItem.SelectedIndex && ComboBoxWikiFinishingItem.SelectedIndex >= 0)
             {
-                (ComboBoxWikiFinishingItem.SelectedIndex, ComboBoxWikiStartingItem.SelectedIndex) = 
+                (ComboBoxWikiFinishingItem.SelectedIndex, ComboBoxWikiStartingItem.SelectedIndex) =
                     (ComboBoxWikiStartingItem.SelectedIndex, ComboBoxWikiFinishingItem.SelectedIndex);
             }
             else
@@ -393,6 +381,53 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
+        #region Settings
+
+        private void ButtonP3Dv5Files_Click(object sender, EventArgs e)
+        {
+            CommonOpenFileDialog dialog = new()
+            {
+                InitialDirectory = "C:\\Users",
+                IsFolderPicker = true
+            };
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                TextBoxP3Dv5Files.Text = dialog.FileName;
+                Properties.Settings.Default.TextBoxSettingsPrepar3Dv5Files = TextBoxP3Dv5Files.Text;
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        private void ComboBoxSettingsCacheServers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.ComboBoxSettingsCacheServers = form.ComboBoxSettingsCacheServers.Text;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ComboBoxSettingsCacheServers_KeyDown(object sender, KeyEventArgs e)
+        {
+            string s = ComboBoxSettingsCacheServers.Text;
+
+            if (e.KeyCode == Keys.Enter)
+            {
+                // if item exists, select it. if it does not exist, add it.
+                if (!ComboBoxSettingsCacheServers.Items.Contains(s))
+                {
+                    ComboBoxSettingsCacheServers.Items.Add(s);
+                }
+            }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                // if item exists, delete it.
+                if (ComboBoxSettingsCacheServers.Items.Contains(s))
+                {
+                    ComboBoxSettingsCacheServers.Items.Remove(s);
+                }
+            }
+        }
+
+        #endregion
+
         #region Utilities
 
         private void ButtonHelp_Click(object sender, EventArgs e)
@@ -400,25 +435,35 @@ namespace P3D_Scenario_Generator
             Help.ShowHelp(this, "Resources/help/index.htm");
         }
 
+        /// <summary>
+        /// Load information such as runway list, circuit image, sign writing alphabet image, set default field values.
+        /// </summary>
         private void PrepareFormFields()
         {
             // General tab
             ListBoxRunways.DataSource = Runway.GetICAOids();
 
             // Circuit tab
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.circuitTab.jpg");
+            string appName = Assembly.GetExecutingAssembly().GetName().Name;
+            string appPath = Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_");
+            Stream stream = Assembly.Load(appName).GetManifestResourceStream($"{appPath}.Resources.Images.circuitTab.jpg");
             PictureBoxCircuit.Image = new Bitmap(stream);
             SetDefaultCircuitParams();
 
             // PhotoTour tab
             SetDefaultParams(TabPagePhotoTour.Controls);
+            RestoreUserSettings(TabPagePhotoTour.Controls);
 
             // Signwriting tab
-            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.signTabSegment22Font.jpg");
+            stream = Assembly.Load(appName).GetManifestResourceStream($"{appPath}.Resources.Images.signTabSegment22Font.jpg");
             PictureBoxSignWriting.Image = new Bitmap(stream);
 
             // Wikipedia Lists tab
             ListBoxWikiColumn.SetSelected(0, true);
+
+            // Settings tab
+            Cache.CheckCache();
+            RestoreUserSettings(TabPageSettings.Controls);
         }
 
         /// <summary>
@@ -432,13 +477,45 @@ namespace P3D_Scenario_Generator
                 if (control.Controls.Count == 0)
                 {
                     if (control.Tag != null)
-                        control.Text = control.Tag.ToString().Split(',')[0];
+                        control.Text = control.Tag.ToString().Split(',')[0].Trim();
                 }
                 else
                 {
                     foreach (Control childControl in control.Controls)
                     {
                         SetDefaultParams(childControl.Controls);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Recursively processes all controls to copy the associated user setting values if they exist into the text field.
+        /// </summary>
+        /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
+        private static void RestoreUserSettings(Control.ControlCollection controlCollection)
+        {
+            foreach (Control control in controlCollection)
+            {
+                if (control.Controls.Count == 0)
+                {
+                    try
+                    {
+                        var settingsValue = Properties.Settings.Default[control.Name];
+                        if (settingsValue != null)
+                            control.Text = settingsValue.ToString();
+                    }
+                    catch
+                    {
+                        // Ignore parameters that don't have an associated entry in settings
+                        continue;
+                    }
+                }
+                else
+                {
+                    foreach (Control childControl in control.Controls)
+                    {
+                        RestoreUserSettings(childControl.Controls);
                     }
                 }
             }
@@ -456,6 +533,7 @@ namespace P3D_Scenario_Generator
                 return;
             }
 
+
             // If it's one of the integer/whole/natural types
             string integerTypes = "integer whole natural";
             if (integerTypes.Contains(parameterTokens[parameterType].Trim()))
@@ -465,20 +543,20 @@ namespace P3D_Scenario_Generator
                     return;
 
                 // Check whole type i.e. 0, 1, 2, ...
-                if (parameterTokens[parameterType].Trim().Equals("whole") && !TextboxIsWhole(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+                if (parameterType.Equals("whole") && !TextboxIsWhole(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
                     return;
 
                 // Check natural type i.e. 1, 2, 3, ...
-                if (parameterTokens[parameterType].Trim().Equals("natural") && !TextboxIsNatural(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+                if (parameterType.Equals("natural") && !TextboxIsNatural(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
                     return;
             }
 
             // If it's a double
-            if (parameterTokens[parameterType].Trim().Equals("double") && !TextboxIsDouble(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+            if (parameterType.Equals("double") && !TextboxIsDouble(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
                 return;
 
             // If it's a string
-            if (parameterTokens[parameterType].Trim().Equals("string") && !TextboxIsString(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+            if (parameterType.Equals("string") && !TextboxIsString(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
                 return;
 
             // Do any custom checks
@@ -544,6 +622,12 @@ namespace P3D_Scenario_Generator
                     return false;
                 }
             return true;
+        }
+
+        private void ListBox_Validating(object sender, CancelEventArgs e)
+        {
+            if (((ListBox)sender).GetItemText(((ListBox)sender).SelectedItem) == "")
+                DisplayParameterValidationMsg($"No selection made", ((ListBox)sender).AccessibleName, e);
         }
 
         private static bool TextboxIsWhole(string text, string title, CancelEventArgs e)
@@ -647,7 +731,7 @@ namespace P3D_Scenario_Generator
             List<string> aircraftList = [Properties.Settings.Default.SelectedAircraft];
             ListBoxAircraft.DataSource = aircraftList;
             Aircraft.CruiseSpeed = Properties.Settings.Default.CruiseSpeed;
-            TextBoxP3Dv5Files.Text = Properties.Settings.Default.Prepar3Dv5Files;
+            TextBoxP3Dv5Files.Text = Properties.Settings.Default.TextBoxSettingsPrepar3Dv5Files;
         }
         #endregion
     }

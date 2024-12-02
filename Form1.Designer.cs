@@ -85,6 +85,11 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapMonitorWidth = new TextBox();
             TextBoxPhotoTourMapMonitorHeight = new TextBox();
             ListBoxPhotoTourMapAlignment = new ListBox();
+            TextBoxSettingsCacheUsage = new TextBox();
+            label41 = new Label();
+            label42 = new Label();
+            TextBoxSettingsCacheDailyTotal = new TextBox();
+            label43 = new Label();
             TabPagePhotoTour = new TabPage();
             label27 = new Label();
             label18 = new Label();
@@ -97,7 +102,9 @@ namespace P3D_Scenario_Generator
             label11 = new Label();
             ButtonHelp = new Button();
             TabPageSettings = new TabPage();
-            tableLayoutPanelSettings = new TableLayoutPanel();
+            groupBox3 = new GroupBox();
+            TableLayoutPanelSettingsMapTileCacheInfo = new TableLayoutPanel();
+            ComboBoxSettingsCacheServers = new ComboBox();
             TextBoxP3Dv5Files = new TextBox();
             TabPageCelestial = new TabPage();
             label26 = new Label();
@@ -143,7 +150,7 @@ namespace P3D_Scenario_Generator
             TextBoxSelectedRunway = new TextBox();
             TextBoxSearchRunway = new TextBox();
             label2 = new Label();
-            TabControlPhotoTour = new TabControl();
+            TabControlP3DSG = new TabControl();
             TabPageWikiList = new TabPage();
             TextBoxWikiDistance = new TextBox();
             LabelWikiDistance = new Label();
@@ -158,13 +165,16 @@ namespace P3D_Scenario_Generator
             LabelWikiTableNames = new Label();
             LabelWikiURL = new Label();
             TextBoxWikiURL = new TextBox();
+            groupBox4 = new GroupBox();
+            tableLayoutPanel1 = new TableLayoutPanel();
             groupBox1.SuspendLayout();
             tableLayoutPanelPhotoTourPhotoWindowLocation.SuspendLayout();
             groupBox2.SuspendLayout();
             tableLayoutPanelPhotoTourMapWindowLocation.SuspendLayout();
             TabPagePhotoTour.SuspendLayout();
             TabPageSettings.SuspendLayout();
-            tableLayoutPanelSettings.SuspendLayout();
+            groupBox3.SuspendLayout();
+            TableLayoutPanelSettingsMapTileCacheInfo.SuspendLayout();
             TabPageCelestial.SuspendLayout();
             TabPageSign.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)PictureBoxSignWriting).BeginInit();
@@ -176,8 +186,10 @@ namespace P3D_Scenario_Generator
             GroupBoxAircraft.SuspendLayout();
             GroupBoxScenario.SuspendLayout();
             GroupBoxRunway.SuspendLayout();
-            TabControlPhotoTour.SuspendLayout();
+            TabControlP3DSG.SuspendLayout();
             TabPageWikiList.SuspendLayout();
+            groupBox4.SuspendLayout();
+            tableLayoutPanel1.SuspendLayout();
             SuspendLayout();
             // 
             // ButtonGenerateScenario
@@ -193,7 +205,8 @@ namespace P3D_Scenario_Generator
             // 
             // button1
             // 
-            button1.Location = new Point(3, 3);
+            button1.Anchor = AnchorStyles.None;
+            button1.Location = new Point(3, 4);
             button1.Name = "button1";
             button1.Size = new Size(120, 23);
             button1.TabIndex = 19;
@@ -494,7 +507,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoOffset.Name = "TextBoxPhotoTourPhotoOffset";
             TextBoxPhotoTourPhotoOffset.Size = new Size(100, 23);
             TextBoxPhotoTourPhotoOffset.TabIndex = 33;
-            TextBoxPhotoTourPhotoOffset.Tag = "20, whole";
+            TextBoxPhotoTourPhotoOffset.Tag = "20,whole";
             TextBoxPhotoTourPhotoOffset.Text = "20";
             TextBoxPhotoTourPhotoOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourPhotoOffset, resources.GetString("TextBoxPhotoTourPhotoOffset.ToolTip"));
@@ -508,7 +521,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoMonitorNumber.Name = "TextBoxPhotoTourPhotoMonitorNumber";
             TextBoxPhotoTourPhotoMonitorNumber.Size = new Size(100, 23);
             TextBoxPhotoTourPhotoMonitorNumber.TabIndex = 32;
-            TextBoxPhotoTourPhotoMonitorNumber.Tag = "0, whole";
+            TextBoxPhotoTourPhotoMonitorNumber.Tag = "0,whole";
             TextBoxPhotoTourPhotoMonitorNumber.Text = "0";
             TextBoxPhotoTourPhotoMonitorNumber.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorNumber, "The default monitor that the photo window will display in. Experiment with values between 0 and the number of monitors minus 1.");
@@ -558,15 +571,18 @@ namespace P3D_Scenario_Generator
             // 
             // ListBoxPhotoTourPhotoAlignment
             // 
+            ListBoxPhotoTourPhotoAlignment.AccessibleName = "Photo Window Location: Alignment";
             ListBoxPhotoTourPhotoAlignment.Anchor = AnchorStyles.None;
             ListBoxPhotoTourPhotoAlignment.FormattingEnabled = true;
             ListBoxPhotoTourPhotoAlignment.ItemHeight = 15;
-            ListBoxPhotoTourPhotoAlignment.Items.AddRange(new object[] { "Top left", "Top right", "Bottom right", "Bottom left", "Centered" });
+            ListBoxPhotoTourPhotoAlignment.Items.AddRange(new object[] { "Top right", "Top left", "Bottom right", "Bottom left", "Centered" });
             ListBoxPhotoTourPhotoAlignment.Location = new Point(139, 60);
             ListBoxPhotoTourPhotoAlignment.Name = "ListBoxPhotoTourPhotoAlignment";
             ListBoxPhotoTourPhotoAlignment.Size = new Size(100, 19);
             ListBoxPhotoTourPhotoAlignment.TabIndex = 40;
+            ListBoxPhotoTourPhotoAlignment.Tag = "listBox";
             toolTip1.SetToolTip(ListBoxPhotoTourPhotoAlignment, "Default location of photo window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            ListBoxPhotoTourPhotoAlignment.Validating += ListBox_Validating;
             // 
             // TextBoxPhotoTourPhotoMonitorHeight
             // 
@@ -576,10 +592,9 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoMonitorHeight.Name = "TextBoxPhotoTourPhotoMonitorHeight";
             TextBoxPhotoTourPhotoMonitorHeight.Size = new Size(100, 23);
             TextBoxPhotoTourPhotoMonitorHeight.TabIndex = 39;
-            TextBoxPhotoTourPhotoMonitorHeight.Tag = "1080, natural";
-            TextBoxPhotoTourPhotoMonitorHeight.Text = "1080";
+            TextBoxPhotoTourPhotoMonitorHeight.Tag = ",natural";
             TextBoxPhotoTourPhotoMonitorHeight.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorHeight, "Resolution height in pixels of the monitor that photo window will display on. Only used when the vertical offset is negative to calculate the required top lefthand corner position of photo window.\r\n");
+            toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorHeight, "Resolution height in pixels of the monitor that photo window will display on.\r\n");
             TextBoxPhotoTourPhotoMonitorHeight.Validating += TextBox_Validating;
             // 
             // TextBoxPhotoTourPhotoMonitorWidth
@@ -590,10 +605,9 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoMonitorWidth.Name = "TextBoxPhotoTourPhotoMonitorWidth";
             TextBoxPhotoTourPhotoMonitorWidth.Size = new Size(100, 23);
             TextBoxPhotoTourPhotoMonitorWidth.TabIndex = 39;
-            TextBoxPhotoTourPhotoMonitorWidth.Tag = "1920, natural";
-            TextBoxPhotoTourPhotoMonitorWidth.Text = "1920";
+            TextBoxPhotoTourPhotoMonitorWidth.Tag = ",natural";
             TextBoxPhotoTourPhotoMonitorWidth.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorWidth, "Resolution width in pixels of the monitor that photo window will display on. Only used when the horizontal offset is negative to calculate the required top lefthand corner position of photo window.\r\n");
+            toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorWidth, "Resolution width in pixels of the monitor that photo window will display on. ");
             TextBoxPhotoTourPhotoMonitorWidth.Validating += TextBox_Validating;
             // 
             // label38
@@ -605,6 +619,7 @@ namespace P3D_Scenario_Generator
             label38.Size = new Size(89, 15);
             label38.TabIndex = 39;
             label38.Text = "Monitor Height";
+            toolTip1.SetToolTip(label38, "Resolution height in pixels of the monitor that photo window will display on.");
             // 
             // label37
             // 
@@ -615,6 +630,7 @@ namespace P3D_Scenario_Generator
             label37.Size = new Size(85, 15);
             label37.TabIndex = 39;
             label37.Text = "Monitor Width";
+            toolTip1.SetToolTip(label37, "Resolution width in pixels of the monitor that photo window will display on. ");
             // 
             // label30
             // 
@@ -625,6 +641,7 @@ namespace P3D_Scenario_Generator
             label30.Size = new Size(39, 15);
             label30.TabIndex = 30;
             label30.Text = "Offset";
+            toolTip1.SetToolTip(label30, resources.GetString("label30.ToolTip"));
             // 
             // label31
             // 
@@ -635,6 +652,7 @@ namespace P3D_Scenario_Generator
             label31.Size = new Size(63, 15);
             label31.TabIndex = 31;
             label31.Text = "Alignment";
+            toolTip1.SetToolTip(label31, "Default location of photo window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
             // 
             // label29
             // 
@@ -645,6 +663,7 @@ namespace P3D_Scenario_Generator
             label29.Size = new Size(97, 15);
             label29.TabIndex = 29;
             label29.Text = "Monitor Number";
+            toolTip1.SetToolTip(label29, "The default monitor that the photo window will display in. Experiment with values between 0 and the number of monitors minus 1.");
             // 
             // groupBox2
             // 
@@ -698,6 +717,7 @@ namespace P3D_Scenario_Generator
             label32.Size = new Size(39, 15);
             label32.TabIndex = 30;
             label32.Text = "Offset";
+            toolTip1.SetToolTip(label32, resources.GetString("label32.ToolTip"));
             // 
             // TextBoxPhotoTourMapOffset
             // 
@@ -707,7 +727,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapOffset.Name = "TextBoxPhotoTourMapOffset";
             TextBoxPhotoTourMapOffset.Size = new Size(100, 23);
             TextBoxPhotoTourMapOffset.TabIndex = 33;
-            TextBoxPhotoTourMapOffset.Tag = "20, whole";
+            TextBoxPhotoTourMapOffset.Tag = "20,whole";
             TextBoxPhotoTourMapOffset.Text = "20";
             TextBoxPhotoTourMapOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourMapOffset, resources.GetString("TextBoxPhotoTourMapOffset.ToolTip"));
@@ -722,6 +742,7 @@ namespace P3D_Scenario_Generator
             label33.Size = new Size(63, 15);
             label33.TabIndex = 31;
             label33.Text = "Alignment";
+            toolTip1.SetToolTip(label33, "Default location of map window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
             // 
             // TextBoxPhotoTourMapMonitorNumber
             // 
@@ -731,7 +752,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapMonitorNumber.Name = "TextBoxPhotoTourMapMonitorNumber";
             TextBoxPhotoTourMapMonitorNumber.Size = new Size(100, 23);
             TextBoxPhotoTourMapMonitorNumber.TabIndex = 32;
-            TextBoxPhotoTourMapMonitorNumber.Tag = "0, whole";
+            TextBoxPhotoTourMapMonitorNumber.Tag = "0,whole";
             TextBoxPhotoTourMapMonitorNumber.Text = "0";
             TextBoxPhotoTourMapMonitorNumber.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourMapMonitorNumber, "The default monitor that the map window will display in. Experiment with values between 0 and the number of monitors minus 1.");
@@ -746,6 +767,7 @@ namespace P3D_Scenario_Generator
             label34.Size = new Size(97, 15);
             label34.TabIndex = 29;
             label34.Text = "Monitor Number";
+            toolTip1.SetToolTip(label34, "The default monitor that the map window will display in. Experiment with values between 0 and the number of monitors minus 1.");
             // 
             // label35
             // 
@@ -756,6 +778,7 @@ namespace P3D_Scenario_Generator
             label35.Size = new Size(85, 15);
             label35.TabIndex = 35;
             label35.Text = "Monitor Width";
+            toolTip1.SetToolTip(label35, "Resolution width in pixels of the monitor that map window will display on. ");
             // 
             // label36
             // 
@@ -766,6 +789,7 @@ namespace P3D_Scenario_Generator
             label36.Size = new Size(89, 15);
             label36.TabIndex = 36;
             label36.Text = "Monitor Height";
+            toolTip1.SetToolTip(label36, "Resolution height in pixels of the monitor that map window will display on. ");
             // 
             // TextBoxPhotoTourMapMonitorWidth
             // 
@@ -775,10 +799,9 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapMonitorWidth.Name = "TextBoxPhotoTourMapMonitorWidth";
             TextBoxPhotoTourMapMonitorWidth.Size = new Size(100, 23);
             TextBoxPhotoTourMapMonitorWidth.TabIndex = 37;
-            TextBoxPhotoTourMapMonitorWidth.Tag = "1920, natural";
-            TextBoxPhotoTourMapMonitorWidth.Text = "1920";
+            TextBoxPhotoTourMapMonitorWidth.Tag = ",natural";
             TextBoxPhotoTourMapMonitorWidth.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourMapMonitorWidth, "Resolution width in pixels of the monitor that map window will display on. Only used when the horizontal offset is negative to calculate the required top lefthand corner position of map window.");
+            toolTip1.SetToolTip(TextBoxPhotoTourMapMonitorWidth, "Resolution width in pixels of the monitor that map window will display on. ");
             TextBoxPhotoTourMapMonitorWidth.Validating += TextBox_Validating;
             // 
             // TextBoxPhotoTourMapMonitorHeight
@@ -789,14 +812,14 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapMonitorHeight.Name = "TextBoxPhotoTourMapMonitorHeight";
             TextBoxPhotoTourMapMonitorHeight.Size = new Size(100, 23);
             TextBoxPhotoTourMapMonitorHeight.TabIndex = 38;
-            TextBoxPhotoTourMapMonitorHeight.Tag = "1080, natural";
-            TextBoxPhotoTourMapMonitorHeight.Text = "1080";
+            TextBoxPhotoTourMapMonitorHeight.Tag = ",natural";
             TextBoxPhotoTourMapMonitorHeight.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourMapMonitorHeight, "Resolution height in pixels of the monitor that map window will display on. Only used when the vertical offset is negative to calculate the required top lefthand corner position of map window.\r\n");
+            toolTip1.SetToolTip(TextBoxPhotoTourMapMonitorHeight, "Resolution height in pixels of the monitor that map window will display on. ");
             TextBoxPhotoTourMapMonitorHeight.Validating += TextBox_Validating;
             // 
             // ListBoxPhotoTourMapAlignment
             // 
+            ListBoxPhotoTourMapAlignment.AccessibleName = "Map Window Location: Alignment";
             ListBoxPhotoTourMapAlignment.Anchor = AnchorStyles.None;
             ListBoxPhotoTourMapAlignment.FormattingEnabled = true;
             ListBoxPhotoTourMapAlignment.ItemHeight = 15;
@@ -805,7 +828,70 @@ namespace P3D_Scenario_Generator
             ListBoxPhotoTourMapAlignment.Name = "ListBoxPhotoTourMapAlignment";
             ListBoxPhotoTourMapAlignment.Size = new Size(100, 19);
             ListBoxPhotoTourMapAlignment.TabIndex = 39;
+            ListBoxPhotoTourMapAlignment.Tag = "listBox";
             toolTip1.SetToolTip(ListBoxPhotoTourMapAlignment, "Default location of map window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            ListBoxPhotoTourMapAlignment.Validating += ListBox_Validating;
+            // 
+            // TextBoxSettingsCacheUsage
+            // 
+            TextBoxSettingsCacheUsage.AccessibleName = "Map Tile Cache Info: Cache Usage";
+            TextBoxSettingsCacheUsage.Anchor = AnchorStyles.None;
+            TextBoxSettingsCacheUsage.Enabled = false;
+            TextBoxSettingsCacheUsage.Location = new Point(139, 64);
+            TextBoxSettingsCacheUsage.Name = "TextBoxSettingsCacheUsage";
+            TextBoxSettingsCacheUsage.Size = new Size(100, 23);
+            TextBoxSettingsCacheUsage.TabIndex = 39;
+            TextBoxSettingsCacheUsage.Tag = "0, natural";
+            TextBoxSettingsCacheUsage.Text = "0";
+            TextBoxSettingsCacheUsage.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxSettingsCacheUsage, "Amount of memory used by cache.");
+            // 
+            // label41
+            // 
+            label41.Anchor = AnchorStyles.None;
+            label41.AutoSize = true;
+            label41.Location = new Point(18, 7);
+            label41.Name = "label41";
+            label41.Size = new Size(89, 15);
+            label41.TabIndex = 30;
+            label41.Text = "Server / API key";
+            toolTip1.SetToolTip(label41, "OSM tile server and API key if required, comma separated.");
+            // 
+            // label42
+            // 
+            label42.Anchor = AnchorStyles.None;
+            label42.AutoSize = true;
+            label42.Location = new Point(25, 68);
+            label42.Name = "label42";
+            label42.Size = new Size(75, 15);
+            label42.TabIndex = 31;
+            label42.Text = "Cache Usage";
+            toolTip1.SetToolTip(label42, "Amount of memory used by cache.");
+            // 
+            // TextBoxSettingsCacheDailyTotal
+            // 
+            TextBoxSettingsCacheDailyTotal.AccessibleName = "Map Tile Cache Info: Cache Daily Total";
+            TextBoxSettingsCacheDailyTotal.Anchor = AnchorStyles.None;
+            TextBoxSettingsCacheDailyTotal.Enabled = false;
+            TextBoxSettingsCacheDailyTotal.Location = new Point(139, 33);
+            TextBoxSettingsCacheDailyTotal.Name = "TextBoxSettingsCacheDailyTotal";
+            TextBoxSettingsCacheDailyTotal.Size = new Size(100, 23);
+            TextBoxSettingsCacheDailyTotal.TabIndex = 32;
+            TextBoxSettingsCacheDailyTotal.Tag = "0";
+            TextBoxSettingsCacheDailyTotal.Text = "0";
+            TextBoxSettingsCacheDailyTotal.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxSettingsCacheDailyTotal, "The total number of tiles retrieved so far today for the current server API key pair.");
+            // 
+            // label43
+            // 
+            label43.Anchor = AnchorStyles.None;
+            label43.AutoSize = true;
+            label43.Location = new Point(14, 37);
+            label43.Name = "label43";
+            label43.Size = new Size(97, 15);
+            label43.TabIndex = 29;
+            label43.Text = "Cache Daily Total";
+            toolTip1.SetToolTip(label43, "The total number of tiles retrieved so far today for the current server API key pair.");
             // 
             // TabPagePhotoTour
             // 
@@ -930,8 +1016,9 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageSettings
             // 
-            TabPageSettings.BackColor = Color.FromArgb(255, 192, 128);
-            TabPageSettings.Controls.Add(tableLayoutPanelSettings);
+            TabPageSettings.BackColor = Color.FromArgb(64, 64, 64);
+            TabPageSettings.Controls.Add(groupBox4);
+            TabPageSettings.Controls.Add(groupBox3);
             TabPageSettings.Location = new Point(4, 24);
             TabPageSettings.Name = "TabPageSettings";
             TabPageSettings.Padding = new Padding(3);
@@ -939,28 +1026,67 @@ namespace P3D_Scenario_Generator
             TabPageSettings.TabIndex = 5;
             TabPageSettings.Text = "Settings";
             // 
-            // tableLayoutPanelSettings
+            // groupBox3
             // 
-            tableLayoutPanelSettings.ColumnCount = 2;
-            tableLayoutPanelSettings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanelSettings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanelSettings.Controls.Add(TextBoxP3Dv5Files, 1, 0);
-            tableLayoutPanelSettings.Controls.Add(button1, 0, 0);
-            tableLayoutPanelSettings.Location = new Point(16, 16);
-            tableLayoutPanelSettings.Name = "tableLayoutPanelSettings";
-            tableLayoutPanelSettings.RowCount = 2;
-            tableLayoutPanelSettings.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanelSettings.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanelSettings.Size = new Size(760, 100);
-            tableLayoutPanelSettings.TabIndex = 0;
+            groupBox3.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox3.Controls.Add(TableLayoutPanelSettingsMapTileCacheInfo);
+            groupBox3.Location = new Point(19, 23);
+            groupBox3.Name = "groupBox3";
+            groupBox3.Size = new Size(286, 127);
+            groupBox3.TabIndex = 1;
+            groupBox3.TabStop = false;
+            groupBox3.Text = "Map Tile Cache Info";
+            toolTip1.SetToolTip(groupBox3, "Information pertaining to the caching of OSM tiles used with to create maps");
+            // 
+            // TableLayoutPanelSettingsMapTileCacheInfo
+            // 
+            TableLayoutPanelSettingsMapTileCacheInfo.AccessibleName = "";
+            TableLayoutPanelSettingsMapTileCacheInfo.Anchor = AnchorStyles.None;
+            TableLayoutPanelSettingsMapTileCacheInfo.ColumnCount = 2;
+            TableLayoutPanelSettingsMapTileCacheInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettingsMapTileCacheInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(ComboBoxSettingsCacheServers, 1, 0);
+            TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(label43, 0, 1);
+            TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(label42, 0, 2);
+            TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(label41, 0, 0);
+            TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(TextBoxSettingsCacheDailyTotal, 1, 1);
+            TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(TextBoxSettingsCacheUsage, 1, 2);
+            TableLayoutPanelSettingsMapTileCacheInfo.ImeMode = ImeMode.On;
+            TableLayoutPanelSettingsMapTileCacheInfo.Location = new Point(16, 22);
+            TableLayoutPanelSettingsMapTileCacheInfo.Name = "TableLayoutPanelSettingsMapTileCacheInfo";
+            TableLayoutPanelSettingsMapTileCacheInfo.RowCount = 3;
+            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TableLayoutPanelSettingsMapTileCacheInfo.Size = new Size(253, 92);
+            TableLayoutPanelSettingsMapTileCacheInfo.TabIndex = 36;
+            // 
+            // ComboBoxSettingsCacheServers
+            // 
+            ComboBoxSettingsCacheServers.AccessibleName = "Map Tile Cache Info: Server / API Key";
+            ComboBoxSettingsCacheServers.Anchor = AnchorStyles.None;
+            ComboBoxSettingsCacheServers.DropDownWidth = 640;
+            ComboBoxSettingsCacheServers.FormattingEnabled = true;
+            ComboBoxSettingsCacheServers.Items.AddRange(new object[] { "https://maptiles.p.rapidapi.com/en/map/v1/, ?rapidapi-key=d9de94c22emsh6dc07cd7103e683p12be01jsn7014f38e1975" });
+            ComboBoxSettingsCacheServers.Location = new Point(139, 3);
+            ComboBoxSettingsCacheServers.Name = "ComboBoxSettingsCacheServers";
+            ComboBoxSettingsCacheServers.Size = new Size(100, 23);
+            ComboBoxSettingsCacheServers.TabIndex = 41;
+            toolTip1.SetToolTip(ComboBoxSettingsCacheServers, "OSM tile server and API key if required, comma separated.");
+            ComboBoxSettingsCacheServers.SelectedIndexChanged += ComboBoxSettingsCacheServers_SelectedIndexChanged;
+            ComboBoxSettingsCacheServers.KeyDown += ComboBoxSettingsCacheServers_KeyDown;
             // 
             // TextBoxP3Dv5Files
             // 
+            TextBoxP3Dv5Files.Anchor = AnchorStyles.None;
             TextBoxP3Dv5Files.Enabled = false;
-            TextBoxP3Dv5Files.Location = new Point(383, 3);
+            TextBoxP3Dv5Files.Location = new Point(139, 4);
             TextBoxP3Dv5Files.Name = "TextBoxP3Dv5Files";
-            TextBoxP3Dv5Files.Size = new Size(302, 23);
+            TextBoxP3Dv5Files.Size = new Size(100, 23);
             TextBoxP3Dv5Files.TabIndex = 18;
+            toolTip1.SetToolTip(TextBoxP3Dv5Files, "Select the Prepar3D v5 Files location where scenario will be stored");
             // 
             // TabPageCelestial
             // 
@@ -1444,21 +1570,21 @@ namespace P3D_Scenario_Generator
             label2.TabIndex = 4;
             label2.Text = "Selected";
             // 
-            // TabControlPhotoTour
+            // TabControlP3DSG
             // 
-            TabControlPhotoTour.Controls.Add(TabPageMenu);
-            TabControlPhotoTour.Controls.Add(TabPageCircuit);
-            TabControlPhotoTour.Controls.Add(TabPagePhotoTour);
-            TabControlPhotoTour.Controls.Add(TabPageSign);
-            TabControlPhotoTour.Controls.Add(TabPageCelestial);
-            TabControlPhotoTour.Controls.Add(TabPageWikiList);
-            TabControlPhotoTour.Controls.Add(TabPageSettings);
-            TabControlPhotoTour.Location = new Point(12, 12);
-            TabControlPhotoTour.Name = "TabControlPhotoTour";
-            TabControlPhotoTour.SelectedIndex = 0;
-            TabControlPhotoTour.Size = new Size(820, 466);
-            TabControlPhotoTour.TabIndex = 0;
-            TabControlPhotoTour.SelectedIndexChanged += TabControl_SelectedIndexChanged;
+            TabControlP3DSG.Controls.Add(TabPageMenu);
+            TabControlP3DSG.Controls.Add(TabPageCircuit);
+            TabControlP3DSG.Controls.Add(TabPagePhotoTour);
+            TabControlP3DSG.Controls.Add(TabPageSign);
+            TabControlP3DSG.Controls.Add(TabPageCelestial);
+            TabControlP3DSG.Controls.Add(TabPageWikiList);
+            TabControlP3DSG.Controls.Add(TabPageSettings);
+            TabControlP3DSG.Location = new Point(12, 12);
+            TabControlP3DSG.Name = "TabControlP3DSG";
+            TabControlP3DSG.SelectedIndex = 0;
+            TabControlP3DSG.Size = new Size(820, 466);
+            TabControlP3DSG.TabIndex = 0;
+            TabControlP3DSG.SelectedIndexChanged += TabControl_SelectedIndexChanged;
             // 
             // TabPageWikiList
             // 
@@ -1601,6 +1727,36 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURL.TabIndex = 0;
             TextBoxWikiURL.TextChanged += TextBoxWikiURL_TextChanged;
             // 
+            // groupBox4
+            // 
+            groupBox4.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox4.Controls.Add(tableLayoutPanel1);
+            groupBox4.Location = new Point(19, 174);
+            groupBox4.Name = "groupBox4";
+            groupBox4.Size = new Size(286, 63);
+            groupBox4.TabIndex = 2;
+            groupBox4.TabStop = false;
+            groupBox4.Text = "Folder Info";
+            // 
+            // tableLayoutPanel1
+            // 
+            tableLayoutPanel1.AccessibleName = "";
+            tableLayoutPanel1.Anchor = AnchorStyles.None;
+            tableLayoutPanel1.ColumnCount = 2;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(TextBoxP3Dv5Files, 1, 0);
+            tableLayoutPanel1.Controls.Add(button1, 0, 0);
+            tableLayoutPanel1.ImeMode = ImeMode.On;
+            tableLayoutPanel1.Location = new Point(16, 22);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 1;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel1.Size = new Size(253, 32);
+            tableLayoutPanel1.TabIndex = 36;
+            // 
             // Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1609,7 +1765,7 @@ namespace P3D_Scenario_Generator
             ClientSize = new Size(844, 553);
             Controls.Add(ButtonHelp);
             Controls.Add(ButtonGenerateScenario);
-            Controls.Add(TabControlPhotoTour);
+            Controls.Add(TabControlP3DSG);
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             MinimizeBox = false;
@@ -1625,8 +1781,9 @@ namespace P3D_Scenario_Generator
             TabPagePhotoTour.ResumeLayout(false);
             TabPagePhotoTour.PerformLayout();
             TabPageSettings.ResumeLayout(false);
-            tableLayoutPanelSettings.ResumeLayout(false);
-            tableLayoutPanelSettings.PerformLayout();
+            groupBox3.ResumeLayout(false);
+            TableLayoutPanelSettingsMapTileCacheInfo.ResumeLayout(false);
+            TableLayoutPanelSettingsMapTileCacheInfo.PerformLayout();
             TabPageCelestial.ResumeLayout(false);
             TabPageCelestial.PerformLayout();
             TabPageSign.ResumeLayout(false);
@@ -1644,9 +1801,12 @@ namespace P3D_Scenario_Generator
             GroupBoxScenario.PerformLayout();
             GroupBoxRunway.ResumeLayout(false);
             GroupBoxRunway.PerformLayout();
-            TabControlPhotoTour.ResumeLayout(false);
+            TabControlP3DSG.ResumeLayout(false);
             TabPageWikiList.ResumeLayout(false);
             TabPageWikiList.PerformLayout();
+            groupBox4.ResumeLayout(false);
+            tableLayoutPanel1.ResumeLayout(false);
+            tableLayoutPanel1.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -1660,7 +1820,6 @@ namespace P3D_Scenario_Generator
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Button ButtonHelp;
         private TabPage TabPageSettings;
-        private TableLayoutPanel tableLayoutPanelSettings;
         internal TextBox TextBoxP3Dv5Files;
         private Button button1;
         private TabPage TabPageCelestial;
@@ -1739,7 +1898,7 @@ namespace P3D_Scenario_Generator
         internal TextBox TextBoxSelectedRunway;
         private TextBox TextBoxSearchRunway;
         private Label label2;
-        private TabControl TabControlPhotoTour;
+        private TabControl TabControlP3DSG;
         private TabPage TabPageWikiList;
         private Label LabelWikiURL;
         internal TextBox TextBoxWikiURL;
@@ -1781,6 +1940,16 @@ namespace P3D_Scenario_Generator
         internal TextBox TextBoxPhotoTourPhotoMonitorWidth;
         internal ListBox ListBoxPhotoTourMapAlignment;
         internal ListBox ListBoxPhotoTourPhotoAlignment;
+        private GroupBox groupBox3;
+        private TableLayoutPanel TableLayoutPanelSettingsMapTileCacheInfo;
+        internal TextBox TextBoxSettingsCacheUsage;
+        private Label label41;
+        private Label label42;
+        internal TextBox TextBoxSettingsCacheDailyTotal;
+        private Label label43;
+        internal ComboBox ComboBoxSettingsCacheServers;
+        private GroupBox groupBox4;
+        private TableLayoutPanel tableLayoutPanel1;
     }
 }
 

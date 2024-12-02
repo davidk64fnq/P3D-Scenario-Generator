@@ -15,13 +15,20 @@ namespace P3D_Scenario_Generator
             }
             catch
             {
-                string errorMessage = "Encountered issues obtaining web doc, try generating a new scenario";
+                string errorMessage = $"Encountered issues obtaining web document for the URL \"{url}\"";
                 MessageBox.Show(errorMessage, "Web document download", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             return htmlDoc;
         }
 
         internal static void GetWebDoc(string url, string saveFile)
+        {
+            HtmlAgilityPack.HtmlDocument htmlDoc = GetWebDoc(url);
+            using FileStream newfs = new(saveFile, FileMode.Create);
+            htmlDoc.Save(newfs, htmlDoc.Encoding);
+        }
+
+        internal static void GetWebImage(string url, string saveFile)
         {
             try
             {
@@ -33,28 +40,15 @@ namespace P3D_Scenario_Generator
             }
             catch
             {
-                string errorMessage = "Encountered issues obtaining web doc, try generating a new scenario";
-                MessageBox.Show(errorMessage, "Web document download", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                string errorMessage = $"Encountered issues obtaining web image for the URL \"{url}\"";
+                MessageBox.Show(errorMessage, "Web image download", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
         internal static string GetWebString(string url)
         {
-            try
-            {
-#pragma warning disable SYSLIB0014
-                WebClient webClient = new();
-                string webString = webClient.DownloadString(url);
-                webClient.Dispose();
-                return webString;
-#pragma warning restore SYSLIB0014
-            }
-            catch
-            {
-                string errorMessage = "Encountered issues obtaining web string, try generating a new scenario";
-                MessageBox.Show(errorMessage, "Web string download", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return string.Empty;
-            }
+            HtmlAgilityPack.HtmlDocument htmlDoc = GetWebDoc(url);
+            return $"{htmlDoc}";
         }
 
 

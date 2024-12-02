@@ -9,8 +9,6 @@ namespace P3D_Scenario_Generator
         // General tab
         internal static string SelectedAirportICAO { get; set; }
         internal static string SelectedAirportID { get; set; }
-        internal static string ScenarioTitle { get; private set; }
-        internal static string ScenarioFolder { get; private set; }
         internal static string ImageFolder { get; private set; }
         internal static string SelectedAircraft { get; private set; }
         internal static string SelectedScenario { get; private set; }
@@ -105,6 +103,14 @@ namespace P3D_Scenario_Generator
         internal static double CelestialImageSouth { get; set; }
         internal static double CelestialImageWest { get; set; }
 
+        // Settings
+        internal static string ScenarioTitle { get; private set; }
+        internal static string ScenarioFolder { get; private set; }
+        internal static string SettingsCacheServerURL { get; set; }
+        internal static string SettingsCacheServerAPIkey { get; set; }
+        internal static string SettingsCacheUsage { get; set; }
+        internal static int SettingsCacheDailyTotal { get; set; }
+
         static private bool IsValidFilename(string fileName)
         {
             return !string.IsNullOrEmpty(fileName) &&
@@ -174,12 +180,12 @@ namespace P3D_Scenario_Generator
             PhotoTourPhotoMonitorWidth = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorWidth.Text);
             PhotoTourPhotoMonitorHeight = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorHeight.Text);
             PhotoTourPhotoOffset = Convert.ToInt32(form.TextBoxPhotoTourPhotoOffset.Text);
-            PhotoTourPhotoAlignment = form.ListBoxPhotoTourPhotoAlignment.Text;
+            PhotoTourPhotoAlignment = form.ListBoxPhotoTourPhotoAlignment.GetItemText(form.ListBoxPhotoTourPhotoAlignment.SelectedItem);
             PhotoTourMapMonitorNumber = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorNumber.Text);
             PhotoTourMapMonitorWidth = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorWidth.Text);
             PhotoTourMapMonitorHeight = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorHeight.Text);
             PhotoTourMapOffset = Convert.ToInt32(form.TextBoxPhotoTourMapOffset.Text);
-            PhotoTourMapAlignment = form.ListBoxPhotoTourMapAlignment.Text;
+            PhotoTourMapAlignment = form.ListBoxPhotoTourMapAlignment.GetItemText(form.ListBoxPhotoTourMapAlignment.SelectedItem);
 
             // Sign Writing
             Message = form.TextBoxSignMessage.Text;
@@ -202,6 +208,16 @@ namespace P3D_Scenario_Generator
                 };
             }
 
+            // Settings
+            ScenarioTitle = form.TextBoxScenarioTitle.Text;
+            ScenarioFolder = $"{form.TextBoxP3Dv5Files.Text}\\{form.TextBoxScenarioTitle.Text}";
+            ImageFolder = $"{ScenarioFolder}\\images";
+            SettingsCacheServerURL = form.ComboBoxSettingsCacheServers.Text.Split(',')[0].Trim();
+            if (form.ComboBoxSettingsCacheServers.Text.Split(',').Length > 1)
+                SettingsCacheServerAPIkey = form.ComboBoxSettingsCacheServers.Text.Split(',')[1].Trim();
+            SettingsCacheUsage = form.TextBoxSettingsCacheUsage.Text;
+            SettingsCacheDailyTotal = Convert.ToInt32(form.TextBoxSettingsCacheDailyTotal.Text);
+
             if (errorMsg != "")
             {
                 MessageBox.Show($"Please attend to the following:\n{errorMsg}", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -209,14 +225,10 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                ScenarioTitle = form.TextBoxScenarioTitle.Text;
-                ScenarioFolder = $"{form.TextBoxP3Dv5Files.Text}\\{form.TextBoxScenarioTitle.Text}";
                 Directory.CreateDirectory(ScenarioFolder);
-                ImageFolder = $"{ScenarioFolder}\\images";
                 Directory.CreateDirectory(ImageFolder);
                 return true;
             }
-
         }
 
         static private bool ValidateScenarioTitle()

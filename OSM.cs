@@ -283,8 +283,8 @@ namespace P3D_Scenario_Generator
 
         static internal void DownloadOSMtile(int xTileNo, int yTileNo, int zoom, string filename)
         {
-            string url = $"{Con.tileServer}{zoom}/{xTileNo}/{yTileNo}.png{Con.rapidApiKey}";
-            Cache.GetOrCopyWebDoc($"{zoom}-{xTileNo}-{yTileNo}.png", url, $"{Parameters.ImageFolder}\\{filename}");
+            string url = $"{Parameters.SettingsCacheServerURL}{zoom}/{xTileNo}/{yTileNo}.png{Parameters.SettingsCacheServerAPIkey}";
+            Cache.GetOrCopyOSMtile($"{zoom}-{xTileNo}-{yTileNo}.png", url, $"{Parameters.ImageFolder}\\{filename}");
         }
 
         static internal void DownloadOSMtileColumn(int xTileNo, int xIndex, BoundingBox boundingBox, int zoom, string filename)

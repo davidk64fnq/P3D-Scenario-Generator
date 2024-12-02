@@ -475,7 +475,7 @@ namespace P3D_Scenario_Generator
         {
             for (int index = 1; index < PhotoLocations.Count - 1; index++)
             {
-                HttpRoutines.GetWebDoc(PhotoLocations[index].photoURL, $"{Parameters.ImageFolder}\\photo_{index:00}.jpg");
+                HttpRoutines.GetWebImage(PhotoLocations[index].photoURL, $"{Parameters.ImageFolder}\\photo_{index:00}.jpg");
 
                 // Load the photo in order to access its width and height
                 string bitmapFilename = $"{Parameters.ImageFolder}\\photo_{index:00}.jpg";
@@ -509,6 +509,21 @@ namespace P3D_Scenario_Generator
                     Drawing.Resize($"{Parameters.ImageFolder}\\photo_{index:00}.jpg", 0, newSize);
                 }
             }
+        }
+
+        static internal void SaveSettings()
+        {
+            Properties.Settings.Default.TextBoxPhotoTourMapMonitorNumber = Parameters.PhotoTourMapMonitorNumber;
+            Properties.Settings.Default.TextBoxPhotoTourMapOffset = Parameters.PhotoTourMapOffset;
+            Properties.Settings.Default.ListBoxPhotoTourMapAlignment = Parameters.PhotoTourMapAlignment;
+            Properties.Settings.Default.TextBoxPhotoTourMapMonitorWidth = Parameters.PhotoTourMapMonitorWidth;
+            Properties.Settings.Default.TextBoxPhotoTourMapMonitorHeight = Parameters.PhotoTourMapMonitorHeight;
+            Properties.Settings.Default.TextBoxPhotoTourPhotoMonitorNumber = Parameters.PhotoTourPhotoMonitorNumber;
+            Properties.Settings.Default.TextBoxPhotoTourPhotoOffset = Parameters.PhotoTourPhotoOffset;
+            Properties.Settings.Default.ListBoxPhotoTourPhotoAlignment = Parameters.PhotoTourPhotoAlignment;
+            Properties.Settings.Default.TextBoxPhotoTourPhotoMonitorWidth = Parameters.PhotoTourPhotoMonitorWidth;
+            Properties.Settings.Default.TextBoxPhotoTourPhotoMonitorHeight = Parameters.PhotoTourPhotoMonitorHeight;
+            Properties.Settings.Default.Save();
         }
     }
 }

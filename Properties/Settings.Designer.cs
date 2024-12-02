@@ -12,7 +12,7 @@ namespace P3D_Scenario_Generator.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.11.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.12.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -25,19 +25,19 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Users\\david\\OneDrive\\Documents\\Prepar3D v5 Files")]
-        public string Prepar3Dv5Files {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSettingsPrepar3Dv5Files {
             get {
-                return ((string)(this["Prepar3Dv5Files"]));
+                return ((string)(this["TextBoxSettingsPrepar3Dv5Files"]));
             }
             set {
-                this["Prepar3Dv5Files"] = value;
+                this["TextBoxSettingsPrepar3Dv5Files"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Piper Cub")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string SelectedAircraft {
             get {
                 return ((string)(this["SelectedAircraft"]));
@@ -49,7 +49,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("thumbnail.jpg")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string AircraftImage {
             get {
                 return ((string)(this["AircraftImage"]));
@@ -61,7 +61,6 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("63")]
         public double CruiseSpeed {
             get {
                 return ((double)(this["CruiseSpeed"]));
@@ -73,25 +72,160 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("9-2024")]
-        public string CacheMonth {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSettingsCacheDate {
             get {
-                return ((string)(this["CacheMonth"]));
+                return ((string)(this["TextBoxSettingsCacheDate"]));
             }
             set {
-                this["CacheMonth"] = value;
+                this["TextBoxSettingsCacheDate"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("464")]
-        public int CacheMonthlyTotal {
+        public int TextBoxSettingsCacheDailyTotal {
             get {
-                return ((int)(this["CacheMonthlyTotal"]));
+                return ((int)(this["TextBoxSettingsCacheDailyTotal"]));
             }
             set {
-                this["CacheMonthlyTotal"] = value;
+                this["TextBoxSettingsCacheDailyTotal"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public int TextBoxPhotoTourMapMonitorNumber {
+            get {
+                return ((int)(this["TextBoxPhotoTourMapMonitorNumber"]));
+            }
+            set {
+                this["TextBoxPhotoTourMapMonitorNumber"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public int TextBoxPhotoTourMapOffset {
+            get {
+                return ((int)(this["TextBoxPhotoTourMapOffset"]));
+            }
+            set {
+                this["TextBoxPhotoTourMapOffset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ListBoxPhotoTourMapAlignment {
+            get {
+                return ((string)(this["ListBoxPhotoTourMapAlignment"]));
+            }
+            set {
+                this["ListBoxPhotoTourMapAlignment"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public int TextBoxPhotoTourMapMonitorWidth {
+            get {
+                return ((int)(this["TextBoxPhotoTourMapMonitorWidth"]));
+            }
+            set {
+                this["TextBoxPhotoTourMapMonitorWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public int TextBoxPhotoTourMapMonitorHeight {
+            get {
+                return ((int)(this["TextBoxPhotoTourMapMonitorHeight"]));
+            }
+            set {
+                this["TextBoxPhotoTourMapMonitorHeight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public int TextBoxPhotoTourPhotoMonitorNumber {
+            get {
+                return ((int)(this["TextBoxPhotoTourPhotoMonitorNumber"]));
+            }
+            set {
+                this["TextBoxPhotoTourPhotoMonitorNumber"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public int TextBoxPhotoTourPhotoOffset {
+            get {
+                return ((int)(this["TextBoxPhotoTourPhotoOffset"]));
+            }
+            set {
+                this["TextBoxPhotoTourPhotoOffset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ListBoxPhotoTourPhotoAlignment {
+            get {
+                return ((string)(this["ListBoxPhotoTourPhotoAlignment"]));
+            }
+            set {
+                this["ListBoxPhotoTourPhotoAlignment"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public int TextBoxPhotoTourPhotoMonitorWidth {
+            get {
+                return ((int)(this["TextBoxPhotoTourPhotoMonitorWidth"]));
+            }
+            set {
+                this["TextBoxPhotoTourPhotoMonitorWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public int TextBoxPhotoTourPhotoMonitorHeight {
+            get {
+                return ((int)(this["TextBoxPhotoTourPhotoMonitorHeight"]));
+            }
+            set {
+                this["TextBoxPhotoTourPhotoMonitorHeight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ComboBoxSettingsCacheServers {
+            get {
+                return ((string)(this["ComboBoxSettingsCacheServers"]));
+            }
+            set {
+                this["ComboBoxSettingsCacheServers"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxSettingsCacheUsage {
+            get {
+                return ((string)(this["TextBoxSettingsCacheUsage"]));
+            }
+            set {
+                this["TextBoxSettingsCacheUsage"] = value;
             }
         }
     }

@@ -2,23 +2,59 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="P3D_Scenario_Generator.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="Prepar3Dv5Files" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\Users\david\OneDrive\Documents\Prepar3D v5 Files</Value>
+    <Setting Name="TextBoxSettingsPrepar3Dv5Files" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="SelectedAircraft" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Piper Cub</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="AircraftImage" Type="System.String" Scope="User">
-      <Value Profile="(Default)">thumbnail.jpg</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="CruiseSpeed" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">63</Value>
+      <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="CacheMonth" Type="System.String" Scope="User">
-      <Value Profile="(Default)">9-2024</Value>
+    <Setting Name="TextBoxSettingsCacheDate" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="CacheMonthlyTotal" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">464</Value>
+    <Setting Name="TextBoxSettingsCacheDailyTotal" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourMapMonitorNumber" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourMapOffset" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ListBoxPhotoTourMapAlignment" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourMapMonitorWidth" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourMapMonitorHeight" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourPhotoMonitorNumber" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourPhotoOffset" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ListBoxPhotoTourPhotoAlignment" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourPhotoMonitorWidth" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourPhotoMonitorHeight" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ComboBoxSettingsCacheServers" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxSettingsCacheUsage" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -81,15 +81,9 @@ namespace P3D_Scenario_Generator
             DateTime startDate = new(Parameters.Year, Parameters.Month, Parameters.Day, Parameters.Hour, Parameters.Minute, Parameters.Second, DateTimeKind.Local);
             startDate = startDate.AddDays(-1);
             url = $"http://www.tecepe.com.br/scripts/AlmanacPagesISAPI.dll/pages?date={startDate.Month}%2F{startDate.Day}%2F{startDate.Year}";
+            almanacData = HttpRoutines.GetWebString(url);
 
-            try
-            {
-                almanacData = HttpRoutines.GetWebString(url);
-            }
-            catch
-            {
-                MessageBox.Show("Encountered issues obtaining almanac data", "Almanac data download", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            // handle return from getwebstring of ""
 
             string ariesGHAdata = almanacData[almanacData.IndexOf("G.M.T")..];
             string[] hours = ariesGHAdata.Split("\n");

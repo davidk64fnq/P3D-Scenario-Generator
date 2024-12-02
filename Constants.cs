@@ -81,19 +81,9 @@ namespace P3D_Scenario_Generator
         public static readonly int maxZoomLevel = 18;
 
         /// <summary>
-        /// Developers access key to OSM tile server
-        /// </summary>
-        public static readonly string rapidApiKey = "?rapidapi-key=d9de94c22emsh6dc07cd7103e683p12be01jsn7014f38e1975";
-
-        /// <summary>
         /// The moving map and overview images used in various scenarios has a fixed square size of twice the <see cref="tileSize"/>
         /// </summary>
         public static readonly int tileFactor = 2;
-
-        /// <summary>
-        /// Tile server for OSM tiles
-        /// </summary>
-        public static readonly string tileServer = "https://maptiles.p.rapidapi.com/en/map/v1/";
 
         /// <summary>
         /// All OSM tiles used in this program are 256x256 pixels
