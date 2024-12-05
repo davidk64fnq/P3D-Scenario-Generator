@@ -26,18 +26,6 @@ namespace P3D_Scenario_Generator.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string TextBoxSettingsPrepar3Dv5Files {
-            get {
-                return ((string)(this["TextBoxSettingsPrepar3Dv5Files"]));
-            }
-            set {
-                this["TextBoxSettingsPrepar3Dv5Files"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string SelectedAircraft {
             get {
                 return ((string)(this["SelectedAircraft"]));
@@ -84,9 +72,10 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public int TextBoxSettingsCacheDailyTotal {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSettingsCacheDailyTotal {
             get {
-                return ((int)(this["TextBoxSettingsCacheDailyTotal"]));
+                return ((string)(this["TextBoxSettingsCacheDailyTotal"]));
             }
             set {
                 this["TextBoxSettingsCacheDailyTotal"] = value;
@@ -95,9 +84,10 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public int TextBoxPhotoTourMapMonitorNumber {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourMapMonitorNumber {
             get {
-                return ((int)(this["TextBoxPhotoTourMapMonitorNumber"]));
+                return ((string)(this["TextBoxPhotoTourMapMonitorNumber"]));
             }
             set {
                 this["TextBoxPhotoTourMapMonitorNumber"] = value;
@@ -106,9 +96,10 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public int TextBoxPhotoTourMapOffset {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourMapOffset {
             get {
-                return ((int)(this["TextBoxPhotoTourMapOffset"]));
+                return ((string)(this["TextBoxPhotoTourMapOffset"]));
             }
             set {
                 this["TextBoxPhotoTourMapOffset"] = value;
@@ -118,20 +109,9 @@ namespace P3D_Scenario_Generator.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ListBoxPhotoTourMapAlignment {
+        public string TextBoxPhotoTourMapMonitorWidth {
             get {
-                return ((string)(this["ListBoxPhotoTourMapAlignment"]));
-            }
-            set {
-                this["ListBoxPhotoTourMapAlignment"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public int TextBoxPhotoTourMapMonitorWidth {
-            get {
-                return ((int)(this["TextBoxPhotoTourMapMonitorWidth"]));
+                return ((string)(this["TextBoxPhotoTourMapMonitorWidth"]));
             }
             set {
                 this["TextBoxPhotoTourMapMonitorWidth"] = value;
@@ -140,9 +120,10 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public int TextBoxPhotoTourMapMonitorHeight {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourMapMonitorHeight {
             get {
-                return ((int)(this["TextBoxPhotoTourMapMonitorHeight"]));
+                return ((string)(this["TextBoxPhotoTourMapMonitorHeight"]));
             }
             set {
                 this["TextBoxPhotoTourMapMonitorHeight"] = value;
@@ -151,9 +132,10 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public int TextBoxPhotoTourPhotoMonitorNumber {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourPhotoMonitorNumber {
             get {
-                return ((int)(this["TextBoxPhotoTourPhotoMonitorNumber"]));
+                return ((string)(this["TextBoxPhotoTourPhotoMonitorNumber"]));
             }
             set {
                 this["TextBoxPhotoTourPhotoMonitorNumber"] = value;
@@ -162,9 +144,10 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public int TextBoxPhotoTourPhotoOffset {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourPhotoOffset {
             get {
-                return ((int)(this["TextBoxPhotoTourPhotoOffset"]));
+                return ((string)(this["TextBoxPhotoTourPhotoOffset"]));
             }
             set {
                 this["TextBoxPhotoTourPhotoOffset"] = value;
@@ -174,20 +157,9 @@ namespace P3D_Scenario_Generator.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ListBoxPhotoTourPhotoAlignment {
+        public string TextBoxPhotoTourPhotoMonitorWidth {
             get {
-                return ((string)(this["ListBoxPhotoTourPhotoAlignment"]));
-            }
-            set {
-                this["ListBoxPhotoTourPhotoAlignment"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public int TextBoxPhotoTourPhotoMonitorWidth {
-            get {
-                return ((int)(this["TextBoxPhotoTourPhotoMonitorWidth"]));
+                return ((string)(this["TextBoxPhotoTourPhotoMonitorWidth"]));
             }
             set {
                 this["TextBoxPhotoTourPhotoMonitorWidth"] = value;
@@ -196,9 +168,10 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public int TextBoxPhotoTourPhotoMonitorHeight {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourPhotoMonitorHeight {
             get {
-                return ((int)(this["TextBoxPhotoTourPhotoMonitorHeight"]));
+                return ((string)(this["TextBoxPhotoTourPhotoMonitorHeight"]));
             }
             set {
                 this["TextBoxPhotoTourPhotoMonitorHeight"] = value;
@@ -207,10 +180,9 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ComboBoxSettingsCacheServers {
+        public global::System.Collections.Specialized.StringCollection ComboBoxSettingsCacheServers {
             get {
-                return ((string)(this["ComboBoxSettingsCacheServers"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxSettingsCacheServers"]));
             }
             set {
                 this["ComboBoxSettingsCacheServers"] = value;
@@ -219,13 +191,189 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string TextBoxSettingsCacheUsage {
             get {
                 return ((string)(this["TextBoxSettingsCacheUsage"]));
             }
             set {
                 this["TextBoxSettingsCacheUsage"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxSettingsScenarioFolder {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxSettingsScenarioFolder"]));
+            }
+            set {
+                this["ComboBoxSettingsScenarioFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxSettingsCacheServersSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxSettingsCacheServersSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxSettingsCacheServersSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxSettingsScenarioFolderSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxSettingsScenarioFolderSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxSettingsScenarioFolderSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxPhotoTourPhotoAlignmentSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxPhotoTourPhotoAlignmentSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxPhotoTourPhotoAlignmentSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxPhotoTourMapAlignmentSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxPhotoTourMapAlignmentSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxPhotoTourMapAlignmentSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxPhotoTourMapWindowSizeSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxPhotoTourMapWindowSizeSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxPhotoTourMapWindowSizeSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourMapHotspotRadius {
+            get {
+                return ((string)(this["TextBoxPhotoTourMapHotspotRadius"]));
+            }
+            set {
+                this["TextBoxPhotoTourMapHotspotRadius"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourConstraintsMinLegDist {
+            get {
+                return ((string)(this["TextBoxPhotoTourConstraintsMinLegDist"]));
+            }
+            set {
+                this["TextBoxPhotoTourConstraintsMinLegDist"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourConstraintsMaxLegDist {
+            get {
+                return ((string)(this["TextBoxPhotoTourConstraintsMaxLegDist"]));
+            }
+            set {
+                this["TextBoxPhotoTourConstraintsMaxLegDist"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourConstraintsMinNoLegs {
+            get {
+                return ((string)(this["TextBoxPhotoTourConstraintsMinNoLegs"]));
+            }
+            set {
+                this["TextBoxPhotoTourConstraintsMinNoLegs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourConstraintsMaxNoLegs {
+            get {
+                return ((string)(this["TextBoxPhotoTourConstraintsMaxNoLegs"]));
+            }
+            set {
+                this["TextBoxPhotoTourConstraintsMaxNoLegs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxPhotoTourConstraintsMaxBearingChange {
+            get {
+                return ((string)(this["TextBoxPhotoTourConstraintsMaxBearingChange"]));
+            }
+            set {
+                this["TextBoxPhotoTourConstraintsMaxBearingChange"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxPhotoTourMapAlignment {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxPhotoTourMapAlignment"]));
+            }
+            set {
+                this["ComboBoxPhotoTourMapAlignment"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxPhotoTourMapWindowSize {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxPhotoTourMapWindowSize"]));
+            }
+            set {
+                this["ComboBoxPhotoTourMapWindowSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxPhotoTourPhotoAlignment {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxPhotoTourPhotoAlignment"]));
+            }
+            set {
+                this["ComboBoxPhotoTourPhotoAlignment"] = value;
             }
         }
     }

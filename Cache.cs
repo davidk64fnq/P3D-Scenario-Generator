@@ -18,7 +18,8 @@ namespace P3D_Scenario_Generator
             {
                 HttpRoutines.GetWebImage(url, saveFile);
                 if (File.Exists(saveFile)) {
-                    Properties.Settings.Default.TextBoxSettingsCacheDailyTotal += 1;
+                    int currentTotal = Convert.ToInt32(Properties.Settings.Default.TextBoxSettingsCacheDailyTotal);
+                    Properties.Settings.Default.TextBoxSettingsCacheDailyTotal = (currentTotal + 1).ToString();
                     Properties.Settings.Default.Save();
                     File.Copy(saveFile, cachePath, true);
                 }
@@ -62,7 +63,7 @@ namespace P3D_Scenario_Generator
             if (Properties.Settings.Default.TextBoxSettingsCacheDate != curCacheDate)
             {
                 Properties.Settings.Default.TextBoxSettingsCacheDate = curCacheDate;
-                Properties.Settings.Default.TextBoxSettingsCacheDailyTotal = 0;
+                Properties.Settings.Default.TextBoxSettingsCacheDailyTotal = "0";
                 Properties.Settings.Default.Save();
             }
             string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

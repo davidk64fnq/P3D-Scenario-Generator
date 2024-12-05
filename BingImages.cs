@@ -21,7 +21,7 @@ namespace P3D_Scenario_Generator
             for (int index = 0; index < urlZoom.Length; index++)
             {
                 url = $"{urlBingBase}Aerial/{Runway.destRwy.AirportLat},{Runway.destRwy.AirportLon}/{urlZoom[index]}?mapSize={urlMapSize[index]}{urlKey}";
-            //    HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.ScenarioFolder), $"images\\{urlFilename[index]}");
+            //    HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SettingsScenarioFolder), $"images\\{urlFilename[index]}");
             }
 
             // Create completion and exit images
@@ -78,7 +78,7 @@ namespace P3D_Scenario_Generator
             // Step back one zoom level
             zoomLevel -= 1;
             url = $"{urlBingBase}Road/{CelestialNav.destinationLat},{CelestialNav.destinationLon}/{zoomLevel}?mapSize=960,540{pushpins}{urlKey}";
-         //   HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.ScenarioFolder), "images\\plotImage.jpg");
+         //   HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SettingsScenarioFolder), "images\\plotImage.jpg");
 
             // Get meta data
             GetBingMetadata(url, celestialImage);
@@ -91,7 +91,7 @@ namespace P3D_Scenario_Generator
         private static void GetBingMetadata(string url, PhotoLocParams curPhoto)
         {
             url += "&mapMetadata=1&o=xml";
-         //   HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.ScenarioFolder), "images\\temp.xml");
+         //   HttpRoutines.GetWebDoc(url, Path.GetDirectoryName(Parameters.SettingsScenarioFolder), "images\\temp.xml");
             XmlDocument doc = new();
             doc.Load($"{Parameters.ImageFolder}\\temp.xml");
             string xml = doc.OuterXml;

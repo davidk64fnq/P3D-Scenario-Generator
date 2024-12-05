@@ -2,9 +2,6 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="P3D_Scenario_Generator.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="TextBoxSettingsPrepar3Dv5Files" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="SelectedAircraft" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
@@ -17,44 +14,83 @@
     <Setting Name="TextBoxSettingsCacheDate" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="TextBoxSettingsCacheDailyTotal" Type="System.Int32" Scope="User">
+    <Setting Name="TextBoxSettingsCacheDailyTotal" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="TextBoxPhotoTourMapMonitorNumber" Type="System.Int32" Scope="User">
+    <Setting Name="TextBoxPhotoTourMapMonitorNumber" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="TextBoxPhotoTourMapOffset" Type="System.Int32" Scope="User">
+    <Setting Name="TextBoxPhotoTourMapOffset" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ListBoxPhotoTourMapAlignment" Type="System.String" Scope="User">
+    <Setting Name="TextBoxPhotoTourMapMonitorWidth" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="TextBoxPhotoTourMapMonitorWidth" Type="System.Int32" Scope="User">
+    <Setting Name="TextBoxPhotoTourMapMonitorHeight" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="TextBoxPhotoTourMapMonitorHeight" Type="System.Int32" Scope="User">
+    <Setting Name="TextBoxPhotoTourPhotoMonitorNumber" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="TextBoxPhotoTourPhotoMonitorNumber" Type="System.Int32" Scope="User">
+    <Setting Name="TextBoxPhotoTourPhotoOffset" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="TextBoxPhotoTourPhotoOffset" Type="System.Int32" Scope="User">
+    <Setting Name="TextBoxPhotoTourPhotoMonitorWidth" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ListBoxPhotoTourPhotoAlignment" Type="System.String" Scope="User">
+    <Setting Name="TextBoxPhotoTourPhotoMonitorHeight" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="TextBoxPhotoTourPhotoMonitorWidth" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="TextBoxPhotoTourPhotoMonitorHeight" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="ComboBoxSettingsCacheServers" Type="System.String" Scope="User">
+    <Setting Name="ComboBoxSettingsCacheServers" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="TextBoxSettingsCacheUsage" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ComboBoxSettingsScenarioFolder" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ComboBoxSettingsCacheServersSelectedIndex" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="ComboBoxSettingsScenarioFolderSelectedIndex" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="ComboBoxPhotoTourPhotoAlignmentSelectedIndex" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="ComboBoxPhotoTourMapAlignmentSelectedIndex" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="ComboBoxPhotoTourMapWindowSizeSelectedIndex" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="TextBoxPhotoTourMapHotspotRadius" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourConstraintsMinLegDist" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourConstraintsMaxLegDist" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourConstraintsMinNoLegs" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourConstraintsMaxNoLegs" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TextBoxPhotoTourConstraintsMaxBearingChange" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ComboBoxPhotoTourMapAlignment" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ComboBoxPhotoTourMapWindowSize" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ComboBoxPhotoTourPhotoAlignment" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

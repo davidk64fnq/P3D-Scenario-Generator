@@ -34,7 +34,7 @@ namespace P3D_Scenario_Generator
 			// Main section
 			int sectionIndex = fs.Section.FindIndex(s => s.Name == "Main");
 			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Title");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.ScenarioTitle}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.GeneralScenarioTitle}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Description");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Con.appTitle} - {Parameters.SelectedScenario}";
 
@@ -76,7 +76,7 @@ namespace P3D_Scenario_Generator
 			// ObjectFile section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "ObjectFile");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "File");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.ScenarioTitle}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.GeneralScenarioTitle}";
 
 			if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
             {
@@ -169,11 +169,11 @@ namespace P3D_Scenario_Generator
         {
 			XmlSerializer xmlSerializer = new(simBaseDocument.GetType());
 
-            using StreamWriter writer = new($"{Parameters.ScenarioFolder}\\{Parameters.ScenarioTitle}.fxml");
+            using StreamWriter writer = new($"{Parameters.SettingsScenarioFolder}\\{Parameters.GeneralScenarioTitle}.fxml");
             xmlSerializer.Serialize(writer, simBaseDocument);
 			writer.Close();
 
-            ScenarioXML.RemoveXMLNSattributes($"{Parameters.ScenarioFolder}\\{Parameters.ScenarioTitle}.fxml");
+            ScenarioXML.RemoveXMLNSattributes($"{Parameters.SettingsScenarioFolder}\\{Parameters.GeneralScenarioTitle}.fxml");
         }
 
 	}

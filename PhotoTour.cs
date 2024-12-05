@@ -223,14 +223,14 @@ namespace P3D_Scenario_Generator
                 // Try to find a random photo location with nearby airport in required range
                 bool legAdded = SetFirstLeg();
 
-                // Try to add more photos up to Parameters.MaxNoLegs in total 
-                while (legAdded && PhotoLocations.Count < Parameters.MaxNoLegs)
+                // Try to add more photos up to Parameters.PhotoTourConstraintsMaxNoLegs in total 
+                while (legAdded && PhotoLocations.Count < Parameters.PhotoTourConstraintsMaxNoLegs)
                 {
                     legAdded = SetNextLeg();
                 }
 
                 // If candidate route has enough legs try to locate a destination airport
-                if (PhotoLocations.Count >= Parameters.MinNoLegs)
+                if (PhotoLocations.Count >= Parameters.PhotoTourConstraintsMinNoLegs)
                 {
                     continueSearching = SetLastLeg();
                 }
@@ -254,11 +254,9 @@ namespace P3D_Scenario_Generator
             // Get starting random photo page
             HttpRoutines.GetWebDoc("https://www.pic2map.com/random.php", saveLocation);
             photoLocation = ExtractPhotoParams(saveLocation);
-            if (!photoLocation.location.Contains(Parameters.PhotoLocation))
-                return false;
 
             // Find nearby airport to starting random photo
-            airportLocation = GetNearbyAirport(photoLocation.latitude, photoLocation.longitude, Parameters.MinLegDist, Parameters.MaxLegDist);
+            airportLocation = GetNearbyAirport(photoLocation.latitude, photoLocation.longitude, Parameters.PhotoTourConstraintsMinLegDist, Parameters.PhotoTourConstraintsMaxLegDist);
             if (airportLocation == null)
                 return false;
             Parameters.SelectedAirportICAO = airportLocation.airportICAO;
@@ -311,13 +309,13 @@ namespace P3D_Scenario_Generator
 
             // Find nearby airport to last photo
             airportLocation = GetNearbyAirport(PhotoLocations[^1].latitude, PhotoLocations[^1].longitude, 
-                Parameters.MinLegDist, Parameters.MaxLegDist);
-            File.Delete($"{Parameters.ScenarioFolder}\\random_pic2map.html"); // no longer needed
+                Parameters.PhotoTourConstraintsMinLegDist, Parameters.PhotoTourConstraintsMaxLegDist);
+            File.Delete($"{Parameters.SettingsScenarioFolder}\\random_pic2map.html"); // no longer needed
             if (airportLocation != null)
             {
                 int headingChange = MathRoutines.CalcHeadingChange(PhotoLocations[^2].forwardBearing, airportLocation.forwardBearing);
                 // Ignore bearing constraint if only one photo, allows backtrack to starting airport
-                if ((Math.Abs(headingChange) < Parameters.MaxBearingChange) || (Parameters.MaxNoLegs == 2)) 
+                if ((Math.Abs(headingChange) < Parameters.PhotoTourConstraintsMaxBearingChange) || (Parameters.PhotoTourConstraintsMaxNoLegs == 2)) 
                 {
                     Runway.SetRunway(Runway.destRwy, airportLocation.airportICAO, airportLocation.airportID);
                     PhotoLocations.Add(airportLocation);
@@ -445,8 +443,8 @@ namespace P3D_Scenario_Generator
                 int headingChange = MathRoutines.CalcHeadingChange(PhotoLocations[^2].forwardBearing, bearing);
 
                 // Does candidate next photo satisfy distance and bearing constraints and has not already been included
-                if (distance <= Parameters.MaxLegDist && distance >= Parameters.MinLegDist && 
-                    Math.Abs(headingChange) < Parameters.MaxBearingChange && 
+                if (distance <= Parameters.PhotoTourConstraintsMaxLegDist && distance >= Parameters.PhotoTourConstraintsMinLegDist && 
+                    Math.Abs(headingChange) < Parameters.PhotoTourConstraintsMaxBearingChange && 
                     PhotoLocations.FindIndex(leg => nextPhotoURL.Contains(leg.legId)) == -1)
                 {
                     return nextPhotoURL;
@@ -509,21 +507,6 @@ namespace P3D_Scenario_Generator
                     Drawing.Resize($"{Parameters.ImageFolder}\\photo_{index:00}.jpg", 0, newSize);
                 }
             }
-        }
-
-        static internal void SaveSettings()
-        {
-            Properties.Settings.Default.TextBoxPhotoTourMapMonitorNumber = Parameters.PhotoTourMapMonitorNumber;
-            Properties.Settings.Default.TextBoxPhotoTourMapOffset = Parameters.PhotoTourMapOffset;
-            Properties.Settings.Default.ListBoxPhotoTourMapAlignment = Parameters.PhotoTourMapAlignment;
-            Properties.Settings.Default.TextBoxPhotoTourMapMonitorWidth = Parameters.PhotoTourMapMonitorWidth;
-            Properties.Settings.Default.TextBoxPhotoTourMapMonitorHeight = Parameters.PhotoTourMapMonitorHeight;
-            Properties.Settings.Default.TextBoxPhotoTourPhotoMonitorNumber = Parameters.PhotoTourPhotoMonitorNumber;
-            Properties.Settings.Default.TextBoxPhotoTourPhotoOffset = Parameters.PhotoTourPhotoOffset;
-            Properties.Settings.Default.ListBoxPhotoTourPhotoAlignment = Parameters.PhotoTourPhotoAlignment;
-            Properties.Settings.Default.TextBoxPhotoTourPhotoMonitorWidth = Parameters.PhotoTourPhotoMonitorWidth;
-            Properties.Settings.Default.TextBoxPhotoTourPhotoMonitorHeight = Parameters.PhotoTourPhotoMonitorHeight;
-            Properties.Settings.Default.Save();
         }
     }
 }

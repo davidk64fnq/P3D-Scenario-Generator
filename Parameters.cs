@@ -6,7 +6,8 @@ namespace P3D_Scenario_Generator
     {
         private static readonly Form form = (Form)Application.OpenForms[0];
 
-        // General tab
+        #region General tab
+
         internal static string SelectedAirportICAO { get; set; }
         internal static string SelectedAirportID { get; set; }
         internal static string ImageFolder { get; private set; }
@@ -22,8 +23,11 @@ namespace P3D_Scenario_Generator
         internal static Season Season { get; private set; }
         internal static int Hours { get; private set; }
         internal static int Minutes { get; private set; }
+        internal static string GeneralScenarioTitle { get; private set; }
 
-        // Circuit tab
+        #endregion
+
+        #region Circuit tab
 
         /// <summary>
         /// Distance between runway and gate 1 in miles
@@ -66,27 +70,105 @@ namespace P3D_Scenario_Generator
         /// </summary>
         internal static double TurnRate { get; private set; }
 
-        // Photo Tour
-        internal static double MaxLegDist { get; private set; }
-        internal static double MinLegDist { get; private set; }
-        internal static double MinNoLegs { get; private set; }
-        internal static double MaxNoLegs { get; private set; }
-        internal static double PhotoLegWindowSize { get; set; }
-        internal static double MaxBearingChange { get; set; }
-        internal static double HotspotRadius { get; set; }
-        internal static string PhotoLocation { get; set; }
+        #endregion
+
+        # region PhotoTour tab
+
+        /// <summary>
+        /// Maximum photo tour leg distance, between airport and photo location or between two photo locations, in miles.
+        /// </summary>
+        internal static double PhotoTourConstraintsMaxLegDist { get; private set; }
+
+        /// <summary>
+        /// Minimum photo tour leg distance, between airport and photo location or between two photo locations, in miles.
+        /// </summary>
+        internal static double PhotoTourConstraintsMinLegDist { get; private set; }
+
+        /// <summary>
+        /// A photo tour from starting airport to one photo location and then onto destination airport, 
+        /// which may be the same as starting airport, is 2 legs. Every additional photo location adds one leg.
+        /// </summary>
+        internal static double PhotoTourConstraintsMinNoLegs { get; private set; }
+
+        /// <summary>
+        /// The maximum number of legs in the photo tour where the leg from last photo location to destination airport is included. 
+        /// So for a given value of this parameter the maximum number of photo locations will be one less.
+        /// </summary>
+        internal static double PhotoTourConstraintsMaxNoLegs { get; private set; }
+
+        /// <summary>
+        /// User can select a map window size of either 512 or 1024 pixels square.
+        /// </summary>
+        internal static double PhotoTourMapWindowSize { get; set; }
+
+        /// <summary>
+        /// Refers to the maximum bearing change allowed between successive legs of the photo tour. The smaller this number 
+        /// the less likely the tour will entail circling back towards the starting airport. This parameter doesn't apply 
+        /// for a one photo location tour to allow return to starting airport as a possibility.
+        /// </summary>
+        internal static double PhotoTourConstraintsMaxBearingChange { get; set; }
+
+        /// <summary>
+        /// The radius of a column user has to fly into at a photo location to set off the proximity trigger in feet.
+        /// </summary>
+        internal static double PhotoTourConstraintsHotspotRadius { get; set; }
+
+        /// <summary>
+        /// Reference integer for the monitor that photo window is to be displayed in initially. Values from 0 to the number of 
+        /// monitors minus 1 expected.
+        /// </summary>
         internal static int PhotoTourPhotoMonitorNumber { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where top left hand corner of photo window is relative to monitor
+        /// </summary>
         internal static int PhotoTourPhotoMonitorWidth { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where top left hand corner of photo window is relative to monitor
+        /// </summary>
         internal static int PhotoTourPhotoMonitorHeight { get; set; }
+
+        /// <summary>
+        /// Specifies how close the corner of photo window is relative to the monitor corner. Values between 0 and 20 excepted.
+        /// </summary>
         internal static int PhotoTourPhotoOffset { get; set; }
+
+        /// <summary>
+        /// Which of four corners of monitor to position photo window relative to or else in the center of monitor.
+        /// </summary>
         internal static string PhotoTourPhotoAlignment { get; set; }
+
+        /// <summary>
+        /// Reference integer for the monitor that map window is to be displayed in initially. Values from 0 to the number of 
+        /// monitors minus 1 expected.
+        /// </summary>
         internal static int PhotoTourMapMonitorNumber { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where top left hand corner of map window is relative to monitor
+        /// </summary>
         internal static int PhotoTourMapMonitorWidth { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where top left hand corner of map window is relative to monitor
+        /// </summary>
         internal static int PhotoTourMapMonitorHeight { get; set; }
+
+        /// <summary>
+        /// Specifies how close the corner of map window is relative to the monitor corner. Values between 0 and 20 excepted.
+        /// </summary>
         internal static int PhotoTourMapOffset { get; set; }
+
+        /// <summary>
+        /// Which of four corners of monitor to position map window relative to or else in the center of monitor.
+        /// </summary>
         internal static string PhotoTourMapAlignment { get; set; }
 
-        // Sign Writing
+        #endregion
+
+        # region Sign Writing tab
+
         internal static string Message { get; private set; }
         internal static double TiltAngle { get; private set; }
         internal static double MessageWindowWidth { get; set; }
@@ -94,7 +176,9 @@ namespace P3D_Scenario_Generator
         internal static double SegmentLengthDeg { get; set; }
         internal static double SegmentRadiusDeg { get; set; }
 
-        // Celestial Navigation
+        #endregion
+
+        #region Celestial Navigation tab
         internal static string CelestialDestRunway { get; set; }
         internal static double CelestialMinDistance { get; set; }
         internal static double CelestialMaxDistance { get; set; }
@@ -103,19 +187,16 @@ namespace P3D_Scenario_Generator
         internal static double CelestialImageSouth { get; set; }
         internal static double CelestialImageWest { get; set; }
 
-        // Settings
-        internal static string ScenarioTitle { get; private set; }
-        internal static string ScenarioFolder { get; private set; }
+        #endregion
+
+        #region Settings tab
         internal static string SettingsCacheServerURL { get; set; }
         internal static string SettingsCacheServerAPIkey { get; set; }
         internal static string SettingsCacheUsage { get; set; }
         internal static int SettingsCacheDailyTotal { get; set; }
+        internal static string SettingsScenarioFolder { get; private set; }
 
-        static private bool IsValidFilename(string fileName)
-        {
-            return !string.IsNullOrEmpty(fileName) &&
-              fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
-        }
+        #endregion
 
         /// <summary>
         /// Copies form fields for chosen scenario into Parameter class fields for ease of access, 
@@ -156,6 +237,7 @@ namespace P3D_Scenario_Generator
             Season = (Season)Math.Ceiling(persianMonth / 3.0);
             Hours = form.TimePicker.Value.Hour;
             Minutes = form.TimePicker.Value.Minute;
+            GeneralScenarioTitle = form.TextBoxScenarioTitle.Text;
 
             // Circuit tab
             UpwindLeg = Convert.ToDouble(form.TextBoxCircuitUpwind.Text);
@@ -168,24 +250,23 @@ namespace P3D_Scenario_Generator
             TurnRate = Convert.ToDouble(form.TextBoxCircuitTurnRate.Text);
 
             // Photo Tour
-            MaxLegDist = Convert.ToDouble(form.TextBoxPhotoMaxLegDist.Text);
-            MinLegDist = Convert.ToDouble(form.TextBoxPhotoMinLegDist.Text);
-            MinNoLegs = Convert.ToDouble(form.TextBoxPhotoMinNoLegs.Text);
-            MaxNoLegs = Convert.ToDouble(form.TextBoxPhotoMaxNoLegs.Text);
-            PhotoLegWindowSize = Convert.ToDouble(form.TextBoxPhotoWindowSize.Text);
-            MaxBearingChange = Convert.ToDouble(form.TextBoxPhotoMaxBearingChange.Text);
-            HotspotRadius = Convert.ToDouble(form.TextBoxPhotoHotspotRadius.Text) * 0.3084; // Convert feet to metres
-            PhotoLocation = form.TextBoxPhotoLocation.Text;
+            PhotoTourConstraintsMaxLegDist = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxLegDist.Text);
+            PhotoTourConstraintsMinLegDist = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMinLegDist.Text);
+            PhotoTourConstraintsMinNoLegs = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMinNoLegs.Text);
+            PhotoTourConstraintsMaxNoLegs = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxNoLegs.Text);
+            PhotoTourMapWindowSize = Convert.ToDouble(form.ComboBoxPhotoTourMapWindowSize.Text);
+            PhotoTourConstraintsMaxBearingChange = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxBearingChange.Text);
+            PhotoTourConstraintsHotspotRadius = Convert.ToDouble(form.TextBoxPhotoTourMapHotspotRadius.Text) * 0.3084; // Convert feet to metres
             PhotoTourPhotoMonitorNumber = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorNumber.Text);
             PhotoTourPhotoMonitorWidth = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorWidth.Text);
             PhotoTourPhotoMonitorHeight = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorHeight.Text);
             PhotoTourPhotoOffset = Convert.ToInt32(form.TextBoxPhotoTourPhotoOffset.Text);
-            PhotoTourPhotoAlignment = form.ListBoxPhotoTourPhotoAlignment.GetItemText(form.ListBoxPhotoTourPhotoAlignment.SelectedItem);
+            PhotoTourPhotoAlignment = form.ComboBoxPhotoTourPhotoAlignment.GetItemText(form.ComboBoxPhotoTourPhotoAlignment.SelectedItem);
             PhotoTourMapMonitorNumber = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorNumber.Text);
             PhotoTourMapMonitorWidth = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorWidth.Text);
             PhotoTourMapMonitorHeight = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorHeight.Text);
             PhotoTourMapOffset = Convert.ToInt32(form.TextBoxPhotoTourMapOffset.Text);
-            PhotoTourMapAlignment = form.ListBoxPhotoTourMapAlignment.GetItemText(form.ListBoxPhotoTourMapAlignment.SelectedItem);
+            PhotoTourMapAlignment = form.ComboBoxPhotoTourMapAlignment.GetItemText(form.ComboBoxPhotoTourPhotoAlignment.SelectedItem);
 
             // Sign Writing
             Message = form.TextBoxSignMessage.Text;
@@ -209,9 +290,8 @@ namespace P3D_Scenario_Generator
             }
 
             // Settings
-            ScenarioTitle = form.TextBoxScenarioTitle.Text;
-            ScenarioFolder = $"{form.TextBoxP3Dv5Files.Text}\\{form.TextBoxScenarioTitle.Text}";
-            ImageFolder = $"{ScenarioFolder}\\images";
+            SettingsScenarioFolder = $"{form.ComboBoxSettingsScenarioFolder.Text}\\{form.TextBoxScenarioTitle.Text}";
+            ImageFolder = $"{SettingsScenarioFolder}\\images";
             SettingsCacheServerURL = form.ComboBoxSettingsCacheServers.Text.Split(',')[0].Trim();
             if (form.ComboBoxSettingsCacheServers.Text.Split(',').Length > 1)
                 SettingsCacheServerAPIkey = form.ComboBoxSettingsCacheServers.Text.Split(',')[1].Trim();
@@ -225,18 +305,23 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                Directory.CreateDirectory(ScenarioFolder);
+                Directory.CreateDirectory(SettingsScenarioFolder);
                 Directory.CreateDirectory(ImageFolder);
                 return true;
             }
         }
 
+        /// <summary>
+        /// Checks that the user supplied scenario title will make a valid filename and that a folder of that name doesn't
+        /// already exist.
+        /// </summary>
+        /// <returns>True for valid scenario title.</returns>
         static private bool ValidateScenarioTitle()
         {
             string saveFolder;
             if (IsValidFilename(form.TextBoxScenarioTitle.Text))
             {
-                saveFolder = $"{form.TextBoxP3Dv5Files.Text}\\{form.TextBoxScenarioTitle.Text}";
+                saveFolder = $"{form.ComboBoxSettingsScenarioFolder.Text}\\{form.TextBoxScenarioTitle.Text}";
                 if (Directory.Exists(saveFolder))
                 {
                     string message = $"A scenario with the same title already exists. Either delete the folder \"{saveFolder}\" (you'll need to shut down Prepar3D first if it's running) or choose a different scenario title.";
@@ -250,6 +335,12 @@ namespace P3D_Scenario_Generator
                 return false;
             }
             return true;
+        }
+
+        static private bool IsValidFilename(string fileName)
+        {
+            return !string.IsNullOrEmpty(fileName) &&
+              fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
         }
     }
 }

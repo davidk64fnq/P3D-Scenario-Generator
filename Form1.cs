@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections;
+using System.ComponentModel;
 using System.Configuration;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -102,7 +103,7 @@ namespace P3D_Scenario_Generator
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
                 PhotoTour.SetPhotoTour();
-                PhotoTour.SaveSettings();
+                SaveUserSettings(TabPagePhotoTour.Controls);
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.SignWriting])
             {
@@ -209,7 +210,7 @@ namespace P3D_Scenario_Generator
 
         static private bool ValidatePhotoDoubleParameters()
         {
-            if (Convert.ToDouble(form.TextBoxPhotoMaxLegDist.Text) < Convert.ToDouble(form.TextBoxPhotoMinLegDist.Text) + 1)
+            if (Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxLegDist.Text) < Convert.ToDouble(form.TextBoxPhotoTourConstraintsMinLegDist.Text) + 1)
             {
                 MessageBox.Show($"Maximum leg distance to be 1 mile greater than minimum leg distance", "Photo Tour Scenario: leg distances", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
@@ -226,34 +227,39 @@ namespace P3D_Scenario_Generator
             SetDefaultParams(((Button)sender).Parent.Controls);
         }
 
+        private void ButtonPhotoTourSaved_Click(object sender, EventArgs e)
+        {
+            RestoreUserSettings(((Button)sender).Parent.Controls);
+        }
+
         static private bool ValidatePhotoParameters(string title, CancelEventArgs e)
         {
-            if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) > 18)
+            if (Convert.ToInt32(form.TextBoxPhotoTourConstraintsMinNoLegs.Text) > 18)
             {
                 DisplayParameterValidationMsg($"Minimum number of legs must be less than 18", title, e);
                 return false;
             }
-            if (Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text) < 2)
+            if (Convert.ToInt32(form.TextBoxPhotoTourConstraintsMinNoLegs.Text) < 2)
             {
                 DisplayParameterValidationMsg($"Minimum number of legs must be greater than 1", title, e);
                 return false;
             }
-            if (Convert.ToInt32(form.TextBoxPhotoMaxNoLegs.Text) > 18)
+            if (Convert.ToInt32(form.TextBoxPhotoTourConstraintsMaxNoLegs.Text) > 18)
             {
                 DisplayParameterValidationMsg($"Maximum number of legs must be less than 18", title, e);
                 return false;
             }
-            if (Convert.ToInt32(form.TextBoxPhotoMaxNoLegs.Text) < Convert.ToInt32(form.TextBoxPhotoMinNoLegs.Text))
+            if (Convert.ToInt32(form.TextBoxPhotoTourConstraintsMaxNoLegs.Text) < Convert.ToInt32(form.TextBoxPhotoTourConstraintsMinNoLegs.Text))
             {
                 DisplayParameterValidationMsg($"Maximum number of legs to be greater than or equal to minimum number of legs", title, e);
                 return false;
             }
-            if (Convert.ToInt32(form.TextBoxPhotoMaxBearingChange.Text) > 180)
+            if (Convert.ToInt32(form.TextBoxPhotoTourConstraintsMaxBearingChange.Text) > 180)
             {
                 DisplayParameterValidationMsg($"Maximum bearing change is limited to between 0 and 180 degrees", title, e);
                 return false;
             }
-            if ((Convert.ToInt32(form.TextBoxPhotoWindowSize.Text) < 375) || (Convert.ToInt32(form.TextBoxPhotoWindowSize.Text) > 1500))
+            if ((Convert.ToInt32(form.ComboBoxPhotoTourMapWindowSize.Text) < 375) || (Convert.ToInt32(form.ComboBoxPhotoTourMapWindowSize.Text) > 1500))
             {
                 DisplayParameterValidationMsg($"Window size is limited to between 375 and 1500 pixels inclusive", title, e);
                 return false;
@@ -381,28 +387,7 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
-        #region Settings
-
-        private void ButtonP3Dv5Files_Click(object sender, EventArgs e)
-        {
-            CommonOpenFileDialog dialog = new()
-            {
-                InitialDirectory = "C:\\Users",
-                IsFolderPicker = true
-            };
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                TextBoxP3Dv5Files.Text = dialog.FileName;
-                Properties.Settings.Default.TextBoxSettingsPrepar3Dv5Files = TextBoxP3Dv5Files.Text;
-                Properties.Settings.Default.Save();
-            }
-        }
-
-        private void ComboBoxSettingsCacheServers_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.ComboBoxSettingsCacheServers = form.ComboBoxSettingsCacheServers.Text;
-            Properties.Settings.Default.Save();
-        }
+        #region Settings Tab
 
         private void ComboBoxSettingsCacheServers_KeyDown(object sender, KeyEventArgs e)
         {
@@ -414,6 +399,9 @@ namespace P3D_Scenario_Generator
                 if (!ComboBoxSettingsCacheServers.Items.Contains(s))
                 {
                     ComboBoxSettingsCacheServers.Items.Add(s);
+                    ComboBoxSettingsCacheServers.SelectedIndex = ComboBoxSettingsCacheServers.Items.Count - 1;
+                    UpdateComboBoxSettingsCacheServersUserSettings();
+                    UpdateComboBoxSettingsCacheServersSelectedIndex();
                 }
             }
             else if (e.KeyCode == Keys.Delete)
@@ -422,8 +410,81 @@ namespace P3D_Scenario_Generator
                 if (ComboBoxSettingsCacheServers.Items.Contains(s))
                 {
                     ComboBoxSettingsCacheServers.Items.Remove(s);
+                    UpdateComboBoxSettingsCacheServersUserSettings();
+                    UpdateComboBoxSettingsCacheServersSelectedIndex();
                 }
             }
+        }
+
+        private void UpdateComboBoxSettingsCacheServersUserSettings()
+        {
+            var newList = new System.Collections.Specialized.StringCollection();
+            foreach (object item in ComboBoxSettingsCacheServers.Items)
+            {
+                newList.Add(item.ToString());
+            }
+            Properties.Settings.Default.ComboBoxSettingsCacheServers = newList;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ComboBoxSettingsCacheServers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateComboBoxSettingsCacheServersSelectedIndex();
+        }
+
+        private void UpdateComboBoxSettingsCacheServersSelectedIndex()
+        {
+            Properties.Settings.Default.ComboBoxSettingsCacheServersSelectedIndex = ComboBoxSettingsCacheServers.SelectedIndex;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ComboBoxSettingsScenarioFolder_KeyDown(object sender, KeyEventArgs e)
+        {
+            string s = ComboBoxSettingsScenarioFolder.Text;
+
+            if (e.KeyCode == Keys.Enter)
+            {
+                // if item exists, select it. if it does not exist, add it.
+                if (!ComboBoxSettingsScenarioFolder.Items.Contains(s))
+                {
+                    ComboBoxSettingsScenarioFolder.Items.Add(s);
+                    ComboBoxSettingsScenarioFolder.SelectedIndex = ComboBoxSettingsScenarioFolder.Items.Count - 1;
+                    UpdateComboBoxSettingsScenarioFolderUserSettings();
+                    UpdateComboBoxSettingsScenarioFolderSelectedIndex();
+                }
+            }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                // if item exists, delete it.
+                if (ComboBoxSettingsScenarioFolder.Items.Contains(s))
+                {
+                    ComboBoxSettingsScenarioFolder.Items.Remove(s);
+                    UpdateComboBoxSettingsScenarioFolderUserSettings();
+                    UpdateComboBoxSettingsScenarioFolderSelectedIndex();
+                }
+            }
+        }
+
+        private void UpdateComboBoxSettingsScenarioFolderUserSettings()
+        {
+            var newList = new System.Collections.Specialized.StringCollection();
+            foreach (object item in ComboBoxSettingsScenarioFolder.Items)
+            {
+                newList.Add(item.ToString());
+            }
+            Properties.Settings.Default.ComboBoxSettingsScenarioFolder = newList;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ComboBoxSettingsScenarioFolder_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateComboBoxSettingsScenarioFolderSelectedIndex();
+        }
+
+        private void UpdateComboBoxSettingsScenarioFolderSelectedIndex()
+        {
+            Properties.Settings.Default.ComboBoxSettingsScenarioFolderSelectedIndex = ComboBoxSettingsScenarioFolder.SelectedIndex;
+            Properties.Settings.Default.Save();
         }
 
         #endregion
@@ -464,6 +525,8 @@ namespace P3D_Scenario_Generator
             // Settings tab
             Cache.CheckCache();
             RestoreUserSettings(TabPageSettings.Controls);
+        //    ComboBoxSettingsCacheServers.SelectedIndex = Properties.Settings.Default.ComboBoxSettingsCacheServersSelectedIndex;
+        //    ComboBoxSettingsScenarioFolder.SelectedIndex = Properties.Settings.Default.ComboBoxSettingsScenarioFolderSelectedIndex;
         }
 
         /// <summary>
@@ -503,11 +566,20 @@ namespace P3D_Scenario_Generator
                     {
                         var settingsValue = Properties.Settings.Default[control.Name];
                         if (settingsValue != null)
-                            control.Text = settingsValue.ToString();
+                            if (control is TextBox)
+                                control.Text = settingsValue.ToString();
+                            else if (control is ComboBox box)
+                            {
+                                box.Items.Clear();
+                                foreach (string item in (System.Collections.Specialized.StringCollection)Properties.Settings.Default[control.Name])
+                                {
+                                    box.Items.Add(item);
+                                }
+                                box.SelectedIndex = (int)Properties.Settings.Default[control.Name + "SelectedIndex"];
+                            }
                     }
                     catch
                     {
-                        // Ignore parameters that don't have an associated entry in settings
                         continue;
                     }
                 }
@@ -519,6 +591,49 @@ namespace P3D_Scenario_Generator
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Recursively processes all controls to copy the text field into the associated user setting value if it exists.
+        /// </summary>
+        /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
+        private static void SaveUserSettings(Control.ControlCollection controlCollection)
+        {
+            foreach (Control control in controlCollection)
+            {
+                if (control.Controls.Count == 0)
+                {
+                    try
+                    {
+                        if (control is TextBox)
+                        {
+                            Properties.Settings.Default[control.Name] = control.Text;
+                        }
+                        else if (control is ComboBox box)
+                        {
+                            var newList = new System.Collections.Specialized.StringCollection();
+                            foreach (object item in box.Items)
+                            {
+                                newList.Add(item.ToString());
+                            }
+                            Properties.Settings.Default[control.Name] = newList;
+                            Properties.Settings.Default[control.Name + "SelectedIndex"] = box.SelectedIndex;
+                        }
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    foreach (Control childControl in control.Controls)
+                    {
+                        SaveUserSettings(childControl.Controls);
+                    }
+                }
+            }
+            Properties.Settings.Default.Save();
         }
 
         private void TextBox_Validating(object sender, CancelEventArgs e)
@@ -731,8 +846,8 @@ namespace P3D_Scenario_Generator
             List<string> aircraftList = [Properties.Settings.Default.SelectedAircraft];
             ListBoxAircraft.DataSource = aircraftList;
             Aircraft.CruiseSpeed = Properties.Settings.Default.CruiseSpeed;
-            TextBoxP3Dv5Files.Text = Properties.Settings.Default.TextBoxSettingsPrepar3Dv5Files;
         }
+
         #endregion
     }
 }

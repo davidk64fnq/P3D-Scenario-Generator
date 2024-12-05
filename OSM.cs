@@ -283,7 +283,7 @@ namespace P3D_Scenario_Generator
 
         static internal void DownloadOSMtile(int xTileNo, int yTileNo, int zoom, string filename)
         {
-            string url = $"{Parameters.SettingsCacheServerURL}{zoom}/{xTileNo}/{yTileNo}.png{Parameters.SettingsCacheServerAPIkey}";
+            string url = $"{Parameters.SettingsCacheServerURL}/{zoom}/{xTileNo}/{yTileNo}.png{Parameters.SettingsCacheServerAPIkey}";
             Cache.GetOrCopyOSMtile($"{zoom}-{xTileNo}-{yTileNo}.png", url, $"{Parameters.ImageFolder}\\{filename}");
         }
 

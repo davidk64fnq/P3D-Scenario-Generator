@@ -36,11 +36,11 @@ namespace P3D_Scenario_Generator
         {
             overview = SetOverviewStruct();
             string overviewHTML = SetOverviewHTML(overview);
-            File.WriteAllText($"{Parameters.ScenarioFolder}\\Overview.htm", overviewHTML);
+            File.WriteAllText($"{Parameters.SettingsScenarioFolder}\\Overview.htm", overviewHTML);
 
             MissionBrief missionBrief = SetMissionBriefStruct(overview);
             string missionBriefHTML = SetMissionBriefHTML(missionBrief);
-            File.WriteAllText($"{Parameters.ScenarioFolder}\\{Parameters.ScenarioTitle}.htm", missionBriefHTML);
+            File.WriteAllText($"{Parameters.SettingsScenarioFolder}\\{Parameters.GeneralScenarioTitle}.htm", missionBriefHTML);
 
             if (Parameters.SelectedScenario != nameof(ScenarioTypes.WikiList) && Parameters.SelectedScenario != nameof(ScenarioTypes.Circuit)
                 && Parameters.SelectedScenario != nameof(ScenarioTypes.PhotoTour) && Parameters.SelectedScenario != nameof(ScenarioTypes.Testing))
@@ -246,26 +246,26 @@ namespace P3D_Scenario_Generator
 
             // Copy style files
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.style_kneeboard.css"); 
-            using (FileStream outputFileStream = new($"{Parameters.ScenarioFolder}\\style_kneeboard.css", FileMode.Create))
+            using (FileStream outputFileStream = new($"{Parameters.SettingsScenarioFolder}\\style_kneeboard.css", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
             stream.Dispose();
 
             stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.style_load_flight.css");
-            using (FileStream outputFileStream = new($"{Parameters.ScenarioFolder}\\style_load_flight.css", FileMode.Create))
+            using (FileStream outputFileStream = new($"{Parameters.SettingsScenarioFolder}\\style_load_flight.css", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
             stream.Dispose();
 
             // Copy sound files
-            if (!Directory.Exists($"{Parameters.ScenarioFolder}\\sound"))
+            if (!Directory.Exists($"{Parameters.SettingsScenarioFolder}\\sound"))
             {
-                Directory.CreateDirectory($"{Parameters.ScenarioFolder}\\sound");
+                Directory.CreateDirectory($"{Parameters.SettingsScenarioFolder}\\sound");
             }
             stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Sounds.ThruHoop.wav");
-            using (FileStream outputFileStream = new($"{Parameters.ScenarioFolder}\\sound\\ThruHoop.wav", FileMode.Create))
+            using (FileStream outputFileStream = new($"{Parameters.SettingsScenarioFolder}\\sound\\ThruHoop.wav", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }

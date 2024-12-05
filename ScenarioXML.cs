@@ -190,7 +190,7 @@ namespace P3D_Scenario_Generator
                 SetCloseWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow");
 
                 // Create cylinder area objects to put over each photo location
-                SetCylinderArea(photoNo, "CylinderArea", "0.0,0.0,0.0", Parameters.HotspotRadius.ToString(), "18520.0", "None");
+                SetCylinderArea(photoNo, "CylinderArea", "0.0,0.0,0.0", Parameters.PhotoTourConstraintsHotspotRadius.ToString(), "18520.0", "None");
                 string pwp = GetPhotoWorldPosition(PhotoTour.GetPhotoLocation(photoNo));
                 AttachedWorldPosition awp = GetAttachedWorldPosition(pwp, "True");
                 SetAttachedWorldPosition("CylinderArea", $"CylinderArea{photoNo:00}", awp);
@@ -541,11 +541,11 @@ namespace P3D_Scenario_Generator
         {
             XmlSerializer xmlSerializer = new(simBaseDocumentXML.GetType());
 
-            using StreamWriter writer = new($"{Parameters.ScenarioFolder}\\{Parameters.ScenarioTitle}.xml");
+            using StreamWriter writer = new($"{Parameters.SettingsScenarioFolder}\\{Parameters.GeneralScenarioTitle}.xml");
             xmlSerializer.Serialize(writer, simBaseDocumentXML);
             writer.Close();
 
-            RemoveXMLNSattributes($"{Parameters.ScenarioFolder}\\{Parameters.ScenarioTitle}.xml");
+            RemoveXMLNSattributes($"{Parameters.SettingsScenarioFolder}\\{Parameters.GeneralScenarioTitle}.xml");
         }
 
         /// <summary>
@@ -1066,7 +1066,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetResourcesFile(string resourceFolder, string resourceFileName)
         {
-            string saveLocation = $"{Parameters.ScenarioFolder}\\images\\{resourceFileName}";
+            string saveLocation = $"{Parameters.SettingsScenarioFolder}\\images\\{resourceFileName}";
             string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.{resourceFolder}.{resourceFileName}";
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
             StreamReader reader = new(stream);
@@ -1087,7 +1087,7 @@ namespace P3D_Scenario_Generator
                 UncompletedImage = "images\\imgM_i.bmp",
                 CompletedImage = "images\\imgM_c.bmp",
                 MissionBrief = "Overview.htm",
-                AbbreviatedMissionBrief = $"{Parameters.ScenarioTitle}.htm",
+                AbbreviatedMissionBrief = $"{Parameters.GeneralScenarioTitle}.htm",
                 SuccessMessage = $"Success! You completed the \"{Parameters.SelectedScenario}\" scenario objectives.",
                 FailureMessage = $"Better luck next time! You failed to complete the \"{Parameters.SelectedScenario}\" scenario objectives.",
                 UserCrashMessage = $"Yikes! You crashed and therefore failed the \"{Parameters.SelectedScenario}\" scenario objectives."
