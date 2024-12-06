@@ -1,7 +1,6 @@
-﻿
-
-using ImageMagick;
-using Microsoft.Office.Interop.Excel;
+﻿using ImageMagick;
+using Application = System.Windows.Forms.Application;
+using TextBox = System.Windows.Forms.TextBox;
 
 namespace P3D_Scenario_Generator
 {
@@ -18,9 +17,9 @@ namespace P3D_Scenario_Generator
             {
                 HttpRoutines.GetWebImage(url, saveFile);
                 if (File.Exists(saveFile)) {
-                    int currentTotal = Convert.ToInt32(Properties.Settings.Default.TextBoxSettingsCacheDailyTotal);
-                    Properties.Settings.Default.TextBoxSettingsCacheDailyTotal = (currentTotal + 1).ToString();
-                    Properties.Settings.Default.Save();
+                    TextBox textBoxSettingsCacheDailyTotal = Application.OpenForms["Form1"].Controls["TextBoxSettingsCacheDailyTotal"] as TextBox;
+                    int currentTotal = Convert.ToInt32(textBoxSettingsCacheDailyTotal.Text);
+                    textBoxSettingsCacheDailyTotal.Text = (currentTotal + 1).ToString();
                     File.Copy(saveFile, cachePath, true);
                 }
                 else

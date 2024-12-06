@@ -283,38 +283,41 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxPhotoTourConstraintsMaxLegDist
             // 
+            TextBoxPhotoTourConstraintsMaxLegDist.AccessibleName = "Tour Constraints: Maximum Leg Distance";
             TextBoxPhotoTourConstraintsMaxLegDist.Anchor = AnchorStyles.None;
             TextBoxPhotoTourConstraintsMaxLegDist.Location = new Point(139, 31);
             TextBoxPhotoTourConstraintsMaxLegDist.Name = "TextBoxPhotoTourConstraintsMaxLegDist";
             TextBoxPhotoTourConstraintsMaxLegDist.Size = new Size(100, 23);
             TextBoxPhotoTourConstraintsMaxLegDist.TabIndex = 3;
-            TextBoxPhotoTourConstraintsMaxLegDist.Tag = "10, double";
+            TextBoxPhotoTourConstraintsMaxLegDist.Tag = "10, double,>=,TextBoxPhotoTourConstraintsMinLegDist";
             TextBoxPhotoTourConstraintsMaxLegDist.Text = "10";
             TextBoxPhotoTourConstraintsMaxLegDist.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMaxLegDist, "Maximum leg distance in miles to next photo, must be atleast 1 mile greater than minimum leg distance.");
-            TextBoxPhotoTourConstraintsMaxLegDist.Validating += TextBoxDouble_Validating;
+            TextBoxPhotoTourConstraintsMaxLegDist.Validating += TextBox_Validating;
             // 
             // TextBoxPhotoTourConstraintsMinLegDist
             // 
+            TextBoxPhotoTourConstraintsMinLegDist.AccessibleName = "Tour Constraints: Minimum Leg Distance";
             TextBoxPhotoTourConstraintsMinLegDist.Anchor = AnchorStyles.None;
             TextBoxPhotoTourConstraintsMinLegDist.Location = new Point(139, 3);
             TextBoxPhotoTourConstraintsMinLegDist.Name = "TextBoxPhotoTourConstraintsMinLegDist";
             TextBoxPhotoTourConstraintsMinLegDist.Size = new Size(100, 23);
             TextBoxPhotoTourConstraintsMinLegDist.TabIndex = 17;
-            TextBoxPhotoTourConstraintsMinLegDist.Tag = "3, double";
+            TextBoxPhotoTourConstraintsMinLegDist.Tag = "3, double,<=,TextBoxPhotoTourConstraintsMaxLegDist";
             TextBoxPhotoTourConstraintsMinLegDist.Text = "3";
             TextBoxPhotoTourConstraintsMinLegDist.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMinLegDist, "Minimum leg distance in miles to next photo");
-            TextBoxPhotoTourConstraintsMinLegDist.Validating += TextBoxDouble_Validating;
+            TextBoxPhotoTourConstraintsMinLegDist.Validating += TextBox_Validating;
             // 
             // TextBoxPhotoTourConstraintsMaxBearingChange
             // 
+            TextBoxPhotoTourConstraintsMaxBearingChange.AccessibleName = "Tour Constraints: Maximum Bearing Change";
             TextBoxPhotoTourConstraintsMaxBearingChange.Anchor = AnchorStyles.None;
             TextBoxPhotoTourConstraintsMaxBearingChange.Location = new Point(139, 116);
             TextBoxPhotoTourConstraintsMaxBearingChange.Name = "TextBoxPhotoTourConstraintsMaxBearingChange";
             TextBoxPhotoTourConstraintsMaxBearingChange.Size = new Size(100, 23);
             TextBoxPhotoTourConstraintsMaxBearingChange.TabIndex = 23;
-            TextBoxPhotoTourConstraintsMaxBearingChange.Tag = "135, natural";
+            TextBoxPhotoTourConstraintsMaxBearingChange.Tag = "135, natural,<,180";
             TextBoxPhotoTourConstraintsMaxBearingChange.Text = "135";
             TextBoxPhotoTourConstraintsMaxBearingChange.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMaxBearingChange, "Maximum bearing change left or right each leg in degrees");
@@ -335,97 +338,115 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxCircuitSpeed
             // 
+            TextBoxCircuitSpeed.AccessibleName = "Circuit: Speed";
             TextBoxCircuitSpeed.Anchor = AnchorStyles.None;
             TextBoxCircuitSpeed.Location = new Point(590, 32);
             TextBoxCircuitSpeed.Name = "TextBoxCircuitSpeed";
             TextBoxCircuitSpeed.Size = new Size(80, 23);
             TextBoxCircuitSpeed.TabIndex = 4;
+            TextBoxCircuitSpeed.Tag = "60,double";
+            TextBoxCircuitSpeed.Text = "60";
             TextBoxCircuitSpeed.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitSpeed, "Cruise speed between gates 1 and 8 in knots");
-            TextBoxCircuitSpeed.Validating += TextBoxDouble_Validating;
+            TextBoxCircuitSpeed.Validating += TextBox_Validating;
             // 
             // TextBoxCircuitTurnRate
             // 
+            TextBoxCircuitTurnRate.AccessibleName = "Circuit: Turn Rate";
             TextBoxCircuitTurnRate.Anchor = AnchorStyles.None;
             TextBoxCircuitTurnRate.Location = new Point(691, 32);
             TextBoxCircuitTurnRate.Name = "TextBoxCircuitTurnRate";
             TextBoxCircuitTurnRate.Size = new Size(80, 23);
             TextBoxCircuitTurnRate.TabIndex = 17;
+            TextBoxCircuitTurnRate.Tag = "2.0,double";
             TextBoxCircuitTurnRate.Text = "2.0";
             TextBoxCircuitTurnRate.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitTurnRate, "360 degrees turn rate in minutes");
+            TextBoxCircuitTurnRate.Validating += TextBox_Validating;
             // 
             // TextBoxCircuitHeightDown
             // 
+            TextBoxCircuitHeightDown.AccessibleName = "Circuit: Height Gates 3 to 6";
             TextBoxCircuitHeightDown.Anchor = AnchorStyles.None;
             TextBoxCircuitHeightDown.Location = new Point(396, 32);
             TextBoxCircuitHeightDown.Name = "TextBoxCircuitHeightDown";
             TextBoxCircuitHeightDown.Size = new Size(80, 23);
             TextBoxCircuitHeightDown.TabIndex = 3;
+            TextBoxCircuitHeightDown.Tag = "1000,double,>=,TextBoxCircuitHeightUpwind,>=,TextBoxCircuitHeightBase";
             TextBoxCircuitHeightDown.Text = "1000";
             TextBoxCircuitHeightDown.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitHeightDown, "Height of circuit above runway in feet (gates 3 to 6)");
-            TextBoxCircuitHeightDown.Validating += TextBoxDouble_Validating;
+            TextBoxCircuitHeightDown.Validating += TextBox_Validating;
             // 
             // TextBoxCircuitHeightUpwind
             // 
+            TextBoxCircuitHeightUpwind.AccessibleName = "Circuit: Height Gate 1";
             TextBoxCircuitHeightUpwind.Anchor = AnchorStyles.None;
             TextBoxCircuitHeightUpwind.Location = new Point(299, 32);
             TextBoxCircuitHeightUpwind.Name = "TextBoxCircuitHeightUpwind";
             TextBoxCircuitHeightUpwind.Size = new Size(80, 23);
             TextBoxCircuitHeightUpwind.TabIndex = 13;
+            TextBoxCircuitHeightUpwind.Tag = "500, double,<=,TextBoxCircuitHeightDown";
             TextBoxCircuitHeightUpwind.Text = "500";
             TextBoxCircuitHeightUpwind.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitHeightUpwind, "Height of circuit above runway in feet (gate 1)");
-            TextBoxCircuitHeightUpwind.Validating += TextBoxDouble_Validating;
+            TextBoxCircuitHeightUpwind.Validating += TextBox_Validating;
             // 
             // TextBoxCircuitFinal
             // 
+            TextBoxCircuitFinal.AccessibleName = "Circuit: Final";
             TextBoxCircuitFinal.Anchor = AnchorStyles.None;
             TextBoxCircuitFinal.Location = new Point(202, 32);
             TextBoxCircuitFinal.Name = "TextBoxCircuitFinal";
             TextBoxCircuitFinal.Size = new Size(80, 23);
             TextBoxCircuitFinal.TabIndex = 2;
+            TextBoxCircuitFinal.Tag = "1,double";
             TextBoxCircuitFinal.Text = "1";
             TextBoxCircuitFinal.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitFinal, "Distance between gate 8 and runway in miles");
-            TextBoxCircuitFinal.Validating += TextBoxDouble_Validating;
+            TextBoxCircuitFinal.Validating += TextBox_Validating;
             // 
             // TextBoxCircuitBase
             // 
+            TextBoxCircuitBase.AccessibleName = "Circuit: Base";
             TextBoxCircuitBase.Anchor = AnchorStyles.None;
             TextBoxCircuitBase.Location = new Point(105, 32);
             TextBoxCircuitBase.Name = "TextBoxCircuitBase";
             TextBoxCircuitBase.Size = new Size(80, 23);
             TextBoxCircuitBase.TabIndex = 1;
+            TextBoxCircuitBase.Tag = "0.5,double";
             TextBoxCircuitBase.Text = "0.5";
             TextBoxCircuitBase.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitBase, "Distance between gates 2 and 3 (6 and 7) in miles");
-            TextBoxCircuitBase.Validating += TextBoxDouble_Validating;
+            TextBoxCircuitBase.Validating += TextBox_Validating;
             // 
             // TextBoxCircuitHeightBase
             // 
+            TextBoxCircuitHeightBase.AccessibleName = "Circuit: Height Gate 8";
             TextBoxCircuitHeightBase.Anchor = AnchorStyles.None;
             TextBoxCircuitHeightBase.Location = new Point(493, 32);
             TextBoxCircuitHeightBase.Name = "TextBoxCircuitHeightBase";
             TextBoxCircuitHeightBase.Size = new Size(80, 23);
             TextBoxCircuitHeightBase.TabIndex = 12;
+            TextBoxCircuitHeightBase.Tag = "500, double,<=,TextBoxCircuitHeightDown";
             TextBoxCircuitHeightBase.Text = "500";
             TextBoxCircuitHeightBase.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitHeightBase, "Height of circuit above runway in feet (gate 8)");
-            TextBoxCircuitHeightBase.Validating += TextBoxDouble_Validating;
+            TextBoxCircuitHeightBase.Validating += TextBox_Validating;
             // 
             // TextBoxCircuitUpwind
             // 
+            TextBoxCircuitUpwind.AccessibleName = "Circuit: Upwind";
             TextBoxCircuitUpwind.Anchor = AnchorStyles.None;
             TextBoxCircuitUpwind.Location = new Point(8, 32);
             TextBoxCircuitUpwind.Name = "TextBoxCircuitUpwind";
             TextBoxCircuitUpwind.Size = new Size(80, 23);
             TextBoxCircuitUpwind.TabIndex = 5;
+            TextBoxCircuitUpwind.Tag = "1,double";
             TextBoxCircuitUpwind.Text = "1";
             TextBoxCircuitUpwind.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitUpwind, "Distance between runway and gate 1 in miles");
-            TextBoxCircuitUpwind.Validating += TextBoxDouble_Validating;
+            TextBoxCircuitUpwind.Validating += TextBox_Validating;
             // 
             // buttonAircraft
             // 
@@ -451,12 +472,13 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxPhotoTourConstraintsMaxNoLegs
             // 
+            TextBoxPhotoTourConstraintsMaxNoLegs.AccessibleName = "Tour Constraints: Maximum number of legs";
             TextBoxPhotoTourConstraintsMaxNoLegs.Anchor = AnchorStyles.None;
             TextBoxPhotoTourConstraintsMaxNoLegs.Location = new Point(139, 87);
             TextBoxPhotoTourConstraintsMaxNoLegs.Name = "TextBoxPhotoTourConstraintsMaxNoLegs";
             TextBoxPhotoTourConstraintsMaxNoLegs.Size = new Size(100, 23);
             TextBoxPhotoTourConstraintsMaxNoLegs.TabIndex = 14;
-            TextBoxPhotoTourConstraintsMaxNoLegs.Tag = "7, natural";
+            TextBoxPhotoTourConstraintsMaxNoLegs.Tag = "7, natural,<,19,>=,TextBoxPhotoTourConstraintsMinNoLegs";
             TextBoxPhotoTourConstraintsMaxNoLegs.Text = "7";
             TextBoxPhotoTourConstraintsMaxNoLegs.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMaxNoLegs, "Maximum number of legs must between 2 and 18 inclusive and greater then or equal to minimum number of legs. Two legs would be starting airport to a single photo location then return to airport.\r\n");
@@ -464,12 +486,13 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxPhotoTourConstraintsMinNoLegs
             // 
+            TextBoxPhotoTourConstraintsMinNoLegs.AccessibleName = "Tour Constraints: Minimum number of legs";
             TextBoxPhotoTourConstraintsMinNoLegs.Anchor = AnchorStyles.None;
             TextBoxPhotoTourConstraintsMinNoLegs.Location = new Point(139, 59);
             TextBoxPhotoTourConstraintsMinNoLegs.Name = "TextBoxPhotoTourConstraintsMinNoLegs";
             TextBoxPhotoTourConstraintsMinNoLegs.Size = new Size(100, 23);
             TextBoxPhotoTourConstraintsMinNoLegs.TabIndex = 13;
-            TextBoxPhotoTourConstraintsMinNoLegs.Tag = "3, natural";
+            TextBoxPhotoTourConstraintsMinNoLegs.Tag = "3, natural,>,2,<,19,<=,TextBoxPhotoTourConstraintsMaxNoLegs";
             TextBoxPhotoTourConstraintsMinNoLegs.Text = "3";
             TextBoxPhotoTourConstraintsMinNoLegs.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMinNoLegs, "Minimum number of legs must between 2 and 18 inclusive and less than or equal to maximum number of legs. Two legs would be starting airport to a single photo location then return to airport.");
@@ -483,7 +506,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoOffset.Name = "TextBoxPhotoTourPhotoOffset";
             TextBoxPhotoTourPhotoOffset.Size = new Size(100, 23);
             TextBoxPhotoTourPhotoOffset.TabIndex = 33;
-            TextBoxPhotoTourPhotoOffset.Tag = "20,whole";
+            TextBoxPhotoTourPhotoOffset.Tag = "20,whole,<=,20";
             TextBoxPhotoTourPhotoOffset.Text = "20";
             TextBoxPhotoTourPhotoOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourPhotoOffset, resources.GetString("TextBoxPhotoTourPhotoOffset.ToolTip"));
@@ -741,7 +764,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourMapOffset.Name = "TextBoxPhotoTourMapOffset";
             TextBoxPhotoTourMapOffset.Size = new Size(100, 23);
             TextBoxPhotoTourMapOffset.TabIndex = 33;
-            TextBoxPhotoTourMapOffset.Tag = "20,whole";
+            TextBoxPhotoTourMapOffset.Tag = "20,whole,<=,20";
             TextBoxPhotoTourMapOffset.Text = "20";
             TextBoxPhotoTourMapOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourMapOffset, resources.GetString("TextBoxPhotoTourMapOffset.ToolTip"));
@@ -964,8 +987,8 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsCacheServers.Size = new Size(100, 23);
             ComboBoxSettingsCacheServers.TabIndex = 41;
             toolTip1.SetToolTip(ComboBoxSettingsCacheServers, "OSM tile server and API key if required, comma separated.");
-            ComboBoxSettingsCacheServers.SelectedIndexChanged += ComboBoxSettingsCacheServers_SelectedIndexChanged;
-            ComboBoxSettingsCacheServers.KeyDown += ComboBoxSettingsCacheServers_KeyDown;
+            ComboBoxSettingsCacheServers.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
+            ComboBoxSettingsCacheServers.KeyDown += ComboBox_KeyDown;
             // 
             // label39
             // 
@@ -989,8 +1012,8 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsScenarioFolder.Size = new Size(100, 23);
             ComboBoxSettingsScenarioFolder.TabIndex = 42;
             toolTip1.SetToolTip(ComboBoxSettingsScenarioFolder, "Location where generated scenarios are stored. Usually \"Prepar3D v5 Files\"");
-            ComboBoxSettingsScenarioFolder.SelectedIndexChanged += ComboBoxSettingsScenarioFolder_SelectedIndexChanged;
-            ComboBoxSettingsScenarioFolder.KeyDown += ComboBoxSettingsScenarioFolder_KeyDown;
+            ComboBoxSettingsScenarioFolder.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
+            ComboBoxSettingsScenarioFolder.KeyDown += ComboBox_KeyDown;
             // 
             // label17
             // 

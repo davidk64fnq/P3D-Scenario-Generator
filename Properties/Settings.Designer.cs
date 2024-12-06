@@ -376,5 +376,101 @@ namespace P3D_Scenario_Generator.Properties {
                 this["ComboBoxPhotoTourPhotoAlignment"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxCircuitUpwind {
+            get {
+                return ((string)(this["TextBoxCircuitUpwind"]));
+            }
+            set {
+                this["TextBoxCircuitUpwind"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxCircuitBase {
+            get {
+                return ((string)(this["TextBoxCircuitBase"]));
+            }
+            set {
+                this["TextBoxCircuitBase"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxCircuitFinal {
+            get {
+                return ((string)(this["TextBoxCircuitFinal"]));
+            }
+            set {
+                this["TextBoxCircuitFinal"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxCircuitHeightUpwind {
+            get {
+                return ((string)(this["TextBoxCircuitHeightUpwind"]));
+            }
+            set {
+                this["TextBoxCircuitHeightUpwind"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxCircuitHeightDown {
+            get {
+                return ((string)(this["TextBoxCircuitHeightDown"]));
+            }
+            set {
+                this["TextBoxCircuitHeightDown"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxCircuitHeightBase {
+            get {
+                return ((string)(this["TextBoxCircuitHeightBase"]));
+            }
+            set {
+                this["TextBoxCircuitHeightBase"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxCircuitTurnRate {
+            get {
+                return ((string)(this["TextBoxCircuitTurnRate"]));
+            }
+            set {
+                this["TextBoxCircuitTurnRate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxCircuitSpeed {
+            get {
+                return ((string)(this["TextBoxCircuitSpeed"]));
+            }
+            set {
+                this["TextBoxCircuitSpeed"] = value;
+            }
+        }
     }
 }

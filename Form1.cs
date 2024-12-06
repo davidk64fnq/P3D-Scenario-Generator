@@ -18,7 +18,7 @@ namespace P3D_Scenario_Generator
             PrepareFormFields();
         }
 
-        #region Menu Tab
+        #region General Tab
 
         #region Runway selection
 
@@ -73,6 +73,7 @@ namespace P3D_Scenario_Generator
             {
                 DisplayStartMessage();
                 Drawing.DrawScenarioImages();
+                SaveUserSettings(TabPageSettings.Controls);
                 DoScenarioSpecificTasks();
 
                 // Delete next three lines once re-write complete
@@ -99,6 +100,7 @@ namespace P3D_Scenario_Generator
             if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Circuit])
             {
                 Circuit.SetCircuit();
+                SaveUserSettings(TabPageCircuit.Controls);
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
@@ -198,26 +200,6 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        static private bool ValidateCircuitDoubleParameters()
-        {
-            if ((Convert.ToDouble(form.TextBoxCircuitHeightDown.Text) < Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text)) || (Convert.ToDouble(form.TextBoxCircuitHeightDown.Text) < Convert.ToDouble(form.TextBoxCircuitHeightBase.Text)))
-            {
-                MessageBox.Show($"Gates 1/2 and 7/8 must be lower than the downwind leg height (Gates 3 to 6)", "Circuit Scenario: heights", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return false;
-            }
-            return true;
-        }
-
-        static private bool ValidatePhotoDoubleParameters()
-        {
-            if (Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxLegDist.Text) < Convert.ToDouble(form.TextBoxPhotoTourConstraintsMinLegDist.Text) + 1)
-            {
-                MessageBox.Show($"Maximum leg distance to be 1 mile greater than minimum leg distance", "Photo Tour Scenario: leg distances", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return false;
-            }
-            return true;
-        }
-
         #endregion
 
         #region Photo Tour Tab
@@ -230,46 +212,6 @@ namespace P3D_Scenario_Generator
         private void ButtonPhotoTourSaved_Click(object sender, EventArgs e)
         {
             RestoreUserSettings(((Button)sender).Parent.Controls);
-        }
-
-        static private bool ValidatePhotoParameters(string title, CancelEventArgs e)
-        {
-            if (Convert.ToInt32(form.TextBoxPhotoTourConstraintsMinNoLegs.Text) > 18)
-            {
-                DisplayParameterValidationMsg($"Minimum number of legs must be less than 18", title, e);
-                return false;
-            }
-            if (Convert.ToInt32(form.TextBoxPhotoTourConstraintsMinNoLegs.Text) < 2)
-            {
-                DisplayParameterValidationMsg($"Minimum number of legs must be greater than 1", title, e);
-                return false;
-            }
-            if (Convert.ToInt32(form.TextBoxPhotoTourConstraintsMaxNoLegs.Text) > 18)
-            {
-                DisplayParameterValidationMsg($"Maximum number of legs must be less than 18", title, e);
-                return false;
-            }
-            if (Convert.ToInt32(form.TextBoxPhotoTourConstraintsMaxNoLegs.Text) < Convert.ToInt32(form.TextBoxPhotoTourConstraintsMinNoLegs.Text))
-            {
-                DisplayParameterValidationMsg($"Maximum number of legs to be greater than or equal to minimum number of legs", title, e);
-                return false;
-            }
-            if (Convert.ToInt32(form.TextBoxPhotoTourConstraintsMaxBearingChange.Text) > 180)
-            {
-                DisplayParameterValidationMsg($"Maximum bearing change is limited to between 0 and 180 degrees", title, e);
-                return false;
-            }
-            if ((Convert.ToInt32(form.ComboBoxPhotoTourMapWindowSize.Text) < 375) || (Convert.ToInt32(form.ComboBoxPhotoTourMapWindowSize.Text) > 1500))
-            {
-                DisplayParameterValidationMsg($"Window size is limited to between 375 and 1500 pixels inclusive", title, e);
-                return false;
-            }
-            if ((Convert.ToInt32(form.TextBoxPhotoTourMapOffset.Text) > 20) || (Convert.ToInt32(form.TextBoxPhotoTourPhotoOffset.Text) > 20))
-            {
-                DisplayParameterValidationMsg($"Window offset is limited to between 0 and 20 pixels", title, e);
-                return false;
-            }
-            return true;
         }
 
         #endregion
@@ -389,104 +331,6 @@ namespace P3D_Scenario_Generator
 
         #region Settings Tab
 
-        private void ComboBoxSettingsCacheServers_KeyDown(object sender, KeyEventArgs e)
-        {
-            string s = ComboBoxSettingsCacheServers.Text;
-
-            if (e.KeyCode == Keys.Enter)
-            {
-                // if item exists, select it. if it does not exist, add it.
-                if (!ComboBoxSettingsCacheServers.Items.Contains(s))
-                {
-                    ComboBoxSettingsCacheServers.Items.Add(s);
-                    ComboBoxSettingsCacheServers.SelectedIndex = ComboBoxSettingsCacheServers.Items.Count - 1;
-                    UpdateComboBoxSettingsCacheServersUserSettings();
-                    UpdateComboBoxSettingsCacheServersSelectedIndex();
-                }
-            }
-            else if (e.KeyCode == Keys.Delete)
-            {
-                // if item exists, delete it.
-                if (ComboBoxSettingsCacheServers.Items.Contains(s))
-                {
-                    ComboBoxSettingsCacheServers.Items.Remove(s);
-                    UpdateComboBoxSettingsCacheServersUserSettings();
-                    UpdateComboBoxSettingsCacheServersSelectedIndex();
-                }
-            }
-        }
-
-        private void UpdateComboBoxSettingsCacheServersUserSettings()
-        {
-            var newList = new System.Collections.Specialized.StringCollection();
-            foreach (object item in ComboBoxSettingsCacheServers.Items)
-            {
-                newList.Add(item.ToString());
-            }
-            Properties.Settings.Default.ComboBoxSettingsCacheServers = newList;
-            Properties.Settings.Default.Save();
-        }
-
-        private void ComboBoxSettingsCacheServers_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            UpdateComboBoxSettingsCacheServersSelectedIndex();
-        }
-
-        private void UpdateComboBoxSettingsCacheServersSelectedIndex()
-        {
-            Properties.Settings.Default.ComboBoxSettingsCacheServersSelectedIndex = ComboBoxSettingsCacheServers.SelectedIndex;
-            Properties.Settings.Default.Save();
-        }
-
-        private void ComboBoxSettingsScenarioFolder_KeyDown(object sender, KeyEventArgs e)
-        {
-            string s = ComboBoxSettingsScenarioFolder.Text;
-
-            if (e.KeyCode == Keys.Enter)
-            {
-                // if item exists, select it. if it does not exist, add it.
-                if (!ComboBoxSettingsScenarioFolder.Items.Contains(s))
-                {
-                    ComboBoxSettingsScenarioFolder.Items.Add(s);
-                    ComboBoxSettingsScenarioFolder.SelectedIndex = ComboBoxSettingsScenarioFolder.Items.Count - 1;
-                    UpdateComboBoxSettingsScenarioFolderUserSettings();
-                    UpdateComboBoxSettingsScenarioFolderSelectedIndex();
-                }
-            }
-            else if (e.KeyCode == Keys.Delete)
-            {
-                // if item exists, delete it.
-                if (ComboBoxSettingsScenarioFolder.Items.Contains(s))
-                {
-                    ComboBoxSettingsScenarioFolder.Items.Remove(s);
-                    UpdateComboBoxSettingsScenarioFolderUserSettings();
-                    UpdateComboBoxSettingsScenarioFolderSelectedIndex();
-                }
-            }
-        }
-
-        private void UpdateComboBoxSettingsScenarioFolderUserSettings()
-        {
-            var newList = new System.Collections.Specialized.StringCollection();
-            foreach (object item in ComboBoxSettingsScenarioFolder.Items)
-            {
-                newList.Add(item.ToString());
-            }
-            Properties.Settings.Default.ComboBoxSettingsScenarioFolder = newList;
-            Properties.Settings.Default.Save();
-        }
-
-        private void ComboBoxSettingsScenarioFolder_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            UpdateComboBoxSettingsScenarioFolderSelectedIndex();
-        }
-
-        private void UpdateComboBoxSettingsScenarioFolderSelectedIndex()
-        {
-            Properties.Settings.Default.ComboBoxSettingsScenarioFolderSelectedIndex = ComboBoxSettingsScenarioFolder.SelectedIndex;
-            Properties.Settings.Default.Save();
-        }
-
         #endregion
 
         #region Utilities
@@ -494,6 +338,42 @@ namespace P3D_Scenario_Generator
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
             Help.ShowHelp(this, "Resources/help/index.htm");
+        }
+
+        private void ComboBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            string s = ((ComboBox)sender).Text;
+
+            if (e.KeyCode == Keys.Enter)
+            {
+                if (!((ComboBox)sender).Items.Contains(s))
+                {
+                    ((ComboBox)sender).Items.Add(s);
+                    ((ComboBox)sender).SelectedIndex = ((ComboBox)sender).Items.Count - 1;
+                    UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
+                }
+            }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                if (((ComboBox)sender).Items.Contains(s))
+                {
+                    ((ComboBox)sender).Items.Remove(s);
+                    if (((ComboBox)sender).Items.Count > 0)
+                        ((ComboBox)sender).SelectedIndex = 0;
+                    UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
+                }
+            }
+        }
+
+        private void ComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
+        }
+
+        private static void UpdateComboBoxSelectedIndex(string comboBoxName, int selectedIndex)
+        {
+            Properties.Settings.Default[comboBoxName + "SelectedIndex"] = selectedIndex;
+            Properties.Settings.Default.Save();
         }
 
         /// <summary>
@@ -509,7 +389,7 @@ namespace P3D_Scenario_Generator
             string appPath = Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_");
             Stream stream = Assembly.Load(appName).GetManifestResourceStream($"{appPath}.Resources.Images.circuitTab.jpg");
             PictureBoxCircuit.Image = new Bitmap(stream);
-            SetDefaultCircuitParams();
+            RestoreUserSettings(TabPageCircuit.Controls);
 
             // PhotoTour tab
             SetDefaultParams(TabPagePhotoTour.Controls);
@@ -638,11 +518,12 @@ namespace P3D_Scenario_Generator
 
         private void TextBox_Validating(object sender, CancelEventArgs e)
         {
-            int parameterType = 1;
+            int parameterTypeIndex = 1;
             string[] parameterTokens = ((TextBox)sender).Tag.ToString().Split(',');
+            string parameterType = parameterTokens[parameterTypeIndex].Trim();
 
             // First two tokens of textbox.Tag are the default value and value type, they should always be coded by developer!
-            if (parameterTokens.Length < 2)
+            if (parameterTokens.Length < 2 || parameterTokens.Length % 2 == 1)
             {
                 DisplayParameterValidationMsg($"Developer has incorrectly set tag field of textbox control!", ((TextBox)sender).AccessibleName, e);
                 return;
@@ -651,7 +532,7 @@ namespace P3D_Scenario_Generator
 
             // If it's one of the integer/whole/natural types
             string integerTypes = "integer whole natural";
-            if (integerTypes.Contains(parameterTokens[parameterType].Trim()))
+            if (integerTypes.Contains(parameterType))
             {
                 // Check it is an integer before looking at whole and natural types
                 if (!TextboxIsInteger(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
@@ -675,7 +556,73 @@ namespace P3D_Scenario_Generator
                 return;
 
             // Do any custom checks
-            ValidatePhotoParameters(((TextBox)sender).AccessibleName, e);
+            if (parameterTokens.Length > 2)
+            {
+                for (int index = 2; index < parameterTokens.Length; index += 2)
+                {
+                    if (!TextboxComparison(parameterTokens[index].Trim(), parameterTokens[index + 1].Trim(), ((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+                        return;
+                }
+            }
+        }
+
+        private static bool TextboxComparison(string operatorToken, string comparedAgainstToken, string comparedToToken, string title, CancelEventArgs e)
+        {
+            // Get the value to be compared against, either a numeric value or the name of a textbox containing a numeric value
+            double comparedAgainstDouble;
+            string comparedAgainstString = "";
+            string accessibleName = "";
+            try
+            {
+                comparedAgainstDouble = Convert.ToDouble(comparedAgainstToken);
+            }
+            catch
+            {
+                GetFormTextField(form.Controls, comparedAgainstToken, ref comparedAgainstString, ref accessibleName);
+                comparedAgainstDouble = Convert.ToDouble(comparedAgainstString);
+            }
+
+            // Get the value to be compared
+            double comparedToDouble = Convert.ToDouble(comparedToToken);
+
+
+            // Do comparison
+            accessibleName = string.IsNullOrEmpty(accessibleName) ? comparedAgainstDouble.ToString() : accessibleName;
+            switch (operatorToken)
+            {
+                case "<":
+                    if (comparedToDouble >= comparedAgainstDouble)
+                    {
+                        DisplayParameterValidationMsg($"Value must be less than {accessibleName}", title, e);
+                        return false;
+                    }
+                    break;
+                case "<=":
+                    if (comparedToDouble > comparedAgainstDouble)
+                    {
+                        DisplayParameterValidationMsg($"Value must be less than or equal to {accessibleName}", title, e);
+                        return false;
+                    }
+                    break;
+                case ">":
+                    if (comparedToDouble <= comparedAgainstDouble)
+                    {
+                        DisplayParameterValidationMsg($"Value must be greater than {accessibleName}", title, e);
+                        return false;
+                    }
+                    break;
+                case ">=":
+                    if (comparedToDouble < comparedAgainstDouble)
+                    {
+                        DisplayParameterValidationMsg($"Value must be greater than or equal to {accessibleName}", title, e);
+                        return false;
+                    }
+                    break;
+                default:
+                    DisplayParameterValidationMsg($"Developer has incorrectly set tag field of textbox control!", title, e);
+                    return false;
+            }
+            return true;
         }
 
         private static bool TextboxIsDouble(string text, string title, CancelEventArgs e)
@@ -739,12 +686,6 @@ namespace P3D_Scenario_Generator
             return true;
         }
 
-        private void ListBox_Validating(object sender, CancelEventArgs e)
-        {
-            if (((ListBox)sender).GetItemText(((ListBox)sender).SelectedItem) == "")
-                DisplayParameterValidationMsg($"No selection made", ((ListBox)sender).AccessibleName, e);
-        }
-
         private static bool TextboxIsWhole(string text, string title, CancelEventArgs e)
         {
             int paramAsInteger = Convert.ToInt32(text);
@@ -762,36 +703,34 @@ namespace P3D_Scenario_Generator
             e.Cancel = true;
         }
 
-        private void TextBoxDouble_Validating(object sender, CancelEventArgs e)
+        private static void GetFormTextField(Control.ControlCollection controlCollection, string fieldName, ref string fieldValue, ref string accessibleName)
         {
-            double paramAsDouble;
-            try
+            foreach (Control control in controlCollection)
             {
-                paramAsDouble = Convert.ToDouble(((TextBox)sender).Text);
-                if (paramAsDouble <= 0)
+                if (control.Controls.Count == 0)
                 {
-                    MessageBox.Show($"Numeric value greater than zero expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    e.Cancel = true;
+                    GetFormTextField(control, fieldName, ref fieldValue, ref accessibleName);
+                }
+                else
+                {
+                    foreach (Control childControl in control.Controls)
+                    {
+                        if (childControl.Controls.Count == 0)
+                        {
+                            GetFormTextField(childControl, fieldName, ref fieldValue, ref accessibleName);
+                        }
+                        GetFormTextField(childControl.Controls, fieldName, ref fieldValue, ref accessibleName);
+                    }
                 }
             }
-            catch (Exception)
+        }
+
+        private static void GetFormTextField(Control control, string fieldName, ref string fieldValue, ref string accessibleName)
+        {
+            if (control is TextBox && control.Name == fieldName)
             {
-                MessageBox.Show($"Numeric value expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                e.Cancel = true;
-            }
-            if (((TextBox)sender).Name.Contains("TextBoxCircuitHeight"))
-            {
-                if (e.Cancel == false && !ValidateCircuitDoubleParameters())
-                {
-                    e.Cancel = true;
-                }
-            }
-            if (((TextBox)sender).Name.Contains("TextBoxPhoto") && ((TextBox)sender).Name.Contains("LegDist"))
-            {
-                if (e.Cancel == false && !ValidatePhotoDoubleParameters())
-                {
-                    e.Cancel = true;
-                }
+                fieldValue = control.Text;
+                accessibleName = control.AccessibleName;
             }
         }
 
