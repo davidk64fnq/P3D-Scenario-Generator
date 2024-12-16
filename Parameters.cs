@@ -99,7 +99,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// User can select a map window size of either 512 or 1024 pixels square.
         /// </summary>
-        internal static double PhotoTourMapWindowSize { get; set; }
+        internal static int PhotoTourMapWindowSize { get; set; }
 
         /// <summary>
         /// Refers to the maximum bearing change allowed between successive legs of the photo tour. The smaller this number 
@@ -198,6 +198,12 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
+        #region Common
+
+        internal static int CommonMovingMapWindowSize { get; private set; }
+
+        #endregion
+
         /// <summary>
         /// Copies form fields for chosen scenario into Parameter class fields for ease of access, 
         /// some error checking, and creates scenario and images directories
@@ -254,7 +260,7 @@ namespace P3D_Scenario_Generator
             PhotoTourConstraintsMinLegDist = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMinLegDist.Text);
             PhotoTourConstraintsMinNoLegs = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMinNoLegs.Text);
             PhotoTourConstraintsMaxNoLegs = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxNoLegs.Text);
-            PhotoTourMapWindowSize = Convert.ToDouble(form.ComboBoxPhotoTourMapWindowSize.Text);
+            PhotoTourMapWindowSize = Convert.ToInt32(form.ComboBoxPhotoTourMapWindowSize.Text);
             PhotoTourConstraintsMaxBearingChange = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxBearingChange.Text);
             PhotoTourConstraintsHotspotRadius = Convert.ToDouble(form.TextBoxPhotoTourMapHotspotRadius.Text) * 0.3084; // Convert feet to metres
             PhotoTourPhotoMonitorNumber = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorNumber.Text);
@@ -266,7 +272,7 @@ namespace P3D_Scenario_Generator
             PhotoTourMapMonitorWidth = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorWidth.Text);
             PhotoTourMapMonitorHeight = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorHeight.Text);
             PhotoTourMapOffset = Convert.ToInt32(form.TextBoxPhotoTourMapOffset.Text);
-            PhotoTourMapAlignment = form.ComboBoxPhotoTourMapAlignment.GetItemText(form.ComboBoxPhotoTourPhotoAlignment.SelectedItem);
+            PhotoTourMapAlignment = form.ComboBoxPhotoTourMapAlignment.GetItemText(form.ComboBoxPhotoTourMapAlignment.SelectedItem);
 
             // Sign Writing
             Message = form.TextBoxSignMessage.Text;
@@ -297,6 +303,12 @@ namespace P3D_Scenario_Generator
                 SettingsCacheServerAPIkey = form.ComboBoxSettingsCacheServers.Text.Split(',')[1].Trim();
             SettingsCacheUsage = form.TextBoxSettingsCacheUsage.Text;
             SettingsCacheDailyTotal = Convert.ToInt32(form.TextBoxSettingsCacheDailyTotal.Text);
+
+            // Common
+            if (SelectedScenario == nameof(ScenarioTypes.PhotoTour))
+            {
+                CommonMovingMapWindowSize = PhotoTourMapWindowSize;
+            }
 
             if (errorMsg != "")
             {

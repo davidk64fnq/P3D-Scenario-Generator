@@ -227,11 +227,11 @@ namespace P3D_Scenario_Generator
                 if (photoNo > 1)
                     SetProximityTriggerOnEnterAction(photoNo - 1, "CloseWindowAction", "CloseUIpanelWindow", photoNo, "ProximityTrigger");
 
-                // Increment gate number
+                // Increment photo number
                 SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", photoNo, "ProximityTrigger");
             }
 
-            // Create timer trigger to play audio introductions and open 1st leg window when scenario starts
+            // Create timer trigger to play audio introductions and open map window when scenario starts
             SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
             SetTimerTriggerAction("OpenWindowAction", $"OpenUIpanelWindow{PhotoTour.PhotoCount - 1:00}", "TimerTrigger01");
             SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
@@ -580,7 +580,7 @@ namespace P3D_Scenario_Generator
             sr.Close();
             sw.Close();
             File.Copy(filePath + ".tmp", filePath, true);
-            File.Delete(filePath + ".tmp");
+            Form.DeleteFile(filePath + ".tmp");
         }
 
         #region Object creation/editing utilities
@@ -700,26 +700,31 @@ namespace P3D_Scenario_Generator
         {
             // Dimensions
             int mapWindowWidth = 512;
-            int mapWindowHeight = 512 + 44;
+            int mapWindowHeight = 512;
+            if (Parameters.CommonMovingMapWindowSize == 1024)
+            {
+                mapWindowWidth = 1024;
+                mapWindowHeight = 1024;
+            }
 
             int horizontalOffset, verticalOffset;
             // Offsets
-            if (Parameters.PhotoTourMapAlignment == "Top left")
+            if (Parameters.PhotoTourMapAlignment == "Top Left")
             {
                 horizontalOffset = Parameters.PhotoTourMapOffset;
                 verticalOffset = Parameters.PhotoTourMapOffset;
             }
-            else if (Parameters.PhotoTourMapAlignment == "Top right")
+            else if (Parameters.PhotoTourMapAlignment == "Top Right")
             {
                 horizontalOffset = Parameters.PhotoTourMapMonitorWidth - Parameters.PhotoTourMapOffset - mapWindowWidth;
                 verticalOffset = Parameters.PhotoTourMapOffset;
             }
-            else if (Parameters.PhotoTourMapAlignment == "Bottom right")
+            else if (Parameters.PhotoTourMapAlignment == "Bottom Right")
             {
                 horizontalOffset = Parameters.PhotoTourMapMonitorWidth - Parameters.PhotoTourMapOffset - mapWindowWidth;
                 verticalOffset = Parameters.PhotoTourMapMonitorHeight - Parameters.PhotoTourMapOffset - mapWindowHeight;
             }
-            else if (Parameters.PhotoTourMapAlignment == "Bottom left")
+            else if (Parameters.PhotoTourMapAlignment == "Bottom Left")
             {
                 horizontalOffset = Parameters.PhotoTourMapOffset;
                 verticalOffset = Parameters.PhotoTourMapMonitorHeight - Parameters.PhotoTourMapOffset - mapWindowHeight;
@@ -741,22 +746,22 @@ namespace P3D_Scenario_Generator
 
             int horizontalOffset = 0, verticalOffset = 0;
             // Offsets
-            if (Parameters.PhotoTourPhotoAlignment == "Top left")
+            if (Parameters.PhotoTourPhotoAlignment == "Top Left")
             {
                 horizontalOffset = Parameters.PhotoTourPhotoOffset;
                 verticalOffset = Parameters.PhotoTourPhotoOffset;
             }
-            else if (Parameters.PhotoTourPhotoAlignment == "Top right")
+            else if (Parameters.PhotoTourPhotoAlignment == "Top Right")
             {
                 horizontalOffset = Parameters.PhotoTourPhotoMonitorWidth - Parameters.PhotoTourPhotoOffset - drawing.Width;
                 verticalOffset = Parameters.PhotoTourPhotoOffset;
             }
-            else if (Parameters.PhotoTourPhotoAlignment == "Bottom right")
+            else if (Parameters.PhotoTourPhotoAlignment == "Bottom Right")
             {
                 horizontalOffset = Parameters.PhotoTourPhotoMonitorWidth - Parameters.PhotoTourPhotoOffset - drawing.Width;
                 verticalOffset = Parameters.PhotoTourPhotoMonitorHeight - Parameters.PhotoTourPhotoOffset - drawing.Height;
             }
-            else if (Parameters.PhotoTourPhotoAlignment == "Bottom left")
+            else if (Parameters.PhotoTourPhotoAlignment == "Bottom Left")
             {
                 horizontalOffset = Parameters.PhotoTourPhotoOffset;
                 verticalOffset = Parameters.PhotoTourPhotoMonitorHeight - Parameters.PhotoTourPhotoOffset - drawing.Height;
@@ -924,6 +929,8 @@ namespace P3D_Scenario_Generator
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
             StreamReader reader = new(stream);
             string movingMapJS = reader.ReadToEnd();
+
+            // Set map edges
             string mapNorth = mapEdges[0].north.ToDouble().ToString();
             string mapEast = mapEdges[0].east.ToDouble().ToString();
             string mapSouth = mapEdges[0].south.ToDouble().ToString();
@@ -939,6 +946,29 @@ namespace P3D_Scenario_Generator
             movingMapJS = movingMapJS.Replace("mapEastX", mapEast);
             movingMapJS = movingMapJS.Replace("mapSouthX", mapSouth);
             movingMapJS = movingMapJS.Replace("mapWestX", mapWest);
+
+            // Set map size related values
+            if (Parameters.CommonMovingMapWindowSize == 512)
+            {
+                movingMapJS = movingMapJS.Replace("imagePixelsX", "512, 1024, 2048");
+                movingMapJS = movingMapJS.Replace("viewPortWidthX", "512");
+                movingMapJS = movingMapJS.Replace("viewPortHeightX", "512");
+                movingMapJS = movingMapJS.Replace("zoom1FilenameSuffixX", "1");
+                movingMapJS = movingMapJS.Replace("zoom2FilenameSuffixX", "2");
+                movingMapJS = movingMapJS.Replace("zoom3FilenameSuffixX", "3");
+            }
+            else
+            {
+                movingMapJS = movingMapJS.Replace("imagePixelsX", "1024, 2048, 4096");
+                movingMapJS = movingMapJS.Replace("viewPortWidthX", "1024");
+                movingMapJS = movingMapJS.Replace("viewPortHeightX", "1024");
+                movingMapJS = movingMapJS.Replace("zoom1FilenameSuffixX", "2");
+                movingMapJS = movingMapJS.Replace("zoom2FilenameSuffixX", "3");
+                movingMapJS = movingMapJS.Replace("zoom3FilenameSuffixX", "4");
+            }
+
+
+
             File.WriteAllText(saveLocation, movingMapJS);
             stream.Dispose();
         }

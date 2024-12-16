@@ -359,7 +359,7 @@ namespace P3D_Scenario_Generator
 
         static internal void MontageTilesToColumn(int yCount, int xIndex, string filename)
         {
-            using var images = new MagickImageCollection();
+            var images = new MagickImageCollection();
             var settings = new MontageSettings
             {
                 Geometry = new MagickGeometry($"{Con.tileSize}x{Con.tileSize}"),
@@ -372,11 +372,12 @@ namespace P3D_Scenario_Generator
             }
             using var result = images.Montage(settings);
             result.Write($"{Parameters.ImageFolder}\\{filename}_{xIndex}.png");
+            images.Dispose();
         }
 
         static internal void MontageTilesToRow(int xCount, int yIndex, string filename)
         {
-            using var images = new MagickImageCollection();
+            var images = new MagickImageCollection();
             var settings = new MontageSettings
             {
                 Geometry = new MagickGeometry($"{Con.tileSize}x{Con.tileSize}"),
@@ -389,11 +390,12 @@ namespace P3D_Scenario_Generator
             }
             using var result = images.Montage(settings);
             result.Write($"{Parameters.ImageFolder}\\{filename}_{yIndex}.png");
+            images.Dispose();
         }
 
         static internal void MontageColumns(int xCount, int yCount, string filename)
         {
-            using var images = new MagickImageCollection();
+            var images = new MagickImageCollection();
             var settings = new MontageSettings
             {
                 Geometry = new MagickGeometry($"{Con.tileSize}x{Con.tileSize * yCount}"),
@@ -406,11 +408,12 @@ namespace P3D_Scenario_Generator
             }
             using var result = images.Montage(settings);
             result.Write($"{Parameters.ImageFolder}\\{filename}.png");
+            images.Dispose();
         }
 
         static internal void MontageRows(int xCount, int yCount, string filename)
         {
-            using var images = new MagickImageCollection();
+            var images = new MagickImageCollection();
             var settings = new MontageSettings
             {
                 Geometry = new MagickGeometry($"{Con.tileSize * xCount}x{Con.tileSize}"),
@@ -423,6 +426,7 @@ namespace P3D_Scenario_Generator
             }
             using var result = images.Montage(settings);
             result.Write($"{Parameters.ImageFolder}\\{filename}.png");
+            images.Dispose();
         }
 
         static internal void MontageTiles(BoundingBox boundingBox, int zoom, string filename)
@@ -454,14 +458,14 @@ namespace P3D_Scenario_Generator
                     break;
             }
             image.Write($"{Parameters.ImageFolder}\\{filename}.{newExt}");
-            File.Delete($"{Parameters.ImageFolder}\\{filename}.{oldExt}");
+            Form.DeleteFile($"{Parameters.ImageFolder}\\{filename}.{oldExt}");
         }
 
         static internal void DeleteTempOSMfiles(string filename)
         {
             foreach (string f in Directory.EnumerateFiles(Parameters.ImageFolder, $"{filename}_*.png"))
             {
-                File.Delete(f);
+                Form.DeleteFile(f);
             }
         }
 

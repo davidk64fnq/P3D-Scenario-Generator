@@ -84,7 +84,6 @@ namespace P3D_Scenario_Generator
                     }
                     else
                     {
-                        reader.ReadToFollowing("City");
                         curAirport.City = reader.ReadElementContentAsString();
                     }
                     while (reader.Read())

@@ -39,7 +39,7 @@ namespace P3D_Scenario_Generator
         {
             int zoom = GetBoundingBoxZoom(gates, 0, gates.Count - 1);
             List<Tile> tiles = SetCircuitOSMtiles(gates, zoom, 0, gates.Count - 1);
-            BoundingBox boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
+            BoundingBox boundingBox = OSM.GetBoundingBox(tiles, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
             Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
             Drawing.MakeSquare(boundingBox, "Charts_01", zoom, Con.tileFactor);
@@ -52,7 +52,7 @@ namespace P3D_Scenario_Generator
         {
             int zoom = 15;
             List<Tile> tiles = SetCircuitOSMtiles(gates, zoom, 0, 0);
-            BoundingBox boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
+            BoundingBox boundingBox = OSM.GetBoundingBox(tiles, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
             if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
             {
@@ -78,7 +78,7 @@ namespace P3D_Scenario_Generator
             for (int zoom = 2; zoom <= Con.maxZoomLevel; zoom++) // zoom of 1 is map of the world!
             {
                 tiles = SetCircuitOSMtiles(gates, zoom, startGateIndex, finishGateIndex);
-                boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
+                boundingBox = OSM.GetBoundingBox(tiles, zoom);
                 if ((boundingBox.xAxis.Count > Con.tileFactor) || (boundingBox.yAxis.Count > Con.tileFactor))
                 {
                     return zoom - 1;

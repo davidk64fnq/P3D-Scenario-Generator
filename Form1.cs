@@ -10,7 +10,7 @@ namespace P3D_Scenario_Generator
 {
     public partial class Form : System.Windows.Forms.Form
     {
-        private static readonly Form form = (Form)Application.OpenForms[0];
+        internal static readonly Form form = (Form)Application.OpenForms[0];
 
         public Form()
         {
@@ -72,8 +72,8 @@ namespace P3D_Scenario_Generator
             if (Parameters.SetParams())
             {
                 DisplayStartMessage();
-                Drawing.DrawScenarioImages();
                 SaveUserSettings(TabPageSettings.Controls);
+                Drawing.DrawScenarioImages();
                 DoScenarioSpecificTasks();
 
                 // Delete next three lines once re-write complete
@@ -218,28 +218,9 @@ namespace P3D_Scenario_Generator
 
         #region Sign Writing Tab
 
-        static private bool ValidateSignWritingParameters()
-        {
-            if (Convert.ToInt32(form.TextBoxSignTilt.Text) > 90)
-            {
-                MessageBox.Show($"Tilt angle is limited to between 1 and 90 degrees inclusive", "Sign Writing Scenario: tilt angle", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return false;
-            }
-            return true;
-        }
-
         #endregion
 
         #region Celestial Navigation Tab
-        static private bool ValidateCelestialIntegerParameters()
-        {
-            if (Convert.ToInt32(form.TextBoxCelestialMaxDist.Text) < Convert.ToInt32(form.TextBoxCelestialMinDist.Text))
-            {
-                MessageBox.Show($"Maximum distance from start position to destination must be greater than minimum distance", "Celestial Navigation Scenario: leg distance", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return false;
-            }
-            return true;
-        }
 
         #endregion
 
@@ -678,7 +659,7 @@ namespace P3D_Scenario_Generator
             }
 
             for (int i = 0; i < text.Length; i++)
-                if (!char.IsLetter(text[i]) && text[i] != ' ' && text[i] != '@')
+                if (!char.IsLetter(text[i]) && text[i] != ' ') // Used to include  && text[i] != '@' - don't know why!
                 {
                     DisplayParameterValidationMsg($"Alphabetic string expected, 'A' to 'Z' and 'a' to 'z' only", title, e);
                     return false;
@@ -734,50 +715,6 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private void TextBoxInteger_Validating(object sender, CancelEventArgs e)
-        {
-            int paramAsInt;
-            try
-            {
-                paramAsInt = Convert.ToInt32(((TextBox)sender).Text);
-            }
-            catch (Exception)
-            {
-                MessageBox.Show($"Integer value expected", ((TextBox)sender).AccessibleName, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                e.Cancel = true;
-            }
-            if (((TextBox)sender).Name.Contains("TextBoxSignTilt"))
-            {
-                if (e.Cancel == false && !ValidateSignWritingParameters())
-                {
-                    e.Cancel = true;
-                }
-            }
-            else if (((TextBox)sender).Name.Contains("TextBoxCelestial") && ((TextBox)sender).Name.Contains("Dist"))
-            {
-                if (e.Cancel == false && !ValidateCelestialIntegerParameters())
-                {
-                    e.Cancel = true;
-                }
-            }
-        }
-
-        private void TextBoxString_Validating(object sender, CancelEventArgs e)
-        {
-            if (string.IsNullOrEmpty(((TextBox)sender).Text))
-            {
-                MessageBox.Show($"Alphabetic string expected", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                e.Cancel = true;
-            }
-
-            for (int i = 0; i < ((TextBox)sender).Text.Length; i++)
-                if (!char.IsLetter(((TextBox)sender).Text[i]) && ((TextBox)sender).Text[i] != ' ' && ((TextBox)sender).Text[i] != '@')
-                {
-                    MessageBox.Show($"Alphabetic string expected, 'A' to 'Z' and 'a' to 'z' only", ((TextBox)sender).Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    e.Cancel = true;
-                }
-        }
-
         private void Init(object sender, EventArgs e)
         {
             string[] newUIvariation = [Properties.Settings.Default.SelectedAircraft, Properties.Settings.Default.AircraftImage];
@@ -785,6 +722,25 @@ namespace P3D_Scenario_Generator
             List<string> aircraftList = [Properties.Settings.Default.SelectedAircraft];
             ListBoxAircraft.DataSource = aircraftList;
             Aircraft.CruiseSpeed = Properties.Settings.Default.CruiseSpeed;
+        }
+
+        internal static void DeleteFile(string filename)
+        {
+            if (!File.Exists(filename))
+                return;
+            var started = DateTime.UtcNow;
+            while ((DateTime.UtcNow - started).TotalMilliseconds < 2000)
+            {
+                try
+                {
+                    File.Delete(filename);
+                    return;
+                }
+                catch (System.IO.IOException)
+                {
+                    // Ignore
+                }
+            }
         }
 
         #endregion

@@ -40,7 +40,7 @@ namespace P3D_Scenario_Generator
                 }
                 image.Save($"{Parameters.ImageFolder}\\{urlIconAdded[index]}");
                 image.Dispose();
-                File.Delete($"{Parameters.ImageFolder}\\{urlFilename[index]}");
+                Form.DeleteFile($"{Parameters.ImageFolder}\\{urlFilename[index]}");
             }
         }
 
@@ -105,7 +105,7 @@ namespace P3D_Scenario_Generator
             curPhoto.zoom = Convert.ToDouble(doc.SelectSingleNode("/Response/ResourceSets/ResourceSet/Resources/StaticMapMetadata/Zoom/text()").Value);
             curPhoto.centreLat = Convert.ToDouble(doc.SelectSingleNode("/Response/ResourceSets/ResourceSet/Resources/StaticMapMetadata/MapCenter/Latitude/text()").Value);
             curPhoto.centreLon = Convert.ToDouble(doc.SelectSingleNode("/Response/ResourceSets/ResourceSet/Resources/StaticMapMetadata/MapCenter/Longitude/text()").Value);
-            File.Delete($"{Parameters.ImageFolder}\\temp.xml");
+            Form.DeleteFile($"{Parameters.ImageFolder}\\temp.xml");
         }
     }
 }

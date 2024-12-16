@@ -39,9 +39,9 @@ namespace P3D_Scenario_Generator
         /// coordinate must be more than boundingBoxTrimMargin pixels from any edge of the bounding box.
         /// </summary>
         /// <param name="tiles">A list of OSM tile references and their associated coordinate</param>
-        /// <param name="boundingBox">The bounding box to be populated
+        /// <param name="boundingBox">The bounding box to be populated</param>
         /// <param name="zoom">The zoom level required for the bounding box</param>
-        static internal BoundingBox GetTilesBoundingBox(List<Tile> tiles, int zoom)
+        static internal BoundingBox GetBoundingBox(List<Tile> tiles, int zoom)
         {
             // Initialise boundingBox to the first tile
             BoundingBox boundingBox = new();
@@ -53,7 +53,7 @@ namespace P3D_Scenario_Generator
             // Adjust boundingBox as needed to include remaining tiles
             for (int tileNo = 1; tileNo < tiles.Count; tileNo++)
             {
-                AddTileToBoundingBox(tiles[tileNo], boundingBox, zoom);
+                ExtendBoundingBox(tiles[tileNo], boundingBox, zoom);
             }
 
             // Add extra tiles if any tile coordinates are too close to bounding box edge
@@ -70,32 +70,32 @@ namespace P3D_Scenario_Generator
         /// <param name="newTile">The tile to be added to bounding box</param>
         /// <param name="boundingBox">The bounding box is two lists of tile numbers, one for x axis the other y axis</param>
         /// <param name="zoom">The zoom level of the bounding box</param>
-        static internal void AddTileToBoundingBox(Tile newTile, BoundingBox boundingBox, int zoom)
+        static internal void ExtendBoundingBox(Tile newTile, BoundingBox boundingBox, int zoom)
         {
             // New tile is above BB i.e. tileNo < boundingBox[yAxis][0]
             if (newTile.yIndex < boundingBox.yAxis[0])
             {
-                AddTileToBBnorth(newTile, boundingBox);
+                ExtendBoundingBoxNorth(newTile, boundingBox);
             }
 
             // New tile is below BB i.e. tileNo > boundingBox[yAxis][^1]
             if (newTile.yIndex > boundingBox.yAxis[^1])
             {
-                AddTileToBBsouth(newTile, boundingBox);
+                ExtendBoundingBoxSouth(newTile, boundingBox);
             }
 
             // New tile is right of BB i.e. tileNo > boundingBox[xAxis][^1], determine whether to move righthand
             // side of bounding box further to the right (usual case) or lefthand side further to the left (across meridian)
             if (newTile.xIndex > boundingBox.xAxis[^1])
             {
-                AddTileToBBeast(newTile, boundingBox, zoom);
+                ExtendBoundingBoxEast(newTile, boundingBox, zoom);
             }
 
             // New tile is left of BB i.e. tileNo < boundingBox[xAxis][0], determine whether to move lefthand
             // side of bounding box further to the left (usual case) or righthand side further to the right (across meridian)
             if (newTile.xIndex < boundingBox.xAxis[0])
             {
-                AddTileToBBwest(newTile, boundingBox, zoom);
+                ExtendBoundingBoxWest(newTile, boundingBox, zoom);
             }
         }
 
@@ -104,7 +104,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="newTile">The tile to be added to bounding box</param>
         /// <param name="boundingBox">The bounding box is two lists of tile numbers, one for x axis the other y axis</param>
-        static internal void AddTileToBBnorth(Tile newTile, BoundingBox boundingBox)
+        static internal void ExtendBoundingBoxNorth(Tile newTile, BoundingBox boundingBox)
         {
             // Insert extra tile No's at beginning of yAxis list
             for (int tileNo = boundingBox.yAxis[0] - 1; tileNo >= newTile.yIndex; tileNo--)
@@ -118,7 +118,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="newTile">The tile to be added to bounding box</param>
         /// <param name="boundingBox">The bounding box is two lists of tile numbers, one for x axis the other y axis</param>
-        static internal void AddTileToBBsouth(Tile newTile, BoundingBox boundingBox)
+        static internal void ExtendBoundingBoxSouth(Tile newTile, BoundingBox boundingBox)
         {
             // Append extra tileNo's at end of yAxis list
             for (int tileNo = boundingBox.yAxis[^1] + 1; tileNo <= newTile.yIndex; tileNo++)
@@ -134,7 +134,7 @@ namespace P3D_Scenario_Generator
         /// <param name="newTile">The tile to be added to bounding box</param>
         /// <param name="boundingBox">The bounding box is two lists of tile numbers, one for x axis the other y axis</param>
         /// <param name="zoom">The zoom level of the bounding box</param>
-        static internal void AddTileToBBeast(Tile newTile, BoundingBox boundingBox, int zoom)
+        static internal void ExtendBoundingBoxEast(Tile newTile, BoundingBox boundingBox, int zoom)
         {
             int distEast, distWest;
 
@@ -169,7 +169,7 @@ namespace P3D_Scenario_Generator
         /// <param name="newTile">The tile to be added to bounding box</param>
         /// <param name="boundingBox">The bounding box is two lists of tile numbers, one for x axis the other y axis</param>
         /// <param name="zoom">The zoom level of the bounding box</param>
-        static internal void AddTileToBBwest(Tile newTile, BoundingBox boundingBox, int zoom)
+        static internal void ExtendBoundingBoxWest(Tile newTile, BoundingBox boundingBox, int zoom)
         {
             int distEast, distWest;
 
@@ -201,8 +201,13 @@ namespace P3D_Scenario_Generator
 
         #region Checking bounding box edges region
 
-        // Go through list of tiles and for those tiles that are on an edge of the bounding box
-        // check that the offset values of tile coordinate are not too close to the bounding box edge
+        /// <summary>
+        /// Go through list of tiles and for those tiles that are on an edge of the bounding box check that the offset values 
+        /// of tile coordinate are not too close to the bounding box edge. Extend bounding box if necessary.
+        /// </summary>
+        /// <param name="tiles">A list of OSM tile references and their associated coordinate</param>
+        /// <param name="boundingBox">The bounding box to be populated</param>
+        /// <param name="zoom">The zoom level required for the bounding box</param>
         static internal void CheckBoundingBoxEdges(List<Tile> tiles, BoundingBox boundingBox, int zoom)
         {
             for (int tileNo = 0; tileNo < tiles.Count; tileNo++)
@@ -233,14 +238,29 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// If the bounding box is not already at top of world map then extend it north by one if coordinate offset is 
+        /// too close to north edge of bounding box.
+        /// </summary>
+        /// <param name="tiles">A list of OSM tile references and their associated coordinate</param>
+        /// <param name="boundingBox">The bounding box to be populated</param>
+        /// <param name="zoom">The zoom level required for the bounding box</param>
         static internal void CheckBBedgesNorth(List<Tile> tiles, BoundingBox boundingBox, int tileNo)
         {
             if ((tiles[tileNo].yOffset < Con.boundingBoxTrimMargin) && (tiles[tileNo].yIndex > 0))
             {
-                boundingBox.yAxis.Insert(0, tiles[tileNo].yIndex - 1); // Only extend as far as xTile = 0
+                boundingBox.yAxis.Insert(0, tiles[tileNo].yIndex - 1); // Only extend as far as yTile = 0
             }
         }
 
+        /// <summary>
+        /// Extend bounding box east if coordinate offset is too close to the east edge. This could involve 
+        /// crossing the meridan line.
+        /// </summary>
+        /// <param name="tiles">A list of OSM tile references and their associated coordinate</param>
+        /// <param name="boundingBox">The bounding box to be populated</param>
+        /// <param name="zoom">The zoom level required for the bounding box</param>
+        /// <param name="tileNo">The index of tile to be checked</param>
         static internal void CheckBBedgesEast(List<Tile> tiles, BoundingBox boundingBox, int zoom, int tileNo)
         {
             int newTileNo;
@@ -255,6 +275,13 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// If the bounding box is not already at bottom of world map then extend it south by one if coordinate offset is 
+        /// too close to south edge of bounding box.
+        /// </summary>
+        /// <param name="tiles">A list of OSM tile references and their associated coordinate</param>
+        /// <param name="boundingBox">The bounding box to be populated</param>
+        /// <param name="zoom">The zoom level required for the bounding box</param>
         static internal void CheckBBedgesSouth(List<Tile> tiles, BoundingBox boundingBox, int zoom, int tileNo)
         {
             if ((tiles[tileNo].yOffset > Con.tileSize - Con.boundingBoxTrimMargin) && (tiles[tileNo].yIndex < Convert.ToInt32(Math.Pow(2, zoom)) - 1))
@@ -263,6 +290,14 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// Extend bounding box west if coordinate offset is too close to the west edge. This could involve 
+        /// crossing the meridan line.
+        /// </summary>
+        /// <param name="tiles">A list of OSM tile references and their associated coordinate</param>
+        /// <param name="boundingBox">The bounding box to be populated</param>
+        /// <param name="zoom">The zoom level required for the bounding box</param>
+        /// <param name="tileNo">The index of tile to be checked</param>
         static internal void CheckBBedgesWest(List<Tile> tiles, BoundingBox boundingBox, int zoom, int tileNo)
         {
             int newTileNo;
@@ -281,12 +316,29 @@ namespace P3D_Scenario_Generator
 
         #region Download OSM tiles region
 
+        /// <summary>
+        /// Download an OSM tile using server and API key specified by user on settings tab. First checks
+        /// whether the OSM tile is in the tile cache. Stores the tile at the specified path given by filename.
+        /// </summary>
+        /// <param name="xTileNo">East/West reference number for required tile at specified zoom</param>
+        /// <param name="yTileNo">North/South reference number for required tile at specified zoom</param>
+        /// <param name="zoom">Required zoom level of OSM tile to be downloaded.</param>
+        /// <param name="filename">Path and filename where the OSM tile will be stored.</param>
         static internal void DownloadOSMtile(int xTileNo, int yTileNo, int zoom, string filename)
         {
             string url = $"{Parameters.SettingsCacheServerURL}/{zoom}/{xTileNo}/{yTileNo}.png{Parameters.SettingsCacheServerAPIkey}";
             Cache.GetOrCopyOSMtile($"{zoom}-{xTileNo}-{yTileNo}.png", url, $"{Parameters.ImageFolder}\\{filename}");
         }
 
+        /// <summary>
+        /// Download an OSM tile column using server and API key specified by user on settings tab. First checks
+        /// whether the OSM tiles are in the tile cache. Stores the tiles at the specified path given by filename.
+        /// </summary>
+        /// <param name="xTileNo">East/West reference number for required tile column at specified zoom</param>
+        /// <param name="xIndex">Used to create the filename for the OSM tile column to be downloaded.</param>
+        /// <param name="boundingBox">The bounding box is used to get the height of the column of tiles to be downloaded</param>
+        /// <param name="zoom">Required zoom level of OSM tiles to be downloaded.</param>
+        /// <param name="filename">Path and filename where the OSM tiles will be stored.</param>
         static internal void DownloadOSMtileColumn(int xTileNo, int xIndex, BoundingBox boundingBox, int zoom, string filename)
         {
             for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++)
@@ -295,6 +347,15 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// Download an OSM tile row using server and API key specified by user on settings tab. First checks
+        /// whether the OSM tiles are in the tile cache. Stores the tiles at the specified path given by filename.
+        /// </summary>
+        /// <param name="xTileNo">North/South reference number for required tile row at specified zoom</param>
+        /// <param name="xIndex">Used to create the filename for the OSM tile row to be downloaded.</param>
+        /// <param name="boundingBox">The bounding box is used to get the width of the row of tiles to be downloaded</param>
+        /// <param name="zoom">Required zoom level of OSM tiles to be downloaded.</param>
+        /// <param name="filename">Path and filename where the OSM tiles will be stored.</param>
         static internal void DownloadOSMtileRow(int yTileNo, int yIndex, BoundingBox boundingBox, int zoom, string filename)
         {
             for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
@@ -322,6 +383,12 @@ namespace P3D_Scenario_Generator
 
         #region Utilities region
 
+        /// <summary>
+        /// Uses CordinatePart library to convert longitude of point to decimal degrees.
+        /// </summary>
+        /// <param name="sLon">The longitude value in format other than decimal degrees.</param>
+        /// <param name="dLon">The longitude value converted to decimal degrees.</param>
+        /// <returns>True if longitude successfully converted to decimal degrees format.</returns>
         internal static bool LonToDecimalDegree(string sLon, out double dLon)
         {
             if (CoordinatePart.TryParse(sLon, out CoordinatePart cLon))
@@ -333,6 +400,12 @@ namespace P3D_Scenario_Generator
             return false;
         }
 
+        /// <summary>
+        /// Uses CordinatePart library to convert latitude of point to decimal degrees.
+        /// </summary>
+        /// <param name="sLon">The latitude value in format other than decimal degrees.</param>
+        /// <param name="dLon">The latitude value converted to decimal degrees.</param>
+        /// <returns>True if latitude successfully converted to decimal degrees format.</returns>
         internal static bool LatToDecimalDegree(string sLat, out double dLat)
         {
             if (CoordinatePart.TryParse(sLat, out CoordinatePart cLat))
@@ -344,6 +417,14 @@ namespace P3D_Scenario_Generator
             return false;
         }
 
+        /// <summary>
+        /// Converts longitude in decimal degrees to xTile number for OSM tiles at given zoom level. Works
+        /// out the xOffset amount of the longitude value on the OSM tile. Uses formulae found at
+        /// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames.
+        /// </summary>
+        /// <param name="dLon">The longitude value converted to decimal degrees.</param>
+        /// <param name="z">The specified zoom level.</param>
+        /// <param name="tile">Stores the xTile and xOffset values for the specified longitude at specified zoom level.</param>
         internal static void LonToTileX(double dLon, int z, Tile tile)
         {
             double doubleTileX = (dLon + 180.0) / 360.0 * (1 << z);
@@ -351,6 +432,14 @@ namespace P3D_Scenario_Generator
             tile.xOffset = Convert.ToInt32(256 * (doubleTileX - tile.xIndex));
         }
 
+        /// <summary>
+        /// Converts latitude in decimal degrees to yTile number for OSM tiles at given zoom level. Works
+        /// out the yOffset amount of the latitude value on the OSM tile. Uses formulae found at
+        /// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames.
+        /// </summary>
+        /// <param name="dLon">The latitude value converted to decimal degrees.</param>
+        /// <param name="z">The specified zoom level.</param>
+        /// <param name="tile">Stores the yTile and yOffset values for the specified latitude at specified zoom level.</param>
         internal static void LatToTileY(double dLat, int z, Tile tile)
         {
             var latRad = dLat / 180 * Math.PI;

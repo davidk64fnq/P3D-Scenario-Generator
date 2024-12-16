@@ -4,16 +4,25 @@ body {
 	padding: 0;
 	overflow: hidden;
 }
-#mapDiv {
-	height: 512px;
-	width: 512px;
-}
-#buttonDiv {
-	padding: 10px;
-}
 #roadMapZoom2, #roadMapZoom3 {
 	display: none;
 }
 #plane {
 	position: absolute;
+}
+#planeButton {
+	position: absolute;
+  	top: 100%; /* adjust the top position of the button */
+  	left: 0%; /* adjust the left position of the button */
+  	transform: translate(3px, -28px); /* center the button */
+  	z-index: 2; /* set a higher z-index than the image */
+  	cursor: pointer; /* change mouse cursor on hover */
+}
+#zoomButton {
+	position: absolute;
+  	top: 100%; /* adjust the top position of the button */
+  	left: 0%; /* adjust the left position of the button */
+  	transform: translate(105px, -28px); /* center the button */
+  	z-index: 2; /* set a higher z-index than the image */
+  	cursor: pointer; /* change mouse cursor on hover */
 }

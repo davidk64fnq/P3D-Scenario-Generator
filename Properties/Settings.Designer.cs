@@ -472,5 +472,113 @@ namespace P3D_Scenario_Generator.Properties {
                 this["TextBoxCircuitSpeed"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSignMessage {
+            get {
+                return ((string)(this["TextBoxSignMessage"]));
+            }
+            set {
+                this["TextBoxSignMessage"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSignTilt {
+            get {
+                return ((string)(this["TextBoxSignTilt"]));
+            }
+            set {
+                this["TextBoxSignTilt"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSignFont {
+            get {
+                return ((string)(this["TextBoxSignFont"]));
+            }
+            set {
+                this["TextBoxSignFont"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSignWindowWidth {
+            get {
+                return ((string)(this["TextBoxSignWindowWidth"]));
+            }
+            set {
+                this["TextBoxSignWindowWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSignGateHeight {
+            get {
+                return ((string)(this["TextBoxSignGateHeight"]));
+            }
+            set {
+                this["TextBoxSignGateHeight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSignSegmentLength {
+            get {
+                return ((string)(this["TextBoxSignSegmentLength"]));
+            }
+            set {
+                this["TextBoxSignSegmentLength"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSignSegmentRadius {
+            get {
+                return ((string)(this["TextBoxSignSegmentRadius"]));
+            }
+            set {
+                this["TextBoxSignSegmentRadius"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxCelestialMinDist {
+            get {
+                return ((string)(this["TextBoxCelestialMinDist"]));
+            }
+            set {
+                this["TextBoxCelestialMinDist"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxCelestialMaxDist {
+            get {
+                return ((string)(this["TextBoxCelestialMaxDist"]));
+            }
+            set {
+                this["TextBoxCelestialMaxDist"] = value;
+            }
+        }
     }
 }

@@ -349,7 +349,7 @@ namespace P3D_Scenario_Generator
             BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = GetBoundingBoxZoom(tiles, 2, 2, 0, WikiTour.Count - 1);
             SetWikiOSMtiles(tiles, zoom, 0, WikiTour.Count - 1);
-            boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
+            boundingBox = OSM.GetBoundingBox(tiles, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
             Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
             Drawing.MakeSquare(boundingBox, "Charts_01", zoom, 2);
@@ -364,7 +364,7 @@ namespace P3D_Scenario_Generator
             BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = 15;
             SetWikiOSMtiles(tiles, zoom, 0, 0);
-            boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
+            boundingBox = OSM.GetBoundingBox(tiles, zoom);
             Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
             if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
             {
@@ -394,7 +394,7 @@ namespace P3D_Scenario_Generator
             {
                 tiles.Clear();
                 SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
-                boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
+                boundingBox = OSM.GetBoundingBox(tiles, zoom);
                 if ((boundingBox.xAxis.Count > tilesWidth) || (boundingBox.yAxis.Count > tilesHeight))
                 {
                     return zoom - 1;
@@ -444,7 +444,7 @@ namespace P3D_Scenario_Generator
 
             int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex);
             SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
-            boundingBox = OSM.GetTilesBoundingBox(tiles, zoom);
+            boundingBox = OSM.GetBoundingBox(tiles, zoom);
             int legNo = startItemIndex + 1; 
             Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1");
             Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
