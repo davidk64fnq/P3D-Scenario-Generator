@@ -43,6 +43,7 @@ namespace P3D_Scenario_Generator
             File.WriteAllText($"{Parameters.SettingsScenarioFolder}\\{Parameters.GeneralScenarioTitle}.htm", missionBriefHTML);
 
             if (Parameters.SelectedScenario != nameof(ScenarioTypes.WikiList) && Parameters.SelectedScenario != nameof(ScenarioTypes.Circuit)
+                && Parameters.SelectedScenario != nameof(ScenarioTypes.SignWriting)
                 && Parameters.SelectedScenario != nameof(ScenarioTypes.PhotoTour) && Parameters.SelectedScenario != nameof(ScenarioTypes.Testing))
             {
                 BingImages.CreateHTMLImages();

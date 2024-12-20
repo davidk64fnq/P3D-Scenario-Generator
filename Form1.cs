@@ -109,7 +109,8 @@ namespace P3D_Scenario_Generator
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.SignWriting])
             {
-                SignWriting.InitLetterPaths();
+                SignWriting.SetSignWriting();
+                SaveUserSettings(TabPageSign.Controls);
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial])
             {
@@ -203,16 +204,6 @@ namespace P3D_Scenario_Generator
         #endregion
 
         #region Photo Tour Tab
-
-        private void ButtonPhotoTourDefault_Click(object sender, EventArgs e)
-        {
-            SetDefaultParams(((Button)sender).Parent.Controls);
-        }
-
-        private void ButtonPhotoTourSaved_Click(object sender, EventArgs e)
-        {
-            RestoreUserSettings(((Button)sender).Parent.Controls);
-        }
 
         #endregion
 
@@ -321,6 +312,16 @@ namespace P3D_Scenario_Generator
             Help.ShowHelp(this, "Resources/help/index.htm");
         }
 
+        private void ButtonDefault_Click(object sender, EventArgs e)
+        {
+            SetDefaultParams(((Button)sender).Parent.Controls);
+        }
+
+        private void ButtonSaved_Click(object sender, EventArgs e)
+        {
+            RestoreUserSettings(((Button)sender).Parent.Controls);
+        }
+
         private void ComboBox_KeyDown(object sender, KeyEventArgs e)
         {
             string s = ((ComboBox)sender).Text;
@@ -377,8 +378,8 @@ namespace P3D_Scenario_Generator
             RestoreUserSettings(TabPagePhotoTour.Controls);
 
             // Signwriting tab
-            stream = Assembly.Load(appName).GetManifestResourceStream($"{appPath}.Resources.Images.signTabSegment22Font.jpg");
-            PictureBoxSignWriting.Image = new Bitmap(stream);
+            SetDefaultParams(TabPageSign.Controls);
+            RestoreUserSettings(TabPageSign.Controls);
 
             // Wikipedia Lists tab
             ListBoxWikiColumn.SetSelected(0, true);
@@ -386,8 +387,6 @@ namespace P3D_Scenario_Generator
             // Settings tab
             Cache.CheckCache();
             RestoreUserSettings(TabPageSettings.Controls);
-        //    ComboBoxSettingsCacheServers.SelectedIndex = Properties.Settings.Default.ComboBoxSettingsCacheServersSelectedIndex;
-        //    ComboBoxSettingsScenarioFolder.SelectedIndex = Properties.Settings.Default.ComboBoxSettingsScenarioFolderSelectedIndex;
         }
 
         /// <summary>

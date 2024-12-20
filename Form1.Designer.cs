@@ -37,7 +37,6 @@ namespace P3D_Scenario_Generator
             toolTip1 = new ToolTip(components);
             TextBoxCelestialMinDist = new TextBox();
             TextBoxCelestialMaxDist = new TextBox();
-            TextBoxSignMessage = new TextBox();
             label19 = new Label();
             TextBoxSignGateHeight = new TextBox();
             TextBoxSignSegmentLength = new TextBox();
@@ -112,6 +111,28 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitUpwind = new TextBox();
             label6 = new Label();
             label7 = new Label();
+            groupBox6 = new GroupBox();
+            tableLayoutPanel3 = new TableLayoutPanel();
+            ComboBoxSignMessage = new ComboBox();
+            TextBoxSignTilt = new TextBox();
+            label16 = new Label();
+            label24 = new Label();
+            label23 = new Label();
+            label22 = new Label();
+            groupBox7 = new GroupBox();
+            tableLayoutPanel4 = new TableLayoutPanel();
+            TextBoxSignMonitorHeight = new TextBox();
+            TextBoxSignMonitorWidth = new TextBox();
+            label20 = new Label();
+            label21 = new Label();
+            label27 = new Label();
+            TextBoxSignOffset = new TextBox();
+            label40 = new Label();
+            TextBoxSignMonitorNumber = new TextBox();
+            label44 = new Label();
+            ComboBoxSignAlignment = new ComboBox();
+            ButtonSignWritingSaved = new Button();
+            ButtonSignWritingDefault = new Button();
             TabPagePhotoTour = new TabPage();
             ButtonHelp = new Button();
             TabPageSettings = new TabPage();
@@ -121,16 +142,6 @@ namespace P3D_Scenario_Generator
             label26 = new Label();
             label25 = new Label();
             TabPageSign = new TabPage();
-            TextBoxSignWindowWidth = new TextBox();
-            TextBoxSignFont = new TextBox();
-            TextBoxSignTilt = new TextBox();
-            label24 = new Label();
-            label23 = new Label();
-            label22 = new Label();
-            PictureBoxSignWriting = new PictureBox();
-            label21 = new Label();
-            label20 = new Label();
-            label16 = new Label();
             TabPageCircuit = new TabPage();
             tableLayoutPanelCircuit = new TableLayoutPanel();
             ButtonCircuitDefault = new Button();
@@ -176,13 +187,16 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelSettingsMapTileCacheInfo.SuspendLayout();
             groupBox5.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
+            groupBox6.SuspendLayout();
+            tableLayoutPanel3.SuspendLayout();
+            groupBox7.SuspendLayout();
+            tableLayoutPanel4.SuspendLayout();
             TabPagePhotoTour.SuspendLayout();
             TabPageSettings.SuspendLayout();
             groupBox4.SuspendLayout();
             tableLayoutPanel1.SuspendLayout();
             TabPageCelestial.SuspendLayout();
             TabPageSign.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)PictureBoxSignWriting).BeginInit();
             TabPageCircuit.SuspendLayout();
             tableLayoutPanelCircuit.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)PictureBoxCircuit).BeginInit();
@@ -232,24 +246,13 @@ namespace P3D_Scenario_Generator
             toolTip1.SetToolTip(TextBoxCelestialMaxDist, "Max run home from starting position (miles)");
             TextBoxCelestialMaxDist.Validating += TextBox_Validating;
             // 
-            // TextBoxSignMessage
-            // 
-            TextBoxSignMessage.AccessibleName = "Sign Writing: Message";
-            TextBoxSignMessage.Location = new Point(148, 26);
-            TextBoxSignMessage.Name = "TextBoxSignMessage";
-            TextBoxSignMessage.Size = new Size(631, 23);
-            TextBoxSignMessage.TabIndex = 1;
-            TextBoxSignMessage.Tag = "FNQ Kid,string";
-            TextBoxSignMessage.Text = "FNQ Kid";
-            toolTip1.SetToolTip(TextBoxSignMessage, "Message consisting only of alphabetic characters");
-            TextBoxSignMessage.Validating += TextBox_Validating;
-            // 
             // label19
             // 
+            label19.Anchor = AnchorStyles.None;
             label19.AutoSize = true;
-            label19.Location = new Point(16, 79);
+            label19.Location = new Point(34, 34);
             label19.Name = "label19";
-            label19.Size = new Size(57, 15);
+            label19.Size = new Size(58, 15);
             label19.TabIndex = 2;
             label19.Text = "Tilt Angle";
             toolTip1.SetToolTip(label19, "Tilt Angle in degrees from horizontal");
@@ -257,7 +260,8 @@ namespace P3D_Scenario_Generator
             // TextBoxSignGateHeight
             // 
             TextBoxSignGateHeight.AccessibleName = "Sign Writing: Gate Height";
-            TextBoxSignGateHeight.Location = new Point(148, 214);
+            TextBoxSignGateHeight.Anchor = AnchorStyles.None;
+            TextBoxSignGateHeight.Location = new Point(139, 59);
             TextBoxSignGateHeight.Name = "TextBoxSignGateHeight";
             TextBoxSignGateHeight.Size = new Size(100, 23);
             TextBoxSignGateHeight.TabIndex = 10;
@@ -270,7 +274,8 @@ namespace P3D_Scenario_Generator
             // TextBoxSignSegmentLength
             // 
             TextBoxSignSegmentLength.AccessibleName = "Sign Writing: Segment Length";
-            TextBoxSignSegmentLength.Location = new Point(148, 262);
+            TextBoxSignSegmentLength.Anchor = AnchorStyles.None;
+            TextBoxSignSegmentLength.Location = new Point(139, 87);
             TextBoxSignSegmentLength.Name = "TextBoxSignSegmentLength";
             TextBoxSignSegmentLength.Size = new Size(100, 23);
             TextBoxSignSegmentLength.TabIndex = 13;
@@ -283,7 +288,8 @@ namespace P3D_Scenario_Generator
             // TextBoxSignSegmentRadius
             // 
             TextBoxSignSegmentRadius.AccessibleName = "Sign Writing: Segment Radius";
-            TextBoxSignSegmentRadius.Location = new Point(148, 312);
+            TextBoxSignSegmentRadius.Anchor = AnchorStyles.None;
+            TextBoxSignSegmentRadius.Location = new Point(139, 116);
             TextBoxSignSegmentRadius.Name = "TextBoxSignSegmentRadius";
             TextBoxSignSegmentRadius.Size = new Size(100, 23);
             TextBoxSignSegmentRadius.TabIndex = 14;
@@ -834,7 +840,7 @@ namespace P3D_Scenario_Generator
             label43.AutoSize = true;
             label43.Location = new Point(14, 37);
             label43.Name = "label43";
-            label43.Size = new Size(97, 15);
+            label43.Size = new Size(98, 15);
             label43.TabIndex = 29;
             label43.Text = "Cache Daily Total";
             toolTip1.SetToolTip(label43, "The total number of tiles retrieved so far today for the current server API key pair.");
@@ -919,9 +925,9 @@ namespace P3D_Scenario_Generator
             // 
             label17.Anchor = AnchorStyles.None;
             label17.AutoSize = true;
-            label17.Location = new Point(4, 120);
+            label17.Location = new Point(5, 120);
             label17.Name = "label17";
-            label17.Size = new Size(117, 15);
+            label17.Size = new Size(116, 15);
             label17.TabIndex = 24;
             label17.Text = "Max Bearing Change";
             toolTip1.SetToolTip(label17, "Maximum bearing change left or right each leg in degrees");
@@ -941,9 +947,9 @@ namespace P3D_Scenario_Generator
             // 
             label13.Anchor = AnchorStyles.None;
             label13.AutoSize = true;
-            label13.Location = new Point(23, 90);
+            label13.Location = new Point(24, 90);
             label13.Name = "label13";
-            label13.Size = new Size(79, 15);
+            label13.Size = new Size(78, 15);
             label13.TabIndex = 16;
             label13.Text = "Max No. Legs";
             toolTip1.SetToolTip(label13, "Maximum number of legs must between 2 and 18 inclusive and greater then or equal to minimum number of legs. Two legs would be starting airport to a single photo location then return to airport.");
@@ -963,9 +969,9 @@ namespace P3D_Scenario_Generator
             // 
             label11.Anchor = AnchorStyles.None;
             label11.AutoSize = true;
-            label11.Location = new Point(25, 34);
+            label11.Location = new Point(26, 34);
             label11.Name = "label11";
-            label11.Size = new Size(75, 15);
+            label11.Size = new Size(74, 15);
             label11.TabIndex = 4;
             label11.Text = "Max Leg Dist";
             toolTip1.SetToolTip(label11, "Maximum leg distance in miles to next photo, must be atleast 1 mile greater than minimum leg distance.");
@@ -1015,14 +1021,14 @@ namespace P3D_Scenario_Generator
             // 
             // ButtonPhotoTourSaved
             // 
-            ButtonPhotoTourSaved.Location = new Point(56, 340);
+            ButtonPhotoTourSaved.Location = new Point(158, 383);
             ButtonPhotoTourSaved.Name = "ButtonPhotoTourSaved";
             ButtonPhotoTourSaved.Size = new Size(75, 23);
             ButtonPhotoTourSaved.TabIndex = 38;
             ButtonPhotoTourSaved.Text = "Saved";
             toolTip1.SetToolTip(ButtonPhotoTourSaved, "Click to reset field values to those used for the last generated Photo Tour scenario.");
             ButtonPhotoTourSaved.UseVisualStyleBackColor = true;
-            ButtonPhotoTourSaved.Click += ButtonPhotoTourSaved_Click;
+            ButtonPhotoTourSaved.Click += ButtonSaved_Click;
             // 
             // ButtonPhotoTourDefault
             // 
@@ -1033,7 +1039,7 @@ namespace P3D_Scenario_Generator
             ButtonPhotoTourDefault.Text = "Default";
             toolTip1.SetToolTip(ButtonPhotoTourDefault, "Click to reset fields to program default values");
             ButtonPhotoTourDefault.UseVisualStyleBackColor = true;
-            ButtonPhotoTourDefault.Click += ButtonPhotoTourDefault_Click;
+            ButtonPhotoTourDefault.Click += ButtonDefault_Click;
             // 
             // TextBoxCircuitSpeed
             // 
@@ -1125,7 +1131,7 @@ namespace P3D_Scenario_Generator
             label28.AutoSize = true;
             label28.Location = new Point(702, 2);
             label28.Name = "label28";
-            label28.Size = new Size(57, 15);
+            label28.Size = new Size(58, 15);
             label28.TabIndex = 18;
             label28.Text = "Turn Rate";
             toolTip1.SetToolTip(label28, "360 degrees turn rate in minutes");
@@ -1237,6 +1243,304 @@ namespace P3D_Scenario_Generator
             label7.Text = "Upwind";
             toolTip1.SetToolTip(label7, "Distance between runway and gate 1 in miles");
             // 
+            // groupBox6
+            // 
+            groupBox6.Anchor = AnchorStyles.None;
+            groupBox6.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox6.Controls.Add(tableLayoutPanel3);
+            groupBox6.Location = new Point(21, 26);
+            groupBox6.Name = "groupBox6";
+            groupBox6.Size = new Size(286, 175);
+            groupBox6.TabIndex = 38;
+            groupBox6.TabStop = false;
+            groupBox6.Text = "Sign Parameters";
+            toolTip1.SetToolTip(groupBox6, "Parameters for generating a sign writing scenario.");
+            // 
+            // tableLayoutPanel3
+            // 
+            tableLayoutPanel3.AccessibleName = "";
+            tableLayoutPanel3.Anchor = AnchorStyles.None;
+            tableLayoutPanel3.ColumnCount = 2;
+            tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel3.Controls.Add(ComboBoxSignMessage, 1, 0);
+            tableLayoutPanel3.Controls.Add(TextBoxSignSegmentRadius, 1, 4);
+            tableLayoutPanel3.Controls.Add(TextBoxSignSegmentLength, 1, 3);
+            tableLayoutPanel3.Controls.Add(TextBoxSignGateHeight, 1, 2);
+            tableLayoutPanel3.Controls.Add(TextBoxSignTilt, 1, 1);
+            tableLayoutPanel3.Controls.Add(label16, 0, 0);
+            tableLayoutPanel3.Controls.Add(label24, 0, 4);
+            tableLayoutPanel3.Controls.Add(label23, 0, 3);
+            tableLayoutPanel3.Controls.Add(label22, 0, 2);
+            tableLayoutPanel3.Controls.Add(label19, 0, 1);
+            tableLayoutPanel3.ImeMode = ImeMode.On;
+            tableLayoutPanel3.Location = new Point(16, 22);
+            tableLayoutPanel3.Name = "tableLayoutPanel3";
+            tableLayoutPanel3.RowCount = 5;
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel3.Size = new Size(253, 143);
+            tableLayoutPanel3.TabIndex = 35;
+            // 
+            // ComboBoxSignMessage
+            // 
+            ComboBoxSignMessage.AccessibleName = "Sign Parameters: Sign Message";
+            ComboBoxSignMessage.Anchor = AnchorStyles.None;
+            ComboBoxSignMessage.DropDownWidth = 100;
+            ComboBoxSignMessage.FormattingEnabled = true;
+            ComboBoxSignMessage.Location = new Point(139, 3);
+            ComboBoxSignMessage.Name = "ComboBoxSignMessage";
+            ComboBoxSignMessage.Size = new Size(100, 23);
+            ComboBoxSignMessage.TabIndex = 43;
+            ComboBoxSignMessage.Tag = ",string";
+            toolTip1.SetToolTip(ComboBoxSignMessage, "The message you wish to write in the sky! Uppercase and lowercase alphabet characters accepted.");
+            ComboBoxSignMessage.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
+            ComboBoxSignMessage.KeyDown += ComboBox_KeyDown;
+            // 
+            // TextBoxSignTilt
+            // 
+            TextBoxSignTilt.AccessibleName = "Sign Writing: Tilt Angle";
+            TextBoxSignTilt.Anchor = AnchorStyles.None;
+            TextBoxSignTilt.Location = new Point(139, 31);
+            TextBoxSignTilt.Name = "TextBoxSignTilt";
+            TextBoxSignTilt.Size = new Size(100, 23);
+            TextBoxSignTilt.TabIndex = 3;
+            TextBoxSignTilt.Tag = "10, whole,<,90";
+            TextBoxSignTilt.Text = "10";
+            TextBoxSignTilt.TextAlign = HorizontalAlignment.Center;
+            TextBoxSignTilt.Validating += TextBox_Validating;
+            // 
+            // label16
+            // 
+            label16.Anchor = AnchorStyles.None;
+            label16.AutoSize = true;
+            label16.Location = new Point(36, 6);
+            label16.Name = "label16";
+            label16.Size = new Size(53, 15);
+            label16.TabIndex = 0;
+            label16.Text = "Message";
+            // 
+            // label24
+            // 
+            label24.Anchor = AnchorStyles.None;
+            label24.AutoSize = true;
+            label24.Location = new Point(17, 120);
+            label24.Name = "label24";
+            label24.Size = new Size(92, 15);
+            label24.TabIndex = 12;
+            label24.Text = "Segment Radius";
+            // 
+            // label23
+            // 
+            label23.Anchor = AnchorStyles.None;
+            label23.AutoSize = true;
+            label23.Location = new Point(16, 90);
+            label23.Name = "label23";
+            label23.Size = new Size(94, 15);
+            label23.TabIndex = 11;
+            label23.Text = "Segment Length";
+            // 
+            // label22
+            // 
+            label22.Anchor = AnchorStyles.None;
+            label22.AutoSize = true;
+            label22.Location = new Point(28, 62);
+            label22.Name = "label22";
+            label22.Size = new Size(70, 15);
+            label22.TabIndex = 9;
+            label22.Text = "Gate Height";
+            // 
+            // groupBox7
+            // 
+            groupBox7.Anchor = AnchorStyles.None;
+            groupBox7.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox7.Controls.Add(tableLayoutPanel4);
+            groupBox7.Location = new Point(21, 231);
+            groupBox7.Name = "groupBox7";
+            groupBox7.Size = new Size(286, 175);
+            groupBox7.TabIndex = 39;
+            groupBox7.TabStop = false;
+            groupBox7.Text = "Sign Window Location";
+            toolTip1.SetToolTip(groupBox7, "Default location of sign writing message window. (Window starts undocked and can be moved)");
+            // 
+            // tableLayoutPanel4
+            // 
+            tableLayoutPanel4.AccessibleName = "";
+            tableLayoutPanel4.Anchor = AnchorStyles.None;
+            tableLayoutPanel4.ColumnCount = 2;
+            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel4.Controls.Add(TextBoxSignMonitorHeight, 1, 4);
+            tableLayoutPanel4.Controls.Add(TextBoxSignMonitorWidth, 1, 3);
+            tableLayoutPanel4.Controls.Add(label20, 0, 4);
+            tableLayoutPanel4.Controls.Add(label21, 0, 3);
+            tableLayoutPanel4.Controls.Add(label27, 0, 1);
+            tableLayoutPanel4.Controls.Add(TextBoxSignOffset, 1, 1);
+            tableLayoutPanel4.Controls.Add(label40, 0, 2);
+            tableLayoutPanel4.Controls.Add(TextBoxSignMonitorNumber, 1, 0);
+            tableLayoutPanel4.Controls.Add(label44, 0, 0);
+            tableLayoutPanel4.Controls.Add(ComboBoxSignAlignment, 1, 2);
+            tableLayoutPanel4.ImeMode = ImeMode.On;
+            tableLayoutPanel4.Location = new Point(16, 22);
+            tableLayoutPanel4.Name = "tableLayoutPanel4";
+            tableLayoutPanel4.RowCount = 5;
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel4.Size = new Size(253, 143);
+            tableLayoutPanel4.TabIndex = 35;
+            // 
+            // TextBoxSignMonitorHeight
+            // 
+            TextBoxSignMonitorHeight.AccessibleName = "Sign Window Location: Monitor Height";
+            TextBoxSignMonitorHeight.Anchor = AnchorStyles.None;
+            TextBoxSignMonitorHeight.Location = new Point(139, 116);
+            TextBoxSignMonitorHeight.Name = "TextBoxSignMonitorHeight";
+            TextBoxSignMonitorHeight.Size = new Size(100, 23);
+            TextBoxSignMonitorHeight.TabIndex = 39;
+            TextBoxSignMonitorHeight.Tag = "1080,natural";
+            TextBoxSignMonitorHeight.Text = "1080";
+            TextBoxSignMonitorHeight.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxSignMonitorHeight, "Resolution height in pixels of the monitor that sign window will display on.\r\n");
+            // 
+            // TextBoxSignMonitorWidth
+            // 
+            TextBoxSignMonitorWidth.AccessibleName = "Sign Window Location: Monitor Width";
+            TextBoxSignMonitorWidth.Anchor = AnchorStyles.None;
+            TextBoxSignMonitorWidth.Location = new Point(139, 87);
+            TextBoxSignMonitorWidth.Name = "TextBoxSignMonitorWidth";
+            TextBoxSignMonitorWidth.Size = new Size(100, 23);
+            TextBoxSignMonitorWidth.TabIndex = 39;
+            TextBoxSignMonitorWidth.Tag = "1920,natural";
+            TextBoxSignMonitorWidth.Text = "1920";
+            TextBoxSignMonitorWidth.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxSignMonitorWidth, "Resolution width in pixels of the monitor that sign window will display on. \r\n");
+            // 
+            // label20
+            // 
+            label20.Anchor = AnchorStyles.None;
+            label20.AutoSize = true;
+            label20.Location = new Point(18, 120);
+            label20.Name = "label20";
+            label20.Size = new Size(89, 15);
+            label20.TabIndex = 39;
+            label20.Text = "Monitor Height";
+            toolTip1.SetToolTip(label20, "Resolution height in pixels of the monitor that sign window will display on.");
+            // 
+            // label21
+            // 
+            label21.Anchor = AnchorStyles.None;
+            label21.AutoSize = true;
+            label21.Location = new Point(20, 90);
+            label21.Name = "label21";
+            label21.Size = new Size(85, 15);
+            label21.TabIndex = 39;
+            label21.Text = "Monitor Width";
+            toolTip1.SetToolTip(label21, "Resolution width in pixels of the monitor that sign window will display on. ");
+            // 
+            // label27
+            // 
+            label27.Anchor = AnchorStyles.None;
+            label27.AutoSize = true;
+            label27.Location = new Point(43, 34);
+            label27.Name = "label27";
+            label27.Size = new Size(39, 15);
+            label27.TabIndex = 30;
+            label27.Text = "Offset";
+            toolTip1.SetToolTip(label27, resources.GetString("label27.ToolTip"));
+            // 
+            // TextBoxSignOffset
+            // 
+            TextBoxSignOffset.AccessibleName = "Sign Window Location: Horizontal Offset";
+            TextBoxSignOffset.Anchor = AnchorStyles.None;
+            TextBoxSignOffset.Location = new Point(139, 31);
+            TextBoxSignOffset.Name = "TextBoxSignOffset";
+            TextBoxSignOffset.Size = new Size(100, 23);
+            TextBoxSignOffset.TabIndex = 33;
+            TextBoxSignOffset.Tag = "20,whole,<=,20";
+            TextBoxSignOffset.Text = "20";
+            TextBoxSignOffset.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxSignOffset, resources.GetString("TextBoxSignOffset.ToolTip"));
+            // 
+            // label40
+            // 
+            label40.Anchor = AnchorStyles.None;
+            label40.AutoSize = true;
+            label40.Location = new Point(31, 62);
+            label40.Name = "label40";
+            label40.Size = new Size(63, 15);
+            label40.TabIndex = 31;
+            label40.Text = "Alignment";
+            toolTip1.SetToolTip(label40, "Default location of sign window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            // 
+            // TextBoxSignMonitorNumber
+            // 
+            TextBoxSignMonitorNumber.AccessibleName = "Sign Window Location: Monitor Number";
+            TextBoxSignMonitorNumber.Anchor = AnchorStyles.None;
+            TextBoxSignMonitorNumber.Location = new Point(139, 3);
+            TextBoxSignMonitorNumber.Name = "TextBoxSignMonitorNumber";
+            TextBoxSignMonitorNumber.Size = new Size(100, 23);
+            TextBoxSignMonitorNumber.TabIndex = 32;
+            TextBoxSignMonitorNumber.Tag = "0,whole";
+            TextBoxSignMonitorNumber.Text = "0";
+            TextBoxSignMonitorNumber.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxSignMonitorNumber, "The default monitor that the sign window will display in. Experiment with values between 0 and the number of monitors minus 1.\r\n");
+            // 
+            // label44
+            // 
+            label44.Anchor = AnchorStyles.None;
+            label44.AutoSize = true;
+            label44.Location = new Point(14, 6);
+            label44.Name = "label44";
+            label44.Size = new Size(97, 15);
+            label44.TabIndex = 29;
+            label44.Text = "Monitor Number";
+            toolTip1.SetToolTip(label44, "The default monitor that the sign window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            // 
+            // ComboBoxSignAlignment
+            // 
+            ComboBoxSignAlignment.AccessibleName = "Sign Window Location: Alignment";
+            ComboBoxSignAlignment.Anchor = AnchorStyles.None;
+            ComboBoxSignAlignment.DropDownWidth = 100;
+            ComboBoxSignAlignment.FormattingEnabled = true;
+            ComboBoxSignAlignment.Items.AddRange(new object[] { "Centered", "Top Left", "Top Right", "Bottom Right", "Bottom Left" });
+            ComboBoxSignAlignment.Location = new Point(139, 59);
+            ComboBoxSignAlignment.Name = "ComboBoxSignAlignment";
+            ComboBoxSignAlignment.Size = new Size(100, 23);
+            ComboBoxSignAlignment.TabIndex = 43;
+            ComboBoxSignAlignment.Tag = "Top Right";
+            ComboBoxSignAlignment.Text = "Top Right";
+            toolTip1.SetToolTip(ComboBoxSignAlignment, "Default location of sign window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.\r\n");
+            // 
+            // ButtonSignWritingSaved
+            // 
+            ButtonSignWritingSaved.Location = new Point(688, 383);
+            ButtonSignWritingSaved.Name = "ButtonSignWritingSaved";
+            ButtonSignWritingSaved.Size = new Size(75, 23);
+            ButtonSignWritingSaved.TabIndex = 40;
+            ButtonSignWritingSaved.Text = "Saved";
+            toolTip1.SetToolTip(ButtonSignWritingSaved, "Click to reset field values to those used for the last generated Sign Writing scenario.");
+            ButtonSignWritingSaved.UseVisualStyleBackColor = true;
+            ButtonSignWritingSaved.Click += ButtonSaved_Click;
+            // 
+            // ButtonSignWritingDefault
+            // 
+            ButtonSignWritingDefault.Location = new Point(587, 383);
+            ButtonSignWritingDefault.Name = "ButtonSignWritingDefault";
+            ButtonSignWritingDefault.Size = new Size(75, 23);
+            ButtonSignWritingDefault.TabIndex = 41;
+            ButtonSignWritingDefault.Text = "Default";
+            toolTip1.SetToolTip(ButtonSignWritingDefault, "Click to reset fields to program default values");
+            ButtonSignWritingDefault.UseVisualStyleBackColor = true;
+            ButtonSignWritingDefault.Click += ButtonDefault_Click;
+            // 
             // TabPagePhotoTour
             // 
             TabPagePhotoTour.BackColor = Color.FromArgb(64, 64, 64);
@@ -1322,7 +1626,7 @@ namespace P3D_Scenario_Generator
             label26.AutoSize = true;
             label26.Location = new Point(16, 79);
             label26.Name = "label26";
-            label26.Size = new Size(109, 15);
+            label26.Size = new Size(108, 15);
             label26.TabIndex = 1;
             label26.Text = "Maximum distance";
             // 
@@ -1337,126 +1641,16 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageSign
             // 
-            TabPageSign.BackColor = Color.FromArgb(255, 192, 128);
-            TabPageSign.Controls.Add(TextBoxSignSegmentRadius);
-            TabPageSign.Controls.Add(TextBoxSignSegmentLength);
-            TabPageSign.Controls.Add(TextBoxSignGateHeight);
-            TabPageSign.Controls.Add(TextBoxSignWindowWidth);
-            TabPageSign.Controls.Add(TextBoxSignFont);
-            TabPageSign.Controls.Add(TextBoxSignTilt);
-            TabPageSign.Controls.Add(TextBoxSignMessage);
-            TabPageSign.Controls.Add(label24);
-            TabPageSign.Controls.Add(label23);
-            TabPageSign.Controls.Add(label22);
-            TabPageSign.Controls.Add(PictureBoxSignWriting);
-            TabPageSign.Controls.Add(label21);
-            TabPageSign.Controls.Add(label20);
-            TabPageSign.Controls.Add(label19);
-            TabPageSign.Controls.Add(label16);
+            TabPageSign.BackColor = Color.FromArgb(64, 64, 64);
+            TabPageSign.Controls.Add(ButtonSignWritingDefault);
+            TabPageSign.Controls.Add(ButtonSignWritingSaved);
+            TabPageSign.Controls.Add(groupBox7);
+            TabPageSign.Controls.Add(groupBox6);
             TabPageSign.Location = new Point(4, 24);
             TabPageSign.Name = "TabPageSign";
             TabPageSign.Size = new Size(812, 438);
             TabPageSign.TabIndex = 3;
             TabPageSign.Text = "Sign Writing";
-            // 
-            // TextBoxSignWindowWidth
-            // 
-            TextBoxSignWindowWidth.AccessibleName = "Sign Writing: Window Width";
-            TextBoxSignWindowWidth.Location = new Point(148, 166);
-            TextBoxSignWindowWidth.Name = "TextBoxSignWindowWidth";
-            TextBoxSignWindowWidth.Size = new Size(100, 23);
-            TextBoxSignWindowWidth.TabIndex = 7;
-            TextBoxSignWindowWidth.Tag = "1000,natural";
-            TextBoxSignWindowWidth.Text = "1000";
-            TextBoxSignWindowWidth.TextAlign = HorizontalAlignment.Center;
-            TextBoxSignWindowWidth.Validating += TextBox_Validating;
-            // 
-            // TextBoxSignFont
-            // 
-            TextBoxSignFont.AccessibleName = "Sign Writing: Font";
-            TextBoxSignFont.Enabled = false;
-            TextBoxSignFont.Location = new Point(148, 118);
-            TextBoxSignFont.Name = "TextBoxSignFont";
-            TextBoxSignFont.Size = new Size(100, 23);
-            TextBoxSignFont.TabIndex = 6;
-            TextBoxSignFont.Tag = "Segment 22,string";
-            TextBoxSignFont.Text = "Segment 22";
-            TextBoxSignFont.TextAlign = HorizontalAlignment.Center;
-            TextBoxSignFont.Validating += TextBox_Validating;
-            // 
-            // TextBoxSignTilt
-            // 
-            TextBoxSignTilt.AccessibleName = "Sign Writing: Tilt Angle";
-            TextBoxSignTilt.Location = new Point(148, 71);
-            TextBoxSignTilt.Name = "TextBoxSignTilt";
-            TextBoxSignTilt.Size = new Size(100, 23);
-            TextBoxSignTilt.TabIndex = 3;
-            TextBoxSignTilt.Tag = "10, whole,<,90";
-            TextBoxSignTilt.Text = "10";
-            TextBoxSignTilt.TextAlign = HorizontalAlignment.Center;
-            TextBoxSignTilt.Validating += TextBox_Validating;
-            // 
-            // label24
-            // 
-            label24.AutoSize = true;
-            label24.Location = new Point(16, 315);
-            label24.Name = "label24";
-            label24.Size = new Size(92, 15);
-            label24.TabIndex = 12;
-            label24.Text = "Segment Radius";
-            // 
-            // label23
-            // 
-            label23.AutoSize = true;
-            label23.Location = new Point(16, 265);
-            label23.Name = "label23";
-            label23.Size = new Size(94, 15);
-            label23.TabIndex = 11;
-            label23.Text = "Segment Length";
-            // 
-            // label22
-            // 
-            label22.AutoSize = true;
-            label22.Location = new Point(16, 217);
-            label22.Name = "label22";
-            label22.Size = new Size(70, 15);
-            label22.TabIndex = 9;
-            label22.Text = "Gate Height";
-            // 
-            // PictureBoxSignWriting
-            // 
-            PictureBoxSignWriting.Location = new Point(279, 71);
-            PictureBoxSignWriting.Name = "PictureBoxSignWriting";
-            PictureBoxSignWriting.Size = new Size(500, 241);
-            PictureBoxSignWriting.TabIndex = 8;
-            PictureBoxSignWriting.TabStop = false;
-            // 
-            // label21
-            // 
-            label21.AutoSize = true;
-            label21.Location = new Point(16, 175);
-            label21.Name = "label21";
-            label21.Size = new Size(86, 15);
-            label21.TabIndex = 5;
-            label21.Text = "Window Width";
-            // 
-            // label20
-            // 
-            label20.AutoSize = true;
-            label20.Location = new Point(16, 126);
-            label20.Name = "label20";
-            label20.Size = new Size(31, 15);
-            label20.TabIndex = 4;
-            label20.Text = "Font";
-            // 
-            // label16
-            // 
-            label16.AutoSize = true;
-            label16.Location = new Point(16, 34);
-            label16.Name = "label16";
-            label16.Size = new Size(53, 15);
-            label16.TabIndex = 0;
-            label16.Text = "Message";
             // 
             // TabPageCircuit
             // 
@@ -1586,7 +1780,7 @@ namespace P3D_Scenario_Generator
             label8.AutoSize = true;
             label8.Location = new Point(30, 78);
             label8.Name = "label8";
-            label8.Size = new Size(77, 15);
+            label8.Size = new Size(78, 15);
             label8.TabIndex = 14;
             label8.Text = "Scenario Title";
             // 
@@ -1849,7 +2043,7 @@ namespace P3D_Scenario_Generator
             LabelWikiTableNames.AutoSize = true;
             LabelWikiTableNames.Location = new Point(37, 88);
             LabelWikiTableNames.Name = "LabelWikiTableNames";
-            LabelWikiTableNames.Size = new Size(74, 15);
+            LabelWikiTableNames.Size = new Size(75, 15);
             LabelWikiTableNames.TabIndex = 2;
             LabelWikiTableNames.Text = "Table Names";
             // 
@@ -1897,6 +2091,12 @@ namespace P3D_Scenario_Generator
             groupBox5.ResumeLayout(false);
             tableLayoutPanel2.ResumeLayout(false);
             tableLayoutPanel2.PerformLayout();
+            groupBox6.ResumeLayout(false);
+            tableLayoutPanel3.ResumeLayout(false);
+            tableLayoutPanel3.PerformLayout();
+            groupBox7.ResumeLayout(false);
+            tableLayoutPanel4.ResumeLayout(false);
+            tableLayoutPanel4.PerformLayout();
             TabPagePhotoTour.ResumeLayout(false);
             TabPageSettings.ResumeLayout(false);
             groupBox4.ResumeLayout(false);
@@ -1905,8 +2105,6 @@ namespace P3D_Scenario_Generator
             TabPageCelestial.ResumeLayout(false);
             TabPageCelestial.PerformLayout();
             TabPageSign.ResumeLayout(false);
-            TabPageSign.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)PictureBoxSignWriting).EndInit();
             TabPageCircuit.ResumeLayout(false);
             tableLayoutPanelCircuit.ResumeLayout(false);
             tableLayoutPanelCircuit.PerformLayout();
@@ -1944,16 +2142,10 @@ namespace P3D_Scenario_Generator
         internal TextBox TextBoxSignSegmentRadius;
         internal TextBox TextBoxSignSegmentLength;
         internal TextBox TextBoxSignGateHeight;
-        internal TextBox TextBoxSignWindowWidth;
-        internal TextBox TextBoxSignFont;
         internal TextBox TextBoxSignTilt;
-        internal TextBox TextBoxSignMessage;
         private Label label24;
         private Label label23;
         private Label label22;
-        private PictureBox PictureBoxSignWriting;
-        private Label label21;
-        private Label label20;
         private Label label19;
         private Label label16;
         private TabPage TabPagePhotoTour;
@@ -2066,6 +2258,23 @@ namespace P3D_Scenario_Generator
         internal TextBox TextBoxCircuitHeightDown;
         internal TextBox TextBoxCircuitTurnRate;
         internal TextBox TextBoxCircuitSpeed;
+        private GroupBox groupBox6;
+        private TableLayoutPanel tableLayoutPanel3;
+        internal ComboBox ComboBoxSignMessage;
+        private GroupBox groupBox7;
+        private TableLayoutPanel tableLayoutPanel4;
+        internal TextBox TextBoxSignMonitorHeight;
+        internal TextBox TextBoxSignMonitorWidth;
+        private Label label20;
+        private Label label21;
+        private Label label27;
+        internal TextBox TextBoxSignOffset;
+        private Label label40;
+        internal TextBox TextBoxSignMonitorNumber;
+        private Label label44;
+        internal ComboBox ComboBoxSignAlignment;
+        private Button ButtonSignWritingDefault;
+        private Button ButtonSignWritingSaved;
     }
 }
 

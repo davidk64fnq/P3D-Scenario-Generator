@@ -476,36 +476,12 @@ namespace P3D_Scenario_Generator.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string TextBoxSignMessage {
-            get {
-                return ((string)(this["TextBoxSignMessage"]));
-            }
-            set {
-                this["TextBoxSignMessage"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string TextBoxSignTilt {
             get {
                 return ((string)(this["TextBoxSignTilt"]));
             }
             set {
                 this["TextBoxSignTilt"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string TextBoxSignFont {
-            get {
-                return ((string)(this["TextBoxSignFont"]));
-            }
-            set {
-                this["TextBoxSignFont"] = value;
             }
         }
         
@@ -578,6 +554,100 @@ namespace P3D_Scenario_Generator.Properties {
             }
             set {
                 this["TextBoxCelestialMaxDist"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxSignMessage {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxSignMessage"]));
+            }
+            set {
+                this["ComboBoxSignMessage"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxSignMessageSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxSignMessageSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxSignMessageSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSignMonitorNumber {
+            get {
+                return ((string)(this["TextBoxSignMonitorNumber"]));
+            }
+            set {
+                this["TextBoxSignMonitorNumber"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSignOffset {
+            get {
+                return ((string)(this["TextBoxSignOffset"]));
+            }
+            set {
+                this["TextBoxSignOffset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxSignAlignment {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxSignAlignment"]));
+            }
+            set {
+                this["ComboBoxSignAlignment"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxSignAlignmentSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxSignAlignmentSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxSignAlignmentSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSignMonitorWidth {
+            get {
+                return ((string)(this["TextBoxSignMonitorWidth"]));
+            }
+            set {
+                this["TextBoxSignMonitorWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSignMonitorHeight {
+            get {
+                return ((string)(this["TextBoxSignMonitorHeight"]));
+            }
+            set {
+                this["TextBoxSignMonitorHeight"] = value;
             }
         }
     }

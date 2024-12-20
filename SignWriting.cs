@@ -3,11 +3,96 @@
     internal class SignWriting
     {
         private static readonly int[] letterPath = new int[123];
+        static internal List<Gate> gates = [];
 
-        // To code a character in letterPath, work out the 22 digit binary number which shows which segments
-        // need to be displayed. The 22 segments are always considered for inclusion in the same order. The first
-        // segment of the 22 segment path is coded at the right hand end of the binary number i.e. the bit representing
-        // 0 or 1. Then convert the binary number to decimal.
+        static internal void SetSignWriting()
+        {
+            Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+            Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+            InitLetterPaths();
+            gates = Gates.SetSignGatesMessage();
+            SetSignWritingOverviewImage(gates);
+            SetSignWritingLocationImage(gates);
+        }
+
+        /// <summary>
+        /// Creates "Charts_01.jpg" using a montage of OSM tiles that covers airport and sign writing gates/>
+        /// </summary>
+        static internal void SetSignWritingOverviewImage(List<Gate> gates)
+        {
+            int zoom = GetBoundingBoxZoom(gates, 0, gates.Count - 1);
+            List<Tile> tiles = SetSignWritingOSMtiles(gates, zoom, 0, gates.Count - 1);
+            BoundingBox boundingBox = OSM.GetBoundingBox(tiles, zoom);
+            Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
+            Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
+            Drawing.MakeSquare(boundingBox, "Charts_01", zoom, Con.tileFactor);
+        }
+
+        /// <summary>
+        /// Creates "chart_thumb.jpg" using an OSM tile that covers the starting airport
+        /// </summary>
+        static internal void SetSignWritingLocationImage(List<Gate> gates)
+        {
+            int zoom = 15;
+            List<Tile> tiles = SetSignWritingOSMtiles(gates, zoom, 0, 0);
+            BoundingBox boundingBox = OSM.GetBoundingBox(tiles, zoom);
+            Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
+            if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
+            {
+                Drawing.MakeSquare(boundingBox, "chart_thumb", zoom, Con.locTileFactor);
+            }
+            if (boundingBox.xAxis.Count == Con.tileFactor)
+            {
+                Drawing.Resize("chart_thumb.png", Con.tileSize, 0);
+            }
+        }
+
+        /// <summary>
+        /// Works out most zoomed in level that includes all gates specified by startGateIndex and finishGateIndex, 
+        /// plus airport where the montage of OSM tiles doesn't exceed <see cref="Con.tileFactor"/> in size
+        /// </summary>
+        /// <param name="startGateIndex">Index of first gate in sign writing message</param>
+        /// <param name="finishGateIndex">Index of last gate in sign writing message</param>
+        /// <returns>The maximum zoom level that meets constraints</returns>
+        static internal int GetBoundingBoxZoom(List<Gate> gates, int startGateIndex, int finishGateIndex)
+        {
+            List<Tile> tiles;
+            BoundingBox boundingBox;
+            for (int zoom = 2; zoom <= Con.maxZoomLevel; zoom++) // zoom of 1 is map of the world!
+            {
+                tiles = SetSignWritingOSMtiles(gates, zoom, startGateIndex, finishGateIndex);
+                boundingBox = OSM.GetBoundingBox(tiles, zoom);
+                if ((boundingBox.xAxis.Count > Con.tileFactor) || (boundingBox.yAxis.Count > Con.tileFactor))
+                {
+                    return zoom - 1;
+                }
+            }
+            return Con.maxZoomLevel;
+        }
+
+        /// <summary>
+        /// Finds OSM tile numbers and offsets for a sign writing message (all gates plus airport)
+        /// </summary>
+        /// <param name="zoom">The zoom level to get OSM tiles at</param>
+        /// <param name="startItemIndex">Index of first gate in sign writing message</param>
+        /// <param name="finishItemIndex">Index of last gate in sign writing message</param>
+        /// <returns>The list of tiles</returns>
+        static internal List<Tile> SetSignWritingOSMtiles(List<Gate> gates, int zoom, int startItemIndex, int finishItemIndex)
+        {
+            List<Tile> tiles = [];
+            for (int gateIndex = startItemIndex; gateIndex <= finishItemIndex; gateIndex++)
+            {
+                tiles.Add(OSM.GetOSMtile(gates[gateIndex].lon.ToString(), gates[gateIndex].lat.ToString(), zoom));
+            }
+            return tiles;
+        }
+
+        /// <summary>
+        /// To code a character in letterPath, work out the 22 digit binary number which shows which segments
+        /// need to be displayed. The 22 segments are always considered for inclusion in the same order. The first
+        /// segment of the 22 segment path is coded at the right hand end of the binary number i.e. the bit representing
+        /// 0 or 1. Then convert the binary number to decimal.
+        /// </summary>
         static internal void InitLetterPaths()
         {
             letterPath['@'] = 4194303;  // Test character all segments turned on
@@ -65,8 +150,14 @@
             letterPath['z'] = 565483;
         }
 
-        // A bitPosition parameter of '0' would mean test the righthand most bit in the binary segement representation
-        // of the character.
+        /// <summary>
+        /// A bitPosition parameter of '0' would mean test the righthand most bit in the binary segment representation
+        /// of the letter. Returns true if the bit at bitPosition is a "1" which means the segment indicated by 
+        /// bitPosition forms part of the letter in the message currently being processed.
+        /// </summary>
+        /// <param name="letter">Ascii letter to check</param>
+        /// <param name="bitPosition">Which bit in binary representation of letter to check whether set (equals "1")</param>
+        /// <returns></returns>
         static internal bool SegmentIsSet(char letter, int bitPosition)
         {
             string letterBinary = Convert.ToString(letterPath[letter], 2);
@@ -89,11 +180,14 @@
             }
         }
 
-        // Approximate distance flown in miles as number of segments (number of gates divided by two) times length of a segment
-        // plus 50% for flying between segments.
+        /// <summary>
+        /// Approximate distance flown in miles as number of segments (number of gates divided by two) times length of a segment
+        /// plus 50% for flying between segments.
+        /// </summary>
+        /// <returns></returns>
         static internal double GetSignWritingDistance()
         {
-            return Gates.GateCount / 2 * Parameters.SegmentLengthDeg * Con.degreeLatFeet / Con.feetInNM * 1.5;
+            return gates.Count / 2 * Parameters.SignSegmentLengthDeg * Con.degreeLatFeet / Con.feetInNM * 1.5;
         }
     }
 }

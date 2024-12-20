@@ -169,12 +169,59 @@ namespace P3D_Scenario_Generator
 
         # region Sign Writing tab
 
-        internal static string Message { get; private set; }
-        internal static double TiltAngle { get; private set; }
-        internal static double MessageWindowWidth { get; set; }
-        internal static double GateHeight { get; set; }
-        internal static double SegmentLengthDeg { get; set; }
-        internal static double SegmentRadiusDeg { get; set; }
+        /// <summary>
+        /// The message to be written, consisting of uppercase and lower case characters plus spaces
+        /// </summary>
+        internal static string SignMessage { get; private set; }
+
+        /// <summary>
+        /// The message can be tilted in the plane of the vertical segments. Gates for vertical segments
+        /// have the pitch altered up or down depending on whether gate sequence is gaining or losing
+        /// altitude. Horizontal segment gates have neutral pitch.
+        /// </summary>
+        internal static double SignTiltAngle { get; private set; }
+
+        /// <summary>
+        /// Height ASML for the lowest altitude gates.
+        /// </summary>
+        internal static double SignGateHeight { get; set; }
+
+        /// <summary>
+        /// The length of a segment measured in degrees of latitude. Includes straight portion of segment
+        /// excludes pointy caps.
+        /// </summary>
+        internal static double SignSegmentLengthDeg { get; set; }
+
+        /// <summary>
+        /// The radius of pointy caps of segment measured in degrees of latitude.
+        /// </summary>
+        internal static double SignSegmentRadiusDeg { get; set; }
+
+        /// <summary>
+        /// Reference integer for the monitor that sign writing window is to be displayed in initially. Values from 0 to the number of 
+        /// monitors minus 1 expected.
+        /// </summary>
+        internal static int SignMonitorNumber { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where top left hand corner of sign writing window is relative to monitor
+        /// </summary>
+        internal static int SignMonitorWidth { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where top left hand corner of sign writing window is relative to monitor
+        /// </summary>
+        internal static int SignMonitorHeight { get; set; }
+
+        /// <summary>
+        /// Specifies how close the corner of sign writing window is relative to the monitor corner. Values between 0 and 20 excepted.
+        /// </summary>
+        internal static int SignOffset { get; set; }
+
+        /// <summary>
+        /// Which of four corners of monitor to position sign writing window relative to or else in the center of monitor.
+        /// </summary>
+        internal static string SignAlignment { get; set; }
 
         #endregion
 
@@ -275,12 +322,16 @@ namespace P3D_Scenario_Generator
             PhotoTourMapAlignment = form.ComboBoxPhotoTourMapAlignment.GetItemText(form.ComboBoxPhotoTourMapAlignment.SelectedItem);
 
             // Sign Writing
-            Message = form.TextBoxSignMessage.Text;
-            TiltAngle = Convert.ToDouble(form.TextBoxSignTilt.Text);
-            MessageWindowWidth = Convert.ToDouble(form.TextBoxSignWindowWidth.Text);
-            GateHeight = Convert.ToDouble(form.TextBoxSignGateHeight.Text);
-            SegmentLengthDeg = Convert.ToDouble(form.TextBoxSignSegmentLength.Text) / Con.degreeLatFeet;
-            SegmentRadiusDeg = Convert.ToDouble(form.TextBoxSignSegmentRadius.Text) / Con.degreeLatFeet;
+            SignMessage = form.ComboBoxSignMessage.GetItemText(form.ComboBoxSignMessage.SelectedItem);
+            SignTiltAngle = Convert.ToDouble(form.TextBoxSignTilt.Text);
+            SignGateHeight = Convert.ToDouble(form.TextBoxSignGateHeight.Text);
+            SignSegmentLengthDeg = Convert.ToDouble(form.TextBoxSignSegmentLength.Text) / Con.degreeLatFeet;
+            SignSegmentRadiusDeg = Convert.ToDouble(form.TextBoxSignSegmentRadius.Text) / Con.degreeLatFeet;
+            SignMonitorNumber = Convert.ToInt32(form.TextBoxSignMonitorNumber.Text);
+            SignMonitorWidth = Convert.ToInt32(form.TextBoxSignMonitorWidth.Text);
+            SignMonitorHeight = Convert.ToInt32(form.TextBoxSignMonitorHeight.Text);
+            SignOffset = Convert.ToInt32(form.TextBoxSignOffset.Text);
+            SignAlignment = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxSignAlignment.SelectedItem);
 
             // Celestial Navigation
             CelestialMinDistance = Convert.ToDouble(form.TextBoxCelestialMinDist.Text);

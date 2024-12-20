@@ -270,11 +270,11 @@ namespace P3D_Scenario_Generator
             SetSignWritingScriptActions();
 
             // First pass
-            for (int gateNo = 1; gateNo <= Gates.GateCount; gateNo++)
+            for (int gateNo = 1; gateNo <= SignWriting.gates.Count; gateNo++)
 			{
                 // Create gate objects (hoop active, hoop inactive and number)
-                string hwp = GetGateWorldPosition(Gates.GetGate(gateNo), Con.hoopActVertOffset);
-                string go = GetGateOrientation(Gates.GetGate(gateNo));
+                string hwp = GetGateWorldPosition(SignWriting.gates[gateNo - 1], Con.hoopActVertOffset);
+                string go = GetGateOrientation(SignWriting.gates[gateNo - 1]);
                 SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Con.hoopActGuid, hwp, go, "False", "1", "False");
                 SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Con.hoopInactGuid, hwp, go, "False", "1", "False");
 
@@ -334,7 +334,7 @@ namespace P3D_Scenario_Generator
             }
 
             // Second pass
-            for (int gateNo = 1; gateNo <= Gates.GateCount; gateNo++)
+            for (int gateNo = 1; gateNo <= SignWriting.gates.Count; gateNo++)
             {
                 if (gateNo % 2 == 1) // First of gate pair marking a segment
                 {
@@ -345,7 +345,7 @@ namespace P3D_Scenario_Generator
                 }
                 else // Second of gate pair marking a segment
                 {
-                    if (gateNo + 1 < Gates.GateCount)
+                    if (gateNo + 1 < SignWriting.gates.Count)
                     {
                         // Make next segment start gate active
                         SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActHoopAct", gateNo, "ProximityTrigger");
@@ -356,7 +356,7 @@ namespace P3D_Scenario_Generator
                 }
 
                 // Add activate next gate proximity trigger action as event to proximity trigger
-                if (gateNo + 1 <= Gates.GateCount)
+                if (gateNo + 1 <= SignWriting.gates.Count)
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActProximityTrigger", gateNo, "ProximityTrigger");
             }
 
@@ -369,7 +369,7 @@ namespace P3D_Scenario_Generator
             SetSignWritingCSS();
 
             // Create  window open/close actions
-//            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", GetSignWritingWindowDimensions());
+            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", GetSignWritingWindowParameters(), Parameters.SignMonitorNumber.ToString());
             SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
 
             // Create timer trigger to play audio introductions, activate first gate and POI, activate first proximity trigger when scenario starts
@@ -391,7 +391,7 @@ namespace P3D_Scenario_Generator
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger
-            SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", Gates.GateCount, "ProximityTrigger");
+            SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", SignWriting.gates.Count, "ProximityTrigger");
         }
 
         static private void SetCelestialWorldBaseFlightXML()
@@ -781,13 +781,46 @@ namespace P3D_Scenario_Generator
 				$"{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W", true)},+0.0";
         }
 
-        static private string[] GetSignWritingWindowDimensions()
+        static private string[] GetSignWritingWindowParameters()
 		{
-            double windowWidth = Gates.cellPixels * (3 * Parameters.Message.Length - 1) + 1 + Gates.cellCapExtraPixels * 2 + 40 + 55;
-            if (windowWidth > Parameters.MessageWindowWidth)
-                windowWidth = Parameters.MessageWindowWidth;
-            double windowHeight = Gates.cellPixels * 4 + 1 + Gates.cellCapExtraPixels * 2 + 40 + 60;
-			return [windowWidth.ToString(), windowHeight.ToString()];
+            // Each character approx 80 pixels wide + 20 pixels padding before it, then extra 40 pixels at end of message
+            int windowWidth = (Parameters.SignMessage.Length * 100) + 40;
+            if (windowWidth > Parameters.SignMonitorWidth - 40)
+                windowWidth = Parameters.SignMonitorWidth - 40;
+
+            // Each character approx 160 pixels high + 20 pixels above it and 60 pixels below it 
+            int windowHeight = 240;
+
+            int horizontalOffset;
+            int verticalOffset;
+            // Offsets
+            if (Parameters.SignAlignment == "Top Left")
+            {
+                horizontalOffset = Parameters.SignOffset;
+                verticalOffset = Parameters.SignOffset;
+            }
+            else if (Parameters.SignAlignment == "Top Right")
+            {
+                horizontalOffset = Parameters.SignMonitorWidth - Parameters.SignOffset - windowWidth;
+                verticalOffset = Parameters.SignOffset;
+            }
+            else if (Parameters.SignAlignment == "Bottom Right")
+            {
+                horizontalOffset = Parameters.SignMonitorWidth - Parameters.SignOffset - windowWidth;
+                verticalOffset = Parameters.SignMonitorHeight - Parameters.SignOffset - windowHeight;
+            }
+            else if (Parameters.SignAlignment == "Bottom Left")
+            {
+                horizontalOffset = Parameters.SignOffset;
+                verticalOffset = Parameters.SignMonitorHeight - Parameters.SignOffset - windowHeight;
+            }
+            else // Parameters.SignAlignment == "Centered"
+            {
+                horizontalOffset = (Parameters.SignMonitorWidth / 2) - (windowWidth / 2);
+                verticalOffset = (Parameters.SignMonitorHeight / 2) - (windowHeight / 2);
+            }
+
+            return [windowWidth.ToString(), windowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
         }
 
         static private string GetWikiItemWorldPosition(int legNo)
@@ -1187,31 +1220,29 @@ namespace P3D_Scenario_Generator
             StreamReader reader = new(stream);
             signWritingHTML = reader.ReadToEnd();
 
-            // Cell is a square where each side has length of two segments, a letter is four cells high and two cells wide
-            // Gates.cellPixels is from middle pixel in segment outside edge to middle pixel in opposite segment outside edge inclusive
-            // Between letters is a gap of one cell width
-            // Canvas width is the cells plus cell gaps between letters plus the outside half of segment line at each end plus padding (20 * 2)
-            canvasWidth = Gates.cellPixels * 3 * Parameters.Message.Length + 1 + Gates.cellCapExtraPixels * 2 - Gates.cellPixels + 40;
+            // Each character approx 80 pixels wide + 20 pixels padding before it, then extra 20 pixels at end of message
+            canvasWidth = (Parameters.SignMessage.Length * 100) + 20;
             signWritingHTML = signWritingHTML.Replace("canvasWidthX", canvasWidth.ToString());
-            canvasHeight = Gates.cellPixels * 4 + 1 + Gates.cellCapExtraPixels * 2 + 40;
+            // Each character approx 160 pixels high + 20 pixels above it and 20 pixels below it
+            canvasHeight = 200;
             signWritingHTML = signWritingHTML.Replace("canvasHeightX", canvasHeight.ToString());
-            signWritingHTML = signWritingHTML.Replace("mapNorthX", (Runway.startRwy.AirportLat + Parameters.SegmentLengthDeg * 4).ToString());
-            signWritingHTML = signWritingHTML.Replace("mapEastX", (Runway.startRwy.AirportLon + Parameters.SegmentLengthDeg * (3 * Parameters.Message.Length - 1)).ToString());
+            signWritingHTML = signWritingHTML.Replace("mapNorthX", (Runway.startRwy.AirportLat + Parameters.SignSegmentLengthDeg * 4).ToString());
+            signWritingHTML = signWritingHTML.Replace("mapEastX", (Runway.startRwy.AirportLon + Parameters.SignSegmentLengthDeg * (3 * Parameters.SignMessage.Length - 1)).ToString());
             signWritingHTML = signWritingHTML.Replace("mapSouthX", Runway.startRwy.AirportLat.ToString());
             signWritingHTML = signWritingHTML.Replace("mapWestX", Runway.startRwy.AirportLon.ToString());
-            signWritingHTML = signWritingHTML.Replace("messageLengthX", Parameters.Message.Length.ToString());
+            signWritingHTML = signWritingHTML.Replace("messageLengthX", Parameters.SignMessage.Length.ToString());
             signWritingHTML = signWritingHTML.Replace("magVarX", Runway.startRwy.MagVar.ToString());
             string topPixels = "0,";
             string leftPixels = "0,";
             string bearings = "0,";
             Gate gate;
-            for (int index = 1; index <= Gates.GateCount; index++)
+            for (int index = 1; index <= SignWriting.gates.Count; index++)
             {
-                gate = Gates.GetGate(index);
+                gate = SignWriting.gates[index - 1];
                 topPixels += gate.topPixels.ToString();
                 leftPixels += gate.leftPixels.ToString();
                 bearings += gate.orientation.ToString();
-                if (index <= Gates.GateCount - 1)
+                if (index <= SignWriting.gates.Count - 1)
                 {
                     topPixels += ",";
                     leftPixels += ",";
