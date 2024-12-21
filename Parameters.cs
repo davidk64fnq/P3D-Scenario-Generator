@@ -236,6 +236,41 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
+        #region Wikipedia
+
+        /// <summary>
+        /// Reference integer for the monitor that map window is to be displayed in initially. Values from 0 to the number of 
+        /// monitors minus 1 expected.
+        /// </summary>
+        internal static int WikiMapMonitorNumber { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where top left hand corner of map window is relative to monitor
+        /// </summary>
+        internal static int WikiMapMonitorWidth { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where top left hand corner of map window is relative to monitor
+        /// </summary>
+        internal static int WikiMapMonitorHeight { get; set; }
+
+        /// <summary>
+        /// Specifies how close the corner of map window is relative to the monitor corner. Values between 0 and 20 excepted.
+        /// </summary>
+        internal static int WikiMapOffset { get; set; }
+
+        /// <summary>
+        /// Which of four corners of monitor to position map window relative to or else in the center of monitor.
+        /// </summary>
+        internal static string WikiMapAlignment { get; set; }
+
+        /// <summary>
+        /// User can select a map window size of either 512 or 1024 pixels square.
+        /// </summary>
+        internal static int WikiMapWindowSize { get; set; }
+
+        #endregion
+
         #region Settings tab
         internal static string SettingsCacheServerURL { get; set; }
         internal static string SettingsCacheServerAPIkey { get; set; }
@@ -307,7 +342,6 @@ namespace P3D_Scenario_Generator
             PhotoTourConstraintsMinLegDist = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMinLegDist.Text);
             PhotoTourConstraintsMinNoLegs = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMinNoLegs.Text);
             PhotoTourConstraintsMaxNoLegs = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxNoLegs.Text);
-            PhotoTourMapWindowSize = Convert.ToInt32(form.ComboBoxPhotoTourMapWindowSize.Text);
             PhotoTourConstraintsMaxBearingChange = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxBearingChange.Text);
             PhotoTourConstraintsHotspotRadius = Convert.ToDouble(form.TextBoxPhotoTourMapHotspotRadius.Text) * 0.3084; // Convert feet to metres
             PhotoTourPhotoMonitorNumber = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorNumber.Text);
@@ -320,6 +354,7 @@ namespace P3D_Scenario_Generator
             PhotoTourMapMonitorHeight = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorHeight.Text);
             PhotoTourMapOffset = Convert.ToInt32(form.TextBoxPhotoTourMapOffset.Text);
             PhotoTourMapAlignment = form.ComboBoxPhotoTourMapAlignment.GetItemText(form.ComboBoxPhotoTourMapAlignment.SelectedItem);
+            PhotoTourMapWindowSize = Convert.ToInt32(form.ComboBoxPhotoTourMapWindowSize.Text);
 
             // Sign Writing
             SignMessage = form.ComboBoxSignMessage.GetItemText(form.ComboBoxSignMessage.SelectedItem);
@@ -345,6 +380,12 @@ namespace P3D_Scenario_Generator
                     errorMsg += "\n\tSelect a list of Wikipedia items first";
                 };
             }
+            WikiMapMonitorNumber = Convert.ToInt32(form.TextBoxWikiMapMonitorNumber.Text);
+            WikiMapMonitorWidth = Convert.ToInt32(form.TextBoxWikiMapMonitorWidth.Text);
+            WikiMapMonitorHeight = Convert.ToInt32(form.TextBoxWikiMapMonitorHeight.Text);
+            WikiMapOffset = Convert.ToInt32(form.TextBoxWikiMapOffset.Text);
+            WikiMapAlignment = form.ComboBoxWikiMapAlignment.GetItemText(form.ComboBoxWikiMapAlignment.SelectedItem);
+            WikiMapWindowSize = Convert.ToInt32(form.ComboBoxWikiMapWindowSize.Text);
 
             // Settings
             SettingsScenarioFolder = $"{form.ComboBoxSettingsScenarioFolder.Text}\\{form.TextBoxScenarioTitle.Text}";

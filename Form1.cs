@@ -75,12 +75,6 @@ namespace P3D_Scenario_Generator
                 SaveUserSettings(TabPageSettings.Controls);
                 Drawing.DrawScenarioImages();
                 DoScenarioSpecificTasks();
-
-                // Delete next three lines once re-write complete
-                //    Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
-                //    Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
-                //    Gates.SetGates();
-
                 ScenarioFXML.GenerateFXMLfile();
                 ScenarioHTML.GenerateHTMLfiles();
                 ScenarioXML.GenerateXMLfile();
@@ -123,6 +117,7 @@ namespace P3D_Scenario_Generator
                 CelestialNav.SetCelestialSextantJS(saveLocation);
                 saveLocation = $"{Parameters.ImageFolder}\\styleCelestialSextant.css";
                 CelestialNav.SetCelestialSextantCSS(saveLocation);
+                SaveUserSettings(TabPageWikiList.Controls);
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
             {
@@ -220,7 +215,7 @@ namespace P3D_Scenario_Generator
         {
             if (TextBoxWikiURL.Text != null)
             {
-                Wikipedia.PopulateWikiPage(TextBoxWikiURL.Text, int.Parse(ListBoxWikiColumn.Text));
+                Wikipedia.PopulateWikiPage(TextBoxWikiURL.Text, int.Parse(TextBoxWikiItemLinkColumn.Text));
                 ListBoxWikiTableNames.DataSource = Wikipedia.CreateWikiTablesDesc();
             }
         }
@@ -382,7 +377,8 @@ namespace P3D_Scenario_Generator
             RestoreUserSettings(TabPageSign.Controls);
 
             // Wikipedia Lists tab
-            ListBoxWikiColumn.SetSelected(0, true);
+            SetDefaultParams(TabPageWikiList.Controls);
+            RestoreUserSettings(TabPageWikiList.Controls);
 
             // Settings tab
             Cache.CheckCache();
@@ -658,7 +654,7 @@ namespace P3D_Scenario_Generator
             }
 
             for (int i = 0; i < text.Length; i++)
-                if (!char.IsLetter(text[i]) && text[i] != ' ') // Used to include  && text[i] != '@' - don't know why!
+                if (!char.IsLetter(text[i]) && text[i] != ' ') // Include  && text[i] != '@' if using test character, see InitLetterPaths()
                 {
                     DisplayParameterValidationMsg($"Alphabetic string expected, 'A' to 'Z' and 'a' to 'z' only", title, e);
                     return false;
@@ -735,7 +731,7 @@ namespace P3D_Scenario_Generator
                     File.Delete(filename);
                     return;
                 }
-                catch (System.IO.IOException)
+                catch (IOException)
                 {
                     // Ignore
                 }

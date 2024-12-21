@@ -46,7 +46,6 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourConstraintsMaxBearingChange = new TextBox();
             TextBoxPhotoTourMapHotspotRadius = new TextBox();
             buttonAircraft = new Button();
-            ListBoxWikiColumn = new ListBox();
             TextBoxPhotoTourConstraintsMaxNoLegs = new TextBox();
             TextBoxPhotoTourConstraintsMinNoLegs = new TextBox();
             TextBoxPhotoTourPhotoOffset = new TextBox();
@@ -133,6 +132,36 @@ namespace P3D_Scenario_Generator
             ComboBoxSignAlignment = new ComboBox();
             ButtonSignWritingSaved = new Button();
             ButtonSignWritingDefault = new Button();
+            groupBox8 = new GroupBox();
+            tableLayoutPanel5 = new TableLayoutPanel();
+            ComboBoxWikiMapWindowSize = new ComboBox();
+            label50 = new Label();
+            TextBoxWikiMapMonitorHeight = new TextBox();
+            TextBoxWikiMapMonitorWidth = new TextBox();
+            label45 = new Label();
+            label46 = new Label();
+            label47 = new Label();
+            TextBoxWikiMapOffset = new TextBox();
+            label48 = new Label();
+            TextBoxWikiMapMonitorNumber = new TextBox();
+            label49 = new Label();
+            ComboBoxWikiMapAlignment = new ComboBox();
+            TextBoxWikiDistance = new TextBox();
+            LabelWikiDistance = new Label();
+            groupBox9 = new GroupBox();
+            tableLayoutPanel6 = new TableLayoutPanel();
+            TextBoxWikiItemLinkColumn = new TextBox();
+            TextBoxWikiURL = new TextBox();
+            ComboBoxWikiFinishingItem = new ComboBox();
+            LabelWikiFinishingItem = new Label();
+            ComboBoxWikiStartingItem = new ComboBox();
+            LabelWikiStartItem = new Label();
+            ListBoxWikiRoute = new ListBox();
+            LabelWikiRoute = new Label();
+            LabelWikiColumn = new Label();
+            ListBoxWikiTableNames = new ListBox();
+            LabelWikiTableNames = new Label();
+            LabelWikiURL = new Label();
             TabPagePhotoTour = new TabPage();
             ButtonHelp = new Button();
             TabPageSettings = new TabPage();
@@ -166,19 +195,6 @@ namespace P3D_Scenario_Generator
             label2 = new Label();
             TabControlP3DSG = new TabControl();
             TabPageWikiList = new TabPage();
-            TextBoxWikiDistance = new TextBox();
-            LabelWikiDistance = new Label();
-            ComboBoxWikiFinishingItem = new ComboBox();
-            LabelWikiFinishingItem = new Label();
-            ComboBoxWikiStartingItem = new ComboBox();
-            LabelWikiStartItem = new Label();
-            ListBoxWikiRoute = new ListBox();
-            LabelWikiRoute = new Label();
-            LabelWikiColumn = new Label();
-            ListBoxWikiTableNames = new ListBox();
-            LabelWikiTableNames = new Label();
-            LabelWikiURL = new Label();
-            TextBoxWikiURL = new TextBox();
             groupBox1.SuspendLayout();
             tableLayoutPanelPhotoTourPhotoWindowLocation.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -191,6 +207,10 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel3.SuspendLayout();
             groupBox7.SuspendLayout();
             tableLayoutPanel4.SuspendLayout();
+            groupBox8.SuspendLayout();
+            tableLayoutPanel5.SuspendLayout();
+            groupBox9.SuspendLayout();
+            tableLayoutPanel6.SuspendLayout();
             TabPagePhotoTour.SuspendLayout();
             TabPageSettings.SuspendLayout();
             groupBox4.SuspendLayout();
@@ -364,17 +384,6 @@ namespace P3D_Scenario_Generator
             toolTip1.SetToolTip(buttonAircraft, "Select the \"aircraft.cfg\" file for your aircraft and then the variation from the list above");
             buttonAircraft.UseVisualStyleBackColor = true;
             buttonAircraft.Click += ButtonAircraft_Click;
-            // 
-            // ListBoxWikiColumn
-            // 
-            ListBoxWikiColumn.FormattingEnabled = true;
-            ListBoxWikiColumn.ItemHeight = 15;
-            ListBoxWikiColumn.Items.AddRange(new object[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" });
-            ListBoxWikiColumn.Location = new Point(662, 29);
-            ListBoxWikiColumn.Name = "ListBoxWikiColumn";
-            ListBoxWikiColumn.Size = new Size(97, 19);
-            ListBoxWikiColumn.TabIndex = 8;
-            toolTip1.SetToolTip(ListBoxWikiColumn, "Column in table(s) containing name of items");
             // 
             // TextBoxPhotoTourConstraintsMaxNoLegs
             // 
@@ -1541,6 +1550,400 @@ namespace P3D_Scenario_Generator
             ButtonSignWritingDefault.UseVisualStyleBackColor = true;
             ButtonSignWritingDefault.Click += ButtonDefault_Click;
             // 
+            // groupBox8
+            // 
+            groupBox8.Anchor = AnchorStyles.None;
+            groupBox8.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox8.Controls.Add(tableLayoutPanel5);
+            groupBox8.Location = new Point(478, 30);
+            groupBox8.Name = "groupBox8";
+            groupBox8.Size = new Size(286, 222);
+            groupBox8.TabIndex = 40;
+            groupBox8.TabStop = false;
+            groupBox8.Text = "Wiki Map Window Location";
+            toolTip1.SetToolTip(groupBox8, "Default location of Wikipedia map window. (Window starts undocked and can be moved)");
+            // 
+            // tableLayoutPanel5
+            // 
+            tableLayoutPanel5.AccessibleName = "";
+            tableLayoutPanel5.Anchor = AnchorStyles.None;
+            tableLayoutPanel5.ColumnCount = 2;
+            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel5.Controls.Add(ComboBoxWikiMapWindowSize, 1, 5);
+            tableLayoutPanel5.Controls.Add(label50, 0, 5);
+            tableLayoutPanel5.Controls.Add(TextBoxWikiMapMonitorHeight, 1, 4);
+            tableLayoutPanel5.Controls.Add(TextBoxWikiMapMonitorWidth, 1, 3);
+            tableLayoutPanel5.Controls.Add(label45, 0, 4);
+            tableLayoutPanel5.Controls.Add(label46, 0, 3);
+            tableLayoutPanel5.Controls.Add(label47, 0, 1);
+            tableLayoutPanel5.Controls.Add(TextBoxWikiMapOffset, 1, 1);
+            tableLayoutPanel5.Controls.Add(label48, 0, 2);
+            tableLayoutPanel5.Controls.Add(TextBoxWikiMapMonitorNumber, 1, 0);
+            tableLayoutPanel5.Controls.Add(label49, 0, 0);
+            tableLayoutPanel5.Controls.Add(ComboBoxWikiMapAlignment, 1, 2);
+            tableLayoutPanel5.ImeMode = ImeMode.On;
+            tableLayoutPanel5.Location = new Point(17, 31);
+            tableLayoutPanel5.Name = "tableLayoutPanel5";
+            tableLayoutPanel5.RowCount = 6;
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 16.6666679F));
+            tableLayoutPanel5.Size = new Size(253, 171);
+            tableLayoutPanel5.TabIndex = 35;
+            // 
+            // ComboBoxWikiMapWindowSize
+            // 
+            ComboBoxWikiMapWindowSize.AccessibleName = "Wiki Map Window: Map Window Size";
+            ComboBoxWikiMapWindowSize.Anchor = AnchorStyles.None;
+            ComboBoxWikiMapWindowSize.DropDownWidth = 200;
+            ComboBoxWikiMapWindowSize.FormattingEnabled = true;
+            ComboBoxWikiMapWindowSize.Items.AddRange(new object[] { "512", "1024" });
+            ComboBoxWikiMapWindowSize.Location = new Point(139, 144);
+            ComboBoxWikiMapWindowSize.Name = "ComboBoxWikiMapWindowSize";
+            ComboBoxWikiMapWindowSize.Size = new Size(100, 23);
+            ComboBoxWikiMapWindowSize.TabIndex = 46;
+            ComboBoxWikiMapWindowSize.Tag = "512";
+            ComboBoxWikiMapWindowSize.Text = "512";
+            toolTip1.SetToolTip(ComboBoxWikiMapWindowSize, "Size of the square map window in pixels.");
+            // 
+            // label50
+            // 
+            label50.Anchor = AnchorStyles.None;
+            label50.AutoSize = true;
+            label50.Location = new Point(26, 148);
+            label50.Name = "label50";
+            label50.Size = new Size(74, 15);
+            label50.TabIndex = 44;
+            label50.Text = "Window Size";
+            toolTip1.SetToolTip(label50, "Size of the square map window in pixels.");
+            // 
+            // TextBoxWikiMapMonitorHeight
+            // 
+            TextBoxWikiMapMonitorHeight.AccessibleName = "Wiki Map Window Location: Monitor Height";
+            TextBoxWikiMapMonitorHeight.Anchor = AnchorStyles.None;
+            TextBoxWikiMapMonitorHeight.Location = new Point(139, 115);
+            TextBoxWikiMapMonitorHeight.Name = "TextBoxWikiMapMonitorHeight";
+            TextBoxWikiMapMonitorHeight.Size = new Size(100, 23);
+            TextBoxWikiMapMonitorHeight.TabIndex = 39;
+            TextBoxWikiMapMonitorHeight.Tag = "1080,natural";
+            TextBoxWikiMapMonitorHeight.Text = "1080";
+            TextBoxWikiMapMonitorHeight.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxWikiMapMonitorHeight, "Resolution height in pixels of the monitor that wikipedia list map window will display on.");
+            TextBoxWikiMapMonitorHeight.Validating += TextBox_Validating;
+            // 
+            // TextBoxWikiMapMonitorWidth
+            // 
+            TextBoxWikiMapMonitorWidth.AccessibleName = "Wiki Map Window Location: Monitor Width";
+            TextBoxWikiMapMonitorWidth.Anchor = AnchorStyles.None;
+            TextBoxWikiMapMonitorWidth.Location = new Point(139, 87);
+            TextBoxWikiMapMonitorWidth.Name = "TextBoxWikiMapMonitorWidth";
+            TextBoxWikiMapMonitorWidth.Size = new Size(100, 23);
+            TextBoxWikiMapMonitorWidth.TabIndex = 39;
+            TextBoxWikiMapMonitorWidth.Tag = "1920,natural";
+            TextBoxWikiMapMonitorWidth.Text = "1920";
+            TextBoxWikiMapMonitorWidth.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxWikiMapMonitorWidth, "Resolution width in pixels of the monitor that wikipedia list map window will display on. ");
+            TextBoxWikiMapMonitorWidth.Validating += TextBox_Validating;
+            // 
+            // label45
+            // 
+            label45.Anchor = AnchorStyles.None;
+            label45.AutoSize = true;
+            label45.Location = new Point(18, 118);
+            label45.Name = "label45";
+            label45.Size = new Size(89, 15);
+            label45.TabIndex = 39;
+            label45.Text = "Monitor Height";
+            toolTip1.SetToolTip(label45, "Resolution height in pixels of the monitor that wikipedia list map window will display on.");
+            // 
+            // label46
+            // 
+            label46.Anchor = AnchorStyles.None;
+            label46.AutoSize = true;
+            label46.Location = new Point(20, 90);
+            label46.Name = "label46";
+            label46.Size = new Size(85, 15);
+            label46.TabIndex = 39;
+            label46.Text = "Monitor Width";
+            toolTip1.SetToolTip(label46, "Resolution width in pixels of the monitor that wikipedia list map window will display on. ");
+            // 
+            // label47
+            // 
+            label47.Anchor = AnchorStyles.None;
+            label47.AutoSize = true;
+            label47.Location = new Point(43, 34);
+            label47.Name = "label47";
+            label47.Size = new Size(39, 15);
+            label47.TabIndex = 30;
+            label47.Text = "Offset";
+            toolTip1.SetToolTip(label47, resources.GetString("label47.ToolTip"));
+            // 
+            // TextBoxWikiMapOffset
+            // 
+            TextBoxWikiMapOffset.AccessibleName = "Wiki Map Window Location: Horizontal Offset";
+            TextBoxWikiMapOffset.Anchor = AnchorStyles.None;
+            TextBoxWikiMapOffset.Location = new Point(139, 31);
+            TextBoxWikiMapOffset.Name = "TextBoxWikiMapOffset";
+            TextBoxWikiMapOffset.Size = new Size(100, 23);
+            TextBoxWikiMapOffset.TabIndex = 33;
+            TextBoxWikiMapOffset.Tag = "20,whole,<=,20";
+            TextBoxWikiMapOffset.Text = "20";
+            TextBoxWikiMapOffset.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxWikiMapOffset, resources.GetString("TextBoxWikiMapOffset.ToolTip"));
+            TextBoxWikiMapOffset.Validating += TextBox_Validating;
+            // 
+            // label48
+            // 
+            label48.Anchor = AnchorStyles.None;
+            label48.AutoSize = true;
+            label48.Location = new Point(31, 62);
+            label48.Name = "label48";
+            label48.Size = new Size(63, 15);
+            label48.TabIndex = 31;
+            label48.Text = "Alignment";
+            toolTip1.SetToolTip(label48, "Default location of wikipedia list map window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            // 
+            // TextBoxWikiMapMonitorNumber
+            // 
+            TextBoxWikiMapMonitorNumber.AccessibleName = "Wiki Map Window Location: Monitor Number";
+            TextBoxWikiMapMonitorNumber.Anchor = AnchorStyles.None;
+            TextBoxWikiMapMonitorNumber.Location = new Point(139, 3);
+            TextBoxWikiMapMonitorNumber.Name = "TextBoxWikiMapMonitorNumber";
+            TextBoxWikiMapMonitorNumber.Size = new Size(100, 23);
+            TextBoxWikiMapMonitorNumber.TabIndex = 32;
+            TextBoxWikiMapMonitorNumber.Tag = "0,whole";
+            TextBoxWikiMapMonitorNumber.Text = "0";
+            TextBoxWikiMapMonitorNumber.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxWikiMapMonitorNumber, "The default monitor that the wikipedia list map window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            TextBoxWikiMapMonitorNumber.Validating += TextBox_Validating;
+            // 
+            // label49
+            // 
+            label49.Anchor = AnchorStyles.None;
+            label49.AutoSize = true;
+            label49.Location = new Point(14, 6);
+            label49.Name = "label49";
+            label49.Size = new Size(97, 15);
+            label49.TabIndex = 29;
+            label49.Text = "Monitor Number";
+            toolTip1.SetToolTip(label49, "The default monitor that the wikipedia list map window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            // 
+            // ComboBoxWikiMapAlignment
+            // 
+            ComboBoxWikiMapAlignment.AccessibleName = "Wiki Map Window Location: Alignment";
+            ComboBoxWikiMapAlignment.Anchor = AnchorStyles.None;
+            ComboBoxWikiMapAlignment.DropDownWidth = 100;
+            ComboBoxWikiMapAlignment.FormattingEnabled = true;
+            ComboBoxWikiMapAlignment.Items.AddRange(new object[] { "Centered", "Top Left", "Top Right", "Bottom Right", "Bottom Left" });
+            ComboBoxWikiMapAlignment.Location = new Point(139, 59);
+            ComboBoxWikiMapAlignment.Name = "ComboBoxWikiMapAlignment";
+            ComboBoxWikiMapAlignment.Size = new Size(100, 23);
+            ComboBoxWikiMapAlignment.TabIndex = 43;
+            ComboBoxWikiMapAlignment.Tag = "Top Right";
+            ComboBoxWikiMapAlignment.Text = "Top Right";
+            toolTip1.SetToolTip(ComboBoxWikiMapAlignment, "Default location of wikipedia list map window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            // 
+            // TextBoxWikiDistance
+            // 
+            TextBoxWikiDistance.AccessibleDescription = "Wikipedia List: Distance";
+            TextBoxWikiDistance.Anchor = AnchorStyles.None;
+            TextBoxWikiDistance.Enabled = false;
+            TextBoxWikiDistance.Location = new Point(139, 172);
+            TextBoxWikiDistance.Name = "TextBoxWikiDistance";
+            TextBoxWikiDistance.Size = new Size(100, 23);
+            TextBoxWikiDistance.TabIndex = 18;
+            TextBoxWikiDistance.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxWikiDistance, "Distance for Wikipedia Tour in miles based on selected start and finish");
+            // 
+            // LabelWikiDistance
+            // 
+            LabelWikiDistance.Anchor = AnchorStyles.None;
+            LabelWikiDistance.AutoSize = true;
+            LabelWikiDistance.Enabled = false;
+            LabelWikiDistance.Location = new Point(37, 176);
+            LabelWikiDistance.Name = "LabelWikiDistance";
+            LabelWikiDistance.Size = new Size(52, 15);
+            LabelWikiDistance.TabIndex = 17;
+            LabelWikiDistance.Text = "Distance";
+            toolTip1.SetToolTip(LabelWikiDistance, "Distance for Wikipedia Tour in miles based on selected start and finish");
+            // 
+            // groupBox9
+            // 
+            groupBox9.Anchor = AnchorStyles.None;
+            groupBox9.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox9.Controls.Add(tableLayoutPanel6);
+            groupBox9.Location = new Point(53, 30);
+            groupBox9.Name = "groupBox9";
+            groupBox9.Size = new Size(286, 238);
+            groupBox9.TabIndex = 41;
+            groupBox9.TabStop = false;
+            groupBox9.Text = "Wikipedia List";
+            toolTip1.SetToolTip(groupBox9, "Parameters that define Wikipedia List");
+            // 
+            // tableLayoutPanel6
+            // 
+            tableLayoutPanel6.AccessibleName = "";
+            tableLayoutPanel6.Anchor = AnchorStyles.None;
+            tableLayoutPanel6.ColumnCount = 2;
+            tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel6.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel6.Controls.Add(TextBoxWikiItemLinkColumn, 1, 1);
+            tableLayoutPanel6.Controls.Add(TextBoxWikiURL, 1, 0);
+            tableLayoutPanel6.Controls.Add(LabelWikiDistance, 0, 6);
+            tableLayoutPanel6.Controls.Add(ComboBoxWikiFinishingItem, 1, 5);
+            tableLayoutPanel6.Controls.Add(LabelWikiFinishingItem, 0, 5);
+            tableLayoutPanel6.Controls.Add(ComboBoxWikiStartingItem, 1, 4);
+            tableLayoutPanel6.Controls.Add(LabelWikiStartItem, 0, 4);
+            tableLayoutPanel6.Controls.Add(ListBoxWikiRoute, 1, 3);
+            tableLayoutPanel6.Controls.Add(LabelWikiRoute, 0, 3);
+            tableLayoutPanel6.Controls.Add(LabelWikiColumn, 0, 1);
+            tableLayoutPanel6.Controls.Add(ListBoxWikiTableNames, 1, 2);
+            tableLayoutPanel6.Controls.Add(LabelWikiTableNames, 0, 2);
+            tableLayoutPanel6.Controls.Add(LabelWikiURL, 0, 0);
+            tableLayoutPanel6.Controls.Add(TextBoxWikiDistance, 1, 6);
+            tableLayoutPanel6.ImeMode = ImeMode.On;
+            tableLayoutPanel6.Location = new Point(15, 22);
+            tableLayoutPanel6.Name = "tableLayoutPanel6";
+            tableLayoutPanel6.RowCount = 7;
+            tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2857132F));
+            tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2857132F));
+            tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2857132F));
+            tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2857132F));
+            tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2857132F));
+            tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2857132F));
+            tableLayoutPanel6.RowStyles.Add(new RowStyle(SizeType.Percent, 14.2857132F));
+            tableLayoutPanel6.Size = new Size(253, 200);
+            tableLayoutPanel6.TabIndex = 35;
+            // 
+            // TextBoxWikiItemLinkColumn
+            // 
+            TextBoxWikiItemLinkColumn.AccessibleDescription = "Wikipedia List: Item Link Column";
+            TextBoxWikiItemLinkColumn.Anchor = AnchorStyles.None;
+            TextBoxWikiItemLinkColumn.Enabled = false;
+            TextBoxWikiItemLinkColumn.Location = new Point(139, 31);
+            TextBoxWikiItemLinkColumn.Name = "TextBoxWikiItemLinkColumn";
+            TextBoxWikiItemLinkColumn.Size = new Size(100, 23);
+            TextBoxWikiItemLinkColumn.TabIndex = 19;
+            TextBoxWikiItemLinkColumn.Tag = "1, natural";
+            TextBoxWikiItemLinkColumn.Text = "1";
+            TextBoxWikiItemLinkColumn.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxWikiItemLinkColumn, "The column in tables or lists containing the link to each item");
+            TextBoxWikiItemLinkColumn.Validating += TextBox_Validating;
+            // 
+            // TextBoxWikiURL
+            // 
+            TextBoxWikiURL.Location = new Point(129, 3);
+            TextBoxWikiURL.Name = "TextBoxWikiURL";
+            TextBoxWikiURL.Size = new Size(101, 23);
+            TextBoxWikiURL.TabIndex = 0;
+            TextBoxWikiURL.TextChanged += TextBoxWikiURL_TextChanged;
+            // 
+            // ComboBoxWikiFinishingItem
+            // 
+            ComboBoxWikiFinishingItem.AccessibleName = "Wikipedia List: Finish Item";
+            ComboBoxWikiFinishingItem.Anchor = AnchorStyles.None;
+            ComboBoxWikiFinishingItem.FormattingEnabled = true;
+            ComboBoxWikiFinishingItem.Location = new Point(139, 143);
+            ComboBoxWikiFinishingItem.Name = "ComboBoxWikiFinishingItem";
+            ComboBoxWikiFinishingItem.Size = new Size(100, 23);
+            ComboBoxWikiFinishingItem.TabIndex = 16;
+            ComboBoxWikiFinishingItem.SelectedIndexChanged += ComboBoxWikiStartingItem_SelectedIndexChanged;
+            // 
+            // LabelWikiFinishingItem
+            // 
+            LabelWikiFinishingItem.Anchor = AnchorStyles.None;
+            LabelWikiFinishingItem.AutoSize = true;
+            LabelWikiFinishingItem.Location = new Point(30, 146);
+            LabelWikiFinishingItem.Name = "LabelWikiFinishingItem";
+            LabelWikiFinishingItem.Size = new Size(65, 15);
+            LabelWikiFinishingItem.TabIndex = 15;
+            LabelWikiFinishingItem.Text = "Finish Item";
+            // 
+            // ComboBoxWikiStartingItem
+            // 
+            ComboBoxWikiStartingItem.AccessibleName = "Wikipedia List: Start Item";
+            ComboBoxWikiStartingItem.Anchor = AnchorStyles.None;
+            ComboBoxWikiStartingItem.FormattingEnabled = true;
+            ComboBoxWikiStartingItem.Location = new Point(139, 115);
+            ComboBoxWikiStartingItem.Name = "ComboBoxWikiStartingItem";
+            ComboBoxWikiStartingItem.Size = new Size(100, 23);
+            ComboBoxWikiStartingItem.TabIndex = 14;
+            ComboBoxWikiStartingItem.SelectedIndexChanged += ComboBoxWikiStartingItem_SelectedIndexChanged;
+            // 
+            // LabelWikiStartItem
+            // 
+            LabelWikiStartItem.Anchor = AnchorStyles.None;
+            LabelWikiStartItem.AutoSize = true;
+            LabelWikiStartItem.Location = new Point(34, 118);
+            LabelWikiStartItem.Name = "LabelWikiStartItem";
+            LabelWikiStartItem.Size = new Size(58, 15);
+            LabelWikiStartItem.TabIndex = 13;
+            LabelWikiStartItem.Text = "Start Item";
+            // 
+            // ListBoxWikiRoute
+            // 
+            ListBoxWikiRoute.FormattingEnabled = true;
+            ListBoxWikiRoute.ItemHeight = 15;
+            ListBoxWikiRoute.Location = new Point(129, 87);
+            ListBoxWikiRoute.Name = "ListBoxWikiRoute";
+            ListBoxWikiRoute.SelectionMode = SelectionMode.None;
+            ListBoxWikiRoute.Size = new Size(121, 19);
+            ListBoxWikiRoute.TabIndex = 12;
+            // 
+            // LabelWikiRoute
+            // 
+            LabelWikiRoute.Anchor = AnchorStyles.None;
+            LabelWikiRoute.AutoSize = true;
+            LabelWikiRoute.Location = new Point(21, 90);
+            LabelWikiRoute.Name = "LabelWikiRoute";
+            LabelWikiRoute.Size = new Size(83, 15);
+            LabelWikiRoute.TabIndex = 9;
+            LabelWikiRoute.Text = "Visit Sequence";
+            // 
+            // LabelWikiColumn
+            // 
+            LabelWikiColumn.Anchor = AnchorStyles.None;
+            LabelWikiColumn.AutoSize = true;
+            LabelWikiColumn.Location = new Point(12, 34);
+            LabelWikiColumn.Name = "LabelWikiColumn";
+            LabelWikiColumn.Size = new Size(102, 15);
+            LabelWikiColumn.TabIndex = 6;
+            LabelWikiColumn.Text = "Item Link Column";
+            // 
+            // ListBoxWikiTableNames
+            // 
+            ListBoxWikiTableNames.FormattingEnabled = true;
+            ListBoxWikiTableNames.ItemHeight = 15;
+            ListBoxWikiTableNames.Location = new Point(129, 59);
+            ListBoxWikiTableNames.Name = "ListBoxWikiTableNames";
+            ListBoxWikiTableNames.Size = new Size(107, 19);
+            ListBoxWikiTableNames.TabIndex = 3;
+            ListBoxWikiTableNames.SelectedIndexChanged += ListBoxWikiTableNames_SelectedIndexChanged;
+            // 
+            // LabelWikiTableNames
+            // 
+            LabelWikiTableNames.Anchor = AnchorStyles.None;
+            LabelWikiTableNames.AutoSize = true;
+            LabelWikiTableNames.Location = new Point(25, 62);
+            LabelWikiTableNames.Name = "LabelWikiTableNames";
+            LabelWikiTableNames.Size = new Size(75, 15);
+            LabelWikiTableNames.TabIndex = 2;
+            LabelWikiTableNames.Text = "Table Names";
+            // 
+            // LabelWikiURL
+            // 
+            LabelWikiURL.Anchor = AnchorStyles.None;
+            LabelWikiURL.AutoSize = true;
+            LabelWikiURL.Location = new Point(21, 6);
+            LabelWikiURL.Name = "LabelWikiURL";
+            LabelWikiURL.Size = new Size(83, 15);
+            LabelWikiURL.TabIndex = 1;
+            LabelWikiURL.Text = "Wikipedia URL";
+            // 
             // TabPagePhotoTour
             // 
             TabPagePhotoTour.BackColor = Color.FromArgb(64, 64, 64);
@@ -1925,144 +2328,15 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageWikiList
             // 
-            TabPageWikiList.BackColor = Color.FromArgb(255, 192, 128);
-            TabPageWikiList.Controls.Add(TextBoxWikiDistance);
-            TabPageWikiList.Controls.Add(LabelWikiDistance);
-            TabPageWikiList.Controls.Add(ComboBoxWikiFinishingItem);
-            TabPageWikiList.Controls.Add(LabelWikiFinishingItem);
-            TabPageWikiList.Controls.Add(ComboBoxWikiStartingItem);
-            TabPageWikiList.Controls.Add(LabelWikiStartItem);
-            TabPageWikiList.Controls.Add(ListBoxWikiRoute);
-            TabPageWikiList.Controls.Add(LabelWikiRoute);
-            TabPageWikiList.Controls.Add(ListBoxWikiColumn);
-            TabPageWikiList.Controls.Add(LabelWikiColumn);
-            TabPageWikiList.Controls.Add(ListBoxWikiTableNames);
-            TabPageWikiList.Controls.Add(LabelWikiTableNames);
-            TabPageWikiList.Controls.Add(LabelWikiURL);
-            TabPageWikiList.Controls.Add(TextBoxWikiURL);
+            TabPageWikiList.BackColor = Color.FromArgb(64, 64, 64);
+            TabPageWikiList.Controls.Add(groupBox9);
+            TabPageWikiList.Controls.Add(groupBox8);
             TabPageWikiList.Location = new Point(4, 24);
             TabPageWikiList.Name = "TabPageWikiList";
             TabPageWikiList.Padding = new Padding(3);
             TabPageWikiList.Size = new Size(812, 438);
             TabPageWikiList.TabIndex = 7;
             TabPageWikiList.Text = "Wikipedia List";
-            // 
-            // TextBoxWikiDistance
-            // 
-            TextBoxWikiDistance.Enabled = false;
-            TextBoxWikiDistance.Location = new Point(681, 320);
-            TextBoxWikiDistance.Name = "TextBoxWikiDistance";
-            TextBoxWikiDistance.Size = new Size(78, 23);
-            TextBoxWikiDistance.TabIndex = 18;
-            // 
-            // LabelWikiDistance
-            // 
-            LabelWikiDistance.AutoSize = true;
-            LabelWikiDistance.Location = new Point(620, 323);
-            LabelWikiDistance.Name = "LabelWikiDistance";
-            LabelWikiDistance.Size = new Size(52, 15);
-            LabelWikiDistance.TabIndex = 17;
-            LabelWikiDistance.Text = "Distance";
-            // 
-            // ComboBoxWikiFinishingItem
-            // 
-            ComboBoxWikiFinishingItem.FormattingEnabled = true;
-            ComboBoxWikiFinishingItem.Location = new Point(418, 320);
-            ComboBoxWikiFinishingItem.Name = "ComboBoxWikiFinishingItem";
-            ComboBoxWikiFinishingItem.Size = new Size(185, 23);
-            ComboBoxWikiFinishingItem.TabIndex = 16;
-            ComboBoxWikiFinishingItem.SelectedIndexChanged += ComboBoxWikiStartingItem_SelectedIndexChanged;
-            // 
-            // LabelWikiFinishingItem
-            // 
-            LabelWikiFinishingItem.AutoSize = true;
-            LabelWikiFinishingItem.Location = new Point(374, 323);
-            LabelWikiFinishingItem.Name = "LabelWikiFinishingItem";
-            LabelWikiFinishingItem.Size = new Size(38, 15);
-            LabelWikiFinishingItem.TabIndex = 15;
-            LabelWikiFinishingItem.Text = "Finish";
-            // 
-            // ComboBoxWikiStartingItem
-            // 
-            ComboBoxWikiStartingItem.FormattingEnabled = true;
-            ComboBoxWikiStartingItem.Location = new Point(183, 320);
-            ComboBoxWikiStartingItem.Name = "ComboBoxWikiStartingItem";
-            ComboBoxWikiStartingItem.Size = new Size(185, 23);
-            ComboBoxWikiStartingItem.TabIndex = 14;
-            ComboBoxWikiStartingItem.SelectedIndexChanged += ComboBoxWikiStartingItem_SelectedIndexChanged;
-            // 
-            // LabelWikiStartItem
-            // 
-            LabelWikiStartItem.AutoSize = true;
-            LabelWikiStartItem.Location = new Point(146, 323);
-            LabelWikiStartItem.Name = "LabelWikiStartItem";
-            LabelWikiStartItem.Size = new Size(31, 15);
-            LabelWikiStartItem.TabIndex = 13;
-            LabelWikiStartItem.Text = "Start";
-            // 
-            // ListBoxWikiRoute
-            // 
-            ListBoxWikiRoute.FormattingEnabled = true;
-            ListBoxWikiRoute.ItemHeight = 15;
-            ListBoxWikiRoute.Location = new Point(146, 180);
-            ListBoxWikiRoute.Name = "ListBoxWikiRoute";
-            ListBoxWikiRoute.SelectionMode = SelectionMode.None;
-            ListBoxWikiRoute.Size = new Size(613, 94);
-            ListBoxWikiRoute.TabIndex = 12;
-            // 
-            // LabelWikiRoute
-            // 
-            LabelWikiRoute.AutoSize = true;
-            LabelWikiRoute.Location = new Point(37, 180);
-            LabelWikiRoute.Name = "LabelWikiRoute";
-            LabelWikiRoute.Size = new Size(83, 15);
-            LabelWikiRoute.TabIndex = 9;
-            LabelWikiRoute.Text = "Visit Sequence";
-            // 
-            // LabelWikiColumn
-            // 
-            LabelWikiColumn.AutoSize = true;
-            LabelWikiColumn.Location = new Point(583, 32);
-            LabelWikiColumn.Name = "LabelWikiColumn";
-            LabelWikiColumn.Size = new Size(50, 15);
-            LabelWikiColumn.TabIndex = 6;
-            LabelWikiColumn.Text = "Column";
-            // 
-            // ListBoxWikiTableNames
-            // 
-            ListBoxWikiTableNames.FormattingEnabled = true;
-            ListBoxWikiTableNames.ItemHeight = 15;
-            ListBoxWikiTableNames.Location = new Point(146, 88);
-            ListBoxWikiTableNames.Name = "ListBoxWikiTableNames";
-            ListBoxWikiTableNames.Size = new Size(613, 49);
-            ListBoxWikiTableNames.TabIndex = 3;
-            ListBoxWikiTableNames.SelectedIndexChanged += ListBoxWikiTableNames_SelectedIndexChanged;
-            // 
-            // LabelWikiTableNames
-            // 
-            LabelWikiTableNames.AutoSize = true;
-            LabelWikiTableNames.Location = new Point(37, 88);
-            LabelWikiTableNames.Name = "LabelWikiTableNames";
-            LabelWikiTableNames.Size = new Size(75, 15);
-            LabelWikiTableNames.TabIndex = 2;
-            LabelWikiTableNames.Text = "Table Names";
-            // 
-            // LabelWikiURL
-            // 
-            LabelWikiURL.AutoSize = true;
-            LabelWikiURL.Location = new Point(37, 37);
-            LabelWikiURL.Name = "LabelWikiURL";
-            LabelWikiURL.Size = new Size(83, 15);
-            LabelWikiURL.TabIndex = 1;
-            LabelWikiURL.Text = "Wikipedia URL";
-            // 
-            // TextBoxWikiURL
-            // 
-            TextBoxWikiURL.Location = new Point(146, 29);
-            TextBoxWikiURL.Name = "TextBoxWikiURL";
-            TextBoxWikiURL.Size = new Size(403, 23);
-            TextBoxWikiURL.TabIndex = 0;
-            TextBoxWikiURL.TextChanged += TextBoxWikiURL_TextChanged;
             // 
             // Form
             // 
@@ -2097,6 +2371,12 @@ namespace P3D_Scenario_Generator
             groupBox7.ResumeLayout(false);
             tableLayoutPanel4.ResumeLayout(false);
             tableLayoutPanel4.PerformLayout();
+            groupBox8.ResumeLayout(false);
+            tableLayoutPanel5.ResumeLayout(false);
+            tableLayoutPanel5.PerformLayout();
+            groupBox9.ResumeLayout(false);
+            tableLayoutPanel6.ResumeLayout(false);
+            tableLayoutPanel6.PerformLayout();
             TabPagePhotoTour.ResumeLayout(false);
             TabPageSettings.ResumeLayout(false);
             groupBox4.ResumeLayout(false);
@@ -2119,7 +2399,6 @@ namespace P3D_Scenario_Generator
             GroupBoxRunway.PerformLayout();
             TabControlP3DSG.ResumeLayout(false);
             TabPageWikiList.ResumeLayout(false);
-            TabPageWikiList.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -2192,7 +2471,6 @@ namespace P3D_Scenario_Generator
         private ListBox ListBoxWikiTableNames;
         private Label LabelWikiTableNames;
         private Label LabelWikiColumn;
-        private ListBox ListBoxWikiColumn;
         private Label LabelWikiRoute;
         private ListBox ListBoxWikiRoute;
         private ComboBox ComboBoxWikiFinishingItem;
@@ -2275,6 +2553,23 @@ namespace P3D_Scenario_Generator
         internal ComboBox ComboBoxSignAlignment;
         private Button ButtonSignWritingDefault;
         private Button ButtonSignWritingSaved;
+        private GroupBox groupBox8;
+        private TableLayoutPanel tableLayoutPanel5;
+        internal TextBox TextBoxWikiMapMonitorHeight;
+        internal TextBox TextBoxWikiMapMonitorWidth;
+        private Label label45;
+        private Label label46;
+        private Label label47;
+        internal TextBox TextBoxWikiMapOffset;
+        private Label label48;
+        internal TextBox TextBoxWikiMapMonitorNumber;
+        private Label label49;
+        internal ComboBox ComboBoxWikiMapAlignment;
+        internal ComboBox ComboBoxWikiMapWindowSize;
+        private Label label50;
+        private GroupBox groupBox9;
+        private TableLayoutPanel tableLayoutPanel6;
+        internal TextBox TextBoxWikiItemLinkColumn;
     }
 }
 

@@ -445,13 +445,20 @@ namespace P3D_Scenario_Generator
             int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex);
             SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             boundingBox = OSM.GetBoundingBox(tiles, zoom);
-            int legNo = startItemIndex + 1; 
+            int legNo = startItemIndex + 1;
+
+            // zoom 1 image
             Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1");
             Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
-            zoomInBoundingBox = Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, 2);
+            zoomInBoundingBox = Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Con.tileFactor);
             Drawing.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg");
 
-            for (int inc = 1; inc <= 2; inc++)
+            // zoom 2, 3 (and 4) images, zoom 1 is base level for map window size of 512 pixels, zoom 2 is base level for map window of 1024 pixels
+            // then there are two additional map images for the higher zoom levels.
+            int numberZoomLevels = 2;
+            if (Parameters.WikiMapWindowSize == 1024)
+                numberZoomLevels = 3;
+            for (int inc = 1; inc <= numberZoomLevels; inc++)
             {
                 SetWikiOSMtiles(tiles, zoom + inc, startItemIndex, finishItemIndex);
                 Drawing.MontageTiles(zoomInBoundingBox, zoom + inc, $"LegRoute_{legNo:00}_zoom{inc + 1}");
@@ -460,7 +467,7 @@ namespace P3D_Scenario_Generator
                 Drawing.ConvertImageformat($"LegRoute_{legNo:00}_zoom{inc + 1}", "png", "jpg");
             }
 
-            SetLegImageBoundaries(zoomInBoundingBox, zoom + 3);
+            SetLegImageBoundaries(zoomInBoundingBox, zoom + numberZoomLevels + 1);
         }
 
         /// <summary>

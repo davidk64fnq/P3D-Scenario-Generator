@@ -650,5 +650,99 @@ namespace P3D_Scenario_Generator.Properties {
                 this["TextBoxSignMonitorHeight"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxWikiMapMonitorHeight {
+            get {
+                return ((string)(this["TextBoxWikiMapMonitorHeight"]));
+            }
+            set {
+                this["TextBoxWikiMapMonitorHeight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxWikMapMonitorNumber {
+            get {
+                return ((string)(this["TextBoxWikMapMonitorNumber"]));
+            }
+            set {
+                this["TextBoxWikMapMonitorNumber"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxWikiMapMonitorWidth {
+            get {
+                return ((string)(this["TextBoxWikiMapMonitorWidth"]));
+            }
+            set {
+                this["TextBoxWikiMapMonitorWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxWikiMapOffset {
+            get {
+                return ((string)(this["TextBoxWikiMapOffset"]));
+            }
+            set {
+                this["TextBoxWikiMapOffset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxWikiMapAlignment {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxWikiMapAlignment"]));
+            }
+            set {
+                this["ComboBoxWikiMapAlignment"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxWikiMapAlignmentSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxWikiMapAlignmentSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxWikiMapAlignmentSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxWikiMapWindowSize {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxWikiMapWindowSize"]));
+            }
+            set {
+                this["ComboBoxWikiMapWindowSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxWikiMapWindowSizeSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxWikiMapWindowSizeSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxWikiMapWindowSizeSelectedIndex"] = value;
+            }
+        }
     }
 }

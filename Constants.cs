@@ -81,7 +81,7 @@ namespace P3D_Scenario_Generator
         public static readonly int maxZoomLevel = 18;
 
         /// <summary>
-        /// The moving map and overview images used in various scenarios has a fixed square size of twice the <see cref="tileSize"/>
+        /// The zoom 1 moving map and overview images used in various scenarios has a fixed square size of twice the <see cref="tileSize"/>
         /// </summary>
         public static readonly int tileFactor = 2;
 

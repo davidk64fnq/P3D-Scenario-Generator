@@ -4,15 +4,15 @@ namespace P3D_Scenario_Generator
 {
 
     /// <summary>
-    /// 
+    /// Used to store information needed for displaying a gate in a scenario
     /// </summary>
-    /// <param name="lat"></param>
-    /// <param name="lon"></param>
-    /// <param name="amsl"></param>
-    /// <param name="pitch"></param>
-    /// <param name="orientation"></param>
-    /// <param name="topPixels"></param>
-    /// <param name="leftPixels"></param>
+    /// <param name="lat">The latitude position for the gate</param>
+    /// <param name="lon">The longitude position for the gate</param>
+    /// <param name="amsl">The AMSL of the gate</param>
+    /// <param name="pitch">Signwriting messages can be tilted in vertical plane of message letters</param>
+    /// <param name="orientation">What direction must the gate be entered to trigger</param>
+    /// <param name="topPixels">Used in signwriting scenario for displaying segment of letter on HTML canvas</param>
+    /// <param name="leftPixels">Used in signwriting scenario for displaying segment of letter on HTML canvas</param>
     public class Gate(double lat, double lon, double amsl, double pitch, double orientation, double topPixels, double leftPixels)
     {
         public double lat = lat;
@@ -176,27 +176,32 @@ namespace P3D_Scenario_Generator
 
         #region Signwriting
 
+        /// <summary>
+        /// Create a set of gates for signwriting message. Start and finish gate for a subset of the 22 possible
+        /// segments used to represent a alphabet letter
+        /// </summary>
+        /// <returns>The list of gates</returns>
         internal static List<Gate> SetSignGatesMessage()
         {
             List<Gate> gates = [];
-            int signLetterNoGates;
+            int currentLetterNoGates;
             for (int index = 0; index < Parameters.SignMessage.Length; index++)
             {
-                if (Parameters.SignMessage[index] != ' ')
+                if (char.IsLetter(Parameters.SignMessage[index]))
                 {
                     // Add the gates needed for current letter to List<Gate> gates
-                    signLetterNoGates = SetSignGatesLetter(gates, index);
+                    currentLetterNoGates = SetSignGatesLetter(gates, index);
 
                     // Move gates just added from 0 lat 0 lon 0 asml reference point to the end of letters in message processed so far
-                    int startGateIndex = gates.Count - signLetterNoGates;
-                    TranslateGates(gates, startGateIndex, signLetterNoGates, 0, Parameters.SignSegmentLengthDeg * 3 * index, 0);
+                    // only longitude is changed
+                    int startGateIndex = gates.Count - currentLetterNoGates;
+                    TranslateGates(gates, startGateIndex, currentLetterNoGates, 0, Parameters.SignSegmentLengthDeg * 3 * index, 0);
                 }
             }
-            int totalNoGates = gates.Count;
-            TiltGates(gates, 0, totalNoGates);
+            TiltGates(gates, 0, gates.Count);
 
             // Move gates to airport and correct height
-            TranslateGates(gates, 0, totalNoGates, Runway.startRwy.AirportLat, Runway.startRwy.AirportLon, Runway.startRwy.Altitude + Parameters.SignGateHeight);
+            TranslateGates(gates, 0, gates.Count, Runway.startRwy.AirportLat, Runway.startRwy.AirportLon, Runway.startRwy.Altitude + Parameters.SignGateHeight);
             return gates;
         }
 
@@ -279,7 +284,7 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Adds a gate to gates for the current segment if it is part of the message letter being processed.
+        /// Adds a gate to list of gates for the current segment if it is part of the message letter being processed.
         /// </summary>
         /// <param name="gates">Where the gates are stored</param>
         /// <param name="latCoef">How many straight segment portions this segment is right of letter lefthand edge</param>
@@ -334,11 +339,11 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Translate a subset of gates in List<Gate> gates by specified latitude, longitude, and altitude amounts
+        /// Translate a subset of gates in list of gates by specified latitude, longitude, and altitude amounts
         /// </summary>
         /// <param name="gates">Where the gates are stored</param>
-        /// <param name="startGateIndex">Index of first gate in List<Gate> gates to be translated</param>
-        /// <param name="noGates">The number of gates in List<Gate> gates to be translated </param>
+        /// <param name="startGateIndex">Index of first gate in list of gates to be translated</param>
+        /// <param name="noGates">The number of gates in list of gates to be translated </param>
         /// <param name="latAmt">Latitude translation amount</param>
         /// <param name="longAmt">Longitude translation amount</param>
         /// <param name="altAmt">Altitude translation amount</param>
@@ -356,8 +361,8 @@ namespace P3D_Scenario_Generator
         /// Tilt gates in vertical segment plane
         /// </summary>
         /// <param name="gates">Where the gates are stored</param>
-        /// <param name="startGateIndex">Index of first gate in List<Gate> gates to be translated</param>
-        /// <param name="noGates">The number of gates in List<Gate> gates to be translated </param>
+        /// <param name="startGateIndex">Index of first gate in list of gates to be translated</param>
+        /// <param name="noGates">The number of gates in list of gates to be translated </param>
         internal static void TiltGates(List<Gate> gates, int startGateIndex, int noGates)
         {
             for (int index = startGateIndex; index < startGateIndex + noGates; index++)
