@@ -146,6 +146,12 @@
   <data name="TextBoxWikiMapOffset.ToolTip" xml:space="preserve">
     <value>The default position of wikipedia list map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the wikipedia list map window is positioned. Ignored if default position of wikipedia list map window is centered.</value>
   </data>
+  <data name="label53.ToolTip" xml:space="preserve">
+    <value>The default position of Wiki URL window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the Wiki URL Wiki URL window is positioned. Ignored if default position of Wiki URL window is centered.</value>
+  </data>
+  <data name="TextBoxWikiURLOffset.ToolTip" xml:space="preserve">
+    <value>The default position of Wiki URL window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the Wiki URL Wiki URL window is positioned. Ignored if default position of Wiki URL window is centered.</value>
+  </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>43</value>
   </metadata>

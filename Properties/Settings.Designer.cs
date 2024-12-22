@@ -25,7 +25,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string SelectedAircraft {
             get {
                 return ((string)(this["SelectedAircraft"]));
@@ -49,6 +49,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public double CruiseSpeed {
             get {
                 return ((double)(this["CruiseSpeed"]));
@@ -60,7 +61,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSettingsCacheDate {
             get {
                 return ((string)(this["TextBoxSettingsCacheDate"]));
@@ -72,7 +73,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSettingsCacheDailyTotal {
             get {
                 return ((string)(this["TextBoxSettingsCacheDailyTotal"]));
@@ -84,7 +85,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourMapMonitorNumber {
             get {
                 return ((string)(this["TextBoxPhotoTourMapMonitorNumber"]));
@@ -96,7 +97,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourMapOffset {
             get {
                 return ((string)(this["TextBoxPhotoTourMapOffset"]));
@@ -108,7 +109,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourMapMonitorWidth {
             get {
                 return ((string)(this["TextBoxPhotoTourMapMonitorWidth"]));
@@ -120,7 +121,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourMapMonitorHeight {
             get {
                 return ((string)(this["TextBoxPhotoTourMapMonitorHeight"]));
@@ -132,7 +133,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourPhotoMonitorNumber {
             get {
                 return ((string)(this["TextBoxPhotoTourPhotoMonitorNumber"]));
@@ -144,7 +145,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourPhotoOffset {
             get {
                 return ((string)(this["TextBoxPhotoTourPhotoOffset"]));
@@ -156,7 +157,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourPhotoMonitorWidth {
             get {
                 return ((string)(this["TextBoxPhotoTourPhotoMonitorWidth"]));
@@ -168,7 +169,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourPhotoMonitorHeight {
             get {
                 return ((string)(this["TextBoxPhotoTourPhotoMonitorHeight"]));
@@ -191,7 +192,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSettingsCacheUsage {
             get {
                 return ((string)(this["TextBoxSettingsCacheUsage"]));
@@ -274,7 +275,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourMapHotspotRadius {
             get {
                 return ((string)(this["TextBoxPhotoTourMapHotspotRadius"]));
@@ -286,7 +287,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourConstraintsMinLegDist {
             get {
                 return ((string)(this["TextBoxPhotoTourConstraintsMinLegDist"]));
@@ -298,7 +299,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourConstraintsMaxLegDist {
             get {
                 return ((string)(this["TextBoxPhotoTourConstraintsMaxLegDist"]));
@@ -310,7 +311,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourConstraintsMinNoLegs {
             get {
                 return ((string)(this["TextBoxPhotoTourConstraintsMinNoLegs"]));
@@ -322,7 +323,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourConstraintsMaxNoLegs {
             get {
                 return ((string)(this["TextBoxPhotoTourConstraintsMaxNoLegs"]));
@@ -334,7 +335,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxPhotoTourConstraintsMaxBearingChange {
             get {
                 return ((string)(this["TextBoxPhotoTourConstraintsMaxBearingChange"]));
@@ -379,7 +380,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxCircuitUpwind {
             get {
                 return ((string)(this["TextBoxCircuitUpwind"]));
@@ -391,7 +392,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxCircuitBase {
             get {
                 return ((string)(this["TextBoxCircuitBase"]));
@@ -403,7 +404,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxCircuitFinal {
             get {
                 return ((string)(this["TextBoxCircuitFinal"]));
@@ -415,7 +416,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxCircuitHeightUpwind {
             get {
                 return ((string)(this["TextBoxCircuitHeightUpwind"]));
@@ -427,7 +428,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxCircuitHeightDown {
             get {
                 return ((string)(this["TextBoxCircuitHeightDown"]));
@@ -439,7 +440,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxCircuitHeightBase {
             get {
                 return ((string)(this["TextBoxCircuitHeightBase"]));
@@ -451,7 +452,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxCircuitTurnRate {
             get {
                 return ((string)(this["TextBoxCircuitTurnRate"]));
@@ -463,7 +464,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxCircuitSpeed {
             get {
                 return ((string)(this["TextBoxCircuitSpeed"]));
@@ -475,7 +476,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSignTilt {
             get {
                 return ((string)(this["TextBoxSignTilt"]));
@@ -487,7 +488,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSignWindowWidth {
             get {
                 return ((string)(this["TextBoxSignWindowWidth"]));
@@ -499,7 +500,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSignGateHeight {
             get {
                 return ((string)(this["TextBoxSignGateHeight"]));
@@ -511,7 +512,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSignSegmentLength {
             get {
                 return ((string)(this["TextBoxSignSegmentLength"]));
@@ -523,7 +524,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSignSegmentRadius {
             get {
                 return ((string)(this["TextBoxSignSegmentRadius"]));
@@ -535,7 +536,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxCelestialMinDist {
             get {
                 return ((string)(this["TextBoxCelestialMinDist"]));
@@ -547,7 +548,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxCelestialMaxDist {
             get {
                 return ((string)(this["TextBoxCelestialMaxDist"]));
@@ -582,7 +583,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSignMonitorNumber {
             get {
                 return ((string)(this["TextBoxSignMonitorNumber"]));
@@ -594,7 +595,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSignOffset {
             get {
                 return ((string)(this["TextBoxSignOffset"]));
@@ -629,7 +630,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSignMonitorWidth {
             get {
                 return ((string)(this["TextBoxSignMonitorWidth"]));
@@ -641,7 +642,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSignMonitorHeight {
             get {
                 return ((string)(this["TextBoxSignMonitorHeight"]));
@@ -653,7 +654,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxWikiMapMonitorHeight {
             get {
                 return ((string)(this["TextBoxWikiMapMonitorHeight"]));
@@ -665,19 +666,19 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string TextBoxWikMapMonitorNumber {
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxWikiMapMonitorNumber {
             get {
-                return ((string)(this["TextBoxWikMapMonitorNumber"]));
+                return ((string)(this["TextBoxWikiMapMonitorNumber"]));
             }
             set {
-                this["TextBoxWikMapMonitorNumber"] = value;
+                this["TextBoxWikiMapMonitorNumber"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxWikiMapMonitorWidth {
             get {
                 return ((string)(this["TextBoxWikiMapMonitorWidth"]));
@@ -689,7 +690,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxWikiMapOffset {
             get {
                 return ((string)(this["TextBoxWikiMapOffset"]));
@@ -742,6 +743,240 @@ namespace P3D_Scenario_Generator.Properties {
             }
             set {
                 this["ComboBoxWikiMapWindowSizeSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxWikiURL {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxWikiURL"]));
+            }
+            set {
+                this["ComboBoxWikiURL"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxWikiURLSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxWikiURLSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxWikiURLSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxWikiItemLinkColumn {
+            get {
+                return ((string)(this["TextBoxWikiItemLinkColumn"]));
+            }
+            set {
+                this["TextBoxWikiItemLinkColumn"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxWikiDistance {
+            get {
+                return ((string)(this["TextBoxWikiDistance"]));
+            }
+            set {
+                this["TextBoxWikiDistance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxWikiStartingItem {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxWikiStartingItem"]));
+            }
+            set {
+                this["ComboBoxWikiStartingItem"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxWikiStartingItemSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxWikiStartingItemSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxWikiStartingItemSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Drawing.Point ComboBoxWikiFinishingItem {
+            get {
+                return ((global::System.Drawing.Point)(this["ComboBoxWikiFinishingItem"]));
+            }
+            set {
+                this["ComboBoxWikiFinishingItem"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxWikiFinishingItemSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxWikiFinishingItemSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxWikiFinishingItemSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxWikiTableNames {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxWikiTableNames"]));
+            }
+            set {
+                this["ComboBoxWikiTableNames"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxWikiTableNamesSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxWikiTableNamesSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxWikiTableNamesSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxWikiRoute {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxWikiRoute"]));
+            }
+            set {
+                this["ComboBoxWikiRoute"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxWikiRouteSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxWikiRouteSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxWikiRouteSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxWikiURLMonitorNumber {
+            get {
+                return ((string)(this["TextBoxWikiURLMonitorNumber"]));
+            }
+            set {
+                this["TextBoxWikiURLMonitorNumber"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxWikiURLOffset {
+            get {
+                return ((string)(this["TextBoxWikiURLOffset"]));
+            }
+            set {
+                this["TextBoxWikiURLOffset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxWikiURLAlignment {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxWikiURLAlignment"]));
+            }
+            set {
+                this["ComboBoxWikiURLAlignment"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxWikiURLAlignmentSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxWikiURLAlignmentSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxWikiURLAlignmentSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxWikiURLMonitorWidth {
+            get {
+                return ((string)(this["TextBoxWikiURLMonitorWidth"]));
+            }
+            set {
+                this["TextBoxWikiURLMonitorWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxWikiURLMonitorHeight {
+            get {
+                return ((string)(this["TextBoxWikiURLMonitorHeight"]));
+            }
+            set {
+                this["TextBoxWikiURLMonitorHeight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxWikiURLWindowHeight {
+            get {
+                return ((string)(this["TextBoxWikiURLWindowHeight"]));
+            }
+            set {
+                this["TextBoxWikiURLWindowHeight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxWikiURLWindowWidth {
+            get {
+                return ((string)(this["TextBoxWikiURLWindowWidth"]));
+            }
+            set {
+                this["TextBoxWikiURLWindowWidth"] = value;
             }
         }
     }

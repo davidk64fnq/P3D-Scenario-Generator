@@ -143,10 +143,10 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += " as you navigate from one Wikipedia list location to the next using IFR (I follow roads) ";
                     overview.Briefing += "You'll take off, fly to a series of list locations, ";
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
-                    overview.Briefing += $"{Runway.destRwy.Id} at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
-                    overview.Briefing += $"{Runway.destRwy.City}, {Runway.destRwy.Country}.";
+                    overview.Briefing += $"{Runway.startRwy.Id} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
+                    overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
                     overview.Objective = "Take off and visit a series of Wikipedia list locations before landing ";
-                    overview.Objective += $"at {Wikipedia.WikiTour[^1].airportICAO}, runway {Wikipedia.WikiTour[^1].airportID}";
+                    overview.Objective += $"at {Runway.destRwy.IcaoName}, runway {Runway.destRwy.IcaoId}";
                     overview.Tips = "The early bird gets the worm, but the second mouse gets the cheese.";
                     break;
                 default:

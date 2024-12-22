@@ -294,7 +294,7 @@ namespace P3D_Scenario_Generator
 
         #region SetWikiTour region
 
-        static internal void SetWikiTour(int tableNo, ListBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance)
+        static internal void SetWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance)
         {
             PopulateWikiTour(tableNo, route, tourStartItem, tourFinishItem, tourDistance);
             SetWikiAirports();
@@ -313,11 +313,13 @@ namespace P3D_Scenario_Generator
             WikiTour.Insert(0, GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble()));
             Coordinate coordStartAirport = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
             WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
+            Runway.SetRunway(Runway.startRwy, WikiTour[0].airportICAO, WikiTour[0].airportID);
 
             Coordinate coordLastItem = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
             WikiTour.Add(GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble()));
             Coordinate coordFinishAirport = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
             WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
+            Runway.SetRunway(Runway.destRwy, WikiTour[^1].airportICAO, WikiTour[^1].airportID);
         }
 
         /// <summary>
@@ -507,7 +509,7 @@ namespace P3D_Scenario_Generator
         /// <param name="tourStartItem">User specified first item of tour</param>
         /// <param name="tourFinishItem">User specified last item of tour</param>
         /// <param name="tourDistance">The distance from first to last item in miles</param>
-        static internal void PopulateWikiTour(int tableNo, ListBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance)
+        static internal void PopulateWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance)
         {
             WikiTour = [];
             bool finished = PopulateWikiTourOneItem(tableNo, tourStartItem, tourFinishItem);
@@ -547,7 +549,7 @@ namespace P3D_Scenario_Generator
         /// <param name="tourStartItem">User specified first item of tour</param>
         /// <param name="tourFinishItem">User specified last item of tour</param>
         /// <returns>True if this case applies</returns>
-        static internal bool PopulateWikiTourMultipleItems(int tableNo, ListBox.ObjectCollection route, object tourStartItem, object tourFinishItem)
+        static internal bool PopulateWikiTourMultipleItems(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem)
         {
             int tourStartItemNo = GetWikiRouteLegFirstItemNo(tourStartItem.ToString());
             int tourFinishItemNo = GetWikiRouteLegFirstItemNo(tourFinishItem.ToString());

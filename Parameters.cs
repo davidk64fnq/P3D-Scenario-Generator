@@ -239,6 +239,73 @@ namespace P3D_Scenario_Generator
         #region Wikipedia
 
         /// <summary>
+        /// The Wikipedia URL for the list or table you want to select a subset of items from. List or table needs a column 
+        /// containing a link to the individual items.
+        /// </summary>
+        internal static string WikiURL { get; set; }
+
+        /// <summary>
+        /// The column in Wikipedia URL tables or lists containing the link to each item
+        /// </summary>
+        internal static int WikiItemLinkColumn { get; set; }
+
+        /// <summary>
+        /// Useable tables (or lists) found in the user supplied Wikipedia URL.
+        /// </summary>
+        internal static string WikiTableNames { get; set; }
+
+        /// <summary>
+        /// Proposed visit sequence for items in selected table (list) for the user supplied Wikipedia URL
+        /// </summary>
+        internal static string WikiRoute { get; set; }
+
+        /// <summary>
+        /// Starting item from Visit Sequence for subset to be visited
+        /// </summary>
+        internal static string WikiStartingItem { get; set; }
+
+        /// <summary>
+        /// Finishing item from Visit Sequence for subset to be visited
+        /// </summary>
+        internal static string WikiFinishingItem { get; set; }
+
+        /// <summary>
+        /// Reference integer for the monitor that URL window is to be displayed in initially. Values from 0 to the number of 
+        /// monitors minus 1 expected.
+        /// </summary>
+        internal static int WikiURLMonitorNumber { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where top left hand corner of URL window is relative to monitor
+        /// </summary>
+        internal static int WikiURLMonitorWidth { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where top left hand corner of URL window is relative to monitor
+        /// </summary>
+        internal static int WikiURLMonitorHeight { get; set; }
+
+        /// <summary>
+        /// Specifies how close the corner of URL window is relative to the monitor corner. Values between 0 and 20 excepted.
+        /// </summary>
+        internal static int WikiURLOffset { get; set; }
+
+        /// <summary>
+        /// Which of four corners of monitor to position URL window relative to or else in the center of monitor.
+        /// </summary>
+        internal static string WikiURLAlignment { get; set; }
+
+        /// <summary>
+        /// The width of URL window in pixels
+        /// </summary>
+        internal static int WikiURLWindowWidth { get; set; }
+
+        /// <summary>
+        /// The height of URL window in pixels
+        /// </summary>
+        internal static int WikiURLWindowHeight { get; set; }
+
+        /// <summary>
         /// Reference integer for the monitor that map window is to be displayed in initially. Values from 0 to the number of 
         /// monitors minus 1 expected.
         /// </summary>
@@ -380,6 +447,19 @@ namespace P3D_Scenario_Generator
                     errorMsg += "\n\tSelect a list of Wikipedia items first";
                 };
             }
+            WikiURL = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxWikiURL.SelectedItem);
+            WikiItemLinkColumn = Convert.ToInt32(form.TextBoxWikiItemLinkColumn.Text);
+            WikiTableNames = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxWikiTableNames.SelectedItem);
+            WikiRoute = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxWikiRoute.SelectedItem);
+            WikiStartingItem = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxWikiStartingItem.SelectedItem);
+            WikiFinishingItem = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxWikiFinishingItem.SelectedItem);
+            WikiURLMonitorNumber = Convert.ToInt32(form.TextBoxWikiURLMonitorNumber.Text);
+            WikiURLMonitorWidth = Convert.ToInt32(form.TextBoxWikiURLMonitorWidth.Text);
+            WikiURLMonitorHeight = Convert.ToInt32(form.TextBoxWikiURLMonitorHeight.Text);
+            WikiURLOffset = Convert.ToInt32(form.TextBoxWikiURLOffset.Text);
+            WikiURLAlignment = form.ComboBoxWikiURLAlignment.GetItemText(form.ComboBoxWikiURLAlignment.SelectedItem);
+            WikiURLWindowWidth = Convert.ToInt32(form.TextBoxWikiURLWindowWidth.Text);
+            WikiURLWindowHeight = Convert.ToInt32(form.TextBoxWikiURLWindowHeight.Text);
             WikiMapMonitorNumber = Convert.ToInt32(form.TextBoxWikiMapMonitorNumber.Text);
             WikiMapMonitorWidth = Convert.ToInt32(form.TextBoxWikiMapMonitorWidth.Text);
             WikiMapMonitorHeight = Convert.ToInt32(form.TextBoxWikiMapMonitorHeight.Text);
@@ -400,6 +480,10 @@ namespace P3D_Scenario_Generator
             if (SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
                 CommonMovingMapWindowSize = PhotoTourMapWindowSize;
+            }
+            else if (SelectedScenario == nameof(ScenarioTypes.WikiList))
+            {
+                CommonMovingMapWindowSize = WikiMapWindowSize;
             }
 
             if (errorMsg != "")

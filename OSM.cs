@@ -319,6 +319,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Download an OSM tile using server and API key specified by user on settings tab. First checks
         /// whether the OSM tile is in the tile cache. Stores the tile at the specified path given by filename.
+        /// (https://maptiles.p.rapidapi.com/en/map/v1, ?rapidapi-key=d9de94c22emsh6dc07cd7103e683p12be01jsn7014f38e1975)
         /// </summary>
         /// <param name="xTileNo">East/West reference number for required tile at specified zoom</param>
         /// <param name="yTileNo">North/South reference number for required tile at specified zoom</param>

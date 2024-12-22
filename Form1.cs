@@ -121,8 +121,9 @@ namespace P3D_Scenario_Generator
             }
             else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
             {
-                Wikipedia.SetWikiTour(ListBoxWikiTableNames.SelectedIndex, ListBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem,
+                Wikipedia.SetWikiTour(ComboBoxWikiTableNames.SelectedIndex, ComboBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem,
                     ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text);
+                SaveUserSettings(TabPageWikiList.Controls);
             }
             else
             {
@@ -211,35 +212,43 @@ namespace P3D_Scenario_Generator
         #endregion
 
         #region Wikipedia Lists Tab
-        private void TextBoxWikiURL_TextChanged(object sender, EventArgs e)
+
+        private void ComboBoxWikiURL_TextChanged(object sender, EventArgs e)
         {
-            if (TextBoxWikiURL.Text != null)
+            ComboBoxWikiURL_TextChanged();
+            ComboBox_SelectedIndexChanged(sender, e);
+        }
+
+        private void ComboBoxWikiURL_TextChanged()
+        {
+            if (ComboBoxWikiURL.SelectedItem != null)
             {
-                Wikipedia.PopulateWikiPage(TextBoxWikiURL.Text, int.Parse(TextBoxWikiItemLinkColumn.Text));
-                ListBoxWikiTableNames.DataSource = Wikipedia.CreateWikiTablesDesc();
+                Wikipedia.PopulateWikiPage(ComboBoxWikiURL.SelectedItem.ToString(), int.Parse(TextBoxWikiItemLinkColumn.Text));
+                ComboBoxWikiTableNames.DataSource = Wikipedia.CreateWikiTablesDesc();
             }
         }
 
-        private void ListBoxWikiTableNames_SelectedIndexChanged(object sender, EventArgs e)
+        private void ComboBoxWikiTableNames_SelectedIndexChanged(object sender, EventArgs e)
         {
             TextBoxWikiDistance.Text = "";
-            if (ListBoxWikiTableNames.Items.Count > 0)
+            if (ComboBoxWikiTableNames.Items.Count > 0)
             {
-                ListBoxWikiRoute.DataSource = Wikipedia.CreateWikiTableRoute(ListBoxWikiTableNames.SelectedIndex);
+                ComboBoxWikiRoute.DataSource = Wikipedia.CreateWikiTableRoute(ComboBoxWikiTableNames.SelectedIndex);
                 List<string> itemList = [];
-                for (int index = 0; index < ListBoxWikiRoute.Items.Count; index++)
+                for (int index = 0; index < ComboBoxWikiRoute.Items.Count; index++)
                 {
-                    itemList.Add(GetWikiRouteLegFirstItem(ListBoxWikiRoute.Items[index].ToString()));
+                    itemList.Add(GetWikiRouteLegFirstItem(ComboBoxWikiRoute.Items[index].ToString()));
                 }
-                if (!itemList.Contains(GetWikiRouteLegLastItem(ListBoxWikiRoute.Items[^1].ToString())))
+                if (!itemList.Contains(GetWikiRouteLegLastItem(ComboBoxWikiRoute.Items[^1].ToString())))
                 {
-                    itemList.Add(GetWikiRouteLegLastItem(ListBoxWikiRoute.Items[^1].ToString()));
+                    itemList.Add(GetWikiRouteLegLastItem(ComboBoxWikiRoute.Items[^1].ToString()));
                 }
                 ComboBoxWikiStartingItem.DataSource = itemList;
                 ComboBoxWikiStartingItem.SelectedIndex = 0;
                 List<string> clonedItemList = new(itemList);
                 ComboBoxWikiFinishingItem.DataSource = clonedItemList;
                 ComboBoxWikiFinishingItem.SelectedIndex = ComboBoxWikiFinishingItem.Items.Count - 1;
+                ComboBox_SelectedIndexChanged(sender, e);
             }
         }
 
@@ -254,11 +263,12 @@ namespace P3D_Scenario_Generator
             {
                 TextBoxWikiDistance.Text = GetWikiDistance();
             }
+            ComboBox_SelectedIndexChanged(sender, e);
         }
 
         private string GetWikiDistance()
         {
-            if (ComboBoxWikiFinishingItem.SelectedIndex > ListBoxWikiRoute.Items.Count)
+            if (ComboBoxWikiFinishingItem.SelectedIndex > ComboBoxWikiRoute.Items.Count)
             {
                 return "";
             }
@@ -270,9 +280,9 @@ namespace P3D_Scenario_Generator
             int distStrStart, distStrFinish, legDistance, routeDistance = 0;
             for (int legNo = ComboBoxWikiStartingItem.SelectedIndex + 1; legNo <= ComboBoxWikiFinishingItem.SelectedIndex; legNo++)
             {
-                distStrStart = ListBoxWikiRoute.Items[legNo - 1].ToString().LastIndexOf('(') + 1;
-                distStrFinish = ListBoxWikiRoute.Items[legNo - 1].ToString().IndexOf(" miles)");
-                legDistance = int.Parse(ListBoxWikiRoute.Items[legNo - 1].ToString()[distStrStart..distStrFinish]);
+                distStrStart = ComboBoxWikiRoute.Items[legNo - 1].ToString().LastIndexOf('(') + 1;
+                distStrFinish = ComboBoxWikiRoute.Items[legNo - 1].ToString().IndexOf(" miles)");
+                legDistance = int.Parse(ComboBoxWikiRoute.Items[legNo - 1].ToString()[distStrStart..distStrFinish]);
                 routeDistance += legDistance;
             }
             return routeDistance.ToString() + " miles";
@@ -422,9 +432,9 @@ namespace P3D_Scenario_Generator
                     {
                         var settingsValue = Properties.Settings.Default[control.Name];
                         if (settingsValue != null)
-                            if (control is TextBox)
+                            if (control is TextBox && control.Tag != null)
                                 control.Text = settingsValue.ToString();
-                            else if (control is ComboBox box)
+                            else if (control is ComboBox box && control.Tag != null)
                             {
                                 box.Items.Clear();
                                 foreach (string item in (System.Collections.Specialized.StringCollection)Properties.Settings.Default[control.Name])

@@ -461,16 +461,17 @@ namespace P3D_Scenario_Generator
 
             // Create HTML, JavaScript and CSS files for windows
             SetResourcesFile("HTML", "MovingMap.html");
+            SetMovingMapJS(Wikipedia.WikiLegMapEdges, Wikipedia.WikiCount);
+            SetResourcesFile("CSS", "styleMovingMap.css");
             SetResourcesFile("HTML", "WikipediaItem.html");
             SetWikiTourJS();
-            SetResourcesFile("CSS", "styleMovingMap.css");
 
             // Create window open/close actions
-            string[] windowDimensions = ["527", "597"]; // 512 + 15/85
-//            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", windowDimensions);
-            SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow"); 
-            windowDimensions = ["1020", "1000"]; // width and height
-//            SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", windowDimensions);
+            string[] mapWindowParameters = GetMapWindowParameters();
+            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", mapWindowParameters, Parameters.WikiMapMonitorNumber.ToString());
+            SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
+            string[] wikiURLwindowDimensions = GetWikiURLWindowParameters();
+            SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", wikiURLwindowDimensions, Parameters.WikiURLMonitorNumber.ToString());
             SetCloseWindowAction(2, "UIPanelWindow", "UIpanelWindow");
 
             // Pass 1 - setup proximity triggers, there is a trigger for each wiki item location
@@ -706,73 +707,55 @@ namespace P3D_Scenario_Generator
                 mapWindowWidth = 1024;
                 mapWindowHeight = 1024;
             }
-
-            int horizontalOffset, verticalOffset;
-            // Offsets
-            if (Parameters.PhotoTourMapAlignment == "Top Left")
-            {
-                horizontalOffset = Parameters.PhotoTourMapOffset;
-                verticalOffset = Parameters.PhotoTourMapOffset;
-            }
-            else if (Parameters.PhotoTourMapAlignment == "Top Right")
-            {
-                horizontalOffset = Parameters.PhotoTourMapMonitorWidth - Parameters.PhotoTourMapOffset - mapWindowWidth;
-                verticalOffset = Parameters.PhotoTourMapOffset;
-            }
-            else if (Parameters.PhotoTourMapAlignment == "Bottom Right")
-            {
-                horizontalOffset = Parameters.PhotoTourMapMonitorWidth - Parameters.PhotoTourMapOffset - mapWindowWidth;
-                verticalOffset = Parameters.PhotoTourMapMonitorHeight - Parameters.PhotoTourMapOffset - mapWindowHeight;
-            }
-            else if (Parameters.PhotoTourMapAlignment == "Bottom Left")
-            {
-                horizontalOffset = Parameters.PhotoTourMapOffset;
-                verticalOffset = Parameters.PhotoTourMapMonitorHeight - Parameters.PhotoTourMapOffset - mapWindowHeight;
-            }
-            else // Parameters.PhotoTourMapAlignment == "Centered"
-            {
-                horizontalOffset = (Parameters.PhotoTourMapMonitorWidth / 2) - (mapWindowWidth / 2);
-                verticalOffset = (Parameters.PhotoTourMapMonitorHeight / 2) - (mapWindowHeight / 2);
-            }
-
-            return [mapWindowWidth.ToString(), mapWindowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
+            return GetWindowParameters(mapWindowWidth, mapWindowHeight, Parameters.PhotoTourMapAlignment,
+                Parameters.PhotoTourMapMonitorWidth, Parameters.PhotoTourMapMonitorHeight, Parameters.PhotoTourMapOffset);
         }
 
         static private string[] GetPhotoWindowParameters(int photoNo)
         {
-            // Dimensions
             string bitmapFilename = $"{Parameters.ImageFolder}\\photo_{photoNo:00}.jpg";
             using Bitmap drawing = new(bitmapFilename);
+            return GetWindowParameters(drawing.Width, drawing.Height, Parameters.PhotoTourPhotoAlignment,
+                Parameters.PhotoTourPhotoMonitorWidth, Parameters.PhotoTourPhotoMonitorHeight, Parameters.PhotoTourPhotoOffset);
+        }
 
-            int horizontalOffset = 0, verticalOffset = 0;
+        static private string[] GetWikiURLWindowParameters()
+        {
+            return GetWindowParameters(Parameters.WikiURLWindowWidth, Parameters.WikiURLWindowHeight, Parameters.WikiURLAlignment,
+                Parameters.WikiURLMonitorWidth, Parameters.WikiURLMonitorHeight, Parameters.WikiURLOffset);
+        }
+
+        static private string[] GetWindowParameters(int windowWidth, int windowHeight, string alignment, int monitorWidth, int monitorHeight, int offset)
+        {
+            int horizontalOffset, verticalOffset;
             // Offsets
-            if (Parameters.PhotoTourPhotoAlignment == "Top Left")
+            if (alignment == "Top Left")
             {
-                horizontalOffset = Parameters.PhotoTourPhotoOffset;
-                verticalOffset = Parameters.PhotoTourPhotoOffset;
+                horizontalOffset = offset;
+                verticalOffset = offset;
             }
-            else if (Parameters.PhotoTourPhotoAlignment == "Top Right")
+            else if (alignment == "Top Right")
             {
-                horizontalOffset = Parameters.PhotoTourPhotoMonitorWidth - Parameters.PhotoTourPhotoOffset - drawing.Width;
-                verticalOffset = Parameters.PhotoTourPhotoOffset;
+                horizontalOffset = monitorWidth - offset - windowWidth;
+                verticalOffset = offset;
             }
-            else if (Parameters.PhotoTourPhotoAlignment == "Bottom Right")
+            else if (alignment == "Bottom Right")
             {
-                horizontalOffset = Parameters.PhotoTourPhotoMonitorWidth - Parameters.PhotoTourPhotoOffset - drawing.Width;
-                verticalOffset = Parameters.PhotoTourPhotoMonitorHeight - Parameters.PhotoTourPhotoOffset - drawing.Height;
+                horizontalOffset = monitorWidth - offset - windowWidth;
+                verticalOffset = monitorHeight - offset - windowHeight;
             }
-            else if (Parameters.PhotoTourPhotoAlignment == "Bottom Left")
+            else if (alignment == "Bottom Left")
             {
-                horizontalOffset = Parameters.PhotoTourPhotoOffset;
-                verticalOffset = Parameters.PhotoTourPhotoMonitorHeight - Parameters.PhotoTourPhotoOffset - drawing.Height;
+                horizontalOffset = offset;
+                verticalOffset = monitorHeight - offset - windowHeight;
             }
-            else // Parameters.PhotoTourPhotoAlignment == "Centered"
+            else // alignment == "Centered"
             {
-                horizontalOffset = (Parameters.PhotoTourPhotoMonitorWidth / 2) - (drawing.Width / 2);
-                verticalOffset = (Parameters.PhotoTourPhotoMonitorHeight / 2) - (drawing.Height / 2);
+                horizontalOffset = (monitorWidth / 2) - (windowWidth / 2);
+                verticalOffset = (monitorHeight / 2) - (windowHeight / 2);
             }
 
-            return [drawing.Width.ToString(), drawing.Height.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
+            return [windowWidth.ToString(), windowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
         }
 
         static private string GetPhotoWorldPosition(PhotoLocParams photoLegParams)
@@ -1321,8 +1304,6 @@ namespace P3D_Scenario_Generator
 
         static private void SetWikiTourJS()
         {
-            SetMovingMapJS(Wikipedia.WikiLegMapEdges, Wikipedia.WikiCount);
-
             string saveLocation = $"{Parameters.ImageFolder}\\scriptsWikipediaItem.js";
             string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaItem.js";
             Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
