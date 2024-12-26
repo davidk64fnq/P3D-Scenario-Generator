@@ -223,6 +223,7 @@ namespace P3D_Scenario_Generator
         {
             if (ComboBoxWikiURL.SelectedItem != null)
             {
+                Parameters.SelectedScenario = Con.scenarioNames[(int)ScenarioTypes.WikiList];
                 Wikipedia.PopulateWikiPage(ComboBoxWikiURL.SelectedItem.ToString(), int.Parse(TextBoxWikiItemLinkColumn.Text));
                 ComboBoxWikiTableNames.DataSource = Wikipedia.CreateWikiTablesDesc();
             }

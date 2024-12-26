@@ -29,6 +29,17 @@ namespace P3D_Scenario_Generator
     }
 
     /// <summary>
+    /// Stores latitude and longitude boundaries of OSM image depicting coordinates, used by HTML Javascript moving map code
+    /// </summary>
+    public class MapEdges
+    {
+        public CoordinatePart north;
+        public CoordinatePart east;
+        public CoordinatePart south;
+        public CoordinatePart west;
+    }
+
+    /// <summary>
     /// Provides methods for working with OSM map tiles, working out what square array of tiles are needed
     /// to include a set of coordinates at maximum zoom, and downloading those tiles.
     /// </summary>

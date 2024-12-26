@@ -4,14 +4,45 @@ using System.Web;
 
 namespace P3D_Scenario_Generator
 {
+    /// <summary>
+    /// Stores information pertaining to a Wikipedia item in the Wikipedia list tour, also used for start and destination airports
+    /// </summary>
     public class WikiItemParams
     {
-        public string title;            //  Wiki item HTML title tag value
-        public string itemURL;          //  Wiki item page URL
-        public string latitude;         //  Latitude for this Wiki item
-        public string longitude;        //  Longitude for this Wiki item
-        public string airportICAO;      //  Only used for start and destination airport instances
-        public string airportID;        //  Only used for start and destination airport instances
+        /// <summary>
+        /// Wiki item HTML title tag value
+        /// </summary>
+        public string title;
+
+        /// <summary>
+        /// Wiki item page URL
+        /// </summary>
+        public string itemURL;
+
+        /// <summary>
+        /// Latitude for this Wiki item
+        /// </summary>
+        public string latitude;
+
+        /// <summary>
+        /// Longitude for this Wiki item
+        /// </summary>
+        public string longitude;
+
+        /// <summary>
+        /// Only used for start and destination airport instances
+        /// </summary>
+        public string airportICAO;
+
+        /// <summary>
+        /// Only used for start and destination airport instances
+        /// </summary>
+        public string airportID;
+
+        /// <summary>
+        /// Was to be used for navigating Wiki item html document
+        /// </summary>
+        public List<string> hrefs;     
     }
 
     /// <summary>
@@ -19,11 +50,30 @@ namespace P3D_Scenario_Generator
     /// </summary>
     internal class Wikipedia()
     {
-        internal static int WikiCount { get; private set; } // The wikipedia list items plus start and finish airports
-        internal static int WikiDistance { get; private set; } // From start to finish airport
-        internal static List<MapEdges> WikiLegMapEdges { get; private set; } // Lat/Lon boundaries for each OSM montage leg image
-        internal static List<List<WikiItemParams>> WikiPage { get; private set; } // Table(s) of items scraped from user supplied Wikipedia URL
-        internal static List<WikiItemParams> WikiTour { get; private set; } // List of user selected Wikipedia items
+        /// <summary>
+        /// The wikipedia list items plus start and finish airports
+        /// </summary>
+        internal static int WikiCount { get; private set; }
+
+        /// <summary>
+        /// From start to finish airport
+        /// </summary>
+        internal static int WikiDistance { get; private set; }
+
+        /// <summary>
+        /// Lat/Lon boundaries for each OSM montage leg image
+        /// </summary>
+        internal static List<MapEdges> WikiLegMapEdges { get; private set; }
+
+        /// <summary>
+        /// Table(s) of items scraped from user supplied Wikipedia URL
+        /// </summary>
+        internal static List<List<WikiItemParams>> WikiPage { get; private set; }
+
+        /// <summary>
+        /// List of user selected Wikipedia items
+        /// </summary>
+        internal static List<WikiItemParams> WikiTour { get; private set; } 
 
         #region Populating WikiPage when user pastes in Wikipedia URL, called from main form
 
@@ -91,9 +141,38 @@ namespace P3D_Scenario_Generator
                 wikiItem.itemURL = link;
                 if (GetWikiItemCoordinates(wikiItem))
                 {
+                    wikiItem.hrefs = GetWikiItemHREFs(wikiItem);
                     curTable.Add(wikiItem);
                 }
             }
+        }
+
+        /// <summary>
+        /// Retrieves any href="# links in the item. These are used to allow user to step through sections
+        /// of the item page using joystick mapped buttons as an alternative to scrolling with a mouse.
+        /// </summary>
+        /// <param name="wikiItem">The current row in table being populated in <see cref="WikiPage"/></param>
+        static internal List<string> GetWikiItemHREFs(WikiItemParams wikiItem)
+        {
+            var htmlDoc = HttpRoutines.GetWebDoc($"https://en.wikipedia.org/{wikiItem.itemURL}");
+            string htmlDocContents = htmlDoc.Text;
+            int indexSearchFrom = 0;
+            string hrefTag = "href=\"#";
+            List<string> hrefs = [];
+            int indexHREFtagStart = htmlDocContents.IndexOf(hrefTag, indexSearchFrom);
+            while (indexHREFtagStart >= 0)
+            {
+                int indexHREFvalueStart = indexHREFtagStart + hrefTag.Length;
+                int indexHREFvalueFinish = htmlDocContents.IndexOf('\"', indexHREFvalueStart);
+                string hrefValue = htmlDocContents[indexHREFvalueStart..indexHREFvalueFinish];
+                if (hrefValue.Length > 0 && !hrefValue.Contains("cite", StringComparison.OrdinalIgnoreCase))
+                {
+                    hrefs.Add(hrefValue);
+                }
+                indexSearchFrom = indexHREFvalueFinish + 1;
+                indexHREFtagStart = htmlDocContents.IndexOf(hrefTag, indexSearchFrom);
+            }
+            return hrefs;
         }
 
         /// <summary>
@@ -292,15 +371,24 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
-        #region SetWikiTour region
+        #region SetWikiTour - Populate WikiTour using methods in next section plus set airport(s) and create OSM images 
 
+        /// <summary>
+        /// Populate WikiTour using methods in next section plus set airport(s) and create OSM images
+        /// </summary>
+        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
+        /// <param name="route">Route leg summary strings</param>
+        /// <param name="tourStartItem">User specified first item of tour</param>
+        /// <param name="tourFinishItem">User specified last item of tour</param>
+        /// <param name="tourDistance">The distance from first to last item in miles</param>
         static internal void SetWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance)
         {
             PopulateWikiTour(tableNo, route, tourStartItem, tourFinishItem, tourDistance);
             SetWikiAirports();
-            SetWikiOverviewImage();
-            SetWikiLocationImage();
-            SetAllWikiLegRouteImages();
+            Common.SetOverviewImage();
+            Common.SetLocationImage();
+            WikiLegMapEdges = [];
+            Common.SetAllLegRouteImages(0, WikiTour.Count - 2);
         }
 
         /// <summary>
@@ -343,69 +431,6 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Creates "Charts_01.jpg" using a montage of OSM tiles that covers both airports and all items in <see cref="WikiTour"/>
-        /// </summary>
-        static internal void SetWikiOverviewImage()
-        {
-            List<Tile> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
-            BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
-            int zoom = GetBoundingBoxZoom(tiles, 2, 2, 0, WikiTour.Count - 1);
-            SetWikiOSMtiles(tiles, zoom, 0, WikiTour.Count - 1);
-            boundingBox = OSM.GetBoundingBox(tiles, zoom);
-            Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
-            Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
-            Drawing.MakeSquare(boundingBox, "Charts_01", zoom, 2);
-        }
-
-        /// <summary>
-        /// Creates "chart_thumb.jpg" using an OSM tile that covers the starting airport
-        /// </summary>
-        static internal void SetWikiLocationImage()
-        {
-            List<Tile> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
-            BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
-            int zoom = 15;
-            SetWikiOSMtiles(tiles, zoom, 0, 0);
-            boundingBox = OSM.GetBoundingBox(tiles, zoom);
-            Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
-            if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
-            {
-                Drawing.MakeSquare(boundingBox, "chart_thumb", zoom, 2);
-            }
-            if (boundingBox.xAxis.Count == 2)
-            {
-                Drawing.Resize("chart_thumb", 256, 0);
-            }
-        }
-
-        /// <summary>
-        /// Works out most zoomed in level that includes all items specified by startItemIndex and finishItemIndex, 
-        /// where the montage of OSM tiles doesn't exceed tilesWidth and tilesHeight in size
-        /// </summary>
-        /// <param name="tiles">List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile</param>
-        /// <param name="tilesWidth">Maximum number of tiles allowed for x axis</param>
-        /// <param name="tilesHeight">Maximum number of tiles allowed for x axis</param>
-        /// <param name="startItemIndex">Index of start item in <see cref="WikiTour"/></param>
-        /// <param name="finishItemIndex">Index of finish item in <see cref="WikiTour"/></param>
-        /// <returns>The maximum zoom level that meets constraints</returns>
-        static internal int GetBoundingBoxZoom(List<Tile> tiles, int tilesWidth, int tilesHeight,
-            int startItemIndex, int finishItemIndex)
-        {
-            BoundingBox boundingBox;
-            for (int zoom = 2; zoom <= 18; zoom++)
-            {
-                tiles.Clear();
-                SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
-                boundingBox = OSM.GetBoundingBox(tiles, zoom);
-                if ((boundingBox.xAxis.Count > tilesWidth) || (boundingBox.yAxis.Count > tilesHeight))
-                {
-                    return zoom - 1;
-                }
-            }
-            return 18;
-        }
-
-        /// <summary>
         /// Finds OSM tile numbers and offsets for a <see cref="WikiTour"/> (all items plus airports, or a pair of items)
         /// </summary>
         /// <param name="tiles">List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile</param>
@@ -421,85 +446,9 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        /// <summary>
-        /// Creates "LegRoute_XX.jpg" images for all legs using a montage of OSM tiles that covers the start and finish leg items
-        /// </summary>
-        static internal void SetAllWikiLegRouteImages()
-        {
-            WikiLegMapEdges = [];
-            for (int itemNo = 0; itemNo <= WikiTour.Count - 2; itemNo++)
-            {
-                SetOneWikiLegRouteImages(itemNo, itemNo + 1);
-            }
-        }
-
-        /// <summary>
-        /// Creates "LegRoute_XX.jpg" images for one leg using a montage of OSM tiles that covers the start and finish leg items 
-        /// </summary>
-        /// <param name="startItemIndex">Index of start item in <see cref="WikiTour"/></param>
-        /// <param name="finishItemIndex">Index of finish item in <see cref="WikiTour"/></param>
-        static internal void SetOneWikiLegRouteImages(int startItemIndex, int finishItemIndex)
-        {
-            List<Tile> tiles = [];
-            BoundingBox boundingBox;
-            BoundingBox zoomInBoundingBox;
-
-            int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex);
-            SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
-            boundingBox = OSM.GetBoundingBox(tiles, zoom);
-            int legNo = startItemIndex + 1;
-
-            // zoom 1 image
-            Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1");
-            Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
-            zoomInBoundingBox = Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Con.tileFactor);
-            Drawing.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg");
-
-            // zoom 2, 3 (and 4) images, zoom 1 is base level for map window size of 512 pixels, zoom 2 is base level for map window of 1024 pixels
-            // then there are two additional map images for the higher zoom levels.
-            int numberZoomLevels = 2;
-            if (Parameters.WikiMapWindowSize == 1024)
-                numberZoomLevels = 3;
-            for (int inc = 1; inc <= numberZoomLevels; inc++)
-            {
-                SetWikiOSMtiles(tiles, zoom + inc, startItemIndex, finishItemIndex);
-                Drawing.MontageTiles(zoomInBoundingBox, zoom + inc, $"LegRoute_{legNo:00}_zoom{inc + 1}");
-                Drawing.DrawRoute(tiles, zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}");
-                zoomInBoundingBox = Drawing.MakeSquare(zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}", zoom + inc, (int)Math.Pow(2, inc + 1));
-                Drawing.ConvertImageformat($"LegRoute_{legNo:00}_zoom{inc + 1}", "png", "jpg");
-            }
-
-            SetLegImageBoundaries(zoomInBoundingBox, zoom + numberZoomLevels + 1);
-        }
-
-        /// <summary>
-        /// Calculates leg map imageURL lat/lon boundaries, assumes called in leg number sequence starting with first leg
-        /// </summary>
-        /// <param name="legNo">Leg numbers run from 0</param>
-        /// <param name="boundingBox">The OSM tile numbers for x and y axis that cover the set of coordinates depicted in an image</param>
-        /// <param name="zoom">The OSM tile zoom level for the boundingBox</param>
-        static internal void SetLegImageBoundaries(BoundingBox boundingBox, int zoom)
-        {
-            MapEdges legEdges = new();
-            Coordinate c;
-
-            // Get the lat/lon coordinates of top left corner of bounding box
-            c = OSM.TileNoToLatLon(boundingBox.xAxis[0], boundingBox.yAxis[0], zoom);
-            legEdges.north = c.Latitude;
-            legEdges.west = c.Longitude;
-
-            // Get the lat/lon coordinates of top left corner of tile immediately below and right of bottom right corner of bounding box
-            c = OSM.TileNoToLatLon(boundingBox.xAxis[^1] + 1, boundingBox.yAxis[^1] + 1, zoom);
-            legEdges.south = c.Latitude;
-            legEdges.east = c.Longitude;
-
-            // Assumes this method called in leg number sequence starting with first leg
-            WikiLegMapEdges.Add(legEdges);
-        }
-
         #endregion
 
-        #region Populating wikiTour
+        #region Populating WikiTour
 
         /// <summary>
         /// Populates WikiTour for selected table based on user specified start and finish items and current route
@@ -630,7 +579,8 @@ namespace P3D_Scenario_Generator
                 title = WikiPage[tableNo][itemNo].title,
                 itemURL = WikiPage[tableNo][itemNo].itemURL,
                 latitude = WikiPage[tableNo][itemNo].latitude,
-                longitude = WikiPage[tableNo][itemNo].longitude
+                longitude = WikiPage[tableNo][itemNo].longitude,
+                hrefs = WikiPage[tableNo][itemNo].hrefs
             };
             return wikiItem;
         }

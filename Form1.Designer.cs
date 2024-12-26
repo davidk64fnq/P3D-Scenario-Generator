@@ -134,18 +134,18 @@ namespace P3D_Scenario_Generator
             ButtonSignWritingDefault = new Button();
             groupBox8 = new GroupBox();
             tableLayoutPanel5 = new TableLayoutPanel();
-            ComboBoxWikiMapWindowSize = new ComboBox();
-            label50 = new Label();
-            TextBoxWikiMapMonitorHeight = new TextBox();
-            TextBoxWikiMapMonitorWidth = new TextBox();
-            label45 = new Label();
-            label46 = new Label();
             label47 = new Label();
             TextBoxWikiMapOffset = new TextBox();
             label48 = new Label();
             TextBoxWikiMapMonitorNumber = new TextBox();
             label49 = new Label();
             ComboBoxWikiMapAlignment = new ComboBox();
+            label46 = new Label();
+            label45 = new Label();
+            label50 = new Label();
+            TextBoxWikiMapMonitorWidth = new TextBox();
+            TextBoxWikiMapMonitorHeight = new TextBox();
+            ComboBoxWikiMapWindowSize = new ComboBox();
             TextBoxWikiDistance = new TextBox();
             LabelWikiDistance = new Label();
             groupBox9 = new GroupBox();
@@ -164,6 +164,9 @@ namespace P3D_Scenario_Generator
             LabelWikiURL = new Label();
             groupBox10 = new GroupBox();
             tableLayoutPanel7 = new TableLayoutPanel();
+            TextBoxWikiURLWindowHeight = new TextBox();
+            TextBoxWikiURLWindowWidth = new TextBox();
+            label56 = new Label();
             TextBoxWikiURLMonitorHeight = new TextBox();
             TextBoxWikiURLMonitorWidth = new TextBox();
             label51 = new Label();
@@ -174,6 +177,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorNumber = new TextBox();
             label55 = new Label();
             ComboBoxWikiURLAlignment = new ComboBox();
+            label57 = new Label();
             TabPagePhotoTour = new TabPage();
             ButtonHelp = new Button();
             TabPageSettings = new TabPage();
@@ -207,10 +211,6 @@ namespace P3D_Scenario_Generator
             label2 = new Label();
             TabControlP3DSG = new TabControl();
             TabPageWikiList = new TabPage();
-            label56 = new Label();
-            label57 = new Label();
-            TextBoxWikiURLWindowWidth = new TextBox();
-            TextBoxWikiURLWindowHeight = new TextBox();
             groupBox1.SuspendLayout();
             tableLayoutPanelPhotoTourPhotoWindowLocation.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -425,8 +425,8 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourConstraintsMinNoLegs.Name = "TextBoxPhotoTourConstraintsMinNoLegs";
             TextBoxPhotoTourConstraintsMinNoLegs.Size = new Size(100, 23);
             TextBoxPhotoTourConstraintsMinNoLegs.TabIndex = 13;
-            TextBoxPhotoTourConstraintsMinNoLegs.Tag = "3, natural,>,2,<,19,<=,TextBoxPhotoTourConstraintsMaxNoLegs";
-            TextBoxPhotoTourConstraintsMinNoLegs.Text = "3";
+            TextBoxPhotoTourConstraintsMinNoLegs.Tag = "2, natural,>=,2,<,19,<=,TextBoxPhotoTourConstraintsMaxNoLegs";
+            TextBoxPhotoTourConstraintsMinNoLegs.Text = "2";
             TextBoxPhotoTourConstraintsMinNoLegs.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMinNoLegs, "Minimum number of legs must between 2 and 18 inclusive and less than or equal to maximum number of legs. Two legs would be starting airport to a single photo location then return to airport.");
             TextBoxPhotoTourConstraintsMinNoLegs.Validating += TextBox_Validating;
@@ -1617,82 +1617,6 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel5.Size = new Size(506, 85);
             tableLayoutPanel5.TabIndex = 35;
             // 
-            // ComboBoxWikiMapWindowSize
-            // 
-            ComboBoxWikiMapWindowSize.AccessibleName = "Wiki Map Window: Map Window Size";
-            ComboBoxWikiMapWindowSize.Anchor = AnchorStyles.None;
-            ComboBoxWikiMapWindowSize.DropDownWidth = 200;
-            ComboBoxWikiMapWindowSize.FormattingEnabled = true;
-            ComboBoxWikiMapWindowSize.Items.AddRange(new object[] { "512", "1024" });
-            ComboBoxWikiMapWindowSize.Location = new Point(392, 59);
-            ComboBoxWikiMapWindowSize.Name = "ComboBoxWikiMapWindowSize";
-            ComboBoxWikiMapWindowSize.Size = new Size(100, 23);
-            ComboBoxWikiMapWindowSize.TabIndex = 46;
-            ComboBoxWikiMapWindowSize.Tag = "1024";
-            ComboBoxWikiMapWindowSize.Text = "1024";
-            toolTip1.SetToolTip(ComboBoxWikiMapWindowSize, "Size of the square map window in pixels.");
-            // 
-            // label50
-            // 
-            label50.Anchor = AnchorStyles.None;
-            label50.AutoSize = true;
-            label50.Location = new Point(278, 63);
-            label50.Name = "label50";
-            label50.Size = new Size(74, 15);
-            label50.TabIndex = 44;
-            label50.Text = "Window Size";
-            toolTip1.SetToolTip(label50, "Size of the square map window in pixels.");
-            // 
-            // TextBoxWikiMapMonitorHeight
-            // 
-            TextBoxWikiMapMonitorHeight.AccessibleName = "Wiki Map Window Location: Monitor Height";
-            TextBoxWikiMapMonitorHeight.Anchor = AnchorStyles.None;
-            TextBoxWikiMapMonitorHeight.Location = new Point(392, 31);
-            TextBoxWikiMapMonitorHeight.Name = "TextBoxWikiMapMonitorHeight";
-            TextBoxWikiMapMonitorHeight.Size = new Size(100, 23);
-            TextBoxWikiMapMonitorHeight.TabIndex = 39;
-            TextBoxWikiMapMonitorHeight.Tag = "1080,natural";
-            TextBoxWikiMapMonitorHeight.Text = "1080";
-            TextBoxWikiMapMonitorHeight.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiMapMonitorHeight, "Resolution height in pixels of the monitor that wikipedia list map window will display on.");
-            TextBoxWikiMapMonitorHeight.Validating += TextBox_Validating;
-            // 
-            // TextBoxWikiMapMonitorWidth
-            // 
-            TextBoxWikiMapMonitorWidth.AccessibleName = "Wiki Map Window Location: Monitor Width";
-            TextBoxWikiMapMonitorWidth.Anchor = AnchorStyles.None;
-            TextBoxWikiMapMonitorWidth.Location = new Point(392, 3);
-            TextBoxWikiMapMonitorWidth.Name = "TextBoxWikiMapMonitorWidth";
-            TextBoxWikiMapMonitorWidth.Size = new Size(100, 23);
-            TextBoxWikiMapMonitorWidth.TabIndex = 39;
-            TextBoxWikiMapMonitorWidth.Tag = "1920,natural";
-            TextBoxWikiMapMonitorWidth.Text = "1920";
-            TextBoxWikiMapMonitorWidth.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiMapMonitorWidth, "Resolution width in pixels of the monitor that wikipedia list map window will display on. ");
-            TextBoxWikiMapMonitorWidth.Validating += TextBox_Validating;
-            // 
-            // label45
-            // 
-            label45.Anchor = AnchorStyles.None;
-            label45.AutoSize = true;
-            label45.Location = new Point(270, 34);
-            label45.Name = "label45";
-            label45.Size = new Size(89, 15);
-            label45.TabIndex = 39;
-            label45.Text = "Monitor Height";
-            toolTip1.SetToolTip(label45, "Resolution height in pixels of the monitor that wikipedia list map window will display on.");
-            // 
-            // label46
-            // 
-            label46.Anchor = AnchorStyles.None;
-            label46.AutoSize = true;
-            label46.Location = new Point(272, 6);
-            label46.Name = "label46";
-            label46.Size = new Size(85, 15);
-            label46.TabIndex = 39;
-            label46.Text = "Monitor Width";
-            toolTip1.SetToolTip(label46, "Resolution width in pixels of the monitor that wikipedia list map window will display on. ");
-            // 
             // label47
             // 
             label47.Anchor = AnchorStyles.None;
@@ -1768,6 +1692,82 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiMapAlignment.Tag = "Top Left";
             ComboBoxWikiMapAlignment.Text = "Top Left";
             toolTip1.SetToolTip(ComboBoxWikiMapAlignment, "Default location of wikipedia list map window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            // 
+            // label46
+            // 
+            label46.Anchor = AnchorStyles.None;
+            label46.AutoSize = true;
+            label46.Location = new Point(272, 6);
+            label46.Name = "label46";
+            label46.Size = new Size(85, 15);
+            label46.TabIndex = 39;
+            label46.Text = "Monitor Width";
+            toolTip1.SetToolTip(label46, "Resolution width in pixels of the monitor that wikipedia list map window will display on. ");
+            // 
+            // label45
+            // 
+            label45.Anchor = AnchorStyles.None;
+            label45.AutoSize = true;
+            label45.Location = new Point(270, 34);
+            label45.Name = "label45";
+            label45.Size = new Size(89, 15);
+            label45.TabIndex = 39;
+            label45.Text = "Monitor Height";
+            toolTip1.SetToolTip(label45, "Resolution height in pixels of the monitor that wikipedia list map window will display on.");
+            // 
+            // label50
+            // 
+            label50.Anchor = AnchorStyles.None;
+            label50.AutoSize = true;
+            label50.Location = new Point(278, 63);
+            label50.Name = "label50";
+            label50.Size = new Size(74, 15);
+            label50.TabIndex = 44;
+            label50.Text = "Window Size";
+            toolTip1.SetToolTip(label50, "Size of the square map window in pixels.");
+            // 
+            // TextBoxWikiMapMonitorWidth
+            // 
+            TextBoxWikiMapMonitorWidth.AccessibleName = "Wiki Map Window Location: Monitor Width";
+            TextBoxWikiMapMonitorWidth.Anchor = AnchorStyles.None;
+            TextBoxWikiMapMonitorWidth.Location = new Point(392, 3);
+            TextBoxWikiMapMonitorWidth.Name = "TextBoxWikiMapMonitorWidth";
+            TextBoxWikiMapMonitorWidth.Size = new Size(100, 23);
+            TextBoxWikiMapMonitorWidth.TabIndex = 39;
+            TextBoxWikiMapMonitorWidth.Tag = "1920,natural";
+            TextBoxWikiMapMonitorWidth.Text = "1920";
+            TextBoxWikiMapMonitorWidth.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxWikiMapMonitorWidth, "Resolution width in pixels of the monitor that wikipedia list map window will display on. ");
+            TextBoxWikiMapMonitorWidth.Validating += TextBox_Validating;
+            // 
+            // TextBoxWikiMapMonitorHeight
+            // 
+            TextBoxWikiMapMonitorHeight.AccessibleName = "Wiki Map Window Location: Monitor Height";
+            TextBoxWikiMapMonitorHeight.Anchor = AnchorStyles.None;
+            TextBoxWikiMapMonitorHeight.Location = new Point(392, 31);
+            TextBoxWikiMapMonitorHeight.Name = "TextBoxWikiMapMonitorHeight";
+            TextBoxWikiMapMonitorHeight.Size = new Size(100, 23);
+            TextBoxWikiMapMonitorHeight.TabIndex = 39;
+            TextBoxWikiMapMonitorHeight.Tag = "1080,natural";
+            TextBoxWikiMapMonitorHeight.Text = "1080";
+            TextBoxWikiMapMonitorHeight.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxWikiMapMonitorHeight, "Resolution height in pixels of the monitor that wikipedia list map window will display on.");
+            TextBoxWikiMapMonitorHeight.Validating += TextBox_Validating;
+            // 
+            // ComboBoxWikiMapWindowSize
+            // 
+            ComboBoxWikiMapWindowSize.AccessibleName = "Wiki Map Window: Map Window Size";
+            ComboBoxWikiMapWindowSize.Anchor = AnchorStyles.None;
+            ComboBoxWikiMapWindowSize.DropDownWidth = 200;
+            ComboBoxWikiMapWindowSize.FormattingEnabled = true;
+            ComboBoxWikiMapWindowSize.Items.AddRange(new object[] { "512", "1024" });
+            ComboBoxWikiMapWindowSize.Location = new Point(392, 59);
+            ComboBoxWikiMapWindowSize.Name = "ComboBoxWikiMapWindowSize";
+            ComboBoxWikiMapWindowSize.Size = new Size(100, 23);
+            ComboBoxWikiMapWindowSize.TabIndex = 46;
+            ComboBoxWikiMapWindowSize.Tag = "1024";
+            ComboBoxWikiMapWindowSize.Text = "1024";
+            toolTip1.SetToolTip(ComboBoxWikiMapWindowSize, "Size of the square map window in pixels.");
             // 
             // TextBoxWikiDistance
             // 
@@ -2036,6 +2036,45 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel7.Size = new Size(253, 200);
             tableLayoutPanel7.TabIndex = 35;
             // 
+            // TextBoxWikiURLWindowHeight
+            // 
+            TextBoxWikiURLWindowHeight.AccessibleName = "Wiki URL Window Location: Window Height";
+            TextBoxWikiURLWindowHeight.Anchor = AnchorStyles.None;
+            TextBoxWikiURLWindowHeight.Location = new Point(139, 172);
+            TextBoxWikiURLWindowHeight.Name = "TextBoxWikiURLWindowHeight";
+            TextBoxWikiURLWindowHeight.Size = new Size(100, 23);
+            TextBoxWikiURLWindowHeight.TabIndex = 47;
+            TextBoxWikiURLWindowHeight.Tag = "1024,natural";
+            TextBoxWikiURLWindowHeight.Text = "1024";
+            TextBoxWikiURLWindowHeight.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxWikiURLWindowHeight, "Resolution height in pixels of the Wiki URL window.");
+            TextBoxWikiURLWindowHeight.Validating += TextBox_Validating;
+            // 
+            // TextBoxWikiURLWindowWidth
+            // 
+            TextBoxWikiURLWindowWidth.AccessibleName = "Wiki URL Window Location: Window Width";
+            TextBoxWikiURLWindowWidth.Anchor = AnchorStyles.None;
+            TextBoxWikiURLWindowWidth.Location = new Point(139, 143);
+            TextBoxWikiURLWindowWidth.Name = "TextBoxWikiURLWindowWidth";
+            TextBoxWikiURLWindowWidth.Size = new Size(100, 23);
+            TextBoxWikiURLWindowWidth.TabIndex = 46;
+            TextBoxWikiURLWindowWidth.Tag = "800,natural";
+            TextBoxWikiURLWindowWidth.Text = "800";
+            TextBoxWikiURLWindowWidth.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxWikiURLWindowWidth, "Resolution width in pixels of the Wiki URL window. ");
+            TextBoxWikiURLWindowWidth.Validating += TextBox_Validating;
+            // 
+            // label56
+            // 
+            label56.Anchor = AnchorStyles.None;
+            label56.AutoSize = true;
+            label56.Location = new Point(20, 146);
+            label56.Name = "label56";
+            label56.Size = new Size(86, 15);
+            label56.TabIndex = 44;
+            label56.Text = "Window Width";
+            toolTip1.SetToolTip(label56, "Resolution width in pixels of the Wiki URL window. ");
+            // 
             // TextBoxWikiURLMonitorHeight
             // 
             TextBoxWikiURLMonitorHeight.AccessibleName = "Wiki URL Window Location: Monitor Height";
@@ -2161,6 +2200,17 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiURLAlignment.Tag = "Top Right";
             ComboBoxWikiURLAlignment.Text = "Top Right";
             toolTip1.SetToolTip(ComboBoxWikiURLAlignment, "Default location of Wiki URL window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            // 
+            // label57
+            // 
+            label57.Anchor = AnchorStyles.None;
+            label57.AutoSize = true;
+            label57.Location = new Point(18, 176);
+            label57.Name = "label57";
+            label57.Size = new Size(90, 15);
+            label57.TabIndex = 45;
+            label57.Text = "Window Height";
+            toolTip1.SetToolTip(label57, "Resolution height in pixels of the Wiki URL window.");
             // 
             // TabPagePhotoTour
             // 
@@ -2556,56 +2606,6 @@ namespace P3D_Scenario_Generator
             TabPageWikiList.Size = new Size(812, 438);
             TabPageWikiList.TabIndex = 7;
             TabPageWikiList.Text = "Wikipedia List";
-            // 
-            // label56
-            // 
-            label56.Anchor = AnchorStyles.None;
-            label56.AutoSize = true;
-            label56.Location = new Point(20, 146);
-            label56.Name = "label56";
-            label56.Size = new Size(86, 15);
-            label56.TabIndex = 44;
-            label56.Text = "Window Width";
-            toolTip1.SetToolTip(label56, "Resolution width in pixels of the Wiki URL window. ");
-            // 
-            // label57
-            // 
-            label57.Anchor = AnchorStyles.None;
-            label57.AutoSize = true;
-            label57.Location = new Point(18, 176);
-            label57.Name = "label57";
-            label57.Size = new Size(90, 15);
-            label57.TabIndex = 45;
-            label57.Text = "Window Height";
-            toolTip1.SetToolTip(label57, "Resolution height in pixels of the Wiki URL window.");
-            // 
-            // TextBoxWikiURLWindowWidth
-            // 
-            TextBoxWikiURLWindowWidth.AccessibleName = "Wiki URL Window Location: Window Width";
-            TextBoxWikiURLWindowWidth.Anchor = AnchorStyles.None;
-            TextBoxWikiURLWindowWidth.Location = new Point(139, 143);
-            TextBoxWikiURLWindowWidth.Name = "TextBoxWikiURLWindowWidth";
-            TextBoxWikiURLWindowWidth.Size = new Size(100, 23);
-            TextBoxWikiURLWindowWidth.TabIndex = 46;
-            TextBoxWikiURLWindowWidth.Tag = "800,natural";
-            TextBoxWikiURLWindowWidth.Text = "800";
-            TextBoxWikiURLWindowWidth.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiURLWindowWidth, "Resolution width in pixels of the Wiki URL window. ");
-            TextBoxWikiURLWindowWidth.Validating += TextBox_Validating;
-            // 
-            // TextBoxWikiURLWindowHeight
-            // 
-            TextBoxWikiURLWindowHeight.AccessibleName = "Wiki URL Window Location: Window Height";
-            TextBoxWikiURLWindowHeight.Anchor = AnchorStyles.None;
-            TextBoxWikiURLWindowHeight.Location = new Point(139, 172);
-            TextBoxWikiURLWindowHeight.Name = "TextBoxWikiURLWindowHeight";
-            TextBoxWikiURLWindowHeight.Size = new Size(100, 23);
-            TextBoxWikiURLWindowHeight.TabIndex = 47;
-            TextBoxWikiURLWindowHeight.Tag = "1024,natural";
-            TextBoxWikiURLWindowHeight.Text = "1024";
-            TextBoxWikiURLWindowHeight.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiURLWindowHeight, "Resolution height in pixels of the Wiki URL window.");
-            TextBoxWikiURLWindowHeight.Validating += TextBox_Validating;
             // 
             // Form
             // 

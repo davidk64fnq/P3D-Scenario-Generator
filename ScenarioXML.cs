@@ -707,8 +707,19 @@ namespace P3D_Scenario_Generator
                 mapWindowWidth = 1024;
                 mapWindowHeight = 1024;
             }
-            return GetWindowParameters(mapWindowWidth, mapWindowHeight, Parameters.PhotoTourMapAlignment,
+            if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
+            {
+                return GetWindowParameters(mapWindowWidth, mapWindowHeight, Parameters.PhotoTourMapAlignment,
                 Parameters.PhotoTourMapMonitorWidth, Parameters.PhotoTourMapMonitorHeight, Parameters.PhotoTourMapOffset);
+            }
+            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.WikiList))
+            {
+                return GetWindowParameters(mapWindowWidth, mapWindowHeight, Parameters.WikiMapAlignment,
+                Parameters.WikiMapMonitorWidth, Parameters.WikiMapMonitorHeight, Parameters.WikiMapOffset);
+            }
+            else
+                return null;
+            
         }
 
         static private string[] GetPhotoWindowParameters(int photoNo)
@@ -1317,8 +1328,38 @@ namespace P3D_Scenario_Generator
             // double up last url to display while travelling from last item to destination airport
             itemURLs += ", " + "\"https://en.wikipedia.org" + Wikipedia.WikiTour[Wikipedia.WikiCount - 2].itemURL + "\"";
             wikipediaJS = wikipediaJS.Replace("itemURLsX", itemURLs);
+            wikipediaJS = wikipediaJS.Replace("itemHREFsX", SetWikiTourAllLegHREFsJS());
+            wikipediaJS = wikipediaJS.Replace("widthX", Parameters.WikiURLWindowWidth.ToString());
+            wikipediaJS = wikipediaJS.Replace("heightX", (Parameters.WikiURLWindowHeight - 50).ToString());
             File.WriteAllText(saveLocation, wikipediaJS);
             stream.Dispose();
+        }
+
+        static private string SetWikiTourAllLegHREFsJS()
+        {
+            string hrefs = SetWikiTourOneLegHREFsJS(1);
+            for (int legNo = 2; legNo < Wikipedia.WikiCount - 1; legNo++)
+            {
+                hrefs += ", " + SetWikiTourOneLegHREFsJS(legNo);
+            }
+            // double up last url to display while travelling from last item to destination airport
+            hrefs += ", " + SetWikiTourOneLegHREFsJS(Wikipedia.WikiCount - 2);
+            return hrefs;
+        }
+
+        static private string SetWikiTourOneLegHREFsJS(int legIndex)
+        {
+            int noHREFs = Wikipedia.WikiTour[legIndex].hrefs.Count;
+            if (noHREFs == 0)
+                return "";
+            string itemHREFs = $"[";
+            itemHREFs += $"\"{Wikipedia.WikiTour[legIndex].hrefs[0]}\"";
+            for (int hrefNo = 1; hrefNo < noHREFs - 1; hrefNo++)
+            {
+                itemHREFs += ", " + $"\"{Wikipedia.WikiTour[legIndex].hrefs[hrefNo]}\"";
+            }
+            itemHREFs += "]";
+            return itemHREFs;
         }
 
         #endregion

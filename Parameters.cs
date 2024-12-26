@@ -12,7 +12,7 @@ namespace P3D_Scenario_Generator
         internal static string SelectedAirportID { get; set; }
         internal static string ImageFolder { get; private set; }
         internal static string SelectedAircraft { get; private set; }
-        internal static string SelectedScenario { get; private set; }
+        internal static string SelectedScenario { get; set; }
         internal static int Second { get; private set; }
         internal static int Minute { get; private set; }
         internal static int Hour { get; private set; }
