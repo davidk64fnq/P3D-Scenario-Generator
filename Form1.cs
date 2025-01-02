@@ -22,48 +22,47 @@ namespace P3D_Scenario_Generator
 
         #region Runway selection
 
-        private void ListBoxRunways_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            TextBoxSelectedRunway.Text = ListBoxRunways.SelectedItem.ToString();
-        }
-
         private void TextBoxSearchRunway_TextChanged(object sender, EventArgs e)
         {
-            int searchIndex = ListBoxRunways.FindString(TextBoxSearchRunway.Text);
+            int searchIndex = ComboBoxGeneralRunwaySelected.FindString(TextBoxGeneralSearchRunway.Text);
             if (searchIndex != ListBox.NoMatches)
             {
-                ListBoxRunways.SelectedIndex = searchIndex;
+                ComboBoxGeneralRunwaySelected.SelectedIndex = searchIndex;
             }
         }
 
         private void ButtonRandRunway_Click(object sender, EventArgs e)
         {
             Random random = new();
-            ListBoxRunways.SelectedIndex = random.Next(0, ListBoxRunways.Items.Count);
+            ComboBoxGeneralRunwaySelected.SelectedIndex = random.Next(0, ComboBoxGeneralRunwaySelected.Items.Count);
+            TextBoxGeneralSearchRunway.Text = "";
         }
 
         #endregion
 
         #region Scenario selection
 
-        private void ListBoxScenarioType_SelectedIndexChanged(object sender, EventArgs e)
+        private void ButtonRandomScenario_Click(object sender, EventArgs e)
         {
-            TextBoxSelectedScenario.Text = ListBoxScenarioType.SelectedItem.ToString();
-            if ((TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
-                || (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial])
-                || (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList]))
+            Random random = new();
+            ComboBoxGeneralScenarioType.SelectedIndex = random.Next(0, ComboBoxGeneralScenarioType.Items.Count);
+        }
+
+        private void ComboBoxGeneralScenarioType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if ((ComboBoxGeneralScenarioType.SelectedItem.ToString() == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
+                || (ComboBoxGeneralScenarioType.SelectedItem.ToString() == Con.scenarioNames[(int)ScenarioTypes.Celestial])
+                || (ComboBoxGeneralScenarioType.SelectedItem.ToString() == Con.scenarioNames[(int)ScenarioTypes.WikiList]))
             {
-                ListBoxRunways.Enabled = false;
-                TextBoxSearchRunway.Enabled = false;
+                ComboBoxGeneralRunwaySelected.Enabled = false;
+                TextBoxGeneralSearchRunway.Enabled = false;
                 ButtonRandRunway.Enabled = false;
-                TextBoxSelectedRunway.Text = "";
             }
             else
             {
-                ListBoxRunways.Enabled = true;
-                TextBoxSearchRunway.Enabled = true;
+                ComboBoxGeneralRunwaySelected.Enabled = true;
+                TextBoxGeneralSearchRunway.Enabled = true;
                 ButtonRandRunway.Enabled = true;
-                TextBoxSelectedRunway.Text = ListBoxRunways.SelectedItem.ToString();
             }
         }
 
@@ -91,22 +90,22 @@ namespace P3D_Scenario_Generator
 
         private void DoScenarioSpecificTasks()
         {
-            if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Circuit])
+            if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.Circuit])
             {
                 Circuit.SetCircuit();
                 SaveUserSettings(TabPageCircuit.Controls);
             }
-            else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
+            else if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
                 PhotoTour.SetPhotoTour();
                 SaveUserSettings(TabPagePhotoTour.Controls);
             }
-            else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.SignWriting])
+            else if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.SignWriting])
             {
                 SignWriting.SetSignWriting();
                 SaveUserSettings(TabPageSign.Controls);
             }
-            else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial])
+            else if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial])
             {
                 CelestialNav.GetAlmanacData();
                 CelestialNav.InitStars();
@@ -119,11 +118,12 @@ namespace P3D_Scenario_Generator
                 CelestialNav.SetCelestialSextantCSS(saveLocation);
                 SaveUserSettings(TabPageWikiList.Controls);
             }
-            else if (TextBoxSelectedScenario.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
+            else if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
             {
                 Wikipedia.SetWikiTour(ComboBoxWikiTableNames.SelectedIndex, ComboBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem,
                     ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text);
                 SaveUserSettings(TabPageWikiList.Controls);
+                ClearWikiListSettingsFields();
             }
             else
             {
@@ -141,26 +141,100 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
+        #region Date and Time selection
+
+        private void ButtonRandomDate_Click(object sender, EventArgs e)
+        {
+            DateTime start = new(2000, 1, 1);
+            int range = (DateTime.Today - start).Days;
+            Random random = new();
+            GeneralDatePicker.Text = start.AddDays(random.Next(range)).ToString();
+        }
+
+        private void ButtonRandomTime_Click(object sender, EventArgs e)
+        {
+            var rnd = new Random(Guid.NewGuid().GetHashCode());
+            var year = rnd.Next(2000, DateTime.Today.Year);
+            var month = rnd.Next(1, 13);
+            var days = rnd.Next(1, DateTime.DaysInMonth(year, month) + 1);
+            GeneralTimePicker.Text = new DateTime(year, month, days,
+                    rnd.Next(0, 24), rnd.Next(0, 60), rnd.Next(0, 60), rnd.Next(0, 1000)).ToString();
+        }
+
+        #endregion
+
         #region Aircraft selection
 
         private void ButtonAircraft_Click(object sender, EventArgs e)
         {
-            List<string> uiVariations = Aircraft.GetUIvariations();
-            if (uiVariations.Count > 0)
+            AircraftVariant aircraftVariant = Aircraft.ChooseAircraftVariant(ComboBoxSettingsSimulatorVersion.Text);
+            if (aircraftVariant.Title != null)
             {
-                Properties.Settings.Default.CruiseSpeed = Aircraft.CruiseSpeed;
+                Properties.Settings.Default.AircraftTitles.Add(aircraftVariant.Title);
+                Properties.Settings.Default.AircraftTitlesSelectedIndex = Properties.Settings.Default.AircraftTitles.Count - 1;
+                Properties.Settings.Default.AircraftCruiseSpeeds.Add(aircraftVariant.CruiseSpeed);
+                Properties.Settings.Default.AircraftImages.Add(aircraftVariant.ThumbnailImagePath);
                 Properties.Settings.Default.Save();
-                ListBoxAircraft.DataSource = uiVariations;
-                ListBoxAircraft.SelectedIndex = 0;
-                SetDefaultCircuitParams();
+                ComboBoxGeneralAircraftSelection.DataSource = null;
+                ComboBoxGeneralAircraftSelection.DataSource = Properties.Settings.Default.AircraftTitles;
+                ComboBoxGeneralAircraftSelection.SelectedIndex = ComboBoxGeneralAircraftSelection.Items.Count - 1;
             }
         }
 
-        private void ListBoxAircraft_SelectedIndexChanged(object sender, EventArgs e)
+        private void ComboBoxGeneralAircraftSelection_KeyDown(object sender, KeyEventArgs e)
         {
-            Properties.Settings.Default.SelectedAircraft = ListBoxAircraft.Text;
-            Properties.Settings.Default.AircraftImage = Aircraft.GetImagename(ListBoxAircraft.Text);
-            Properties.Settings.Default.Save();
+            string deletedItem = ((ComboBox)sender).Text;
+
+            if (e.KeyCode == Keys.Delete)
+            {
+                e.SuppressKeyPress = true;
+                int deletedIndex = Properties.Settings.Default.AircraftTitles.IndexOf(deletedItem);
+                Properties.Settings.Default.AircraftTitles.RemoveAt(deletedIndex);
+                if (Properties.Settings.Default.AircraftTitles.Count > 0)
+                    Properties.Settings.Default.AircraftTitlesSelectedIndex = 0;
+                Properties.Settings.Default.AircraftCruiseSpeeds.RemoveAt(deletedIndex);
+                Properties.Settings.Default.AircraftImages.RemoveAt(deletedIndex);
+                Properties.Settings.Default.Save();
+                ((ComboBox)sender).DataSource = null;
+                ((ComboBox)sender).DataSource = Properties.Settings.Default.AircraftTitles;
+                if (deletedIndex > 0)
+                    ((ComboBox)sender).SelectedIndex = 0;
+            }
+        }
+
+        private void ComboBoxGeneralAircraftSelection_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetDefaultCircuitParams();
+        }
+
+        #endregion
+
+        #region Location selection
+
+        private void ComboBoxGeneralLocation_KeyDown(object sender, KeyEventArgs e)
+        {
+            string s = ((ComboBox)sender).Text;
+
+            if (e.KeyCode == Keys.Enter)
+            {
+                if (!((ComboBox)sender).Items.Contains(s))
+                {
+                    ((ComboBox)sender).Items.Add(s);
+                    ((ComboBox)sender).SelectedIndex = ((ComboBox)sender).Items.Count - 1;
+                    UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
+                }
+            }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                e.SuppressKeyPress = true;
+                if (((ComboBox)sender).Items.Contains(s) && !s.Contains("None") && !s.Contains("All"))
+                {
+                    ((ComboBox)sender).Items.Remove(s);
+                    if (((ComboBox)sender).Items.Count > 0)
+                        ((ComboBox)sender).SelectedIndex = 0;
+                    UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
+                }
+            }
         }
 
         #endregion
@@ -176,13 +250,16 @@ namespace P3D_Scenario_Generator
 
         private void SetDefaultCircuitParams()
         {
-            if (Properties.Settings.Default.CruiseSpeed <= 0)
+            if (ComboBoxGeneralAircraftSelection.Items.Count == 0)
             {
                 MessageBox.Show($"Select an aircraft to calculate default values", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
-                double cruiseSpeed = Properties.Settings.Default.CruiseSpeed;
+                int aircraftIndex = ComboBoxGeneralAircraftSelection.SelectedIndex;
+                if (aircraftIndex < 0)
+                    return;
+                double cruiseSpeed = Convert.ToDouble(Properties.Settings.Default.AircraftCruiseSpeeds[aircraftIndex]);
                 TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", cruiseSpeed);
                 TextBoxCircuitHeightDown.Text = "1000";
                 TextBoxCircuitHeightUpwind.Text = "500";
@@ -213,6 +290,27 @@ namespace P3D_Scenario_Generator
 
         #region Wikipedia Lists Tab
 
+        /// <summary>
+        /// After saving all of the Wikipedia scenario related settings this method is called to clear the settings
+        /// relating to setting up the wiki tour. Otherwise the tour would get recreated on application load everytime.
+        /// </summary>
+        private static void ClearWikiListSettingsFields()
+        {
+            Properties.Settings.Default.ComboBoxWikiURL.Clear();
+            Properties.Settings.Default.ComboBoxWikiURLSelectedIndex = -1;
+            Properties.Settings.Default.TextBoxWikiItemLinkColumn = "1";
+            Properties.Settings.Default.ComboBoxWikiTableNames.Clear();
+            Properties.Settings.Default.ComboBoxWikiTableNamesSelectedIndex = -1;
+            Properties.Settings.Default.ComboBoxWikiRoute.Clear();
+            Properties.Settings.Default.ComboBoxWikiRouteSelectedIndex = -1;
+            Properties.Settings.Default.ComboBoxWikiStartingItem.Clear();
+            Properties.Settings.Default.ComboBoxWikiStartingItemSelectedIndex = -1;
+            Properties.Settings.Default.ComboBoxWikiFinishingItem.Clear();
+            Properties.Settings.Default.ComboBoxWikiFinishingItemSelectedIndex = -1;
+            Properties.Settings.Default.TextBoxWikiDistance = "";
+            Properties.Settings.Default.Save();
+        }
+
         private void ComboBoxWikiURL_TextChanged(object sender, EventArgs e)
         {
             ComboBoxWikiURL_TextChanged();
@@ -221,7 +319,7 @@ namespace P3D_Scenario_Generator
 
         private void ComboBoxWikiURL_TextChanged()
         {
-            if (ComboBoxWikiURL.SelectedItem != null)
+            if (ComboBoxWikiURL.SelectedItem.ToString() != "")
             {
                 Parameters.SelectedScenario = Con.scenarioNames[(int)ScenarioTypes.WikiList];
                 Wikipedia.PopulateWikiPage(ComboBoxWikiURL.SelectedItem.ToString(), int.Parse(TextBoxWikiItemLinkColumn.Text));
@@ -231,6 +329,8 @@ namespace P3D_Scenario_Generator
 
         private void ComboBoxWikiTableNames_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (ComboBoxWikiURL.Items.Count == 0)
+                return;
             TextBoxWikiDistance.Text = "";
             if (ComboBoxWikiTableNames.Items.Count > 0)
             {
@@ -343,6 +443,7 @@ namespace P3D_Scenario_Generator
             }
             else if (e.KeyCode == Keys.Delete)
             {
+                e.SuppressKeyPress = true;
                 if (((ComboBox)sender).Items.Contains(s))
                 {
                     ((ComboBox)sender).Items.Remove(s);
@@ -370,13 +471,14 @@ namespace P3D_Scenario_Generator
         private void PrepareFormFields()
         {
             // General tab
-            ListBoxRunways.DataSource = Runway.GetICAOids();
+            ComboBoxGeneralRunwaySelected.DataSource = Runway.GetICAOids();
+            ComboBoxGeneralScenarioType.SelectedIndex = 0;
+            ComboBoxGeneralAircraftSelection.DataSource = Properties.Settings.Default.AircraftTitles;
+            if (Properties.Settings.Default.AircraftTitlesSelectedIndex < ComboBoxGeneralAircraftSelection.Items.Count)
+                ComboBoxGeneralAircraftSelection.SelectedIndex = Properties.Settings.Default.AircraftTitlesSelectedIndex;
 
             // Circuit tab
-            string appName = Assembly.GetExecutingAssembly().GetName().Name;
-            string appPath = Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_");
-            Stream stream = Assembly.Load(appName).GetManifestResourceStream($"{appPath}.Resources.Images.circuitTab.jpg");
-            PictureBoxCircuit.Image = new Bitmap(stream);
+            SetDefaultParams(TabPagePhotoTour.Controls);
             RestoreUserSettings(TabPageCircuit.Controls);
 
             // PhotoTour tab
@@ -433,16 +535,20 @@ namespace P3D_Scenario_Generator
                     {
                         var settingsValue = Properties.Settings.Default[control.Name];
                         if (settingsValue != null)
-                            if (control is TextBox && control.Tag != null)
+                            if (control is TextBox)
                                 control.Text = settingsValue.ToString();
-                            else if (control is ComboBox box && control.Tag != null)
+                            else if (control is ComboBox box)
                             {
-                                box.Items.Clear();
-                                foreach (string item in (System.Collections.Specialized.StringCollection)Properties.Settings.Default[control.Name])
+                                int itemCount = ((System.Collections.Specialized.StringCollection)Properties.Settings.Default[control.Name]).Count;
+                                if (itemCount > 0)
                                 {
-                                    box.Items.Add(item);
+                                    box.Items.Clear();
+                                    foreach (string item in (System.Collections.Specialized.StringCollection)Properties.Settings.Default[control.Name])
+                                    {
+                                        box.Items.Add(item);
+                                    }
+                                    box.SelectedIndex = (int)Properties.Settings.Default[control.Name + "SelectedIndex"];
                                 }
-                                box.SelectedIndex = (int)Properties.Settings.Default[control.Name + "SelectedIndex"];
                             }
                     }
                     catch
@@ -719,15 +825,6 @@ namespace P3D_Scenario_Generator
                 fieldValue = control.Text;
                 accessibleName = control.AccessibleName;
             }
-        }
-
-        private void Init(object sender, EventArgs e)
-        {
-            string[] newUIvariation = [Properties.Settings.Default.SelectedAircraft, Properties.Settings.Default.AircraftImage];
-            Aircraft.uiVariations.Add(newUIvariation);
-            List<string> aircraftList = [Properties.Settings.Default.SelectedAircraft];
-            ListBoxAircraft.DataSource = aircraftList;
-            Aircraft.CruiseSpeed = Properties.Settings.Default.CruiseSpeed;
         }
 
         internal static void DeleteFile(string filename)

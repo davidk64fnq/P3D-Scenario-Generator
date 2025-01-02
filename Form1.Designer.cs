@@ -45,7 +45,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourConstraintsMinLegDist = new TextBox();
             TextBoxPhotoTourConstraintsMaxBearingChange = new TextBox();
             TextBoxPhotoTourMapHotspotRadius = new TextBox();
-            buttonAircraft = new Button();
+            buttonGeneralAircraft = new Button();
             TextBoxPhotoTourConstraintsMaxNoLegs = new TextBox();
             TextBoxPhotoTourConstraintsMinNoLegs = new TextBox();
             TextBoxPhotoTourPhotoOffset = new TextBox();
@@ -178,6 +178,31 @@ namespace P3D_Scenario_Generator
             label55 = new Label();
             ComboBoxWikiURLAlignment = new ComboBox();
             label57 = new Label();
+            groupBox11 = new GroupBox();
+            tableLayoutPanelCircuit = new TableLayoutPanel();
+            label1 = new Label();
+            TextBoxGeneralSearchRunway = new TextBox();
+            groupBox12 = new GroupBox();
+            tableLayoutPanel8 = new TableLayoutPanel();
+            ButtonRandRunway = new Button();
+            ComboBoxGeneralRunwaySelected = new ComboBox();
+            groupBox13 = new GroupBox();
+            tableLayoutPanel9 = new TableLayoutPanel();
+            ButtonRandomScenario = new Button();
+            TextBoxGeneralScenarioTitle = new TextBox();
+            ComboBoxGeneralScenarioType = new ComboBox();
+            label2 = new Label();
+            ComboBoxGeneralAircraftSelection = new ComboBox();
+            label8 = new Label();
+            ComboBoxSettingsSimulatorVersion = new ComboBox();
+            groupBox16 = new GroupBox();
+            tableLayoutPanel12 = new TableLayoutPanel();
+            ComboBoxGeneralLocationCity = new ComboBox();
+            ComboBoxGeneralLocationState = new ComboBox();
+            ComboBoxGeneralLocationCountry = new ComboBox();
+            label58 = new Label();
+            label59 = new Label();
+            label60 = new Label();
             TabPagePhotoTour = new TabPage();
             ButtonHelp = new Button();
             TabPageSettings = new TabPage();
@@ -188,27 +213,16 @@ namespace P3D_Scenario_Generator
             label25 = new Label();
             TabPageSign = new TabPage();
             TabPageCircuit = new TabPage();
-            tableLayoutPanelCircuit = new TableLayoutPanel();
             ButtonCircuitDefault = new Button();
-            PictureBoxCircuit = new PictureBox();
             TabPageMenu = new TabPage();
-            GroupBoxDateTime = new GroupBox();
-            DatePicker = new DateTimePicker();
-            TextBoxScenarioTitle = new TextBox();
-            TimePicker = new DateTimePicker();
-            label8 = new Label();
-            GroupBoxAircraft = new GroupBox();
-            ListBoxAircraft = new ListBox();
-            GroupBoxScenario = new GroupBox();
-            ListBoxScenarioType = new ListBox();
-            TextBoxSelectedScenario = new TextBox();
-            GroupBoxRunway = new GroupBox();
-            ListBoxRunways = new ListBox();
-            ButtonRandRunway = new Button();
-            label1 = new Label();
-            TextBoxSelectedRunway = new TextBox();
-            TextBoxSearchRunway = new TextBox();
-            label2 = new Label();
+            groupBox15 = new GroupBox();
+            tableLayoutPanel11 = new TableLayoutPanel();
+            groupBox14 = new GroupBox();
+            tableLayoutPanel10 = new TableLayoutPanel();
+            ButtonRandomTime = new Button();
+            ButtonRandomDate = new Button();
+            GeneralDatePicker = new DateTimePicker();
+            GeneralTimePicker = new DateTimePicker();
             TabControlP3DSG = new TabControl();
             TabPageWikiList = new TabPage();
             groupBox1.SuspendLayout();
@@ -229,6 +243,14 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel6.SuspendLayout();
             groupBox10.SuspendLayout();
             tableLayoutPanel7.SuspendLayout();
+            groupBox11.SuspendLayout();
+            tableLayoutPanelCircuit.SuspendLayout();
+            groupBox12.SuspendLayout();
+            tableLayoutPanel8.SuspendLayout();
+            groupBox13.SuspendLayout();
+            tableLayoutPanel9.SuspendLayout();
+            groupBox16.SuspendLayout();
+            tableLayoutPanel12.SuspendLayout();
             TabPagePhotoTour.SuspendLayout();
             TabPageSettings.SuspendLayout();
             groupBox4.SuspendLayout();
@@ -236,13 +258,11 @@ namespace P3D_Scenario_Generator
             TabPageCelestial.SuspendLayout();
             TabPageSign.SuspendLayout();
             TabPageCircuit.SuspendLayout();
-            tableLayoutPanelCircuit.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)PictureBoxCircuit).BeginInit();
             TabPageMenu.SuspendLayout();
-            GroupBoxDateTime.SuspendLayout();
-            GroupBoxAircraft.SuspendLayout();
-            GroupBoxScenario.SuspendLayout();
-            GroupBoxRunway.SuspendLayout();
+            groupBox15.SuspendLayout();
+            tableLayoutPanel11.SuspendLayout();
+            groupBox14.SuspendLayout();
+            tableLayoutPanel10.SuspendLayout();
             TabControlP3DSG.SuspendLayout();
             TabPageWikiList.SuspendLayout();
             SuspendLayout();
@@ -392,16 +412,16 @@ namespace P3D_Scenario_Generator
             toolTip1.SetToolTip(TextBoxPhotoTourMapHotspotRadius, "Radius of photo hotspot location in feet");
             TextBoxPhotoTourMapHotspotRadius.Validating += TextBox_Validating;
             // 
-            // buttonAircraft
+            // buttonGeneralAircraft
             // 
-            buttonAircraft.Location = new Point(75, 172);
-            buttonAircraft.Name = "buttonAircraft";
-            buttonAircraft.Size = new Size(120, 23);
-            buttonAircraft.TabIndex = 11;
-            buttonAircraft.Text = "aircraft.cfg";
-            toolTip1.SetToolTip(buttonAircraft, "Select the \"aircraft.cfg\" file for your aircraft and then the variation from the list above");
-            buttonAircraft.UseVisualStyleBackColor = true;
-            buttonAircraft.Click += ButtonAircraft_Click;
+            buttonGeneralAircraft.Location = new Point(3, 3);
+            buttonGeneralAircraft.Name = "buttonGeneralAircraft";
+            buttonGeneralAircraft.Size = new Size(100, 23);
+            buttonGeneralAircraft.TabIndex = 11;
+            buttonGeneralAircraft.Text = "Selection";
+            toolTip1.SetToolTip(buttonGeneralAircraft, "To add a new aircraft to the list of favourites choose the image of preferred aircraft variant");
+            buttonGeneralAircraft.UseVisualStyleBackColor = true;
+            buttonGeneralAircraft.Click += ButtonAircraft_Click;
             // 
             // TextBoxPhotoTourConstraintsMaxNoLegs
             // 
@@ -919,7 +939,7 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsCacheServers.Name = "ComboBoxSettingsCacheServers";
             ComboBoxSettingsCacheServers.Size = new Size(100, 23);
             ComboBoxSettingsCacheServers.TabIndex = 41;
-            ComboBoxSettingsCacheServers.Tag = ",";
+            ComboBoxSettingsCacheServers.Tag = "";
             toolTip1.SetToolTip(ComboBoxSettingsCacheServers, "OSM tile server and API key if required, comma separated.");
             ComboBoxSettingsCacheServers.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
             ComboBoxSettingsCacheServers.KeyDown += ComboBox_KeyDown;
@@ -928,7 +948,7 @@ namespace P3D_Scenario_Generator
             // 
             label39.Anchor = AnchorStyles.None;
             label39.AutoSize = true;
-            label39.Location = new Point(19, 8);
+            label39.Location = new Point(19, 7);
             label39.Name = "label39";
             label39.Size = new Size(88, 15);
             label39.TabIndex = 31;
@@ -941,11 +961,11 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsScenarioFolder.Anchor = AnchorStyles.None;
             ComboBoxSettingsScenarioFolder.DropDownWidth = 640;
             ComboBoxSettingsScenarioFolder.FormattingEnabled = true;
-            ComboBoxSettingsScenarioFolder.Location = new Point(139, 4);
+            ComboBoxSettingsScenarioFolder.Location = new Point(139, 3);
             ComboBoxSettingsScenarioFolder.Name = "ComboBoxSettingsScenarioFolder";
             ComboBoxSettingsScenarioFolder.Size = new Size(100, 23);
             ComboBoxSettingsScenarioFolder.TabIndex = 42;
-            ComboBoxSettingsScenarioFolder.Tag = ",";
+            ComboBoxSettingsScenarioFolder.Tag = "";
             toolTip1.SetToolTip(ComboBoxSettingsScenarioFolder, "Location where generated scenarios are stored. Usually \"Prepar3D v5 Files\"");
             ComboBoxSettingsScenarioFolder.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
             ComboBoxSettingsScenarioFolder.KeyDown += ComboBox_KeyDown;
@@ -1072,9 +1092,9 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxCircuitSpeed
             // 
-            TextBoxCircuitSpeed.AccessibleName = "Circuit: Speed";
+            TextBoxCircuitSpeed.AccessibleName = "Circuit Parameters: Speed";
             TextBoxCircuitSpeed.Anchor = AnchorStyles.None;
-            TextBoxCircuitSpeed.Location = new Point(590, 25);
+            TextBoxCircuitSpeed.Location = new Point(149, 171);
             TextBoxCircuitSpeed.Name = "TextBoxCircuitSpeed";
             TextBoxCircuitSpeed.Size = new Size(80, 23);
             TextBoxCircuitSpeed.TabIndex = 4;
@@ -1086,9 +1106,9 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxCircuitTurnRate
             // 
-            TextBoxCircuitTurnRate.AccessibleName = "Circuit: Turn Rate";
+            TextBoxCircuitTurnRate.AccessibleName = "Circuit Parameters: Turn Rate";
             TextBoxCircuitTurnRate.Anchor = AnchorStyles.None;
-            TextBoxCircuitTurnRate.Location = new Point(691, 25);
+            TextBoxCircuitTurnRate.Location = new Point(149, 201);
             TextBoxCircuitTurnRate.Name = "TextBoxCircuitTurnRate";
             TextBoxCircuitTurnRate.Size = new Size(80, 23);
             TextBoxCircuitTurnRate.TabIndex = 17;
@@ -1100,9 +1120,9 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxCircuitHeightDown
             // 
-            TextBoxCircuitHeightDown.AccessibleName = "Circuit: Height Gates 3 to 6";
+            TextBoxCircuitHeightDown.AccessibleName = "Circuit Parameters: Height Gates 3 to 6";
             TextBoxCircuitHeightDown.Anchor = AnchorStyles.None;
-            TextBoxCircuitHeightDown.Location = new Point(396, 25);
+            TextBoxCircuitHeightDown.Location = new Point(149, 115);
             TextBoxCircuitHeightDown.Name = "TextBoxCircuitHeightDown";
             TextBoxCircuitHeightDown.Size = new Size(80, 23);
             TextBoxCircuitHeightDown.TabIndex = 3;
@@ -1114,9 +1134,9 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxCircuitHeightUpwind
             // 
-            TextBoxCircuitHeightUpwind.AccessibleName = "Circuit: Height Gate 1";
+            TextBoxCircuitHeightUpwind.AccessibleName = "Circuit Parameters: Height Gate 1";
             TextBoxCircuitHeightUpwind.Anchor = AnchorStyles.None;
-            TextBoxCircuitHeightUpwind.Location = new Point(299, 25);
+            TextBoxCircuitHeightUpwind.Location = new Point(149, 87);
             TextBoxCircuitHeightUpwind.Name = "TextBoxCircuitHeightUpwind";
             TextBoxCircuitHeightUpwind.Size = new Size(80, 23);
             TextBoxCircuitHeightUpwind.TabIndex = 13;
@@ -1128,9 +1148,9 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxCircuitFinal
             // 
-            TextBoxCircuitFinal.AccessibleName = "Circuit: Final";
+            TextBoxCircuitFinal.AccessibleName = "Circuit Parameters: Final";
             TextBoxCircuitFinal.Anchor = AnchorStyles.None;
-            TextBoxCircuitFinal.Location = new Point(202, 25);
+            TextBoxCircuitFinal.Location = new Point(149, 59);
             TextBoxCircuitFinal.Name = "TextBoxCircuitFinal";
             TextBoxCircuitFinal.Size = new Size(80, 23);
             TextBoxCircuitFinal.TabIndex = 2;
@@ -1142,9 +1162,9 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxCircuitBase
             // 
-            TextBoxCircuitBase.AccessibleName = "Circuit: Base";
+            TextBoxCircuitBase.AccessibleName = "Circuit Parameters: Base";
             TextBoxCircuitBase.Anchor = AnchorStyles.None;
-            TextBoxCircuitBase.Location = new Point(105, 25);
+            TextBoxCircuitBase.Location = new Point(149, 31);
             TextBoxCircuitBase.Name = "TextBoxCircuitBase";
             TextBoxCircuitBase.Size = new Size(80, 23);
             TextBoxCircuitBase.TabIndex = 1;
@@ -1158,7 +1178,7 @@ namespace P3D_Scenario_Generator
             // 
             label28.Anchor = AnchorStyles.None;
             label28.AutoSize = true;
-            label28.Location = new Point(702, 2);
+            label28.Location = new Point(34, 205);
             label28.Name = "label28";
             label28.Size = new Size(58, 15);
             label28.TabIndex = 18;
@@ -1167,9 +1187,9 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxCircuitHeightBase
             // 
-            TextBoxCircuitHeightBase.AccessibleName = "Circuit: Height Gate 8";
+            TextBoxCircuitHeightBase.AccessibleName = "Circuit Parameters: Height Gate 8";
             TextBoxCircuitHeightBase.Anchor = AnchorStyles.None;
-            TextBoxCircuitHeightBase.Location = new Point(493, 25);
+            TextBoxCircuitHeightBase.Location = new Point(149, 143);
             TextBoxCircuitHeightBase.Name = "TextBoxCircuitHeightBase";
             TextBoxCircuitHeightBase.Size = new Size(80, 23);
             TextBoxCircuitHeightBase.TabIndex = 12;
@@ -1183,7 +1203,7 @@ namespace P3D_Scenario_Generator
             // 
             label10.Anchor = AnchorStyles.None;
             label10.AutoSize = true;
-            label10.Location = new Point(296, 2);
+            label10.Location = new Point(19, 90);
             label10.Name = "label10";
             label10.Size = new Size(87, 15);
             label10.TabIndex = 16;
@@ -1194,7 +1214,7 @@ namespace P3D_Scenario_Generator
             // 
             label3.Anchor = AnchorStyles.None;
             label3.AutoSize = true;
-            label3.Location = new Point(130, 2);
+            label3.Location = new Point(47, 34);
             label3.Name = "label3";
             label3.Size = new Size(31, 15);
             label3.TabIndex = 6;
@@ -1206,7 +1226,7 @@ namespace P3D_Scenario_Generator
             // 
             label4.Anchor = AnchorStyles.None;
             label4.AutoSize = true;
-            label4.Location = new Point(226, 2);
+            label4.Location = new Point(47, 62);
             label4.Name = "label4";
             label4.Size = new Size(32, 15);
             label4.TabIndex = 7;
@@ -1217,7 +1237,7 @@ namespace P3D_Scenario_Generator
             // 
             label5.Anchor = AnchorStyles.None;
             label5.AutoSize = true;
-            label5.Location = new Point(395, 2);
+            label5.Location = new Point(21, 118);
             label5.Name = "label5";
             label5.Size = new Size(83, 15);
             label5.TabIndex = 8;
@@ -1228,7 +1248,7 @@ namespace P3D_Scenario_Generator
             // 
             label9.Anchor = AnchorStyles.None;
             label9.AutoSize = true;
-            label9.Location = new Point(490, 2);
+            label9.Location = new Point(19, 146);
             label9.Name = "label9";
             label9.Size = new Size(87, 15);
             label9.TabIndex = 15;
@@ -1237,9 +1257,9 @@ namespace P3D_Scenario_Generator
             // 
             // TextBoxCircuitUpwind
             // 
-            TextBoxCircuitUpwind.AccessibleName = "Circuit: Upwind";
+            TextBoxCircuitUpwind.AccessibleName = "Circuit Parameters: Upwind";
             TextBoxCircuitUpwind.Anchor = AnchorStyles.None;
-            TextBoxCircuitUpwind.Location = new Point(8, 25);
+            TextBoxCircuitUpwind.Location = new Point(149, 3);
             TextBoxCircuitUpwind.Name = "TextBoxCircuitUpwind";
             TextBoxCircuitUpwind.Size = new Size(80, 23);
             TextBoxCircuitUpwind.TabIndex = 5;
@@ -1253,7 +1273,7 @@ namespace P3D_Scenario_Generator
             // 
             label6.Anchor = AnchorStyles.None;
             label6.AutoSize = true;
-            label6.Location = new Point(611, 2);
+            label6.Location = new Point(43, 174);
             label6.Name = "label6";
             label6.Size = new Size(39, 15);
             label6.TabIndex = 9;
@@ -1265,7 +1285,7 @@ namespace P3D_Scenario_Generator
             label7.AllowDrop = true;
             label7.Anchor = AnchorStyles.None;
             label7.AutoSize = true;
-            label7.Location = new Point(24, 2);
+            label7.Location = new Point(39, 6);
             label7.Name = "label7";
             label7.Size = new Size(48, 15);
             label7.TabIndex = 10;
@@ -1893,7 +1913,6 @@ namespace P3D_Scenario_Generator
             TextBoxWikiItemLinkColumn.Text = "1";
             TextBoxWikiItemLinkColumn.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiItemLinkColumn, "The column in Wikipdeia URL table or lists containing the link to each item");
-            TextBoxWikiItemLinkColumn.TextChanged += ComboBoxWikiURL_TextChanged;
             TextBoxWikiItemLinkColumn.Validating += TextBox_Validating;
             // 
             // ComboBoxWikiFinishingItem
@@ -2212,6 +2231,381 @@ namespace P3D_Scenario_Generator
             label57.Text = "Window Height";
             toolTip1.SetToolTip(label57, "Resolution height in pixels of the Wiki URL window.");
             // 
+            // groupBox11
+            // 
+            groupBox11.Anchor = AnchorStyles.None;
+            groupBox11.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox11.Controls.Add(tableLayoutPanelCircuit);
+            groupBox11.Location = new Point(35, 36);
+            groupBox11.Name = "groupBox11";
+            groupBox11.Size = new Size(286, 272);
+            groupBox11.TabIndex = 42;
+            groupBox11.TabStop = false;
+            groupBox11.Text = "Circuit Parameters";
+            toolTip1.SetToolTip(groupBox11, "Parameters that define the circuit");
+            // 
+            // tableLayoutPanelCircuit
+            // 
+            tableLayoutPanelCircuit.Anchor = AnchorStyles.None;
+            tableLayoutPanelCircuit.BackColor = Color.FromArgb(255, 192, 128);
+            tableLayoutPanelCircuit.ColumnCount = 2;
+            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelCircuit.Controls.Add(label7, 0, 0);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitTurnRate, 1, 7);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitUpwind, 1, 0);
+            tableLayoutPanelCircuit.Controls.Add(label28, 0, 7);
+            tableLayoutPanelCircuit.Controls.Add(label3, 0, 1);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitSpeed, 1, 6);
+            tableLayoutPanelCircuit.Controls.Add(label6, 0, 6);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitBase, 1, 1);
+            tableLayoutPanelCircuit.Controls.Add(label4, 0, 2);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitHeightBase, 1, 5);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitFinal, 1, 2);
+            tableLayoutPanelCircuit.Controls.Add(label9, 0, 5);
+            tableLayoutPanelCircuit.Controls.Add(label10, 0, 3);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitHeightDown, 1, 4);
+            tableLayoutPanelCircuit.Controls.Add(label5, 0, 4);
+            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitHeightUpwind, 1, 3);
+            tableLayoutPanelCircuit.Location = new Point(15, 28);
+            tableLayoutPanelCircuit.Margin = new Padding(0);
+            tableLayoutPanelCircuit.Name = "tableLayoutPanelCircuit";
+            tableLayoutPanelCircuit.RowCount = 8;
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Percent, 12.5F));
+            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanelCircuit.Size = new Size(253, 229);
+            tableLayoutPanelCircuit.TabIndex = 17;
+            // 
+            // label1
+            // 
+            label1.Anchor = AnchorStyles.None;
+            label1.AutoSize = true;
+            label1.Location = new Point(42, 38);
+            label1.Name = "label1";
+            label1.Size = new Size(42, 15);
+            label1.TabIndex = 3;
+            label1.Text = "Search";
+            toolTip1.SetToolTip(label1, "Start typing an airport ICAO to find an airport");
+            // 
+            // TextBoxGeneralSearchRunway
+            // 
+            TextBoxGeneralSearchRunway.AccessibleName = "Runway Selection: Search";
+            TextBoxGeneralSearchRunway.Anchor = AnchorStyles.None;
+            TextBoxGeneralSearchRunway.Location = new Point(139, 34);
+            TextBoxGeneralSearchRunway.Name = "TextBoxGeneralSearchRunway";
+            TextBoxGeneralSearchRunway.Size = new Size(100, 23);
+            TextBoxGeneralSearchRunway.TabIndex = 2;
+            toolTip1.SetToolTip(TextBoxGeneralSearchRunway, "Start typing an airport ICAO to find an airport");
+            TextBoxGeneralSearchRunway.TextChanged += TextBoxSearchRunway_TextChanged;
+            // 
+            // groupBox12
+            // 
+            groupBox12.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox12.Controls.Add(tableLayoutPanel8);
+            groupBox12.Location = new Point(67, 23);
+            groupBox12.Name = "groupBox12";
+            groupBox12.Size = new Size(286, 95);
+            groupBox12.TabIndex = 18;
+            groupBox12.TabStop = false;
+            groupBox12.Text = "Runway Selection";
+            toolTip1.SetToolTip(groupBox12, "Press \"Random\" button for random selection of runway, or select from dropdown list, or start typing an ICAO code in search box.");
+            // 
+            // tableLayoutPanel8
+            // 
+            tableLayoutPanel8.AccessibleName = "";
+            tableLayoutPanel8.Anchor = AnchorStyles.None;
+            tableLayoutPanel8.ColumnCount = 2;
+            tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel8.Controls.Add(ButtonRandRunway, 0, 0);
+            tableLayoutPanel8.Controls.Add(ComboBoxGeneralRunwaySelected, 1, 0);
+            tableLayoutPanel8.Controls.Add(label1, 0, 1);
+            tableLayoutPanel8.Controls.Add(TextBoxGeneralSearchRunway, 1, 1);
+            tableLayoutPanel8.ImeMode = ImeMode.On;
+            tableLayoutPanel8.Location = new Point(17, 22);
+            tableLayoutPanel8.Name = "tableLayoutPanel8";
+            tableLayoutPanel8.RowCount = 2;
+            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel8.Size = new Size(253, 61);
+            tableLayoutPanel8.TabIndex = 36;
+            // 
+            // ButtonRandRunway
+            // 
+            ButtonRandRunway.Anchor = AnchorStyles.None;
+            ButtonRandRunway.Location = new Point(17, 3);
+            ButtonRandRunway.Name = "ButtonRandRunway";
+            ButtonRandRunway.Size = new Size(91, 23);
+            ButtonRandRunway.TabIndex = 5;
+            ButtonRandRunway.Text = "Random Runway";
+            ButtonRandRunway.UseVisualStyleBackColor = true;
+            ButtonRandRunway.Click += ButtonRandRunway_Click;
+            // 
+            // ComboBoxGeneralRunwaySelected
+            // 
+            ComboBoxGeneralRunwaySelected.AccessibleName = "Runway Selection: Selected";
+            ComboBoxGeneralRunwaySelected.Anchor = AnchorStyles.None;
+            ComboBoxGeneralRunwaySelected.DropDownStyle = ComboBoxStyle.DropDownList;
+            ComboBoxGeneralRunwaySelected.DropDownWidth = 100;
+            ComboBoxGeneralRunwaySelected.FormattingEnabled = true;
+            ComboBoxGeneralRunwaySelected.Location = new Point(139, 3);
+            ComboBoxGeneralRunwaySelected.MaxDropDownItems = 20;
+            ComboBoxGeneralRunwaySelected.Name = "ComboBoxGeneralRunwaySelected";
+            ComboBoxGeneralRunwaySelected.Size = new Size(100, 23);
+            ComboBoxGeneralRunwaySelected.TabIndex = 42;
+            ComboBoxGeneralRunwaySelected.Tag = "";
+            toolTip1.SetToolTip(ComboBoxGeneralRunwaySelected, "To customise airport list see help");
+            // 
+            // groupBox13
+            // 
+            groupBox13.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox13.Controls.Add(tableLayoutPanel9);
+            groupBox13.Location = new Point(67, 146);
+            groupBox13.Name = "groupBox13";
+            groupBox13.Size = new Size(286, 95);
+            groupBox13.TabIndex = 19;
+            groupBox13.TabStop = false;
+            groupBox13.Text = "Scenario Selection";
+            toolTip1.SetToolTip(groupBox13, "Select a scenario type and specify an alphabetic characters title");
+            // 
+            // tableLayoutPanel9
+            // 
+            tableLayoutPanel9.AccessibleName = "";
+            tableLayoutPanel9.Anchor = AnchorStyles.None;
+            tableLayoutPanel9.ColumnCount = 2;
+            tableLayoutPanel9.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel9.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel9.Controls.Add(ButtonRandomScenario, 0, 0);
+            tableLayoutPanel9.Controls.Add(TextBoxGeneralScenarioTitle, 1, 1);
+            tableLayoutPanel9.Controls.Add(ComboBoxGeneralScenarioType, 1, 0);
+            tableLayoutPanel9.Controls.Add(label2, 0, 1);
+            tableLayoutPanel9.ImeMode = ImeMode.On;
+            tableLayoutPanel9.Location = new Point(17, 22);
+            tableLayoutPanel9.Name = "tableLayoutPanel9";
+            tableLayoutPanel9.RowCount = 2;
+            tableLayoutPanel9.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel9.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel9.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel9.Size = new Size(253, 61);
+            tableLayoutPanel9.TabIndex = 36;
+            // 
+            // ButtonRandomScenario
+            // 
+            ButtonRandomScenario.Anchor = AnchorStyles.None;
+            ButtonRandomScenario.Location = new Point(17, 3);
+            ButtonRandomScenario.Name = "ButtonRandomScenario";
+            ButtonRandomScenario.Size = new Size(91, 23);
+            ButtonRandomScenario.TabIndex = 43;
+            ButtonRandomScenario.Text = "Random Runway";
+            ButtonRandomScenario.UseVisualStyleBackColor = true;
+            ButtonRandomScenario.Click += ButtonRandomScenario_Click;
+            // 
+            // TextBoxGeneralScenarioTitle
+            // 
+            TextBoxGeneralScenarioTitle.Anchor = AnchorStyles.None;
+            TextBoxGeneralScenarioTitle.Location = new Point(139, 34);
+            TextBoxGeneralScenarioTitle.Name = "TextBoxGeneralScenarioTitle";
+            TextBoxGeneralScenarioTitle.Size = new Size(100, 23);
+            TextBoxGeneralScenarioTitle.TabIndex = 13;
+            TextBoxGeneralScenarioTitle.Tag = ", string";
+            toolTip1.SetToolTip(TextBoxGeneralScenarioTitle, "Specify an alphabetic characters title for the scenario");
+            TextBoxGeneralScenarioTitle.Validating += TextBox_Validating;
+            // 
+            // ComboBoxGeneralScenarioType
+            // 
+            ComboBoxGeneralScenarioType.AccessibleName = "Runway Selection: Selected";
+            ComboBoxGeneralScenarioType.Anchor = AnchorStyles.None;
+            ComboBoxGeneralScenarioType.DropDownStyle = ComboBoxStyle.DropDownList;
+            ComboBoxGeneralScenarioType.DropDownWidth = 120;
+            ComboBoxGeneralScenarioType.FormattingEnabled = true;
+            ComboBoxGeneralScenarioType.Items.AddRange(new object[] { "Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation", "Wikipedia List", "Testing" });
+            ComboBoxGeneralScenarioType.Location = new Point(139, 3);
+            ComboBoxGeneralScenarioType.MaxDropDownItems = 20;
+            ComboBoxGeneralScenarioType.Name = "ComboBoxGeneralScenarioType";
+            ComboBoxGeneralScenarioType.Size = new Size(100, 23);
+            ComboBoxGeneralScenarioType.TabIndex = 42;
+            ComboBoxGeneralScenarioType.Tag = "";
+            toolTip1.SetToolTip(ComboBoxGeneralScenarioType, "The type of scenario required\r\n");
+            ComboBoxGeneralScenarioType.SelectedIndexChanged += ComboBoxGeneralScenarioType_SelectedIndexChanged;
+            // 
+            // label2
+            // 
+            label2.Anchor = AnchorStyles.None;
+            label2.AutoSize = true;
+            label2.Location = new Point(48, 38);
+            label2.Name = "label2";
+            label2.Size = new Size(30, 15);
+            label2.TabIndex = 3;
+            label2.Text = "Title";
+            toolTip1.SetToolTip(label2, "Specify an alphabetic characters title for the scenario");
+            // 
+            // ComboBoxGeneralAircraftSelection
+            // 
+            ComboBoxGeneralAircraftSelection.AccessibleName = "Aircraft Selection: Selected";
+            ComboBoxGeneralAircraftSelection.Anchor = AnchorStyles.None;
+            ComboBoxGeneralAircraftSelection.DropDownWidth = 200;
+            ComboBoxGeneralAircraftSelection.FormattingEnabled = true;
+            ComboBoxGeneralAircraftSelection.Location = new Point(139, 4);
+            ComboBoxGeneralAircraftSelection.Name = "ComboBoxGeneralAircraftSelection";
+            ComboBoxGeneralAircraftSelection.Size = new Size(100, 23);
+            ComboBoxGeneralAircraftSelection.TabIndex = 42;
+            ComboBoxGeneralAircraftSelection.Tag = "";
+            toolTip1.SetToolTip(ComboBoxGeneralAircraftSelection, "Choose an aircraft from the list of favourite aircraft to use in this scenario");
+            ComboBoxGeneralAircraftSelection.SelectedIndexChanged += ComboBoxGeneralAircraftSelection_SelectedIndexChanged;
+            ComboBoxGeneralAircraftSelection.KeyDown += ComboBoxGeneralAircraftSelection_KeyDown;
+            // 
+            // label8
+            // 
+            label8.Anchor = AnchorStyles.None;
+            label8.AutoSize = true;
+            label8.Location = new Point(40, 38);
+            label8.Name = "label8";
+            label8.Size = new Size(45, 15);
+            label8.TabIndex = 43;
+            label8.Text = "Version";
+            toolTip1.SetToolTip(label8, "Used to identify registry entry that specifies location of P3D program files, including SimObjects for aircraft selection");
+            // 
+            // ComboBoxSettingsSimulatorVersion
+            // 
+            ComboBoxSettingsSimulatorVersion.AccessibleName = "Folder Info: Simulator Version";
+            ComboBoxSettingsSimulatorVersion.Anchor = AnchorStyles.None;
+            ComboBoxSettingsSimulatorVersion.DropDownWidth = 100;
+            ComboBoxSettingsSimulatorVersion.FormattingEnabled = true;
+            ComboBoxSettingsSimulatorVersion.Items.AddRange(new object[] { "4", "5", "6" });
+            ComboBoxSettingsSimulatorVersion.Location = new Point(139, 34);
+            ComboBoxSettingsSimulatorVersion.Name = "ComboBoxSettingsSimulatorVersion";
+            ComboBoxSettingsSimulatorVersion.Size = new Size(100, 23);
+            ComboBoxSettingsSimulatorVersion.TabIndex = 44;
+            ComboBoxSettingsSimulatorVersion.Tag = "5";
+            ComboBoxSettingsSimulatorVersion.Text = "5";
+            toolTip1.SetToolTip(ComboBoxSettingsSimulatorVersion, "Used to identify registry entry that specifies location of P3D program files, including SimObjects for aircraft selection");
+            // 
+            // groupBox16
+            // 
+            groupBox16.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox16.Controls.Add(tableLayoutPanel12);
+            groupBox16.Location = new Point(452, 114);
+            groupBox16.Name = "groupBox16";
+            groupBox16.Size = new Size(286, 127);
+            groupBox16.TabIndex = 39;
+            groupBox16.TabStop = false;
+            groupBox16.Text = "Location Filter";
+            toolTip1.SetToolTip(groupBox16, resources.GetString("groupBox16.ToolTip"));
+            // 
+            // tableLayoutPanel12
+            // 
+            tableLayoutPanel12.AccessibleName = "";
+            tableLayoutPanel12.Anchor = AnchorStyles.None;
+            tableLayoutPanel12.ColumnCount = 2;
+            tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationCity, 1, 2);
+            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationState, 1, 1);
+            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationCountry, 1, 0);
+            tableLayoutPanel12.Controls.Add(label58, 0, 1);
+            tableLayoutPanel12.Controls.Add(label59, 0, 2);
+            tableLayoutPanel12.Controls.Add(label60, 0, 0);
+            tableLayoutPanel12.ImeMode = ImeMode.On;
+            tableLayoutPanel12.Location = new Point(18, 23);
+            tableLayoutPanel12.Name = "tableLayoutPanel12";
+            tableLayoutPanel12.RowCount = 3;
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel12.Size = new Size(253, 92);
+            tableLayoutPanel12.TabIndex = 36;
+            // 
+            // ComboBoxGeneralLocationCity
+            // 
+            ComboBoxGeneralLocationCity.AccessibleName = "Location Filter: City";
+            ComboBoxGeneralLocationCity.Anchor = AnchorStyles.None;
+            ComboBoxGeneralLocationCity.DropDownWidth = 640;
+            ComboBoxGeneralLocationCity.FormattingEnabled = true;
+            ComboBoxGeneralLocationCity.Items.AddRange(new object[] { "None", "All" });
+            ComboBoxGeneralLocationCity.Location = new Point(139, 64);
+            ComboBoxGeneralLocationCity.Name = "ComboBoxGeneralLocationCity";
+            ComboBoxGeneralLocationCity.Size = new Size(100, 23);
+            ComboBoxGeneralLocationCity.TabIndex = 43;
+            ComboBoxGeneralLocationCity.Tag = "None";
+            ComboBoxGeneralLocationCity.Text = "None";
+            toolTip1.SetToolTip(ComboBoxGeneralLocationCity, resources.GetString("ComboBoxGeneralLocationCity.ToolTip"));
+            ComboBoxGeneralLocationCity.KeyDown += ComboBoxGeneralLocation_KeyDown;
+            // 
+            // ComboBoxGeneralLocationState
+            // 
+            ComboBoxGeneralLocationState.AccessibleName = "Location Filter: State";
+            ComboBoxGeneralLocationState.Anchor = AnchorStyles.None;
+            ComboBoxGeneralLocationState.DropDownWidth = 640;
+            ComboBoxGeneralLocationState.FormattingEnabled = true;
+            ComboBoxGeneralLocationState.Items.AddRange(new object[] { "None", "All" });
+            ComboBoxGeneralLocationState.Location = new Point(139, 33);
+            ComboBoxGeneralLocationState.Name = "ComboBoxGeneralLocationState";
+            ComboBoxGeneralLocationState.Size = new Size(100, 23);
+            ComboBoxGeneralLocationState.TabIndex = 42;
+            ComboBoxGeneralLocationState.Tag = "None";
+            ComboBoxGeneralLocationState.Text = "None";
+            toolTip1.SetToolTip(ComboBoxGeneralLocationState, resources.GetString("ComboBoxGeneralLocationState.ToolTip"));
+            ComboBoxGeneralLocationState.KeyDown += ComboBoxGeneralLocation_KeyDown;
+            // 
+            // ComboBoxGeneralLocationCountry
+            // 
+            ComboBoxGeneralLocationCountry.AccessibleName = "Location Filter: Country";
+            ComboBoxGeneralLocationCountry.Anchor = AnchorStyles.None;
+            ComboBoxGeneralLocationCountry.DropDownWidth = 640;
+            ComboBoxGeneralLocationCountry.FormattingEnabled = true;
+            ComboBoxGeneralLocationCountry.Items.AddRange(new object[] { "None", "All" });
+            ComboBoxGeneralLocationCountry.Location = new Point(139, 3);
+            ComboBoxGeneralLocationCountry.Name = "ComboBoxGeneralLocationCountry";
+            ComboBoxGeneralLocationCountry.Size = new Size(100, 23);
+            ComboBoxGeneralLocationCountry.TabIndex = 41;
+            ComboBoxGeneralLocationCountry.Tag = "None";
+            ComboBoxGeneralLocationCountry.Text = "None";
+            toolTip1.SetToolTip(ComboBoxGeneralLocationCountry, resources.GetString("ComboBoxGeneralLocationCountry.ToolTip"));
+            ComboBoxGeneralLocationCountry.KeyDown += ComboBoxGeneralLocation_KeyDown;
+            // 
+            // label58
+            // 
+            label58.Anchor = AnchorStyles.None;
+            label58.AutoSize = true;
+            label58.Location = new Point(46, 37);
+            label58.Name = "label58";
+            label58.Size = new Size(33, 15);
+            label58.TabIndex = 29;
+            label58.Text = "State";
+            toolTip1.SetToolTip(label58, "A user created list of possible filter values for the state field in \"runways.xml\" file\r\n");
+            // 
+            // label59
+            // 
+            label59.Anchor = AnchorStyles.None;
+            label59.AutoSize = true;
+            label59.Location = new Point(49, 68);
+            label59.Name = "label59";
+            label59.Size = new Size(28, 15);
+            label59.TabIndex = 31;
+            label59.Text = "City";
+            toolTip1.SetToolTip(label59, "A user created list of possible filter values for the city field in \"runways.xml\" file");
+            // 
+            // label60
+            // 
+            label60.Anchor = AnchorStyles.None;
+            label60.AutoSize = true;
+            label60.Location = new Point(38, 7);
+            label60.Name = "label60";
+            label60.Size = new Size(50, 15);
+            label60.TabIndex = 30;
+            label60.Text = "Country";
+            toolTip1.SetToolTip(label60, "A user created list of possible filter values for the country field in \"runways.xml\" file");
+            // 
             // TabPagePhotoTour
             // 
             TabPagePhotoTour.BackColor = Color.FromArgb(64, 64, 64);
@@ -2255,7 +2649,7 @@ namespace P3D_Scenario_Generator
             groupBox4.Controls.Add(tableLayoutPanel1);
             groupBox4.Location = new Point(19, 174);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(286, 63);
+            groupBox4.Size = new Size(286, 95);
             groupBox4.TabIndex = 2;
             groupBox4.TabStop = false;
             groupBox4.Text = "Folder Info";
@@ -2267,16 +2661,17 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel1.ColumnCount = 2;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(ComboBoxSettingsSimulatorVersion, 1, 1);
+            tableLayoutPanel1.Controls.Add(label8, 0, 1);
             tableLayoutPanel1.Controls.Add(ComboBoxSettingsScenarioFolder, 1, 0);
             tableLayoutPanel1.Controls.Add(label39, 0, 0);
             tableLayoutPanel1.ImeMode = ImeMode.On;
             tableLayoutPanel1.Location = new Point(16, 22);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 1;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel1.Size = new Size(253, 32);
+            tableLayoutPanel1.RowCount = 2;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Size = new Size(253, 61);
             tableLayoutPanel1.TabIndex = 36;
             // 
             // TabPageCelestial
@@ -2326,9 +2721,8 @@ namespace P3D_Scenario_Generator
             // TabPageCircuit
             // 
             TabPageCircuit.BackColor = Color.FromArgb(64, 64, 64);
-            TabPageCircuit.Controls.Add(tableLayoutPanelCircuit);
+            TabPageCircuit.Controls.Add(groupBox11);
             TabPageCircuit.Controls.Add(ButtonCircuitDefault);
-            TabPageCircuit.Controls.Add(PictureBoxCircuit);
             TabPageCircuit.Location = new Point(4, 24);
             TabPageCircuit.Name = "TabPageCircuit";
             TabPageCircuit.Padding = new Padding(3);
@@ -2336,49 +2730,11 @@ namespace P3D_Scenario_Generator
             TabPageCircuit.TabIndex = 1;
             TabPageCircuit.Text = "Circuit";
             // 
-            // tableLayoutPanelCircuit
-            // 
-            tableLayoutPanelCircuit.Anchor = AnchorStyles.None;
-            tableLayoutPanelCircuit.BackColor = Color.FromArgb(255, 192, 128);
-            tableLayoutPanelCircuit.ColumnCount = 8;
-            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
-            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
-            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
-            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
-            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
-            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
-            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
-            tableLayoutPanelCircuit.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 12.5F));
-            tableLayoutPanelCircuit.Controls.Add(label7, 0, 0);
-            tableLayoutPanelCircuit.Controls.Add(label6, 6, 0);
-            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitUpwind, 0, 1);
-            tableLayoutPanelCircuit.Controls.Add(label9, 5, 0);
-            tableLayoutPanelCircuit.Controls.Add(label5, 4, 0);
-            tableLayoutPanelCircuit.Controls.Add(label4, 2, 0);
-            tableLayoutPanelCircuit.Controls.Add(label3, 1, 0);
-            tableLayoutPanelCircuit.Controls.Add(label10, 3, 0);
-            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitHeightBase, 5, 1);
-            tableLayoutPanelCircuit.Controls.Add(label28, 7, 0);
-            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitBase, 1, 1);
-            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitFinal, 2, 1);
-            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitHeightUpwind, 3, 1);
-            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitHeightDown, 4, 1);
-            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitTurnRate, 7, 1);
-            tableLayoutPanelCircuit.Controls.Add(TextBoxCircuitSpeed, 6, 1);
-            tableLayoutPanelCircuit.Location = new Point(15, 371);
-            tableLayoutPanelCircuit.Margin = new Padding(0);
-            tableLayoutPanelCircuit.Name = "tableLayoutPanelCircuit";
-            tableLayoutPanelCircuit.RowCount = 2;
-            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanelCircuit.RowStyles.Add(new RowStyle(SizeType.Absolute, 25F));
-            tableLayoutPanelCircuit.Size = new Size(783, 53);
-            tableLayoutPanelCircuit.TabIndex = 17;
-            // 
             // ButtonCircuitDefault
             // 
             ButtonCircuitDefault.BackColor = Color.FromArgb(255, 192, 128);
             ButtonCircuitDefault.ForeColor = SystemColors.ControlText;
-            ButtonCircuitDefault.Location = new Point(711, 345);
+            ButtonCircuitDefault.Location = new Point(35, 378);
             ButtonCircuitDefault.Name = "ButtonCircuitDefault";
             ButtonCircuitDefault.Size = new Size(75, 23);
             ButtonCircuitDefault.TabIndex = 11;
@@ -2386,21 +2742,14 @@ namespace P3D_Scenario_Generator
             ButtonCircuitDefault.UseVisualStyleBackColor = true;
             ButtonCircuitDefault.Click += ButtonCircuitDefault_Click;
             // 
-            // PictureBoxCircuit
-            // 
-            PictureBoxCircuit.Location = new Point(15, 15);
-            PictureBoxCircuit.Name = "PictureBoxCircuit";
-            PictureBoxCircuit.Size = new Size(783, 325);
-            PictureBoxCircuit.TabIndex = 0;
-            PictureBoxCircuit.TabStop = false;
-            // 
             // TabPageMenu
             // 
             TabPageMenu.BackColor = Color.FromArgb(64, 64, 64);
-            TabPageMenu.Controls.Add(GroupBoxDateTime);
-            TabPageMenu.Controls.Add(GroupBoxAircraft);
-            TabPageMenu.Controls.Add(GroupBoxScenario);
-            TabPageMenu.Controls.Add(GroupBoxRunway);
+            TabPageMenu.Controls.Add(groupBox16);
+            TabPageMenu.Controls.Add(groupBox15);
+            TabPageMenu.Controls.Add(groupBox14);
+            TabPageMenu.Controls.Add(groupBox13);
+            TabPageMenu.Controls.Add(groupBox12);
             TabPageMenu.Location = new Point(4, 24);
             TabPageMenu.Name = "TabPageMenu";
             TabPageMenu.Padding = new Padding(3);
@@ -2408,175 +2757,107 @@ namespace P3D_Scenario_Generator
             TabPageMenu.TabIndex = 6;
             TabPageMenu.Text = "General";
             // 
-            // GroupBoxDateTime
+            // groupBox15
             // 
-            GroupBoxDateTime.BackColor = Color.FromArgb(255, 192, 128);
-            GroupBoxDateTime.Controls.Add(DatePicker);
-            GroupBoxDateTime.Controls.Add(TextBoxScenarioTitle);
-            GroupBoxDateTime.Controls.Add(TimePicker);
-            GroupBoxDateTime.Controls.Add(label8);
-            GroupBoxDateTime.Location = new Point(302, 289);
-            GroupBoxDateTime.Name = "GroupBoxDateTime";
-            GroupBoxDateTime.Size = new Size(478, 115);
-            GroupBoxDateTime.TabIndex = 17;
-            GroupBoxDateTime.TabStop = false;
-            GroupBoxDateTime.Text = "Date and Time";
+            groupBox15.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox15.Controls.Add(tableLayoutPanel11);
+            groupBox15.Location = new Point(452, 23);
+            groupBox15.Name = "groupBox15";
+            groupBox15.Size = new Size(286, 63);
+            groupBox15.TabIndex = 38;
+            groupBox15.TabStop = false;
+            groupBox15.Text = "Aircraft Selection";
             // 
-            // DatePicker
+            // tableLayoutPanel11
             // 
-            DatePicker.CustomFormat = "";
-            DatePicker.Location = new Point(30, 33);
-            DatePicker.Name = "DatePicker";
-            DatePicker.Size = new Size(206, 23);
-            DatePicker.TabIndex = 15;
+            tableLayoutPanel11.AccessibleName = "";
+            tableLayoutPanel11.Anchor = AnchorStyles.None;
+            tableLayoutPanel11.ColumnCount = 2;
+            tableLayoutPanel11.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel11.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel11.Controls.Add(ComboBoxGeneralAircraftSelection, 1, 0);
+            tableLayoutPanel11.Controls.Add(buttonGeneralAircraft, 0, 0);
+            tableLayoutPanel11.ImeMode = ImeMode.On;
+            tableLayoutPanel11.Location = new Point(18, 22);
+            tableLayoutPanel11.Name = "tableLayoutPanel11";
+            tableLayoutPanel11.RowCount = 1;
+            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel11.Size = new Size(253, 32);
+            tableLayoutPanel11.TabIndex = 36;
             // 
-            // TextBoxScenarioTitle
+            // groupBox14
             // 
-            TextBoxScenarioTitle.Location = new Point(305, 75);
-            TextBoxScenarioTitle.Name = "TextBoxScenarioTitle";
-            TextBoxScenarioTitle.Size = new Size(156, 23);
-            TextBoxScenarioTitle.TabIndex = 13;
+            groupBox14.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox14.Controls.Add(tableLayoutPanel10);
+            groupBox14.Location = new Point(67, 269);
+            groupBox14.Name = "groupBox14";
+            groupBox14.Size = new Size(286, 95);
+            groupBox14.TabIndex = 37;
+            groupBox14.TabStop = false;
+            groupBox14.Text = "Date and Time";
             // 
-            // TimePicker
+            // tableLayoutPanel10
             // 
-            TimePicker.Format = DateTimePickerFormat.Time;
-            TimePicker.Location = new Point(342, 33);
-            TimePicker.Name = "TimePicker";
-            TimePicker.ShowUpDown = true;
-            TimePicker.Size = new Size(119, 23);
-            TimePicker.TabIndex = 16;
+            tableLayoutPanel10.AccessibleName = "";
+            tableLayoutPanel10.Anchor = AnchorStyles.None;
+            tableLayoutPanel10.ColumnCount = 2;
+            tableLayoutPanel10.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel10.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel10.Controls.Add(ButtonRandomTime, 0, 1);
+            tableLayoutPanel10.Controls.Add(ButtonRandomDate, 0, 0);
+            tableLayoutPanel10.Controls.Add(GeneralDatePicker, 1, 0);
+            tableLayoutPanel10.Controls.Add(GeneralTimePicker, 1, 1);
+            tableLayoutPanel10.ImeMode = ImeMode.On;
+            tableLayoutPanel10.Location = new Point(17, 22);
+            tableLayoutPanel10.Name = "tableLayoutPanel10";
+            tableLayoutPanel10.RowCount = 2;
+            tableLayoutPanel10.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel10.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel10.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel10.Size = new Size(253, 61);
+            tableLayoutPanel10.TabIndex = 36;
             // 
-            // label8
+            // ButtonRandomTime
             // 
-            label8.AutoSize = true;
-            label8.Location = new Point(30, 78);
-            label8.Name = "label8";
-            label8.Size = new Size(78, 15);
-            label8.TabIndex = 14;
-            label8.Text = "Scenario Title";
+            ButtonRandomTime.Anchor = AnchorStyles.None;
+            ButtonRandomTime.Location = new Point(17, 34);
+            ButtonRandomTime.Name = "ButtonRandomTime";
+            ButtonRandomTime.Size = new Size(91, 23);
+            ButtonRandomTime.TabIndex = 47;
+            ButtonRandomTime.Text = "Random Runway";
+            ButtonRandomTime.UseVisualStyleBackColor = true;
+            ButtonRandomTime.Click += ButtonRandomTime_Click;
             // 
-            // GroupBoxAircraft
+            // ButtonRandomDate
             // 
-            GroupBoxAircraft.BackColor = Color.FromArgb(255, 192, 128);
-            GroupBoxAircraft.Controls.Add(ListBoxAircraft);
-            GroupBoxAircraft.Controls.Add(buttonAircraft);
-            GroupBoxAircraft.Location = new Point(515, 23);
-            GroupBoxAircraft.Name = "GroupBoxAircraft";
-            GroupBoxAircraft.Size = new Size(265, 235);
-            GroupBoxAircraft.TabIndex = 13;
-            GroupBoxAircraft.TabStop = false;
-            GroupBoxAircraft.Text = "Aircraft selection";
+            ButtonRandomDate.Anchor = AnchorStyles.None;
+            ButtonRandomDate.Location = new Point(17, 3);
+            ButtonRandomDate.Name = "ButtonRandomDate";
+            ButtonRandomDate.Size = new Size(91, 23);
+            ButtonRandomDate.TabIndex = 46;
+            ButtonRandomDate.Text = "Random Runway";
+            ButtonRandomDate.UseVisualStyleBackColor = true;
+            ButtonRandomDate.Click += ButtonRandomDate_Click;
             // 
-            // ListBoxAircraft
+            // GeneralDatePicker
             // 
-            ListBoxAircraft.FormattingEnabled = true;
-            ListBoxAircraft.ItemHeight = 15;
-            ListBoxAircraft.Location = new Point(17, 47);
-            ListBoxAircraft.Name = "ListBoxAircraft";
-            ListBoxAircraft.Size = new Size(231, 94);
-            ListBoxAircraft.TabIndex = 12;
-            ListBoxAircraft.SelectedIndexChanged += ListBoxAircraft_SelectedIndexChanged;
+            GeneralDatePicker.Anchor = AnchorStyles.None;
+            GeneralDatePicker.Format = DateTimePickerFormat.Short;
+            GeneralDatePicker.Location = new Point(139, 3);
+            GeneralDatePicker.Name = "GeneralDatePicker";
+            GeneralDatePicker.Size = new Size(100, 23);
+            GeneralDatePicker.TabIndex = 44;
             // 
-            // GroupBoxScenario
+            // GeneralTimePicker
             // 
-            GroupBoxScenario.BackColor = Color.FromArgb(255, 192, 128);
-            GroupBoxScenario.Controls.Add(ListBoxScenarioType);
-            GroupBoxScenario.Controls.Add(TextBoxSelectedScenario);
-            GroupBoxScenario.Location = new Point(302, 23);
-            GroupBoxScenario.Name = "GroupBoxScenario";
-            GroupBoxScenario.Size = new Size(182, 235);
-            GroupBoxScenario.TabIndex = 8;
-            GroupBoxScenario.TabStop = false;
-            GroupBoxScenario.Text = "Scenario Type";
-            // 
-            // ListBoxScenarioType
-            // 
-            ListBoxScenarioType.FormattingEnabled = true;
-            ListBoxScenarioType.ItemHeight = 15;
-            ListBoxScenarioType.Items.AddRange(new object[] { "Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation", "Wikipedia List", "Testing" });
-            ListBoxScenarioType.Location = new Point(30, 47);
-            ListBoxScenarioType.Name = "ListBoxScenarioType";
-            ListBoxScenarioType.Size = new Size(120, 94);
-            ListBoxScenarioType.TabIndex = 6;
-            ListBoxScenarioType.SelectedIndexChanged += ListBoxScenarioType_SelectedIndexChanged;
-            // 
-            // TextBoxSelectedScenario
-            // 
-            TextBoxSelectedScenario.Enabled = false;
-            TextBoxSelectedScenario.Location = new Point(30, 172);
-            TextBoxSelectedScenario.Name = "TextBoxSelectedScenario";
-            TextBoxSelectedScenario.Size = new Size(119, 23);
-            TextBoxSelectedScenario.TabIndex = 7;
-            // 
-            // GroupBoxRunway
-            // 
-            GroupBoxRunway.BackColor = Color.FromArgb(255, 192, 128);
-            GroupBoxRunway.Controls.Add(ListBoxRunways);
-            GroupBoxRunway.Controls.Add(ButtonRandRunway);
-            GroupBoxRunway.Controls.Add(label1);
-            GroupBoxRunway.Controls.Add(TextBoxSelectedRunway);
-            GroupBoxRunway.Controls.Add(TextBoxSearchRunway);
-            GroupBoxRunway.Controls.Add(label2);
-            GroupBoxRunway.Location = new Point(31, 23);
-            GroupBoxRunway.Name = "GroupBoxRunway";
-            GroupBoxRunway.Size = new Size(238, 381);
-            GroupBoxRunway.TabIndex = 6;
-            GroupBoxRunway.TabStop = false;
-            GroupBoxRunway.Text = "Runway selection";
-            // 
-            // ListBoxRunways
-            // 
-            ListBoxRunways.FormattingEnabled = true;
-            ListBoxRunways.ItemHeight = 15;
-            ListBoxRunways.Location = new Point(55, 47);
-            ListBoxRunways.Name = "ListBoxRunways";
-            ListBoxRunways.Size = new Size(120, 94);
-            ListBoxRunways.TabIndex = 0;
-            ListBoxRunways.SelectedIndexChanged += ListBoxRunways_SelectedIndexChanged;
-            // 
-            // ButtonRandRunway
-            // 
-            ButtonRandRunway.Location = new Point(71, 341);
-            ButtonRandRunway.Name = "ButtonRandRunway";
-            ButtonRandRunway.Size = new Size(91, 23);
-            ButtonRandRunway.TabIndex = 5;
-            ButtonRandRunway.Text = "Random Runway";
-            ButtonRandRunway.UseVisualStyleBackColor = true;
-            ButtonRandRunway.Click += ButtonRandRunway_Click;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(38, 176);
-            label1.Name = "label1";
-            label1.Size = new Size(42, 15);
-            label1.TabIndex = 3;
-            label1.Text = "Search";
-            // 
-            // TextBoxSelectedRunway
-            // 
-            TextBoxSelectedRunway.Enabled = false;
-            TextBoxSelectedRunway.Location = new Point(102, 266);
-            TextBoxSelectedRunway.Name = "TextBoxSelectedRunway";
-            TextBoxSelectedRunway.Size = new Size(91, 23);
-            TextBoxSelectedRunway.TabIndex = 1;
-            // 
-            // TextBoxSearchRunway
-            // 
-            TextBoxSearchRunway.Location = new Point(102, 173);
-            TextBoxSearchRunway.Name = "TextBoxSearchRunway";
-            TextBoxSearchRunway.Size = new Size(91, 23);
-            TextBoxSearchRunway.TabIndex = 2;
-            TextBoxSearchRunway.TextChanged += TextBoxSearchRunway_TextChanged;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(29, 269);
-            label2.Name = "label2";
-            label2.Size = new Size(51, 15);
-            label2.TabIndex = 4;
-            label2.Text = "Selected";
+            GeneralTimePicker.Anchor = AnchorStyles.None;
+            GeneralTimePicker.Format = DateTimePickerFormat.Time;
+            GeneralTimePicker.Location = new Point(139, 34);
+            GeneralTimePicker.Name = "GeneralTimePicker";
+            GeneralTimePicker.Size = new Size(100, 23);
+            GeneralTimePicker.TabIndex = 45;
             // 
             // TabControlP3DSG
             // 
@@ -2621,7 +2902,6 @@ namespace P3D_Scenario_Generator
             MinimizeBox = false;
             Name = "Form";
             Text = "P3D Scenario Generator";
-            Load += Init;
             groupBox1.ResumeLayout(false);
             tableLayoutPanelPhotoTourPhotoWindowLocation.ResumeLayout(false);
             tableLayoutPanelPhotoTourPhotoWindowLocation.PerformLayout();
@@ -2649,6 +2929,18 @@ namespace P3D_Scenario_Generator
             groupBox10.ResumeLayout(false);
             tableLayoutPanel7.ResumeLayout(false);
             tableLayoutPanel7.PerformLayout();
+            groupBox11.ResumeLayout(false);
+            tableLayoutPanelCircuit.ResumeLayout(false);
+            tableLayoutPanelCircuit.PerformLayout();
+            groupBox12.ResumeLayout(false);
+            tableLayoutPanel8.ResumeLayout(false);
+            tableLayoutPanel8.PerformLayout();
+            groupBox13.ResumeLayout(false);
+            tableLayoutPanel9.ResumeLayout(false);
+            tableLayoutPanel9.PerformLayout();
+            groupBox16.ResumeLayout(false);
+            tableLayoutPanel12.ResumeLayout(false);
+            tableLayoutPanel12.PerformLayout();
             TabPagePhotoTour.ResumeLayout(false);
             TabPageSettings.ResumeLayout(false);
             groupBox4.ResumeLayout(false);
@@ -2658,17 +2950,11 @@ namespace P3D_Scenario_Generator
             TabPageCelestial.PerformLayout();
             TabPageSign.ResumeLayout(false);
             TabPageCircuit.ResumeLayout(false);
-            tableLayoutPanelCircuit.ResumeLayout(false);
-            tableLayoutPanelCircuit.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)PictureBoxCircuit).EndInit();
             TabPageMenu.ResumeLayout(false);
-            GroupBoxDateTime.ResumeLayout(false);
-            GroupBoxDateTime.PerformLayout();
-            GroupBoxAircraft.ResumeLayout(false);
-            GroupBoxScenario.ResumeLayout(false);
-            GroupBoxScenario.PerformLayout();
-            GroupBoxRunway.ResumeLayout(false);
-            GroupBoxRunway.PerformLayout();
+            groupBox15.ResumeLayout(false);
+            tableLayoutPanel11.ResumeLayout(false);
+            groupBox14.ResumeLayout(false);
+            tableLayoutPanel10.ResumeLayout(false);
             TabControlP3DSG.ResumeLayout(false);
             TabPageWikiList.ResumeLayout(false);
             ResumeLayout(false);
@@ -2716,26 +3002,11 @@ namespace P3D_Scenario_Generator
         private Label label11;
         private TabPage TabPageCircuit;
         private Button ButtonCircuitDefault;
-        private PictureBox PictureBoxCircuit;
         private TabPage TabPageMenu;
-        private GroupBox GroupBoxDateTime;
-        internal DateTimePicker DatePicker;
-        internal TextBox TextBoxScenarioTitle;
-        internal DateTimePicker TimePicker;
-        private Label label8;
-        private GroupBox GroupBoxAircraft;
-        internal ListBox ListBoxAircraft;
-        private Button buttonAircraft;
-        private GroupBox GroupBoxScenario;
-        internal ListBox ListBoxScenarioType;
-        internal TextBox TextBoxSelectedScenario;
-        private GroupBox GroupBoxRunway;
-        internal ListBox ListBoxRunways;
+        internal TextBox TextBoxGeneralScenarioTitle;
+        private Button buttonGeneralAircraft;
         private Button ButtonRandRunway;
         private Label label1;
-        internal TextBox TextBoxSelectedRunway;
-        private TextBox TextBoxSearchRunway;
-        private Label label2;
         private TabControl TabControlP3DSG;
         private TabPage TabPageWikiList;
         private Label LabelWikiURL;
@@ -2858,6 +3129,35 @@ namespace P3D_Scenario_Generator
         private Label label56;
         private Label label57;
         internal TextBox TextBoxWikiURLWindowHeight;
+        private GroupBox groupBox11;
+        private GroupBox groupBox12;
+        private TableLayoutPanel tableLayoutPanel8;
+        internal ComboBox ComboBoxGeneralRunwaySelected;
+        private GroupBox groupBox13;
+        private TableLayoutPanel tableLayoutPanel9;
+        internal ComboBox ComboBoxGeneralScenarioType;
+        private Label label2;
+        private GroupBox groupBox14;
+        private TableLayoutPanel tableLayoutPanel10;
+        internal DateTimePicker GeneralDatePicker;
+        internal DateTimePicker GeneralTimePicker;
+        private Button ButtonRandomScenario;
+        private Button ButtonRandomTime;
+        private Button ButtonRandomDate;
+        private GroupBox groupBox15;
+        private TableLayoutPanel tableLayoutPanel11;
+        internal ComboBox ComboBoxGeneralAircraftSelection;
+        internal ComboBox ComboBoxSettingsSimulatorVersion;
+        private Label label8;
+        internal TextBox TextBoxGeneralSearchRunway;
+        private GroupBox groupBox16;
+        private TableLayoutPanel tableLayoutPanel12;
+        internal ComboBox ComboBoxGeneralLocationCountry;
+        private Label label58;
+        private Label label59;
+        private Label label60;
+        internal ComboBox ComboBoxGeneralLocationCity;
+        internal ComboBox ComboBoxGeneralLocationState;
     }
 }
 

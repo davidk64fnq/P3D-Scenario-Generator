@@ -66,8 +66,8 @@ namespace P3D_Scenario_Generator
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
                     double duration = ((Parameters.FinalLeg + (Runway.startRwy.Len / Con.feetInNM) + Parameters.UpwindLeg) * 2 + (Parameters.BaseLeg * 2)) / Parameters.Speed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{Parameters.SelectedAircraft}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
+                    overview.Aircraft = $"{Parameters.AircraftTitle}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.AircraftTitle}";
                     overview.Briefing += " by doing that most fundamental of tasks, flying a circuit! ";
                     overview.Briefing += "You'll take off, fly through eight gates as you complete a circuit, ";
                     overview.Briefing += "and land back on the runway. The scenario begins on runway ";
@@ -82,10 +82,10 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
                     overview.Difficulty = "Intermediate";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = PhotoTour.GetPhotoTourDistance() / Aircraft.CruiseSpeed * 60;
+                    duration = PhotoTour.GetPhotoTourDistance() / Parameters.AircraftCruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{Parameters.SelectedAircraft}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
+                    overview.Aircraft = $"{Parameters.AircraftTitle}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.AircraftTitle}";
                     overview.Briefing += " as you navigate from one photo location to the next using IFR (I follow roads) ";
                     overview.Briefing += "You'll take off, fly to a series of photo locations, ";
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
@@ -101,10 +101,10 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
                     overview.Difficulty = "Advanced";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = SignWriting.GetSignWritingDistance() / Aircraft.CruiseSpeed * 60;
+                    duration = SignWriting.GetSignWritingDistance() / Parameters.AircraftCruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{Parameters.SelectedAircraft}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
+                    overview.Aircraft = $"{Parameters.AircraftTitle}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.AircraftTitle}";
                     overview.Briefing += " as you take on the role of sign writer in the sky! ";
                     overview.Briefing += "You'll take off, fly through a series of gates to spell out a message ";
                     overview.Briefing += "and land again when you've finished. The scenario begins on runway ";
@@ -119,11 +119,11 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) {Runway.destRwy.City}, {Runway.destRwy.Country}";
                     overview.Difficulty = "Advanced";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = CelestialNav.GetCelestialDistance() / Aircraft.CruiseSpeed * 60;
+                    duration = CelestialNav.GetCelestialDistance() / Parameters.AircraftCruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{Parameters.SelectedAircraft}";
+                    overview.Aircraft = $"{Parameters.AircraftTitle}";
                     overview.Briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
-                    overview.Briefing += $"as you test your navigation skills flying a {Parameters.SelectedAircraft}.";
+                    overview.Briefing += $"as you test your navigation skills flying a {Parameters.AircraftTitle}.";
                     overview.Briefing += " The scenario finishes on runway ";
                     overview.Briefing += $"{Runway.destRwy.Id} at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.destRwy.City}, {Runway.destRwy.Country}.";
@@ -136,10 +136,10 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) {Runway.destRwy.City}, {Runway.destRwy.Country}";
                     overview.Difficulty = "Intermediate";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = Wikipedia.WikiDistance / Aircraft.CruiseSpeed * 60;
+                    duration = Wikipedia.WikiDistance / Parameters.AircraftCruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{Parameters.SelectedAircraft}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.SelectedAircraft}";
+                    overview.Aircraft = $"{Parameters.AircraftTitle}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.AircraftTitle}";
                     overview.Briefing += " as you navigate from one Wikipedia list location to the next using IFR (I follow roads) ";
                     overview.Briefing += "You'll take off, fly to a series of list locations, ";
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
@@ -229,7 +229,7 @@ namespace P3D_Scenario_Generator
         static private void CopyFiles()
         {
             // Copy selected aircraft thumbnail imageURL from P3D instal
-            string aircraftImageSource = $"{Aircraft.GetImagename(Parameters.SelectedAircraft)}";
+            string aircraftImageSource = Parameters.AircraftImagePath;
             string aircraftImageDest = $"{Parameters.ImageFolder}\\Overview_01.jpg";
             if (File.Exists(aircraftImageSource))
             {

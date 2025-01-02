@@ -4,18 +4,15 @@ namespace P3D_Scenario_Generator
 {
     internal class Parameters
     {
-        private static readonly Form form = (Form)Application.OpenForms[0];
-
         #region General tab
 
         internal static string SelectedAirportICAO { get; set; }
         internal static string SelectedAirportID { get; set; }
         internal static string ImageFolder { get; private set; }
-        internal static string SelectedAircraft { get; private set; }
+        internal static string AircraftTitle { get; private set; }
+        internal static double AircraftCruiseSpeed { get; private set; }
+        internal static string AircraftImagePath { get; private set; }
         internal static string SelectedScenario { get; set; }
-        internal static int Second { get; private set; }
-        internal static int Minute { get; private set; }
-        internal static int Hour { get; private set; }
         internal static int DayOfYear { get; private set; }
         internal static int Day { get; private set; }
         internal static int Month { get; private set; }
@@ -23,6 +20,7 @@ namespace P3D_Scenario_Generator
         internal static Season Season { get; private set; }
         internal static int Hours { get; private set; }
         internal static int Minutes { get; private set; }
+        internal static int Seconds { get; private set; }
         internal static string GeneralScenarioTitle { get; private set; }
 
         #endregion
@@ -344,6 +342,7 @@ namespace P3D_Scenario_Generator
         internal static string SettingsCacheUsage { get; set; }
         internal static int SettingsCacheDailyTotal { get; set; }
         internal static string SettingsScenarioFolder { get; private set; }
+        internal static string SettingsSimulatorVersion { get; private set; }
 
         #endregion
 
@@ -358,7 +357,7 @@ namespace P3D_Scenario_Generator
         /// some error checking, and creates scenario and images directories
         /// </summary>
         /// <returns>True if parameters okay and directories created</returns>
-        static internal bool SetParams()
+        internal static bool SetParams()
         {
             // General tab
             string errorMsg = "";
@@ -366,115 +365,116 @@ namespace P3D_Scenario_Generator
             {
                 return false;
             }
-            if (form.ListBoxAircraft.Items.Count == 0)
+            if (Form.form.ComboBoxGeneralAircraftSelection.Items.Count == 0)
             {
                 errorMsg += "\n\tSelect an aircraft";
             }
             else
             {
-                SelectedAircraft = form.ListBoxAircraft.Items[form.ListBoxAircraft.SelectedIndex].ToString();
+                AircraftTitle = Form.form.ComboBoxGeneralAircraftSelection.Text;
+                AircraftCruiseSpeed = Convert.ToDouble(Properties.Settings.Default.AircraftCruiseSpeeds[Form.form.ComboBoxGeneralAircraftSelection.SelectedIndex]);
+                AircraftImagePath = Properties.Settings.Default.AircraftImages[Form.form.ComboBoxGeneralAircraftSelection.SelectedIndex];
             }
-            SelectedAirportICAO = form.TextBoxSelectedRunway.Text.Split("\t")[0];
-            if (form.TextBoxSelectedRunway.Text != "")
+            SelectedAirportICAO = Form.form.ComboBoxGeneralRunwaySelected.Text.Split("\t")[0];
+            if (Form.form.ComboBoxGeneralRunwaySelected.Text != "")
             {
-                SelectedAirportID = form.TextBoxSelectedRunway.Text.Split("\t")[1][1..^1]; // Strip '(' and ')'
+                SelectedAirportID = Form.form.ComboBoxGeneralRunwaySelected.Text.Split("\t")[1][1..^1]; // Strip '(' and ')'
             }
-            int index = Array.FindIndex(Con.scenarioNames, s => s == form.TextBoxSelectedScenario.Text);
+            int index = Array.FindIndex(Con.scenarioNames, s => s == Form.form.ComboBoxGeneralScenarioType.Text);
             SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
-            Second = form.DatePicker.Value.Second;
-            Minute = form.DatePicker.Value.Minute;
-            Hour = form.DatePicker.Value.Hour;
-            DayOfYear = form.DatePicker.Value.DayOfYear;
-            Day = form.DatePicker.Value.Day;
-            Month = form.DatePicker.Value.Month;
-            Year = form.DatePicker.Value.Year;
-            var persianMonth = new PersianCalendar().GetMonth(form.DatePicker.Value);
+            DayOfYear = Form.form.GeneralDatePicker.Value.DayOfYear;
+            Day = Form.form.GeneralDatePicker.Value.Day;
+            Month = Form.form.GeneralDatePicker.Value.Month;
+            Year = Form.form.GeneralDatePicker.Value.Year;
+            var persianMonth = new PersianCalendar().GetMonth(Form.form.GeneralDatePicker.Value);
             Season = (Season)Math.Ceiling(persianMonth / 3.0);
-            Hours = form.TimePicker.Value.Hour;
-            Minutes = form.TimePicker.Value.Minute;
-            GeneralScenarioTitle = form.TextBoxScenarioTitle.Text;
+            Hours = Form.form.GeneralTimePicker.Value.Hour;
+            Minutes = Form.form.GeneralTimePicker.Value.Minute;
+            Seconds = Form.form.GeneralTimePicker.Value.Second;
+            GeneralScenarioTitle = Form.form.TextBoxGeneralScenarioTitle.Text;
 
             // Circuit tab
-            UpwindLeg = Convert.ToDouble(form.TextBoxCircuitUpwind.Text);
-            BaseLeg = Convert.ToDouble(form.TextBoxCircuitBase.Text);
-            FinalLeg = Convert.ToDouble(form.TextBoxCircuitFinal.Text);
-            HeightUpwind = Convert.ToDouble(form.TextBoxCircuitHeightUpwind.Text);
-            HeightDown = Convert.ToDouble(form.TextBoxCircuitHeightDown.Text);
-            HeightBase = Convert.ToDouble(form.TextBoxCircuitHeightBase.Text);
-            Speed = Convert.ToDouble(form.TextBoxCircuitSpeed.Text);
-            TurnRate = Convert.ToDouble(form.TextBoxCircuitTurnRate.Text);
+            UpwindLeg = Convert.ToDouble(Form.form.TextBoxCircuitUpwind.Text);
+            BaseLeg = Convert.ToDouble(Form.form.TextBoxCircuitBase.Text);
+            FinalLeg = Convert.ToDouble(Form.form.TextBoxCircuitFinal.Text);
+            HeightUpwind = Convert.ToDouble(Form.form.TextBoxCircuitHeightUpwind.Text);
+            HeightDown = Convert.ToDouble(Form.form.TextBoxCircuitHeightDown.Text);
+            HeightBase = Convert.ToDouble(Form.form.TextBoxCircuitHeightBase.Text);
+            Speed = Convert.ToDouble(Form.form.TextBoxCircuitSpeed.Text);
+            TurnRate = Convert.ToDouble(Form.form.TextBoxCircuitTurnRate.Text);
 
             // Photo Tour
-            PhotoTourConstraintsMaxLegDist = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxLegDist.Text);
-            PhotoTourConstraintsMinLegDist = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMinLegDist.Text);
-            PhotoTourConstraintsMinNoLegs = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMinNoLegs.Text);
-            PhotoTourConstraintsMaxNoLegs = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxNoLegs.Text);
-            PhotoTourConstraintsMaxBearingChange = Convert.ToDouble(form.TextBoxPhotoTourConstraintsMaxBearingChange.Text);
-            PhotoTourConstraintsHotspotRadius = Convert.ToDouble(form.TextBoxPhotoTourMapHotspotRadius.Text) * 0.3084; // Convert feet to metres
-            PhotoTourPhotoMonitorNumber = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorNumber.Text);
-            PhotoTourPhotoMonitorWidth = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorWidth.Text);
-            PhotoTourPhotoMonitorHeight = Convert.ToInt32(form.TextBoxPhotoTourPhotoMonitorHeight.Text);
-            PhotoTourPhotoOffset = Convert.ToInt32(form.TextBoxPhotoTourPhotoOffset.Text);
-            PhotoTourPhotoAlignment = form.ComboBoxPhotoTourPhotoAlignment.GetItemText(form.ComboBoxPhotoTourPhotoAlignment.SelectedItem);
-            PhotoTourMapMonitorNumber = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorNumber.Text);
-            PhotoTourMapMonitorWidth = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorWidth.Text);
-            PhotoTourMapMonitorHeight = Convert.ToInt32(form.TextBoxPhotoTourMapMonitorHeight.Text);
-            PhotoTourMapOffset = Convert.ToInt32(form.TextBoxPhotoTourMapOffset.Text);
-            PhotoTourMapAlignment = form.ComboBoxPhotoTourMapAlignment.GetItemText(form.ComboBoxPhotoTourMapAlignment.SelectedItem);
-            PhotoTourMapWindowSize = Convert.ToInt32(form.ComboBoxPhotoTourMapWindowSize.Text);
+            PhotoTourConstraintsMaxLegDist = Convert.ToDouble(Form.form.TextBoxPhotoTourConstraintsMaxLegDist.Text);
+            PhotoTourConstraintsMinLegDist = Convert.ToDouble(Form.form.TextBoxPhotoTourConstraintsMinLegDist.Text);
+            PhotoTourConstraintsMinNoLegs = Convert.ToDouble(Form.form.TextBoxPhotoTourConstraintsMinNoLegs.Text);
+            PhotoTourConstraintsMaxNoLegs = Convert.ToDouble(Form.form.TextBoxPhotoTourConstraintsMaxNoLegs.Text);
+            PhotoTourConstraintsMaxBearingChange = Convert.ToDouble(Form.form.TextBoxPhotoTourConstraintsMaxBearingChange.Text);
+            PhotoTourConstraintsHotspotRadius = Convert.ToDouble(Form.form.TextBoxPhotoTourMapHotspotRadius.Text) * 0.3084; // Convert feet to metres
+            PhotoTourPhotoMonitorNumber = Convert.ToInt32(Form.form.TextBoxPhotoTourPhotoMonitorNumber.Text);
+            PhotoTourPhotoMonitorWidth = Convert.ToInt32(Form.form.TextBoxPhotoTourPhotoMonitorWidth.Text);
+            PhotoTourPhotoMonitorHeight = Convert.ToInt32(Form.form.TextBoxPhotoTourPhotoMonitorHeight.Text);
+            PhotoTourPhotoOffset = Convert.ToInt32(Form.form.TextBoxPhotoTourPhotoOffset.Text);
+            PhotoTourPhotoAlignment = Form.form.ComboBoxPhotoTourPhotoAlignment.GetItemText(Form.form.ComboBoxPhotoTourPhotoAlignment.SelectedItem);
+            PhotoTourMapMonitorNumber = Convert.ToInt32(Form.form.TextBoxPhotoTourMapMonitorNumber.Text);
+            PhotoTourMapMonitorWidth = Convert.ToInt32(Form.form.TextBoxPhotoTourMapMonitorWidth.Text);
+            PhotoTourMapMonitorHeight = Convert.ToInt32(Form.form.TextBoxPhotoTourMapMonitorHeight.Text);
+            PhotoTourMapOffset = Convert.ToInt32(Form.form.TextBoxPhotoTourMapOffset.Text);
+            PhotoTourMapAlignment = Form.form.ComboBoxPhotoTourMapAlignment.GetItemText(Form.form.ComboBoxPhotoTourMapAlignment.SelectedItem);
+            PhotoTourMapWindowSize = Convert.ToInt32(Form.form.ComboBoxPhotoTourMapWindowSize.Text);
 
             // Sign Writing
-            SignMessage = form.ComboBoxSignMessage.GetItemText(form.ComboBoxSignMessage.SelectedItem);
-            SignTiltAngle = Convert.ToDouble(form.TextBoxSignTilt.Text);
-            SignGateHeight = Convert.ToDouble(form.TextBoxSignGateHeight.Text);
-            SignSegmentLengthDeg = Convert.ToDouble(form.TextBoxSignSegmentLength.Text) / Con.degreeLatFeet;
-            SignSegmentRadiusDeg = Convert.ToDouble(form.TextBoxSignSegmentRadius.Text) / Con.degreeLatFeet;
-            SignMonitorNumber = Convert.ToInt32(form.TextBoxSignMonitorNumber.Text);
-            SignMonitorWidth = Convert.ToInt32(form.TextBoxSignMonitorWidth.Text);
-            SignMonitorHeight = Convert.ToInt32(form.TextBoxSignMonitorHeight.Text);
-            SignOffset = Convert.ToInt32(form.TextBoxSignOffset.Text);
-            SignAlignment = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxSignAlignment.SelectedItem);
+            SignMessage = Form.form.ComboBoxSignMessage.GetItemText(Form.form.ComboBoxSignMessage.SelectedItem);
+            SignTiltAngle = Convert.ToDouble(Form.form.TextBoxSignTilt.Text);
+            SignGateHeight = Convert.ToDouble(Form.form.TextBoxSignGateHeight.Text);
+            SignSegmentLengthDeg = Convert.ToDouble(Form.form.TextBoxSignSegmentLength.Text) / Con.degreeLatFeet;
+            SignSegmentRadiusDeg = Convert.ToDouble(Form.form.TextBoxSignSegmentRadius.Text) / Con.degreeLatFeet;
+            SignMonitorNumber = Convert.ToInt32(Form.form.TextBoxSignMonitorNumber.Text);
+            SignMonitorWidth = Convert.ToInt32(Form.form.TextBoxSignMonitorWidth.Text);
+            SignMonitorHeight = Convert.ToInt32(Form.form.TextBoxSignMonitorHeight.Text);
+            SignOffset = Convert.ToInt32(Form.form.TextBoxSignOffset.Text);
+            SignAlignment = Form.form.ComboBoxSignAlignment.GetItemText(Form.form.ComboBoxSignAlignment.SelectedItem);
 
             // Celestial Navigation
-            CelestialMinDistance = Convert.ToDouble(form.TextBoxCelestialMinDist.Text);
-            CelestialMaxDistance = Convert.ToDouble(form.TextBoxCelestialMaxDist.Text);
+            CelestialMinDistance = Convert.ToDouble(Form.form.TextBoxCelestialMinDist.Text);
+            CelestialMaxDistance = Convert.ToDouble(Form.form.TextBoxCelestialMaxDist.Text);
 
             // Wikipedia List
             if (SelectedScenario == nameof(ScenarioTypes.WikiList))
             {
-                if (form.TextBoxWikiDistance.Text == "")
+                if (Form.form.TextBoxWikiDistance.Text == "")
                 {
                     errorMsg += "\n\tSelect a list of Wikipedia items first";
                 };
             }
-            WikiURL = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxWikiURL.SelectedItem);
-            WikiItemLinkColumn = Convert.ToInt32(form.TextBoxWikiItemLinkColumn.Text);
-            WikiTableNames = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxWikiTableNames.SelectedItem);
-            WikiRoute = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxWikiRoute.SelectedItem);
-            WikiStartingItem = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxWikiStartingItem.SelectedItem);
-            WikiFinishingItem = form.ComboBoxSignAlignment.GetItemText(form.ComboBoxWikiFinishingItem.SelectedItem);
-            WikiURLMonitorNumber = Convert.ToInt32(form.TextBoxWikiURLMonitorNumber.Text);
-            WikiURLMonitorWidth = Convert.ToInt32(form.TextBoxWikiURLMonitorWidth.Text);
-            WikiURLMonitorHeight = Convert.ToInt32(form.TextBoxWikiURLMonitorHeight.Text);
-            WikiURLOffset = Convert.ToInt32(form.TextBoxWikiURLOffset.Text);
-            WikiURLAlignment = form.ComboBoxWikiURLAlignment.GetItemText(form.ComboBoxWikiURLAlignment.SelectedItem);
-            WikiURLWindowWidth = Convert.ToInt32(form.TextBoxWikiURLWindowWidth.Text);
-            WikiURLWindowHeight = Convert.ToInt32(form.TextBoxWikiURLWindowHeight.Text);
-            WikiMapMonitorNumber = Convert.ToInt32(form.TextBoxWikiMapMonitorNumber.Text);
-            WikiMapMonitorWidth = Convert.ToInt32(form.TextBoxWikiMapMonitorWidth.Text);
-            WikiMapMonitorHeight = Convert.ToInt32(form.TextBoxWikiMapMonitorHeight.Text);
-            WikiMapOffset = Convert.ToInt32(form.TextBoxWikiMapOffset.Text);
-            WikiMapAlignment = form.ComboBoxWikiMapAlignment.GetItemText(form.ComboBoxWikiMapAlignment.SelectedItem);
-            WikiMapWindowSize = Convert.ToInt32(form.ComboBoxWikiMapWindowSize.Text);
+            WikiURL = Form.form.ComboBoxSignAlignment.GetItemText(Form.form.ComboBoxWikiURL.SelectedItem);
+            WikiItemLinkColumn = Convert.ToInt32(Form.form.TextBoxWikiItemLinkColumn.Text);
+            WikiTableNames = Form.form.ComboBoxSignAlignment.GetItemText(Form.form.ComboBoxWikiTableNames.SelectedItem);
+            WikiRoute = Form.form.ComboBoxSignAlignment.GetItemText(Form.form.ComboBoxWikiRoute.SelectedItem);
+            WikiStartingItem = Form.form.ComboBoxSignAlignment.GetItemText(Form.form.ComboBoxWikiStartingItem.SelectedItem);
+            WikiFinishingItem = Form.form.ComboBoxSignAlignment.GetItemText(Form.form.ComboBoxWikiFinishingItem.SelectedItem);
+            WikiURLMonitorNumber = Convert.ToInt32(Form.form.TextBoxWikiURLMonitorNumber.Text);
+            WikiURLMonitorWidth = Convert.ToInt32(Form.form.TextBoxWikiURLMonitorWidth.Text);
+            WikiURLMonitorHeight = Convert.ToInt32(Form.form.TextBoxWikiURLMonitorHeight.Text);
+            WikiURLOffset = Convert.ToInt32(Form.form.TextBoxWikiURLOffset.Text);
+            WikiURLAlignment = Form.form.ComboBoxWikiURLAlignment.GetItemText(Form.form.ComboBoxWikiURLAlignment.SelectedItem);
+            WikiURLWindowWidth = Convert.ToInt32(Form.form.TextBoxWikiURLWindowWidth.Text);
+            WikiURLWindowHeight = Convert.ToInt32(Form.form.TextBoxWikiURLWindowHeight.Text);
+            WikiMapMonitorNumber = Convert.ToInt32(Form.form.TextBoxWikiMapMonitorNumber.Text);
+            WikiMapMonitorWidth = Convert.ToInt32(Form.form.TextBoxWikiMapMonitorWidth.Text);
+            WikiMapMonitorHeight = Convert.ToInt32(Form.form.TextBoxWikiMapMonitorHeight.Text);
+            WikiMapOffset = Convert.ToInt32(Form.form.TextBoxWikiMapOffset.Text);
+            WikiMapAlignment = Form.form.ComboBoxWikiMapAlignment.GetItemText(Form.form.ComboBoxWikiMapAlignment.SelectedItem);
+            WikiMapWindowSize = Convert.ToInt32(Form.form.ComboBoxWikiMapWindowSize.Text);
 
             // Settings
-            SettingsScenarioFolder = $"{form.ComboBoxSettingsScenarioFolder.Text}\\{form.TextBoxScenarioTitle.Text}";
+            SettingsScenarioFolder = $"{Form.form.ComboBoxSettingsScenarioFolder.Text}\\{Form.form.TextBoxGeneralScenarioTitle.Text}";
             ImageFolder = $"{SettingsScenarioFolder}\\images";
-            SettingsCacheServerURL = form.ComboBoxSettingsCacheServers.Text.Split(',')[0].Trim();
-            if (form.ComboBoxSettingsCacheServers.Text.Split(',').Length > 1)
-                SettingsCacheServerAPIkey = form.ComboBoxSettingsCacheServers.Text.Split(',')[1].Trim();
-            SettingsCacheUsage = form.TextBoxSettingsCacheUsage.Text;
-            SettingsCacheDailyTotal = Convert.ToInt32(form.TextBoxSettingsCacheDailyTotal.Text);
+            SettingsCacheServerURL = Form.form.ComboBoxSettingsCacheServers.Text.Split(',')[0].Trim();
+            if (Form.form.ComboBoxSettingsCacheServers.Text.Split(',').Length > 1)
+                SettingsCacheServerAPIkey = Form.form.ComboBoxSettingsCacheServers.Text.Split(',')[1].Trim();
+            SettingsCacheUsage = Form.form.TextBoxSettingsCacheUsage.Text;
+            SettingsCacheDailyTotal = Convert.ToInt32(Form.form.TextBoxSettingsCacheDailyTotal.Text);
+            SettingsSimulatorVersion = Form.form.ComboBoxSettingsSimulatorVersion.GetItemText(Form.form.ComboBoxSettingsSimulatorVersion.SelectedItem);
 
             // Common
             if (SelectedScenario == nameof(ScenarioTypes.PhotoTour))
@@ -504,12 +504,13 @@ namespace P3D_Scenario_Generator
         /// already exist.
         /// </summary>
         /// <returns>True for valid scenario title.</returns>
-        static private bool ValidateScenarioTitle()
+        internal static bool ValidateScenarioTitle()
         {
             string saveFolder;
-            if (IsValidFilename(form.TextBoxScenarioTitle.Text))
+
+            if (IsValidFilename(Form.form.TextBoxGeneralScenarioTitle.Text))
             {
-                saveFolder = $"{form.ComboBoxSettingsScenarioFolder.Text}\\{form.TextBoxScenarioTitle.Text}";
+                saveFolder = $"{Form.form.ComboBoxSettingsScenarioFolder.Text}\\{Form.form.TextBoxGeneralScenarioTitle.Text}";
                 if (Directory.Exists(saveFolder))
                 {
                     string message = $"A scenario with the same title already exists. Either delete the folder \"{saveFolder}\" (you'll need to shut down Prepar3D first if it's running) or choose a different scenario title.";
@@ -525,7 +526,7 @@ namespace P3D_Scenario_Generator
             return true;
         }
 
-        static private bool IsValidFilename(string fileName)
+        internal static bool IsValidFilename(string fileName)
         {
             return !string.IsNullOrEmpty(fileName) &&
               fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;

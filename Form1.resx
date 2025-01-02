@@ -152,8 +152,37 @@
   <data name="TextBoxWikiURLOffset.ToolTip" xml:space="preserve">
     <value>The default position of Wiki URL window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the Wiki URL Wiki URL window is positioned. Ignored if default position of Wiki URL window is centered.</value>
   </data>
+  <data name="ComboBoxGeneralLocationCity.ToolTip" xml:space="preserve">
+    <value>Select "None" to not filter runway selection based on city. 
+Select "All" to allow any runway selection that matches one of the city filter strings. 
+Select a list item to only select runways that are in that city. 
+Type a new string and press "Enter" to add to the list. 
+Select a list item and press "Delete" to remove an item from the list.
+
+</value>
+  </data>
+  <data name="ComboBoxGeneralLocationState.ToolTip" xml:space="preserve">
+    <value>Select "None" to not filter runway selection based on state. 
+Select "All" to allow any runway selection that matches one of the state filter strings. 
+Select a list item to only select runways that are in that state. 
+Type a new string and press "Enter" to add to the list. 
+Select a list item and press "Delete" to remove an item from the list.
+</value>
+  </data>
+  <data name="ComboBoxGeneralLocationCountry.ToolTip" xml:space="preserve">
+    <value>Select "None" to not filter runway selection based on country. 
+Select "All" to allow any runway selection that matches one of the country filter strings. 
+Select a list item to only select runways that are in that country. 
+Type a new string and press "Enter" to add to the list. 
+Select a list item and press "Delete" to remove an item from the list.</value>
+  </data>
+  <data name="groupBox16.ToolTip" xml:space="preserve">
+    <value>Choose "None" to not filter on Country, State, City respectively. 
+Choose "All" to includes airports in any of options in the respective lists. 
+If you filter on more than one list it's searching for an airport that matches atleast one of the filters.</value>
+  </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>43</value>
+    <value>42</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

@@ -25,37 +25,40 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string SelectedAircraft {
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
+            "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" />")]
+        public global::System.Collections.Specialized.StringCollection AircraftTitles {
             get {
-                return ((string)(this["SelectedAircraft"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["AircraftTitles"]));
             }
             set {
-                this["SelectedAircraft"] = value;
+                this["AircraftTitles"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string AircraftImage {
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
+            "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" />")]
+        public global::System.Collections.Specialized.StringCollection AircraftImages {
             get {
-                return ((string)(this["AircraftImage"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["AircraftImages"]));
             }
             set {
-                this["AircraftImage"] = value;
+                this["AircraftImages"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public double CruiseSpeed {
+        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
+            "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" />")]
+        public global::System.Collections.Specialized.StringCollection AircraftCruiseSpeeds {
             get {
-                return ((double)(this["CruiseSpeed"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["AircraftCruiseSpeeds"]));
             }
             set {
-                this["CruiseSpeed"] = value;
+                this["AircraftCruiseSpeeds"] = value;
             }
         }
         
@@ -818,9 +821,9 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Drawing.Point ComboBoxWikiFinishingItem {
+        public global::System.Collections.Specialized.StringCollection ComboBoxWikiFinishingItem {
             get {
-                return ((global::System.Drawing.Point)(this["ComboBoxWikiFinishingItem"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxWikiFinishingItem"]));
             }
             set {
                 this["ComboBoxWikiFinishingItem"] = value;
@@ -977,6 +980,110 @@ namespace P3D_Scenario_Generator.Properties {
             }
             set {
                 this["TextBoxWikiURLWindowWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Drawing.Color ComboBoxSettingsSimulatorVersion {
+            get {
+                return ((global::System.Drawing.Color)(this["ComboBoxSettingsSimulatorVersion"]));
+            }
+            set {
+                this["ComboBoxSettingsSimulatorVersion"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxSettingsSimulatorVersionSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxSettingsSimulatorVersionSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxSettingsSimulatorVersionSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int AircraftTitlesSelectedIndex {
+            get {
+                return ((int)(this["AircraftTitlesSelectedIndex"]));
+            }
+            set {
+                this["AircraftTitlesSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxGeneralLocationCountry {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxGeneralLocationCountry"]));
+            }
+            set {
+                this["ComboBoxGeneralLocationCountry"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxGeneralLocationCountrySelectedIndex {
+            get {
+                return ((int)(this["ComboBoxGeneralLocationCountrySelectedIndex"]));
+            }
+            set {
+                this["ComboBoxGeneralLocationCountrySelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxGeneralLocationState {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxGeneralLocationState"]));
+            }
+            set {
+                this["ComboBoxGeneralLocationState"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxGeneralLocationStateSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxGeneralLocationStateSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxGeneralLocationStateSelectedIndex"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxGeneralLocationCity {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxGeneralLocationCity"]));
+            }
+            set {
+                this["ComboBoxGeneralLocationCity"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxGeneralLocationCitySelectedIndex {
+            get {
+                return ((int)(this["ComboBoxGeneralLocationCitySelectedIndex"]));
+            }
+            set {
+                this["ComboBoxGeneralLocationCitySelectedIndex"] = value;
             }
         }
     }

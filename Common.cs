@@ -1,8 +1,10 @@
-﻿
-using CoordinateSharp;
+﻿using CoordinateSharp;
 
 namespace P3D_Scenario_Generator
 {
+    /// <summary>
+    /// Methods shared across multiple scenario types
+    /// </summary>
     internal class Common
     {
 
@@ -11,7 +13,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         static internal void SetOverviewImage()
         {
-            List<Tile> tiles = []; // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
+            List<Tile> tiles = [];      // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
             BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = GetBoundingBoxZoom(tiles, 2, 2);
             SetOSMtiles(tiles, zoom);
@@ -69,9 +71,19 @@ namespace P3D_Scenario_Generator
             return 18;
         }
 
+        /// <summary>
+        /// Works out what OSM tiles are needed for a set of coordinates. Two version of this method. This one
+        /// covers all coordinates of a scenario.
+        /// </summary>
+        /// <param name="tiles">List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile</param>
+        /// <param name="zoom">The OSM tile zoom level for the boundingBox</param>
         static internal void SetOSMtiles(List<Tile> tiles, int zoom)
         {
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
+            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Circuit))
+            {
+                Circuit.SetCircuitOSMtiles(tiles, zoom, 0, Circuit.gates.Count - 1);
+            }
+            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
                 PhotoTour.SetPhotoTourOSMtiles(tiles, zoom, 0, PhotoTour.PhotoCount - 1);
             }
@@ -81,9 +93,21 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// Works out what OSM tiles are needed for a set of coordinates. Two version of this method. This one
+        /// is called with a start and finish index.
+        /// </summary>
+        /// <param name="tiles">List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile</param>
+        /// <param name="zoom">The OSM tile zoom level for the boundingBox</param>
+        /// <param name="startItemIndex">Index of start item</param>
+        /// <param name="finishItemIndex">Index of finish item</param>
         static internal void SetOSMtiles(List<Tile> tiles, int zoom, int startItemIndex, int finishItemIndex)
         {
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
+            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Circuit))
+            {
+                Circuit.SetCircuitOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
+            }
+            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
                 PhotoTour.SetPhotoTourOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             }
@@ -93,6 +117,9 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// Creates "chart_thumb.jpg" using an OSM tile that covers the starting airport
+        /// </summary>
         static internal void SetLocationImage()
         {
             List<Tile> tiles = [];      // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
@@ -114,6 +141,8 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Creates "LegRoute_XX.jpg" images for all legs using a montage of OSM tiles that covers the start and finish leg items
         /// </summary>
+        /// <param name="startItemIndex">Index of start item</param>
+        /// <param name="finishItemIndex">Index of finish item</param>
         static internal void SetAllLegRouteImages(int startItemIndex, int finishItemIndex)
         {
             for (int itemNo = startItemIndex; itemNo <= finishItemIndex; itemNo++)
@@ -125,10 +154,8 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Creates "LegRoute_XX.jpg" images for one leg using a montage of OSM tiles that covers the start and finish leg items 
         /// </summary>
-        /// <param name="startItemIndex">Index of start item in <see cref="PhotoLocations"/></param>
-        /// <param name="finishItemIndex">Index of finish item in <see cref="PhotoLocations"/></param>
-        /// <param name="incStartAirport">Whether to include start airport</param>
-        /// <param name="incFinishAirport">Whether to include finish airport</param>
+        /// <param name="startItemIndex">Index of start item</param>
+        /// <param name="finishItemIndex">Index of finish item</param>
         static internal void SetOneRouteImages(int startItemIndex, int finishItemIndex)
         {
             List<Tile> tiles = [];
@@ -149,7 +176,7 @@ namespace P3D_Scenario_Generator
             // zoom 2, 3 (and 4) images, zoom 1 is base level for map window size of 512 pixels, zoom 2 is base level for map window of 1024 pixels
             // then there are two additional map images for the higher zoom levels.
             int numberZoomLevels = 2;
-            if (Parameters.PhotoTourMapWindowSize == 1024)
+            if (Parameters.CommonMovingMapWindowSize == 1024)
                 numberZoomLevels = 3;
             for (int inc = 1; inc <= numberZoomLevels; inc++)
             {

@@ -1,12 +1,19 @@
-﻿
-namespace P3D_Scenario_Generator
+﻿namespace P3D_Scenario_Generator
 {
     /// <summary>
     /// Provides routines for the Circuit scenario type
     /// </summary>
     internal class Circuit
     {
+        /// <summary>
+        /// Start and finish airport (the same) plus the 8 gates making up the circuit.
+        /// </summary>
         static internal List<Gate> gates = [];
+
+        /// <summary>
+        /// Lat/Lon boundaries for each OSM montage leg image
+        /// </summary>
+        internal static List<MapEdges> CircuitLegMapEdges { get; private set; }
 
         /// <summary>
         /// Sets start/destination airports, calculates gate positions, creates overview and location images
@@ -17,8 +24,10 @@ namespace P3D_Scenario_Generator
             Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
             gates = Gates.SetCircuitGates();
             SetCircuitAirport(gates);
-            SetCircuitOverviewImage(gates);
-            SetCircuitLocationImage(gates);
+            Common.SetOverviewImage();
+            Common.SetLocationImage();
+            CircuitLegMapEdges = [];
+            Common.SetAllLegRouteImages(0, gates.Count - 2);
         }
 
         /// <summary>
@@ -33,75 +42,19 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Creates "Charts_01.jpg" using a montage of OSM tiles that covers airport and circuit gates/>
-        /// </summary>
-        static internal void SetCircuitOverviewImage(List<Gate> gates)
-        {
-            int zoom = GetBoundingBoxZoom(gates, 0, gates.Count - 1);
-            List<Tile> tiles = SetCircuitOSMtiles(gates, zoom, 0, gates.Count - 1);
-            BoundingBox boundingBox = OSM.GetBoundingBox(tiles, zoom);
-            Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
-            Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
-            Drawing.MakeSquare(boundingBox, "Charts_01", zoom, Con.tileFactor);
-        }
-
-        /// <summary>
-        /// Creates "chart_thumb.jpg" using an OSM tile that covers the starting airport
-        /// </summary>
-        static internal void SetCircuitLocationImage(List<Gate> gates)
-        {
-            int zoom = 15;
-            List<Tile> tiles = SetCircuitOSMtiles(gates, zoom, 0, 0);
-            BoundingBox boundingBox = OSM.GetBoundingBox(tiles, zoom);
-            Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
-            if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
-            {
-                Drawing.MakeSquare(boundingBox, "chart_thumb", zoom, Con.locTileFactor);
-            }
-            if (boundingBox.xAxis.Count == Con.tileFactor)
-            {
-                Drawing.Resize("chart_thumb.png", Con.tileSize, 0);
-            }
-        }
-
-        /// <summary>
-        /// Works out most zoomed in level that includes all gates specified by startGateIndex and finishGateIndex, 
-        /// plus airport where the montage of OSM tiles doesn't exceed <see cref="Con.tileFactor"/> in size
-        /// </summary>
-        /// <param name="startGateIndex">Index of first gate in circuit</param>
-        /// <param name="finishGateIndex">Index of last gate in circuit</param>
-        /// <returns>The maximum zoom level that meets constraints</returns>
-        static internal int GetBoundingBoxZoom(List<Gate> gates, int startGateIndex, int finishGateIndex)
-        {
-            List<Tile> tiles;
-            BoundingBox boundingBox;
-            for (int zoom = 2; zoom <= Con.maxZoomLevel; zoom++) // zoom of 1 is map of the world!
-            {
-                tiles = SetCircuitOSMtiles(gates, zoom, startGateIndex, finishGateIndex);
-                boundingBox = OSM.GetBoundingBox(tiles, zoom);
-                if ((boundingBox.xAxis.Count > Con.tileFactor) || (boundingBox.yAxis.Count > Con.tileFactor))
-                {
-                    return zoom - 1;
-                }
-            }
-            return Con.maxZoomLevel;
-        }
-
-        /// <summary>
         /// Finds OSM tile numbers and offsets for a circuit (all gates plus airport)
         /// </summary>
         /// <param name="zoom">The zoom level to get OSM tiles at</param>
         /// <param name="startItemIndex">Index of first gate in circuit</param>
         /// <param name="finishItemIndex">Index of last gate in circuit</param>
         /// <returns>The list of tiles</returns>
-        static internal List<Tile> SetCircuitOSMtiles(List<Gate> gates, int zoom, int startItemIndex, int finishItemIndex)
+        static internal void SetCircuitOSMtiles(List<Tile> tiles, int zoom, int startItemIndex, int finishItemIndex)
         {
-            List<Tile> tiles = [];
+            tiles.Clear();
             for (int gateIndex = startItemIndex; gateIndex <= finishItemIndex; gateIndex++)
             {
                 tiles.Add(OSM.GetOSMtile(gates[gateIndex].lon.ToString(), gates[gateIndex].lat.ToString(), zoom));
             }
-            return tiles;
         }
 
         /// <summary>
