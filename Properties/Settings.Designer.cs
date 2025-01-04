@@ -1086,5 +1086,28 @@ namespace P3D_Scenario_Generator.Properties {
                 this["ComboBoxGeneralLocationCitySelectedIndex"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxGeneralLocationFavourites {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxGeneralLocationFavourites"]));
+            }
+            set {
+                this["ComboBoxGeneralLocationFavourites"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ComboBoxGeneralLocationFavouritesSelectedIndex {
+            get {
+                return ((int)(this["ComboBoxGeneralLocationFavouritesSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxGeneralLocationFavouritesSelectedIndex"] = value;
+            }
+        }
     }
 }

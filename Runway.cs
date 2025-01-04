@@ -1,43 +1,147 @@
 ﻿using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace P3D_Scenario_Generator
 {
-    public class Params
+    /// <summary>
+    /// Parameters for a runway sourced from the runways.xml file
+    /// </summary>
+    public class RunwayParams
     {
+        /// <summary>
+        /// Four letter code known as ICAO airport code or location indicator
+        /// </summary>
         internal string IcaoId { get; set; }
+
+        /// <summary>
+        /// The name of the airport
+        /// </summary>
         internal string IcaoName { get; set; }
+
         internal string Country { get; set; }
+
         internal string State { get; set; }
+
         internal string City { get; set; }
+
+        /// <summary>
+        /// The longitude of the approximate center of the airport's useable runways
+        /// </summary>
         internal double AirportLon { get; set; }
+
+        /// <summary>
+        /// The latitude of the approximate center of the airport's useable runways
+        /// </summary>
         internal double AirportLat { get; set; }
+
+        /// <summary>
+        /// Airport altitude (AMSL)
+        /// </summary>
         internal double Altitude { get; set; }
+
+        /// <summary>
+        /// Airport magnetic variation
+        /// </summary>
         internal double MagVar { get; set; }
+
+        /// <summary>
+        /// The runway Id e.g. "05L", multiply two digit number <= 36 by 10 to get 0 to 360 degrees runway approx magnetic heading
+        /// if the number is > 36 it is code for a compass heading or pair of compass headings e.g. 37 = "N-S", 45 = "N"
+        /// </summary>
         internal string Id { get; set; }
+
+        /// <summary>
+        /// The compass bearing of an airport runway with no leading zeros e.g. "5" is 5 degrees. Or a compass
+        /// direction string e.g. "NorthWest"
+        /// </summary>
         internal string Number { get; set; }
+
+        /// <summary>
+        /// One of "None", "Left", "Right", or "Center". Used in setting the airport landing trigger for a scenario
+        /// </summary>
         internal string Designator { get; set; }
-        internal int Len { get; set; }     // feet
-        internal double Hdg { get; set; }  // magnetic (add magVar for true)
-        internal string Def { get; set; }  // surface
-        internal double ThresholdStartLat { get; set; }  // threshold latitude 
-        internal double ThresholdStartLon { get; set; }  // threshold longitude 
+
+        /// <summary>
+        /// Runway length in feet
+        /// </summary>
+        internal int Len { get; set; }
+
+        /// <summary>
+        /// Runway magnetic heading (add magVar for true)
+        /// </summary>
+        internal double Hdg { get; set; } 
+        
+        /// <summary>
+        /// Runway surface material
+        /// </summary>
+        internal string Def { get; set; }
+
+        /// <summary>
+        /// Runway threshold latitude
+        /// </summary>
+        internal double ThresholdStartLat { get; set; }
+
+        /// <summary>
+        /// Runway threshold longitude
+        /// </summary>
+        internal double ThresholdStartLon { get; set; }   
+    }
+
+    /// <summary>
+    /// Stores runway ids in range 37 to 52 which represent compass headings rather than usual degrees to nearest ten
+    /// </summary>
+    /// <param name="v1">The code - a number from 37 to 52 inclusive</param>
+    /// <param name="v2">The fullname e.g. "NorthWest"</param>
+    /// <param name="v3">The abbreviated name e.g. "NW"</param>
+    public class RunwayCompassIds(string v1, string v2, string v3)
+    {
+
+        /// <summary>
+        /// The code - a number from 37 to 52 inclusive
+        /// </summary>
+        internal string Code { get; set; } = v1;
+
+        /// <summary>
+        /// The fullname e.g. "NorthWest"
+        /// </summary>
+        internal string FullName { get; set; } = v2;
+
+        /// <summary>
+        /// The abbreviated name e.g. "NW"
+        /// </summary>
+        internal string AbbrName { get; set; } = v3;
     }
 
     internal class Runway
     {
         private static readonly string xmlFilename = "runways.xml";
-        private static readonly List<string[]> quadrantStringLookup = [];
 
-        internal static Params startRwy = new();
-        internal static Params destRwy = new();
+        /// <summary>
+        /// Used to store runway headings that are compass direction strings rather than 01 to 36, e.g. "NorthWest"
+        /// </summary>
+        private static readonly List<RunwayCompassIds> runwayCompassIds = [];
 
+        /// <summary>
+        /// The scenario start runway
+        /// </summary>
+        internal static RunwayParams startRwy = new();
+
+        /// <summary>
+        /// The scenario destination runway
+        /// </summary>
+        internal static RunwayParams destRwy = new();
+
+        /// <summary>
+        /// Builds list of strings in format "Airport ICAO (Runway Id)" e.g. "LFGO (14L)" used to populate
+        /// available runway list in General tab of application form.
+        /// </summary>
+        /// <returns></returns>
         static internal List<string> GetICAOids()
         {
             List<string> icaoIDs = [];
-            Stream stream = GetRunwayXMLstream();
-            XmlReader reader = XmlReader.Create(stream);
+            using Stream stream = GetRunwayXMLstream();
+            using XmlReader reader = XmlReader.Create(stream);
+            SetRunwayCompassIds();
             while (reader.Read())
             {
                 if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.Element)
@@ -47,7 +151,13 @@ namespace P3D_Scenario_Generator
                     {
                         if (reader.Name == "Runway" && reader.NodeType == XmlNodeType.Element)
                         {
-                            icaoIDs.Add($"{currentAirport}\t({reader.GetAttribute("id")})");
+                            string runwayId = reader.GetAttribute("id");
+                            if (int.TryParse(runwayId, out int runwayNumber) && runwayNumber > 36 && runwayNumber <= 52)
+                            {
+                                RunwayCompassIds runwayCompassId = runwayCompassIds.Find(rcID => rcID.Code == runwayId);
+                                runwayId = runwayCompassId.AbbrName;
+                            }
+                            icaoIDs.Add($@"{currentAirport} ({runwayId})");
                         }
                         if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.EndElement)
                         {
@@ -56,15 +166,14 @@ namespace P3D_Scenario_Generator
                     }
                 }
             }
-            stream.Dispose();
 
             return icaoIDs;
         }
 
-        static internal Params GetNearbyAirport(double queryLat, double queryLon, double minDist, double maxDist)
+        static internal RunwayParams GetNearbyAirport(double queryLat, double queryLon, double minDist, double maxDist)
         {
             double curDistance;
-            Params curAirport = new();
+            RunwayParams curAirport = new();
             Stream stream = GetRunwayXMLstream();
             XmlReader reader = XmlReader.Create(stream);
             while (reader.Read())
@@ -113,12 +222,12 @@ namespace P3D_Scenario_Generator
             return null;
         }
 
-        static internal Params GetNearestAirport(double queryLat, double queryLon)
+        static internal RunwayParams GetNearestAirport(double queryLat, double queryLon)
         {
             double minDistance = 9999;
             double curDistance;
-            Params minAirport = new();
-            Params curAirport = new();
+            RunwayParams minAirport = new();
+            RunwayParams curAirport = new();
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
             Stream stream = GetRunwayXMLstream();
             XmlReader reader = XmlReader.Create(stream);
@@ -173,30 +282,33 @@ namespace P3D_Scenario_Generator
             return stream;
         }
 
-        static private void SetQuadrantStrings()
+        /// <summary>
+        /// Store runway ids in range 37 to 52 which represent compass headings rather than usual degrees to nearest ten
+        /// </summary>
+        static private void SetRunwayCompassIds()
         {
-            quadrantStringLookup.Add(["37", "North"]);
-            quadrantStringLookup.Add(["38", "East"]);
-            quadrantStringLookup.Add(["39", "NorthWest"]);
-            quadrantStringLookup.Add(["40", "SouthWest"]);
-            quadrantStringLookup.Add(["41", "South"]);
-            quadrantStringLookup.Add(["42", "West"]);
-            quadrantStringLookup.Add(["43", "SouthEast"]);
-            quadrantStringLookup.Add(["44", "NorthEast"]);
-            quadrantStringLookup.Add(["45", "North"]);
-            quadrantStringLookup.Add(["46", "West"]);
-            quadrantStringLookup.Add(["47", "NorthWest"]);
-            quadrantStringLookup.Add(["48", "SouthWest"]);
-            quadrantStringLookup.Add(["49", "South"]);
-            quadrantStringLookup.Add(["50", "East"]);
-            quadrantStringLookup.Add(["51", "SouthEast"]);
-            quadrantStringLookup.Add(["52", "NorthEast"]);
+            runwayCompassIds.Add(new("37", "North", "N-S"));
+            runwayCompassIds.Add(new("38", "East", "E-W"));
+            runwayCompassIds.Add(new("39", "NorthWest", "NW-SE"));
+            runwayCompassIds.Add(new("40", "SouthWest", "SW-NE"));
+            runwayCompassIds.Add(new("41", "South", "S-N"));
+            runwayCompassIds.Add(new("42", "West", "W-E"));
+            runwayCompassIds.Add(new("43", "SouthEast", "SE-NW"));
+            runwayCompassIds.Add(new("44", "NorthEast", "NE-SW"));
+            runwayCompassIds.Add(new("45", "North", "N"));
+            runwayCompassIds.Add(new("46", "West",  "W"));
+            runwayCompassIds.Add(new("47", "NorthWest", "NW"));
+            runwayCompassIds.Add(new("48", "SouthWest", "SW"));
+            runwayCompassIds.Add(new("49", "South", "S"));
+            runwayCompassIds.Add(new("50", "East", "E"));
+            runwayCompassIds.Add(new("51", "SouthEast", "SE"));
+            runwayCompassIds.Add(new("52", "NorthEast", "NE"));
         }
 
         static internal string[] SetICAOwords(string rwyType)
         {
             string[] words = ["", ""];
-            Params airport;
+            RunwayParams airport;
             switch (Parameters.SelectedScenario)
             {
                 case nameof(ScenarioTypes.Circuit):
@@ -238,11 +350,11 @@ namespace P3D_Scenario_Generator
             return words;
         }
 
-        static internal void SetRunway(Params rwyParams, string airportICAO, string airportID)
+        static internal void SetRunway(RunwayParams rwyParams, string airportICAO, string airportID)
         {
             Stream stream = GetRunwayXMLstream();
             XmlReader reader = XmlReader.Create(stream);
-            SetQuadrantStrings();
+            SetRunwayCompassIds();
 
             bool runwaySet = false;
             while (reader.ReadToFollowing("ICAO") && runwaySet == false)
@@ -303,7 +415,7 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        static private void SetRunwayId(Params rwyParams, string runwayId)
+        static private void SetRunwayId(RunwayParams rwyParams, string runwayId)
         {
             rwyParams.Id = runwayId;
 
@@ -323,15 +435,15 @@ namespace P3D_Scenario_Generator
                 rwyParams.Designator = "Center";
                 runwayId = runwayId.TrimEnd('C');
             }
-            if (int.TryParse(runwayId, out int number))
-                if (number <= 36)
+            if (int.TryParse(runwayId, out int runwayNumber))
+                if (runwayNumber <= 36)
                 {
                     rwyParams.Number = runwayId.TrimStart('0');
                 } 
-                else if (number <= 52)
+                else if (runwayNumber <= 52)
                 {
-                    int index = quadrantStringLookup.FindIndex(quad => quad[0] == number.ToString());
-                    rwyParams.Number = quadrantStringLookup[index][1];
+                    RunwayCompassIds runwayCompassId = runwayCompassIds.Find(rcID => rcID.Code == runwayId);
+                    rwyParams.Number = runwayCompassId.FullName;
                 }
                 else
                 {

@@ -152,6 +152,14 @@
   <data name="TextBoxWikiURLOffset.ToolTip" xml:space="preserve">
     <value>The default position of Wiki URL window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the Wiki URL Wiki URL window is positioned. Ignored if default position of Wiki URL window is centered.</value>
   </data>
+  <data name="ComboBoxGeneralLocationFavourites.ToolTip" xml:space="preserve">
+    <value>Type a new string and press "Enter" to add to the list. 
+Select a list item and press "Delete" to remove an item from the list.
+A new item represents a combination of Country/State/City settings.
+The program will display the combination after the name you choose.
+
+</value>
+  </data>
   <data name="ComboBoxGeneralLocationCity.ToolTip" xml:space="preserve">
     <value>Select "None" to not filter runway selection based on city. 
 Select "All" to allow any runway selection that matches one of the city filter strings. 

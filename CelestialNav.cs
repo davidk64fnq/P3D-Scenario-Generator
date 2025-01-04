@@ -1,7 +1,5 @@
 ﻿using System.Reflection;
-using Microsoft.VisualBasic.Logging;
 using OfficeOpenXml;
-
 
 namespace P3D_Scenario_Generator
 {

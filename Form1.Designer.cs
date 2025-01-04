@@ -197,6 +197,8 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsSimulatorVersion = new ComboBox();
             groupBox16 = new GroupBox();
             tableLayoutPanel12 = new TableLayoutPanel();
+            ComboBoxGeneralLocationFavourites = new ComboBox();
+            label61 = new Label();
             ComboBoxGeneralLocationCity = new ComboBox();
             ComboBoxGeneralLocationState = new ComboBox();
             ComboBoxGeneralLocationCountry = new ComboBox();
@@ -418,7 +420,7 @@ namespace P3D_Scenario_Generator
             buttonGeneralAircraft.Name = "buttonGeneralAircraft";
             buttonGeneralAircraft.Size = new Size(100, 23);
             buttonGeneralAircraft.TabIndex = 11;
-            buttonGeneralAircraft.Text = "Selection";
+            buttonGeneralAircraft.Text = "Add Aircraft";
             toolTip1.SetToolTip(buttonGeneralAircraft, "To add a new aircraft to the list of favourites choose the image of preferred aircraft variant");
             buttonGeneralAircraft.UseVisualStyleBackColor = true;
             buttonGeneralAircraft.Click += ButtonAircraft_Click;
@@ -2309,7 +2311,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox12.BackColor = Color.FromArgb(255, 192, 128);
             groupBox12.Controls.Add(tableLayoutPanel8);
-            groupBox12.Location = new Point(67, 23);
+            groupBox12.Location = new Point(67, 204);
             groupBox12.Name = "groupBox12";
             groupBox12.Size = new Size(286, 95);
             groupBox12.TabIndex = 18;
@@ -2368,7 +2370,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox13.BackColor = Color.FromArgb(255, 192, 128);
             groupBox13.Controls.Add(tableLayoutPanel9);
-            groupBox13.Location = new Point(67, 146);
+            groupBox13.Location = new Point(67, 314);
             groupBox13.Name = "groupBox13";
             groupBox13.Size = new Size(286, 95);
             groupBox13.TabIndex = 19;
@@ -2492,9 +2494,9 @@ namespace P3D_Scenario_Generator
             // 
             groupBox16.BackColor = Color.FromArgb(255, 192, 128);
             groupBox16.Controls.Add(tableLayoutPanel12);
-            groupBox16.Location = new Point(452, 114);
+            groupBox16.Location = new Point(67, 29);
             groupBox16.Name = "groupBox16";
-            groupBox16.Size = new Size(286, 127);
+            groupBox16.Size = new Size(286, 159);
             groupBox16.TabIndex = 39;
             groupBox16.TabStop = false;
             groupBox16.Text = "Location Filter";
@@ -2507,6 +2509,8 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel12.ColumnCount = 2;
             tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationFavourites, 1, 3);
+            tableLayoutPanel12.Controls.Add(label61, 0, 3);
             tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationCity, 1, 2);
             tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationState, 1, 1);
             tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationCountry, 1, 0);
@@ -2514,25 +2518,51 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel12.Controls.Add(label59, 0, 2);
             tableLayoutPanel12.Controls.Add(label60, 0, 0);
             tableLayoutPanel12.ImeMode = ImeMode.On;
-            tableLayoutPanel12.Location = new Point(18, 23);
+            tableLayoutPanel12.Location = new Point(18, 21);
             tableLayoutPanel12.Name = "tableLayoutPanel12";
-            tableLayoutPanel12.RowCount = 3;
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel12.Size = new Size(253, 92);
+            tableLayoutPanel12.RowCount = 4;
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            tableLayoutPanel12.Size = new Size(253, 122);
             tableLayoutPanel12.TabIndex = 36;
+            // 
+            // ComboBoxGeneralLocationFavourites
+            // 
+            ComboBoxGeneralLocationFavourites.AccessibleName = "Location Filter: Favourites";
+            ComboBoxGeneralLocationFavourites.Anchor = AnchorStyles.None;
+            ComboBoxGeneralLocationFavourites.DropDownWidth = 300;
+            ComboBoxGeneralLocationFavourites.FormattingEnabled = true;
+            ComboBoxGeneralLocationFavourites.Items.AddRange(new object[] { "None" });
+            ComboBoxGeneralLocationFavourites.Location = new Point(139, 94);
+            ComboBoxGeneralLocationFavourites.Name = "ComboBoxGeneralLocationFavourites";
+            ComboBoxGeneralLocationFavourites.Size = new Size(100, 23);
+            ComboBoxGeneralLocationFavourites.TabIndex = 45;
+            ComboBoxGeneralLocationFavourites.Tag = "None";
+            ComboBoxGeneralLocationFavourites.Text = "None";
+            toolTip1.SetToolTip(ComboBoxGeneralLocationFavourites, resources.GetString("ComboBoxGeneralLocationFavourites.ToolTip"));
+            ComboBoxGeneralLocationFavourites.KeyDown += ComboBoxGeneralLocationFavourites_KeyDown;
+            // 
+            // label61
+            // 
+            label61.Anchor = AnchorStyles.None;
+            label61.AutoSize = true;
+            label61.Location = new Point(32, 98);
+            label61.Name = "label61";
+            label61.Size = new Size(61, 15);
+            label61.TabIndex = 44;
+            label61.Text = "Favourites";
+            toolTip1.SetToolTip(label61, "Saved Combinations of Country/State/City settings");
             // 
             // ComboBoxGeneralLocationCity
             // 
             ComboBoxGeneralLocationCity.AccessibleName = "Location Filter: City";
             ComboBoxGeneralLocationCity.Anchor = AnchorStyles.None;
-            ComboBoxGeneralLocationCity.DropDownWidth = 640;
+            ComboBoxGeneralLocationCity.DropDownWidth = 200;
             ComboBoxGeneralLocationCity.FormattingEnabled = true;
             ComboBoxGeneralLocationCity.Items.AddRange(new object[] { "None", "All" });
-            ComboBoxGeneralLocationCity.Location = new Point(139, 64);
+            ComboBoxGeneralLocationCity.Location = new Point(139, 63);
             ComboBoxGeneralLocationCity.Name = "ComboBoxGeneralLocationCity";
             ComboBoxGeneralLocationCity.Size = new Size(100, 23);
             ComboBoxGeneralLocationCity.TabIndex = 43;
@@ -2545,7 +2575,7 @@ namespace P3D_Scenario_Generator
             // 
             ComboBoxGeneralLocationState.AccessibleName = "Location Filter: State";
             ComboBoxGeneralLocationState.Anchor = AnchorStyles.None;
-            ComboBoxGeneralLocationState.DropDownWidth = 640;
+            ComboBoxGeneralLocationState.DropDownWidth = 200;
             ComboBoxGeneralLocationState.FormattingEnabled = true;
             ComboBoxGeneralLocationState.Items.AddRange(new object[] { "None", "All" });
             ComboBoxGeneralLocationState.Location = new Point(139, 33);
@@ -2561,7 +2591,7 @@ namespace P3D_Scenario_Generator
             // 
             ComboBoxGeneralLocationCountry.AccessibleName = "Location Filter: Country";
             ComboBoxGeneralLocationCountry.Anchor = AnchorStyles.None;
-            ComboBoxGeneralLocationCountry.DropDownWidth = 640;
+            ComboBoxGeneralLocationCountry.DropDownWidth = 200;
             ComboBoxGeneralLocationCountry.FormattingEnabled = true;
             ComboBoxGeneralLocationCountry.Items.AddRange(new object[] { "None", "All" });
             ComboBoxGeneralLocationCountry.Location = new Point(139, 3);
@@ -2588,7 +2618,7 @@ namespace P3D_Scenario_Generator
             // 
             label59.Anchor = AnchorStyles.None;
             label59.AutoSize = true;
-            label59.Location = new Point(49, 68);
+            label59.Location = new Point(49, 67);
             label59.Name = "label59";
             label59.Size = new Size(28, 15);
             label59.TabIndex = 31;
@@ -2761,7 +2791,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox15.BackColor = Color.FromArgb(255, 192, 128);
             groupBox15.Controls.Add(tableLayoutPanel11);
-            groupBox15.Location = new Point(452, 23);
+            groupBox15.Location = new Point(459, 144);
             groupBox15.Name = "groupBox15";
             groupBox15.Size = new Size(286, 63);
             groupBox15.TabIndex = 38;
@@ -2791,7 +2821,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox14.BackColor = Color.FromArgb(255, 192, 128);
             groupBox14.Controls.Add(tableLayoutPanel10);
-            groupBox14.Location = new Point(67, 269);
+            groupBox14.Location = new Point(459, 29);
             groupBox14.Name = "groupBox14";
             groupBox14.Size = new Size(286, 95);
             groupBox14.TabIndex = 37;
@@ -3158,6 +3188,8 @@ namespace P3D_Scenario_Generator
         private Label label60;
         internal ComboBox ComboBoxGeneralLocationCity;
         internal ComboBox ComboBoxGeneralLocationState;
+        private Label label61;
+        internal ComboBox ComboBoxGeneralLocationFavourites;
     }
 }
 

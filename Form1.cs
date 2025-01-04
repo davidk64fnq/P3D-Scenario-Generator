@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Web;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
@@ -211,13 +212,19 @@ namespace P3D_Scenario_Generator
 
         #region Location selection
 
+        /// <summary>
+        /// Allows user to enter a new location string for country/state/city or delete an existing string.
+        /// But not reserved "All" and "None" strings.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ComboBoxGeneralLocation_KeyDown(object sender, KeyEventArgs e)
         {
             string s = ((ComboBox)sender).Text;
 
             if (e.KeyCode == Keys.Enter)
             {
-                if (!((ComboBox)sender).Items.Contains(s))
+                if (!((ComboBox)sender).Items.Contains(s) && !s.Contains("None") && !s.Contains("All"))
                 {
                     ((ComboBox)sender).Items.Add(s);
                     ((ComboBox)sender).SelectedIndex = ((ComboBox)sender).Items.Count - 1;
@@ -235,6 +242,75 @@ namespace P3D_Scenario_Generator
                     UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
                 }
             }
+        }
+
+        /// <summary>
+        /// User can save combinations of the setting for location country, state, and city as favourites. This
+        /// method allows user to add and delete these favourites. Appends the settings to the user selected name 
+        /// of the favourite as a formatted string.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ComboBoxGeneralLocationFavourites_KeyDown(object sender, KeyEventArgs e)
+        {
+            string input = ((ComboBox)sender).Text;
+
+            if (e.KeyCode == Keys.Enter)
+            {
+                string filters = BuildAllFiltersString();
+                if (filters != "")
+                    input = $"{input} ({filters})";
+                if (!((ComboBox)sender).Items.Contains(input) && !input.Contains("None"))
+                {
+                    ((ComboBox)sender).Items.Add(input);
+                    ((ComboBox)sender).SelectedIndex = ((ComboBox)sender).Items.Count - 1;
+                    UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
+                }
+            }
+            else if (e.KeyCode == Keys.Delete && !input.Contains("None"))
+            {
+                e.SuppressKeyPress = true;
+                if (((ComboBox)sender).Items.Contains(input))
+                {
+                    ((ComboBox)sender).Items.Remove(input);
+                    if (((ComboBox)sender).Items.Count > 0)
+                        ((ComboBox)sender).SelectedIndex = 0;
+                    UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Builds the formatted string appended to location favourites name when created by user.
+        /// </summary>
+        /// <returns>The formatted combined location filter settings for country, state, and city</returns>
+        private string BuildAllFiltersString()
+        {
+            string filters = "";
+            string countryFilter = BuildFilterString("Country", ComboBoxGeneralLocationCountry.Text);
+            string stateFilter = BuildFilterString("State", ComboBoxGeneralLocationState.Text); 
+            string cityFilter = BuildFilterString("City", ComboBoxGeneralLocationCity.Text);
+            if (countryFilter.Length > 0)
+                filters = countryFilter;
+            if (stateFilter.Length > 0 && filters.Length > 0)
+                filters = filters + " OR " + stateFilter;
+            else
+                filters = stateFilter;
+            if (cityFilter.Length > 0 && filters.Length > 0)
+                filters = filters + " OR " + cityFilter;
+            else
+                filters = cityFilter;
+            return filters;
+        }
+
+        private static string BuildFilterString(string fieldName, string selectedString)
+        {
+            if (selectedString == "None")
+                return string.Empty;
+            else if (selectedString == "All")
+                return $"{fieldName} = \"Match any item in list\"";
+            else
+                return $"{fieldName} = \"{selectedString}\"";
         }
 
         #endregion
