@@ -40,6 +40,11 @@ namespace P3D_Scenario_Generator
         public string airportID;
 
         /// <summary>
+        /// Only used for start and destination airport instances
+        /// </summary>
+        public int airportIndex;
+
+        /// <summary>
         /// Was to be used for navigating Wiki item html document
         /// </summary>
         public List<string> hrefs;     
@@ -401,13 +406,13 @@ namespace P3D_Scenario_Generator
             WikiTour.Insert(0, GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble()));
             Coordinate coordStartAirport = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
             WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
-            Runway.SetRunway(Runway.startRwy, WikiTour[0].airportICAO, WikiTour[0].airportID);
+            Runway.startRwy = Runway.Runways[WikiTour[0].airportIndex];
 
             Coordinate coordLastItem = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
             WikiTour.Add(GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble()));
             Coordinate coordFinishAirport = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
             WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
-            Runway.SetRunway(Runway.destRwy, WikiTour[^1].airportICAO, WikiTour[^1].airportID);
+            Runway.destRwy = Runway.Runways[WikiTour[^1].airportIndex];
         }
 
         /// <summary>

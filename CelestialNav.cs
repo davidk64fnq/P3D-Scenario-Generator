@@ -163,7 +163,7 @@ namespace P3D_Scenario_Generator
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Excel.CelestialNavStars.xlsx");
+            Stream stream = Form.GetResourceStream("Excel.CelestialNavStars.xlsx");
             using ExcelPackage package = new(stream);
             var worksheet = package.Workbook.Worksheets[0];
             int index = 2; // skip header row
@@ -233,7 +233,7 @@ namespace P3D_Scenario_Generator
         {
             string celestialHTML;
 
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.CelestialSextant.html");
+            Stream stream = Form.GetResourceStream("HTML.CelestialSextant.html");
             StreamReader reader = new(stream);
             celestialHTML = reader.ReadToEnd();
             string starOptions = "<option>Select Star</option>";
@@ -250,7 +250,7 @@ namespace P3D_Scenario_Generator
         {
             string celestialJS;
 
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsCelestialSextant.js");
+            Stream stream = Form.GetResourceStream("Javascript.scriptsCelestialSextant.js");
             StreamReader reader = new(stream);
             celestialJS = reader.ReadToEnd();
             string constellation = "";
@@ -394,7 +394,7 @@ namespace P3D_Scenario_Generator
             File.WriteAllText($"{saveLocation}\\scriptsCelestialSextant.js", celestialJS);
             stream.Dispose();
 
-            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsCelestialAstroCalcs.js");
+            stream = Form.GetResourceStream($"Javascript.scriptsCelestialAstroCalcs.js");
             reader = new StreamReader(stream);
             celestialJS = reader.ReadToEnd();
             File.WriteAllText($"{saveLocation}\\scriptsCelestialAstroCalcs.js", celestialJS);
@@ -405,7 +405,7 @@ namespace P3D_Scenario_Generator
         {
             string signWritingCSS;
 
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleCelestialSextant.css");
+            Stream stream = Form.GetResourceStream($"CSS.styleCelestialSextant.css");
             StreamReader reader = new(stream);
             signWritingCSS = reader.ReadToEnd();
             File.WriteAllText(saveLocation, signWritingCSS);

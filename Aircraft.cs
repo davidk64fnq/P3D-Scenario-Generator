@@ -62,10 +62,10 @@ namespace P3D_Scenario_Generator
             string aircraftCFG = File.ReadAllText($"{aircraftFolderPath}\\aircraft.cfg");
             using StringReader reader = new(aircraftCFG);
             string currentLine;
+            string currentTitle = "";
             while ((currentLine = reader.ReadLine()) != null)
             {
                 currentLine = currentLine.Trim();
-                string currentTitle = "";
                 if (currentLine.StartsWith("title="))
                 {
                     currentTitle = currentLine["title=".Length..^0].Trim();

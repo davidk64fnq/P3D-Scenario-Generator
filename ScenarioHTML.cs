@@ -188,7 +188,7 @@ namespace P3D_Scenario_Generator
         {
             string overviewHTML;
 
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.OverviewSource.htm");
+            Stream stream = Form.GetResourceStream($"HTML.OverviewSource.htm");
             StreamReader reader = new(stream);
             overviewHTML = reader.ReadToEnd();
             stream.Dispose();
@@ -209,7 +209,7 @@ namespace P3D_Scenario_Generator
         {
             string missionBriefHTML;
 
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.MissionBriefSource.htm");
+            Stream stream = Form.GetResourceStream($"HTML.MissionBriefSource.htm");
             StreamReader reader = new(stream);
             missionBriefHTML = reader.ReadToEnd();
             stream.Dispose();
@@ -237,7 +237,7 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                Stream thumbnailStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.thumbnail.jpg");
+                Stream thumbnailStream = Form.GetResourceStream($"Images.thumbnail.jpg");
                 using (FileStream outputFileStream = new(aircraftImageDest, FileMode.Create))
                 {
                     thumbnailStream.CopyTo(outputFileStream);
@@ -246,14 +246,14 @@ namespace P3D_Scenario_Generator
             }
 
             // Copy style files
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.style_kneeboard.css"); 
+            Stream stream = Form.GetResourceStream($"CSS.style_kneeboard.css"); 
             using (FileStream outputFileStream = new($"{Parameters.SettingsScenarioFolder}\\style_kneeboard.css", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
             stream.Dispose();
 
-            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.style_load_flight.css");
+            stream = Form.GetResourceStream($"CSS.style_load_flight.css");
             using (FileStream outputFileStream = new($"{Parameters.SettingsScenarioFolder}\\style_load_flight.css", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
@@ -265,7 +265,7 @@ namespace P3D_Scenario_Generator
             {
                 Directory.CreateDirectory($"{Parameters.SettingsScenarioFolder}\\sound");
             }
-            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Sounds.ThruHoop.wav");
+            stream = Form.GetResourceStream($"Sounds.ThruHoop.wav");
             using (FileStream outputFileStream = new($"{Parameters.SettingsScenarioFolder}\\sound\\ThruHoop.wav", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
@@ -273,7 +273,7 @@ namespace P3D_Scenario_Generator
             stream.Dispose();
 
             // Copy aircraft imageURL used in moving maps
-            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.aircraft.png");
+            stream = Form.GetResourceStream($"Images.aircraft.png");
             using (FileStream outputFileStream = new($"{Parameters.ImageFolder}\\aircraft.png", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
@@ -281,7 +281,7 @@ namespace P3D_Scenario_Generator
             stream.Dispose();
 
             // Copy header banner imageURL
-            stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.header.png");
+            stream = Form.GetResourceStream($"Images.header.png");
             using (FileStream outputFileStream = new($"{Parameters.ImageFolder}\\header.png", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);

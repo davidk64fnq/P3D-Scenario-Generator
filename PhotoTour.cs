@@ -28,6 +28,11 @@ namespace P3D_Scenario_Generator
         public string airportID;
 
         /// <summary>
+        /// Only used for start and destination airport instances
+        /// </summary>
+        public int airportIndex;
+
+        /// <summary>
         /// Used to filter on location string for starting photo in tour
         /// </summary>
         public string location;
@@ -134,7 +139,7 @@ namespace P3D_Scenario_Generator
             string saveLocation = $"{Parameters.ImageFolder}\\random_pic2map.html";
 
             // Clear last attempt
-            PhotoLocations.Clear();
+            PhotoLocations = [];
 
             // Get starting random photo page
             Form.DeleteFile(saveLocation);
@@ -149,7 +154,8 @@ namespace P3D_Scenario_Generator
                 return false;
             Parameters.SelectedAirportICAO = airportLocation.airportICAO;
             Parameters.SelectedAirportID = airportLocation.airportID;
-            Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+            Parameters.SelectedAirportIndex = airportLocation.airportIndex;
+            Runway.startRwy = Runway.Runways[Parameters.SelectedAirportIndex];
             airportLocation.forwardBearing = MathRoutines.GetReciprocalHeading(airportLocation.forwardBearing);
             PhotoLocations.Add(airportLocation);
             PhotoLocations.Add(photoLocation);
@@ -196,6 +202,7 @@ namespace P3D_Scenario_Generator
             photoLocationParams.legId = nearbyAirport.Id; // So that field isn't null when searching photo tour for photo locations included
             photoLocationParams.airportICAO = nearbyAirport.IcaoId;
             photoLocationParams.airportID = nearbyAirport.Id;
+            photoLocationParams.airportIndex = nearbyAirport.RunwaysIndex;
             photoLocationParams.forwardDist = MathRoutines.CalcDistance(queryLat, queryLon, nearbyAirport.AirportLat, nearbyAirport.AirportLon);
             photoLocationParams.latitude = nearbyAirport.AirportLat;
             photoLocationParams.longitude = nearbyAirport.AirportLon;
@@ -321,7 +328,7 @@ namespace P3D_Scenario_Generator
                 // Ignore bearing constraint if only one photo, allows backtrack to starting airport
                 if ((Math.Abs(headingChange) < Parameters.PhotoTourConstraintsMaxBearingChange) || (Parameters.PhotoTourConstraintsMaxNoLegs == 2)) 
                 {
-                    Runway.SetRunway(Runway.destRwy, airportLocation.airportICAO, airportLocation.airportID);
+                    Runway.destRwy = Runway.Runways[airportLocation.airportIndex];
                     PhotoLocations.Add(airportLocation);
                     PhotoCount = PhotoLocations.Count;
                     GetPhotos();

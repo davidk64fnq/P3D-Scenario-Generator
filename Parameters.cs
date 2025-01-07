@@ -8,6 +8,7 @@ namespace P3D_Scenario_Generator
 
         internal static string SelectedAirportICAO { get; set; }
         internal static string SelectedAirportID { get; set; }
+        internal static int SelectedAirportIndex { get; set; }
         internal static string ImageFolder { get; private set; }
         internal static string AircraftTitle { get; private set; }
         internal static double AircraftCruiseSpeed { get; private set; }
@@ -375,11 +376,12 @@ namespace P3D_Scenario_Generator
                 AircraftCruiseSpeed = Convert.ToDouble(Properties.Settings.Default.AircraftCruiseSpeeds[Form.form.ComboBoxGeneralAircraftSelection.SelectedIndex]);
                 AircraftImagePath = Properties.Settings.Default.AircraftImages[Form.form.ComboBoxGeneralAircraftSelection.SelectedIndex];
             }
-            SelectedAirportICAO = Form.form.ComboBoxGeneralRunwaySelected.Text.Split("\t")[0];
+            SelectedAirportICAO = Form.form.ComboBoxGeneralRunwaySelected.Text.Split(" ")[0];
             if (Form.form.ComboBoxGeneralRunwaySelected.Text != "")
             {
-                SelectedAirportID = Form.form.ComboBoxGeneralRunwaySelected.Text.Split("\t")[1][1..^1]; // Strip '(' and ')'
+                SelectedAirportID = Form.form.ComboBoxGeneralRunwaySelected.Text.Split(" ")[1][1..^1]; // Strip '(' and ')'
             }
+            SelectedAirportIndex = Form.form.ComboBoxGeneralRunwaySelected.SelectedIndex;
             int index = Array.FindIndex(Con.scenarioNames, s => s == Form.form.ComboBoxGeneralScenarioType.Text);
             SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
             DayOfYear = Form.form.GeneralDatePicker.Value.DayOfYear;

@@ -952,8 +952,7 @@ namespace P3D_Scenario_Generator
         static private void SetMovingMapJS(List<MapEdges> mapEdges, int count)
         {
             string saveLocation = $"{Parameters.ImageFolder}\\scriptsMovingMap.js";
-            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsMovingMap.js";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
+            Stream stream = Form.GetResourceStream("Javascript.scriptsMovingMap.js");
             StreamReader reader = new(stream);
             string movingMapJS = reader.ReadToEnd();
 
@@ -1124,8 +1123,7 @@ namespace P3D_Scenario_Generator
         static private void SetResourcesFile(string resourceFolder, string resourceFileName)
         {
             string saveLocation = $"{Parameters.SettingsScenarioFolder}\\images\\{resourceFileName}";
-            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.{resourceFolder}.{resourceFileName}";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
+            Stream stream = Form.GetResourceStream($"{resourceFolder}.{resourceFileName}");
             StreamReader reader = new(stream);
             string streamContents = reader.ReadToEnd();
             File.WriteAllText(saveLocation, streamContents);
@@ -1196,7 +1194,7 @@ namespace P3D_Scenario_Generator
         {
             string signWritingCSS;
 
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.CSS.styleSignWriting.css");
+            Stream stream = Form.GetResourceStream("CSS.styleSignWriting.css");
             StreamReader reader = new(stream);
             signWritingCSS = reader.ReadToEnd();
             string saveLocation = $"{Parameters.ImageFolder}\\styleSignWriting.css";
@@ -1210,7 +1208,7 @@ namespace P3D_Scenario_Generator
             double canvasWidth;
             double canvasHeight;
 
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.HTML.SignWriting.html");
+            Stream stream = Form.GetResourceStream("HTML.SignWriting.html");
             StreamReader reader = new(stream);
             signWritingHTML = reader.ReadToEnd();
 
@@ -1255,7 +1253,7 @@ namespace P3D_Scenario_Generator
         {
             string signWritingJS;
 
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsSignWriting.js");
+            Stream stream = Form.GetResourceStream("Javascript.scriptsSignWriting.js");
             StreamReader reader = new(stream);
             signWritingJS = reader.ReadToEnd();
             string saveLocation = $"{Parameters.ImageFolder}\\scriptsSignWriting.js";
@@ -1316,8 +1314,7 @@ namespace P3D_Scenario_Generator
         static private void SetWikiTourJS()
         {
             string saveLocation = $"{Parameters.ImageFolder}\\scriptsWikipediaItem.js";
-            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Javascript.scriptsWikipediaItem.js";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
+            Stream stream = Form.GetResourceStream("Javascript.scriptsWikipediaItem.js");
             StreamReader reader = new(stream);
             string wikipediaJS = reader.ReadToEnd();
             string itemURLs = "\"https://en.wikipedia.org" + Wikipedia.WikiTour[1].itemURL + "\"";

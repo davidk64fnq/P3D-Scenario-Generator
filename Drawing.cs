@@ -316,8 +316,7 @@ namespace P3D_Scenario_Generator
         static internal void DrawScenarioLoadImage(string iconName, string outputName)
         {
             // Make a copy of the base imageURL file
-            string sourceFile = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.imgM.png";
-            using (Stream sourceStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(sourceFile))
+            using (Stream sourceStream = Form.GetResourceStream("Images.imgM.png"))
             {
                 using FileStream outputFileStream = new($"{Parameters.ImageFolder}\\{outputName}.png", FileMode.Create);
                     sourceStream.CopyTo(outputFileStream);
@@ -338,8 +337,7 @@ namespace P3D_Scenario_Generator
                 image.Annotate(Parameters.SelectedScenario, geometry, Gravity.Center);
 
                 // Overlay the icon imageURL on the base imageURL
-                string iconFile = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.Images.{iconName}.png";
-                using (Stream successIconStream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(iconFile))
+                using (Stream successIconStream = Form.GetResourceStream($"Images.{iconName}.png"))
                 {
                     using MagickImage imageIcon = new(successIconStream);
                     {

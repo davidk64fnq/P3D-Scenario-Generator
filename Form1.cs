@@ -128,8 +128,8 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
-                Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+                Runway.startRwy = Runway.Runways[Parameters.SelectedAirportIndex];
+                Runway.destRwy = Runway.Runways[Parameters.SelectedAirportIndex];
             }
         }
 
@@ -547,6 +547,7 @@ namespace P3D_Scenario_Generator
         private void PrepareFormFields()
         {
             // General tab
+            Runway.GetRunways();
             ComboBoxGeneralRunwaySelected.DataSource = Runway.GetICAOids();
             ComboBoxGeneralScenarioType.SelectedIndex = 0;
             ComboBoxGeneralAircraftSelection.DataSource = Properties.Settings.Default.AircraftTitles;
@@ -920,6 +921,13 @@ namespace P3D_Scenario_Generator
                     // Ignore
                 }
             }
+        }
+
+        internal static Stream GetResourceStream(string resource)
+        {
+            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.{resource}";
+            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
+            return stream;
         }
 
         #endregion

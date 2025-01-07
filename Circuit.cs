@@ -20,14 +20,14 @@
         /// </summary>
         static internal void SetCircuit()
         {
-            Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
-            Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+            Runway.startRwy = Runway.Runways[Parameters.SelectedAirportIndex];
+            Runway.destRwy = Runway.Runways[Parameters.SelectedAirportIndex];
             gates = Gates.SetCircuitGates();
             SetCircuitAirport(gates);
             Common.SetOverviewImage();
             Common.SetLocationImage();
             CircuitLegMapEdges = [];
-            Common.SetAllLegRouteImages(0, gates.Count - 2);
+        //    Common.SetAllLegRouteImages(0, gates.Count - 2);
         }
 
         /// <summary>

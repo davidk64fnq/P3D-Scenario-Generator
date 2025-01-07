@@ -26,8 +26,8 @@
         /// </summary>
         static internal void SetSignWriting()
         {
-            Runway.SetRunway(Runway.startRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
-            Runway.SetRunway(Runway.destRwy, Parameters.SelectedAirportICAO, Parameters.SelectedAirportID);
+            Runway.startRwy = Runway.Runways[Parameters.SelectedAirportIndex];
+            Runway.destRwy = Runway.Runways[Parameters.SelectedAirportIndex];
             InitLetterPaths();
             gates = Gates.SetSignGatesMessage();
             SetSignWritingOverviewImage(gates);

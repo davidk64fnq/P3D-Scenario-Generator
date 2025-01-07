@@ -134,7 +134,7 @@ namespace P3D_Scenario_Generator
             }
             if (boundingBox.xAxis.Count == 2)
             {
-                Drawing.Resize("chart_thumb", 256, 0);
+                Drawing.Resize("chart_thumb.png", 256, 0);
             }
         }
 
