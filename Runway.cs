@@ -5,7 +5,7 @@ namespace P3D_Scenario_Generator
     /// <summary>
     /// Parameters for a runway sourced from the runways.xml file
     /// </summary>
-    public class RunwayParams
+    public class RunwayParams : ICloneable
     {
         /// <summary>
         /// Four letter code known as ICAO airport code or location indicator
@@ -44,19 +44,21 @@ namespace P3D_Scenario_Generator
         internal double MagVar { get; set; }
 
         /// <summary>
-        /// The runway Id e.g. "05L", multiply two digit number less than equal to 36 by 10 to get 0 to 360 degrees runway approx magnetic 
-        /// heading if the number is greater than 36 it is code for a compass heading or pair of compass headings e.g. 37 = "N-S", 45 = "N"
+        /// The runway Id e.g. "05L", the two digit number is 10's of degrees so 05 is 50 degrees approximate
+        /// magnetic runway heading. If the number is greater than 36 it is code for a compass heading or pair 
+        /// of compass headings e.g. 37 = "N-S", 45 = "N". The number is extracted and stored as "Number" field.
+        /// The ltter is extracted and stored as "Designator" field.
         /// </summary>
         internal string Id { get; set; }
 
         /// <summary>
         /// The compass bearing of an airport runway with no leading zeros e.g. "5" is 5 degrees. Or a compass
-        /// direction string e.g. "NorthWest"
+        /// direction string e.g. "Northwest"
         /// </summary>
         internal string Number { get; set; }
 
         /// <summary>
-        /// One of "None", "Left", "Right", or "Center". Used in setting the airport landing trigger for a scenario
+        /// One of "None", "Left", "Right", "Center", or "Water". Used in setting the airport landing trigger for a scenario
         /// </summary>
         internal string Designator { get; set; }
 
@@ -86,9 +88,30 @@ namespace P3D_Scenario_Generator
         internal double ThresholdStartLon { get; set; }   
 
         /// <summary>
-        /// Index of runway in <see cref="Runway.Runways"
+        /// Index of runway in <see cref="Runway.Runways"></see>
         /// </summary>
         internal int RunwaysIndex { get; set; }
+
+        /// <summary>
+        /// Clones the airport level runway information prior to reading in each runway for the current airport
+        /// </summary>
+        /// <returns>Cloned version of <see cref="RunwayParams"/></returns>
+        public object Clone()
+        {
+            var clonedRunwayParams = new RunwayParams
+            {
+                IcaoId = IcaoId,
+                IcaoName = IcaoName,
+                Country = Country,
+                State = State,
+                City = City,
+                AirportLon = AirportLon,
+                AirportLat = AirportLat,
+                Altitude = Altitude,
+                MagVar = MagVar
+            };
+            return clonedRunwayParams;
+        }
     }
 
     /// <summary>
@@ -99,7 +122,6 @@ namespace P3D_Scenario_Generator
     /// <param name="v3">The abbreviated name e.g. "NW"</param>
     public class RunwayCompassIds(string v1, string v2, string v3)
     {
-
         /// <summary>
         /// The code - a number from 37 to 52 inclusive
         /// </summary>
@@ -118,9 +140,16 @@ namespace P3D_Scenario_Generator
 
     internal class Runway
     {
-        private static readonly string xmlFilename = "runways.xml";
-
+        /// <summary>
+        /// The list of runways loaded from "runways.xml" file on application startup
+        /// </summary>
         internal static List<RunwayParams> Runways { get; set; }
+
+        /// <summary>
+        /// The list of runways loaded from "runways.xml" file on application startup filtered by current 
+        /// Country/State/Location strings on General tab
+        /// </summary>
+        internal static List<RunwayParams> RunwaysSubset { get; set; }
 
         /// <summary>
         /// Used to store runway headings that are compass direction strings rather than 01 to 36, e.g. "NorthWest"
@@ -137,6 +166,8 @@ namespace P3D_Scenario_Generator
         /// </summary>
         internal static RunwayParams destRwy = new();
 
+        #region Load runways from "runways.xml" and build list for General tab region
+
         /// <summary>
         /// Read in all the runways from runways.xml when the application loads
         /// </summary>
@@ -148,10 +179,14 @@ namespace P3D_Scenario_Generator
             using XmlReader reader = XmlReader.Create(stream);
             SetRunwayCompassIds();
             int curIndex = 0;
+
+            // Read "runways.xml" from start to finish
             while (reader.Read())
             {
+                // Read to the start of an aiport section
                 if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.Element)
                 {
+                    // Store airport specific information
                     curAirport.IcaoId = reader.GetAttribute("id");
                     reader.ReadToFollowing("ICAOName");
                     curAirport.IcaoName = reader.ReadElementContentAsString();
@@ -177,105 +212,45 @@ namespace P3D_Scenario_Generator
                     curAirport.Altitude = reader.ReadElementContentAsDouble();
                     reader.ReadToFollowing("MagVar");
                     curAirport.MagVar = reader.ReadElementContentAsDouble();
+
+                    // Read current airport runway subsections
                     while (reader.Read())
                     {
+                        // Store runway subsection specific information
                         if (reader.Name == "Runway" && reader.NodeType == XmlNodeType.Element)
                         {
-                            SetRunwayId(curAirport, reader.GetAttribute("id"));
-                            reader.ReadToFollowing("Len");
-                            curAirport.Len = reader.ReadElementContentAsInt();
-                            reader.ReadToFollowing("Hdg");
-                            curAirport.Hdg = reader.ReadElementContentAsDouble();
-                            reader.ReadToFollowing("Def");
-                            curAirport.Def = reader.ReadElementContentAsString();
-                            reader.ReadToFollowing("Lat");
-                            curAirport.ThresholdStartLat = reader.ReadElementContentAsDouble();
-                            reader.ReadToFollowing("Lon");
-                            curAirport.ThresholdStartLon = reader.ReadElementContentAsDouble();
+                            // Each runway has a copy of the airport information
+                            RunwayParams newRunway = (RunwayParams)curAirport.Clone();
+                            SetRunwayId(newRunway, reader.GetAttribute("id"));
+
+                            // Read to end of current runway subsection and store a new runway record
+                            if (newRunway.Id != null)
+                            {
+                                reader.ReadToFollowing("Len");
+                                newRunway.Len = reader.ReadElementContentAsInt();
+                                reader.ReadToFollowing("Hdg");
+                                newRunway.Hdg = reader.ReadElementContentAsDouble();
+                                reader.ReadToFollowing("Def");
+                                newRunway.Def = reader.ReadElementContentAsString();
+                                reader.ReadToFollowing("Lat");
+                                newRunway.ThresholdStartLat = reader.ReadElementContentAsDouble();
+                                reader.ReadToFollowing("Lon");
+                                newRunway.ThresholdStartLon = reader.ReadElementContentAsDouble();
+                                newRunway.RunwaysIndex = curIndex;
+                                curIndex++;
+                                Runways.Add(newRunway);
+                            }
                         }
+
+                        // We've reached end of current airport section so break out of reading runway subsections loop
                         if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.EndElement)
                         {
-                            if (curAirport.Id != null)
-                            {
-                                curAirport.RunwaysIndex = curIndex;
-                                curIndex++;
-                                Runways.Add(curAirport);
-                            }
                             curAirport = new();
                             break;
                         }
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Builds list of strings in format "Airport ICAO (Runway Id)" e.g. "LFGO (14L)" used to populate
-        /// available runway list in General tab of application form.
-        /// </summary>
-        /// <returns>The list of runway strings</returns>
-        static internal List<string> GetICAOids()
-        {
-            List<string> icaoIDs = [];
-
-            for (int i = 0; i < Runways.Count; i++)
-            {
-                icaoIDs.Add($@"{Runways[i].IcaoId} ({Runways[i].Id})");
-            }
-            return icaoIDs;
-        }
-
-        /// <summary>
-        /// Search through the list of runways, starting from a random runway in list. Return the first runway
-        /// located that is between a minimum and maximum distance from the provided reference coordinate
-        /// </summary>
-        /// <param name="queryLat">Latitude of query coordinate</param>
-        /// <param name="queryLon">Longitute of query coordinate</param>
-        /// <param name="minDist">The minimum distance runway can be from reference coordinate</param>
-        /// <param name="maxDist">The maximum distance runway can be from reference coordinate</param>
-        /// <returns>The runway that meets the minimum and maximum distance requirements</returns>
-        static internal RunwayParams GetNearbyAirport(double queryLat, double queryLon, double minDist, double maxDist)
-        {
-            double curDistance;
-            Random r = new();
-            int curIndex = r.Next(0, Runways.Count);
-            for (int i = 0; i < Runways.Count; i++)
-            {
-                curDistance = MathRoutines.CalcDistance(Runways[curIndex].AirportLat, Runways[curIndex].AirportLon, queryLat, queryLon);
-                if ((curDistance < maxDist) && (curDistance > minDist))
-                {
-                    return Runways[curIndex];
-                }
-                curIndex++;
-                if (curIndex == Runways.Count)
-                {
-                    curIndex = 0;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Search through the list of runways. Returns the nearest runway to the provided reference coordinate.
-        /// </summary>
-        /// <param name="queryLat">Latitude of query coordinate</param>
-        /// <param name="queryLon">Longitute of query coordinate</param>
-        /// <returns>The nearest runway to the provided reference cooordinate</returns>
-        static internal RunwayParams GetNearestAirport(double queryLat, double queryLon)
-        {
-            RunwayParams minAirport = new();
-            double minDistance = 9999;
-            double curDistance;
-            for (int curIndex = 0; curIndex < Runways.Count; curIndex++)
-            {
-                curDistance = MathRoutines.CalcDistance(Runways[curIndex].AirportLat, Runways[curIndex].AirportLon, queryLat, queryLon);
-                if (curDistance < minDistance)
-                {
-                    minDistance = curDistance;
-                    minAirport = Runways[curIndex];
-                }
-            }
-            return minAirport;
         }
 
         /// <summary>
@@ -287,6 +262,7 @@ namespace P3D_Scenario_Generator
         static private Stream GetRunwayXMLstream()
         {
             Stream stream;
+            string xmlFilename = "runways.xml";
 
             if (File.Exists(xmlFilename))
             {
@@ -304,23 +280,248 @@ namespace P3D_Scenario_Generator
         /// </summary>
         static private void SetRunwayCompassIds()
         {
-            runwayCompassIds.Add(new("37", "North", "N-S"));
-            runwayCompassIds.Add(new("38", "East", "E-W"));
-            runwayCompassIds.Add(new("39", "NorthWest", "NW-SE"));
-            runwayCompassIds.Add(new("40", "SouthWest", "SW-NE"));
-            runwayCompassIds.Add(new("41", "South", "S-N"));
-            runwayCompassIds.Add(new("42", "West", "W-E"));
-            runwayCompassIds.Add(new("43", "SouthEast", "SE-NW"));
-            runwayCompassIds.Add(new("44", "NorthEast", "NE-SW"));
+            runwayCompassIds.Add(new("37", "North-South", "N-S"));
+            runwayCompassIds.Add(new("38", "East-West", "E-W"));
+            runwayCompassIds.Add(new("39", "Northwest-Southeast", "NW-SE"));
+            runwayCompassIds.Add(new("40", "Southwest-Northeast", "SW-NE"));
+            runwayCompassIds.Add(new("41", "South-North", "S-N"));
+            runwayCompassIds.Add(new("42", "West-East", "W-E"));
+            runwayCompassIds.Add(new("43", "Southeast-Northwest", "SE-NW"));
+            runwayCompassIds.Add(new("44", "Northeast-Southwest", "NE-SW"));
             runwayCompassIds.Add(new("45", "North", "N"));
-            runwayCompassIds.Add(new("46", "West",  "W"));
-            runwayCompassIds.Add(new("47", "NorthWest", "NW"));
-            runwayCompassIds.Add(new("48", "SouthWest", "SW"));
+            runwayCompassIds.Add(new("46", "West", "W"));
+            runwayCompassIds.Add(new("47", "Northwest", "NW"));
+            runwayCompassIds.Add(new("48", "Southwest", "SW"));
             runwayCompassIds.Add(new("49", "South", "S"));
             runwayCompassIds.Add(new("50", "East", "E"));
-            runwayCompassIds.Add(new("51", "SouthEast", "SE"));
-            runwayCompassIds.Add(new("52", "NorthEast", "NE"));
+            runwayCompassIds.Add(new("51", "Southeast", "SE"));
+            runwayCompassIds.Add(new("52", "Northeast", "NE"));
         }
+
+        /// <summary>
+        /// Takes a runway Id and extracts the alphabetic code letter if present and the runway number which is sometimes
+        /// a string. E.g. "23L" is "Left" plus "23", "45" is "North", "32W" is "Water" plus "32"
+        /// </summary>
+        /// <param name="rwyParams">Where the runway Id, designator and number are stored</param>
+        /// <param name="runwayId">The runway Id string to be processed</param>
+        static private void SetRunwayId(RunwayParams rwyParams, string runwayId)
+        {
+            rwyParams.Id = runwayId;
+
+            rwyParams.Designator = "None";
+            if (runwayId.EndsWith('L'))
+            {
+                rwyParams.Designator = "Left";
+                runwayId = runwayId.TrimEnd('L');
+            }
+            else if (runwayId.EndsWith('R'))
+            {
+                rwyParams.Designator = "Right";
+                runwayId = runwayId.TrimEnd('R');
+            }
+            else if (runwayId.EndsWith('C'))
+            {
+                rwyParams.Designator = "Center";
+                runwayId = runwayId.TrimEnd('C');
+            }
+            else if (runwayId.EndsWith('W'))
+            {
+                rwyParams.Designator = "Water";
+                runwayId = runwayId.TrimEnd('W');
+            }
+            if (int.TryParse(runwayId, out int runwayNumber))
+                if (runwayNumber <= 36)
+                {
+                    rwyParams.Number = runwayId.TrimStart('0');
+                }
+                else if (runwayNumber <= 52)
+                {
+                    RunwayCompassIds runwayCompassId = runwayCompassIds.Find(rcID => rcID.Code == runwayId);
+                    rwyParams.Number = runwayCompassId.AbbrName;
+                }
+        }
+
+        /// <summary>
+        /// Builds list of strings in format "Airport ICAO (Runway Id)" e.g. "LFGO (14L)" used to populate
+        /// available runway list in General tab of application form.
+        /// </summary>
+        /// <returns>The list of runway strings</returns>
+        static internal List<string> GetICAOids()
+        {
+            List<string> icaoIDs = [];
+
+            for (int i = 0; i < Runways.Count; i++)
+            {
+                if (int.TryParse(Runways[i].Number, out int runwayNumber) && runwayNumber <= 36)
+                {
+                    icaoIDs.Add($"{Runways[i].IcaoId} ({Runways[i].Id})");
+                }
+                else
+                {
+                    string runwayId = $"{Runways[i].IcaoId} ({Runways[i].Number})";
+                    if (Runways[i].Designator != null && Runways[i].Designator != "None")
+                    {
+                        runwayId = $"{runwayId}[{Runways[i].Designator[0..1]}]";
+                    }
+                    icaoIDs.Add(runwayId);
+                }
+            }
+            return icaoIDs;
+        }
+
+        #endregion
+
+        #region Search for a runway(s) that meets constraints region
+
+        /// <summary>
+        /// Search through the list of runways, starting from a random runway in list. Return the first runway
+        /// located that is between a minimum and maximum distance from the provided reference coordinate
+        /// </summary>
+        /// <param name="queryLat">Latitude of query coordinate</param>
+        /// <param name="queryLon">Longitute of query coordinate</param>
+        /// <param name="minDist">The minimum distance runway can be from reference coordinate</param>
+        /// <param name="maxDist">The maximum distance runway can be from reference coordinate</param>
+        /// <returns>The runway that meets the minimum and maximum distance requirements</returns>
+        static internal RunwayParams GetNearbyRunway(double queryLat, double queryLon, double minDist, double maxDist)
+        {
+            SetRunwaysSubset();
+            double curDistance;
+            Random r = new();
+            int curIndex = r.Next(0, RunwaysSubset.Count);
+            for (int i = 0; i < Runways.Count; i++)
+            {
+                curDistance = MathRoutines.CalcDistance(RunwaysSubset[curIndex].AirportLat, RunwaysSubset[curIndex].AirportLon, queryLat, queryLon);
+                if ((curDistance < maxDist) && (curDistance > minDist))
+                {
+                    return RunwaysSubset[curIndex];
+                }
+                curIndex++;
+                if (curIndex == RunwaysSubset.Count)
+                {
+                    curIndex = 0;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Search through the list of runways. Returns the nearest runway to the provided reference coordinate.
+        /// </summary>
+        /// <param name="queryLat">Latitude of query coordinate</param>
+        /// <param name="queryLon">Longitute of query coordinate</param>
+        /// <returns>The nearest runway to the provided reference cooordinate</returns>
+        static internal RunwayParams GetNearestRunway(double queryLat, double queryLon)
+        {
+            SetRunwaysSubset();
+            RunwayParams minAirport = new();
+            double minDistance = 9999;
+            double curDistance;
+            for (int curIndex = 0; curIndex < RunwaysSubset.Count; curIndex++)
+            {
+                curDistance = MathRoutines.CalcDistance(RunwaysSubset[curIndex].AirportLat, RunwaysSubset[curIndex].AirportLon, queryLat, queryLon);
+                if (curDistance < minDistance)
+                {
+                    minDistance = curDistance;
+                    minAirport = RunwaysSubset[curIndex];
+                }
+            }
+            return minAirport;
+        }
+
+        /// <summary>
+        /// Creates a subset of the <see cref="Runways"/> list of runways filtering on the Country/State/City
+        /// location strings in the General tab
+        /// </summary>
+        static internal void SetRunwaysSubset()
+        {
+            // If Country/State/City filters all set to "None" just return full list of runways
+            if (Form.form.ComboBoxGeneralLocationCountry.Text == "None" && Form.form.ComboBoxGeneralLocationState.Text == "None" &&
+                Form.form.ComboBoxGeneralLocationCity.Text == "None")
+            {
+                RunwaysSubset = CloneRunwayParamsList(Runways);
+            }
+
+            // Get the subset of runways that match each of the Country/State/City filters and take the union of them - removes duplicates
+            List<RunwayParams> runwaysCountrySubset = GetRunwaysLocationSubset(Form.form.ComboBoxGeneralLocationCountry.Items, 
+            Form.form.ComboBoxGeneralLocationCountry.Text, "Country");
+            List<RunwayParams> runwaysStateSubset = GetRunwaysLocationSubset(Form.form.ComboBoxGeneralLocationState.Items,
+                Form.form.ComboBoxGeneralLocationState.Text, "State");
+            List<RunwayParams> runwaysCitySubset = GetRunwaysLocationSubset(Form.form.ComboBoxGeneralLocationCity.Items,
+                Form.form.ComboBoxGeneralLocationCity.Text, "City");
+            List<RunwayParams> runwaysSubset = runwaysCountrySubset.Union(runwaysStateSubset).ToList();
+            runwaysSubset = runwaysSubset.Union(runwaysCitySubset).ToList();
+
+            if (runwaysCountrySubset.Count > 0)
+            {
+                RunwaysSubset = runwaysSubset;
+            }
+            else 
+            {
+                MessageBox.Show("No runways match the location filters combination, using all runways instead", "Random Runway: Location filters", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                RunwaysSubset = CloneRunwayParamsList(Runways);
+            }
+        }
+
+        /// <summary>
+        /// Clones a list of <see cref="RunwayParams"/>
+        /// </summary>
+        /// <param name="sourceList">The list of <see cref="RunwayParams"/> to be cloned</param>
+        /// <returns>The cloned list of <see cref="RunwayParams"/></returns>
+        static internal List<RunwayParams> CloneRunwayParamsList(List<RunwayParams> sourceList)
+        {
+            List<RunwayParams> runwaysSubset = [];
+            sourceList.ForEach((item) =>
+            {
+                runwaysSubset.Add((RunwayParams)item.Clone());
+            });
+            return runwaysSubset;
+        }
+
+        /// <summary>
+        /// Gets the subset of runways from <see cref="Runways"/> filtered on one location string type
+        /// </summary>
+        /// <param name="locationStrings">The collection of location strings</param>
+        /// <param name="selectedLocation">The selected item in the collection of location strings</param>
+        /// <param name="locationType">Which of Country/State/City filtering on</param>
+        /// <returns>The subset of runways filtered from <see cref="Runways"/></returns>
+        static internal List<RunwayParams> GetRunwaysLocationSubset(ComboBox.ObjectCollection locationStrings, string selectedLocation, string locationType)
+        {
+            List<RunwayParams> runwaysSubset = [];
+            if (selectedLocation == "All")
+            {
+                if (locationType == "Country")
+                {
+                    runwaysSubset = Runways.FindAll(runway => locationStrings.Contains(runway.Country));
+                }
+                else if (locationType == "State")
+                {
+                    runwaysSubset = Runways.FindAll(runway => locationStrings.Contains(runway.State));
+                }
+                else
+                {
+                    runwaysSubset = Runways.FindAll(runway => locationStrings.Contains(runway.City));
+                }
+            }
+            else if (selectedLocation != "None")
+            {
+                if (locationType == "Country")
+                {
+                    runwaysSubset = Runways.FindAll(runway => selectedLocation.Contains(runway.Country));
+                }
+                else if (locationType == "State")
+                {
+                    runwaysSubset = Runways.FindAll(runway => selectedLocation.Contains(runway.State));
+                }
+                else
+                {
+                    runwaysSubset = Runways.FindAll(runway => selectedLocation.Contains(runway.City));
+                }
+            }
+            return runwaysSubset;
+        }
+
+        #endregion region
 
         // Delete once celestial reworked
         static internal string[] SetICAOwords(string rwyType)
@@ -343,7 +544,7 @@ namespace P3D_Scenario_Generator
                     if (rwyType == "destination")
                     {
                         Random random = new();
-                        airport = GetNearestAirport(-60 + random.Next(0, 120), -180 + random.Next(0, 360));
+                        airport = GetNearestRunway(-60 + random.Next(0, 120), -180 + random.Next(0, 360));
                         Parameters.CelestialDestRunway = $"{airport.IcaoId}\t({airport.Id})";
                         words = Parameters.CelestialDestRunway.Split("\t");
                     }
@@ -432,53 +633,6 @@ namespace P3D_Scenario_Generator
                 CelestialNav.SetCelestialStartLocation();
                 BingImages.GetCelestialOverviewImage();
             }
-        }
-
-        /// <summary>
-        /// Takes a runway Id and extracts the alphabetic code letter if present and the runway number which is sometimes
-        /// a string. E.g. "23L" is "Left" plus "23", "45" is "North", "32W" is "Water" plus "32"
-        /// </summary>
-        /// <param name="rwyParams">Where the runway Id, designator and number are stored</param>
-        /// <param name="runwayId">The runway Id string to be processed</param>
-        static private void SetRunwayId(RunwayParams rwyParams, string runwayId)
-        {
-            rwyParams.Id = runwayId;
-
-            rwyParams.Designator = "None";                
-            if (runwayId.EndsWith('L'))
-            {
-                rwyParams.Designator = "Left";
-                runwayId = runwayId.TrimEnd('L');
-            }
-            else if (runwayId.EndsWith('R'))
-            {
-                rwyParams.Designator = "Right";
-                runwayId = runwayId.TrimEnd('R');
-            }
-            else if (runwayId.EndsWith('C'))
-            {
-                rwyParams.Designator = "Center";
-                runwayId = runwayId.TrimEnd('C');
-            }
-            else if (runwayId.EndsWith('W'))
-            {
-                rwyParams.Designator = "Water";
-                runwayId = runwayId.TrimEnd('W');
-            }
-            if (int.TryParse(runwayId, out int runwayNumber))
-                if (runwayNumber <= 36)
-                {
-                    rwyParams.Number = runwayId.TrimStart('0');
-                } 
-                else if (runwayNumber <= 52)
-                {
-                    RunwayCompassIds runwayCompassId = runwayCompassIds.Find(rcID => rcID.Code == runwayId);
-                    rwyParams.Number = runwayCompassId.FullName;
-                }
-                else
-                {
-                    rwyParams.Number = "0";
-                }
         }
     }
 }

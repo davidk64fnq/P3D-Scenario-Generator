@@ -34,8 +34,11 @@ namespace P3D_Scenario_Generator
 
         private void ButtonRandRunway_Click(object sender, EventArgs e)
         {
+            Runway.SetRunwaysSubset();
             Random random = new();
-            ComboBoxGeneralRunwaySelected.SelectedIndex = random.Next(0, ComboBoxGeneralRunwaySelected.Items.Count);
+            int randomSubsetIndex = random.Next(0, Runway.RunwaysSubset.Count);
+            int randomRunwayIndex = Runway.RunwaysSubset[randomSubsetIndex].RunwaysIndex;
+            ComboBoxGeneralRunwaySelected.SelectedIndex = randomRunwayIndex;
             TextBoxGeneralSearchRunway.Text = "";
         }
 
@@ -85,7 +88,7 @@ namespace P3D_Scenario_Generator
         private static void DisplayStartMessage()
         {
             Cursor.Current = Cursors.WaitCursor;
-            string message = $"Creating scenario files in \"{Parameters.ImageFolder}\" - will confirm when complete";
+            string message = $"Creating scenario files in \"{Parameters.SettingsScenarioFolder}\" - will confirm when complete";
             MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -136,7 +139,7 @@ namespace P3D_Scenario_Generator
         private static void DisplayFinishMessage()
         {
             Cursor.Current = Cursors.Default;
-            string message = $"Scenario files created in \"{Parameters.ImageFolder}\" - enjoy your flight!";
+            string message = $"Scenario files created in \"{Parameters.SettingsScenarioFolder}\" - enjoy your flight!";
             MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -288,7 +291,7 @@ namespace P3D_Scenario_Generator
         {
             string filters = "";
             string countryFilter = BuildFilterString("Country", ComboBoxGeneralLocationCountry.Text);
-            string stateFilter = BuildFilterString("State", ComboBoxGeneralLocationState.Text); 
+            string stateFilter = BuildFilterString("State", ComboBoxGeneralLocationState.Text);
             string cityFilter = BuildFilterString("City", ComboBoxGeneralLocationCity.Text);
             if (countryFilter.Length > 0)
                 filters = countryFilter;

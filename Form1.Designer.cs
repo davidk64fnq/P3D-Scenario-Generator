@@ -2356,7 +2356,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralRunwaySelected.AccessibleName = "Runway Selection: Selected";
             ComboBoxGeneralRunwaySelected.Anchor = AnchorStyles.None;
             ComboBoxGeneralRunwaySelected.DropDownStyle = ComboBoxStyle.DropDownList;
-            ComboBoxGeneralRunwaySelected.DropDownWidth = 100;
+            ComboBoxGeneralRunwaySelected.DropDownWidth = 150;
             ComboBoxGeneralRunwaySelected.FormattingEnabled = true;
             ComboBoxGeneralRunwaySelected.Location = new Point(139, 3);
             ComboBoxGeneralRunwaySelected.MaxDropDownItems = 20;
