@@ -145,8 +145,9 @@ namespace P3D_Scenario_Generator
             Form.DeleteFile(saveLocation);
             HttpRoutines.GetWebDoc("https://www.pic2map.com/random.php", saveLocation);
             photoLocation = ExtractPhotoParams(saveLocation);
-            if (!photoLocation.location.Contains("Israel"))
+            if (!Form.CheckLocationFilters(photoLocation.location)) {
                 return false;
+            }
 
             // Find nearby airport to starting random photo
             airportLocation = GetNearbyAirport(photoLocation.latitude, photoLocation.longitude, Parameters.PhotoTourConstraintsMinLegDist, Parameters.PhotoTourConstraintsMaxLegDist);

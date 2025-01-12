@@ -2542,6 +2542,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralLocationFavourites.Tag = "None";
             ComboBoxGeneralLocationFavourites.Text = "None";
             toolTip1.SetToolTip(ComboBoxGeneralLocationFavourites, resources.GetString("ComboBoxGeneralLocationFavourites.ToolTip"));
+            ComboBoxGeneralLocationFavourites.SelectedIndexChanged += ComboBoxGeneralLocationFavourites_SelectedIndexChanged;
             ComboBoxGeneralLocationFavourites.KeyDown += ComboBoxGeneralLocationFavourites_KeyDown;
             // 
             // label61

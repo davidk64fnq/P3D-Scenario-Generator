@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Windows.Forms;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -215,6 +216,40 @@ namespace P3D_Scenario_Generator
 
         #region Location selection
 
+        private void ComboBoxGeneralLocationFavourites_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string s = ((ComboBox)sender).Text;
+            string[] strings = s.Split("\"");
+
+            if (strings.Length < 2)
+            {
+                SetLocationFilterIndex("Country", "None");
+                SetLocationFilterIndex("State", "None");
+                SetLocationFilterIndex("City", "None");
+                return;
+            }
+
+            for (int index = 0; index < strings.Length - 1; index += 2)
+            {
+                if (strings[index].Contains("Country"))
+                    SetLocationFilterIndex("Country", strings[index + 1]);
+                else if (strings[index].Contains("State"))
+                    SetLocationFilterIndex("State", strings[index + 1]); 
+                else 
+                    SetLocationFilterIndex("City", strings[index + 1]);
+            }
+        }
+
+        private void SetLocationFilterIndex(string locationType, string locationFilterText)
+        {
+            if (locationType == "Country")
+                ComboBoxGeneralLocationCountry.SelectedIndex = ComboBoxGeneralLocationCountry.Items.IndexOf(locationFilterText);
+            else if (locationType == "State")
+                ComboBoxGeneralLocationState.SelectedIndex = ComboBoxGeneralLocationState.Items.IndexOf(locationFilterText);
+            else
+                ComboBoxGeneralLocationCity.SelectedIndex = ComboBoxGeneralLocationCity.Items.IndexOf(locationFilterText);
+        }
+
         /// <summary>
         /// Allows user to enter a new location string for country/state/city or delete an existing string.
         /// But not reserved "All" and "None" strings.
@@ -224,6 +259,9 @@ namespace P3D_Scenario_Generator
         private void ComboBoxGeneralLocation_KeyDown(object sender, KeyEventArgs e)
         {
             string s = ((ComboBox)sender).Text;
+            s = Regex.Replace(s, "[^a-zA-Z]", " ");
+            s = Regex.Replace(s, @"\s+", " ");
+            s = s.Trim();
 
             if (e.KeyCode == Keys.Enter)
             {
@@ -232,6 +270,10 @@ namespace P3D_Scenario_Generator
                     ((ComboBox)sender).Items.Add(s);
                     ((ComboBox)sender).SelectedIndex = ((ComboBox)sender).Items.Count - 1;
                     UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
+                }
+                else
+                {
+                    ((ComboBox)sender).SelectedIndex = 0;
                 }
             }
             else if (e.KeyCode == Keys.Delete)
@@ -297,13 +339,52 @@ namespace P3D_Scenario_Generator
                 filters = countryFilter;
             if (stateFilter.Length > 0 && filters.Length > 0)
                 filters = filters + " OR " + stateFilter;
-            else
+            else if (filters.Length == 0)
                 filters = stateFilter;
             if (cityFilter.Length > 0 && filters.Length > 0)
                 filters = filters + " OR " + cityFilter;
-            else
+            else if (filters.Length == 0)
                 filters = cityFilter;
             return filters;
+        }
+
+        internal static bool CheckLocationFilters(string location)
+        {
+            // If Country/State/City filters all set to "None" return true as no filtering on location is required
+            if (form.ComboBoxGeneralLocationCountry.Text == "None" && form.ComboBoxGeneralLocationState.Text == "None" &&
+                form.ComboBoxGeneralLocationCity.Text == "None")
+            {
+                return true;
+            }
+
+            // Check each of Country/State/City filter strings against location
+            bool checkCountry = CheckLocationFilter(location, form.ComboBoxGeneralLocationCountry.Items, form.ComboBoxGeneralLocationCountry.Text);
+            bool checkState = CheckLocationFilter(location, form.ComboBoxGeneralLocationState.Items, form.ComboBoxGeneralLocationState.Text);
+            bool checkCity = CheckLocationFilter(location, form.ComboBoxGeneralLocationCity.Items, form.ComboBoxGeneralLocationCity.Text);
+            if (checkCountry || checkState || checkCity)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        internal static bool CheckLocationFilter(string location, ComboBox.ObjectCollection locationStrings, string selectedLocation)
+        {
+            if (selectedLocation == "All")
+            {
+                return locationStrings.Contains(location);
+            }
+            else if (selectedLocation != "None")
+            {
+                return selectedLocation.Contains(location);
+            }
+            else
+            {
+                return true;
+            }
         }
 
         private static string BuildFilterString(string fieldName, string selectedString)
