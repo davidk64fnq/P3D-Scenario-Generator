@@ -138,6 +138,32 @@ namespace P3D_Scenario_Generator
         internal string AbbrName { get; set; } = v3;
     }
 
+    /// <summary>
+    /// Stores the Country/State/City location filter values for a location favourite
+    /// </summary>
+    public class LocationFavourite(string v1, List<string> v2, List<string> v3, List<string> v4)
+    {
+        /// <summary>
+        /// The name of the favourite
+        /// </summary>
+        internal string Name { get; set; } = v1;
+
+        /// <summary>
+        /// The list of valid country strings for this favourite 
+        /// </summary>
+        internal List<string> Countries { get; set; } = v2;
+
+        /// <summary>
+        /// The list of valid state strings for this favourite 
+        /// </summary>
+        internal List<string> States { get; set; } = v3;
+
+        /// <summary>
+        /// The list of valid city strings for this favourite 
+        /// </summary>
+        internal List<string> Cities { get; set; } = v4;
+    }
+
     internal class Runway
     {
         /// <summary>
@@ -165,6 +191,11 @@ namespace P3D_Scenario_Generator
         /// The scenario destination runway
         /// </summary>
         internal static RunwayParams destRwy = new();
+
+        /// <summary>
+        /// User created location favourites built from combinations of Country/State/City strings in "runways.xml" file
+        /// </summary>
+        internal static List<LocationFavourite> LocationFavourites = [];
 
         #region Load runways from "runways.xml" and build list for General tab region
 
@@ -367,6 +398,174 @@ namespace P3D_Scenario_Generator
                 }
             }
             return icaoIDs;
+        }
+
+        /// <summary>
+        /// Get a sorted list of the country strings in "runways.xml"
+        /// </summary>
+        /// <returns>Sorted list of the country strings in "runways.xml"</returns>
+        static internal List<string> GetRunwayCountries()
+        {
+            List<string> countries = [];
+
+            for (int i = 0; i < Runways.Count; i++)
+            {
+                if (Runways[i].Country != "" && countries.IndexOf(Runways[i].Country) == -1)
+                {
+                    countries.Add(Runways[i].Country);
+                }
+            }
+            countries.Sort();
+            countries.Insert(0, "All");
+            countries.Insert(0, "None");
+            return countries;
+        }
+
+        /// <summary>
+        /// Get a sorted list of the state strings in "runways.xml"
+        /// </summary>
+        /// <returns>Sorted list of the state strings in "runways.xml"</returns>
+        static internal List<string> GetRunwayStates()
+        {
+            List<string> states = [];
+
+            for (int i = 0; i < Runways.Count; i++)
+            {
+                if (Runways[i].State != null && Runways[i].State != "" && states.IndexOf(Runways[i].State) == -1)
+                {
+                    states.Add(Runways[i].State);
+                }
+            }
+            states.Sort();
+            states.Insert(0, "All");
+            states.Insert(0, "None");
+            return states;
+        }
+
+        /// <summary>
+        /// Get a sorted list of the city strings in "runways.xml"
+        /// </summary>
+        /// <returns>Sorted list of the city strings in "runways.xml"</returns>
+        static internal List<string> GetRunwayCities()
+        {
+            List<string> cities = [];
+
+            for (int i = 0; i < Runways.Count; i++)
+            {
+                if (Runways[i].City != "" && cities.IndexOf(Runways[i].City) == -1)
+                {
+                    cities.Add(Runways[i].City);
+                }
+            }
+            cities.Sort();
+            cities.Insert(0, "All");
+            cities.Insert(0, "None");
+            return cities;
+        }
+
+        /// <summary>
+        /// Get a sorted list of the location favourite names
+        /// </summary>
+        /// <returns>Sorted list of the location favourite names</returns>
+        static internal List<string> GetLocationFavouriteNames()
+        {
+            List<string> locationFavouriteNames = [];
+
+            for (int i = 0; i < LocationFavourites.Count; i++)
+            {
+                locationFavouriteNames.Add(LocationFavourites[i].Name);
+            }
+            locationFavouriteNames.Sort();
+            return locationFavouriteNames;
+        }
+
+        static internal void AddLocationToLocationFavourite(string locationType, string locationValue)
+        {
+            // Get index of locationFavourite to be added to
+            string selectedFavouriteName = Form.form.ComboBoxGeneralLocationFavourites.SelectedItem.ToString();
+            int locationFavouriteIndex = LocationFavourites.FindIndex(favourite => favourite.Name == selectedFavouriteName);
+
+            if (locationValue == "None")
+            {
+                ClearLocationFavouriteList(locationFavouriteIndex, locationType);
+            }
+            else if (locationValue == "All")
+            {
+                AddToLocationFavouriteList(locationFavouriteIndex, locationType, "All");
+            }
+            else
+            {
+                AddToLocationFavouriteList(locationFavouriteIndex, locationType, locationValue);
+            }
+            SetTextBoxGeneralLocationFilters(locationFavouriteIndex);
+        }
+
+        static internal void ClearLocationFavouriteList(int locationFavouriteIndex, string locationType)
+        {
+            if (locationType == "Country")
+                LocationFavourites[locationFavouriteIndex].Countries.Clear();
+            else if (locationType == "State")
+                LocationFavourites[locationFavouriteIndex].States.Clear();
+            else
+                LocationFavourites[locationFavouriteIndex].Cities.Clear();
+        }
+
+        static internal void AddToLocationFavouriteList(int locationFavouriteIndex, string locationType, string locationValue)
+        {
+            if (locationType == "Country")
+            {
+                LocationFavourites[locationFavouriteIndex].Countries.Add(locationValue);
+                LocationFavourites[locationFavouriteIndex].Countries = LocationFavourites[locationFavouriteIndex].Countries.Distinct().ToList();
+                LocationFavourites[locationFavouriteIndex].Countries.Sort();
+            }
+            else if (locationType == "State")
+            {
+                LocationFavourites[locationFavouriteIndex].States.Add(locationValue);
+                LocationFavourites[locationFavouriteIndex].States = LocationFavourites[locationFavouriteIndex].States.Distinct().ToList();
+                LocationFavourites[locationFavouriteIndex].States.Sort();
+            }
+            else
+            {
+                LocationFavourites[locationFavouriteIndex].Cities.Add(locationValue);
+                LocationFavourites[locationFavouriteIndex].Cities = LocationFavourites[locationFavouriteIndex].Cities.Distinct().ToList();
+                LocationFavourites[locationFavouriteIndex].Cities.Sort();
+            }
+        }
+
+        static internal void DeleteLocationFromLocationFavourite(string locationType, string locationValue)
+        {
+            // Get index of locationFavourite to be removed from
+            string selectedFavouriteName = Form.form.ComboBoxGeneralLocationFavourites.SelectedItem.ToString();
+            int locationFavouriteIndex = LocationFavourites.FindIndex(favourite => favourite.Name == selectedFavouriteName);
+
+            if (locationValue == "None")
+            {
+                return;
+            }
+            else if (locationValue == "All")
+            {
+                ClearLocationFavouriteList(locationFavouriteIndex, locationType);
+            }
+            else
+            {
+                DeleteFromLocationFavouriteList(locationFavouriteIndex, locationType, locationValue);
+            }
+            SetTextBoxGeneralLocationFilters(locationFavouriteIndex);
+        }
+
+        static internal void DeleteFromLocationFavouriteList(int locationFavouriteIndex, string locationType, string locationValue)
+        {
+            if (locationType == "Country")
+                LocationFavourites[locationFavouriteIndex].Countries.Remove(locationValue);
+            else if (locationType == "State")
+                LocationFavourites[locationFavouriteIndex].States.Remove(locationValue);
+            else
+                LocationFavourites[locationFavouriteIndex].Cities.Remove(locationValue);
+        }
+
+        static internal void SetTextBoxGeneralLocationFilters(int locationFavouriteIndex)
+        {
+            string filters;
         }
 
         #endregion

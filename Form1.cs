@@ -216,11 +216,21 @@ namespace P3D_Scenario_Generator
 
         #region Location selection
 
+        /// <summary>
+        /// When user selects a favourite this parses the favourite string to extract the Country/State/City
+        /// filter strings and sets the corresponding fields to those values.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ComboBoxGeneralLocationFavourites_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // Sample favourite string "Orbx TrueEarth (Country = "Netherlands" OR State = "California Washington")
+            // So Country/State/City strings are at indexes 0, 2, 4 (depending which are used e.g. City could be 2, 4, or 6)
+            // filter strings are at indexes 1, 3, 5
             string s = ((ComboBox)sender).Text;
             string[] strings = s.Split("\"");
 
+            // Handle favourite string of "None"
             if (strings.Length < 2)
             {
                 SetLocationFilterIndex("Country", "None");
@@ -229,6 +239,7 @@ namespace P3D_Scenario_Generator
                 return;
             }
 
+            // Handle remaining filter strings pairs
             for (int index = 0; index < strings.Length - 1; index += 2)
             {
                 if (strings[index].Contains("Country"))
@@ -240,6 +251,11 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// Sets the Country/State/City location filter field to the required value
+        /// </summary>
+        /// <param name="locationType">Which of Country/State/City location filter field to set</param>
+        /// <param name="locationFilterText">The value to set the location filter to</param>
         private void SetLocationFilterIndex(string locationType, string locationFilterText)
         {
             if (locationType == "Country")
@@ -258,34 +274,23 @@ namespace P3D_Scenario_Generator
         /// <param name="e"></param>
         private void ComboBoxGeneralLocation_KeyDown(object sender, KeyEventArgs e)
         {
-            string s = ((ComboBox)sender).Text;
-            s = Regex.Replace(s, "[^a-zA-Z]", " ");
-            s = Regex.Replace(s, @"\s+", " ");
-            s = s.Trim();
+            string selectedItem = ((ComboBox)sender).SelectedItem.ToString();
+            string locationType;
+
+            if (((ComboBox)sender).Name.Contains("Country"))
+                locationType = "Country";
+            else if(((ComboBox)sender).Name.Contains("State"))
+                locationType = "State";
+            else
+                locationType = "City";
 
             if (e.KeyCode == Keys.Enter)
             {
-                if (!((ComboBox)sender).Items.Contains(s) && !s.Contains("None") && !s.Contains("All"))
-                {
-                    ((ComboBox)sender).Items.Add(s);
-                    ((ComboBox)sender).SelectedIndex = ((ComboBox)sender).Items.Count - 1;
-                    UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
-                }
-                else
-                {
-                    ((ComboBox)sender).SelectedIndex = 0;
-                }
+                Runway.AddLocationToLocationFavourite(locationType, selectedItem);
             }
             else if (e.KeyCode == Keys.Delete)
             {
-                e.SuppressKeyPress = true;
-                if (((ComboBox)sender).Items.Contains(s) && !s.Contains("None") && !s.Contains("All"))
-                {
-                    ((ComboBox)sender).Items.Remove(s);
-                    if (((ComboBox)sender).Items.Count > 0)
-                        ((ComboBox)sender).SelectedIndex = 0;
-                    UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
-                }
+                Runway.DeleteLocationFromLocationFavourite(locationType, selectedItem);
             }
         }
 
@@ -633,6 +638,12 @@ namespace P3D_Scenario_Generator
             // General tab
             Runway.GetRunways();
             ComboBoxGeneralRunwaySelected.DataSource = Runway.GetICAOids();
+            ComboBoxGeneralLocationCountry.DataSource = Runway.GetRunwayCountries();
+            ComboBoxGeneralLocationState.DataSource = Runway.GetRunwayStates();
+            ComboBoxGeneralLocationCity.DataSource = Runway.GetRunwayCities();
+            if (Runway.LocationFavourites.Count == 0)
+                Runway.LocationFavourites.Add(new LocationFavourite("None", [], [], []));
+            ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
             ComboBoxGeneralScenarioType.SelectedIndex = 0;
             ComboBoxGeneralAircraftSelection.DataSource = Properties.Settings.Default.AircraftTitles;
             if (Properties.Settings.Default.AircraftTitlesSelectedIndex < ComboBoxGeneralAircraftSelection.Items.Count)

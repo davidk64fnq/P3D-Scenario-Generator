@@ -184,6 +184,22 @@ Select a list item to only select runways that are in that country.
 Type a new string and press "Enter" to add to the list. 
 Select a list item and press "Delete" to remove an item from the list.</value>
   </data>
+  <data name="label58.ToolTip" xml:space="preserve">
+    <value>A user created list of possible filter values for the state field in "runways.xml" file.
+Sample valid strings:
+     "California"
+     "Queensland Victoria"
+Program will confirm each word in string is a valid country in "runways.xml" file
+
+</value>
+  </data>
+  <data name="label60.ToolTip" xml:space="preserve">
+    <value>A user created list of possible filter values for the country field in "runways.xml" file.
+Sample valid strings:
+     "Australia"
+     "Wales Scotland Ireland"
+Program will confirm each word in string is a valid country in "runways.xml" file</value>
+  </data>
   <data name="groupBox16.ToolTip" xml:space="preserve">
     <value>Choose "None" to not filter on Country, State, City respectively. 
 Choose "All" to includes airports in any of options in the respective lists. 
