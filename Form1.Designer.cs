@@ -2540,8 +2540,9 @@ namespace P3D_Scenario_Generator
             TextBoxGeneralLocationFilters.Name = "TextBoxGeneralLocationFilters";
             TextBoxGeneralLocationFilters.Size = new Size(100, 23);
             TextBoxGeneralLocationFilters.TabIndex = 47;
-            TextBoxGeneralLocationFilters.Tag = ", string";
+            TextBoxGeneralLocationFilters.Tag = "";
             toolTip1.SetToolTip(TextBoxGeneralLocationFilters, "Specify an alphabetic characters title for the scenario");
+            TextBoxGeneralLocationFilters.MouseHover += TextBoxGeneralLocationFilters_MouseHover;
             // 
             // label62
             // 
@@ -2558,18 +2559,17 @@ namespace P3D_Scenario_Generator
             // 
             ComboBoxGeneralLocationFavourites.AccessibleName = "Location Filter: Favourites";
             ComboBoxGeneralLocationFavourites.Anchor = AnchorStyles.None;
+            ComboBoxGeneralLocationFavourites.DropDownStyle = ComboBoxStyle.DropDownList;
             ComboBoxGeneralLocationFavourites.DropDownWidth = 540;
             ComboBoxGeneralLocationFavourites.FormattingEnabled = true;
-            ComboBoxGeneralLocationFavourites.Items.AddRange(new object[] { "None" });
+            ComboBoxGeneralLocationFavourites.Items.AddRange(new object[] { "Favourite 1", "Favourite 2", "Favourite 3", "Favourite 4", "Favourite 5", "Favourite 6", "Favourite 7", "Favourite 8", "Favourite 9", "Favourite 10" });
             ComboBoxGeneralLocationFavourites.Location = new Point(139, 93);
             ComboBoxGeneralLocationFavourites.Name = "ComboBoxGeneralLocationFavourites";
             ComboBoxGeneralLocationFavourites.Size = new Size(100, 23);
             ComboBoxGeneralLocationFavourites.TabIndex = 45;
-            ComboBoxGeneralLocationFavourites.Tag = "None";
-            ComboBoxGeneralLocationFavourites.Text = "None";
+            ComboBoxGeneralLocationFavourites.Tag = "";
             toolTip1.SetToolTip(ComboBoxGeneralLocationFavourites, resources.GetString("ComboBoxGeneralLocationFavourites.ToolTip"));
             ComboBoxGeneralLocationFavourites.SelectedIndexChanged += ComboBoxGeneralLocationFavourites_SelectedIndexChanged;
-            ComboBoxGeneralLocationFavourites.KeyDown += ComboBoxGeneralLocationFavourites_KeyDown;
             // 
             // label61
             // 
@@ -2586,6 +2586,7 @@ namespace P3D_Scenario_Generator
             // 
             ComboBoxGeneralLocationCity.AccessibleName = "Location Filter: City";
             ComboBoxGeneralLocationCity.Anchor = AnchorStyles.None;
+            ComboBoxGeneralLocationCity.DropDownStyle = ComboBoxStyle.DropDownList;
             ComboBoxGeneralLocationCity.DropDownWidth = 200;
             ComboBoxGeneralLocationCity.FormattingEnabled = true;
             ComboBoxGeneralLocationCity.Items.AddRange(new object[] { "None", "All" });
@@ -2593,8 +2594,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralLocationCity.Name = "ComboBoxGeneralLocationCity";
             ComboBoxGeneralLocationCity.Size = new Size(100, 23);
             ComboBoxGeneralLocationCity.TabIndex = 43;
-            ComboBoxGeneralLocationCity.Tag = "None";
-            ComboBoxGeneralLocationCity.Text = "None";
+            ComboBoxGeneralLocationCity.Tag = "";
             toolTip1.SetToolTip(ComboBoxGeneralLocationCity, resources.GetString("ComboBoxGeneralLocationCity.ToolTip"));
             ComboBoxGeneralLocationCity.KeyDown += ComboBoxGeneralLocation_KeyDown;
             // 
@@ -2602,6 +2602,7 @@ namespace P3D_Scenario_Generator
             // 
             ComboBoxGeneralLocationState.AccessibleName = "Location Filter: State";
             ComboBoxGeneralLocationState.Anchor = AnchorStyles.None;
+            ComboBoxGeneralLocationState.DropDownStyle = ComboBoxStyle.DropDownList;
             ComboBoxGeneralLocationState.DropDownWidth = 200;
             ComboBoxGeneralLocationState.FormattingEnabled = true;
             ComboBoxGeneralLocationState.Items.AddRange(new object[] { "None", "All" });
@@ -2609,8 +2610,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralLocationState.Name = "ComboBoxGeneralLocationState";
             ComboBoxGeneralLocationState.Size = new Size(100, 23);
             ComboBoxGeneralLocationState.TabIndex = 42;
-            ComboBoxGeneralLocationState.Tag = "None";
-            ComboBoxGeneralLocationState.Text = "None";
+            ComboBoxGeneralLocationState.Tag = "";
             toolTip1.SetToolTip(ComboBoxGeneralLocationState, resources.GetString("ComboBoxGeneralLocationState.ToolTip"));
             ComboBoxGeneralLocationState.KeyDown += ComboBoxGeneralLocation_KeyDown;
             // 
@@ -2626,7 +2626,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralLocationCountry.Name = "ComboBoxGeneralLocationCountry";
             ComboBoxGeneralLocationCountry.Size = new Size(100, 23);
             ComboBoxGeneralLocationCountry.TabIndex = 41;
-            ComboBoxGeneralLocationCountry.Tag = "None";
+            ComboBoxGeneralLocationCountry.Tag = "";
             toolTip1.SetToolTip(ComboBoxGeneralLocationCountry, resources.GetString("ComboBoxGeneralLocationCountry.ToolTip"));
             ComboBoxGeneralLocationCountry.KeyDown += ComboBoxGeneralLocation_KeyDown;
             // 
@@ -2918,13 +2918,13 @@ namespace P3D_Scenario_Generator
             // 
             // TabControlP3DSG
             // 
+            TabControlP3DSG.Controls.Add(TabPageMenu);
             TabControlP3DSG.Controls.Add(TabPageCircuit);
             TabControlP3DSG.Controls.Add(TabPagePhotoTour);
             TabControlP3DSG.Controls.Add(TabPageSign);
             TabControlP3DSG.Controls.Add(TabPageCelestial);
             TabControlP3DSG.Controls.Add(TabPageWikiList);
             TabControlP3DSG.Controls.Add(TabPageSettings);
-            TabControlP3DSG.Controls.Add(TabPageMenu);
             TabControlP3DSG.Location = new Point(12, 12);
             TabControlP3DSG.Name = "TabControlP3DSG";
             TabControlP3DSG.SelectedIndex = 0;

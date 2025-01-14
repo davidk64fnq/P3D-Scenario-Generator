@@ -141,7 +141,7 @@ namespace P3D_Scenario_Generator
     /// <summary>
     /// Stores the Country/State/City location filter values for a location favourite
     /// </summary>
-    public class LocationFavourite(string v1, List<string> v2, List<string> v3, List<string> v4)
+    public class LocationFavourite(string v1, List<string> v2, List<string> v3, List<string> v4) : ICloneable
     {
         /// <summary>
         /// The name of the favourite
@@ -162,6 +162,16 @@ namespace P3D_Scenario_Generator
         /// The list of valid city strings for this favourite 
         /// </summary>
         internal List<string> Cities { get; set; } = v4;
+
+        /// <summary>
+        /// Clones the current location favourite when user adds a new favourites string
+        /// </summary>
+        /// <returns>Cloned version of <see cref="LocationFavourite"/></returns>
+        public object Clone()
+        {
+            var locationFavourite = new LocationFavourite(Name, Countries, States, Cities);
+            return locationFavourite;
+        }
     }
 
     internal class Runway
@@ -479,7 +489,7 @@ namespace P3D_Scenario_Generator
             return locationFavouriteNames;
         }
 
-        static internal void AddLocationToLocationFavourite(string locationType, string locationValue)
+        static internal void AddFilterValueToLocationFavourite(string locationType, string locationValue)
         {
             // Get index of locationFavourite to be added to
             string selectedFavouriteName = Form.form.ComboBoxGeneralLocationFavourites.SelectedItem.ToString();
@@ -488,16 +498,20 @@ namespace P3D_Scenario_Generator
             if (locationValue == "None")
             {
                 ClearLocationFavouriteList(locationFavouriteIndex, locationType);
+                AddToLocationFavouriteList(locationFavouriteIndex, locationType, "None");
             }
             else if (locationValue == "All")
             {
+                ClearLocationFavouriteList(locationFavouriteIndex, locationType);
                 AddToLocationFavouriteList(locationFavouriteIndex, locationType, "All");
             }
             else
             {
                 AddToLocationFavouriteList(locationFavouriteIndex, locationType, locationValue);
+                DeleteFromLocationFavouriteList(locationFavouriteIndex, locationType, "None");
+                DeleteFromLocationFavouriteList(locationFavouriteIndex, locationType, "All");
             }
-            SetTextBoxGeneralLocationFilters(locationFavouriteIndex);
+            SetTextBoxGeneralLocationFilters(selectedFavouriteName);
         }
 
         static internal void ClearLocationFavouriteList(int locationFavouriteIndex, string locationType)
@@ -532,7 +546,28 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        static internal void DeleteLocationFromLocationFavourite(string locationType, string locationValue)
+        /// <summary>
+        ///  Gets a filter string to display in the Country/State/City fields on the General tab of form.
+        ///  The current favourite may include more than one filter value for one or more of these fields.
+        ///  Displays the first of the filter values as the list is maintained sorted.
+        /// </summary>
+        /// <param name="locationType">Which of Country/State/City fields the display filter value is for</param>
+        /// <returns>The Country/State/City field the display filter value</returns>
+        static internal string GetLocationFavouriteDisplayFilterValue(string locationType)
+        {
+            // Get index of locationFavourite 
+            string selectedFavouriteName = Form.form.ComboBoxGeneralLocationFavourites.SelectedItem.ToString();
+            int locationFavouriteIndex = LocationFavourites.FindIndex(favourite => favourite.Name == selectedFavouriteName);
+
+            if (locationType == "Country")
+                return LocationFavourites[locationFavouriteIndex].Countries[0];
+            else if (locationType == "State")
+                return LocationFavourites[locationFavouriteIndex].States[0];
+            else
+                return LocationFavourites[locationFavouriteIndex].Cities[0];
+        }
+
+        static internal void DeleteFilterValueFromLocationFavourite(string locationType, string locationValue)
         {
             // Get index of locationFavourite to be removed from
             string selectedFavouriteName = Form.form.ComboBoxGeneralLocationFavourites.SelectedItem.ToString();
@@ -545,27 +580,56 @@ namespace P3D_Scenario_Generator
             else if (locationValue == "All")
             {
                 ClearLocationFavouriteList(locationFavouriteIndex, locationType);
+                AddToLocationFavouriteList(locationFavouriteIndex, locationType, "None");
             }
             else
             {
                 DeleteFromLocationFavouriteList(locationFavouriteIndex, locationType, locationValue);
             }
-            SetTextBoxGeneralLocationFilters(locationFavouriteIndex);
+            SetTextBoxGeneralLocationFilters(selectedFavouriteName);
         }
 
         static internal void DeleteFromLocationFavouriteList(int locationFavouriteIndex, string locationType, string locationValue)
         {
             if (locationType == "Country")
+            {
                 LocationFavourites[locationFavouriteIndex].Countries.Remove(locationValue);
+                if (LocationFavourites[locationFavouriteIndex].Countries.Count == 0)
+                    AddToLocationFavouriteList(locationFavouriteIndex, locationType, "None");
+            }
             else if (locationType == "State")
+            {
                 LocationFavourites[locationFavouriteIndex].States.Remove(locationValue);
+                if (LocationFavourites[locationFavouriteIndex].States.Count == 0)
+                    AddToLocationFavouriteList(locationFavouriteIndex, locationType, "None");
+            }
             else
+            {
                 LocationFavourites[locationFavouriteIndex].Cities.Remove(locationValue);
+                if (LocationFavourites[locationFavouriteIndex].Cities.Count == 0)
+                    AddToLocationFavouriteList(locationFavouriteIndex, locationType, "None");
+            }
         }
 
-        static internal void SetTextBoxGeneralLocationFilters(int locationFavouriteIndex)
+        static internal string SetTextBoxGeneralLocationFilters(string selectedFavouriteName)
         {
             string filters;
+            // Get index of selected locationFavourite 
+            int locationFavouriteIndex = LocationFavourites.FindIndex(favourite => favourite.Name == selectedFavouriteName);
+
+            filters = "Countries = \"";
+            foreach (string country in LocationFavourites[locationFavouriteIndex].Countries)
+                filters += $"{country} ";
+            filters = filters.Trim();
+            filters += "\", States = \"";
+            foreach (string state in LocationFavourites[locationFavouriteIndex].States)
+                filters += $"{state} ";
+            filters = filters.Trim();
+            filters += "\", Cities = \"";
+            foreach (string city in LocationFavourites[locationFavouriteIndex].Cities)
+                filters += $"{city} ";
+            filters = filters.Trim() + "\"";
+            return filters;
         }
 
         #endregion
