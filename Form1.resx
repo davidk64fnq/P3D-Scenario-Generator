@@ -152,58 +152,114 @@
   <data name="TextBoxWikiURLOffset.ToolTip" xml:space="preserve">
     <value>The default position of Wiki URL window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the Wiki URL Wiki URL window is positioned. Ignored if default position of Wiki URL window is centered.</value>
   </data>
-  <data name="ComboBoxGeneralLocationFavourites.ToolTip" xml:space="preserve">
-    <value>Type a new string and press "Enter" to add to the list. 
-Select a list item and press "Delete" to remove an item from the list.
-A new item represents a combination of Country/State/City settings.
-The program will display the combination after the name you choose.
+  <data name="label62.ToolTip" xml:space="preserve">
+    <value>Current combination of Country/State/City settings. Will match to any airport that has one of the listed country, 
+state or city strings in "runways.xml" file.
 
-</value>
+To modify filters in current combination select the Country/State/City item in the respective field and press 
+"Enter" to add it or "Delete" to remove it from the combination favourite.</value>
+  </data>
+  <data name="ComboBoxGeneralLocationFavourites.ToolTip" xml:space="preserve">
+    <value>Select the combination of Country, State and City filters to be used in identifying runways 
+for use in a scenario.
+
+To modify filters in current combination select the Country/State/City item in the respective 
+field and press "Enter" to add it or "Delete" to remove it from the combination favourite.
+
+To see the currently selected favourite, mouseover the "Filters" field below.</value>
+  </data>
+  <data name="label61.ToolTip" xml:space="preserve">
+    <value>Select the combination of Country, State and City filters to be used in identifying runways 
+for use in a scenario.
+
+To modify filters in current combination select the Country/State/City item in the respective 
+field and press "Enter" to add it or "Delete" to remove it from the combination favourite.
+
+To see the currently selected favourite, mouseover the "Filters" field below.</value>
   </data>
   <data name="ComboBoxGeneralLocationCity.ToolTip" xml:space="preserve">
-    <value>Select "None" to not filter runway selection based on city. 
-Select "All" to allow any runway selection that matches one of the city filter strings. 
-Select a list item to only select runways that are in that city. 
-Type a new string and press "Enter" to add to the list. 
-Select a list item and press "Delete" to remove an item from the list.
+    <value>To add selected city to currently selected "Favourites" press "Enter"
+To delete selected city from currently selected "Favourites" press "Delete"
 
-</value>
+Make sure you click with the mouse in the field or change the selection via the dropdown 
+to ensure the field is in focus.
+
+Selecting a city without then pressing enter or delete has no effect on the
+currently selected favourite. Scenarios are generated based ONLY on the filter values 
+in the currently selected favourite.
+
+Select "None" and press "Enter" to clear runway selection filters based on city in 
+currently selected favourite. </value>
   </data>
   <data name="ComboBoxGeneralLocationState.ToolTip" xml:space="preserve">
-    <value>Select "None" to not filter runway selection based on state. 
-Select "All" to allow any runway selection that matches one of the state filter strings. 
-Select a list item to only select runways that are in that state. 
-Type a new string and press "Enter" to add to the list. 
-Select a list item and press "Delete" to remove an item from the list.
-</value>
+    <value>To add selected state to currently selected "Favourites" press "Enter"
+To delete selected state from currently selected "Favourites" press "Delete"
+
+Make sure you click with the mouse in the field or change the selection via the dropdown 
+to ensure the field is in focus.
+
+Selecting a state without then pressing enter or delete has no effect on the
+currently selected favourite. Scenarios are generated based ONLY on the filter values 
+in the currently selected favourite.
+
+Select "None" and press "Enter" to clear runway selection filters based on state in 
+currently selected favourite. </value>
   </data>
   <data name="ComboBoxGeneralLocationCountry.ToolTip" xml:space="preserve">
-    <value>Select "None" to not filter runway selection based on country. 
-Select "All" to allow any runway selection that matches one of the country filter strings. 
-Select a list item to only select runways that are in that country. 
-Type a new string and press "Enter" to add to the list. 
-Select a list item and press "Delete" to remove an item from the list.</value>
+    <value>To add selected country to currently selected "Favourites" press "Enter"
+To delete selected country from currently selected "Favourites" press "Delete"
+
+Make sure you click with the mouse in the field or change the selection via the dropdown 
+to ensure the field is in focus.
+
+Selecting a country without then pressing enter or delete has no effect on the
+currently selected favourite. Scenarios are generated based ONLY on the filter values 
+in the currently selected favourite.
+
+Select "None" and press "Enter" to clear runway selection filters based on country in 
+currently selected favourite. </value>
   </data>
   <data name="label58.ToolTip" xml:space="preserve">
-    <value>A user created list of possible filter values for the state field in "runways.xml" file.
-Sample valid strings:
-     "California"
-     "Queensland Victoria"
-Program will confirm each word in string is a valid country in "runways.xml" file
+    <value>To add selected state to currently selected "Favourites" press "Enter"
+To delete selected state from currently selected "Favourites" press "Delete"
 
-</value>
+Make sure you click with the mouse in the field or change the selection via the dropdown 
+to ensure the field is in focus.
+
+Selecting a state without then pressing enter or delete has no effect on the
+currently selected favourite. Scenarios are generated based ONLY on the filter values 
+in the currently selected favourite.
+
+Select "None" and press "Enter" to clear runway selection filters based on state  in 
+currently selected favourite. </value>
+  </data>
+  <data name="label59.ToolTip" xml:space="preserve">
+    <value>To add selected city to currently selected "Favourites" press "Enter"
+To delete selected city from currently selected "Favourites" press "Delete"
+
+Make sure you click with the mouse in the field or change the selection via the dropdown 
+to ensure the field is in focus.
+
+Selecting a city without then pressing enter or delete has no effect on the
+currently selected favourite. Scenarios are generated based ONLY on the filter values 
+in the currently selected favourite.
+
+Select "None" and press "Enter" to clear runway selection filters based on city in 
+currently selected favourite. </value>
   </data>
   <data name="label60.ToolTip" xml:space="preserve">
-    <value>A user created list of possible filter values for the country field in "runways.xml" file.
-Sample valid strings:
-     "Australia"
-     "Wales Scotland Ireland"
-Program will confirm each word in string is a valid country in "runways.xml" file</value>
-  </data>
-  <data name="groupBox16.ToolTip" xml:space="preserve">
-    <value>Choose "None" to not filter on Country, State, City respectively. 
-Choose "All" to includes airports in any of options in the respective lists. 
-If you filter on more than one list it's searching for an airport that matches atleast one of the filters.</value>
+    <value>To add selected country to currently selected "Favourites" press "Enter"
+To delete selected country from currently selected "Favourites" press "Delete"
+
+Make sure you click with the mouse in the field or change the selection via the dropdown 
+to ensure the field is in focus.
+
+Selecting a country without then pressing enter or delete has no effect on the
+currently selected favourite. Scenarios are generated based ONLY on the filter values 
+in the currently selected favourite.
+
+Select "None" and press "Enter" to clear runway selection filters based on country in 
+currently selected favourite. </value>
   </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>42</value>

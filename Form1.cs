@@ -216,6 +216,37 @@ namespace P3D_Scenario_Generator
 
         #region Location selection
 
+        private void ComboBoxGeneralLocationFavourites_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                string newFavouriteName = ((ComboBox)sender).Text;
+                string oldFavouriteName = Runway.UpdateLocationFavouriteName(newFavouriteName);
+
+                // create method to do this, manage CurrentLocationFavouriteIndex, adjust ComboBoxGeneralLocationFavourites selectedindex
+
+                Runway.LocationFavourites.Add(new LocationFavourite(oldFavouriteName, ["None"], ["None"], ["None"]));
+                ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
+                int newFavouriteIndex = ComboBoxGeneralLocationFavourites.Items.IndexOf(newFavouriteName);
+                ComboBoxGeneralLocationFavourites.SelectedIndex = newFavouriteIndex;
+            }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                e.SuppressKeyPress = true;
+                string deleteFavouriteName = ((ComboBox)sender).Text;
+
+                // create method to do this, manage CurrentLocationFavouriteIndex, adjust ComboBoxGeneralLocationFavourites selectedindex
+
+                LocationFavourite deleteLocationFavourite = Runway.LocationFavourites.Find(favourite => favourite.Name == deleteFavouriteName);
+                if (deleteLocationFavourite != null)
+                {
+                    Runway.LocationFavourites.Remove(deleteLocationFavourite);
+                    Runway.CurrentLocationFavouriteIndex = 0;
+                }
+                ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
+            }
+        }
+
         /// <summary>
         /// Display tooltip on mouseover of TextBoxGeneralLocationFilters field to show wide content
         /// </summary>
@@ -557,8 +588,8 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralLocationCountry.DataSource = Runway.GetRunwayCountries();
             ComboBoxGeneralLocationState.DataSource = Runway.GetRunwayStates();
             ComboBoxGeneralLocationCity.DataSource = Runway.GetRunwayCities();
-            for (int favNo = 1; favNo <= 10; favNo++)
-                Runway.LocationFavourites.Add(new LocationFavourite($"Favourite {favNo}", ["None"], ["None"], ["None"]));
+            if (Runway.LocationFavourites.Count == 0)
+                Runway.LocationFavourites.Add(new LocationFavourite($"Favourite 1", ["None"], ["None"], ["None"]));
             TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters("Favourite 1");
             ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
             ComboBoxGeneralScenarioType.SelectedIndex = 0;

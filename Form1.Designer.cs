@@ -195,9 +195,6 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralAircraftSelection = new ComboBox();
             label8 = new Label();
             ComboBoxSettingsSimulatorVersion = new ComboBox();
-            groupBox16 = new GroupBox();
-            tableLayoutPanel12 = new TableLayoutPanel();
-            TextBoxGeneralLocationFilters = new TextBox();
             label62 = new Label();
             ComboBoxGeneralLocationFavourites = new ComboBox();
             label61 = new Label();
@@ -207,6 +204,9 @@ namespace P3D_Scenario_Generator
             label58 = new Label();
             label59 = new Label();
             label60 = new Label();
+            groupBox16 = new GroupBox();
+            tableLayoutPanel12 = new TableLayoutPanel();
+            TextBoxGeneralLocationFilters = new TextBox();
             TabPagePhotoTour = new TabPage();
             ButtonHelp = new Button();
             TabPageSettings = new TabPage();
@@ -2492,58 +2492,6 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsSimulatorVersion.Text = "5";
             toolTip1.SetToolTip(ComboBoxSettingsSimulatorVersion, "Used to identify registry entry that specifies location of P3D program files, including SimObjects for aircraft selection");
             // 
-            // groupBox16
-            // 
-            groupBox16.BackColor = Color.FromArgb(255, 192, 128);
-            groupBox16.Controls.Add(tableLayoutPanel12);
-            groupBox16.Location = new Point(67, 29);
-            groupBox16.Name = "groupBox16";
-            groupBox16.Size = new Size(286, 188);
-            groupBox16.TabIndex = 39;
-            groupBox16.TabStop = false;
-            groupBox16.Text = "Location Filter";
-            toolTip1.SetToolTip(groupBox16, resources.GetString("groupBox16.ToolTip"));
-            // 
-            // tableLayoutPanel12
-            // 
-            tableLayoutPanel12.AccessibleName = "";
-            tableLayoutPanel12.Anchor = AnchorStyles.None;
-            tableLayoutPanel12.ColumnCount = 2;
-            tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel12.Controls.Add(TextBoxGeneralLocationFilters, 1, 4);
-            tableLayoutPanel12.Controls.Add(label62, 0, 4);
-            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationFavourites, 1, 3);
-            tableLayoutPanel12.Controls.Add(label61, 0, 3);
-            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationCity, 1, 2);
-            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationState, 1, 1);
-            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationCountry, 1, 0);
-            tableLayoutPanel12.Controls.Add(label58, 0, 1);
-            tableLayoutPanel12.Controls.Add(label59, 0, 2);
-            tableLayoutPanel12.Controls.Add(label60, 0, 0);
-            tableLayoutPanel12.ImeMode = ImeMode.On;
-            tableLayoutPanel12.Location = new Point(17, 22);
-            tableLayoutPanel12.Name = "tableLayoutPanel12";
-            tableLayoutPanel12.RowCount = 5;
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            tableLayoutPanel12.Size = new Size(253, 152);
-            tableLayoutPanel12.TabIndex = 36;
-            // 
-            // TextBoxGeneralLocationFilters
-            // 
-            TextBoxGeneralLocationFilters.Anchor = AnchorStyles.None;
-            TextBoxGeneralLocationFilters.Location = new Point(139, 124);
-            TextBoxGeneralLocationFilters.Name = "TextBoxGeneralLocationFilters";
-            TextBoxGeneralLocationFilters.Size = new Size(100, 23);
-            TextBoxGeneralLocationFilters.TabIndex = 47;
-            TextBoxGeneralLocationFilters.Tag = "";
-            toolTip1.SetToolTip(TextBoxGeneralLocationFilters, "Specify an alphabetic characters title for the scenario");
-            TextBoxGeneralLocationFilters.MouseHover += TextBoxGeneralLocationFilters_MouseHover;
-            // 
             // label62
             // 
             label62.Anchor = AnchorStyles.None;
@@ -2553,16 +2501,14 @@ namespace P3D_Scenario_Generator
             label62.Size = new Size(38, 15);
             label62.TabIndex = 46;
             label62.Text = "Filters";
-            toolTip1.SetToolTip(label62, "Saved Combinations of Country/State/City settings");
+            toolTip1.SetToolTip(label62, resources.GetString("label62.ToolTip"));
             // 
             // ComboBoxGeneralLocationFavourites
             // 
             ComboBoxGeneralLocationFavourites.AccessibleName = "Location Filter: Favourites";
             ComboBoxGeneralLocationFavourites.Anchor = AnchorStyles.None;
-            ComboBoxGeneralLocationFavourites.DropDownStyle = ComboBoxStyle.DropDownList;
             ComboBoxGeneralLocationFavourites.DropDownWidth = 540;
             ComboBoxGeneralLocationFavourites.FormattingEnabled = true;
-            ComboBoxGeneralLocationFavourites.Items.AddRange(new object[] { "Favourite 1", "Favourite 2", "Favourite 3", "Favourite 4", "Favourite 5", "Favourite 6", "Favourite 7", "Favourite 8", "Favourite 9", "Favourite 10" });
             ComboBoxGeneralLocationFavourites.Location = new Point(139, 93);
             ComboBoxGeneralLocationFavourites.Name = "ComboBoxGeneralLocationFavourites";
             ComboBoxGeneralLocationFavourites.Size = new Size(100, 23);
@@ -2570,6 +2516,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralLocationFavourites.Tag = "";
             toolTip1.SetToolTip(ComboBoxGeneralLocationFavourites, resources.GetString("ComboBoxGeneralLocationFavourites.ToolTip"));
             ComboBoxGeneralLocationFavourites.SelectedIndexChanged += ComboBoxGeneralLocationFavourites_SelectedIndexChanged;
+            ComboBoxGeneralLocationFavourites.KeyDown += ComboBoxGeneralLocationFavourites_KeyDown;
             // 
             // label61
             // 
@@ -2580,7 +2527,7 @@ namespace P3D_Scenario_Generator
             label61.Size = new Size(61, 15);
             label61.TabIndex = 44;
             label61.Text = "Favourites";
-            toolTip1.SetToolTip(label61, "Saved Combinations of Country/State/City settings");
+            toolTip1.SetToolTip(label61, resources.GetString("label61.ToolTip"));
             // 
             // ComboBoxGeneralLocationCity
             // 
@@ -2650,7 +2597,7 @@ namespace P3D_Scenario_Generator
             label59.Size = new Size(28, 15);
             label59.TabIndex = 31;
             label59.Text = "City";
-            toolTip1.SetToolTip(label59, "A user created list of possible filter values for the city field in \"runways.xml\" file");
+            toolTip1.SetToolTip(label59, resources.GetString("label59.ToolTip"));
             // 
             // label60
             // 
@@ -2662,6 +2609,56 @@ namespace P3D_Scenario_Generator
             label60.TabIndex = 30;
             label60.Text = "Country";
             toolTip1.SetToolTip(label60, resources.GetString("label60.ToolTip"));
+            // 
+            // groupBox16
+            // 
+            groupBox16.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox16.Controls.Add(tableLayoutPanel12);
+            groupBox16.Location = new Point(67, 29);
+            groupBox16.Name = "groupBox16";
+            groupBox16.Size = new Size(286, 188);
+            groupBox16.TabIndex = 39;
+            groupBox16.TabStop = false;
+            groupBox16.Text = "Location Filter";
+            // 
+            // tableLayoutPanel12
+            // 
+            tableLayoutPanel12.AccessibleName = "";
+            tableLayoutPanel12.Anchor = AnchorStyles.None;
+            tableLayoutPanel12.ColumnCount = 2;
+            tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel12.Controls.Add(TextBoxGeneralLocationFilters, 1, 4);
+            tableLayoutPanel12.Controls.Add(label62, 0, 4);
+            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationFavourites, 1, 3);
+            tableLayoutPanel12.Controls.Add(label61, 0, 3);
+            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationCity, 1, 2);
+            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationState, 1, 1);
+            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationCountry, 1, 0);
+            tableLayoutPanel12.Controls.Add(label58, 0, 1);
+            tableLayoutPanel12.Controls.Add(label59, 0, 2);
+            tableLayoutPanel12.Controls.Add(label60, 0, 0);
+            tableLayoutPanel12.ImeMode = ImeMode.On;
+            tableLayoutPanel12.Location = new Point(17, 22);
+            tableLayoutPanel12.Name = "tableLayoutPanel12";
+            tableLayoutPanel12.RowCount = 5;
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanel12.Size = new Size(253, 152);
+            tableLayoutPanel12.TabIndex = 36;
+            // 
+            // TextBoxGeneralLocationFilters
+            // 
+            TextBoxGeneralLocationFilters.Anchor = AnchorStyles.None;
+            TextBoxGeneralLocationFilters.Location = new Point(139, 124);
+            TextBoxGeneralLocationFilters.Name = "TextBoxGeneralLocationFilters";
+            TextBoxGeneralLocationFilters.Size = new Size(100, 23);
+            TextBoxGeneralLocationFilters.TabIndex = 47;
+            TextBoxGeneralLocationFilters.Tag = "";
+            TextBoxGeneralLocationFilters.MouseHover += TextBoxGeneralLocationFilters_MouseHover;
             // 
             // TabPagePhotoTour
             // 

@@ -207,6 +207,8 @@ namespace P3D_Scenario_Generator
         /// </summary>
         internal static List<LocationFavourite> LocationFavourites = [];
 
+        internal static int CurrentLocationFavouriteIndex;
+
         #region Load runways from "runways.xml" and build list for General tab region
 
         /// <summary>
@@ -426,7 +428,6 @@ namespace P3D_Scenario_Generator
                 }
             }
             countries.Sort();
-            countries.Insert(0, "All");
             countries.Insert(0, "None");
             return countries;
         }
@@ -447,7 +448,6 @@ namespace P3D_Scenario_Generator
                 }
             }
             states.Sort();
-            states.Insert(0, "All");
             states.Insert(0, "None");
             return states;
         }
@@ -468,7 +468,6 @@ namespace P3D_Scenario_Generator
                 }
             }
             cities.Sort();
-            cities.Insert(0, "All");
             cities.Insert(0, "None");
             return cities;
         }
@@ -500,16 +499,10 @@ namespace P3D_Scenario_Generator
                 ClearLocationFavouriteList(locationFavouriteIndex, locationType);
                 AddToLocationFavouriteList(locationFavouriteIndex, locationType, "None");
             }
-            else if (locationValue == "All")
-            {
-                ClearLocationFavouriteList(locationFavouriteIndex, locationType);
-                AddToLocationFavouriteList(locationFavouriteIndex, locationType, "All");
-            }
             else
             {
                 AddToLocationFavouriteList(locationFavouriteIndex, locationType, locationValue);
                 DeleteFromLocationFavouriteList(locationFavouriteIndex, locationType, "None");
-                DeleteFromLocationFavouriteList(locationFavouriteIndex, locationType, "All");
             }
             SetTextBoxGeneralLocationFilters(selectedFavouriteName);
         }
@@ -577,11 +570,6 @@ namespace P3D_Scenario_Generator
             {
                 return;
             }
-            else if (locationValue == "All")
-            {
-                ClearLocationFavouriteList(locationFavouriteIndex, locationType);
-                AddToLocationFavouriteList(locationFavouriteIndex, locationType, "None");
-            }
             else
             {
                 DeleteFromLocationFavouriteList(locationFavouriteIndex, locationType, locationValue);
@@ -611,24 +599,52 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// Combines the Country/State/City location filters into a single string for display using
+        /// a tooltip with MouseHover event over TextBoxGeneralLocationFilters
+        /// </summary>
+        /// <param name="selectedFavouriteName">Used to identify the correct locationFavourite in <see cref="LocationFavourites"/></param>
+        /// <returns>Country/State/City location filters combined into a single string</returns>
         static internal string SetTextBoxGeneralLocationFilters(string selectedFavouriteName)
         {
             string filters;
             // Get index of selected locationFavourite 
             int locationFavouriteIndex = LocationFavourites.FindIndex(favourite => favourite.Name == selectedFavouriteName);
+            CurrentLocationFavouriteIndex = locationFavouriteIndex;
 
             filters = "Countries = \"";
-            foreach (string country in LocationFavourites[locationFavouriteIndex].Countries)
-                filters += $"{country} ";
+            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[locationFavouriteIndex].Countries);
+            filters += "\" \nStates = \"";
+            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[locationFavouriteIndex].States);
+            filters += "\" \nCities = \"";
+            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[locationFavouriteIndex].Cities);
+            filters += "\"";
+            return filters;
+        }
+
+        static internal string UpdateLocationFavouriteName(string newLocationFavouriteName)
+        {
+            string oldLocationFavouriteName = LocationFavourites[CurrentLocationFavouriteIndex].Name;
+            if (LocationFavourites.FindAll(favourite => favourite.Name ==  newLocationFavouriteName).Count == 0)
+                LocationFavourites[CurrentLocationFavouriteIndex].Name = newLocationFavouriteName;
+            return oldLocationFavouriteName;
+        }
+
+        /// <summary>
+        /// Combines one of Country/State/City location filters into a single string for display using
+        /// a tooltip with MouseHover event over TextBoxGeneralLocationFilters
+        /// </summary>
+        /// <param name="locationFilterStrings">The list of location filter strings to be combined</param>
+        /// <returns>One of Country/State/City location filters combined into a single string</returns>
+        static private string SetTextBoxGeneralLocationFilter(List<string> locationFilterStrings)
+        {
+            string filters = "";
+
+            foreach (string country in locationFilterStrings)
+                filters += $"{country}, ";
             filters = filters.Trim();
-            filters += "\", States = \"";
-            foreach (string state in LocationFavourites[locationFavouriteIndex].States)
-                filters += $"{state} ";
-            filters = filters.Trim();
-            filters += "\", Cities = \"";
-            foreach (string city in LocationFavourites[locationFavouriteIndex].Cities)
-                filters += $"{city} ";
-            filters = filters.Trim() + "\"";
+            filters = filters.Trim(',');
+
             return filters;
         }
 
