@@ -472,6 +472,121 @@ namespace P3D_Scenario_Generator
             return cities;
         }
 
+        #endregion
+
+        #region Manage Location favourites region
+
+        /// <summary>
+        /// Adds filter string to one of Country/State/City for <see cref="CurrentLocationFavouriteIndex"/> in 
+        /// <see cref="LocationFavourites"/>
+        /// </summary>
+        /// <param name="locationType">Which of Country/State/City to add to</param>
+        /// <param name="locationValue">The filter string to be added</param>
+        static internal void AddFilterValueToLocationFavourite(string locationType, string locationValue)
+        {
+            if (locationValue == "None")
+            {
+                // Clear existing filter strings and add "None"
+                ClearLocationFavouriteList(locationType);
+                AddToLocationFavouriteList(locationType, "None");
+            }
+            else
+            {
+                // Add filter string
+                AddToLocationFavouriteList(locationType, locationValue);
+                // Handle case where filter list was "None"
+                DeleteFromLocationFavouriteList(locationType, "None");
+            }
+        }
+
+        /// <summary>
+        /// Adds filter string to one of Country/State/City for <see cref="CurrentLocationFavouriteIndex"/> in 
+        /// <see cref="LocationFavourites"/>
+        /// </summary>
+        /// <param name="locationType">Which of Country/State/City to add to</param>
+        /// <param name="locationValue">The filter string to be added</param>
+        static internal void AddToLocationFavouriteList(string locationType, string locationValue)
+        {
+            if (locationType == "Country")
+            {
+                LocationFavourites[CurrentLocationFavouriteIndex].Countries.Add(locationValue);
+                LocationFavourites[CurrentLocationFavouriteIndex].Countries = LocationFavourites[CurrentLocationFavouriteIndex].Countries.Distinct().ToList();
+                LocationFavourites[CurrentLocationFavouriteIndex].Countries.Sort();
+            }
+            else if (locationType == "State")
+            {
+                LocationFavourites[CurrentLocationFavouriteIndex].States.Add(locationValue);
+                LocationFavourites[CurrentLocationFavouriteIndex].States = LocationFavourites[CurrentLocationFavouriteIndex].States.Distinct().ToList();
+                LocationFavourites[CurrentLocationFavouriteIndex].States.Sort();
+            }
+            else
+            {
+                LocationFavourites[CurrentLocationFavouriteIndex].Cities.Add(locationValue);
+                LocationFavourites[CurrentLocationFavouriteIndex].Cities = LocationFavourites[CurrentLocationFavouriteIndex].Cities.Distinct().ToList();
+                LocationFavourites[CurrentLocationFavouriteIndex].Cities.Sort();
+            }
+        }
+
+        /// <summary>
+        /// Clears filter string list for one of Country/State/City for <see cref="CurrentLocationFavouriteIndex"/> in 
+        /// <see cref="LocationFavourites"/>
+        /// </summary>
+        /// <param name="locationType">Which Country/State/City filter string list to clear </param>
+        static internal void ClearLocationFavouriteList(string locationType)
+        {
+            if (locationType == "Country")
+                LocationFavourites[CurrentLocationFavouriteIndex].Countries.Clear();
+            else if (locationType == "State")
+                LocationFavourites[CurrentLocationFavouriteIndex].States.Clear();
+            else
+                LocationFavourites[CurrentLocationFavouriteIndex].Cities.Clear();
+        }
+
+        /// <summary>
+        /// Deletes filter string from one of Country/State/City for <see cref="CurrentLocationFavouriteIndex"/> in 
+        /// <see cref="LocationFavourites"/>
+        /// </summary>
+        /// <param name="locationType">Which of Country/State/City to delete from</param>
+        /// <param name="locationValue">The filter string to be deleted</param>
+        static internal void DeleteFromLocationFavouriteList(string locationType, string locationValue)
+        {
+            if (locationType == "Country")
+            {
+                LocationFavourites[CurrentLocationFavouriteIndex].Countries.Remove(locationValue);
+                if (LocationFavourites[CurrentLocationFavouriteIndex].Countries.Count == 0)
+                    AddToLocationFavouriteList(locationType, "None");
+            }
+            else if (locationType == "State")
+            {
+                LocationFavourites[CurrentLocationFavouriteIndex].States.Remove(locationValue);
+                if (LocationFavourites[CurrentLocationFavouriteIndex].States.Count == 0)
+                    AddToLocationFavouriteList(locationType, "None");
+            }
+            else
+            {
+                LocationFavourites[CurrentLocationFavouriteIndex].Cities.Remove(locationValue);
+                if (LocationFavourites[CurrentLocationFavouriteIndex].Cities.Count == 0)
+                    AddToLocationFavouriteList(locationType, "None");
+            }
+        }
+
+        /// <summary>
+        ///  Gets a filter string to display in the Country/State/City fields on the General tab of form.
+        ///  The current favourite may include more than one filter value for one or more of these fields.
+        ///  Displays the first of the filter values as the list is maintained sorted.
+        /// </summary>
+        /// <param name="locationType">Which of Country/State/City fields the display filter value is for</param>
+        /// <returns>The Country/State/City field display filter value</returns>
+        static internal string GetLocationFavouriteDisplayFilterValue(string locationType)
+        {
+            if (locationType == "Country")
+                return LocationFavourites[CurrentLocationFavouriteIndex].Countries[0];
+            else if (locationType == "State")
+                return LocationFavourites[CurrentLocationFavouriteIndex].States[0];
+            else
+                return LocationFavourites[CurrentLocationFavouriteIndex].Cities[0];
+        }
+
         /// <summary>
         /// Get a sorted list of the location favourite names
         /// </summary>
@@ -488,114 +603,21 @@ namespace P3D_Scenario_Generator
             return locationFavouriteNames;
         }
 
-        static internal void AddFilterValueToLocationFavourite(string locationType, string locationValue)
-        {
-            // Get index of locationFavourite to be added to
-            string selectedFavouriteName = Form.form.ComboBoxGeneralLocationFavourites.SelectedItem.ToString();
-            int locationFavouriteIndex = LocationFavourites.FindIndex(favourite => favourite.Name == selectedFavouriteName);
-
-            if (locationValue == "None")
-            {
-                ClearLocationFavouriteList(locationFavouriteIndex, locationType);
-                AddToLocationFavouriteList(locationFavouriteIndex, locationType, "None");
-            }
-            else
-            {
-                AddToLocationFavouriteList(locationFavouriteIndex, locationType, locationValue);
-                DeleteFromLocationFavouriteList(locationFavouriteIndex, locationType, "None");
-            }
-            SetTextBoxGeneralLocationFilters(selectedFavouriteName);
-        }
-
-        static internal void ClearLocationFavouriteList(int locationFavouriteIndex, string locationType)
-        {
-            if (locationType == "Country")
-                LocationFavourites[locationFavouriteIndex].Countries.Clear();
-            else if (locationType == "State")
-                LocationFavourites[locationFavouriteIndex].States.Clear();
-            else
-                LocationFavourites[locationFavouriteIndex].Cities.Clear();
-        }
-
-        static internal void AddToLocationFavouriteList(int locationFavouriteIndex, string locationType, string locationValue)
-        {
-            if (locationType == "Country")
-            {
-                LocationFavourites[locationFavouriteIndex].Countries.Add(locationValue);
-                LocationFavourites[locationFavouriteIndex].Countries = LocationFavourites[locationFavouriteIndex].Countries.Distinct().ToList();
-                LocationFavourites[locationFavouriteIndex].Countries.Sort();
-            }
-            else if (locationType == "State")
-            {
-                LocationFavourites[locationFavouriteIndex].States.Add(locationValue);
-                LocationFavourites[locationFavouriteIndex].States = LocationFavourites[locationFavouriteIndex].States.Distinct().ToList();
-                LocationFavourites[locationFavouriteIndex].States.Sort();
-            }
-            else
-            {
-                LocationFavourites[locationFavouriteIndex].Cities.Add(locationValue);
-                LocationFavourites[locationFavouriteIndex].Cities = LocationFavourites[locationFavouriteIndex].Cities.Distinct().ToList();
-                LocationFavourites[locationFavouriteIndex].Cities.Sort();
-            }
-        }
-
         /// <summary>
-        ///  Gets a filter string to display in the Country/State/City fields on the General tab of form.
-        ///  The current favourite may include more than one filter value for one or more of these fields.
-        ///  Displays the first of the filter values as the list is maintained sorted.
+        /// Deletes filter string from one of Country/State/City for <see cref="CurrentLocationFavouriteIndex"/> in 
+        /// <see cref="LocationFavourites"/>
         /// </summary>
-        /// <param name="locationType">Which of Country/State/City fields the display filter value is for</param>
-        /// <returns>The Country/State/City field the display filter value</returns>
-        static internal string GetLocationFavouriteDisplayFilterValue(string locationType)
-        {
-            // Get index of locationFavourite 
-            string selectedFavouriteName = Form.form.ComboBoxGeneralLocationFavourites.SelectedItem.ToString();
-            int locationFavouriteIndex = LocationFavourites.FindIndex(favourite => favourite.Name == selectedFavouriteName);
-
-            if (locationType == "Country")
-                return LocationFavourites[locationFavouriteIndex].Countries[0];
-            else if (locationType == "State")
-                return LocationFavourites[locationFavouriteIndex].States[0];
-            else
-                return LocationFavourites[locationFavouriteIndex].Cities[0];
-        }
-
+        /// <param name="locationType">Which of Country/State/City to delete from</param>
+        /// <param name="locationValue">The filter string to be deleted</param>
         static internal void DeleteFilterValueFromLocationFavourite(string locationType, string locationValue)
         {
-            // Get index of locationFavourite to be removed from
-            string selectedFavouriteName = Form.form.ComboBoxGeneralLocationFavourites.SelectedItem.ToString();
-            int locationFavouriteIndex = LocationFavourites.FindIndex(favourite => favourite.Name == selectedFavouriteName);
-
             if (locationValue == "None")
             {
                 return;
             }
             else
             {
-                DeleteFromLocationFavouriteList(locationFavouriteIndex, locationType, locationValue);
-            }
-            SetTextBoxGeneralLocationFilters(selectedFavouriteName);
-        }
-
-        static internal void DeleteFromLocationFavouriteList(int locationFavouriteIndex, string locationType, string locationValue)
-        {
-            if (locationType == "Country")
-            {
-                LocationFavourites[locationFavouriteIndex].Countries.Remove(locationValue);
-                if (LocationFavourites[locationFavouriteIndex].Countries.Count == 0)
-                    AddToLocationFavouriteList(locationFavouriteIndex, locationType, "None");
-            }
-            else if (locationType == "State")
-            {
-                LocationFavourites[locationFavouriteIndex].States.Remove(locationValue);
-                if (LocationFavourites[locationFavouriteIndex].States.Count == 0)
-                    AddToLocationFavouriteList(locationFavouriteIndex, locationType, "None");
-            }
-            else
-            {
-                LocationFavourites[locationFavouriteIndex].Cities.Remove(locationValue);
-                if (LocationFavourites[locationFavouriteIndex].Cities.Count == 0)
-                    AddToLocationFavouriteList(locationFavouriteIndex, locationType, "None");
+                DeleteFromLocationFavouriteList(locationType, locationValue);
             }
         }
 
@@ -603,31 +625,71 @@ namespace P3D_Scenario_Generator
         /// Combines the Country/State/City location filters into a single string for display using
         /// a tooltip with MouseHover event over TextBoxGeneralLocationFilters
         /// </summary>
-        /// <param name="selectedFavouriteName">Used to identify the correct locationFavourite in <see cref="LocationFavourites"/></param>
         /// <returns>Country/State/City location filters combined into a single string</returns>
-        static internal string SetTextBoxGeneralLocationFilters(string selectedFavouriteName)
+        static internal string SetTextBoxGeneralLocationFilters()
         {
             string filters;
-            // Get index of selected locationFavourite 
-            int locationFavouriteIndex = LocationFavourites.FindIndex(favourite => favourite.Name == selectedFavouriteName);
-            CurrentLocationFavouriteIndex = locationFavouriteIndex;
 
             filters = "Countries = \"";
-            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[locationFavouriteIndex].Countries);
+            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[CurrentLocationFavouriteIndex].Countries);
             filters += "\" \nStates = \"";
-            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[locationFavouriteIndex].States);
+            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[CurrentLocationFavouriteIndex].States);
             filters += "\" \nCities = \"";
-            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[locationFavouriteIndex].Cities);
+            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[CurrentLocationFavouriteIndex].Cities);
             filters += "\"";
             return filters;
         }
 
+        /// <summary>
+        /// Updates current location favourite with new name if that name has not already been used
+        /// </summary>
+        /// <param name="newLocationFavouriteName">The new location favourite name</param>
+        /// <returns>The replaced current location favourite name</returns>
         static internal string UpdateLocationFavouriteName(string newLocationFavouriteName)
         {
+            // Save name of current location favourite before changing
             string oldLocationFavouriteName = LocationFavourites[CurrentLocationFavouriteIndex].Name;
+
+            // Make sure new name is not already in use and then change in current location favourite
             if (LocationFavourites.FindAll(favourite => favourite.Name ==  newLocationFavouriteName).Count == 0)
                 LocationFavourites[CurrentLocationFavouriteIndex].Name = newLocationFavouriteName;
+
+            // Return old favourite name so a new location favourite of that name can be created
             return oldLocationFavouriteName;
+        }
+
+        /// <summary>
+        /// Add a location favourite to end of <see cref="LocationFavourites"/> no need to
+        /// adjust <see cref="CurrentLocationFavouriteIndex"/> as it is unaffected by adding to
+        /// end of the list unless it's the first favourite to be added in which case set
+        /// <see cref="CurrentLocationFavouriteIndex"/> to zero.
+        /// </summary>
+        /// <param name="newLocationFavourite">The new <see cref="LocationFavourite"/> to be added</param>
+        static internal void AddLocationFavourite(LocationFavourite newLocationFavourite)
+        {
+            LocationFavourites.Add(newLocationFavourite);
+            if (LocationFavourites.Count == 1)
+                CurrentLocationFavouriteIndex = 0;
+        }
+
+        /// <summary>
+        /// Delete a location favourite from <see cref="LocationFavourites"/> and adjust 
+        /// <see cref="CurrentLocationFavouriteIndex"/> to zero
+        /// </summary>
+        /// <param name="deleteLocationFavouriteName">The name of the  <see cref="LocationFavourite"/> to be deleted</param>
+        /// <returns>The name of the zero index <see cref="LocationFavourites"/> location favourite</returns>
+        static internal string DeleteLocationFavourite(string deleteLocationFavouriteName)
+        {
+            if (LocationFavourites.Count > 1)
+            {
+                LocationFavourite deleteLocationFavourite = LocationFavourites.Find(favourite => favourite.Name == deleteLocationFavouriteName);
+                if (deleteLocationFavourite != null)
+                {
+                    LocationFavourites.Remove(deleteLocationFavourite);
+                    CurrentLocationFavouriteIndex = 0;
+                }
+            }
+            return LocationFavourites[CurrentLocationFavouriteIndex].Name;
         }
 
         /// <summary>
@@ -640,12 +702,32 @@ namespace P3D_Scenario_Generator
         {
             string filters = "";
 
-            foreach (string country in locationFilterStrings)
-                filters += $"{country}, ";
+            foreach (string filterString in locationFilterStrings)
+                filters += $"{filterString}, ";
             filters = filters.Trim();
             filters = filters.Trim(',');
 
             return filters;
+        }
+
+        /// <summary>
+        /// Get the <see cref="CurrentLocationFavouriteIndex"/> instance in <see cref="LocationFavourites"/>
+        /// </summary>
+        /// <returns>The <see cref="CurrentLocationFavouriteIndex"/> instance in <see cref="LocationFavourites"/></returns>
+        static internal LocationFavourite GetCurrentLocationFavourite()
+        {
+            return LocationFavourites[CurrentLocationFavouriteIndex];
+        }
+
+        /// <summary>
+        /// Reset <see cref="CurrentLocationFavouriteIndex"/> to the instance of <see cref="LocationFavourite"/>
+        /// with newFavouriteName
+        /// </summary>
+        /// <param name="newFavouriteName">The name of the new instance to be set as <see cref="CurrentLocationFavouriteIndex"/></param>
+        static internal void ChangeCurrentLocationFavouriteIndex(string newFavouriteName)
+        {
+            LocationFavourite locationFavourite = LocationFavourites.Find(favourite => favourite.Name == newFavouriteName);
+            CurrentLocationFavouriteIndex = LocationFavourites.IndexOf(locationFavourite);
         }
 
         #endregion

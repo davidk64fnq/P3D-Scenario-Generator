@@ -6,7 +6,10 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Windows.Forms;
+using System.Xml.Serialization;
+using Microsoft.VisualBasic.ApplicationServices;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using Newtonsoft.Json;
 
 namespace P3D_Scenario_Generator
 {
@@ -216,34 +219,62 @@ namespace P3D_Scenario_Generator
 
         #region Location selection
 
+        /// <summary>
+        /// Add or delete an entry in <see cref="ComboBoxGeneralLocationFavourites"/> list
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ComboBoxGeneralLocationFavourites_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
+                // Alter locationFavourite instance in Runway.cs to reflect new name
                 string newFavouriteName = ((ComboBox)sender).Text;
                 string oldFavouriteName = Runway.UpdateLocationFavouriteName(newFavouriteName);
 
-                // create method to do this, manage CurrentLocationFavouriteIndex, adjust ComboBoxGeneralLocationFavourites selectedindex
+                // Create a new locationFavourite instance in Runway.cs using old name and all filters set to "None"
+                Runway.AddLocationFavourite(new LocationFavourite(oldFavouriteName, ["None"], ["None"], ["None"]));
 
-                Runway.LocationFavourites.Add(new LocationFavourite(oldFavouriteName, ["None"], ["None"], ["None"]));
+                // Refresh the ComboBoxGeneralLocationFavourites field list on form
                 ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
+
+                // Set selected index for ComboBoxGeneralLocationFavourites
                 int newFavouriteIndex = ComboBoxGeneralLocationFavourites.Items.IndexOf(newFavouriteName);
                 ComboBoxGeneralLocationFavourites.SelectedIndex = newFavouriteIndex;
+
+                // Refresh Country/State/City fields on form
+                LocationFavourite currentLocationFavourite = Runway.GetCurrentLocationFavourite();
+                ComboBoxGeneralLocationCountry.Text = currentLocationFavourite.Countries[0];
+                ComboBoxGeneralLocationState.Text = currentLocationFavourite.States[0];
+                ComboBoxGeneralLocationCity.Text = currentLocationFavourite.Cities[0];
+
+                // Refresh TextBoxGeneralLocationFilters field on form
+                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
             }
             else if (e.KeyCode == Keys.Delete)
             {
+                // Don't delete a character
                 e.SuppressKeyPress = true;
+
+                // Delete locationFavourite instance in Runway.cs
                 string deleteFavouriteName = ((ComboBox)sender).Text;
+                string currentFavouriteName = Runway.DeleteLocationFavourite(deleteFavouriteName);
 
-                // create method to do this, manage CurrentLocationFavouriteIndex, adjust ComboBoxGeneralLocationFavourites selectedindex
-
-                LocationFavourite deleteLocationFavourite = Runway.LocationFavourites.Find(favourite => favourite.Name == deleteFavouriteName);
-                if (deleteLocationFavourite != null)
-                {
-                    Runway.LocationFavourites.Remove(deleteLocationFavourite);
-                    Runway.CurrentLocationFavouriteIndex = 0;
-                }
+                // Refresh the ComboBoxGeneralLocationFavourites field list on form
                 ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
+
+                // Set selected index for ComboBoxGeneralLocationFavourites 
+                int currentFavouriteIndex = ComboBoxGeneralLocationFavourites.Items.IndexOf(currentFavouriteName);
+                ComboBoxGeneralLocationFavourites.SelectedIndex = currentFavouriteIndex;
+
+                // Refresh Country/State/City fields on form
+                LocationFavourite currentLocationFavourite = Runway.GetCurrentLocationFavourite();
+                ComboBoxGeneralLocationCountry.Text = currentLocationFavourite.Countries[0];
+                ComboBoxGeneralLocationState.Text = currentLocationFavourite.States[0];
+                ComboBoxGeneralLocationCity.Text = currentLocationFavourite.Cities[0];
+
+                // Refresh TextBoxGeneralLocationFilters field on form
+                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
             }
         }
 
@@ -259,20 +290,25 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// When user selects a different location favourite set teh Country/State/City location fields
+        /// When user selects a different location favourite set the Country/State/City location fields
         /// to correct values and refresh the TextBoxGeneralLocationFilters field value.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void ComboBoxGeneralLocationFavourites_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string curFavourite = ComboBoxGeneralLocationFavourites.Text;
-            LocationFavourite locationFavourite = Runway.LocationFavourites.Find(favourite => favourite.Name == curFavourite);
+            // Update CurrentLocationFavouriteIndex in Runway.cs
+            string newFavouriteName = ((ComboBox)sender).Text;
+            Runway.ChangeCurrentLocationFavouriteIndex(newFavouriteName);
 
-            ComboBoxGeneralLocationCountry.Text = locationFavourite.Countries[0];
-            ComboBoxGeneralLocationState.Text = locationFavourite.States[0];
-            ComboBoxGeneralLocationCity.Text = locationFavourite.Cities[0];
-            TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters(curFavourite);
+            // Refresh Country/State/City fields on form
+            LocationFavourite currentLocationFavourite = Runway.GetCurrentLocationFavourite();
+            ComboBoxGeneralLocationCountry.Text = currentLocationFavourite.Countries[0];
+            ComboBoxGeneralLocationState.Text = currentLocationFavourite.States[0];
+            ComboBoxGeneralLocationCity.Text = currentLocationFavourite.Cities[0];
+
+            // Refresh TextBoxGeneralLocationFilters field on form
+            TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
         }
 
         /// <summary>
@@ -286,7 +322,6 @@ namespace P3D_Scenario_Generator
         private void ComboBoxGeneralLocation_KeyDown(object sender, KeyEventArgs e)
         {
             string selectedItem = ((ComboBox)sender).SelectedItem.ToString();
-            string curFavourite = ComboBoxGeneralLocationFavourites.Text;
             string locationType;
 
             if (((ComboBox)sender).Name.Contains("Country"))
@@ -299,13 +334,13 @@ namespace P3D_Scenario_Generator
             if (e.KeyCode == Keys.Enter)
             {
                 Runway.AddFilterValueToLocationFavourite(locationType, selectedItem);
-                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters(curFavourite);
+                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
                 ((ComboBox)sender).Text = Runway.GetLocationFavouriteDisplayFilterValue(locationType);
             }
             else if (e.KeyCode == Keys.Delete)
             {
                 Runway.DeleteFilterValueFromLocationFavourite(locationType, selectedItem);
-                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters(curFavourite);
+                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
                 ((ComboBox)sender).Text = Runway.GetLocationFavouriteDisplayFilterValue(locationType);
             }
         }
@@ -589,8 +624,8 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralLocationState.DataSource = Runway.GetRunwayStates();
             ComboBoxGeneralLocationCity.DataSource = Runway.GetRunwayCities();
             if (Runway.LocationFavourites.Count == 0)
-                Runway.LocationFavourites.Add(new LocationFavourite($"Favourite 1", ["None"], ["None"], ["None"]));
-            TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters("Favourite 1");
+                Runway.AddLocationFavourite(new LocationFavourite("None", ["None"], ["None"], ["None"]));
+            TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
             ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
             ComboBoxGeneralScenarioType.SelectedIndex = 0;
             ComboBoxGeneralAircraftSelection.DataSource = Properties.Settings.Default.AircraftTitles;

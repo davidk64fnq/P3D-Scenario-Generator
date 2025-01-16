@@ -166,6 +166,11 @@ for use in a scenario.
 To modify filters in current combination select the Country/State/City item in the respective 
 field and press "Enter" to add it or "Delete" to remove it from the combination favourite.
 
+To rename a favourite, type in the new name and press "Enter", this will rename the existing 
+favourite and create a new favourite with the old favourite name.
+
+To delete a favourite, press "Delete" with the "Favourites" field name selected.
+
 To see the currently selected favourite, mouseover the "Filters" field below.</value>
   </data>
   <data name="label61.ToolTip" xml:space="preserve">
@@ -174,6 +179,11 @@ for use in a scenario.
 
 To modify filters in current combination select the Country/State/City item in the respective 
 field and press "Enter" to add it or "Delete" to remove it from the combination favourite.
+
+To rename a favourite, type in the new name and press "Enter", this will rename the existing 
+favourite and create a new favourite with the old favourite name.
+
+To delete a favourite, press "Delete" with the "Favourites" field name selected.
 
 To see the currently selected favourite, mouseover the "Filters" field below.</value>
   </data>
