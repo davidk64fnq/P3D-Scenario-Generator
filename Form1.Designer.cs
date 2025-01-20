@@ -2956,6 +2956,7 @@ namespace P3D_Scenario_Generator
             MinimizeBox = false;
             Name = "Form";
             Text = "P3D Scenario Generator";
+            FormClosing += Form_FormClosing;
             groupBox1.ResumeLayout(false);
             tableLayoutPanelPhotoTourPhotoWindowLocation.ResumeLayout(false);
             tableLayoutPanelPhotoTourPhotoWindowLocation.PerformLayout();

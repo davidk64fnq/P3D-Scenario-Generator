@@ -1,7 +1,4 @@
 ﻿using ImageMagick;
-using System.Windows.Forms;
-using Application = System.Windows.Forms.Application;
-using TextBox = System.Windows.Forms.TextBox;
 
 namespace P3D_Scenario_Generator
 {

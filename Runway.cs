@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using Newtonsoft.Json;
+using System.Xml;
 
 namespace P3D_Scenario_Generator
 {
@@ -141,37 +142,27 @@ namespace P3D_Scenario_Generator
     /// <summary>
     /// Stores the Country/State/City location filter values for a location favourite
     /// </summary>
-    public class LocationFavourite(string v1, List<string> v2, List<string> v3, List<string> v4) : ICloneable
+    public class LocationFavourite()
     {
         /// <summary>
         /// The name of the favourite
         /// </summary>
-        internal string Name { get; set; } = v1;
+        public string Name { get; set; }
 
         /// <summary>
         /// The list of valid country strings for this favourite 
         /// </summary>
-        internal List<string> Countries { get; set; } = v2;
+        public List<string> Countries { get; set; }
 
         /// <summary>
         /// The list of valid state strings for this favourite 
         /// </summary>
-        internal List<string> States { get; set; } = v3;
+        public List<string> States { get; set; }
 
         /// <summary>
         /// The list of valid city strings for this favourite 
         /// </summary>
-        internal List<string> Cities { get; set; } = v4;
-
-        /// <summary>
-        /// Clones the current location favourite when user adds a new favourites string
-        /// </summary>
-        /// <returns>Cloned version of <see cref="LocationFavourite"/></returns>
-        public object Clone()
-        {
-            var locationFavourite = new LocationFavourite(Name, Countries, States, Cities);
-            return locationFavourite;
-        }
+        public List<string> Cities { get; set; }
     }
 
     internal class Runway
@@ -665,8 +656,15 @@ namespace P3D_Scenario_Generator
         /// <see cref="CurrentLocationFavouriteIndex"/> to zero.
         /// </summary>
         /// <param name="newLocationFavourite">The new <see cref="LocationFavourite"/> to be added</param>
-        static internal void AddLocationFavourite(LocationFavourite newLocationFavourite)
+        static internal void AddLocationFavourite(string name, List<string> countries, List<string> states, List<string> cities)
         {
+            var newLocationFavourite = new LocationFavourite
+            {
+                Name = name,
+                Countries = countries,
+                States = states,
+                Cities = cities
+            };
             LocationFavourites.Add(newLocationFavourite);
             if (LocationFavourites.Count == 1)
                 CurrentLocationFavouriteIndex = 0;
@@ -730,6 +728,103 @@ namespace P3D_Scenario_Generator
             CurrentLocationFavouriteIndex = LocationFavourites.IndexOf(locationFavourite);
         }
 
+        /// <summary>
+        /// Save <see cref="LocationFavourites"/> to file in JSON format
+        /// </summary>
+        internal static void SaveLocationFavourites()
+        {
+            string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            directory = Path.Combine(directory, AppDomain.CurrentDomain.FriendlyName);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            directory = Path.Combine(directory, "LocationFavouritesJSON.txt");
+
+            JsonSerializer serializer = new()
+            {
+                Formatting = Newtonsoft.Json.Formatting.Indented
+            };
+            using StreamWriter sw = new(directory);
+            using JsonWriter writer = new JsonTextWriter(sw);
+            serializer.Serialize(writer, LocationFavourites);
+        }
+
+        /// <summary>
+        /// Load <see cref="LocationFavourites"/> from file stored in JSON format
+        /// </summary>
+        internal static void LoadLocationFavourites()
+        {
+            string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            directory = Path.Combine(directory, AppDomain.CurrentDomain.FriendlyName);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            directory = Path.Combine(directory, "LocationFavouritesJSON.txt");
+
+            string input;
+            if (!File.Exists(directory))
+            {
+                Stream stream = Form.GetResourceStream("Text.LocationFavouritesJSON.txt");
+                StreamReader reader = new(stream);
+                input = reader.ReadToEnd();
+            }
+            else
+            {
+                input = File.ReadAllText(directory);
+            }
+
+            LocationFavourites = JsonConvert.DeserializeObject<List<LocationFavourite>>(input);
+        }
+
+        /// <summary>
+        /// Checks a location string (Country/State/City) against the current location favourite in <see cref="LocationFavourites"/>
+        /// </summary>
+        /// <param name="location">The location string to be checked</param>
+        /// <returns>True if the location string to be checked matches one of the Country/State/City filter values</returns>
+        internal static bool CheckLocationFilters(string location)
+        {
+            // If Country/State/City filters all set to "None" return true as no filtering on location is required
+            if (LocationFavourites[CurrentLocationFavouriteIndex].Countries[0] == "None" && 
+                LocationFavourites[CurrentLocationFavouriteIndex].States[0] == "None" &&
+                LocationFavourites[CurrentLocationFavouriteIndex].Cities[0] == "None")
+            {
+                return true;
+            }
+
+            // Check each of Country/State/City filter strings against location
+            bool checkCountry = CheckLocationFilter(location, LocationFavourites[CurrentLocationFavouriteIndex].Countries);
+            bool checkState = CheckLocationFilter(location, LocationFavourites[CurrentLocationFavouriteIndex].States);
+            bool checkCity = CheckLocationFilter(location, LocationFavourites[CurrentLocationFavouriteIndex].Cities);
+            if (checkCountry || checkState || checkCity)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks a location string against one of Country/State/City in the current location favourite in <see cref="LocationFavourites"/>
+        /// </summary>
+        /// <param name="location">The location string to be checked</param>
+        /// <param name="locationStrings">The strings to be checked against in <see cref="LocationFavourites"/></param>
+        /// <returns>True if the location string to be checked matches one of the filter values in locationStrings</returns>
+        internal static bool CheckLocationFilter(string location, List<string> locationStrings)
+        {
+            if (locationStrings[0] != "None")
+            {
+                return locationStrings.Contains(location);
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         #endregion
 
         #region Search for a runway(s) that meets constraints region
@@ -791,24 +886,22 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Creates a subset of the <see cref="Runways"/> list of runways filtering on the Country/State/City
-        /// location strings in the General tab
+        /// location strings in the current location favourite in <see cref="LocationFavourites"/>
         /// </summary>
         static internal void SetRunwaysSubset()
         {
             // If Country/State/City filters all set to "None" just return full list of runways
-            if (Form.form.ComboBoxGeneralLocationCountry.Text == "None" && Form.form.ComboBoxGeneralLocationState.Text == "None" &&
-                Form.form.ComboBoxGeneralLocationCity.Text == "None")
+            if (LocationFavourites[CurrentLocationFavouriteIndex].Countries[0] == "None" &&
+                LocationFavourites[CurrentLocationFavouriteIndex].States[0] == "None" &&
+                LocationFavourites[CurrentLocationFavouriteIndex].Cities[0] == "None")
             {
                 RunwaysSubset = CloneRunwayParamsList(Runways);
             }
 
             // Get the subset of runways that match each of the Country/State/City filters and take the union of them - removes duplicates
-            List<RunwayParams> runwaysCountrySubset = GetRunwaysLocationSubset(Form.form.ComboBoxGeneralLocationCountry.Items, 
-            Form.form.ComboBoxGeneralLocationCountry.Text, "Country");
-            List<RunwayParams> runwaysStateSubset = GetRunwaysLocationSubset(Form.form.ComboBoxGeneralLocationState.Items,
-                Form.form.ComboBoxGeneralLocationState.Text, "State");
-            List<RunwayParams> runwaysCitySubset = GetRunwaysLocationSubset(Form.form.ComboBoxGeneralLocationCity.Items,
-                Form.form.ComboBoxGeneralLocationCity.Text, "City");
+            List<RunwayParams> runwaysCountrySubset = GetRunwaysLocationSubset(LocationFavourites[CurrentLocationFavouriteIndex].Countries, "Country");
+            List<RunwayParams> runwaysStateSubset = GetRunwaysLocationSubset(LocationFavourites[CurrentLocationFavouriteIndex].States, "State");
+            List<RunwayParams> runwaysCitySubset = GetRunwaysLocationSubset(LocationFavourites[CurrentLocationFavouriteIndex].Cities, "City");
             List<RunwayParams> runwaysSubset = runwaysCountrySubset.Union(runwaysStateSubset).ToList();
             runwaysSubset = runwaysSubset.Union(runwaysCitySubset).ToList();
 
@@ -841,15 +934,15 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Gets the subset of runways from <see cref="Runways"/> filtered on one location string type
+        /// in the current location favourite in <see cref="LocationFavourites"/>
         /// </summary>
         /// <param name="locationStrings">The collection of location strings</param>
-        /// <param name="selectedLocation">The selected item in the collection of location strings</param>
         /// <param name="locationType">Which of Country/State/City filtering on</param>
         /// <returns>The subset of runways filtered from <see cref="Runways"/></returns>
-        static internal List<RunwayParams> GetRunwaysLocationSubset(ComboBox.ObjectCollection locationStrings, string selectedLocation, string locationType)
+        static internal List<RunwayParams> GetRunwaysLocationSubset(List<string> locationStrings, string locationType)
         {
             List<RunwayParams> runwaysSubset = [];
-            if (selectedLocation == "All")
+            if (locationStrings[0] != "None")
             {
                 if (locationType == "Country")
                 {
@@ -862,21 +955,6 @@ namespace P3D_Scenario_Generator
                 else
                 {
                     runwaysSubset = Runways.FindAll(runway => locationStrings.Contains(runway.City));
-                }
-            }
-            else if (selectedLocation != "None")
-            {
-                if (locationType == "Country")
-                {
-                    runwaysSubset = Runways.FindAll(runway => selectedLocation.Contains(runway.Country));
-                }
-                else if (locationType == "State")
-                {
-                    runwaysSubset = Runways.FindAll(runway => selectedLocation.Contains(runway.State));
-                }
-                else
-                {
-                    runwaysSubset = Runways.FindAll(runway => selectedLocation.Contains(runway.City));
                 }
             }
             return runwaysSubset;

@@ -21,6 +21,16 @@ namespace P3D_Scenario_Generator
         /// Full path including filename of selected thumbnail.jpg file or empty string
         /// </summary>
         public string ThumbnailImagePath { get; set; }
+
+        /// <summary>
+        /// Whether the aircraft has floats, used to exclude water runways from consideration if selected aircraft doesn't have floats
+        /// </summary>
+        public bool HasFloats { get; set; }
+
+        /// <summary>
+        /// Whether the aircraft has wheels/scrapes/skids, used to exclude land runways from consideration if selected aircraft doesn't have them
+        /// </summary>
+        public bool HasWheels { get; set; }
     }
 
     /// <summary>
@@ -43,6 +53,8 @@ namespace P3D_Scenario_Generator
                 aircraftVariant.ThumbnailImagePath = thumbnailPath;
                 aircraftVariant.Title = GetAircraftTitle(thumbnailPath);
                 aircraftVariant.CruiseSpeed = GetAircraftCruiseSpeed(thumbnailPath);
+                aircraftVariant.HasFloats = GetAircraftFloatsStatus(thumbnailPath);
+                aircraftVariant.HasWheels = GetAircraftWheelsStatus(thumbnailPath);
             }
             return aircraftVariant;
         }
@@ -124,6 +136,68 @@ namespace P3D_Scenario_Generator
                 }
             }
             return "";
+        }
+
+        /// <summary>
+        /// Gets whether the aircraft is equipped with floats from the aircraft.cfg file
+        /// </summary>
+        /// <param name="thumbnailPath">From this is extracted the aircraft folder which contains the aircraft.cfg file</param>
+        /// <returns>True if the aircraft is equipped with floats</returns>
+        static internal bool GetAircraftFloatsStatus(string thumbnailPath)
+        {
+            // https://www.prepar3d.com/SDKv5/sdk/simulation_objects/aircraft_configuration_files.html#contact_points
+            // says that in the section [contact_points] a line starting "point.X = 4, etc." indicates floats
+            string textureFolderPath = Path.GetDirectoryName(thumbnailPath);
+            string aircraftFolderPath = Path.GetDirectoryName(textureFolderPath);
+            string aircraftCFG = File.ReadAllText($"{aircraftFolderPath}\\aircraft.cfg");
+            using StringReader reader = new(aircraftCFG);
+            string currentLine;
+            while ((currentLine = reader.ReadLine()) != null)
+            {
+                currentLine = currentLine.Trim();
+                if (currentLine.StartsWith("point."))
+                {
+                    string[] words1 = currentLine.Split("=");
+                    string[] words2 = words1[1].Trim().Split(',');
+                    int contactPointClass = int.Parse(words2[0]);
+                    if (contactPointClass == 4)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets whether the aircraft is equipped with wheels/scrapes/skids from the aircraft.cfg file
+        /// </summary>
+        /// <param name="thumbnailPath">From this is extracted the aircraft folder which contains the aircraft.cfg file</param>
+        /// <returns>True if the aircraft is equipped with wheels/scrapes/skids</returns>
+        static internal bool GetAircraftWheelsStatus(string thumbnailPath)
+        {
+            // https://www.prepar3d.com/SDKv5/sdk/simulation_objects/aircraft_configuration_files.html#contact_points
+            // says that in the section [contact_points] a line starting "point.X = 1 or 2 or 3, etc." indicates wheels/scrapes/skids
+            string textureFolderPath = Path.GetDirectoryName(thumbnailPath);
+            string aircraftFolderPath = Path.GetDirectoryName(textureFolderPath);
+            string aircraftCFG = File.ReadAllText($"{aircraftFolderPath}\\aircraft.cfg");
+            using StringReader reader = new(aircraftCFG);
+            string currentLine;
+            while ((currentLine = reader.ReadLine()) != null)
+            {
+                currentLine = currentLine.Trim();
+                if (currentLine.StartsWith("point."))
+                {
+                    string[] words1 = currentLine.Split("=");
+                    string[] words2 = words1[1].Trim().Split(',');
+                    int contactPointClass = int.Parse(words2[0]);
+                    if (contactPointClass >= 1 && contactPointClass <= 3)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>

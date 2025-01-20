@@ -145,7 +145,7 @@ namespace P3D_Scenario_Generator
             Form.DeleteFile(saveLocation);
             HttpRoutines.GetWebDoc("https://www.pic2map.com/random.php", saveLocation);
             photoLocation = ExtractPhotoParams(saveLocation);
-            if (!Form.CheckLocationFilters(photoLocation.location)) {
+            if (!Runway.CheckLocationFilters(photoLocation.location)) {
                 return false;
             }
 

@@ -1,15 +1,5 @@
-﻿using System.Collections;
-using System.ComponentModel;
-using System.Configuration;
+﻿using System.ComponentModel;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
-using System.Web;
-using System.Windows.Forms;
-using System.Xml.Serialization;
-using Microsoft.VisualBasic.ApplicationServices;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using Newtonsoft.Json;
 
 namespace P3D_Scenario_Generator
 {
@@ -233,7 +223,7 @@ namespace P3D_Scenario_Generator
                 string oldFavouriteName = Runway.UpdateLocationFavouriteName(newFavouriteName);
 
                 // Create a new locationFavourite instance in Runway.cs using old name and all filters set to "None"
-                Runway.AddLocationFavourite(new LocationFavourite(oldFavouriteName, ["None"], ["None"], ["None"]));
+                Runway.AddLocationFavourite(oldFavouriteName, ["None"], ["None"], ["None"]);
 
                 // Refresh the ComboBoxGeneralLocationFavourites field list on form
                 ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
@@ -342,45 +332,6 @@ namespace P3D_Scenario_Generator
                 Runway.DeleteFilterValueFromLocationFavourite(locationType, selectedItem);
                 TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
                 ((ComboBox)sender).Text = Runway.GetLocationFavouriteDisplayFilterValue(locationType);
-            }
-        }
-
-        internal static bool CheckLocationFilters(string location)
-        {
-            // If Country/State/City filters all set to "None" return true as no filtering on location is required
-            if (form.ComboBoxGeneralLocationCountry.Text == "None" && form.ComboBoxGeneralLocationState.Text == "None" &&
-                form.ComboBoxGeneralLocationCity.Text == "None")
-            {
-                return true;
-            }
-
-            // Check each of Country/State/City filter strings against location
-            bool checkCountry = CheckLocationFilter(location, form.ComboBoxGeneralLocationCountry.Items, form.ComboBoxGeneralLocationCountry.Text);
-            bool checkState = CheckLocationFilter(location, form.ComboBoxGeneralLocationState.Items, form.ComboBoxGeneralLocationState.Text);
-            bool checkCity = CheckLocationFilter(location, form.ComboBoxGeneralLocationCity.Items, form.ComboBoxGeneralLocationCity.Text);
-            if (checkCountry || checkState || checkCity)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        internal static bool CheckLocationFilter(string location, ComboBox.ObjectCollection locationStrings, string selectedLocation)
-        {
-            if (selectedLocation == "All")
-            {
-                return locationStrings.Contains(location);
-            }
-            else if (selectedLocation != "None")
-            {
-                return selectedLocation.Contains(location);
-            }
-            else
-            {
-                return true;
             }
         }
 
@@ -623,8 +574,8 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralLocationCountry.DataSource = Runway.GetRunwayCountries();
             ComboBoxGeneralLocationState.DataSource = Runway.GetRunwayStates();
             ComboBoxGeneralLocationCity.DataSource = Runway.GetRunwayCities();
-            if (Runway.LocationFavourites.Count == 0)
-                Runway.AddLocationFavourite(new LocationFavourite("None", ["None"], ["None"], ["None"]));
+            Runway.LoadLocationFavourites();
+            Runway.CurrentLocationFavouriteIndex = 0;
             TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
             ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
             ComboBoxGeneralScenarioType.SelectedIndex = 0;
@@ -1009,5 +960,10 @@ namespace P3D_Scenario_Generator
         }
 
         #endregion
+
+        private void Form_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Runway.SaveLocationFavourites();
+        }
     }
 }
