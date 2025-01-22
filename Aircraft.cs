@@ -13,6 +13,11 @@ namespace P3D_Scenario_Generator
         public string Title { get; set; }
 
         /// <summary>
+        /// The user editable name of the aircraft variant for display purposes on General tab of form
+        /// </summary>
+        public string DisplayName { get; set; }
+
+        /// <summary>
         /// The cruise speed in knots of the aircraft variant as recorded in the aircraft.cfg file
         /// </summary>
         public string CruiseSpeed { get; set; }
@@ -23,14 +28,15 @@ namespace P3D_Scenario_Generator
         public string ThumbnailImagePath { get; set; }
 
         /// <summary>
-        /// Whether the aircraft has floats, used to exclude water runways from consideration if selected aircraft doesn't have floats
+        /// Whether the aircraft has floats, used to exclude takeoff/landing for water runways if selected aircraft doesn't have floats
         /// </summary>
         public bool HasFloats { get; set; }
 
         /// <summary>
-        /// Whether the aircraft has wheels/scrapes/skids, used to exclude land runways from consideration if selected aircraft doesn't have them
+        /// Whether the aircraft has wheels/scrapes/skids, used to exclude takeoff from land based (non water) runways if selected 
+        /// aircraft doesn't have them
         /// </summary>
-        public bool HasWheels { get; set; }
+        public bool HasWheelsOrEquiv { get; set; }
     }
 
     /// <summary>
@@ -39,11 +45,21 @@ namespace P3D_Scenario_Generator
     internal class Aircraft
     {
         /// <summary>
+        /// List of aircraft variants maintained by user with current selection shown on General tab of form
+        /// </summary>
+        internal static List<AircraftVariant> AircraftVariants {  get; set; }
+
+        /// <summary>
+        /// Currently selected aircraft variant displayed on General tab of form
+        /// </summary>
+        internal static int CurrentAircraftVariantIndex;
+
+        /// <summary>
         /// Prompts the user to select an aircraft variant thumbnail image and collects the aircraft title and 
         /// cruise speed from the aircraft.cfg file
         /// </summary>
-        /// <returns>An instance of <see cref="AircraftVariant"/> containing the aircraft variant information</returns>
-        static internal AircraftVariant ChooseAircraftVariant(string simulatorVersion)
+        /// <returns>True if new aircraft variant selected and added to <see cref="AircraftVariants"/></returns>
+        static internal bool ChooseAircraftVariant(string simulatorVersion)
         {
             AircraftVariant aircraftVariant = new();
 
@@ -52,11 +68,70 @@ namespace P3D_Scenario_Generator
             {
                 aircraftVariant.ThumbnailImagePath = thumbnailPath;
                 aircraftVariant.Title = GetAircraftTitle(thumbnailPath);
+                aircraftVariant.DisplayName = aircraftVariant.Title;
                 aircraftVariant.CruiseSpeed = GetAircraftCruiseSpeed(thumbnailPath);
                 aircraftVariant.HasFloats = GetAircraftFloatsStatus(thumbnailPath);
-                aircraftVariant.HasWheels = GetAircraftWheelsStatus(thumbnailPath);
+                aircraftVariant.HasWheelsOrEquiv = GetAircraftWheelsStatus(thumbnailPath);
+                if (AddAircraftVariant(aircraftVariant))
+                    return true;
             }
-            return aircraftVariant;
+            return false;
+        }
+
+        /// <summary>
+        /// Adds aircraft variant to <see cref="AircraftVariants"/> ensuring no duplicates
+        /// </summary>
+        /// <param name="aircraftVariant">The aircraft variant to be added</param>
+        /// <returns>True if new aircraft variant added to <see cref="AircraftVariants"/></returns>
+        static internal bool AddAircraftVariant(AircraftVariant aircraftVariant)
+        {
+            // If list empty just add new variant
+            if (AircraftVariants == null || AircraftVariants.Count == 0)
+            {
+                AircraftVariants = [aircraftVariant];
+                CurrentAircraftVariantIndex = 0;
+                return true;
+            }
+
+            // Check whether variant is already in list and add if it isn't
+            int variantIndex = AircraftVariants.FindIndex(aircraft => aircraft.Title == aircraftVariant.Title);
+            if (variantIndex == -1)
+            {
+                AircraftVariants.Add(aircraftVariant);
+                CurrentAircraftVariantIndex = AircraftVariants.Count - 1;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Get a sorted list of the aircraft variant display names
+        /// </summary>
+        /// <returns>Sorted list of the aircraft variant display names</returns>
+        static internal List<string> GetAircraftVariantDisplayNames()
+        {
+            List<string> names = [];
+
+            for (int i = 0; i < AircraftVariants.Count; i++)
+            {
+                names.Add(AircraftVariants[i].DisplayName);
+            }
+            names.Sort();
+            return names;
+        }
+
+        /// <summary>
+        /// Reset <see cref="CurrentAircraftVariantIndex"/> to the instance of <see cref="AircraftVariant"/>
+        /// with newFavouriteAircraft
+        /// </summary>
+        /// <param name="newFavouriteAircraft">The name of the new instance to be set as <see cref="CurrentAircraftVariantIndex"/></param>
+        static internal void ChangeCurrentAircraftVariantIndex(string newFavouriteAircraft)
+        {
+            AircraftVariant aircraftVariant = AircraftVariants.Find(aircraft => aircraft.DisplayName == newFavouriteAircraft);
+            CurrentAircraftVariantIndex = AircraftVariants.IndexOf(aircraftVariant);
         }
 
         /// <summary>

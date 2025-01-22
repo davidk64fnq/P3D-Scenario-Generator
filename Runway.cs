@@ -198,6 +198,9 @@ namespace P3D_Scenario_Generator
         /// </summary>
         internal static List<LocationFavourite> LocationFavourites = [];
 
+        /// <summary>
+        /// Currently selected location favourite displayed on form
+        /// </summary>
         internal static int CurrentLocationFavouriteIndex;
 
         #region Load runways from "runways.xml" and build list for General tab region

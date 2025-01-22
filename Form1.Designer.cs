@@ -221,6 +221,8 @@ namespace P3D_Scenario_Generator
             TabPageMenu = new TabPage();
             groupBox15 = new GroupBox();
             tableLayoutPanel11 = new TableLayoutPanel();
+            ButtonRandomAircraft = new Button();
+            TextBoxGeneralAircraftValues = new TextBox();
             groupBox14 = new GroupBox();
             tableLayoutPanel10 = new TableLayoutPanel();
             ButtonRandomTime = new Button();
@@ -418,7 +420,8 @@ namespace P3D_Scenario_Generator
             // 
             // buttonGeneralAircraft
             // 
-            buttonGeneralAircraft.Location = new Point(3, 3);
+            buttonGeneralAircraft.Anchor = AnchorStyles.None;
+            buttonGeneralAircraft.Location = new Point(13, 34);
             buttonGeneralAircraft.Name = "buttonGeneralAircraft";
             buttonGeneralAircraft.Size = new Size(100, 23);
             buttonGeneralAircraft.TabIndex = 11;
@@ -2349,7 +2352,7 @@ namespace P3D_Scenario_Generator
             ButtonRandRunway.Name = "ButtonRandRunway";
             ButtonRandRunway.Size = new Size(91, 23);
             ButtonRandRunway.TabIndex = 5;
-            ButtonRandRunway.Text = "Random Runway";
+            ButtonRandRunway.Text = "Random";
             ButtonRandRunway.UseVisualStyleBackColor = true;
             ButtonRandRunway.Click += ButtonRandRunway_Click;
             // 
@@ -2372,7 +2375,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox13.BackColor = Color.FromArgb(255, 192, 128);
             groupBox13.Controls.Add(tableLayoutPanel9);
-            groupBox13.Location = new Point(459, 229);
+            groupBox13.Location = new Point(459, 296);
             groupBox13.Name = "groupBox13";
             groupBox13.Size = new Size(286, 95);
             groupBox13.TabIndex = 19;
@@ -2457,7 +2460,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralAircraftSelection.Anchor = AnchorStyles.None;
             ComboBoxGeneralAircraftSelection.DropDownWidth = 200;
             ComboBoxGeneralAircraftSelection.FormattingEnabled = true;
-            ComboBoxGeneralAircraftSelection.Location = new Point(139, 4);
+            ComboBoxGeneralAircraftSelection.Location = new Point(139, 3);
             ComboBoxGeneralAircraftSelection.Name = "ComboBoxGeneralAircraftSelection";
             ComboBoxGeneralAircraftSelection.Size = new Size(100, 23);
             ComboBoxGeneralAircraftSelection.TabIndex = 42;
@@ -2817,7 +2820,7 @@ namespace P3D_Scenario_Generator
             groupBox15.Controls.Add(tableLayoutPanel11);
             groupBox15.Location = new Point(459, 144);
             groupBox15.Name = "groupBox15";
-            groupBox15.Size = new Size(286, 63);
+            groupBox15.Size = new Size(286, 95);
             groupBox15.TabIndex = 38;
             groupBox15.TabStop = false;
             groupBox15.Text = "Aircraft Selection";
@@ -2829,17 +2832,38 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel11.ColumnCount = 2;
             tableLayoutPanel11.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel11.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel11.Controls.Add(ButtonRandomAircraft, 0, 0);
             tableLayoutPanel11.Controls.Add(ComboBoxGeneralAircraftSelection, 1, 0);
-            tableLayoutPanel11.Controls.Add(buttonGeneralAircraft, 0, 0);
+            tableLayoutPanel11.Controls.Add(buttonGeneralAircraft, 0, 1);
+            tableLayoutPanel11.Controls.Add(TextBoxGeneralAircraftValues, 1, 1);
             tableLayoutPanel11.ImeMode = ImeMode.On;
-            tableLayoutPanel11.Location = new Point(18, 22);
+            tableLayoutPanel11.Location = new Point(17, 22);
             tableLayoutPanel11.Name = "tableLayoutPanel11";
-            tableLayoutPanel11.RowCount = 1;
-            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel11.Size = new Size(253, 32);
+            tableLayoutPanel11.RowCount = 2;
+            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel11.Size = new Size(253, 61);
             tableLayoutPanel11.TabIndex = 36;
+            // 
+            // ButtonRandomAircraft
+            // 
+            ButtonRandomAircraft.Anchor = AnchorStyles.None;
+            ButtonRandomAircraft.Location = new Point(17, 3);
+            ButtonRandomAircraft.Name = "ButtonRandomAircraft";
+            ButtonRandomAircraft.Size = new Size(91, 23);
+            ButtonRandomAircraft.TabIndex = 49;
+            ButtonRandomAircraft.Text = "Random";
+            ButtonRandomAircraft.UseVisualStyleBackColor = true;
+            ButtonRandomAircraft.Click += ButtonRandomAircraft_Click;
+            // 
+            // TextBoxGeneralAircraftValues
+            // 
+            TextBoxGeneralAircraftValues.Anchor = AnchorStyles.None;
+            TextBoxGeneralAircraftValues.Location = new Point(139, 34);
+            TextBoxGeneralAircraftValues.Name = "TextBoxGeneralAircraftValues";
+            TextBoxGeneralAircraftValues.Size = new Size(100, 23);
+            TextBoxGeneralAircraftValues.TabIndex = 48;
+            TextBoxGeneralAircraftValues.Tag = "";
             // 
             // groupBox14
             // 
@@ -3008,6 +3032,7 @@ namespace P3D_Scenario_Generator
             TabPageMenu.ResumeLayout(false);
             groupBox15.ResumeLayout(false);
             tableLayoutPanel11.ResumeLayout(false);
+            tableLayoutPanel11.PerformLayout();
             groupBox14.ResumeLayout(false);
             tableLayoutPanel10.ResumeLayout(false);
             TabControlP3DSG.ResumeLayout(false);
@@ -3217,6 +3242,8 @@ namespace P3D_Scenario_Generator
         internal ComboBox ComboBoxGeneralLocationFavourites;
         internal TextBox TextBoxGeneralLocationFilters;
         private Label label62;
+        private Button ButtonRandomAircraft;
+        internal TextBox TextBoxGeneralAircraftValues;
     }
 }
 

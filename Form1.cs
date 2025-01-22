@@ -165,16 +165,9 @@ namespace P3D_Scenario_Generator
 
         private void ButtonAircraft_Click(object sender, EventArgs e)
         {
-            AircraftVariant aircraftVariant = Aircraft.ChooseAircraftVariant(ComboBoxSettingsSimulatorVersion.Text);
-            if (aircraftVariant.Title != null)
+            if (Aircraft.ChooseAircraftVariant(ComboBoxSettingsSimulatorVersion.Text))
             {
-                Properties.Settings.Default.AircraftTitles.Add(aircraftVariant.Title);
-                Properties.Settings.Default.AircraftTitlesSelectedIndex = Properties.Settings.Default.AircraftTitles.Count - 1;
-                Properties.Settings.Default.AircraftCruiseSpeeds.Add(aircraftVariant.CruiseSpeed);
-                Properties.Settings.Default.AircraftImages.Add(aircraftVariant.ThumbnailImagePath);
-                Properties.Settings.Default.Save();
-                ComboBoxGeneralAircraftSelection.DataSource = null;
-                ComboBoxGeneralAircraftSelection.DataSource = Properties.Settings.Default.AircraftTitles;
+                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
                 ComboBoxGeneralAircraftSelection.SelectedIndex = ComboBoxGeneralAircraftSelection.Items.Count - 1;
             }
         }
@@ -203,6 +196,22 @@ namespace P3D_Scenario_Generator
         private void ComboBoxGeneralAircraftSelection_SelectedIndexChanged(object sender, EventArgs e)
         {
             SetDefaultCircuitParams();
+        }
+
+        private void ButtonRandomAircraft_Click(object sender, EventArgs e)
+        {
+            if (Aircraft.AircraftVariants == null)
+                return;
+            Random random = new();
+            int randomAircraftIndex = random.Next(0, Aircraft.AircraftVariants.Count);
+            ComboBoxGeneralAircraftSelection.SelectedIndex = randomAircraftIndex;
+
+            // Update CurrentAircraftVariantIndex in Aircraft.cs
+            string newFavouriteAircraft = ComboBoxGeneralAircraftSelection.Text;
+            Aircraft.ChangeCurrentAircraftVariantIndex(newFavouriteAircraft);
+
+            // Refresh TextBoxGeneralAircraftValues field on form
+        //    TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
         }
 
         #endregion
@@ -354,10 +363,9 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                int aircraftIndex = ComboBoxGeneralAircraftSelection.SelectedIndex;
-                if (aircraftIndex < 0)
+                if (Aircraft.AircraftVariants.Count == 0)
                     return;
-                double cruiseSpeed = Convert.ToDouble(Properties.Settings.Default.AircraftCruiseSpeeds[aircraftIndex]);
+                double cruiseSpeed = Convert.ToDouble(Aircraft.AircraftVariants[Aircraft.CurrentAircraftVariantIndex].CruiseSpeed);
                 TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", cruiseSpeed);
                 TextBoxCircuitHeightDown.Text = "1000";
                 TextBoxCircuitHeightUpwind.Text = "500";
@@ -569,8 +577,12 @@ namespace P3D_Scenario_Generator
         private void PrepareFormFields()
         {
             // General tab
+
+            //  Runways
             Runway.GetRunways();
             ComboBoxGeneralRunwaySelected.DataSource = Runway.GetICAOids();
+
+            //  Locations
             ComboBoxGeneralLocationCountry.DataSource = Runway.GetRunwayCountries();
             ComboBoxGeneralLocationState.DataSource = Runway.GetRunwayStates();
             ComboBoxGeneralLocationCity.DataSource = Runway.GetRunwayCities();
@@ -578,13 +590,19 @@ namespace P3D_Scenario_Generator
             Runway.CurrentLocationFavouriteIndex = 0;
             TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
             ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
+
+            //  Scenario type
             ComboBoxGeneralScenarioType.SelectedIndex = 0;
-            ComboBoxGeneralAircraftSelection.DataSource = Properties.Settings.Default.AircraftTitles;
-            if (Properties.Settings.Default.AircraftTitlesSelectedIndex < ComboBoxGeneralAircraftSelection.Items.Count)
-                ComboBoxGeneralAircraftSelection.SelectedIndex = Properties.Settings.Default.AircraftTitlesSelectedIndex;
+
+            //  Aircraft variants
+            if (Aircraft.AircraftVariants != null)
+            {
+                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+                ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
+            }
 
             // Circuit tab
-            SetDefaultParams(TabPagePhotoTour.Controls);
+            SetDefaultParams(TabPageCircuit.Controls);
             RestoreUserSettings(TabPageCircuit.Controls);
 
             // PhotoTour tab
@@ -959,11 +977,11 @@ namespace P3D_Scenario_Generator
             return stream;
         }
 
-        #endregion
-
         private void Form_FormClosing(object sender, FormClosingEventArgs e)
         {
             Runway.SaveLocationFavourites();
         }
+
+        #endregion
     }
 }
