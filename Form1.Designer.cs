@@ -428,7 +428,7 @@ namespace P3D_Scenario_Generator
             buttonGeneralAircraft.Text = "Add Aircraft";
             toolTip1.SetToolTip(buttonGeneralAircraft, "To add a new aircraft to the list of favourites choose the image of preferred aircraft variant");
             buttonGeneralAircraft.UseVisualStyleBackColor = true;
-            buttonGeneralAircraft.Click += ButtonAircraft_Click;
+            buttonGeneralAircraft.Click += ButtonAddAircraft_Click;
             // 
             // TextBoxPhotoTourConstraintsMaxNoLegs
             // 
@@ -2864,6 +2864,7 @@ namespace P3D_Scenario_Generator
             TextBoxGeneralAircraftValues.Size = new Size(100, 23);
             TextBoxGeneralAircraftValues.TabIndex = 48;
             TextBoxGeneralAircraftValues.Tag = "";
+            TextBoxGeneralAircraftValues.MouseHover += TextBoxGeneralAircraftValues_MouseHover;
             // 
             // groupBox14
             // 

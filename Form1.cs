@@ -163,55 +163,95 @@ namespace P3D_Scenario_Generator
 
         #region Aircraft selection
 
-        private void ButtonAircraft_Click(object sender, EventArgs e)
+        private void ButtonAddAircraft_Click(object sender, EventArgs e)
         {
             if (Aircraft.ChooseAircraftVariant(ComboBoxSettingsSimulatorVersion.Text))
             {
                 ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
-                ComboBoxGeneralAircraftSelection.SelectedIndex = ComboBoxGeneralAircraftSelection.Items.Count - 1;
+                ComboBoxGeneralAircraftSelection.SelectedIndex = Aircraft.CurrentAircraftVariantIndex;
             }
         }
 
         private void ComboBoxGeneralAircraftSelection_KeyDown(object sender, KeyEventArgs e)
         {
-            string deletedItem = ((ComboBox)sender).Text;
-
-            if (e.KeyCode == Keys.Delete)
+            if (e.KeyCode == Keys.Enter)
             {
+                // Alter aircraftVariant instance in Aircraft.cs to reflect new display name
+                string newDisplayName = ((ComboBox)sender).Text;
+                Aircraft.UpdateAircraftVariantDisplayName(newDisplayName);
+
+                // Refresh the ComboBoxGeneralAircraftSelection field list on form
+                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+
+                // Set selected index for ComboBoxGeneralAircraftSelection 
+                ComboBoxGeneralAircraftSelection.SelectedIndex = Aircraft.CurrentAircraftVariantIndex;
+
+                // Refresh TextBoxGeneralLocationFilters field on form
+                TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
+            }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                // Don't delete a character
                 e.SuppressKeyPress = true;
-                int deletedIndex = Properties.Settings.Default.AircraftTitles.IndexOf(deletedItem);
-                Properties.Settings.Default.AircraftTitles.RemoveAt(deletedIndex);
-                if (Properties.Settings.Default.AircraftTitles.Count > 0)
-                    Properties.Settings.Default.AircraftTitlesSelectedIndex = 0;
-                Properties.Settings.Default.AircraftCruiseSpeeds.RemoveAt(deletedIndex);
-                Properties.Settings.Default.AircraftImages.RemoveAt(deletedIndex);
-                Properties.Settings.Default.Save();
-                ((ComboBox)sender).DataSource = null;
-                ((ComboBox)sender).DataSource = Properties.Settings.Default.AircraftTitles;
-                if (deletedIndex > 0)
-                    ((ComboBox)sender).SelectedIndex = 0;
+
+                if (((ComboBox)sender).Items.Count == 0)
+                {
+                    ((ComboBox)sender).Text = "";
+                    return;
+                }
+
+                // Delete aircraftVariant instance in Aircraft.cs
+                string deleteDisplayName = ((ComboBox)sender).Text;
+                Aircraft.DeleteAircraftVariant(deleteDisplayName);
+
+                // Refresh the ComboBoxGeneralAircraftSelection field list on form
+                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+
+                // Set selected index for ComboBoxGeneralAircraftSelection 
+                if (ComboBoxGeneralAircraftSelection.Items.Count > 0)
+                    ComboBoxGeneralAircraftSelection.SelectedIndex = Aircraft.CurrentAircraftVariantIndex;
+                else
+                {
+                    ComboBoxGeneralAircraftSelection.SelectedIndex = -1;
+                    ((ComboBox)sender).Text = "";
+                }
+
+                // Refresh TextBoxGeneralLocationFilters field on form
+                TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
             }
         }
 
         private void ComboBoxGeneralAircraftSelection_SelectedIndexChanged(object sender, EventArgs e)
         {
+            AircraftVariant aircraftVariant = Aircraft.AircraftVariants.Find(aircraft => aircraft.DisplayName == ((ComboBox)sender).Text);
+            Aircraft.CurrentAircraftVariantIndex = Aircraft.AircraftVariants.IndexOf(aircraftVariant);
+
+            // Refresh TextBoxGeneralLocationFilters field on form
+            TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
+
             SetDefaultCircuitParams();
         }
 
         private void ButtonRandomAircraft_Click(object sender, EventArgs e)
         {
-            if (Aircraft.AircraftVariants == null)
+            if (Aircraft.AircraftVariants == null || Aircraft.AircraftVariants.Count == 0)
                 return;
             Random random = new();
             int randomAircraftIndex = random.Next(0, Aircraft.AircraftVariants.Count);
             ComboBoxGeneralAircraftSelection.SelectedIndex = randomAircraftIndex;
 
             // Update CurrentAircraftVariantIndex in Aircraft.cs
-            string newFavouriteAircraft = ComboBoxGeneralAircraftSelection.Text;
-            Aircraft.ChangeCurrentAircraftVariantIndex(newFavouriteAircraft);
+            string newDisplayName = ComboBoxGeneralAircraftSelection.Text;
+            Aircraft.ChangeCurrentAircraftVariantIndex(newDisplayName);
 
             // Refresh TextBoxGeneralAircraftValues field on form
-        //    TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
+            TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
+        }
+
+        private void TextBoxGeneralAircraftValues_MouseHover(object sender, EventArgs e)
+        {
+            ToolTip t = new();
+            t.Show(TextBoxGeneralAircraftValues.Text, TextBoxGeneralAircraftValues, 0, 0, 5000);
         }
 
         #endregion
