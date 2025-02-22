@@ -25,45 +25,6 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
-            "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" />")]
-        public global::System.Collections.Specialized.StringCollection AircraftTitles {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["AircraftTitles"]));
-            }
-            set {
-                this["AircraftTitles"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
-            "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" />")]
-        public global::System.Collections.Specialized.StringCollection AircraftImages {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["AircraftImages"]));
-            }
-            set {
-                this["AircraftImages"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfString xmlns:xsd=\"http://www.w3." +
-            "org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" />")]
-        public global::System.Collections.Specialized.StringCollection AircraftCruiseSpeeds {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["AircraftCruiseSpeeds"]));
-            }
-            set {
-                this["AircraftCruiseSpeeds"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSettingsCacheDate {
             get {
@@ -1003,18 +964,6 @@ namespace P3D_Scenario_Generator.Properties {
             }
             set {
                 this["ComboBoxSettingsSimulatorVersionSelectedIndex"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int AircraftTitlesSelectedIndex {
-            get {
-                return ((int)(this["AircraftTitlesSelectedIndex"]));
-            }
-            set {
-                this["AircraftTitlesSelectedIndex"] = value;
             }
         }
     }

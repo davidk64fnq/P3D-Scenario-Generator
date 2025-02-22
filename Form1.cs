@@ -165,9 +165,16 @@ namespace P3D_Scenario_Generator
 
         private void ButtonAddAircraft_Click(object sender, EventArgs e)
         {
-            if (Aircraft.ChooseAircraftVariant(ComboBoxSettingsSimulatorVersion.Text))
+            string displayName = Aircraft.ChooseAircraftVariant(ComboBoxSettingsSimulatorVersion.Text);
+            if (displayName != "")
             {
                 ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+
+                // Refreshing ComboBoxGeneralAircraftSelection.DataSource triggers ComboBoxGeneralAircraftSelection_SelectedIndexChanged
+                // so restore correct Aircraft.CurrentAircraftVariantIndex
+                Aircraft.ChangeCurrentAircraftVariantIndex(displayName);
+
+                // Set selected index for ComboBoxGeneralAircraftSelection 
                 ComboBoxGeneralAircraftSelection.SelectedIndex = Aircraft.CurrentAircraftVariantIndex;
             }
         }
@@ -182,6 +189,10 @@ namespace P3D_Scenario_Generator
 
                 // Refresh the ComboBoxGeneralAircraftSelection field list on form
                 ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+
+                // Refreshing ComboBoxGeneralAircraftSelection.DataSource triggers ComboBoxGeneralAircraftSelection_SelectedIndexChanged
+                // so restore correct Aircraft.CurrentAircraftVariantIndex
+                Aircraft.ChangeCurrentAircraftVariantIndex(newDisplayName);
 
                 // Set selected index for ComboBoxGeneralAircraftSelection 
                 ComboBoxGeneralAircraftSelection.SelectedIndex = Aircraft.CurrentAircraftVariantIndex;
@@ -201,6 +212,7 @@ namespace P3D_Scenario_Generator
                 }
 
                 // Delete aircraftVariant instance in Aircraft.cs
+                int oldIndex = Aircraft.CurrentAircraftVariantIndex;
                 string deleteDisplayName = ((ComboBox)sender).Text;
                 Aircraft.DeleteAircraftVariant(deleteDisplayName);
 
@@ -208,12 +220,20 @@ namespace P3D_Scenario_Generator
                 ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
 
                 // Set selected index for ComboBoxGeneralAircraftSelection 
-                if (ComboBoxGeneralAircraftSelection.Items.Count > 0)
-                    ComboBoxGeneralAircraftSelection.SelectedIndex = Aircraft.CurrentAircraftVariantIndex;
-                else
+                if (oldIndex != Aircraft.CurrentAircraftVariantIndex)
                 {
-                    ComboBoxGeneralAircraftSelection.SelectedIndex = -1;
-                    ((ComboBox)sender).Text = "";
+                    if (oldIndex == 0 && ComboBoxGeneralAircraftSelection.Items.Count > 0)
+                        // There were 2 or more items and first in list was deleted 
+                        ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
+                    else if (ComboBoxGeneralAircraftSelection.Items.Count > 0)
+                        // There were two or more items so change to prior item in list
+                        ComboBoxGeneralAircraftSelection.SelectedIndex = oldIndex - 1;
+                    else
+                    {
+                        // There was one item in list (or no items)
+                        ComboBoxGeneralAircraftSelection.SelectedIndex = -1;
+                        ((ComboBox)sender).Text = "";
+                    }
                 }
 
                 // Refresh TextBoxGeneralLocationFilters field on form
@@ -224,7 +244,7 @@ namespace P3D_Scenario_Generator
         private void ComboBoxGeneralAircraftSelection_SelectedIndexChanged(object sender, EventArgs e)
         {
             AircraftVariant aircraftVariant = Aircraft.AircraftVariants.Find(aircraft => aircraft.DisplayName == ((ComboBox)sender).Text);
-            Aircraft.CurrentAircraftVariantIndex = Aircraft.AircraftVariants.IndexOf(aircraftVariant);
+            Aircraft.ChangeCurrentAircraftVariantIndex(aircraftVariant.DisplayName);
 
             // Refresh TextBoxGeneralLocationFilters field on form
             TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
@@ -257,6 +277,13 @@ namespace P3D_Scenario_Generator
         #endregion
 
         #region Location selection
+
+        private void ButtonRandomLocation_Click(object sender, EventArgs e)
+        {
+            Random random = new();
+            int randomLocationFavouriteIndex = random.Next(0, Runway.LocationFavourites.Count);
+            ComboBoxGeneralLocationFavourites.SelectedIndex = randomLocationFavouriteIndex;
+        }
 
         /// <summary>
         /// Add or delete an entry in <see cref="ComboBoxGeneralLocationFavourites"/> list
@@ -635,7 +662,8 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralScenarioType.SelectedIndex = 0;
 
             //  Aircraft variants
-            if (Aircraft.AircraftVariants != null)
+            Aircraft.LoadAircraftVariants();
+            if (Aircraft.AircraftVariants != null && Aircraft.AircraftVariants.Count > 0)
             {
                 ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
                 ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
@@ -1020,6 +1048,7 @@ namespace P3D_Scenario_Generator
         private void Form_FormClosing(object sender, FormClosingEventArgs e)
         {
             Runway.SaveLocationFavourites();
+            Aircraft.SaveAircraftVariants();
         }
 
         #endregion

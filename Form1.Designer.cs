@@ -195,7 +195,6 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralAircraftSelection = new ComboBox();
             label8 = new Label();
             ComboBoxSettingsSimulatorVersion = new ComboBox();
-            label62 = new Label();
             ComboBoxGeneralLocationFavourites = new ComboBox();
             label61 = new Label();
             ComboBoxGeneralLocationCity = new ComboBox();
@@ -231,6 +230,7 @@ namespace P3D_Scenario_Generator
             GeneralTimePicker = new DateTimePicker();
             TabControlP3DSG = new TabControl();
             TabPageWikiList = new TabPage();
+            ButtonRandomLocation = new Button();
             groupBox1.SuspendLayout();
             tableLayoutPanelPhotoTourPhotoWindowLocation.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -2495,17 +2495,6 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsSimulatorVersion.Text = "5";
             toolTip1.SetToolTip(ComboBoxSettingsSimulatorVersion, "Used to identify registry entry that specifies location of P3D program files, including SimObjects for aircraft selection");
             // 
-            // label62
-            // 
-            label62.Anchor = AnchorStyles.None;
-            label62.AutoSize = true;
-            label62.Location = new Point(44, 128);
-            label62.Name = "label62";
-            label62.Size = new Size(38, 15);
-            label62.TabIndex = 46;
-            label62.Text = "Filters";
-            toolTip1.SetToolTip(label62, resources.GetString("label62.ToolTip"));
-            // 
             // ComboBoxGeneralLocationFavourites
             // 
             ComboBoxGeneralLocationFavourites.AccessibleName = "Location Filter: Favourites";
@@ -2631,8 +2620,8 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel12.ColumnCount = 2;
             tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel12.Controls.Add(ButtonRandomLocation, 0, 4);
             tableLayoutPanel12.Controls.Add(TextBoxGeneralLocationFilters, 1, 4);
-            tableLayoutPanel12.Controls.Add(label62, 0, 4);
             tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationFavourites, 1, 3);
             tableLayoutPanel12.Controls.Add(label61, 0, 3);
             tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationCity, 1, 2);
@@ -2967,6 +2956,17 @@ namespace P3D_Scenario_Generator
             TabPageWikiList.TabIndex = 7;
             TabPageWikiList.Text = "Wikipedia List";
             // 
+            // ButtonRandomLocation
+            // 
+            ButtonRandomLocation.Anchor = AnchorStyles.None;
+            ButtonRandomLocation.Location = new Point(17, 124);
+            ButtonRandomLocation.Name = "ButtonRandomLocation";
+            ButtonRandomLocation.Size = new Size(91, 23);
+            ButtonRandomLocation.TabIndex = 48;
+            ButtonRandomLocation.Text = "Random";
+            ButtonRandomLocation.UseVisualStyleBackColor = true;
+            ButtonRandomLocation.Click += ButtonRandomLocation_Click;
+            // 
             // Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -3242,9 +3242,9 @@ namespace P3D_Scenario_Generator
         private Label label61;
         internal ComboBox ComboBoxGeneralLocationFavourites;
         internal TextBox TextBoxGeneralLocationFilters;
-        private Label label62;
         private Button ButtonRandomAircraft;
         internal TextBox TextBoxGeneralAircraftValues;
+        private Button ButtonRandomLocation;
     }
 }
 

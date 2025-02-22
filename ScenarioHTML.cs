@@ -71,7 +71,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += " by doing that most fundamental of tasks, flying a circuit! ";
                     overview.Briefing += "You'll take off, fly through eight gates as you complete a circuit, ";
                     overview.Briefing += "and land back on the runway. The scenario begins on runway ";
-                    overview.Briefing += $"{Runway.startRwy.Id} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
+                    overview.Briefing += $"{Runway.startRwy.Number} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
                     overview.Objective = "Take off and fly through the eight gates before landing on the same runway.";
                     overview.Tips = "Each pair of gates marks the start and finish of a 90 degree turn. ";
@@ -89,7 +89,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += " as you navigate from one photo location to the next using IFR (I follow roads) ";
                     overview.Briefing += "You'll take off, fly to a series of photo locations, ";
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
-                    overview.Briefing += $"{Runway.startRwy.Id} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
+                    overview.Briefing += $"{Runway.startRwy.Number} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
                     overview.Objective = "Take off and visit a series of photo locations before landing ";
                     overview.Objective += $"at {Runway.destRwy.IcaoName}, runway {Runway.destRwy.IcaoId}";
@@ -108,7 +108,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += " as you take on the role of sign writer in the sky! ";
                     overview.Briefing += "You'll take off, fly through a series of gates to spell out a message ";
                     overview.Briefing += "and land again when you've finished. The scenario begins on runway ";
-                    overview.Briefing += $"{Runway.startRwy.Id} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
+                    overview.Briefing += $"{Runway.startRwy.Number} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
                     overview.Objective = "Take off and fly through a series of gates before landing on the same runway.";
                     overview.Tips = "When life gives you lemons, squirt someone in the eye.";
@@ -125,7 +125,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
                     overview.Briefing += $"as you test your navigation skills flying a {Parameters.AircraftTitle}.";
                     overview.Briefing += " The scenario finishes on runway ";
-                    overview.Briefing += $"{Runway.destRwy.Id} at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
+                    overview.Briefing += $"{Runway.destRwy.Number} at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.destRwy.City}, {Runway.destRwy.Country}.";
                     overview.Objective = "Navigate using celestial navigation before landing at the destination runway";
                     overview.Tips = "Never go to bed mad. Stay up and fight.";
@@ -143,7 +143,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += " as you navigate from one Wikipedia list location to the next using IFR (I follow roads) ";
                     overview.Briefing += "You'll take off, fly to a series of list locations, ";
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
-                    overview.Briefing += $"{Runway.startRwy.Id} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
+                    overview.Briefing += $"{Runway.startRwy.Number} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
                     overview.Objective = "Take off and visit a series of Wikipedia list locations before landing ";
                     overview.Objective += $"at {Runway.destRwy.IcaoName}, runway {Runway.destRwy.IcaoId}";

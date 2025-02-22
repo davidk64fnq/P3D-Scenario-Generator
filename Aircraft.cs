@@ -1,15 +1,16 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace P3D_Scenario_Generator
 {
     /// <summary>
-    /// Stores information for a user selected aircraft variant, title, display name, cruisespeed, 
-    /// whether it has wheels equivalent, whether it has floats and thumbnail image full path
+    /// Stores information for a user selected aircraft variant; title, display name, cruisespeed, 
+    /// thumbnail image full path, whether it has floats, and whether it has wheels equivalent
     /// </summary>
     public class AircraftVariant
     {
         /// <summary>
-        /// The title of the aircraft variant as recorded in the relevant variant [fltsim.?] section of aircraft.cfg file
+        /// The title of the aircraft variant as recorded in the relevant variant [fltsim.?] section of an aircraft.cfg file
         /// </summary>
         public string Title { get; set; }
 
@@ -34,18 +35,18 @@ namespace P3D_Scenario_Generator
         public bool HasFloats { get; set; }
 
         /// <summary>
-        /// Whether the aircraft has wheels/scrapes/skids, used to exclude takeoff from land based (non water) runways if selected 
-        /// aircraft doesn't have them
+        /// Whether the aircraft has wheels/scrapes/skids/skis, used to exclude takeoff from land based (non water) runways if selected 
+        /// aircraft doesn't have them. Note landing possible with straight floats.
         /// </summary>
         public bool HasWheelsOrEquiv { get; set; }
     }
 
     /// <summary>
-    /// Methods for user selection of an aircraft variant for a scenario. The selected variants are stored
-    /// in <see cref="AircraftVariants"/> in alphabetical order by display name. Currently selected variant
-    /// is <see cref="CurrentAircraftVariantIndex"/>. Methods organised in three sections:
-    ///     1. Prompting user for an aircraft variant and reading the aircraft information from P3D files
-    ///     2. Adding and deleting aircraft variants from <see cref="AircraftVariants"/> and changing current variant
+    /// Methods for user selection of an aircraft variant for a scenario. The selected variants are stored <br />
+    /// in <see cref="AircraftVariants"/> in alphabetical order by display name. Currently selected variant <br />
+    /// is <see cref="CurrentAircraftVariantIndex"/>. Methods organised in three sections: <br />
+    ///     1. Prompting user for an aircraft variant and reading the aircraft information from P3D files <br />
+    ///     2. Adding and deleting aircraft variants from <see cref="AircraftVariants"/> and changing <see cref="AircraftVariants"/> <br />
     ///     3. Providing a list of display names for the form and a formatted string of the aircraft variant details
     /// </summary>
     internal class Aircraft
@@ -54,12 +55,12 @@ namespace P3D_Scenario_Generator
         /// List of aircraft variants maintained by user with current selection shown on General tab of form.
         /// Sorted alphabetically by display name.
         /// </summary>
-        internal static List<AircraftVariant> AircraftVariants {  get; set; }
+        internal static List<AircraftVariant> AircraftVariants = [];
 
         /// <summary>
         /// Currently selected aircraft variant displayed on General tab of form
         /// </summary>
-        internal static int CurrentAircraftVariantIndex;
+        internal static int CurrentAircraftVariantIndex { get; private set; }
 
         #region Prompt user for and read a new aircraft variant from P3D files section
 
@@ -71,7 +72,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="simulatorVersion">Which of version 4, 5, 6 etc. Prepar3D is being used.</param>
         /// <returns>True if new aircraft variant selected and added to <see cref="AircraftVariants"/></returns>
-        internal static bool ChooseAircraftVariant(string simulatorVersion)
+        internal static string ChooseAircraftVariant(string simulatorVersion)
         {
             AircraftVariant aircraftVariant = new();
 
@@ -86,9 +87,9 @@ namespace P3D_Scenario_Generator
                 aircraftVariant.HasFloats = GetAircraftFloatsStatus(thumbnailPath);
                 aircraftVariant.HasWheelsOrEquiv = GetAircraftWheelsStatus(thumbnailPath);
                 if (AddAircraftVariant(aircraftVariant))
-                    return true;
+                    return aircraftVariant.DisplayName;
             }
-            return false;
+            return "";
         }
 
         /// <summary>
@@ -395,10 +396,7 @@ namespace P3D_Scenario_Generator
                     AircraftVariants.Remove(aircraftVariant);
 
                     // Adjust the selected aircraft variant
-                    if (AircraftVariants.Count > 0)
-                        CurrentAircraftVariantIndex--;
-                    else
-                        CurrentAircraftVariantIndex = 0;
+                    CurrentAircraftVariantIndex--;
 
                     return true;
                 }
@@ -410,7 +408,8 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Changes the display name of <see cref="CurrentAircraftVariantIndex"/> aircraft variant in
-        /// <see cref="AircraftVariants"/> to displayName. If <see cref="AircraftVariants"/> is null
+        /// <see cref="AircraftVariants"/> to displayName. Resorts <see cref="AircraftVariants"/> and
+        /// updates <see cref="CurrentAircraftVariantIndex"/>. If <see cref="AircraftVariants"/> is null
         /// or empty then does nothing.
         /// </summary>
         /// <param name="displayName">The new display name</param>
@@ -418,7 +417,11 @@ namespace P3D_Scenario_Generator
         {
             // Make sure new name is not already in use and then change in current aircraft variant
             if (AircraftVariants != null && AircraftVariants.FindAll(aircraft => aircraft.DisplayName == displayName).Count == 0)
+            {
                 AircraftVariants[CurrentAircraftVariantIndex].DisplayName = displayName;
+                AircraftVariants.Sort((x, y) => x.DisplayName.CompareTo(y.DisplayName));
+                ChangeCurrentAircraftVariantIndex(displayName);
+            }
         }
 
         #endregion
@@ -464,6 +467,60 @@ namespace P3D_Scenario_Generator
             aircraftValues += " \nHas Floats = ";
             aircraftValues += AircraftVariants[CurrentAircraftVariantIndex].HasFloats.ToString();
             return aircraftValues;
+        }
+
+        #endregion
+
+        #region Save and Load aircraft variants section
+
+        /// <summary>
+        /// Save <see cref="AircraftVariants"/> to file in JSON format
+        /// </summary>
+        internal static void SaveAircraftVariants()
+        {
+            string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            directory = Path.Combine(directory, AppDomain.CurrentDomain.FriendlyName);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            directory = Path.Combine(directory, "AircraftVariantsJSON.txt");
+
+            JsonSerializer serializer = new()
+            {
+                Formatting = Formatting.Indented
+            };
+            using StreamWriter sw = new(directory);
+            using JsonWriter writer = new JsonTextWriter(sw);
+            serializer.Serialize(writer, AircraftVariants);
+        }
+
+        /// <summary>
+        /// Load <see cref="AircraftVariants"/> from file stored in JSON format
+        /// </summary>
+        internal static void LoadAircraftVariants()
+        {
+            string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            directory = Path.Combine(directory, AppDomain.CurrentDomain.FriendlyName);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            directory = Path.Combine(directory, "AircraftVariantsJSON.txt");
+
+            string input;
+            if (!File.Exists(directory))
+            {
+                Stream stream = Form.GetResourceStream("Text.AircraftVariantsJSON.txt");
+                StreamReader reader = new(stream);
+                input = reader.ReadToEnd();
+            }
+            else
+            {
+                input = File.ReadAllText(directory);
+            }
+
+            AircraftVariants = JsonConvert.DeserializeObject<List<AircraftVariant>>(input);
         }
 
         #endregion

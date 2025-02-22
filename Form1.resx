@@ -152,13 +152,6 @@
   <data name="TextBoxWikiURLOffset.ToolTip" xml:space="preserve">
     <value>The default position of Wiki URL window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the Wiki URL Wiki URL window is positioned. Ignored if default position of Wiki URL window is centered.</value>
   </data>
-  <data name="label62.ToolTip" xml:space="preserve">
-    <value>Current combination of Country/State/City settings. Will match to any airport that has one of the listed country, 
-state or city strings in "runways.xml" file.
-
-To modify filters in current combination select the Country/State/City item in the respective field and press 
-"Enter" to add it or "Delete" to remove it from the combination favourite.</value>
-  </data>
   <data name="ComboBoxGeneralLocationFavourites.ToolTip" xml:space="preserve">
     <value>Select the combination of Country, State and City filters to be used in identifying runways 
 for use in a scenario.

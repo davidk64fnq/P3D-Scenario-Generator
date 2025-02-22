@@ -372,9 +372,10 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                AircraftTitle = Form.form.ComboBoxGeneralAircraftSelection.Text;
-                AircraftCruiseSpeed = Convert.ToDouble(Properties.Settings.Default.AircraftCruiseSpeeds[Form.form.ComboBoxGeneralAircraftSelection.SelectedIndex]);
-                AircraftImagePath = Properties.Settings.Default.AircraftImages[Form.form.ComboBoxGeneralAircraftSelection.SelectedIndex];
+                AircraftVariant aircraftVariant = Aircraft.AircraftVariants[Aircraft.CurrentAircraftVariantIndex];
+                AircraftTitle = aircraftVariant.Title;
+                AircraftCruiseSpeed = Convert.ToDouble(aircraftVariant.CruiseSpeed);
+                AircraftImagePath = aircraftVariant.ThumbnailImagePath;
             }
             SelectedAirportICAO = Form.form.ComboBoxGeneralRunwaySelected.Text.Split(" ")[0];
             if (Form.form.ComboBoxGeneralRunwaySelected.Text != "")

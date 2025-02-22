@@ -1,6 +1,4 @@
-﻿
-using System.Reflection;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator
 {
@@ -846,6 +844,11 @@ namespace P3D_Scenario_Generator
 
 		static private void SetAirportLandingTriggerRunwayFilter(string rwyNumber, string rwyDesignator, string tSearch)
 		{
+            if (!int.TryParse(rwyNumber, out int rwyNumberInt))
+            {
+                int rcIdIndex = Runway.RunwayCompassIds.FindIndex(runwayCompassId => runwayCompassId.AbbrName == rwyNumber);
+                rwyNumber = Runway.RunwayCompassIds[rcIdIndex].Number;
+            }
 			RunwayFilter rf = new(rwyNumber, rwyDesignator);
 			int idIndex;
 			idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.FindIndex(o => o.Descr == tSearch);

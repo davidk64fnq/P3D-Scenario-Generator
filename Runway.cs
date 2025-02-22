@@ -48,18 +48,19 @@ namespace P3D_Scenario_Generator
         /// The runway Id e.g. "05L", the two digit number is 10's of degrees so 05 is 50 degrees approximate
         /// magnetic runway heading. If the number is greater than 36 it is code for a compass heading or pair 
         /// of compass headings e.g. 37 = "N-S", 45 = "N". The number is extracted and stored as "Number" field.
-        /// The ltter is extracted and stored as "Designator" field.
+        /// The letter which distinguishes parallel runways is extracted and stored as "Designator" field.
         /// </summary>
         internal string Id { get; set; }
 
         /// <summary>
-        /// The compass bearing of an airport runway with no leading zeros e.g. "5" is 5 degrees. Or a compass
-        /// direction string e.g. "Northwest"
+        /// See <see cref="Id"/>, two digit number is 10's of degrees so 05 is 50 degrees approximate
+        /// magnetic runway heading. If the number is greater than 36 it is code for a compass heading or pair 
+        /// of compass headings e.g. 37 = "N-S", 45 = "N".
         /// </summary>
         internal string Number { get; set; }
 
         /// <summary>
-        /// One of "None", "Left", "Right", "Center", or "Water". Used in setting the airport landing trigger for a scenario
+        /// See <see cref="Id"/>, one of "None", "Left", "Right", "Center", or "Water". Used in setting the airport landing trigger for a scenario
         /// </summary>
         internal string Designator { get; set; }
 
@@ -121,7 +122,7 @@ namespace P3D_Scenario_Generator
     /// <param name="v1">The code - a number from 37 to 52 inclusive</param>
     /// <param name="v2">The fullname e.g. "NorthWest"</param>
     /// <param name="v3">The abbreviated name e.g. "NW"</param>
-    public class RunwayCompassIds(string v1, string v2, string v3)
+    public class RunwayCompassIds(string v1, string v2, string v3, string v4)
     {
         /// <summary>
         /// The code - a number from 37 to 52 inclusive
@@ -137,6 +138,11 @@ namespace P3D_Scenario_Generator
         /// The abbreviated name e.g. "NW"
         /// </summary>
         internal string AbbrName { get; set; } = v3;
+
+        /// <summary>
+        /// The number equivalent used in setting AirportLandingTrigger in ScenarioXML.cs e.g. for "NW" it would be 315
+        /// </summary>
+        internal string Number { get; set; } = v4;
     }
 
     /// <summary>
@@ -181,7 +187,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Used to store runway headings that are compass direction strings rather than 01 to 36, e.g. "NorthWest"
         /// </summary>
-        private static readonly List<RunwayCompassIds> runwayCompassIds = [];
+        internal static readonly List<RunwayCompassIds> RunwayCompassIds = [];
 
         /// <summary>
         /// The scenario start runway
@@ -317,22 +323,22 @@ namespace P3D_Scenario_Generator
         /// </summary>
         static private void SetRunwayCompassIds()
         {
-            runwayCompassIds.Add(new("37", "North-South", "N-S"));
-            runwayCompassIds.Add(new("38", "East-West", "E-W"));
-            runwayCompassIds.Add(new("39", "Northwest-Southeast", "NW-SE"));
-            runwayCompassIds.Add(new("40", "Southwest-Northeast", "SW-NE"));
-            runwayCompassIds.Add(new("41", "South-North", "S-N"));
-            runwayCompassIds.Add(new("42", "West-East", "W-E"));
-            runwayCompassIds.Add(new("43", "Southeast-Northwest", "SE-NW"));
-            runwayCompassIds.Add(new("44", "Northeast-Southwest", "NE-SW"));
-            runwayCompassIds.Add(new("45", "North", "N"));
-            runwayCompassIds.Add(new("46", "West", "W"));
-            runwayCompassIds.Add(new("47", "Northwest", "NW"));
-            runwayCompassIds.Add(new("48", "Southwest", "SW"));
-            runwayCompassIds.Add(new("49", "South", "S"));
-            runwayCompassIds.Add(new("50", "East", "E"));
-            runwayCompassIds.Add(new("51", "Southeast", "SE"));
-            runwayCompassIds.Add(new("52", "Northeast", "NE"));
+            RunwayCompassIds.Add(new("37", "North-South", "N-S", "36"));
+            RunwayCompassIds.Add(new("38", "East-West", "E-W", "9"));
+            RunwayCompassIds.Add(new("39", "Northwest-Southeast", "NW-SE", "32"));
+            RunwayCompassIds.Add(new("40", "Southwest-Northeast", "SW-NE", "23"));
+            RunwayCompassIds.Add(new("41", "South-North", "S-N", "18"));
+            RunwayCompassIds.Add(new("42", "West-East", "W-E", "27"));
+            RunwayCompassIds.Add(new("43", "Southeast-Northwest", "SE-NW", "14"));
+            RunwayCompassIds.Add(new("44", "Northeast-Southwest", "NE-SW", "5"));
+            RunwayCompassIds.Add(new("45", "North", "N", "36"));
+            RunwayCompassIds.Add(new("46", "West", "W", "27"));
+            RunwayCompassIds.Add(new("47", "Northwest", "NW", "32"));
+            RunwayCompassIds.Add(new("48", "Southwest", "SW", "23"));
+            RunwayCompassIds.Add(new("49", "South", "S", "18"));
+            RunwayCompassIds.Add(new("50", "East", "E", "9"));
+            RunwayCompassIds.Add(new("51", "Southeast", "SE", "14"));
+            RunwayCompassIds.Add(new("52", "Northeast", "NE", "5"));
         }
 
         /// <summary>
@@ -373,7 +379,7 @@ namespace P3D_Scenario_Generator
                 }
                 else if (runwayNumber <= 52)
                 {
-                    RunwayCompassIds runwayCompassId = runwayCompassIds.Find(rcID => rcID.Code == runwayId);
+                    RunwayCompassIds runwayCompassId = RunwayCompassIds.Find(rcID => rcID.Code == runwayId);
                     rwyParams.Number = runwayCompassId.AbbrName;
                 }
         }
@@ -398,6 +404,7 @@ namespace P3D_Scenario_Generator
                     string runwayId = $"{Runways[i].IcaoId} ({Runways[i].Number})";
                     if (Runways[i].Designator != null && Runways[i].Designator != "None")
                     {
+                        // Append designator if not "None"
                         runwayId = $"{runwayId}[{Runways[i].Designator[0..1]}]";
                     }
                     icaoIDs.Add(runwayId);
@@ -908,7 +915,7 @@ namespace P3D_Scenario_Generator
             List<RunwayParams> runwaysSubset = runwaysCountrySubset.Union(runwaysStateSubset).ToList();
             runwaysSubset = runwaysSubset.Union(runwaysCitySubset).ToList();
 
-            if (runwaysCountrySubset.Count > 0)
+            if (runwaysSubset.Count > 0)
             {
                 RunwaysSubset = runwaysSubset;
             }
