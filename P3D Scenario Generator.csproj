@@ -69,6 +69,7 @@
     <None Remove="Resources\Javascript\scriptsWikipediaItem.js" />
     <None Remove="Resources\LocationFavouritesJSON.txt" />
     <None Remove="Resources\Sounds\ThruHoop.wav" />
+    <None Remove="Resources\Text\AircraftVariantsJSON.txt" />
     <None Remove="Resources\XML\runways.xml" />
     <None Remove="Resources\XML\source.fxml" />
     <None Remove="runways.xml" />
@@ -178,6 +179,7 @@
     <EmbeddedResource Include="Resources\Javascript\scriptsSignWriting.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsWikipediaItem.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsMovingMap.js" />
+    <EmbeddedResource Include="Resources\Text\AircraftVariantsJSON.txt" />
     <EmbeddedResource Include="Resources\Text\LocationFavouritesJSON.txt" />
     <EmbeddedResource Include="Resources\Sounds\ThruHoop.wav" />
     <EmbeddedResource Include="Resources\XML\runways.xml" />

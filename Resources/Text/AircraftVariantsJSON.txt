@@ -1,0 +1,10 @@
+[
+  {
+    "Title": "",
+    "DisplayName": "",
+    "CruiseSpeed": "60.0",
+    "ThumbnailImagePath": "",
+    "HasFloats": false,
+    "HasWheelsOrEquiv": true
+  }
+]

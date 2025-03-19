@@ -110,7 +110,8 @@ namespace P3D_Scenario_Generator
                 AirportLon = AirportLon,
                 AirportLat = AirportLat,
                 Altitude = Altitude,
-                MagVar = MagVar
+                MagVar = MagVar,
+                RunwaysIndex = RunwaysIndex
             };
             return clonedRunwayParams;
         }
@@ -906,14 +907,15 @@ namespace P3D_Scenario_Generator
                 LocationFavourites[CurrentLocationFavouriteIndex].Cities[0] == "None")
             {
                 RunwaysSubset = CloneRunwayParamsList(Runways);
+                return;
             }
 
             // Get the subset of runways that match each of the Country/State/City filters and take the union of them - removes duplicates
             List<RunwayParams> runwaysCountrySubset = GetRunwaysLocationSubset(LocationFavourites[CurrentLocationFavouriteIndex].Countries, "Country");
             List<RunwayParams> runwaysStateSubset = GetRunwaysLocationSubset(LocationFavourites[CurrentLocationFavouriteIndex].States, "State");
             List<RunwayParams> runwaysCitySubset = GetRunwaysLocationSubset(LocationFavourites[CurrentLocationFavouriteIndex].Cities, "City");
-            List<RunwayParams> runwaysSubset = runwaysCountrySubset.Union(runwaysStateSubset).ToList();
-            runwaysSubset = runwaysSubset.Union(runwaysCitySubset).ToList();
+            List<RunwayParams> runwaysSubset = [.. runwaysCountrySubset.Union(runwaysStateSubset)];
+            runwaysSubset = [.. runwaysSubset.Union(runwaysCitySubset)];
 
             if (runwaysSubset.Count > 0)
             {
