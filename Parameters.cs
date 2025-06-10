@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using System.Windows.Forms;
+using HtmlAgilityPack;
 
 namespace P3D_Scenario_Generator
 {
@@ -478,6 +480,10 @@ namespace P3D_Scenario_Generator
             SettingsCacheUsage = Form.form.TextBoxSettingsCacheUsage.Text;
             SettingsCacheDailyTotal = Convert.ToInt32(Form.form.TextBoxSettingsCacheDailyTotal.Text);
             SettingsSimulatorVersion = Form.form.ComboBoxSettingsSimulatorVersion.GetItemText(Form.form.ComboBoxSettingsSimulatorVersion.SelectedItem);
+            if (!ValidateMapTileServerKey())
+            {
+                return false;
+            }
 
             // Common
             if (SelectedScenario == nameof(ScenarioTypes.PhotoTour))
@@ -533,6 +539,24 @@ namespace P3D_Scenario_Generator
         {
             return !string.IsNullOrEmpty(fileName) &&
               fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
+        }
+
+        internal static bool ValidateMapTileServerKey()
+        {
+            string url = $"{Parameters.SettingsCacheServerURL}/0/0/0.png{Parameters.SettingsCacheServerAPIkey}";
+            HtmlAgilityPack.HtmlDocument htmlDoc = null;
+            try
+            {
+                HtmlWeb web = new();
+                htmlDoc = web.Load(url);
+            }
+            catch
+            {
+                string errorMessage = $"The MapTile Cache Info Server and API key specified on Settings tab are not valid";
+                MessageBox.Show(errorMessage, "Web document download", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            return true;
         }
     }
 }

@@ -205,6 +205,7 @@ namespace P3D_Scenario_Generator
             label60 = new Label();
             groupBox16 = new GroupBox();
             tableLayoutPanel12 = new TableLayoutPanel();
+            ButtonRandomLocation = new Button();
             TextBoxGeneralLocationFilters = new TextBox();
             TabPagePhotoTour = new TabPage();
             ButtonHelp = new Button();
@@ -230,7 +231,6 @@ namespace P3D_Scenario_Generator
             GeneralTimePicker = new DateTimePicker();
             TabControlP3DSG = new TabControl();
             TabPageWikiList = new TabPage();
-            ButtonRandomLocation = new Button();
             groupBox1.SuspendLayout();
             tableLayoutPanelPhotoTourPhotoWindowLocation.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -2375,7 +2375,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox13.BackColor = Color.FromArgb(255, 192, 128);
             groupBox13.Controls.Add(tableLayoutPanel9);
-            groupBox13.Location = new Point(459, 296);
+            groupBox13.Location = new Point(459, 260);
             groupBox13.Name = "groupBox13";
             groupBox13.Size = new Size(286, 95);
             groupBox13.TabIndex = 19;
@@ -2465,7 +2465,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralAircraftSelection.Size = new Size(100, 23);
             ComboBoxGeneralAircraftSelection.TabIndex = 42;
             ComboBoxGeneralAircraftSelection.Tag = "";
-            toolTip1.SetToolTip(ComboBoxGeneralAircraftSelection, "Choose an aircraft from the list of favourite aircraft to use in this scenario");
+            toolTip1.SetToolTip(ComboBoxGeneralAircraftSelection, "Choose an aircraft from the list of favourite aircraft to use in this scenario.\r\n\r\nTo change the display name of selected aircraft variant, type in the new name\r\nand press enter.");
             ComboBoxGeneralAircraftSelection.SelectedIndexChanged += ComboBoxGeneralAircraftSelection_SelectedIndexChanged;
             ComboBoxGeneralAircraftSelection.KeyDown += ComboBoxGeneralAircraftSelection_KeyDown;
             // 
@@ -2641,6 +2641,17 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
             tableLayoutPanel12.Size = new Size(253, 152);
             tableLayoutPanel12.TabIndex = 36;
+            // 
+            // ButtonRandomLocation
+            // 
+            ButtonRandomLocation.Anchor = AnchorStyles.None;
+            ButtonRandomLocation.Location = new Point(17, 124);
+            ButtonRandomLocation.Name = "ButtonRandomLocation";
+            ButtonRandomLocation.Size = new Size(91, 23);
+            ButtonRandomLocation.TabIndex = 48;
+            ButtonRandomLocation.Text = "Random";
+            ButtonRandomLocation.UseVisualStyleBackColor = true;
+            ButtonRandomLocation.Click += ButtonRandomLocation_Click;
             // 
             // TextBoxGeneralLocationFilters
             // 
@@ -2955,17 +2966,6 @@ namespace P3D_Scenario_Generator
             TabPageWikiList.Size = new Size(812, 438);
             TabPageWikiList.TabIndex = 7;
             TabPageWikiList.Text = "Wikipedia List";
-            // 
-            // ButtonRandomLocation
-            // 
-            ButtonRandomLocation.Anchor = AnchorStyles.None;
-            ButtonRandomLocation.Location = new Point(17, 124);
-            ButtonRandomLocation.Name = "ButtonRandomLocation";
-            ButtonRandomLocation.Size = new Size(91, 23);
-            ButtonRandomLocation.TabIndex = 48;
-            ButtonRandomLocation.Text = "Random";
-            ButtonRandomLocation.UseVisualStyleBackColor = true;
-            ButtonRandomLocation.Click += ButtonRandomLocation_Click;
             // 
             // Form
             // 

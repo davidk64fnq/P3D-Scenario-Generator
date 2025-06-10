@@ -174,8 +174,9 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Gets the aircraft title from the aircraft.cfg file
+        /// Gets the aircraft title from the aircraft.cfg (or equivalent) file
         /// </summary>
+        /// <param name="thumbnailPath">Path to the user selected aircraft variant thumbnail image</param>
         /// <returns>The aircraft variant title string or an empty string</returns>
         internal static string GetAircraftTitle(string thumbnailPath)
         {
@@ -183,9 +184,7 @@ namespace P3D_Scenario_Generator
             string textureValue = GetTextureValue(thumbnailPath);
 
             // Now get aircraft variant title, assumes "title" always comes before "texture" in each variant section
-            string textureFolderPath = Path.GetDirectoryName(thumbnailPath);
-            string aircraftFolderPath = Path.GetDirectoryName(textureFolderPath);
-            string aircraftCFG = File.ReadAllText($"{aircraftFolderPath}\\aircraft.cfg");
+            string aircraftCFG = GetAircraftCFG(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
             string currentLine;
             string currentTitle = "";
@@ -206,6 +205,29 @@ namespace P3D_Scenario_Generator
                 }
             }
             return "";
+        }
+
+        /// <summary>
+        /// Looks for the aircraft.cfg file associated with the user selected aircraft variant and reads
+        /// it into a text string. Will try to read sim.cfg as an alternative else returns an empty string
+        /// and advises user
+        /// </summary>
+        /// <param name="thumbnailPath">Path to the user selected aircraft variant thumbnail image</param>
+        /// <returns>Text string containing contents of aircraft.cfg file (or equivalent) otherwise empty string</returns>
+        internal static string GetAircraftCFG(string thumbnailPath)
+        {
+            string textureFolderPath = Path.GetDirectoryName(thumbnailPath);
+            string aircraftFolderPath = Path.GetDirectoryName(textureFolderPath);
+            if (File.Exists($"{aircraftFolderPath}\\aircraft.cfg"))
+                return File.ReadAllText($"{aircraftFolderPath}\\aircraft.cfg");
+            else if (File.Exists($"{aircraftFolderPath}\\sim.cfg"))
+                return File.ReadAllText($"{aircraftFolderPath}\\sim.cfg");
+            else
+            {
+                MessageBox.Show($"Unable to locate aircraft.cfg or sim.cfg for selected aircraft variant, " +
+                    "rename equivalent file and advise developer", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return "";
+            }
         }
 
         /// <summary>
@@ -239,9 +261,7 @@ namespace P3D_Scenario_Generator
         /// <returns>The aircraft variant cruise speed string or an empty string</returns>
         internal static string GetAircraftCruiseSpeed(string thumbnailPath)
         {
-            string textureFolderPath = Path.GetDirectoryName(thumbnailPath);
-            string aircraftFolderPath = Path.GetDirectoryName(textureFolderPath);
-            string aircraftCFG = File.ReadAllText($"{aircraftFolderPath}\\aircraft.cfg");
+            string aircraftCFG = GetAircraftCFG(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
             string currentLine;
             while ((currentLine = reader.ReadLine()) != null)
@@ -271,9 +291,7 @@ namespace P3D_Scenario_Generator
             // but I've seen ski variants of DHC-2 with both point.X = 16 (skis?) and point.X = 4 (float) in the 
             // aircraft.cfg so if both present assume wheel (or equivalent) based plane not float based.
             // Note: P3D learning centre has 3 = Skid and no mention of 16
-            string textureFolderPath = Path.GetDirectoryName(thumbnailPath);
-            string aircraftFolderPath = Path.GetDirectoryName(textureFolderPath);
-            string aircraftCFG = File.ReadAllText($"{aircraftFolderPath}\\aircraft.cfg");
+            string aircraftCFG = GetAircraftCFG(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
             string currentLine;
             bool hasFloats = false, hasSkis = false;
@@ -308,9 +326,7 @@ namespace P3D_Scenario_Generator
             // https://www.prepar3d.com/SDKv5/sdk/simulation_objects/aircraft_configuration_files.html#contact_points
             // says that in the section [contact_points] a line starting "point.X = 1 or 2 or 3" indicates wheels/scrapes/skids
             // Note:  a value of 16 might indicate skis though not documented in P3D v5 learning centre
-            string textureFolderPath = Path.GetDirectoryName(thumbnailPath);
-            string aircraftFolderPath = Path.GetDirectoryName(textureFolderPath);
-            string aircraftCFG = File.ReadAllText($"{aircraftFolderPath}\\aircraft.cfg");
+            string aircraftCFG = GetAircraftCFG(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
             string currentLine;
             while ((currentLine = reader.ReadLine()) != null)
@@ -509,18 +525,11 @@ namespace P3D_Scenario_Generator
             directory = Path.Combine(directory, "AircraftVariantsJSON.txt");
 
             string input;
-            if (!File.Exists(directory))
-            {
-                Stream stream = Form.GetResourceStream("Text.AircraftVariantsJSON.txt");
-                StreamReader reader = new(stream);
-                input = reader.ReadToEnd();
-            }
-            else
+            if (File.Exists(directory))
             {
                 input = File.ReadAllText(directory);
+                AircraftVariants = JsonConvert.DeserializeObject<List<AircraftVariant>>(input);
             }
-
-            AircraftVariants = JsonConvert.DeserializeObject<List<AircraftVariant>>(input);
         }
 
         #endregion
