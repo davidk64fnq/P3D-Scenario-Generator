@@ -200,7 +200,7 @@ namespace P3D_Scenario_Generator
             RunwayParams nearbyAirport = Runway.GetNearbyRunway(queryLat, queryLon, minDist, maxDist);
             if (nearbyAirport == null)
                 return null;
-            photoLocationParams.legId = nearbyAirport.Id; // So that field isn't null when searching photo tour for photo locations included
+            photoLocationParams.legId = nearbyAirport.IcaoId; // So that field isn't null when searching photo tour for photo locations included
             photoLocationParams.airportICAO = nearbyAirport.IcaoId;
             photoLocationParams.airportID = nearbyAirport.Id;
             photoLocationParams.airportIndex = nearbyAirport.RunwaysIndex;
