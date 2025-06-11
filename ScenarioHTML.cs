@@ -91,8 +91,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
                     overview.Briefing += $"{Runway.startRwy.Number} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
-                    overview.Objective = "Take off and visit a series of photo locations before landing ";
-                    overview.Objective += $"at {Runway.destRwy.IcaoName}, runway {Runway.destRwy.IcaoId}";
+                    overview.Objective = "Take off and visit a series of photo locations before landing at {Runway.destRwy.IcaoName} (any runway)";
                     overview.Tips = "Never do today what you can put off till tomorrow";
                     break;
                 case nameof(ScenarioTypes.SignWriting):
@@ -124,10 +123,9 @@ namespace P3D_Scenario_Generator
                     overview.Aircraft = $"{Parameters.AircraftTitle}";
                     overview.Briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
                     overview.Briefing += $"as you test your navigation skills flying a {Parameters.AircraftTitle}.";
-                    overview.Briefing += " The scenario finishes on runway ";
-                    overview.Briefing += $"{Runway.destRwy.Number} at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
+                    overview.Briefing += " The scenario finishes at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.destRwy.City}, {Runway.destRwy.Country}.";
-                    overview.Objective = "Navigate using celestial navigation before landing at the destination runway";
+                    overview.Objective = "Navigate using celestial navigation before landing at the destination airport (any runway)";
                     overview.Tips = "Never go to bed mad. Stay up and fight.";
                     break;
                 case nameof(ScenarioTypes.WikiList):
@@ -146,7 +144,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += $"{Runway.startRwy.Number} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
                     overview.Objective = "Take off and visit a series of Wikipedia list locations before landing ";
-                    overview.Objective += $"at {Runway.destRwy.IcaoName}, runway {Runway.destRwy.IcaoId}";
+                    overview.Objective += $"at {Runway.destRwy.IcaoName} (any runway)";
                     overview.Tips = "The early bird gets the worm, but the second mouse gets the cheese.";
                     break;
                 default:

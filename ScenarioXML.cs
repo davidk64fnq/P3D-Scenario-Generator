@@ -135,7 +135,6 @@ namespace P3D_Scenario_Generator
             // Create airport landing trigger and activation action 
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoId);
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
-            SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger
@@ -241,7 +240,6 @@ namespace P3D_Scenario_Generator
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoTour.PhotoCount - 1:00}", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoTour.PhotoCount - 2:00}", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
-            SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger 
@@ -383,7 +381,6 @@ namespace P3D_Scenario_Generator
 
             // Create airport landing trigger and activation action 
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoId);
-            SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", "CloseUIpanelWindow01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
@@ -433,7 +430,6 @@ namespace P3D_Scenario_Generator
             SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "True", Runway.destRwy.IcaoId);
             SetAirportLandingTriggerAction("CloseWindowAction", "CloseCelestialSextant01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
-            SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
         }
 
         static private void SetWikiListWorldBaseFlightXML()
@@ -520,7 +516,6 @@ namespace P3D_Scenario_Generator
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow02", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
-            SetAirportLandingTriggerRunwayFilter(Runway.destRwy.Number, Runway.destRwy.Designator, "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger 
@@ -823,7 +818,7 @@ namespace P3D_Scenario_Generator
         static private void SetAirportLandingTrigger(string descr, string landingType, string activated, string airportIdent)
         {
             List<ObjectReference> orList = [];
-            SimMissionAirportLandingTrigger alt = new(descr, landingType, activated, new Actions(orList), GetGUID(), airportIdent, new RunwayFilter());
+            SimMissionAirportLandingTrigger alt = new(descr, landingType, activated, new Actions(orList), GetGUID(), airportIdent, null);
             if (simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger != null)
                 simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.Add(alt);
             else
