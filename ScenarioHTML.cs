@@ -91,7 +91,7 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
                     overview.Briefing += $"{Runway.startRwy.Number} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
-                    overview.Objective = "Take off and visit a series of photo locations before landing at {Runway.destRwy.IcaoName} (any runway)";
+                    overview.Objective = $"Take off and visit a series of photo locations before landing at {Runway.destRwy.IcaoName} (any runway)";
                     overview.Tips = "Never do today what you can put off till tomorrow";
                     break;
                 case nameof(ScenarioTypes.SignWriting):
