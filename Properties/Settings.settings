@@ -236,11 +236,14 @@
     <Setting Name="TextBoxWikiURLWindowWidth" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="ComboBoxSettingsSimulatorVersion" Type="System.Drawing.Color" Scope="User">
+    <Setting Name="ComboBoxSettingsSimulatorVersion" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ComboBoxSettingsSimulatorVersionSelectedIndex" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="TextBoxSettingsP3DprogramData" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\ProgramData\Lockheed Martin\Prepar3D v</Value>
     </Setting>
   </Settings>
 </SettingsFile>
