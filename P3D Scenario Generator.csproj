@@ -187,7 +187,7 @@
 
   <ItemGroup>
     <PackageReference Include="CoordinateSharp" Version="3.2.1.1" />
-    <PackageReference Include="EPPlus" Version="7.5.1" />
+    <PackageReference Include="EPPlus" Version="8.0.5" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.71" />
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.2.0" />
     <PackageReference Include="Magick.NET.SystemDrawing" Version="8.0.2" />
