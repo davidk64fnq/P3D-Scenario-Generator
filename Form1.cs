@@ -68,6 +68,7 @@ namespace P3D_Scenario_Generator
         {
             if (Parameters.SetParams())
             {
+                CheckRunwaysXMLupToDate();
                 DisplayStartMessage();
                 SaveUserSettings(TabPageSettings.Controls);
                 Drawing.DrawScenarioImages();
@@ -691,6 +692,84 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
+        /// Compares last modified date of scenery.cfg with that of runways.xml.
+        /// If scenery.cfg has been modified more recently, warns user that runways.xml
+        /// may be out of date and needs to be recreated.
+        /// </summary>
+        /// <remarks>
+        /// If a warning is displayed, the last modified date of runways.xml is updated
+        /// to the current time. This action prevents the warning from being shown repeatedly
+        /// on subsequent program runs until the user has addressed the underlying issue
+        /// by recreating the runways.xml file.
+        /// </remarks>
+        internal static void CheckRunwaysXMLupToDate()
+        {
+            string xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "runways.xml");
+            string sceneryCFGdirectory = Parameters.SettingsP3DprogramData + Parameters.SettingsSimulatorVersion;
+            string sceneryCFGfilePath = Path.Combine(sceneryCFGdirectory, "scenery.cfg");
+
+            try
+            {
+                // Check whether user created runways.xml exists. Exit if it doesn't as program is using the
+                // default version of file. Otherwise get the last modified date.
+                DateTime? xmlLastModified = GetFileLastWriteTime(xmlFilePath);
+                if (!xmlLastModified.HasValue)
+                {
+                    return;
+                }
+
+                // Check that scenery.cfg exists. Advise user if it doesn't. Otherwise get last modified date.
+                DateTime? sceneryLastModified = GetFileLastWriteTime(sceneryCFGfilePath);
+                if (!sceneryLastModified.HasValue)
+                {
+                    string sceneryCfgMissingMessage = $"The scenery.cfg file is not in folder \"{sceneryCFGdirectory}\"." +
+                        " The program uses scenery.cfg last modified date to check whether user created runways.xml is up-to-date." +
+                        " You may need to update the simulator version number in settings.";
+                    MessageBox.Show(sceneryCfgMissingMessage, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Do comparison of runway.xml and scenery.cfg dates and warn user if necessary
+                if (sceneryLastModified > xmlLastModified)
+                {
+                    string runwaysXmlOutOfDateMessage = $"The scenery.cfg file has been modified more recently than the user created runways.xml file." +
+                        " Consider rebuilding the runways.xml file to include recently added airports." +
+                        " The program will now refresh the last modified date on runways.xml to prevent repeated warnings";
+                    MessageBox.Show(runwaysXmlOutOfDateMessage, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    DateTime currentTime = DateTime.Now;
+                    File.SetLastWriteTime(xmlFilePath, currentTime);
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                MessageBox.Show($"Error: Access to a file is denied. Please check permissions. Details: {ex.Message}",
+                                Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (IOException ex)
+            {
+                MessageBox.Show($"An I/O error occurred while checking file dates. Details: {ex.Message}",
+                                Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An unexpected error occurred: {ex.Message}",
+                                Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the last write time of a file. Returns null if the file does not exist.
+        /// </summary>
+        /// <param name="filePath">The full path to the file.</param>
+        /// <returns>The DateTime of the last write time, or null if the file does not exist.</returns>
+        private static DateTime? GetFileLastWriteTime(string filePath)
+        {
+            FileInfo fileInfo = new(filePath);
+            return fileInfo.Exists ? fileInfo.LastWriteTime : null;
+        }
+
+        /// <summary>
         /// Recursively processes all controls to copy the default value stored in the tag field if it exists into the text field.
         /// </summary>
         /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
@@ -1049,6 +1128,7 @@ namespace P3D_Scenario_Generator
         {
             Runway.SaveLocationFavourites();
             Aircraft.SaveAircraftVariants();
+            SaveUserSettings(TabPageSettings.Controls);
         }
 
         #endregion

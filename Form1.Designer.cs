@@ -203,6 +203,8 @@ namespace P3D_Scenario_Generator
             label58 = new Label();
             label59 = new Label();
             label60 = new Label();
+            label62 = new Label();
+            TextBoxSettingsP3DprogramData = new TextBox();
             groupBox16 = new GroupBox();
             tableLayoutPanel12 = new TableLayoutPanel();
             ButtonRandomLocation = new Button();
@@ -2473,7 +2475,7 @@ namespace P3D_Scenario_Generator
             // 
             label8.Anchor = AnchorStyles.None;
             label8.AutoSize = true;
-            label8.Location = new Point(40, 38);
+            label8.Location = new Point(40, 37);
             label8.Name = "label8";
             label8.Size = new Size(45, 15);
             label8.TabIndex = 43;
@@ -2487,12 +2489,11 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsSimulatorVersion.DropDownWidth = 100;
             ComboBoxSettingsSimulatorVersion.FormattingEnabled = true;
             ComboBoxSettingsSimulatorVersion.Items.AddRange(new object[] { "4", "5", "6" });
-            ComboBoxSettingsSimulatorVersion.Location = new Point(139, 34);
+            ComboBoxSettingsSimulatorVersion.Location = new Point(139, 33);
             ComboBoxSettingsSimulatorVersion.Name = "ComboBoxSettingsSimulatorVersion";
             ComboBoxSettingsSimulatorVersion.Size = new Size(100, 23);
             ComboBoxSettingsSimulatorVersion.TabIndex = 44;
-            ComboBoxSettingsSimulatorVersion.Tag = "5";
-            ComboBoxSettingsSimulatorVersion.Text = "5";
+            ComboBoxSettingsSimulatorVersion.Tag = "";
             toolTip1.SetToolTip(ComboBoxSettingsSimulatorVersion, "Used to identify registry entry that specifies location of P3D program files, including SimObjects for aircraft selection");
             // 
             // ComboBoxGeneralLocationFavourites
@@ -2602,6 +2603,30 @@ namespace P3D_Scenario_Generator
             label60.Text = "Country";
             toolTip1.SetToolTip(label60, resources.GetString("label60.ToolTip"));
             // 
+            // label62
+            // 
+            label62.Anchor = AnchorStyles.None;
+            label62.AutoSize = true;
+            label62.Location = new Point(11, 68);
+            label62.Name = "label62";
+            label62.Size = new Size(104, 15);
+            label62.TabIndex = 45;
+            label62.Text = "P3D Program Data";
+            toolTip1.SetToolTip(label62, "Location where generated scenarios are stored. Usually \"Prepar3D v5 Files\"");
+            // 
+            // TextBoxSettingsP3DprogramData
+            // 
+            TextBoxSettingsP3DprogramData.AccessibleName = "Folder Info: P3D Program Data";
+            TextBoxSettingsP3DprogramData.Anchor = AnchorStyles.None;
+            TextBoxSettingsP3DprogramData.Location = new Point(139, 64);
+            TextBoxSettingsP3DprogramData.Name = "TextBoxSettingsP3DprogramData";
+            TextBoxSettingsP3DprogramData.Size = new Size(100, 23);
+            TextBoxSettingsP3DprogramData.TabIndex = 46;
+            TextBoxSettingsP3DprogramData.Tag = "C:\\ProgramData\\Lockheed Martin\\Prepar3D v";
+            TextBoxSettingsP3DprogramData.Text = "C:\\ProgramData\\Lockheed Martin\\Prepar3D v";
+            TextBoxSettingsP3DprogramData.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxSettingsP3DprogramData, "P3D Program Data folder path excluding version number suffix");
+            // 
             // groupBox16
             // 
             groupBox16.BackColor = Color.FromArgb(255, 192, 128);
@@ -2706,7 +2731,7 @@ namespace P3D_Scenario_Generator
             groupBox4.Controls.Add(tableLayoutPanel1);
             groupBox4.Location = new Point(19, 174);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(286, 95);
+            groupBox4.Size = new Size(286, 127);
             groupBox4.TabIndex = 2;
             groupBox4.TabStop = false;
             groupBox4.Text = "Folder Info";
@@ -2718,6 +2743,8 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel1.ColumnCount = 2;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(TextBoxSettingsP3DprogramData, 1, 2);
+            tableLayoutPanel1.Controls.Add(label62, 0, 2);
             tableLayoutPanel1.Controls.Add(ComboBoxSettingsSimulatorVersion, 1, 1);
             tableLayoutPanel1.Controls.Add(label8, 0, 1);
             tableLayoutPanel1.Controls.Add(ComboBoxSettingsScenarioFolder, 1, 0);
@@ -2725,10 +2752,11 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel1.ImeMode = ImeMode.On;
             tableLayoutPanel1.Location = new Point(16, 22);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 2;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Size = new Size(253, 61);
+            tableLayoutPanel1.RowCount = 3;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 33F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 33F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 34F));
+            tableLayoutPanel1.Size = new Size(253, 92);
             tableLayoutPanel1.TabIndex = 36;
             // 
             // TabPageCelestial
@@ -3245,6 +3273,8 @@ namespace P3D_Scenario_Generator
         private Button ButtonRandomAircraft;
         internal TextBox TextBoxGeneralAircraftValues;
         private Button ButtonRandomLocation;
+        internal TextBox TextBoxSettingsP3DprogramData;
+        private Label label62;
     }
 }
 

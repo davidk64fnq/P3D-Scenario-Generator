@@ -14,16 +14,19 @@
             The list is alphabetical showing airport ICAO and runway id in parentheses. P3D Scenario Generator doesn't display location information for the selected airport in order to preserve the element of surprise when a random runway is chosen.
         </p>
         <p>
-            The runway data is derived from a file produced by the "MakeRunways" program named "runways.xml". To include add-on airports in the available list, download a copy of "MakeRunways" and generate a copy of "runways.xml" that reflects the airports installed on your PC. This involves using a utility included with "MakeRunways" called "LorbySceneryExport", details are provided in the "MakeRwys README.pdf" file. Place the generated "runways.xml" file in the same directory as the P3D Scenario Generator program files and it will be used in preference to the default "runways.xml" list incorporated in the P3D Scenario Generator executable.  
+            The runway data is derived from a file produced by the "MakeRunways" program named "runways.xml". To include add-on airports in the available list, download a copy of "MakeRunways" and generate a copy of "runways.xml" that reflects the airports installed on your PC.   
+        </p>
+        <p>
+            This involves using a utility included with "MakeRunways" called "LorbySceneryExport", details are provided in the "MakeRwys README.pdf" file. Place the generated "runways.xml" file in the same directory as the P3D Scenario Generator program files and it will be used in preference to the default "runways.xml" list incorporated in the P3D Scenario Generator executable.
+        </p>
+        <p>
+            P3D Scenario Generator runs a check each time you generate a scenario to see whether a user generated "runways.xml" exists and if so that the last modified date of the file is more recent than that of "scenery.cfg" in the P3D Program Data folder. The first time it detects this a warning is displayed and then the "runways.xml" last modified date is set to now to stop the warning from repeating indefinitely.
         </p>
         <p>
             Note 1: Rather than double clicking MakeRwys.exe to execute it, use Windows Powershell from the directory containing Prepar3D.exe with the command ".\MakeRwys />0" This will ensure the really short runways are included rather than by default only greater 1500m.
         </p>
         <p>
-            Note 2: You may need to delete the string encoding="Windows-1252" from the first line of runways.xml if your system complains about this encoding.
-        </p>
-        <p>
-            Note 3: Make sure all add-on scenery is activated before running MakeRwys!
+            Note 2: Make sure all add-on scenery is activated before running MakeRwys!
         </p>
     </body>
 </html>
