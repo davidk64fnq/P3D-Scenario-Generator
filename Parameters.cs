@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Windows.Forms;
 using HtmlAgilityPack;
 
 namespace P3D_Scenario_Generator
@@ -346,6 +345,7 @@ namespace P3D_Scenario_Generator
         internal static int SettingsCacheDailyTotal { get; set; }
         internal static string SettingsScenarioFolder { get; private set; }
         internal static string SettingsSimulatorVersion { get; private set; }
+        internal static string SettingsP3DprogramData { get; private set; }
 
         #endregion
 
@@ -480,6 +480,7 @@ namespace P3D_Scenario_Generator
             SettingsCacheUsage = Form.form.TextBoxSettingsCacheUsage.Text;
             SettingsCacheDailyTotal = Convert.ToInt32(Form.form.TextBoxSettingsCacheDailyTotal.Text);
             SettingsSimulatorVersion = Form.form.ComboBoxSettingsSimulatorVersion.GetItemText(Form.form.ComboBoxSettingsSimulatorVersion.SelectedItem);
+            SettingsP3DprogramData = Form.form.TextBoxSettingsP3DprogramData.Text; 
             if (!ValidateMapTileServerKey())
             {
                 return false;
