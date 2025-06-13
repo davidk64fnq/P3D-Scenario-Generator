@@ -299,8 +299,8 @@ namespace P3D_Scenario_Generator
                 string newFavouriteName = ((ComboBox)sender).Text;
                 string oldFavouriteName = Runway.UpdateLocationFavouriteName(newFavouriteName);
 
-                // Create a new locationFavourite instance in Runway.cs using old name and all filters set to "None"
-                Runway.AddLocationFavourite(oldFavouriteName, ["None"], ["None"], ["None"]);
+                // Create a new locationFavourite instance in Runway.cs using old name and all filters copied from current selected favourite
+                Runway.AddLocationFavourite(oldFavouriteName);
 
                 // Refresh the ComboBoxGeneralLocationFavourites field list on form
                 ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();

@@ -157,22 +157,31 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// The name of the favourite
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// The list of valid country strings for this favourite 
         /// </summary>
-        public List<string> Countries { get; set; }
+        public List<string> Countries { get; set; } = [];
 
         /// <summary>
         /// The list of valid state strings for this favourite 
         /// </summary>
-        public List<string> States { get; set; }
+        public List<string> States { get; set; } = [];
 
         /// <summary>
         /// The list of valid city strings for this favourite 
         /// </summary>
-        public List<string> Cities { get; set; }
+        public List<string> Cities { get; set; } = [];
+
+        // Copy constructor 
+        public LocationFavourite(LocationFavourite original) : this() // Calls the primary constructor for initialization
+        {
+            this.Name = original.Name;
+            this.Countries = original.Countries?.ToList() ?? [];
+            this.States = original.States?.ToList() ?? [];
+            this.Cities = original.Cities?.ToList() ?? [];
+        }
     }
 
     internal class Runway
@@ -664,22 +673,20 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Add a location favourite to end of <see cref="LocationFavourites"/> no need to
+        /// Add a location favourite to end of <see cref="LocationFavourites"/>, no need to
         /// adjust <see cref="CurrentLocationFavouriteIndex"/> as it is unaffected by adding to
         /// end of the list unless it's the first favourite to be added in which case set
         /// <see cref="CurrentLocationFavouriteIndex"/> to zero.
         /// </summary>
-        /// <param name="newLocationFavourite">The new <see cref="LocationFavourite"/> to be added</param>
-        static internal void AddLocationFavourite(string name, List<string> countries, List<string> states, List<string> cities)
+        /// <param name="name">The name for the new <see cref="LocationFavourite"/> to be added</param>
+        static internal void AddLocationFavourite(string name)
         {
-            var newLocationFavourite = new LocationFavourite
+            // Create a deep copy using the extension method
+            LocationFavourite deepCopyFav = new(LocationFavourites[CurrentLocationFavouriteIndex])
             {
-                Name = name,
-                Countries = countries,
-                States = states,
-                Cities = cities
+                Name = name
             };
-            LocationFavourites.Add(newLocationFavourite);
+            LocationFavourites.Add(deepCopyFav);
             if (LocationFavourites.Count == 1)
                 CurrentLocationFavouriteIndex = 0;
         }
