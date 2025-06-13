@@ -160,7 +160,7 @@ namespace P3D_Scenario_Generator
 
         static internal void InitStars()
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            ExcelPackage.License.SetNonCommercialPersonal("David Kilpatrick");
 
             Stream stream = Form.GetResourceStream("Excel.CelestialNavStars.xlsx");
             using ExcelPackage package = new(stream);
