@@ -432,6 +432,7 @@ namespace P3D_Scenario_Generator
             wikiItemParams.airportID = nearestAirport.Id;
             wikiItemParams.latitude = nearestAirport.AirportLat.ToString();
             wikiItemParams.longitude = nearestAirport.AirportLon.ToString();
+            wikiItemParams.airportIndex = nearestAirport.RunwaysIndex;
             return wikiItemParams;
         }
 
