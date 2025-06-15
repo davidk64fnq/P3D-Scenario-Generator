@@ -425,6 +425,7 @@ namespace P3D_Scenario_Generator
         static internal WikiItemParams GetNearestAirport(double queryLat, double queryLon)
         {
             WikiItemParams wikiItemParams = new();
+            Runway.SetRunwaysSubset();
             RunwayParams nearestAirport = Runway.GetNearestRunway(queryLat, queryLon);
             if (nearestAirport == null)
                 return null;

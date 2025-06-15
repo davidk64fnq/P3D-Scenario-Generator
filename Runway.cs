@@ -861,7 +861,6 @@ namespace P3D_Scenario_Generator
         /// <returns>The runway that meets the minimum and maximum distance requirements</returns>
         static internal RunwayParams GetNearbyRunway(double queryLat, double queryLon, double minDist, double maxDist)
         {
-            SetRunwaysSubset();
             double curDistance;
             Random r = new();
             int curIndex = r.Next(0, RunwaysSubset.Count);
@@ -889,7 +888,6 @@ namespace P3D_Scenario_Generator
         /// <returns>The nearest runway to the provided reference cooordinate</returns>
         static internal RunwayParams GetNearestRunway(double queryLat, double queryLon)
         {
-            SetRunwaysSubset();
             RunwayParams minAirport = new();
             double minDistance = 9999;
             double curDistance;
@@ -1005,6 +1003,7 @@ namespace P3D_Scenario_Generator
                     if (rwyType == "destination")
                     {
                         Random random = new();
+                        SetRunwaysSubset();
                         airport = GetNearestRunway(-60 + random.Next(0, 120), -180 + random.Next(0, 360));
                         Parameters.CelestialDestRunway = $"{airport.IcaoId}\t({airport.Id})";
                         words = Parameters.CelestialDestRunway.Split("\t");
