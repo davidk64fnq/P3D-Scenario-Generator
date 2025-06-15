@@ -107,7 +107,7 @@ namespace P3D_Scenario_Generator
             // Prompt user to select an aircraft variant thumbnail image
             using OpenFileDialog openFileDialog1 = new()
             {
-                Title = "Select a aircraft thumbnail image file",
+                Title = "Select an aircraft thumbnail image file from within a \"texture.X\" folder (X could be any string), NOT a \"texture\" folder",
                 DefaultExt = "jpg",
                 Filter = "JPG files (*.jpg)|*.jpg|All files (*.*)|*.*",
                 FilterIndex = 1,
