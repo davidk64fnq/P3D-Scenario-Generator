@@ -69,6 +69,7 @@ namespace P3D_Scenario_Generator
             if (Parameters.SetParams())
             {
                 CheckRunwaysXMLupToDate();
+                Runway.SetRunwaysSubset();
                 DisplayStartMessage();
                 SaveUserSettings(TabPageSettings.Controls);
                 Drawing.DrawScenarioImages();

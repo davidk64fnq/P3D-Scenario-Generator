@@ -194,7 +194,6 @@ namespace P3D_Scenario_Generator
         static internal PhotoLocParams GetNearbyAirport(double queryLat, double queryLon, double minDist, double maxDist)
         {
             PhotoLocParams photoLocationParams = new();
-            Runway.SetRunwaysSubset();
             RunwayParams nearbyAirport = Runway.GetNearbyRunway(queryLat, queryLon, minDist, maxDist);
             if (nearbyAirport == null)
                 return null;
