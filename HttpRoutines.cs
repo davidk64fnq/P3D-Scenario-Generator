@@ -48,7 +48,7 @@ namespace P3D_Scenario_Generator
         internal static string GetWebString(string url)
         {
             HtmlAgilityPack.HtmlDocument htmlDoc = GetWebDoc(url);
-            return $"{htmlDoc}";
+            return htmlDoc.DocumentNode.OuterHtml;
         }
 
 
