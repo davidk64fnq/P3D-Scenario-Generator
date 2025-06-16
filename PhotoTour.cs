@@ -322,16 +322,11 @@ namespace P3D_Scenario_Generator
             Form.DeleteFile($"{Parameters.SettingsScenarioFolder}\\random_pic2map.html"); // no longer needed
             if (airportLocation != null)
             {
-                int headingChange = MathRoutines.CalcHeadingChange(PhotoLocations[^2].forwardBearing, airportLocation.forwardBearing);
-                // Ignore bearing constraint if only one photo, allows backtrack to starting airport
-                if ((Math.Abs(headingChange) < Parameters.PhotoTourConstraintsMaxBearingChange) || (Parameters.PhotoTourConstraintsMaxNoLegs == 2)) 
-                {
-                    Runway.destRwy = Runway.Runways[airportLocation.airportIndex];
-                    PhotoLocations.Add(airportLocation);
-                    PhotoCount = PhotoLocations.Count;
-                    GetPhotos();
-                    return false;
-                }
+                Runway.destRwy = Runway.Runways[airportLocation.airportIndex];
+                PhotoLocations.Add(airportLocation);
+                PhotoCount = PhotoLocations.Count;
+                GetPhotos();
+                return false;
             }
             return true;
         }
