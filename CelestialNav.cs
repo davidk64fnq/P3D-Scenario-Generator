@@ -3,6 +3,23 @@ using System.Text;
 
 namespace P3D_Scenario_Generator
 {
+    /// <summary>
+    /// Represents a celestial star with various astronomical properties.
+    /// </summary>
+    /// <param name="s1">The constellation the star belongs to.</param>
+    /// <param name="s2">A unique identifier for the star.</param>
+    /// <param name="s3">An identifier for a connected star, if applicable.</param>
+    /// <param name="s4">The star's number designation.</param>
+    /// <param name="s5">The common name of the star.</param>
+    /// <param name="s6">A link to its Wikipedia page or other relevant information.</param>
+    /// <param name="s7">The Bayer designation of the star.</param>
+    /// <param name="d8">The Right Ascension in hours.</param>
+    /// <param name="d9">The Right Ascension in minutes.</param>
+    /// <param name="d10">The Right Ascension in seconds.</param>
+    /// <param name="d11">The Declination in degrees.</param>
+    /// <param name="d12">The Declination in arcminutes.</param>
+    /// <param name="d13">The Declination in arcseconds.</param>
+    /// <param name="d14">The visual magnitude of the star.</param>
     public class Star(string s1, string s2, string s3, string s4, string s5, string s6, string s7, double d8, double d9, double d10, double d11, double d12, double d13, double d14)
     {
         public string constellation = s1;
@@ -21,16 +38,22 @@ namespace P3D_Scenario_Generator
         public double visMag = d14;
     }
 
+    /// <summary>
+    /// Manages all aspects of celestial navigation for the simulation, including loading star data,
+    /// retrieving almanac information, calculating celestial positions, and generating
+    /// dynamic web content (HTML, JavaScript, CSS) for a celestial sextant display.
+    /// It also handles the creation and backup of the simulator's stars.dat file.
+    /// </summary>
     class CelestialNav
     {
         private static readonly List<Star> stars = [];
         internal static List<string> navStarNames = [];
         internal static int noStars = 0;
-        internal static double[,] ariesGHAd = new double[3, 24];
-        internal static double[,] ariesGHAm = new double[3, 24];
-        internal static double[] starsSHAd = new double[57];
+        internal static int[,] ariesGHAd = new int[Con.NumberOfDaysToExtract, Con.HoursPerDay];
+        internal static double[,] ariesGHAm = new double[Con.NumberOfDaysToExtract, Con.HoursPerDay];
+        internal static int[] starsSHAd = new int[57];
         internal static double[] starsSHAm = new double[57];
-        internal static double[] starsDECd = new double[57];
+        internal static int[] starsDECd = new int[57];
         internal static double[] starsDECm = new double[57];
         internal static double midairStartHdg;
         internal static double midairStartLat;
@@ -40,6 +63,16 @@ namespace P3D_Scenario_Generator
         internal static double celestialImageSouth;
         internal static double celestialImageWest;
 
+        private static readonly Random _random = new();
+
+        /// <summary>
+        /// Initializes the celestial navigation system for a new scenario.
+        /// This method sets a random destination runway, determines the celestial start location,
+        /// and then attempts to load almanac data, initialize star data, create star data files,
+        /// and set up the necessary HTML, JavaScript, and CSS for the celestial sextant display.
+        /// If all these steps are successful, it also updates the overview and location images.
+        /// </summary>
+        /// <returns>True if all celestial setup operations complete successfully; otherwise, false.</returns>
         static internal bool SetCelestial()
         {
             Runway.destRwy = Runway.GetRandomRunway();
@@ -53,6 +86,13 @@ namespace P3D_Scenario_Generator
             return false;
         }
 
+        /// <summary>
+        /// Calculates and sets the geographical boundaries (North, East, South, West) for a celestial map image.
+        /// These boundaries define the extent of the map based on a starting point and a specified distance.
+        /// </summary>
+        /// <param name="midairStartLat">The starting latitude (in degrees) of the center of the celestial map.</param>
+        /// <param name="midairStartLon">The starting longitude (in degrees) of the center of the celestial map.</param>
+        /// <param name="distance">The radial distance (in nautical miles) from the center to the edges of the map.</param>
         static internal void SetCelestialMapEdges(double midairStartLat, double midairStartLon, double distance)
         {
             double dFinishLat = 0; 
@@ -103,7 +143,13 @@ namespace P3D_Scenario_Generator
             DateTime startDate = new(Parameters.Year, Parameters.Month, Parameters.Day, Parameters.Hours, Parameters.Minutes, Parameters.Seconds, DateTimeKind.Local);
             startDate = startDate.AddDays(-1);
             string url = $"http://www.tecepe.com.br/scripts/AlmanacPagesISAPI.dll/pages?date={startDate.Month}%2F{startDate.Day}%2F{startDate.Year}";
-            return HttpRoutines.GetWebString(url);
+
+            string result = HttpRoutines.GetWebDoc(url).DocumentNode.OuterHtml; 
+            if (result == null)
+            {
+                Log.Error($"Failed to download almanac data from URL: {url}");
+            }
+            return result;
         }
 
         /// <summary>
@@ -113,27 +159,200 @@ namespace P3D_Scenario_Generator
         /// <returns>True if successful in extracting Aries GHA degrees and minutes</returns>
         static internal bool ExtractAriesGHA(string almanacData)
         {
-            if (!almanacData.Contains("G.M.T", StringComparison.CurrentCulture)) return false;
-            string ariesGHAdata = almanacData[almanacData.IndexOf("G.M.T")..];
-            string[] hours = ariesGHAdata.Split("\n");                      // GHA data is one line per hour
-            if (hours.Length < 85) return false;                            // Check sufficient lines to pick up the three days of data
+            const int DegsAndMinsSegmentIndex = 1;              // The segment in pipes string array containing GHA degrees and minutes values
+            const int Expected_Space_Separated_Segments = 2;    // Expecting 2 space separated segments being GHA degrees and minutes values
+            const int StarGHAdegreesIndex = 0;                  // Index in spaces string array of GHA degrees value
+            const int StarGHAminutesIndex = 1;                  // Index in spaces string array of GHA minutes value
             int day = 0, hour = 0;
-            for (int line = 2; line < 85; line++)
+            if (GetAriesGHAdataBlock(almanacData, out string[] hourDataLines))
             {
-                if (hours[line].Length > 6 && hours[line][6] == '|')        // Uniquely identifies the data lines from formatting lines
+                for (int lineNo = 0; lineNo < hourDataLines.Length; lineNo++)
                 {
-                    string[] pipes = hours[line].Split('|');                // pipes[0] will contain the hour, pipes[1] the GHA data for that hour
-                    string[] spaces = pipes[0].Trim().Split(' ');           // spaces[^1] will contain the hour minus any day characters
-                    if (spaces[^1] != hour.ToString()) return false;        // Check the data is arranged from hour 0 to hour 23, for the three days
-                    spaces = pipes[1].Trim().Split(' ');                    // spaces[0] will contain the GHA degrees, spaces[1] the GHA minutes
-                    int GHAdegrees = Convert.ToInt16(spaces[0]);
-                    if (GHAdegrees < 0 || GHAdegrees > 360) return false;   // Check data is in degree range
-                    ariesGHAd[day, hour] = GHAdegrees;                      // Store the degrees for current hour
-                    double GHAminutes = Convert.ToDouble(spaces[1]);
-                    if (GHAminutes < 0 || GHAminutes > 60) return false;    // Check data is in minutes range
-                    ariesGHAm[day, hour++] = GHAminutes;                    // Store the minutes for current hour then increment the hour
-                    if (hour == 24) { hour = 0; day++; }
+                    if (ValidAriesGHAdataline(hourDataLines[lineNo], hour))
+                    {
+                        string[] pipes = hourDataLines[lineNo].Split('|');
+                        string[] spaces = pipes[DegsAndMinsSegmentIndex].Trim().Split(' ');     // pipes[1] contains the Aries GHA data
+                        if (spaces.Length < Expected_Space_Separated_Segments)                  // Check if degrees and minutes exist
+                        {
+                            Log.Error($"Malformed GHA data (degrees/minutes) in Aries GHA line {lineNo}: '{hourDataLines[lineNo]}'");
+                            return false;
+                        }
+
+                        if (!TryParseDegrees(spaces[StarGHAdegreesIndex], "Aries GHA", out ariesGHAd[day, hour]))
+                            return false;
+
+                        if (!TryParseMinutes(spaces[StarGHAminutesIndex], "Aries GHA", out ariesGHAm[day, hour++]))
+                            return false;
+
+                        if (hour == Con.HoursPerDay) { hour = 0; day++; }
+                    }
                 }
+                if (hour == 0 && day == Con.NumberOfDaysToExtract)
+                    return true;
+                else
+                {
+                    Log.Error($"Unable to extract {Con.NumberOfDaysToExtract} days of {Con.HoursPerDay} hours Aries GHA degrees and minutes data from almanac data.");
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Extracts the specific block of Aries GHA data lines from the raw almanac data.
+        /// This block is identified by its header line containing "ARIES", "VENUS", and "MARS",
+        /// and ends before the next major data block identified by "SUN", "MOON", and "STARS".
+        /// Performs checks to ensure both header lines are present and the Aries GHA block
+        /// contains at least the expected number of data rows (3 days * 24 hours).
+        /// </summary>
+        /// <param name="almanacData">The complete raw almanac data as a single string.</param>
+        /// <param name="hourDataLines">
+        /// When this method returns, contains an array of strings representing
+        /// only the lines within the identified Aries GHA data block if successful; otherwise, an empty array.
+        /// </param>
+        /// <returns>True if the Aries GHA data block was successfully identified and extracted; otherwise, false.</returns>
+        static internal bool GetAriesGHAdataBlock(string almanacData, out string[] hourDataLines)
+        {
+            // Almanac data has two blocks of data covering 3 days with one line per each of 24 hours labelled 0 to 23
+            // The Aries GHA data is in the first block which has a header row with the strings "ARIES", "VENUS", and "MARS" in it
+            // The second block has a header row with the strings "SUN", "MOON", and "STARS" in it
+
+            hourDataLines = almanacData.Split("\n");
+
+            // Check Aries GHA data block header line present
+            if (!HeaderLinePresent(hourDataLines, Con.AriesKeyword, Con.VenusKeyword, Con.MarsKeyword, out int firstBlockHeaderIndex))
+            {
+                return false;
+            }
+
+            // Check second non Aries GHA data block header line present
+            if (!HeaderLinePresent(hourDataLines, Con.SunKeyword, Con.MoonKeyword, Con.StarsKeyword, out int secondBlockHeaderIndex))
+            {
+                return false;
+            }
+
+            // Check there is atleast 72 rows of data in first block being 3 days x 24 hours per day
+            if (firstBlockHeaderIndex + (Con.NumberOfDaysToExtract * Con.HoursPerDay) < secondBlockHeaderIndex)
+            {
+                hourDataLines = hourDataLines[firstBlockHeaderIndex..secondBlockHeaderIndex];
+                return true;
+            }
+            else
+            {
+                Log.Error($"There is less than 72 ({Con.NumberOfDaysToExtract} days x {Con.HoursPerDay} hours) rows of data in the Aries GHA block " +
+                    "within the downloaded almanac data");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks if a header line containing all three specified keywords (case-sensitive) is present
+        /// within the provided array of data lines.
+        /// </summary>
+        /// <param name="hourDataLines">The array of strings to search within.</param>
+        /// <param name="keyword1">The first keyword to search for.</param>
+        /// <param name="keyword2">The second keyword to search for.</param>
+        /// <param name="keyword3">The third keyword to search for.</param>
+        /// <param name="headerLineIndex">
+        /// When this method returns, contains the zero-based index of the first line
+        /// that contains all three keywords if found; otherwise, returns -1.
+        /// </param>
+        /// <returns>True if a matching header line is found; otherwise, false.</returns>
+        static internal bool HeaderLinePresent(string[] hourDataLines, string keyword1, string keyword2, string keyword3, out int headerLineIndex)
+        {
+            var matchingLineInfo = hourDataLines
+                .Select((line, index) => new { Line = line, Index = index })
+                .FirstOrDefault(item =>
+                    item.Line.Contains(keyword1) &&
+                    item.Line.Contains(keyword2) &&
+                    item.Line.Contains(keyword3)
+                );
+            if (matchingLineInfo != null)
+            {
+                headerLineIndex = matchingLineInfo.Index;
+                return true;
+            }
+            else
+            {
+                headerLineIndex = matchingLineInfo.Index;
+                Log.Error($"Header line containing '{keyword1}', '{keyword2}', and '{keyword3}' not found in almanac data.");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Validates if a given string line is a well-formed Aries GHA data line
+        /// by checking its pipe-separated structure and if the embedded hour matches the expected next hour.
+        /// </summary>
+        /// <param name="potentialHourDataLine">The string line from the almanac data to validate.</param>
+        /// <param name="nextHour">The expected hour value (0-23) that the data line should contain.</param>
+        /// <returns>
+        /// True if the line contains at least two pipe-separated parts, and the last
+        /// space-delimited value in the first part matches the <paramref name="nextHour"/>;
+        /// otherwise, false. No error is logged if validation fails, as non-data lines are expected.
+        /// </returns>
+        static internal bool ValidAriesGHAdataline(string potentialHourDataLine, int nextHour)
+        {
+            const int Expected_Min_Pipe_Separated_Parts = 2;
+            const int HourSegmentIndex = 0;
+
+            // Check whether it contains atleast one pipe symbol
+            string[] pipes = potentialHourDataLine.Split('|');
+            if (pipes.Length >= Expected_Min_Pipe_Separated_Parts)
+            {
+                // Check whether last space delimited data in pipes[HourSegmentIndex] matches nextHour
+                string[] spaces = pipes[HourSegmentIndex].Trim().Split(' ');
+                if (spaces.Length > 0 && spaces[^1] == nextHour.ToString())
+                {
+                    return true;
+                }
+            }
+            // No error logging as it's expected some lines contain no data
+            return false;
+        }
+
+        /// <summary>
+        /// Attempts to parse a string into an integer representing degrees and validates its range (0 to 360, inclusive).
+        /// Logs an error if parsing fails or if the value is out of the valid range.
+        /// </summary>
+        /// <param name="degreesStringIn">The string containing the degrees value to parse.</param>
+        /// <param name="degreesName">A descriptive name for the degrees value (e.g., "Aries GHA") used in error messages.</param>
+        /// <param name="degreesIntOut">When this method returns, contains the parsed integer value if successful; otherwise, 0.</param>
+        /// <returns>True if the string was successfully parsed into a valid degree value; otherwise, false.</returns>
+        static internal bool TryParseDegrees(string degreesStringIn, string degreesName, out int degreesIntOut)
+        {
+            if (!int.TryParse(degreesStringIn, out degreesIntOut))
+            {
+                Log.Error($"Failed to parse {degreesName} degrees in string: '{degreesStringIn}'");
+                return false;
+            }
+            if (degreesIntOut < 0 || degreesIntOut > Con.MaxDegrees)
+            {
+                Log.Error($"{degreesName} degrees out of range in string: {degreesStringIn}");
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to parse a string into a double representing minutes and validates its range (0 to 60, inclusive).
+        /// Logs an error if parsing fails or if the value is out of the valid range.
+        /// </summary>
+        /// <param name="minutesStringIn">The string containing the minutes value to parse.</param>
+        /// <param name="minutesName">A descriptive name for the minutes value (e.g., "Aries GHA") used in error messages.</param>
+        /// <param name="minutesDoubleOut">When this method returns, contains the parsed double value if successful; otherwise, 0.</param>
+        /// <returns>True if the string was successfully parsed into a valid minute value; otherwise, false.</returns>
+        static internal bool TryParseMinutes(string minutesStringIn, string minutesName, out double minutesDoubleOut)
+        {
+            if (!double.TryParse(minutesStringIn, out minutesDoubleOut))
+            {
+                Log.Error($"Failed to parse {minutesName} minutes in string: '{minutesStringIn}'");
+                return false;
+            }
+            if (minutesDoubleOut < 0 || minutesDoubleOut > Con.MaxMinutes)
+            {
+                Log.Error($"{minutesName} minutes out of range in string: {minutesStringIn}");
+                return false;
             }
             return true;
         }
@@ -151,50 +370,168 @@ namespace P3D_Scenario_Generator
                 "Denebola", "Diphda", "Dubhe", "Elnath", "Eltanin", "Enif", "Fomalhaut", "Gacrux", "Gienah", "Hadar", "Hamal", "Kaus Austr.", "Kochab",
                 "Markab", "Menkar", "Menkent", "Miaplacidus", "Mirfak", "Nunki", "Peacock", "Pollux", "Procyon", "Rasalhague", "Regulus", "Rigel",
                 "Rigil Kent", "Sabik", "Schedar", "Shaula", "Sirius", "Spica", "Suhail", "Vega", "Zuben-ubi"};
-            string[] almanacDataRows = almanacData.Split("\n");
 
+            string[] almanacDataRows = almanacData.Split("\n");
             foreach (string starName in starNames)
             {
-                string starDataLine = null;
-                var matchingLines = almanacDataRows
-                    .Select(line => new { Line = line, ExtractedName = ExtractStarName(line) })
-                    .Where(item => item.ExtractedName != null && item.ExtractedName.Equals(starName, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-                if (matchingLines.Count == 1)
-                    starDataLine = matchingLines.Single().Line;
-                else 
-                    return false;
-                string[] pipes = starDataLine.Split('|');
-                // Star data occurs after last pipe symbol in line, and is whitespace separated ([12..] strips star name from front)
-                string[] spaces = pipes[^1][12..].Split(" ", StringSplitOptions.RemoveEmptyEntries);   
-
-                // Store SHA degrees and minutes for current star
-                starsSHAd[starIndex] = Convert.ToDouble(spaces[0]);
-                starsSHAm[starIndex] = Convert.ToDouble(spaces[1]);
-
-                // Store SHA declination degrees and minutes, if degrees is < 10 then there is a space between the N or S character and the degrees number
-                if (spaces.Length == 4)
+                if (!GetStarDataLine(almanacDataRows, starName, out string starDataLine))
                 {
-                    starsDECd[starIndex] = Convert.ToDouble(spaces[2][1..]);    // Exclude N or S character
-                    if (spaces[2][0] == 'S')
-                        starsDECd[starIndex] *= -1;                             // Store south declinations as negative values
-                    starsDECm[starIndex++] = Convert.ToDouble(spaces[3]);
-                }
-                else if (spaces.Length == 5)
-                {
-                    starsDECd[starIndex] = Convert.ToDouble(spaces[3]);
-                    if (spaces[2][0] == 'S')
-                        starsDECd[starIndex] *= -1;                             // Store south declinations as negative values
-                    starsDECm[starIndex++] = Convert.ToDouble(spaces[4]);
-                }
-                else
+                    Log.Error($"Unable to locate exactly one line of data for star name \"{starName}\" in almanac data.");
                     return false;
+                }
+
+                if (!GetStarDataValues(starDataLine, out string[] starDataValues))
+                {
+                    Log.Error($"Unable to locate the star data values for star name \"{starName}\" in almanac data.");
+                    return false;
+                }
+
+                if (!TryParseStarDataValues(starDataValues, starIndex, starName))
+                {
+                    Log.Error($"Unable to parse the star data values for star name \"{starName}\" in almanac data.");
+                    return false;
+                }
             }
 
             return true;
         }
 
-        // Function to extract star name from a data line based on the new understanding
+        /// <summary>
+        /// Attempts to find a single data line for a specified star within an array of almanac data rows.
+        /// It extracts a potential star name from each line and performs a case-insensitive comparison.
+        /// </summary>
+        /// <param name="almanacDataRows">An array of strings, where each string represents a row of almanac data.</param>
+        /// <param name="starName">The name of the star to search for (e.g., "POLLUX", "SIRIUS").</param>
+        /// <param name="starDataLine">
+        /// When this method returns, contains the found star's data line if exactly one match is found;
+        /// otherwise, it is set to null.
+        /// </param>
+        /// <returns>
+        /// True if exactly one line containing the specified star's data is found;
+        /// False if no lines are found, or if multiple lines for the same star are found (indicating ambiguity).
+        /// </returns>
+        static internal bool GetStarDataLine(string[] almanacDataRows, string starName, out string starDataLine)
+        {
+            var matchingLines = almanacDataRows
+                .Select(line => new { Line = line, ExtractedName = ExtractStarName(line) })
+                .Where(item => item.ExtractedName != null && item.ExtractedName.Equals(starName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (matchingLines.Count == 1)
+            {
+                starDataLine = matchingLines.Single().Line;
+                return true;
+            }
+            else
+            {
+                starDataLine = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Extracts the star data related values from a star data line.
+        /// </summary>
+        /// <param name="starDataLine">The raw string line containing star data.</param>
+        /// <param name="starDataValues">SHA and Declination, degrees and minutes for star.</param>
+        /// <returns>True if the line is valid and values are extracted; otherwise, false.</returns>
+        static internal bool GetStarDataValues(string starDataLine, out string[] starDataValues)
+        {
+            const int ExpectedPipeParts = 4; // Expecting 3 pipes, resulting in 4 parts
+            const int LastPipeSegmentMinLength = 12; // Minimum length for last segment before stripping
+            const int DataSubstringStartIndex = 12; // Index to start extracting data from last segment
+            const int ExpectedMinSpaceParts = 4;
+            const int ExpectedMaxSpaceParts = 5;
+
+            starDataValues = default; // Initialize out parameter
+
+            string[] pipes = starDataLine.Split('|');
+            if (pipes.Length != ExpectedPipeParts)
+            {
+                Log.Error($"Malformed star data line '{starDataLine}'. Expected exactly {ExpectedPipeParts - 1} pipe symbols, found {pipes.Length - 1}.");
+                return false;
+            }
+
+            string lastPipeSegment = pipes[^1]; // Use a meaningful name for clarity
+            if (lastPipeSegment.Length < LastPipeSegmentMinLength)
+            {
+                Log.Error($"Malformed star data line '{starDataLine}'. Last data segment '{lastPipeSegment}' is too short (expected at least {LastPipeSegmentMinLength} chars).");
+                return false;
+            }
+
+            // Star data occurs after the initial part of the last pipe segment
+            string dataSubstring = lastPipeSegment[DataSubstringStartIndex..];
+            string[] spaces = dataSubstring.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+
+            if (spaces.Length < ExpectedMinSpaceParts || spaces.Length > ExpectedMaxSpaceParts)
+            {
+                Log.Error($"Malformed star data line '{starDataLine}'. Expected {ExpectedMinSpaceParts}-{ExpectedMaxSpaceParts} space-separated values for SHA/Declination data, found {spaces.Length}. Data: '{dataSubstring}'.");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Parses and stores the Right Ascension (SHA) and Declination (DEC) values for a specific star
+        /// from an array of space-separated data strings. It handles variations in the format
+        /// of the declination data (4 or 5 parts depending on leading sign/space).
+        /// </summary>
+        /// <param name="starDataValues">
+        /// An array of strings containing the SHA degrees, SHA minutes, and Declination values.
+        /// Expected to have 4 or 5 elements.
+        /// </param>
+        /// <param name="starIndex">The array index at which to store the parsed star data (e.g., 0 for Acamar, 1 for Achernar).</param>
+        /// <param name="starName">The name of the star for context in error messages (e.g., "Acamar").</param>
+        /// <returns>True if all SHA and Declination values are successfully parsed and validated; otherwise, false.</returns>
+        static internal bool TryParseStarDataValues(string[] starDataValues, int starIndex, string starName)
+        {
+            const int StarSHAdegreesIndex = 0; // Index in starDataValues of SHA degrees value
+            const int StarSHAminutesIndex = 1; // Index in starDataValues of SHA minutes value
+            const int ExpectedMinSpaceParts = 4;
+            const int ExpectedMaxSpaceParts = 5;
+
+            // Store SHA degrees and minutes for current star
+            if (!TryParseDegrees(starDataValues[StarSHAdegreesIndex], $"{starName} SHA", out starsSHAd[starIndex]))
+                return false;
+
+            if (!TryParseMinutes(starDataValues[StarSHAminutesIndex], $"{starName} SHA", out starsSHAm[starIndex]))
+                return false;
+
+            // Store SHA declination degrees and minutes, if degrees is < 10 then there is a space between the N or S character and the degrees number
+            if (starDataValues.Length == ExpectedMinSpaceParts)
+            {
+                const int starDECsignIndex = 2;         // Index in starDataValues of where declination sign (N or S) is stored
+                const int starDECdegreesIndex = 2;      // Index in starDataValues of Declination degrees value
+                const int starDECminutesIndex = 3;      // Index in starDataValues of Declination minutes value
+                if (!TryParseDegrees(starDataValues[starDECdegreesIndex][1..], $"{starName} Dec", out starsDECd[starIndex])) // Exclude N or S character
+                    return false; 
+                if (starDataValues[starDECsignIndex][0] == 'S')
+                    starsDECd[starIndex] *= -1;         // Store south declinations as negative values
+                if (!TryParseMinutes(starDataValues[starDECminutesIndex], $"{starName} Dec", out starsDECm[starIndex++]))
+                    return false;
+            }
+            else if (starDataValues.Length == ExpectedMaxSpaceParts)
+            {
+                const int starDECsignIndex = 2;         // Index in starDataValues of where declination sign (N or S) is stored
+                const int starDECdegreesIndex = 3;      // Index in starDataValues of Declination degrees value
+                const int starDECminutesIndex = 4;      // Index in starDataValues of Declination minutes value
+                if (!TryParseDegrees(starDataValues[starDECdegreesIndex], $"{starName} Dec", out starsDECd[starIndex])) // Exclude N or S character
+                    return false;
+                if (starDataValues[starDECsignIndex][0] == 'S')
+                    starsDECd[starIndex] *= -1;         // Store south declinations as negative values
+                if (!TryParseMinutes(starDataValues[starDECminutesIndex], $"{starName} Dec", out starsDECm[starIndex++]))
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Extracts a potential star name from a given string line.
+        /// The star name is expected to be located after the last occurrence of "| " and be up to 12 characters long.
+        /// It performs basic validation to ensure the extracted string is not empty, all numeric, or out of bounds.
+        /// </summary>
+        /// <param name="line">The input string line from which to extract the star name.</param>
+        /// <returns>The extracted star name if found and valid; otherwise, returns null.</returns>
         static internal string ExtractStarName(string line)
         {
             // Find the last occurrence of "| "
@@ -208,7 +545,7 @@ namespace P3D_Scenario_Generator
 
                 string potentialStarName = line.Substring(startIndex, length).Trim();
 
-                // Optional: Validate if it looks like a star name (e.g., not just numbers or empty)
+                // Validate if it looks like a star name (e.g., not just numbers or empty)
                 if (!string.IsNullOrEmpty(potentialStarName) && !char.IsDigit(potentialStarName[0]))
                 {
                     return potentialStarName;
@@ -354,9 +691,6 @@ namespace P3D_Scenario_Generator
             return MathRoutines.CalcDistance(midairStartLat, midairStartLon, Runway.destRwy.AirportLat, Runway.destRwy.AirportLon);
         }
 
-        // Consider using a static Random instance for performance and better randomness
-        private static readonly Random _random = new();
-
         /// <summary>
         /// Sets a random celestial starting location and heading for a simulated aircraft.
         /// The start location is positioned within a specified distance range from the destination
@@ -464,8 +798,7 @@ namespace P3D_Scenario_Generator
             {
                 // Catch any errors related to accessing the embedded resource itself,
                 // or directory creation. File writing errors are handled by FileOperationsHelper.
-                MessageBox.Show($"An unexpected error occurred while generating the Celestial Sextant HTML file: {ex.Message}",
-                                "HTML Generation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error($"An error occurred while generating the Celestial Sextant HTML file: {ex.Message}");
                 return false;
             }
         }
@@ -584,8 +917,7 @@ namespace P3D_Scenario_Generator
             catch (Exception ex)
             {
                 // Catch any errors related to resource streams or initial directory creation
-                MessageBox.Show($"An unexpected error occurred during JavaScript file generation: {ex.Message}",
-                                "Error Generating Files", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error($"An unexpected error occurred during JavaScript file generation: {ex.Message}");
                 return false;
             }
         }
@@ -648,8 +980,7 @@ namespace P3D_Scenario_Generator
             catch (Exception ex)
             {
                 // Catch any errors related to accessing the embedded resource itself.
-                MessageBox.Show($"An unexpected error occurred while processing the Celestial Sextant CSS: {ex.Message}",
-                                "CSS File Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error($"An unexpected error occurred while processing the Celestial Sextant CSS: {ex.Message}");
                 return false;
             }
         }

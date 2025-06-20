@@ -137,5 +137,63 @@ namespace P3D_Scenario_Generator
 
         #endregion
 
+        #region Astronomy constants
+
+        /// <summary>
+        /// "ARIES"
+        /// </summary>
+        public static readonly string AriesKeyword = "ARIES";
+
+        /// <summary>
+        /// "VENUS"
+        /// </summary>
+        public static readonly string VenusKeyword = "VENUS";
+
+        /// <summary>
+        /// "MARS"
+        /// </summary>
+        public static readonly string MarsKeyword = "MARS";
+
+        /// <summary>
+        /// "SUN"
+        /// </summary>
+        public static readonly string SunKeyword = "SUN";
+
+        /// <summary>
+        /// "MOON"
+        /// </summary>
+        public static readonly string MoonKeyword = "MOON";
+
+        /// <summary>
+        /// "STARS"
+        /// </summary>
+        public static readonly string StarsKeyword = "STARS";
+
+        /// <summary>
+        /// 60 minutes in an hour
+        /// </summary>
+        public static readonly int MaxMinutes = 60;
+
+        /// <summary>
+        /// 360 degrees in a circle
+        /// </summary>
+        public static readonly int MaxDegrees = 360;
+
+        #endregion
+
+        #region Celestial navigation scenario constants
+
+        /// <summary>
+        /// Number of hours in a day
+        /// </summary>
+        public static readonly int HoursPerDay = 24;
+
+        /// <summary>
+        /// Number of days of data extracted from almanac data retrieved from Internet
+        /// </summary>
+        public static readonly int NumberOfDaysToExtract = 3;
+
+        #endregion
+
     }
 }
