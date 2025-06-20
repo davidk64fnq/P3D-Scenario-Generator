@@ -145,8 +145,7 @@ namespace P3D_Scenario_Generator
         private static void ShowFileError(string message)
         {
             MessageBox.Show(message, "File Operation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            // In a real application, you might also log this error:
-            // Logger.LogError(message);
+            Log.Error(message);
         }
     }
 }
