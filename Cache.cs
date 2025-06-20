@@ -13,7 +13,7 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                HttpRoutines.GetWebImage(url, saveFile);
+                HttpRoutines.DownloadBinaryFile(url, saveFile);
                 if (File.Exists(saveFile))
                 {
                     int curTotal = Convert.ToInt32(Properties.Settings.Default.TextBoxSettingsCacheDailyTotal);
