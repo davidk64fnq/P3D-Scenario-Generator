@@ -99,16 +99,16 @@ namespace P3D_Scenario_Generator
             HtmlNodeCollection rows = null;
             HtmlNodeCollection cells = null;
             string tableSelection = "//table[contains(@class, 'sortable wikitable') or contains(@class, 'wikitable sortable')]";
-            if (htmlDoc != null && HttpRoutines.GetNodeCollection(htmlDoc.DocumentNode, ref tables, tableSelection, true))
+            if (htmlDoc != null && GetNodeCollection(htmlDoc.DocumentNode, ref tables, tableSelection, true))
             {
                 foreach (var table in tables)
                 {
                     List<WikiItemParams> curTable = [];
-                    if (HttpRoutines.GetNodeCollection(table, ref rows, ".//tr", true))
+                    if (GetNodeCollection(table, ref rows, ".//tr", true))
                     {
                         foreach (var row in rows)
                         {
-                            if (HttpRoutines.GetNodeCollection(row, ref cells, ".//th | .//td", true) && cells.Count >= columnNo)
+                            if (GetNodeCollection(row, ref cells, ".//th | .//td", true) && cells.Count >= columnNo)
                             {
                                 ReadWikiCell(cells[columnNo - 1], curTable);
                             }
@@ -190,12 +190,12 @@ namespace P3D_Scenario_Generator
         {
             var htmlDoc = HttpRoutines.GetWebDoc($"https://en.wikipedia.org/{wikiItem.itemURL}");
             HtmlNodeCollection spans = null;
-            if (htmlDoc != null && HttpRoutines.GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='latitude']", false))
+            if (htmlDoc != null && GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='latitude']", false))
             {
                 if (spans != null && spans.Count > 0)
                 {
                     wikiItem.latitude = ConvertWikiCoOrd(spans[0].InnerText);
-                    HttpRoutines.GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='longitude']", false);
+                    GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='longitude']", false);
                     wikiItem.longitude = ConvertWikiCoOrd(spans[0].InnerText);
                     return true;
                 }
@@ -230,6 +230,25 @@ namespace P3D_Scenario_Generator
             wikiCoOrd = wikiCoOrd.Remove(wikiCoOrd.Length - 1);
 
             return wikiCoOrd;
+        }
+
+        /// <summary>
+        /// Parses parent HtmlNode using specified selection string for collection of child HtmlNodes
+        /// </summary>
+        /// <param name="parentNode">The HtmlNode to be searched</param>
+        /// <param name="childNodeCollection">The collection of HtmlNodes resulting from selction string</param>
+        /// <param name="selection">The string used to collect child HtmlNodes from the parent HtmlNode</param>
+        /// <returns></returns>
+        static internal bool GetNodeCollection(HtmlNode parentNode, ref HtmlNodeCollection childNodeCollection, string selection, bool verbose)
+        {
+            childNodeCollection = parentNode.SelectNodes(selection);
+            if (childNodeCollection == null && verbose)
+            {
+                string errorMessage = $"Node collection failed for {selection}";
+                MessageBox.Show(errorMessage, $"{Parameters.SelectedScenario}", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
+            }
+            return true;
         }
 
         #endregion
