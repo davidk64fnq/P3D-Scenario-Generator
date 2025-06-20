@@ -401,7 +401,7 @@ namespace P3D_Scenario_Generator
 
             // Create sextant window object
             SetUIPanelWindow(1, "CelestialSextant", "False", "True", "images\\htmlCelestialSextant.html", "False", "True");
-//			SetOpenWindowAction(1, "UIPanelWindow", "CelestialSextant", ["986", "755"]);
+			SetOpenWindowAction(1, "UIPanelWindow", "CelestialSextant", ["986", "755", "20", "20"], "2");
             SetCloseWindowAction(1, "UIPanelWindow", "CelestialSextant");
 
             // Create onscreen text object for displaying error message from sextant

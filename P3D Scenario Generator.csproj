@@ -59,6 +59,7 @@
     <None Remove="Resources\Images\failure-icon.png" />
     <None Remove="Resources\Images\header.png" />
     <None Remove="Resources\Images\imgM.png" />
+    <None Remove="Resources\Images\plotImage.jpg" />
     <None Remove="Resources\Images\signTabSegment22Font.jpg" />
     <None Remove="Resources\Images\success-icon.png" />
     <None Remove="Resources\Javascript\scriptsCelestialAstroCalcs.js" />
@@ -170,6 +171,7 @@
     <EmbeddedResource Include="Resources\Images\failure-icon.png" />
     <EmbeddedResource Include="Resources\Images\header.png" />
     <EmbeddedResource Include="Resources\Images\imgM.png" />
+    <EmbeddedResource Include="Resources\Images\plotImage.jpg" />
     <EmbeddedResource Include="Resources\Images\signTabSegment22Font.jpg" />
     <EmbeddedResource Include="Resources\Images\success-icon.png" />
     <EmbeddedResource Include="Resources\Javascript\scriptsPhotoTour.js" />

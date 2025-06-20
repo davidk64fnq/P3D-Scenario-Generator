@@ -18,8 +18,11 @@ namespace P3D_Scenario_Generator
             int zoom = GetBoundingBoxZoom(tiles, 2, 2);
             SetOSMtiles(tiles, zoom);
             boundingBox = OSM.GetBoundingBox(tiles, zoom);
-            Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
-            Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
+            Drawing.MontageTiles(boundingBox, zoom, "Charts_01"); 
+            if (Parameters.SelectedScenario != nameof(ScenarioTypes.Celestial))
+            {
+                Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
+            }
             Drawing.MakeSquare(boundingBox, "Charts_01", zoom, 2);
         }
 
@@ -91,6 +94,10 @@ namespace P3D_Scenario_Generator
             {
                 Wikipedia.SetWikiOSMtiles(tiles, zoom, 0, Wikipedia.WikiTour.Count - 1);
             }
+            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
+            {
+                CelestialNav.SetCelestialOSMtiles(tiles, zoom, 0, 1);
+            }
         }
 
         /// <summary>
@@ -114,6 +121,10 @@ namespace P3D_Scenario_Generator
             else if (Parameters.SelectedScenario == nameof(ScenarioTypes.WikiList))
             {
                 Wikipedia.SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
+            }
+            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
+            {
+                CelestialNav.SetCelestialOSMtiles(tiles, zoom, 1, 1);   // Use destination airport as scenario is a mid air start
             }
         }
 

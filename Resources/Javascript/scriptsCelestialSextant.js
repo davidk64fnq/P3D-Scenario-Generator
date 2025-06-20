@@ -17,8 +17,8 @@ const visMag = [visMagX];
 const lines = [linesX];					// pairs of stars connected by a line when constellations displayed
 const destLat = destLatX;				// latitude of dest airport (degrees)
 const destLon = destLonX;
-const ariesGHAd = [ariesGHAdX];			// Three days of data starting the day BEFORE scenario selected start date to allow for UT going backwards to previous day
-const ariesGHAm = [ariesGHAmX];
+const ariesGHAd = ariesGHAdX;			// Three days of data starting the day BEFORE scenario selected start date to allow for UT going backwards to previous day
+const ariesGHAm = ariesGHAmX;
 const starsSHAd = [starsSHAdX];
 const starsSHAm = [starsSHAmX];
 const starsDECd = [starsDECdX];
@@ -275,12 +275,6 @@ function updatePlotTab() {
 			context.lineTo(fixCoordPixelsLeft[index + 1], fixCoordPixelsTop[index + 1]);
 			context.stroke();
 		}
-		if (fixCoordPixelsLeft.length > 1) {
-			context.beginPath();
-			context.moveTo(fixCoordPixelsLeft[fixCoordPixelsLeft.length - 1], fixCoordPixelsTop[fixCoordPixelsTop.length - 1]);
-			context.lineTo(Math.floor(windowW / 2), Math.floor(windowH / 2)); 
-			context.stroke();
-        }
 	}
 
 	// Optionally show plane

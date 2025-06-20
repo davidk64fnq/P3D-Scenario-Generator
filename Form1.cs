@@ -107,16 +107,8 @@ namespace P3D_Scenario_Generator
             }
             else if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial])
             {
-                CelestialNav.GetAlmanacData();
-                CelestialNav.InitStars();
-                CelestialNav.CreateStarsDat();
-                string saveLocation = $"{Parameters.ImageFolder}\\htmlCelestialSextant.html";
-                CelestialNav.SetCelestialSextantHTML(saveLocation);
-                saveLocation = $"{Parameters.ImageFolder}\\";
-                CelestialNav.SetCelestialSextantJS(saveLocation);
-                saveLocation = $"{Parameters.ImageFolder}\\styleCelestialSextant.css";
-                CelestialNav.SetCelestialSextantCSS(saveLocation);
-                SaveUserSettings(TabPageWikiList.Controls);
+                if (CelestialNav.SetCelestial())
+                    SaveUserSettings(TabPageWikiList.Controls);
             }
             else if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
             {

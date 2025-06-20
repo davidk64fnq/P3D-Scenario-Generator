@@ -42,13 +42,6 @@ namespace P3D_Scenario_Generator
             string missionBriefHTML = SetMissionBriefHTML(missionBrief);
             File.WriteAllText($"{Parameters.SettingsScenarioFolder}\\{Parameters.GeneralScenarioTitle}.htm", missionBriefHTML);
 
-            if (Parameters.SelectedScenario != nameof(ScenarioTypes.WikiList) && Parameters.SelectedScenario != nameof(ScenarioTypes.Circuit)
-                && Parameters.SelectedScenario != nameof(ScenarioTypes.SignWriting)
-                && Parameters.SelectedScenario != nameof(ScenarioTypes.PhotoTour) && Parameters.SelectedScenario != nameof(ScenarioTypes.Testing))
-            {
-                BingImages.CreateHTMLImages();
-            }
-
             CopyFiles();
         }
 
@@ -123,7 +116,7 @@ namespace P3D_Scenario_Generator
                     overview.Aircraft = $"{Parameters.AircraftTitle}";
                     overview.Briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
                     overview.Briefing += $"as you test your navigation skills flying a {Parameters.AircraftTitle}.";
-                    overview.Briefing += " The scenario finishes at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
+                    overview.Briefing += $" The scenario finishes at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.destRwy.City}, {Runway.destRwy.Country}.";
                     overview.Objective = "Navigate using celestial navigation before landing at the destination airport (any runway)";
                     overview.Tips = "Never go to bed mad. Stay up and fight.";

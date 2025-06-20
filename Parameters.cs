@@ -229,10 +229,6 @@ namespace P3D_Scenario_Generator
         internal static string CelestialDestRunway { get; set; }
         internal static double CelestialMinDistance { get; set; }
         internal static double CelestialMaxDistance { get; set; }
-        internal static double CelestialImageNorth { get; set; }
-        internal static double CelestialImageEast { get; set; }
-        internal static double CelestialImageSouth { get; set; }
-        internal static double CelestialImageWest { get; set; }
 
         #endregion
 

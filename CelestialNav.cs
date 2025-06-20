@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml;
+using System.Text;
 
 namespace P3D_Scenario_Generator
 {
@@ -34,131 +35,195 @@ namespace P3D_Scenario_Generator
         internal static double midairStartHdg;
         internal static double midairStartLat;
         internal static double midairStartLon;
-        internal static double destinationLat;
-        internal static double destinationLon;
+        internal static double celestialImageNorth;
+        internal static double celestialImageEast;
+        internal static double celestialImageSouth;
+        internal static double celestialImageWest;
 
-        static internal void CreateStarsDat()
+        static internal bool SetCelestial()
         {
-            string starsDat = $"[Star Settings]\nIntensity=230\nNumStars={noStars}\n[Star Locations]\n";
-
-            // If stars.dat exists rename it
-            if (File.Exists("C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\\stars.dat"))
+            Runway.destRwy = Runway.GetRandomRunway();
+            SetCelestialStartLocation();
+            if (GetAlmanacData() && InitStars() && CreateStarsDat() && SetCelestialSextantHTML() && SetCelestialSextantJS() && SetCelestialSextantCSS())
             {
-                Form.DeleteFile("C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\\stars.dat.P3DscenarioGenerator.backup");
-                File.Move("C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\\stars.dat", "C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\\stars.dat.P3DscenarioGenerator.backup");
+                Common.SetOverviewImage();
+                Common.SetLocationImage();
+                return true;
             }
-
-            for (int index = 0; index < noStars; index++)
-            {
-                starsDat += $"Star.{index} = {index + 1}";
-                starsDat += $",{stars[index].raH}";
-                starsDat += $",{stars[index].raM}";
-                starsDat += $",{stars[index].raS}";
-                starsDat += $",{stars[index].decD}";
-                starsDat += $",{stars[index].decM}";
-                starsDat += $",{stars[index].decS}";
-                starsDat += $",{stars[index].visMag}\n";
-            }
-
-            File.WriteAllText("C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\\stars.dat", starsDat);
+            return false;
         }
 
-        static internal Star GetStar(int index)
+        static internal void SetCelestialMapEdges(double midairStartLat, double midairStartLon, double distance)
         {
-            return stars[index];
+            double dFinishLat = 0; 
+            double dFinishLon = 0;
+            double distFeet = distance * 1.1 * Con.feetInNM;
+            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 0, distFeet, ref celestialImageNorth, ref dFinishLon);
+            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 90, distFeet, ref dFinishLat, ref celestialImageEast);
+            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 180, distFeet, ref celestialImageSouth, ref dFinishLon);
+            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 270, distFeet, ref dFinishLat, ref celestialImageWest);
         }
 
-        // http://www.tecepe.com.br/scripts/AlmanacPagesISAPI.dll
-        static internal void GetAlmanacData()
+        /// <summary>
+        /// Finds OSM tile numbers and offsets for celestial scenario, comprising starting position in air and destination airport
+        /// </summary>
+        /// <param name="zoom">The zoom level to get OSM tiles at</param>
+        /// <returns>The list of tiles</returns>
+        static internal void SetCelestialOSMtiles(List<Tile> tiles, int zoom, int startItemIndex, int finishItemIndex)
         {
-            string url;
-            string almanacData = "";
-            int[] navStarMapping = [6, 4, 29, 18, -1, 9, 31, 33, 54, 14, 24, 40, 0, 50, 1, 41, 36, 42, 21, 12, 15, 16, 11, -1, 52, 27, 3, 26, 13, 46, 53, 55, 30, 28, 34, 5, 47, 39, 56, 7, 35, 23, 8, 49, 51, -1, 20, 19, 45, 25, 10, 37, 43, 2, 44, 17, 32, 22, 48, 38];
+            tiles.Clear();
+            if (startItemIndex == 0)
+                tiles.Add(OSM.GetOSMtile(midairStartLon.ToString(), midairStartLat.ToString(), zoom));
+            tiles.Add(OSM.GetOSMtile(Runway.destRwy.AirportLon.ToString(), Runway.destRwy.AirportLat.ToString(), zoom));
+        }
 
+        /// <summary>
+        /// Using scenario date provided by user, obtain almanac data for three days, and extract Aries GHA degrees and minutes,
+        /// and for the list of navigational stars SHA and Declination in degrees and minutes
+        /// </summary>
+        /// <returns>True if able to retrieve the almanac data from the web and everything on the page is still where expected!</returns>
+        static internal bool GetAlmanacData()
+        {
+            string almanacData = DownloadAlmanac();
+            if (almanacData == null) return false;
+
+            if (!ExtractAriesGHA(almanacData)) return false;
+
+            if (!ExtractStarData(almanacData)) return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Download the almanac data for the three days centered on the selected scenario date
+        /// </summary>
+        /// <returns>The webpage outerHTML containing the alamanac data</returns>
+        static internal string DownloadAlmanac()
+        {
             DateTime startDate = new(Parameters.Year, Parameters.Month, Parameters.Day, Parameters.Hours, Parameters.Minutes, Parameters.Seconds, DateTimeKind.Local);
             startDate = startDate.AddDays(-1);
-            url = $"http://www.tecepe.com.br/scripts/AlmanacPagesISAPI.dll/pages?date={startDate.Month}%2F{startDate.Day}%2F{startDate.Year}";
-            almanacData = HttpRoutines.GetWebString(url);
-
-            // handle return from getwebstring of ""
-
-            string ariesGHAdata = almanacData[almanacData.IndexOf("G.M.T")..];
-            string[] hours = ariesGHAdata.Split("\n");
-            int day = 0;
-            int hour = 0;
-            for (int line = 2; line < 85; line++)
-            {
-                if (hours[line].Length > 6 && hours[line][6] == '|')
-                {
-                    string[] pipes = hours[line].Split('|');
-                    string[] spaces = pipes[1].Trim().Split(' ');
-                    ariesGHAd[day, hour] = Convert.ToDouble(spaces[0]);
-                    ariesGHAm[day, hour++] = Convert.ToDouble(spaces[1]);
-                    if (hour == 24)
-                    {
-                        hour = 0;
-                        day++;
-                    }
-                }
-            }
-
-            string starsData = almanacData[almanacData.IndexOf(" | Acamar")..];
-            string[] stars = starsData.Split("\n");
-            int sequenceNo = 0;
-            int alphaNo = 0;
-            int decSign;
-            for (int line = 0; line < 71; line++)
-            {
-                string[] pipes = stars[line].Split('|');
-                if (!String.Equals(pipes[^1], " \r"))
-                {
-                    string starData = pipes[^1][12..];
-                    string[] spaces = starData.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-                    if (sequenceNo != 4 && sequenceNo != 23 && sequenceNo != 45) // these stars not included
-                    {
-                        if (sequenceNo == 8)
-                        {
-                            alphaNo = 4; // put "Al Nair" in sort order that C# uses
-                        }
-                        starsSHAd[alphaNo] = Convert.ToDouble(spaces[0]);
-                        starsSHAm[alphaNo] = Convert.ToDouble(spaces[1]);
-                        if (spaces[2].StartsWith('S'))
-                        {
-                            decSign = -1;
-                        }
-                        else
-                        {
-                            decSign = 1;
-                        }
-                        if (spaces[2].Length == 1)
-                        {
-                            starsDECd[alphaNo] = Convert.ToDouble(spaces[3]) * decSign;
-                            starsDECm[alphaNo] = Convert.ToDouble(spaces[4]);
-                        }
-                        else
-                        {
-                            starsDECd[alphaNo] = Convert.ToDouble(spaces[2][1..]) * decSign;
-                            starsDECm[alphaNo] = Convert.ToDouble(spaces[3]);
-                        }
-                        if (alphaNo == 3)
-                        {
-                            alphaNo = 5; // leave room for "Al Nair"
-                        }
-                        else if (alphaNo == 4)
-                        {
-                            alphaNo = 8; // skip back to usual alphabetical order
-                        }
-                        else
-                        {
-                            alphaNo++;
-                        }
-                    }
-                    sequenceNo++;
-                }
-            }
+            string url = $"http://www.tecepe.com.br/scripts/AlmanacPagesISAPI.dll/pages?date={startDate.Month}%2F{startDate.Day}%2F{startDate.Year}";
+            return HttpRoutines.GetWebString(url);
         }
 
-        static internal void InitStars()
+        /// <summary>
+        /// Extract the Aries GHA degrees and minutes data values for each hour of the three days
+        /// </summary>
+        /// <param name="almanacData">The raw data downloaded from the web</param>
+        /// <returns>True if successful in extracting Aries GHA degrees and minutes</returns>
+        static internal bool ExtractAriesGHA(string almanacData)
+        {
+            if (!almanacData.Contains("G.M.T", StringComparison.CurrentCulture)) return false;
+            string ariesGHAdata = almanacData[almanacData.IndexOf("G.M.T")..];
+            string[] hours = ariesGHAdata.Split("\n");                      // GHA data is one line per hour
+            if (hours.Length < 85) return false;                            // Check sufficient lines to pick up the three days of data
+            int day = 0, hour = 0;
+            for (int line = 2; line < 85; line++)
+            {
+                if (hours[line].Length > 6 && hours[line][6] == '|')        // Uniquely identifies the data lines from formatting lines
+                {
+                    string[] pipes = hours[line].Split('|');                // pipes[0] will contain the hour, pipes[1] the GHA data for that hour
+                    string[] spaces = pipes[0].Trim().Split(' ');           // spaces[^1] will contain the hour minus any day characters
+                    if (spaces[^1] != hour.ToString()) return false;        // Check the data is arranged from hour 0 to hour 23, for the three days
+                    spaces = pipes[1].Trim().Split(' ');                    // spaces[0] will contain the GHA degrees, spaces[1] the GHA minutes
+                    int GHAdegrees = Convert.ToInt16(spaces[0]);
+                    if (GHAdegrees < 0 || GHAdegrees > 360) return false;   // Check data is in degree range
+                    ariesGHAd[day, hour] = GHAdegrees;                      // Store the degrees for current hour
+                    double GHAminutes = Convert.ToDouble(spaces[1]);
+                    if (GHAminutes < 0 || GHAminutes > 60) return false;    // Check data is in minutes range
+                    ariesGHAm[day, hour++] = GHAminutes;                    // Store the minutes for current hour then increment the hour
+                    if (hour == 24) { hour = 0; day++; }
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Extract degrees and minutes for the SHA and Declination of navigational stars
+        /// </summary>
+        /// <param name="almanacData">The raw data downloaded from the web</param>
+        /// <returns>True if successful in extracting SHA and Declination of navigational stars</returns>
+        static internal bool ExtractStarData(string almanacData)
+        {
+            int starIndex = 0;
+            string[] starNames = { "Acamar", "Achernar", "Acrux", "Adhara", "Al Na-ir", "Aldebaran", "Alioth", "Alkaid", "Alnilam", "Alphard", "Alphecca",
+                "Alpheratz", "Altair", "Ankaa", "Antares", "Arcturus", "Atria", "Avior", "Bellatrix", "Betelgeuse", "Canopus", "Capella", "Deneb",
+                "Denebola", "Diphda", "Dubhe", "Elnath", "Eltanin", "Enif", "Fomalhaut", "Gacrux", "Gienah", "Hadar", "Hamal", "Kaus Austr.", "Kochab",
+                "Markab", "Menkar", "Menkent", "Miaplacidus", "Mirfak", "Nunki", "Peacock", "Pollux", "Procyon", "Rasalhague", "Regulus", "Rigel",
+                "Rigil Kent", "Sabik", "Schedar", "Shaula", "Sirius", "Spica", "Suhail", "Vega", "Zuben-ubi"};
+            string[] almanacDataRows = almanacData.Split("\n");
+
+            foreach (string starName in starNames)
+            {
+                string starDataLine = null;
+                var matchingLines = almanacDataRows
+                    .Select(line => new { Line = line, ExtractedName = ExtractStarName(line) })
+                    .Where(item => item.ExtractedName != null && item.ExtractedName.Equals(starName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                if (matchingLines.Count == 1)
+                    starDataLine = matchingLines.Single().Line;
+                else 
+                    return false;
+                string[] pipes = starDataLine.Split('|');
+                // Star data occurs after last pipe symbol in line, and is whitespace separated ([12..] strips star name from front)
+                string[] spaces = pipes[^1][12..].Split(" ", StringSplitOptions.RemoveEmptyEntries);   
+
+                // Store SHA degrees and minutes for current star
+                starsSHAd[starIndex] = Convert.ToDouble(spaces[0]);
+                starsSHAm[starIndex] = Convert.ToDouble(spaces[1]);
+
+                // Store SHA declination degrees and minutes, if degrees is < 10 then there is a space between the N or S character and the degrees number
+                if (spaces.Length == 4)
+                {
+                    starsDECd[starIndex] = Convert.ToDouble(spaces[2][1..]);    // Exclude N or S character
+                    if (spaces[2][0] == 'S')
+                        starsDECd[starIndex] *= -1;                             // Store south declinations as negative values
+                    starsDECm[starIndex++] = Convert.ToDouble(spaces[3]);
+                }
+                else if (spaces.Length == 5)
+                {
+                    starsDECd[starIndex] = Convert.ToDouble(spaces[3]);
+                    if (spaces[2][0] == 'S')
+                        starsDECd[starIndex] *= -1;                             // Store south declinations as negative values
+                    starsDECm[starIndex++] = Convert.ToDouble(spaces[4]);
+                }
+                else
+                    return false;
+            }
+
+            return true;
+        }
+
+        // Function to extract star name from a data line based on the new understanding
+        static internal string ExtractStarName(string line)
+        {
+            // Find the last occurrence of "| "
+            int lastPipeIndex = line.LastIndexOf("| ");
+
+            if (lastPipeIndex != -1 && lastPipeIndex + 2 < line.Length)
+            {
+                // The star name starts 2 characters after the last "|", and is 12 characters long.
+                int startIndex = lastPipeIndex + 2;
+                int length = Math.Min(12, line.Length - startIndex); // Ensure we don't go out of bounds
+
+                string potentialStarName = line.Substring(startIndex, length).Trim();
+
+                // Optional: Validate if it looks like a star name (e.g., not just numbers or empty)
+                if (!string.IsNullOrEmpty(potentialStarName) && !char.IsDigit(potentialStarName[0]))
+                {
+                    return potentialStarName;
+                }
+            }
+
+            return null; // No valid star name found
+        }
+
+        /// <summary>
+        /// Read in list of all stars from excel spreadsheet embedded resource, includes the creating a list of
+        /// the navigational stars.
+        /// </summary>
+        /// <returns>True if the spreadsheet read in successfully</returns>
+        static internal bool InitStars()
         {
             ExcelPackage.License.SetNonCommercialPersonal("David Kilpatrick");
 
@@ -191,224 +256,402 @@ namespace P3D_Scenario_Generator
                 index++;
             }
             navStarNames.Sort();
+            return true;
         }
 
+        /// <summary>
+        /// Creates P3D Scenario Generator specific version of "stars.dat" and backs up original if user agrees. If user doesn't agree
+        /// a dummy copy of "stars.dat" is created so that user isn't asked again.
+        /// </summary>
+        /// <returns>True if all needed file operations complete successfully</returns>
+        static internal bool CreateStarsDat()
+        {
+            string starsDatPath = Path.Combine(Parameters.SettingsP3DprogramData + Parameters.SettingsSimulatorVersion, "stars.dat");
+            string starsDatBackupPath = Path.Combine(Parameters.SettingsP3DprogramData + Parameters.SettingsSimulatorVersion, "stars.dat.P3DscenarioGenerator.backup");
+
+            string starsDatContent = $"[Star Settings]\nIntensity=230\nNumStars={noStars}\n[Star Locations]\n";
+
+            // If the file "stars.dat.P3DscenarioGenerator.backup" exists then assume user has previously said yes to the prompt below
+            // and there is no need to do it again as the replacement "stars.dat" doesn't change over time
+            if (!File.Exists(starsDatBackupPath))
+            {
+                string message =    "To see the same stars out the window as are displayed in the celestial sextant, the program" +
+                                    " needs to backup the existing stars.dat file (to stars.dat.P3DscenarioGenerator.backup) and replace" +
+                                    " it with a program generated version. Press \"Yes\" to go ahead with backup and replacement, \"No\" to leave stars.dat as is";
+                string title = "Confirm backup and replacement of stars.dat";
+                MessageBoxButtons buttons = MessageBoxButtons.YesNo;
+                DialogResult result = MessageBox.Show(message, title, buttons, MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    // Backup existing stars.dat if it exists
+                    if (File.Exists(starsDatPath)) 
+                    {
+                        // Try to delete the old backup. If it fails, report and stop.
+                        if (!FileOps.TryDeleteFile(starsDatBackupPath))
+                        {
+                            return false;
+                        }
+
+                        // Try to move the current stars.dat. If it fails, report and stop.
+                        if (!FileOps.TryMoveFile(starsDatPath, starsDatBackupPath))
+                        {
+                            return false;
+                        }
+                    }
+
+                    // Populate the content for the new stars.dat
+                    for (int index = 0; index < noStars; index++)
+                    {
+                        starsDatContent += $"Star.{index} = {index + 1}";
+                        starsDatContent += $",{stars[index].raH}";
+                        starsDatContent += $",{stars[index].raM}";
+                        starsDatContent += $",{stars[index].raS}";
+                        starsDatContent += $",{stars[index].decD}";
+                        starsDatContent += $",{stars[index].decM}";
+                        starsDatContent += $",{stars[index].decS}";
+                        starsDatContent += $",{stars[index].visMag}\n";
+                    }
+
+                    // Try to write the new stars.dat file. If it fails, report and stop.
+                    if (!FileOps.TryWriteAllText(starsDatPath, starsDatContent))
+                    {
+                        return false;
+                    }
+
+                    MessageBox.Show("stars.dat successfully updated and backed up.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return true; // Operation successful
+                }
+                else // Copy "stars.dat" to "stars.dat.P3DscenarioGenerator.backup" to prevent future prompting of user
+                {
+                    if (!FileOps.TryCopyFile(starsDatPath, starsDatBackupPath, false))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;    
+        }
+
+        /// <summary>
+        /// Retrieves a Star object from the internal 'stars' array at the specified index.
+        /// </summary>
+        /// <param name="index">The zero-based index of the Star to retrieve.</param>
+        /// <returns>The Star object located at the specified index.</returns>
+        static internal Star GetStar(int index)
+        {
+            return stars[index];
+        }
+
+        /// <summary>
+        /// Calculates the great-circle distance between two geographic points
+        /// (midair starting latitude/longitude and destination latitude/longitude)
+        /// using the CalcDistance method from MathRoutines.
+        /// </summary>
+        /// <returns>The calculated celestial distance in nautical miles.</returns>
         static internal double GetCelestialDistance()
         {
-            return MathRoutines.CalcDistance(midairStartLat, midairStartLon, destinationLat, destinationLon);
+            return MathRoutines.CalcDistance(midairStartLat, midairStartLon, Runway.destRwy.AirportLat, Runway.destRwy.AirportLon);
         }
 
+        // Consider using a static Random instance for performance and better randomness
+        private static readonly Random _random = new();
+
+        /// <summary>
+        /// Sets a random celestial starting location and heading for a simulated aircraft.
+        /// The start location is positioned within a specified distance range from the destination
+        /// runway, using more accurate spherical geometry calculations for latitude/longitude.
+        /// </summary>
         static internal void SetCelestialStartLocation()
         {
-            Random random = new();
-            midairStartHdg = -180 + random.Next(0, 360);
+            // 1. Set a random heading between -180 and 180 degrees
+            midairStartHdg = -180.0 + (_random.NextDouble() * 360.0); // Continuous double for heading
 
-            // Position plane in random direction from destination runway between min/max distance parameter
-            double randomAngle = random.Next(0, 90) * Math.PI / 180.0;
-            double randomRadius = Parameters.CelestialMinDistance + random.Next(0, (int)(Parameters.CelestialMaxDistance - Parameters.CelestialMinDistance));
-            double randomLatAdj = randomRadius * Con.feetInNM / Con.degreeLatFeet * Math.Cos(randomAngle) * (random.Next(0, 2) * 2 - 1);
-            double randomLonAdj = randomRadius * Con.feetInNM / Con.degreeLatFeet * Math.Sin(randomAngle) * (random.Next(0, 2) * 2 - 1);
-            midairStartLat = Runway.destRwy.AirportLat + randomLatAdj;
+            // 2. Position plane randomly around destination within min/max distance
+            // Using continuous random for angle and radius for better distribution
+
+            // Generate a random angle in radians (0 to 2*PI)
+            double randomAngleRad = _random.NextDouble() * 2 * Math.PI;
+
+            // Generate a random radius (distance) within the specified range (in NM)
+            double minDistanceNM = Parameters.CelestialMinDistance;
+            double maxDistanceNM = Parameters.CelestialMaxDistance;
+            double randomRadiusNM = minDistanceNM + (_random.NextDouble() * (maxDistanceNM - minDistanceNM));
+
+            // Convert radius from nautical miles to degrees latitude for calculation reference
+            // Assuming 1 nautical mile = 1 minute of arc (1/60th of a degree latitude)
+            const double NAUTICAL_MILES_PER_DEGREE_LAT = 60.0;
+            double randomRadiusDegreesLat = randomRadiusNM / NAUTICAL_MILES_PER_DEGREE_LAT;
+
+            // More accurate latitude and longitude adjustments for spherical geometry
+            // This is a simplified direct calculation. For very high accuracy over large distances,
+            // use proper spherical trigonometry (e.g., haversine or Vincenty formula).
+            // For short distances, this approximation is often acceptable.
+
+            // Calculate latitude adjustment
+            midairStartLat = Runway.destRwy.AirportLat + (randomRadiusDegreesLat * Math.Cos(randomAngleRad));
+
+            // Calculate longitude adjustment, accounting for convergence of meridians
+            // Longitude adjustment depends on latitude (cos(latitude))
+            // This uses the destination latitude for simplicity, a more accurate method
+            // would average the start/end latitudes or use iterative methods.
+            double degreesLongitudePerDegreeLatitudeAtDest = 1.0 / Math.Cos(Runway.destRwy.AirportLat * Math.PI / 180.0);
+            double randomRadiusDegreesLon = randomRadiusDegreesLat * degreesLongitudePerDegreeLatitudeAtDest;
+
+            midairStartLon = Runway.destRwy.AirportLon + (randomRadiusDegreesLon * Math.Sin(randomAngleRad));
+
+            // 3. Normalize Latitude and Longitude
+            // Latitude normalization (-90 to +90)
             if (midairStartLat > 90)
             {
-                midairStartLat -= 180;
+                midairStartLat = 180 - midairStartLat; // Go south from the pole
+                midairStartLon += 180; // Flip longitude if crossing pole
             }
             else if (midairStartLat < -90)
             {
-                midairStartLat += 180;
+                midairStartLat = -180 - midairStartLat; // Go north from the pole
+                midairStartLon += 180; // Flip longitude if crossing pole
             }
-            midairStartLon = Runway.destRwy.AirportLon + randomLonAdj;
-            if (midairStartLon > 180)
+            // Ensure latitude is within -90 to 90 after crossing logic if it landed exactly on a pole
+            if (midairStartLat > 90) midairStartLat = 90;
+            if (midairStartLat < -90) midairStartLat = -90;
+
+
+            // Longitude normalization (-180 to +180)
+            midairStartLon = (midairStartLon + 180.0) % 360.0; // Wrap to 0 to 360
+            if (midairStartLon < 0)
             {
-                midairStartLon -= 360;
+                midairStartLon += 360.0; // Ensure positive if modulo resulted in negative for negative input
             }
-            else if (midairStartLon < -180)
-            {
-                midairStartLon += 360;
-            }
+            midairStartLon = midairStartLon - 180.0; // Shift to -180 to +180
+
+            SetCelestialMapEdges(midairStartLat, midairStartLon, randomRadiusNM);
         }
 
-        static internal void SetCelestialSextantHTML(string saveLocation)
+        /// <summary>
+        /// Populates an embedded HTML template (CelestialSextant.html) with dynamic data,
+        /// specifically a list of navigational star names for a dropdown, and
+        /// writes the modified HTML to the scenario folder.
+        /// </summary>
+        /// <returns>True if the HTML file is successfully generated and written; otherwise, false.</returns>
+        static internal bool SetCelestialSextantHTML()
         {
-            string celestialHTML;
+            string htmlOutputPath = Path.Combine(Parameters.ImageFolder, "htmlCelestialSextant.html");
 
-            Stream stream = Form.GetResourceStream("HTML.CelestialSextant.html");
-            StreamReader reader = new(stream);
-            celestialHTML = reader.ReadToEnd();
-            string starOptions = "<option>Select Star</option>";
-            for (int index = 0; index < CelestialNav.navStarNames.Count; index++)
+            try
             {
-                starOptions += $"<option>{CelestialNav.navStarNames[index]}</option>";
+                // Read in CelestialSextant.html template using 'using' statements for proper disposal.
+                string celestialHTML;
+                using (Stream stream = Form.GetResourceStream("HTML.CelestialSextant.html"))
+                using (StreamReader reader = new(stream))
+                {
+                    celestialHTML = reader.ReadToEnd();
+                }
+
+                // Create the list of star names for the HTML dropdown options.
+                // Use String.Join for concise and efficient string building.
+                // It automatically handles commas and adds the '<option>' tags.
+                string starOptions = "<option>Select Star</option>" +
+                                     string.Join("", navStarNames.Select(name => $"<option>{name}</option>"));
+
+                // Replace the placeholder in the HTML.
+                celestialHTML = celestialHTML.Replace("starOptionsX", starOptions);
+
+                // Write the modified HTML to the scenario folder using the error-handling helper.
+                return FileOps.TryWriteAllText(htmlOutputPath, celestialHTML);
             }
-            celestialHTML = celestialHTML.Replace("starOptionsX", starOptions);
-            File.WriteAllText(saveLocation, celestialHTML);
-            stream.Dispose();
+            catch (Exception ex)
+            {
+                // Catch any errors related to accessing the embedded resource itself,
+                // or directory creation. File writing errors are handled by FileOperationsHelper.
+                MessageBox.Show($"An unexpected error occurred while generating the Celestial Sextant HTML file: {ex.Message}",
+                                "HTML Generation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
         }
 
-        static internal void SetCelestialSextantJS(string saveLocation)
+        /// <summary>
+        /// Generates and updates JavaScript files (scriptsCelestialSextant.js and scriptsCelestialAstroCalcs.js)
+        /// by reading templates from embedded resources, populating them with dynamic star data
+        /// and other parameters, and writing the modified files to the specified image folder.
+        /// Includes robust error handling for file operations.
+        /// </summary>
+        /// <returns>True if both JavaScript files are successfully generated and saved; otherwise, false.</returns>
+        static internal bool SetCelestialSextantJS()
         {
-            string celestialJS;
+            string saveLocation = Parameters.ImageFolder;
+            string sextantJsOutputPath = Path.Combine(saveLocation, "scriptsCelestialSextant.js");
+            string astroCalcsJsOutputPath = Path.Combine(saveLocation, "scriptsCelestialAstroCalcs.js");
 
-            Stream stream = Form.GetResourceStream("Javascript.scriptsCelestialSextant.js");
-            StreamReader reader = new(stream);
-            celestialJS = reader.ReadToEnd();
-            string constellation = "";
-            string id = "";
-            string starNumber = "";
-            string starName = "";
-            string bayer = "";
-            string raH = "";
-            string raM = "";
-            string raS = "";
-            string decD = "";
-            string decM = "";
-            string decS = "";
-            string visMag = "";
-            string lines = "";
-            Star star;
-            for (int index = 0; index < CelestialNav.noStars; index++)
+            try
             {
-                star = CelestialNav.GetStar(index);
-                constellation += $"\"{star.constellation}\"";
-                id += $"\"{star.id}\"";
-                starNumber += $"\"{star.starNumber}\"";
-                starName += $"\"{star.starName}\"";
-                bayer += $"\"{star.bayer}\"";
-                raH += star.raH.ToString();
-                raM += star.raM.ToString();
-                raS += star.raS.ToString();
-                decD += star.decD.ToString();
-                decM += star.decM.ToString();
-                decS += star.decS.ToString();
-                visMag += star.visMag.ToString();
-                if (star.connectedId != "")
+                // --- Process CelestialSextant.js ---
+                string celestialJS;
+                using (Stream stream = Form.GetResourceStream("Javascript.scriptsCelestialSextant.js"))
+                using (StreamReader reader = new(stream))
                 {
-                    if (lines != "")
-                    {
-                        lines += ", ";
-                    }
-                    lines += $"\"{star.id}\", \"{star.connectedId}\"";
+                    celestialJS = reader.ReadToEnd();
                 }
-                if (index < CelestialNav.noStars - 1)
-                {
-                    constellation += ",";
-                    id += ",";
-                    starNumber += ",";
-                    starName += ",";
-                    bayer += ",";
-                    raH += ",";
-                    raM += ",";
-                    raS += ",";
-                    decD += ",";
-                    decM += ",";
-                    decS += ",";
-                    visMag += ",";
-                }
-            }
-            celestialJS = celestialJS.Replace("constellationX", constellation);
-            celestialJS = celestialJS.Replace("idX", id);
-            celestialJS = celestialJS.Replace("starNumberX", starNumber);
-            celestialJS = celestialJS.Replace("starNameX", starName);
-            celestialJS = celestialJS.Replace("bayerX", bayer);
-            celestialJS = celestialJS.Replace("raHX", raH);
-            celestialJS = celestialJS.Replace("raMX", raM);
-            celestialJS = celestialJS.Replace("raSX", raS);
-            celestialJS = celestialJS.Replace("decDX", decD);
-            celestialJS = celestialJS.Replace("decMX", decM);
-            celestialJS = celestialJS.Replace("decSX", decS);
-            celestialJS = celestialJS.Replace("visMagX", visMag);
-            celestialJS = celestialJS.Replace("linesX", lines);
-            celestialJS = celestialJS.Replace("destLatX", CelestialNav.destinationLat.ToString());
-            celestialJS = celestialJS.Replace("destLonX", CelestialNav.destinationLon.ToString());
-            string ariesGHAd = "";
-            string ariesGHAm = "";
-            for (int day = 0; day < 3; day++)
-            {
-                ariesGHAd += "[";
-                ariesGHAm += "[";
-                for (int hour = 0; hour < 24; hour++)
-                {
-                    ariesGHAd += CelestialNav.ariesGHAd[day, hour];
-                    ariesGHAm += CelestialNav.ariesGHAm[day, hour];
-                    if (hour < 23)
-                    {
-                        ariesGHAd += ",";
-                        ariesGHAm += ",";
-                    }
-                }
-                ariesGHAd += "]";
-                ariesGHAm += "]";
-                if (day < 2)
-                {
-                    ariesGHAd += ",";
-                    ariesGHAm += ",";
-                }
-            }
-            celestialJS = celestialJS.Replace("ariesGHAdX", ariesGHAd);
-            celestialJS = celestialJS.Replace("ariesGHAmX", ariesGHAm);
-            string starsSHAd = "";
-            string starsSHAm = "";
-            for (int starIndex = 0; starIndex < CelestialNav.starsSHAd.Length; starIndex++)
-            {
-                starsSHAd += CelestialNav.starsSHAd[starIndex];
-                starsSHAm += CelestialNav.starsSHAm[starIndex];
-                if (starIndex < CelestialNav.starsSHAd.Length - 1)
-                {
-                    starsSHAd += ",";
-                    starsSHAm += ",";
-                }
-            }
-            celestialJS = celestialJS.Replace("starsSHAdX", starsSHAd);
-            celestialJS = celestialJS.Replace("starsSHAmX", starsSHAm);
-            string starsDECd = "";
-            string starsDECm = "";
-            for (int starIndex = 0; starIndex < CelestialNav.starsDECd.Length; starIndex++)
-            {
-                starsDECd += CelestialNav.starsDECd[starIndex];
-                starsDECm += CelestialNav.starsDECm[starIndex];
-                if (starIndex < CelestialNav.starsDECd.Length - 1)
-                {
-                    starsDECd += ",";
-                    starsDECm += ",";
-                }
-            }
-            celestialJS = celestialJS.Replace("starsDECdX", starsDECd);
-            celestialJS = celestialJS.Replace("starsDECmX", starsDECm);
-            string starNameList = "";
-            for (int starIndex = 0; starIndex < CelestialNav.navStarNames.Count; starIndex++)
-            {
-                starNameList += $"\"{CelestialNav.navStarNames[starIndex]}\"";
-                if (starIndex < CelestialNav.navStarNames.Count - 1)
-                {
-                    starNameList += ",";
-                }
-            }
-            celestialJS = celestialJS.Replace("starNameListX", starNameList);
-            string startDate = $"\"{Parameters.Month}/{Parameters.Day}/{Parameters.Year}\"";
-            celestialJS = celestialJS.Replace("startDateX", startDate);
-            celestialJS = celestialJS.Replace("northEdgeX", Parameters.CelestialImageNorth.ToString());
-            celestialJS = celestialJS.Replace("eastEdgeX", Parameters.CelestialImageEast.ToString());
-            celestialJS = celestialJS.Replace("southEdgeX", Parameters.CelestialImageSouth.ToString());
-            celestialJS = celestialJS.Replace("westEdgeX", Parameters.CelestialImageWest.ToString());
-            File.WriteAllText($"{saveLocation}\\scriptsCelestialSextant.js", celestialJS);
-            stream.Dispose();
 
-            stream = Form.GetResourceStream($"Javascript.scriptsCelestialAstroCalcs.js");
-            reader = new StreamReader(stream);
-            celestialJS = reader.ReadToEnd();
-            File.WriteAllText($"{saveLocation}\\scriptsCelestialAstroCalcs.js", celestialJS);
-            stream.Dispose();
+                // Build star data as a collection for LINQ processing
+                IEnumerable<Star> allStars = Enumerable.Range(0, noStars).Select(GetStar);
+
+                // Prepare all replacement values in a dictionary
+                Dictionary<string, string> replacements = new()
+                {
+                    // Star Data Replacements
+                    { "constellationX", string.Join(",", allStars.Select(s => $"\"{s.constellation}\"")) },
+                    { "idX", string.Join(",", allStars.Select(s => $"\"{s.id}\"")) },
+                    { "starNumberX", string.Join(",", allStars.Select(s => $"\"{s.starNumber}\"")) },
+                    { "starNameX", string.Join(",", allStars.Select(s => $"\"{s.starName}\"")) },
+                    { "bayerX", string.Join(",", allStars.Select(s => $"\"{s.bayer}\"")) },
+                    { "raHX", string.Join(",", allStars.Select(s => s.raH.ToString())) },
+                    { "raMX", string.Join(",", allStars.Select(s => s.raM.ToString())) },
+                    { "raSX", string.Join(",", allStars.Select(s => s.raS.ToString())) },
+                    { "decDX", string.Join(",", allStars.Select(s => s.decD.ToString())) },
+                    { "decMX", string.Join(",", allStars.Select(s => s.decM.ToString())) },
+                    { "decSX", string.Join(",", allStars.Select(s => s.decS.ToString())) },
+                    { "visMagX", string.Join(",", allStars.Select(s => s.visMag.ToString())) },
+                    { "linesX", string.Join(", ", allStars
+                        .Where(s => !string.IsNullOrEmpty(s.connectedId))
+                        .SelectMany(s => new[] { $"\"{s.id}\"", $"\"{s.connectedId}\"" }))
+                    },
+
+                    // Geographic Coordinates
+                    { "destLatX", Runway.destRwy.AirportLat.ToString() },
+                    { "destLonX", Runway.destRwy.AirportLon.ToString() },
+
+                    // Aries GHA data (using LINQ for arrays/2D arrays)
+                    { "ariesGHAdX", BuildNestedArrayString(ariesGHAd) },
+                    { "ariesGHAmX", BuildNestedArrayString(ariesGHAm) },
+
+                    // Star SHA data
+                    { "starsSHAdX", string.Join(",", starsSHAd.Select(d => d.ToString())) },
+                    { "starsSHAmX", string.Join(",", starsSHAm.Select(m => m.ToString())) },
+
+                    // Star DEC data
+                    { "starsDECdX", string.Join(",", starsDECd.Select(d => d.ToString())) },
+                    { "starsDECmX", string.Join(",", starsDECm.Select(m => m.ToString())) },
+
+                    // Nav Star Names
+                    { "starNameListX", string.Join(",", navStarNames.Select(name => $"\"{name}\"")) },
+
+                    // Date and Image Edge Parameters
+                    { "startDateX", $"\"{Parameters.Month}/{Parameters.Day}/{Parameters.Year}\"" },
+                    { "northEdgeX", celestialImageNorth.ToString() },
+                    { "eastEdgeX", celestialImageEast.ToString() },
+                    { "southEdgeX", celestialImageSouth.ToString() },
+                    { "westEdgeX", celestialImageWest.ToString() }
+                };
+
+                // Apply all replacements
+                foreach (var entry in replacements)
+                {
+                    celestialJS = celestialJS.Replace(entry.Key, entry.Value);
+                }
+
+                // Write the modified CelestialSextant.js file
+                if (!FileOps.TryWriteAllText(sextantJsOutputPath, celestialJS))
+                {
+                    return false; // Error handled by helper, just exit
+                }
+
+                // --- Process CelestialAstroCalcs.js ---
+                // Assuming this file doesn't need dynamic replacements and is just copied
+                string astroCalcsJS;
+                using (Stream stream = Form.GetResourceStream("Javascript.scriptsCelestialAstroCalcs.js"))
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    astroCalcsJS = reader.ReadToEnd();
+                }
+
+                // Write the CelestialAstroCalcs.js file
+                if (!FileOps.TryWriteAllText(astroCalcsJsOutputPath, astroCalcsJS))
+                {
+                    return false; // Error handled by helper, just exit
+                }
+
+                // Copy plotImage used in Plotting tab
+                Stream plotStream = Form.GetResourceStream($"Images.plotImage.jpg");
+                using (FileStream outputFileStream = new($"{Parameters.ImageFolder}\\plotImage.jpg", FileMode.Create))
+                {
+                    plotStream.CopyTo(outputFileStream);
+                }
+                plotStream.Dispose();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Catch any errors related to resource streams or initial directory creation
+                MessageBox.Show($"An unexpected error occurred during JavaScript file generation: {ex.Message}",
+                                "Error Generating Files", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
         }
 
-        static internal void SetCelestialSextantCSS(string saveLocation)
+        /// <summary>
+        /// Helper method to build a JavaScript-style 2D array string from a C# 2D array.
+        /// </summary>
+        private static string BuildNestedArrayString<T>(T[,] array)
+        {
+            StringBuilder sb = new();
+            sb.Append('[');
+            for (int i = 0; i < array.GetLength(0); i++)
+            {
+                sb.Append('[');
+                for (int j = 0; j < array.GetLength(1); j++)
+                {
+                    sb.Append(array[i, j]);
+                    if (j < array.GetLength(1) - 1)
+                    {
+                        sb.Append(',');
+                    }
+                }
+                sb.Append(']');
+                if (i < array.GetLength(0) - 1)
+                {
+                    sb.Append(',');
+                }
+            }
+            sb.Append(']');
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Reads the Celestial Sextant CSS template from an embedded resource and writes it
+        /// to a specified file location.
+        /// </summary>
+        /// <param name="saveLocation">The full path, including filename, where the CSS file should be saved.</param>
+        static internal bool SetCelestialSextantCSS()
         {
             string signWritingCSS;
+            string cssOutputPath = Path.Combine(Parameters.ImageFolder, "styleCelestialSextant.css");
 
-            Stream stream = Form.GetResourceStream($"CSS.styleCelestialSextant.css");
-            StreamReader reader = new(stream);
-            signWritingCSS = reader.ReadToEnd();
-            File.WriteAllText(saveLocation, signWritingCSS);
-            stream.Dispose();
+            // Use 'using' statements to ensure streams are properly disposed, even if errors occur.
+            // Also, incorporate FileOps for robust error handling.
+            try
+            {
+                using (Stream stream = Form.GetResourceStream($"CSS.styleCelestialSextant.css"))
+                using (StreamReader reader = new(stream))
+                {
+                    signWritingCSS = reader.ReadToEnd();
+                }
+
+                // Use the centralized file operation helper to write the file, with error handling.
+                if (!FileOps.TryWriteAllText(cssOutputPath, signWritingCSS))
+                {
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Catch any errors related to accessing the embedded resource itself.
+                MessageBox.Show($"An unexpected error occurred while processing the Celestial Sextant CSS: {ex.Message}",
+                                "CSS File Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
         }
     }
 }

@@ -1,7 +1,4 @@
-﻿using Microsoft.Office.Interop.Excel;
-using Newtonsoft.Json;
-using System.IO;
-using System.Reflection;
+﻿using Newtonsoft.Json;
 using System.Xml;
 
 namespace P3D_Scenario_Generator
@@ -851,6 +848,17 @@ namespace P3D_Scenario_Generator
         #region Search for a runway(s) that meets constraints region
 
         /// <summary>
+        /// Selects and returns a random RunwayParams object from the predefined subset of runways.
+        /// </summary>
+        /// <returns>A randomly selected RunwayParams object.</returns>
+        static internal RunwayParams GetRandomRunway()
+        {
+            Random random = new();
+            int randomSubsetIndex = random.Next(0, Runway.RunwaysSubset.Count);
+            return RunwaysSubset[randomSubsetIndex];
+        }
+
+        /// <summary>
         /// Search through the list of runways, starting from a random runway in list. Return the first runway
         /// located that is between a minimum and maximum distance from the provided reference coordinate
         /// </summary>
@@ -981,118 +989,5 @@ namespace P3D_Scenario_Generator
         }
 
         #endregion region
-
-        // Delete once celestial reworked
-        static internal string[] SetICAOwords(string rwyType)
-        {
-            string[] words = ["", ""];
-            RunwayParams airport;
-            switch (Parameters.SelectedScenario)
-            {
-                case nameof(ScenarioTypes.Circuit):
-                case nameof(ScenarioTypes.SignWriting):
-            //        words = Parameters.SelectedRunway.Split("\t");
-                    break;
-                case nameof(ScenarioTypes.PhotoTour):
-            //        if (rwyType == "start")
-            //            words = Parameters.SelectedRunway.Split("\t");
-            //        else
-            //            words = Parameters.PhotoDestRunway.Split("\t");
-                    break;
-                case nameof(ScenarioTypes.Celestial):
-                    if (rwyType == "destination")
-                    {
-                        Random random = new();
-                        SetRunwaysSubset();
-                        airport = GetNearestRunway(-60 + random.Next(0, 120), -180 + random.Next(0, 360));
-                        Parameters.CelestialDestRunway = $"{airport.IcaoId}\t({airport.Id})";
-                        words = Parameters.CelestialDestRunway.Split("\t");
-                    }
-                    break;
-                case nameof(ScenarioTypes.WikiList):
-                    if (rwyType == "start")
-                    {
-                        words[0] = Wikipedia.WikiTour[0].airportICAO;
-                        words[1] = Wikipedia.WikiTour[0].airportID;
-                    }
-                    else
-                    {
-                        words[0] = Wikipedia.WikiTour[^1].airportICAO;
-                        words[1] = Wikipedia.WikiTour[^1].airportID;
-                    }
-                    break;
-                default:
-                    break;
-            }
-            words[1] = words[1].Trim('(');
-            words[1] = words[1].Trim(')');
-            return words;
-        }
-
-        // Delete once celestial reworked
-        static internal void SetRunway(RunwayParams rwyParams, string airportICAO, string airportID)
-        {
-            Stream stream = GetRunwayXMLstream();
-            XmlReader reader = XmlReader.Create(stream);
-            SetRunwayCompassIds();
-
-            bool runwaySet = false;
-            while (reader.ReadToFollowing("ICAO") && runwaySet == false)
-            {
-                // Check we have located selected airport
-                if (reader.MoveToAttribute("id") && reader.Value == airportICAO)
-                {
-                    rwyParams.IcaoId = reader.Value;
-                    reader.ReadToFollowing("ICAOName");
-                    rwyParams.IcaoName = reader.ReadElementContentAsString();
-                    reader.ReadToFollowing("Country");
-                    rwyParams.Country = reader.ReadElementContentAsString();
-                    reader.ReadToFollowing("City");
-                    rwyParams.City = reader.ReadElementContentAsString();
-                    reader.ReadToFollowing("Longitude");
-                    rwyParams.AirportLon = reader.ReadElementContentAsDouble();
-                    reader.ReadToFollowing("Latitude");
-                    rwyParams.AirportLat = reader.ReadElementContentAsDouble();
-                    reader.ReadToFollowing("Altitude");
-                    rwyParams.Altitude = reader.ReadElementContentAsDouble();
-                    reader.ReadToFollowing("MagVar");
-                    rwyParams.MagVar = reader.ReadElementContentAsDouble();
-
-                    // Check we have located selected runway
-                    do
-                    {
-                        reader.Read();
-                    }
-                    while (!(reader.Name == "Runway" && reader.MoveToAttribute("id") && reader.Value == airportID));
-                    SetRunwayId(rwyParams, reader.Value);
-                    reader.ReadToFollowing("Len");
-                    rwyParams.Len = reader.ReadElementContentAsInt();
-                    reader.ReadToFollowing("Hdg");
-                    rwyParams.Hdg = reader.ReadElementContentAsDouble();
-                    reader.ReadToFollowing("Def");
-                    rwyParams.Def = reader.ReadElementContentAsString();
-                    reader.ReadToFollowing("Lat");
-                    rwyParams.ThresholdStartLat = reader.ReadElementContentAsDouble();
-                    reader.ReadToFollowing("Lon");
-                    rwyParams.ThresholdStartLon = reader.ReadElementContentAsDouble();
-
-                    if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
-                    {
-                        CelestialNav.destinationLat = rwyParams.AirportLat;
-                        CelestialNav.destinationLon = rwyParams.AirportLon;
-                    }
-
-                    runwaySet = true;
-                }
-            }
-            stream.Dispose();
-
-
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
-            {
-                CelestialNav.SetCelestialStartLocation();
-                BingImages.GetCelestialOverviewImage();
-            }
-        }
     }
 }
