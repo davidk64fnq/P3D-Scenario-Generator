@@ -76,7 +76,7 @@ namespace P3D_Scenario_Generator
         public static readonly int locTileFactor = 1;
 
         /// <summary>
-        /// Maximum level of OSM tiles available from <see cref="Con.tileServer"/>
+        /// Maximum level of OSM tiles available
         /// </summary>
         public static readonly int maxZoomLevel = 18;
 
