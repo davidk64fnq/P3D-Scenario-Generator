@@ -1,69 +1,106 @@
-﻿using OfficeOpenXml;
+﻿using CoordinateSharp; 
+using OfficeOpenXml;
 using System.Text;
 
 namespace P3D_Scenario_Generator
 {
-    /// <summary>
-    /// Represents a celestial star with various astronomical properties.
-    /// </summary>
-    /// <param name="s1">The constellation the star belongs to.</param>
-    /// <param name="s2">A unique identifier for the star.</param>
-    /// <param name="s3">An identifier for a connected star, if applicable.</param>
-    /// <param name="s4">The star's number designation.</param>
-    /// <param name="s5">The common name of the star.</param>
-    /// <param name="s6">A link to its Wikipedia page or other relevant information.</param>
-    /// <param name="s7">The Bayer designation of the star.</param>
-    /// <param name="d8">The Right Ascension in hours.</param>
-    /// <param name="d9">The Right Ascension in minutes.</param>
-    /// <param name="d10">The Right Ascension in seconds.</param>
-    /// <param name="d11">The Declination in degrees.</param>
-    /// <param name="d12">The Declination in arcminutes.</param>
-    /// <param name="d13">The Declination in arcseconds.</param>
-    /// <param name="d14">The visual magnitude of the star.</param>
-    public class Star(string s1, string s2, string s3, string s4, string s5, string s6, string s7, double d8, double d9, double d10, double d11, double d12, double d13, double d14)
-    {
-        public string constellation = s1;
-        public string id = s2;
-        public string connectedId = s3;
-        public string starNumber = s4;
-        public string starName = s5;
-        public string wikiLink = s6;
-        public string bayer = s7;
-        public double raH = d8;
-        public double raM = d9;
-        public double raS = d10;
-        public double decD = d11;
-        public double decM = d12;
-        public double decS = d13;
-        public double visMag = d14;
-    }
-
     /// <summary>
     /// Manages all aspects of celestial navigation for the simulation, including loading star data,
     /// retrieving almanac information, calculating celestial positions, and generating
     /// dynamic web content (HTML, JavaScript, CSS) for a celestial sextant display.
     /// It also handles the creation and backup of the simulator's stars.dat file.
     /// </summary>
-    class CelestialNav
+    class CelestialNav 
     {
+        /// <summary>
+        /// Read in from embedded Excel resource and then written to "stars.dat"
+        /// </summary>
         private static readonly List<Star> stars = [];
+
+        /// <summary>
+        /// Read in from embedded Excel resource and then written to scenario html and javascript files
+        /// </summary>
         internal static List<string> navStarNames = [];
+
+        /// <summary>
+        /// Stores the number of stars read in from embedded Excel resource
+        /// </summary>
         internal static int noStars = 0;
+
+        /// <summary>
+        /// Stores 3 days x 24 hours of Aries GHA degrees star data extracted from web based almanac
+        /// </summary>
         internal static int[,] ariesGHAd = new int[Con.NumberOfDaysToExtract, Con.HoursPerDay];
+
+        /// <summary>
+        /// Stores 3 days x 24 hours of Aries GHA minutes star data extracted from web based almanac
+        /// </summary>
         internal static double[,] ariesGHAm = new double[Con.NumberOfDaysToExtract, Con.HoursPerDay];
-        internal static int[] starsSHAd = new int[57];
-        internal static double[] starsSHAm = new double[57];
-        internal static int[] starsDECd = new int[57];
-        internal static double[] starsDECm = new double[57];
+
+        /// <summary>
+        /// The number of stars for which data extracted from web based almanac
+        /// </summary>
+        internal const int NoStarsInAlmanacData = 57;
+
+        /// <summary>
+        /// Stores NoStarsInAlmanacData SHA degrees star data extracted from web based almanac
+        /// </summary>
+        internal static int[] starsSHAd = new int[NoStarsInAlmanacData];
+
+        /// <summary>
+        /// Stores NoStarsInAlmanacData SHA minutes star data extracted from web based almanac
+        /// </summary>
+        internal static double[] starsSHAm = new double[NoStarsInAlmanacData];
+
+        /// <summary>
+        /// Stores NoStarsInAlmanacData Declination degrees star data extracted from web based almanac
+        /// </summary>
+        internal static int[] starsDECd = new int[NoStarsInAlmanacData];
+
+        /// <summary>
+        /// Stores NoStarsInAlmanacData Declination minutes star data extracted from web based almanac
+        /// </summary>
+        internal static double[] starsDECm = new double[NoStarsInAlmanacData];
+
+        /// <summary>
+        /// Celestial scenario starts in mid air - this is the initial heading in degrees
+        /// </summary>
         internal static double midairStartHdg;
+
+        /// <summary>
+        /// Celestial scenario starts in mid air - this is the initial latitude in degrees
+        /// </summary>
         internal static double midairStartLat;
+
+        /// <summary>
+        /// Celestial scenario starts in mid air - this is the initial longitude in degrees
+        /// </summary>
         internal static double midairStartLon;
+
+        /// <summary>
+        /// Used to define celestial sextant plotting tab northern latitude
+        /// </summary>
         internal static double celestialImageNorth;
+
+        /// <summary>
+        /// Used to define celestial sextant plotting tab eastern longitude
+        /// </summary>
         internal static double celestialImageEast;
+
+        /// <summary>
+        /// Used to define celestial sextant plotting tab southern latitude
+        /// </summary>
         internal static double celestialImageSouth;
+
+        /// <summary>
+        /// Used to define celestial sextant plotting tab western longitude
+        /// </summary>
         internal static double celestialImageWest;
 
-        private static readonly Random _random = new();
+        /// <summary>
+        /// Provides a thread-safe random number generator.
+        /// </summary>
+        private static readonly Random _random = Random.Shared;
 
         /// <summary>
         /// Initializes the celestial navigation system for a new scenario.
@@ -77,44 +114,76 @@ namespace P3D_Scenario_Generator
         {
             Runway.destRwy = Runway.GetRandomRunway();
             SetCelestialStartLocation();
-            if (GetAlmanacData() && InitStars() && CreateStarsDat() && SetCelestialSextantHTML() && SetCelestialSextantJS() && SetCelestialSextantCSS())
+
+            if (!GetAlmanacData())
             {
-                Common.SetOverviewImage();
-                Common.SetLocationImage();
-                return true;
+                Log.Error("Failed to get almanac data during celestial setup.");
+                return false;
             }
-            return false;
+
+            if (!InitStars())
+            {
+                Log.Error("Failed to initialize stars data during celestial setup.");
+                return false;
+            }
+
+            if (!CreateStarsDat())
+            {
+                Log.Error("Failed to create stars.dat file during celestial setup.");
+                return false;
+            }
+
+            if (!SetCelestialSextantHTML())
+            {
+                Log.Error("Failed to set celestial sextant HTML during celestial setup.");
+                return false;
+            }
+
+            if (!SetCelestialSextantJS())
+            {
+                Log.Error("Failed to set celestial sextant JavaScript during celestial setup.");
+                return false;
+            }
+
+            if (!SetCelestialSextantCSS())
+            {
+                Log.Error("Failed to set celestial sextant CSS during celestial setup.");
+                return false;
+            }
+
+            bool drawRoute = false;
+            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute))
+            {
+                Log.Error("Failed to create overview image during celestial setup.");
+                return false;
+            }
+
+            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords()))
+            {
+                Log.Error("Failed to create location image during celestial setup.");
+                return false;
+            }
+
+            return true;
         }
 
-        /// <summary>
-        /// Calculates and sets the geographical boundaries (North, East, South, West) for a celestial map image.
-        /// These boundaries define the extent of the map based on a starting point and a specified distance.
-        /// </summary>
-        /// <param name="midairStartLat">The starting latitude (in degrees) of the center of the celestial map.</param>
-        /// <param name="midairStartLon">The starting longitude (in degrees) of the center of the celestial map.</param>
-        /// <param name="distance">The radial distance (in nautical miles) from the center to the edges of the map.</param>
-        static internal void SetCelestialMapEdges(double midairStartLat, double midairStartLon, double distance)
+        static internal IEnumerable<Coordinate> SetOverviewCoords()
         {
-            double dFinishLat = 0; 
-            double dFinishLon = 0;
-            double distFeet = distance * 1.1 * Con.feetInNM;
-            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 0, distFeet, ref celestialImageNorth, ref dFinishLon);
-            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 90, distFeet, ref dFinishLat, ref celestialImageEast);
-            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 180, distFeet, ref celestialImageSouth, ref dFinishLon);
-            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 270, distFeet, ref dFinishLat, ref celestialImageWest);
+            IEnumerable<Coordinate> coordinates =
+            [
+                new Coordinate(midairStartLat, midairStartLon),    
+                new Coordinate(Runway.destRwy.AirportLat, Runway.destRwy.AirportLon)     
+            ];
+            return coordinates;
         }
 
-        /// <summary>
-        /// Finds OSM tile numbers and offsets for celestial scenario, comprising starting position in air and destination airport
-        /// </summary>
-        /// <param name="zoom">The zoom level to get OSM tiles at</param>
-        /// <returns>The list of tiles</returns>
-        static internal void SetCelestialOSMtiles(List<Tile> tiles, int zoom, int startItemIndex, int finishItemIndex)
+        static internal IEnumerable<Coordinate> SetLocationCoords()
         {
-            tiles.Clear();
-            if (startItemIndex == 0)
-                tiles.Add(OSM.GetOSMtile(midairStartLon.ToString(), midairStartLat.ToString(), zoom));
-            tiles.Add(OSM.GetOSMtile(Runway.destRwy.AirportLon.ToString(), Runway.destRwy.AirportLat.ToString(), zoom));
+            IEnumerable<Coordinate> coordinates =
+            [
+                new Coordinate(Runway.destRwy.AirportLat, Runway.destRwy.AirportLon)
+            ];
+            return coordinates;
         }
 
         /// <summary>
@@ -274,7 +343,7 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                headerLineIndex = matchingLineInfo.Index;
+                headerLineIndex = -1;
                 Log.Error($"Header line containing '{keyword1}', '{keyword2}', and '{keyword3}' not found in almanac data.");
                 return false;
             }
@@ -436,7 +505,7 @@ namespace P3D_Scenario_Generator
         /// <returns>True if the line is valid and values are extracted; otherwise, false.</returns>
         static internal bool GetStarDataValues(string starDataLine, out string[] starDataValues)
         {
-            const int ExpectedPipeParts = 4; // Expecting 3 pipes, resulting in 4 parts
+            const int ExpectedMinPipeParts = 2; // Expecting 3 pipes, resulting in 4 parts for all but Pollux which is 1 pipe and 2 parts
             const int LastPipeSegmentMinLength = 12; // Minimum length for last segment before stripping
             const int DataSubstringStartIndex = 12; // Index to start extracting data from last segment
             const int ExpectedMinSpaceParts = 4;
@@ -445,9 +514,9 @@ namespace P3D_Scenario_Generator
             starDataValues = default; // Initialize out parameter
 
             string[] pipes = starDataLine.Split('|');
-            if (pipes.Length != ExpectedPipeParts)
+            if (pipes.Length < ExpectedMinPipeParts)
             {
-                Log.Error($"Malformed star data line '{starDataLine}'. Expected exactly {ExpectedPipeParts - 1} pipe symbols, found {pipes.Length - 1}.");
+                Log.Error($"Malformed star data line '{starDataLine}'. Expected a minimum of {ExpectedMinPipeParts - 1} pipe symbols, found {pipes.Length - 1}.");
                 return false;
             }
 
@@ -468,6 +537,7 @@ namespace P3D_Scenario_Generator
                 return false;
             }
 
+            starDataValues = spaces;
             return true;
         }
 
@@ -507,7 +577,7 @@ namespace P3D_Scenario_Generator
                     return false; 
                 if (starDataValues[starDECsignIndex][0] == 'S')
                     starsDECd[starIndex] *= -1;         // Store south declinations as negative values
-                if (!TryParseMinutes(starDataValues[starDECminutesIndex], $"{starName} Dec", out starsDECm[starIndex++]))
+                if (!TryParseMinutes(starDataValues[starDECminutesIndex], $"{starName} Dec", out starsDECm[starIndex]))
                     return false;
             }
             else if (starDataValues.Length == ExpectedMaxSpaceParts)
@@ -519,9 +589,10 @@ namespace P3D_Scenario_Generator
                     return false;
                 if (starDataValues[starDECsignIndex][0] == 'S')
                     starsDECd[starIndex] *= -1;         // Store south declinations as negative values
-                if (!TryParseMinutes(starDataValues[starDECminutesIndex], $"{starName} Dec", out starsDECm[starIndex++]))
+                if (!TryParseMinutes(starDataValues[starDECminutesIndex], $"{starName} Dec", out starsDECm[starIndex]))
                     return false;
             }
+            starIndex++;
             return true;
         }
 
@@ -641,13 +712,13 @@ namespace P3D_Scenario_Generator
                     for (int index = 0; index < noStars; index++)
                     {
                         starsDatContent += $"Star.{index} = {index + 1}";
-                        starsDatContent += $",{stars[index].raH}";
-                        starsDatContent += $",{stars[index].raM}";
-                        starsDatContent += $",{stars[index].raS}";
-                        starsDatContent += $",{stars[index].decD}";
-                        starsDatContent += $",{stars[index].decM}";
-                        starsDatContent += $",{stars[index].decS}";
-                        starsDatContent += $",{stars[index].visMag}\n";
+                        starsDatContent += $",{stars[index].RaH}";
+                        starsDatContent += $",{stars[index].RaM}";
+                        starsDatContent += $",{stars[index].RaS}";
+                        starsDatContent += $",{stars[index].DecD}";
+                        starsDatContent += $",{stars[index].DecM}";
+                        starsDatContent += $",{stars[index].DecS}";
+                        starsDatContent += $",{stars[index].VisMag}\n";
                     }
 
                     // Try to write the new stars.dat file. If it fails, report and stop.
@@ -804,6 +875,24 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
+        /// Calculates and sets the geographical boundaries (North, East, South, West) for a celestial map image.
+        /// These boundaries define the extent of the map based on a starting point and a specified distance.
+        /// </summary>
+        /// <param name="midairStartLat">The starting latitude (in degrees) of the center of the celestial map.</param>
+        /// <param name="midairStartLon">The starting longitude (in degrees) of the center of the celestial map.</param>
+        /// <param name="distance">The radial distance (in nautical miles) from the center to the edges of the map.</param>
+        static internal void SetCelestialMapEdges(double midairStartLat, double midairStartLon, double distance)
+        {
+            double dFinishLat = 0;
+            double dFinishLon = 0;
+            double distFeet = distance * 1.1 * Con.feetInNM;
+            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 0, distFeet, ref celestialImageNorth, ref dFinishLon);
+            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 90, distFeet, ref dFinishLat, ref celestialImageEast);
+            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 180, distFeet, ref celestialImageSouth, ref dFinishLon);
+            MathRoutines.AdjCoords(midairStartLat, midairStartLon, 270, distFeet, ref dFinishLat, ref celestialImageWest);
+        }
+
+        /// <summary>
         /// Generates and updates JavaScript files (scriptsCelestialSextant.js and scriptsCelestialAstroCalcs.js)
         /// by reading templates from embedded resources, populating them with dynamic star data
         /// and other parameters, and writing the modified files to the specified image folder.
@@ -833,21 +922,21 @@ namespace P3D_Scenario_Generator
                 Dictionary<string, string> replacements = new()
                 {
                     // Star Data Replacements
-                    { "constellationX", string.Join(",", allStars.Select(s => $"\"{s.constellation}\"")) },
-                    { "idX", string.Join(",", allStars.Select(s => $"\"{s.id}\"")) },
-                    { "starNumberX", string.Join(",", allStars.Select(s => $"\"{s.starNumber}\"")) },
-                    { "starNameX", string.Join(",", allStars.Select(s => $"\"{s.starName}\"")) },
-                    { "bayerX", string.Join(",", allStars.Select(s => $"\"{s.bayer}\"")) },
-                    { "raHX", string.Join(",", allStars.Select(s => s.raH.ToString())) },
-                    { "raMX", string.Join(",", allStars.Select(s => s.raM.ToString())) },
-                    { "raSX", string.Join(",", allStars.Select(s => s.raS.ToString())) },
-                    { "decDX", string.Join(",", allStars.Select(s => s.decD.ToString())) },
-                    { "decMX", string.Join(",", allStars.Select(s => s.decM.ToString())) },
-                    { "decSX", string.Join(",", allStars.Select(s => s.decS.ToString())) },
-                    { "visMagX", string.Join(",", allStars.Select(s => s.visMag.ToString())) },
+                    { "constellationX", string.Join(",", allStars.Select(s => $"\"{s.Constellation}\"")) },
+                    { "idX", string.Join(",", allStars.Select(s => $"\"{s.Id}\"")) },
+                    { "starNumberX", string.Join(",", allStars.Select(s => $"\"{s.StarNumber}\"")) },
+                    { "starNameX", string.Join(",", allStars.Select(s => $"\"{s.StarName}\"")) },
+                    { "bayerX", string.Join(",", allStars.Select(s => $"\"{s.Bayer}\"")) },
+                    { "raHX", string.Join(",", allStars.Select(s => s.RaH.ToString())) },
+                    { "raMX", string.Join(",", allStars.Select(s => s.RaM.ToString())) },
+                    { "raSX", string.Join(",", allStars.Select(s => s.RaS.ToString())) },
+                    { "decDX", string.Join(",", allStars.Select(s => s.DecD.ToString())) },
+                    { "decMX", string.Join(",", allStars.Select(s => s.DecM.ToString())) },
+                    { "decSX", string.Join(",", allStars.Select(s => s.DecS.ToString())) },
+                    { "visMagX", string.Join(",", allStars.Select(s => s.VisMag.ToString())) },
                     { "linesX", string.Join(", ", allStars
-                        .Where(s => !string.IsNullOrEmpty(s.connectedId))
-                        .SelectMany(s => new[] { $"\"{s.id}\"", $"\"{s.connectedId}\"" }))
+                        .Where(s => !string.IsNullOrEmpty(s.ConnectedId))
+                        .SelectMany(s => new[] { $"\"{s.Id}\"", $"\"{s.ConnectedId}\"" }))
                     },
 
                     // Geographic Coordinates

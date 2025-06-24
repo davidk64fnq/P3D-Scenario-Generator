@@ -142,7 +142,7 @@ namespace P3D_Scenario_Generator
             PhotoLocations = [];
 
             // Get starting random photo page
-            Form.DeleteFile(saveLocation);
+            FileOps.TryDeleteFile(saveLocation);
             HttpRoutines.GetWebDoc("https://www.pic2map.com/random.php", saveLocation);
             photoLocation = ExtractPhotoParams(saveLocation);
 
@@ -232,7 +232,7 @@ namespace P3D_Scenario_Generator
             PhotoLocations[^1].forwardBearing = bearing;
 
             // Extract next nearest unselected photo location parameters
-            Form.DeleteFile(saveLocation);
+            FileOps.TryDeleteFile(saveLocation);
             HttpRoutines.GetWebDoc(url, saveLocation);
             photoLocation = ExtractPhotoParams(saveLocation);
             PhotoLocations.Add(photoLocation);
@@ -319,7 +319,7 @@ namespace P3D_Scenario_Generator
             // Find nearby airport to last photo
             airportLocation = GetNearbyAirport(PhotoLocations[^1].latitude, PhotoLocations[^1].longitude, 
                 Parameters.PhotoTourConstraintsMinLegDist, Parameters.PhotoTourConstraintsMaxLegDist);
-            Form.DeleteFile($"{Parameters.SettingsScenarioFolder}\\random_pic2map.html"); // no longer needed
+            FileOps.TryDeleteFile($"{Parameters.SettingsScenarioFolder}\\random_pic2map.html"); // no longer needed
             if (airportLocation != null)
             {
                 Runway.destRwy = Runway.Runways[airportLocation.airportIndex];
@@ -381,6 +381,8 @@ namespace P3D_Scenario_Generator
         {
             for (int index = 1; index < PhotoLocations.Count - 1; index++)
             {
+                // ***** Need to check bool return value ****** //
+
                 HttpRoutines.DownloadBinaryFile(PhotoLocations[index].photoURL, $"{Parameters.ImageFolder}\\photo_{index:00}.jpg");
 
                 // Load the photo in order to access its width and height
@@ -408,11 +410,11 @@ namespace P3D_Scenario_Generator
                 // If photo is too big (within 95 percent of one of the dimensions) then resize it
                 if (newWidth)
                 {
-                    Drawing.Resize($"{Parameters.ImageFolder}\\photo_{index:00}.jpg", newSize, 0);
+                    ImageUtils.Resize($"{Parameters.ImageFolder}\\photo_{index:00}.jpg", newSize, 0);
                 }
                 else if (newHeight)
                 {
-                    Drawing.Resize($"{Parameters.ImageFolder}\\photo_{index:00}.jpg", 0, newSize);
+                    ImageUtils.Resize($"{Parameters.ImageFolder}\\photo_{index:00}.jpg", 0, newSize);
                 }
             }
         }

@@ -72,7 +72,7 @@ namespace P3D_Scenario_Generator
                 Runway.SetRunwaysSubset();
                 DisplayStartMessage();
                 SaveUserSettings(TabPageSettings.Controls);
-                Drawing.DrawScenarioImages();
+                ImageUtils.DrawScenarioImages();
                 DoScenarioSpecificTasks();
                 ScenarioFXML.GenerateFXMLfile();
                 ScenarioHTML.GenerateHTMLfiles();
@@ -1088,25 +1088,6 @@ namespace P3D_Scenario_Generator
             {
                 fieldValue = control.Text;
                 accessibleName = control.AccessibleName;
-            }
-        }
-
-        internal static void DeleteFile(string filename)
-        {
-            if (!File.Exists(filename))
-                return;
-            var started = DateTime.UtcNow;
-            while ((DateTime.UtcNow - started).TotalMilliseconds < 2000)
-            {
-                try
-                {
-                    File.Delete(filename);
-                    return;
-                }
-                catch (IOException)
-                {
-                    // Ignore
-                }
             }
         }
 

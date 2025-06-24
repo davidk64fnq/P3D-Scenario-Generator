@@ -105,9 +105,9 @@
             int zoom = GetBoundingBoxZoom(gates, 0, gates.Count - 1);
             List<Tile> tiles = SetSignWritingOSMtiles(gates, zoom, 0, gates.Count - 1);
             BoundingBox boundingBox = OSM.GetBoundingBox(tiles, zoom);
-            Drawing.MontageTiles(boundingBox, zoom, "Charts_01");
-            Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
-            Drawing.MakeSquare(boundingBox, "Charts_01", zoom, Con.tileFactor);
+            MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01");
+            ImageUtils.DrawRoute(tiles, boundingBox, "Charts_01");
+            ImageUtils.MakeSquare(boundingBox, "Charts_01", zoom, Con.tileFactor);
         }
 
         /// <summary>
@@ -118,14 +118,14 @@
             int zoom = 15;
             List<Tile> tiles = SetSignWritingOSMtiles(gates, zoom, 0, 0);
             BoundingBox boundingBox = OSM.GetBoundingBox(tiles, zoom);
-            Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
+            MapTileMontager.MontageTiles(boundingBox, zoom, "chart_thumb");
             if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
             {
-                Drawing.MakeSquare(boundingBox, "chart_thumb", zoom, Con.locTileFactor);
+                ImageUtils.MakeSquare(boundingBox, "chart_thumb", zoom, Con.locationImageTileFactor);
             }
             if (boundingBox.xAxis.Count == Con.tileFactor)
             {
-                Drawing.Resize("chart_thumb.png", Con.tileSize, 0);
+                ImageUtils.Resize("chart_thumb.png", Con.tileSize, 0);
             }
         }
 

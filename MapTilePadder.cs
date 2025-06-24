@@ -1,0 +1,583 @@
+﻿using ImageMagick;
+
+namespace P3D_Scenario_Generator
+{
+    /// <summary>
+    /// Provides static methods for adjusting and "padding" the OpenStreetMap (OSM) tile grid
+    /// and corresponding images to achieve specific dimensions or zoom levels.
+    /// This includes adding tiles to the edges of a bounding box and performing image cropping/resizing.
+    /// Each method now returns a boolean indicating success or failure, with errors logged.
+    /// </summary>
+    /// <remarks>
+    /// General padding notes:
+    /// Padding east or west is always possible as you can continue across the longitudinal meridian if required.
+    /// Padding north and south is always possible if you are not already at the north or south pole; in those special cases,
+    /// you can only pad on the side away from the pole. This is why for north-south there are three methods:
+    /// <see cref="PadNorthSouth"/>, <see cref="PadNorth"/>, and <see cref="PadSouth"/>, while for west-east only
+    /// <see cref="PadWestEast"/> is needed. If all the coordinates fit in an area covered by a square of four OSM tiles,
+    /// then no padding is required. If they fit in a one-tile square area or a one-by-two rectangular tile area, then padding
+    /// is required to attain a two-by-two tile image. The OSM tiles needed to form the padded image at the next higher zoom level
+    /// are calculated and returned to the calling method at this time while it is known what form of padding took place. Padding
+    /// operations use a temporary naming scheme for tiles with a (0,0) origin in the top-left corner; for a three-tile square
+    /// temporary image, the bottom-right tile would be (2,2), x-axis first then y-axis.
+    ///
+    /// General zooming in notes:
+    /// To zoom in on a tile that is (X,Y) with bounding box x-axis = X and y-axis = Y, the new bounding box
+    /// would be x-axis = 2X, 2X + 1 and y-axis = 2Y, 2Y + 1. If padding operation involved taking half of a tile then the new
+    /// bounding box would only use either 2X or 2X + 1 (2Y or 2Y + 1) at the next higher zoom level.
+    /// </remarks>
+    internal static class MapTilePadder
+    {
+        /// <summary>
+        /// Pads the bounding box and the corresponding image by adding tiles to all four sides (North, South, West, East).
+        /// This method is designed for an initial 1x1 tile image. It adds eight surrounding tiles to create a 3x3 conceptual grid,
+        /// then crops the central 2x2 area to effectively "zoom in" and expand the original image.
+        /// </summary>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be expanded. This object will be modified
+        /// to include the newly added tile indices *before* the zoom-in calculation.</param>
+        /// <param name="newTileNorth">The Y-index of the new tile row to be added to the North (top).</param>
+        /// <param name="newTileSouth">The Y-index of the new tile row to be added to the South (bottom).</param>
+        /// <param name="newTileWest">The X-index of the new tile column to be added to the West (left).</param>
+        /// <param name="newTileEast">The X-index of the new tile column to be added to the East (right).</param>
+        /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
+        /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
+        /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
+        /// the new zoomed-in tile coordinates if successful; otherwise, a default <see cref="BoundingBox"/>.</param>
+        /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
+        /// <remarks>
+        /// The file to be padded is 1w x 1h (unit is Con.tileSize). Add a row of tiles 1h x 3w on top and bottom of existing tile,
+        /// add a tile to the left and right of existing tile, montage them together 3w x 3h, then crop 0.5 w/h from all edges.
+        /// Resulting file is 2w x 2h with original image in middle 1w x 1h.
+        /// </remarks>
+        static internal bool PadNorthSouthWestEast(BoundingBox boundingBox, int newTileNorth, int newTileSouth,
+            int newTileWest, int newTileEast, string filename, int zoom, out BoundingBox resultBoundingBox)
+        {
+            resultBoundingBox = new BoundingBox(); // Initialize out parameter
+
+            try
+            {
+                // Adjust bounding box by enlarging in all four directions by one tile.
+                boundingBox.yAxis.Insert(0, newTileNorth);
+                boundingBox.xAxis.Insert(0, newTileWest);
+                boundingBox.xAxis.Add(newTileEast);
+                boundingBox.yAxis.Add(newTileSouth);
+
+                // Download eight additional tiles and rename the existing tile image to be in the centre.
+                // The filename_X_Y.png convention is used for temporary tiles where (1,1) is the original tile.
+                if (!OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false; // 0,0 0,1 0,2
+                if (!OSM.DownloadOSMtile(newTileWest, boundingBox.yAxis[1], zoom, $"{filename}_0_1.png")) return false; // 1,0
+
+                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1_1.png";
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false; // 1,1
+
+                if (!OSM.DownloadOSMtile(newTileEast, boundingBox.yAxis[1], zoom, $"{filename}_2_1.png")) return false; // 1,2
+                if (!OSM.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename)) return false; // 2,0 2,1 2,2
+
+                // Montage the entire expanded 3x3 grid into a single image.
+                if (!MapTileMontager.MontageTiles(boundingBox, zoom, filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles(filename)) return false;
+
+                // Crop the central 2x2 tile area from the newly montaged 3x3 image.
+                string finalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                if (!File.Exists(finalImagePath))
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouthWestEast: Montaged image not found at '{finalImagePath}'. Cannot crop.");
+                    return false;
+                }
+
+                using MagickImage image = new(finalImagePath);
+                // Define geometry: (width, height, x-offset, y-offset)
+                // We want a 2x2 tile area, starting at (0.5 * tile size, 0.5 * tile size) from top-left of the 3x3 image.
+                IMagickGeometry geometry = new MagickGeometry(Con.tileSize * 2, Con.tileSize * 2, (uint)(Con.tileSize / 2), (uint)(Con.tileSize / 2));
+                image.Crop(geometry);
+                image.ResetPage();
+                image.Write(finalImagePath);
+
+                // Calculate the new bounding box coordinates for the zoomed-in view.
+                resultBoundingBox = ZoomInNorthSouthWestEast(boundingBox);
+                return true; // Operation successful
+            }
+            catch (MagickErrorException mex)
+            {
+                Log.Error($"MapTilePadder.PadNorthSouthWestEast: Magick.NET error for '{filename}': {mex.Message}", mex);
+                return false;
+            }
+            catch (IOException ioex)
+            {
+                Log.Error($"MapTilePadder.PadNorthSouthWestEast: I/O error for '{filename}': {ioex.Message}", ioex);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"MapTilePadder.PadNorthSouthWestEast: An unexpected error occurred for '{filename}': {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Adjusts the bounding box coordinates to reflect a "zoom in" operation after padding
+        /// North, South, West, and East. This effectively doubles the number of tiles in both
+        /// X and Y axes by interpolating new tile numbers from the central 2x2 portion of a 3x3 grid.
+        /// </summary>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> after its physical extent has been padded.</param>
+        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</returns>
+        static internal BoundingBox ZoomInNorthSouthWestEast(BoundingBox boundingBox)
+        {
+            BoundingBox zoomInBoundingBox = new();
+            List<int> ewAxis = [];
+            ewAxis.Add(2 * boundingBox.xAxis[0] + 1); // Left-most column (x=0) corresponds to 2*x + 1
+            for (int xIndex = 1; xIndex < boundingBox.xAxis.Count - 1; xIndex++)
+            {
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+            }
+            ewAxis.Add(2 * boundingBox.xAxis[^1]); // Right-most column (x=2) corresponds to 2*x
+            zoomInBoundingBox.xAxis = ewAxis;
+
+            List<int> nsAxis = [];
+            nsAxis.Add(2 * boundingBox.yAxis[0] + 1); // Top-most row (y=0) corresponds to 2*y + 1
+            for (int yIndex = 1; yIndex < boundingBox.yAxis.Count - 1; yIndex++) 
+            {
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+            }
+            nsAxis.Add(2 * boundingBox.yAxis[^1]); // Bottom-most row (y=2) corresponds to 2*y
+            zoomInBoundingBox.yAxis = nsAxis;
+            return zoomInBoundingBox;
+        }
+
+        /// <summary>
+        /// Pads the bounding box and the corresponding image by adding tiles to the West and East sides.
+        /// This method is typically used when the original image is 1 tile wide by N tiles high.
+        /// It creates two new 1xN columns (West and East), montages them with the original N tiles
+        /// (which becomes the central column), resulting in a 3xN image. Then, it crops the central
+        /// 2xN area, effectively widening the view while maintaining height.
+        /// </summary>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be expanded. This object will be modified
+        /// to include the newly added tile indices *before* the zoom-in calculation.</param>
+        /// <param name="newTileWest">The X-index of the new tile column to be added to the West (left).</param>
+        /// <param name="newTileEast">The X-index of the new tile column to be added to the East (right).</param>
+        /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
+        /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
+        /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
+        /// the new zoomed-in tile coordinates if successful; otherwise, a default <see cref="BoundingBox"/>.</param>
+        /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
+        /// <remarks>
+        /// The file to be padded is 1w x 2h (unit is Con.tileSize). Create a column of tiles on left and right side 1w x 2h,
+        /// montage them together 3w x 2h, then crop a column 0.5w x 2h from outside edges. Resulting file is 2w x 2h with original
+        /// image in middle horizontally.
+        /// </remarks>
+        static internal bool PadWestEast(BoundingBox boundingBox, int newTileWest, int newTileEast, string filename, int zoom, out BoundingBox resultBoundingBox)
+        {
+            resultBoundingBox = new BoundingBox(); // Initialize out parameter
+
+            try
+            {
+                // Create new western column (index 0)
+                if (!OSM.DownloadOSMtileColumn(newTileWest, 0, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToColumn(boundingBox.yAxis.Count, 0, filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+
+                // Rename source column to be the centre column (index 1)
+                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1.png";
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
+
+                // Create new eastern column (index 2)
+                if (!OSM.DownloadOSMtileColumn(newTileEast, 2, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToColumn(boundingBox.yAxis.Count, 2, filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+
+                // Montage the three columns (West, Original, East) into one image (3w x 2h).
+                if (!MapTileMontager.MontageColumns(3, boundingBox.yAxis.Count, filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles(filename)) return false;
+
+                // Crop the central 2w x 2h area from the newly montaged 3w x 2h image.
+                string finalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                if (!File.Exists(finalImagePath))
+                {
+                    Log.Error($"MapTilePadder.PadWestEast: Montaged image not found at '{finalImagePath}'. Cannot crop.");
+                    return false;
+                }
+
+                using MagickImage image = new(finalImagePath);
+                // Define geometry: (width, height, x-offset, y-offset)
+                // We want a 2x2 tile area, starting at (0.5 * tile size, 0) from top-left of the 3x2 image.
+                IMagickGeometry geometry = new MagickGeometry(Con.tileSize / 2, 0, (uint)Con.tileSize * 2, (uint)Con.tileSize * 2);
+                image.Crop(geometry);
+                image.ResetPage();
+                image.Write(finalImagePath);
+
+                // Calculate the new bounding box coordinates for the zoomed-in view.
+                resultBoundingBox = ZoomInWestEast(boundingBox);
+                return true; // Operation successful
+            }
+            catch (MagickErrorException mex)
+            {
+                Log.Error($"MapTilePadder.PadWestEast: Magick.NET error for '{filename}': {mex.Message}", mex);
+                return false;
+            }
+            catch (IOException ioex)
+            {
+                Log.Error($"MapTilePadder.PadWestEast: I/O error for '{filename}': {ioex.Message}", ioex);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"MapTilePadder.PadWestEast: An unexpected error occurred for '{filename}': {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Adjusts the bounding box coordinates to reflect a "zoom in" operation after padding
+        /// West and East. This effectively doubles the number of tiles in the X axis by interpolating
+        /// new tile numbers, using the central 2xN portion of a 3xN grid.
+        /// </summary>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> after its physical extent has been padded.</param>
+        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</returns>
+        static internal BoundingBox ZoomInWestEast(BoundingBox boundingBox)
+        {
+            BoundingBox zoomInBoundingBox = new();
+            List<int> ewAxis = [];
+            ewAxis.Add(2 * boundingBox.xAxis[0] - 1); 
+            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
+            {
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+            }
+            ewAxis.Add(2 * boundingBox.xAxis[^1] + 2); 
+            zoomInBoundingBox.xAxis = ewAxis;
+
+            List<int> nsAxis = [];
+            for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++) 
+            {
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+            }
+            zoomInBoundingBox.yAxis = nsAxis;
+            return zoomInBoundingBox;
+        }
+
+        /// <summary>
+        /// Pads the bounding box and the corresponding image by adding tiles to the North and South sides.
+        /// This method is typically used when the original image is N tiles wide by 1 tile high.
+        /// It creates two new Nx1 rows (North and South), montages them with the original N tiles
+        /// (which becomes the central row), resulting in an Nx3 image. Then, it crops the central
+        /// Nx2 area, effectively heightening the view while maintaining width.
+        /// </summary>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be expanded. This object will be modified
+        /// to include the newly added tile indices *before* the zoom-in calculation.</param>
+        /// <param name="newTileNorth">The Y-index of the new tile row to be added to the North (top).</param>
+        /// <param name="newTileSouth">The Y-index of the new tile row to be added to the South (bottom).</param>
+        /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
+        /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
+        /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
+        /// the new zoomed-in tile coordinates if successful; otherwise, a default <see cref="BoundingBox"/>.</param>
+        /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
+        /// <remarks>
+        /// The file to be padded is 2w x 1h (unit is Con.tileSize). Create a row of tiles above and below 2w x 1h,
+        /// montage them together 2w x 3h, then crop a row 2w x 0.5h from outside edges. Resulting file is 2w x 2h with original
+        /// image in middle vertically.
+        /// </remarks>
+        static internal bool PadNorthSouth(BoundingBox boundingBox, int newTileNorth, int newTileSouth, string filename, int zoom, out BoundingBox resultBoundingBox)
+        {
+            resultBoundingBox = new BoundingBox(); // Initialize out parameter
+
+            try
+            {
+                // Create new northern row (index 0)
+                if (!OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.xAxis.Count, 0, filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+
+                // Rename source row to be the centre row (index 1)
+                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1.png";
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
+
+                // Create new southern row (index 2)
+                if (!OSM.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.xAxis.Count, 2, filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+
+                // Montage the three rows (North, Original, South) into one image (2w x 3h).
+                if (!MapTileMontager.MontageRows(boundingBox.xAxis.Count, 3, filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles(filename)) return false;
+
+                // Crop the central 2w x 2h area from the newly montaged 2w x 3h image.
+                string finalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                if (!File.Exists(finalImagePath))
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouth: Montaged image not found at '{finalImagePath}'. Cannot crop.");
+                    return false;
+                }
+
+                using MagickImage image = new(finalImagePath);
+                // Define geometry: (width, height, x-offset, y-offset)
+                // We want a 2x2 tile area, starting at (0, 0.5 * tile size) from top-left of the 2x3 image.
+                IMagickGeometry geometry = new MagickGeometry(0, Con.tileSize / 2, (uint)Con.tileSize * 2, (uint)Con.tileSize * 2);
+                image.Crop(geometry);
+                image.ResetPage();
+                image.Write(finalImagePath);
+
+                // Calculate the new bounding box coordinates for the zoomed-in view.
+                resultBoundingBox = ZoomInNorthSouth(boundingBox);
+                return true; // Operation successful
+            }
+            catch (MagickErrorException mex)
+            {
+                Log.Error($"MapTilePadder.PadNorthSouth: Magick.NET error for '{filename}': {mex.Message}", mex);
+                return false;
+            }
+            catch (IOException ioex)
+            {
+                Log.Error($"MapTilePadder.PadNorthSouth: I/O error for '{filename}': {ioex.Message}", ioex);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"MapTilePadder.PadNorthSouth: An unexpected error occurred for '{filename}': {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Adjusts the bounding box coordinates to reflect a "zoom in" operation after padding
+        /// North and South. This effectively doubles the number of tiles in the Y axis by interpolating
+        /// new tile numbers, using the central Nx2 portion of an Nx3 grid.
+        /// </summary>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> after its physical extent has been padded.</param>
+        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</returns>
+        static internal BoundingBox ZoomInNorthSouth(BoundingBox boundingBox)
+        {
+            BoundingBox zoomInBoundingBox = new();
+            List<int> ewAxis = [];
+            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
+            {
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+            }
+            zoomInBoundingBox.xAxis = ewAxis;
+
+            List<int> nsAxis = [];
+            nsAxis.Add(2 * boundingBox.yAxis[0] - 1); 
+            for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++) 
+            {
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+            }
+            nsAxis.Add(2 * boundingBox.yAxis[^1] + 2); 
+            zoomInBoundingBox.yAxis = nsAxis;
+            return zoomInBoundingBox;
+        }
+
+        /// <summary>
+        /// Pads the bounding box and the corresponding image by adding tiles to the North side,
+        /// typically when already at or near the South Pole. This method is used for an existing
+        /// image that is N tiles wide by 1 tile high. It adds a new Nx1 row to the North, montages
+        /// it with the original image, shifting the original content to the bottom vertically.
+        /// </summary>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be expanded. This object will be modified
+        /// to include the newly added tile indices *before* the zoom-in calculation.</param>
+        /// <param name="newTileNorth">The Y-index of the new tile row to be added to the North (top).</param>
+        /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
+        /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
+        /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
+        /// the new zoomed-in tile coordinates if successful; otherwise, a default <see cref="BoundingBox"/>.</param>
+        /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
+        /// <remarks>
+        /// The file to be padded is 2w x 1h (unit is Con.tileSize) and we're at the south pole. Create a row of tiles above 2w x 1h,
+        /// montage them together. Resulting file is 2w x 2h with original image at bottom vertically.
+        /// </remarks>
+        static internal bool PadNorth(BoundingBox boundingBox, int newTileNorth, string filename, int zoom, out BoundingBox resultBoundingBox)
+        {
+            resultBoundingBox = new BoundingBox(); // Initialize out parameter
+
+            try
+            {
+                // Create new northern row (index 0)
+                if (!OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.xAxis.Count, 0, filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+
+                // Rename source row to be the bottom row (index 1)
+                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1.png";
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
+
+                // Montage the two rows (North, Original) into one image (2w x 2h).
+                if (!MapTileMontager.MontageRows(boundingBox.xAxis.Count, 2, filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles(filename)) return false;
+
+                // Calculate the new bounding box coordinates for the zoomed-in view.
+                resultBoundingBox = ZoomInNorth(boundingBox);
+                return true; // Operation successful
+            }
+            catch (MagickErrorException mex)
+            {
+                Log.Error($"MapTilePadder.PadNorth: Magick.NET error for '{filename}': {mex.Message}", mex);
+                return false;
+            }
+            catch (IOException ioex)
+            {
+                Log.Error($"MapTilePadder.PadNorth: I/O error for '{filename}': {ioex.Message}", ioex);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"MapTilePadder.PadNorth: An unexpected error occurred for '{filename}': {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Adjusts the bounding box coordinates to reflect a "zoom in" operation after padding
+        /// North. This effectively doubles the number of tiles in the Y axis by interpolating
+        /// new tile numbers, often used when approaching the South Pole where padding can only occur North.
+        /// </summary>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> after its physical extent has been padded.</param>
+        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</returns>
+        static internal BoundingBox ZoomInNorth(BoundingBox boundingBox)
+        {
+            BoundingBox zoomInBoundingBox = new();
+            List<int> ewAxis = [];
+            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
+            {
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+            }
+            zoomInBoundingBox.xAxis = ewAxis;
+
+            List<int> nsAxis = [];
+            nsAxis.Add(2 * boundingBox.yAxis[0] - 2); // Specific adjustment for North padding zoom
+            nsAxis.Add(2 * boundingBox.yAxis[0] - 1); // Specific adjustment for North padding zoom
+            for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++) 
+            {
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+            }
+            zoomInBoundingBox.yAxis = nsAxis;
+            return zoomInBoundingBox;
+        }
+
+        /// <summary>
+        /// Pads the bounding box and the corresponding image by adding tiles to the South side,
+        /// typically when already at or near the North Pole. This method is used for an existing
+        /// image that is N tiles wide by 1 tile high. It adds a new Nx1 row to the South, montages
+        /// it with the original image, keeping the original content at the top vertically.
+        /// </summary>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be expanded. This object will be modified
+        /// to include the newly added tile indices *before* the zoom-in calculation.</param>
+        /// <param name="newTileSouth">The Y-index of the new tile row to be added to the South (bottom).</param>
+        /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
+        /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
+        /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
+        /// the new zoomed-in tile coordinates if successful; otherwise, a default <see cref="BoundingBox"/>.</param>
+        /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
+        /// <remarks>
+        /// The file to be padded is 2w x 1h (unit is Con.tileSize) and we're at the north pole. Create a row of tiles below 2w x 1h,
+        /// montage them together. Resulting file is 2w x 2h with original image at top vertically.
+        /// </remarks>
+        static internal bool PadSouth(BoundingBox boundingBox, int newTileSouth, string filename, int zoom, out BoundingBox resultBoundingBox)
+        {
+            resultBoundingBox = new BoundingBox(); // Initialize out parameter
+
+            try
+            {
+                // Rename source row to be the top row (index 0)
+                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_0.png";
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
+
+                // Create new southern row (index 1)
+                if (!OSM.DownloadOSMtileRow(newTileSouth, 1, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.xAxis.Count, 1, filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+
+                // Montage the two rows (Original, South) into one image (2w x 2h).
+                if (!MapTileMontager.MontageRows(boundingBox.xAxis.Count, 2, filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles(filename)) return false;
+
+                // Calculate the new bounding box coordinates for the zoomed-in view.
+                resultBoundingBox = ZoomInSouth(boundingBox);
+                return true; // Operation successful
+            }
+            catch (MagickErrorException mex)
+            {
+                Log.Error($"MapTilePadder.PadSouth: Magick.NET error for '{filename}': {mex.Message}", mex);
+                return false;
+            }
+            catch (IOException ioex)
+            {
+                Log.Error($"MapTilePadder.PadSouth: I/O error for '{filename}': {ioex.Message}", ioex);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"MapTilePadder.PadSouth: An unexpected error occurred for '{filename}': {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Adjusts the bounding box coordinates to reflect a "zoom in" operation after padding
+        /// South. This effectively doubles the number of tiles in the Y axis by interpolating
+        /// new tile numbers, often used when approaching the North Pole where padding can only occur South.
+        /// </summary>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> after its physical extent has been padded.</param>
+        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</returns>
+        static internal BoundingBox ZoomInSouth(BoundingBox boundingBox)
+        {
+            BoundingBox zoomInBoundingBox = new();
+            List<int> ewAxis = [];
+            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
+            {
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+            }
+            zoomInBoundingBox.xAxis = ewAxis;
+
+            List<int> nsAxis = [];
+            for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++) 
+            {
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+            }
+            nsAxis.Add(2 * boundingBox.yAxis[^1] + 2); // Specific adjustment for South padding zoom
+            nsAxis.Add(2 * boundingBox.yAxis[^1] + 3); // Specific adjustment for South padding zoom
+            zoomInBoundingBox.yAxis = nsAxis;
+            return zoomInBoundingBox;
+        }
+
+        /// <summary>
+        /// This is called when no padding has taken place to create a square image.
+        /// It adjusts the bounding box coordinates to reflect a general "zoom in" operation,
+        /// effectively doubling the number of tiles in both X and Y axes by interpolating new tile numbers.
+        /// Located in this class as it closely resembles the padding related zoom in methods.
+        /// </summary>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be zoomed in.</param>
+        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the zoom.</returns>
+        static internal BoundingBox ZoomIn(BoundingBox boundingBox)
+        {
+            BoundingBox zoomInBoundingBox = new();
+            List<int> ewAxis = [];
+            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
+            {
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+            }
+            zoomInBoundingBox.xAxis = ewAxis;
+
+            List<int> nsAxis = [];
+            for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++) 
+            {
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+            }
+            zoomInBoundingBox.yAxis = nsAxis;
+            return zoomInBoundingBox;
+        }
+    }
+}

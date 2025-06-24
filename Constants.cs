@@ -73,7 +73,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// <see cref="tileSize"/> multiplier for location image
         /// </summary>
-        public static readonly int locTileFactor = 1;
+        public static readonly int locationImageTileFactor = 1;
 
         /// <summary>
         /// Maximum level of OSM tiles available
@@ -89,6 +89,17 @@ namespace P3D_Scenario_Generator
         /// All OSM tiles used in this program are 256x256 pixels
         /// </summary>
         public static readonly int tileSize = 256;
+
+        /// <summary>
+        /// The target width of the generated overview image in tiles.
+        /// </summary>
+        public const int overviewImageTileFactor = 2;
+
+        /// <summary>
+        /// Signals <see cref="MapTileImageMaker.CreateImage(IEnumerable{CoordinateSharp.Coordinate}, bool, int, int, string, int)"/> to calculate zoom rather than 
+        /// use passed zoom value.
+        /// </summary>
+        public const int autoCalculateZoom = -1;
 
         #endregion
 

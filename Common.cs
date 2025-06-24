@@ -18,12 +18,12 @@ namespace P3D_Scenario_Generator
             int zoom = GetBoundingBoxZoom(tiles, 2, 2);
             SetOSMtiles(tiles, zoom);
             boundingBox = OSM.GetBoundingBox(tiles, zoom);
-            Drawing.MontageTiles(boundingBox, zoom, "Charts_01"); 
+            MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01"); 
             if (Parameters.SelectedScenario != nameof(ScenarioTypes.Celestial))
             {
-                Drawing.DrawRoute(tiles, boundingBox, "Charts_01");
+                ImageUtils.DrawRoute(tiles, boundingBox, "Charts_01");
             }
-            Drawing.MakeSquare(boundingBox, "Charts_01", zoom, 2);
+            ImageUtils.MakeSquare(boundingBox, "Charts_01", zoom, 2);
         }
 
         /// <summary>
@@ -94,10 +94,6 @@ namespace P3D_Scenario_Generator
             {
                 Wikipedia.SetWikiOSMtiles(tiles, zoom, 0, Wikipedia.WikiTour.Count - 1);
             }
-            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
-            {
-                CelestialNav.SetCelestialOSMtiles(tiles, zoom, 0, 1);
-            }
         }
 
         /// <summary>
@@ -122,10 +118,6 @@ namespace P3D_Scenario_Generator
             {
                 Wikipedia.SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             }
-            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.Celestial))
-            {
-                CelestialNav.SetCelestialOSMtiles(tiles, zoom, 1, 1);   // Use destination airport as scenario is a mid air start
-            }
         }
 
         /// <summary>
@@ -138,14 +130,14 @@ namespace P3D_Scenario_Generator
             int zoom = 15;
             SetOSMtiles(tiles, zoom, 0, 0);
             boundingBox = OSM.GetBoundingBox(tiles, zoom);
-            Drawing.MontageTiles(boundingBox, zoom, "chart_thumb");
+            MapTileMontager.MontageTiles(boundingBox, zoom, "chart_thumb");
             if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
             {
-                Drawing.MakeSquare(boundingBox, "chart_thumb", zoom, 2);
+                ImageUtils.MakeSquare(boundingBox, "chart_thumb", zoom, 2);
             }
             if (boundingBox.xAxis.Count == 2)
             {
-                Drawing.Resize("chart_thumb.png", 256, 0);
+                ImageUtils.Resize("chart_thumb.png", 256, 0);
             }
         }
 
@@ -179,10 +171,10 @@ namespace P3D_Scenario_Generator
             int legNo = startItemIndex + 1;
 
             // zoom 1 image
-            Drawing.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1");
-            Drawing.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
-            zoomInBoundingBox = Drawing.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Con.tileFactor);
-            Drawing.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg");
+            MapTileMontager.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1");
+            ImageUtils.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
+            zoomInBoundingBox = ImageUtils.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Con.tileFactor);
+            ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg");
 
             // zoom 2, 3 (and 4) images, zoom 1 is base level for map window size of 512 pixels, zoom 2 is base level for map window of 1024 pixels
             // then there are two additional map images for the higher zoom levels.
@@ -192,10 +184,10 @@ namespace P3D_Scenario_Generator
             for (int inc = 1; inc <= numberZoomLevels; inc++)
             {
                 SetOSMtiles(tiles, zoom + inc, startItemIndex, finishItemIndex);
-                Drawing.MontageTiles(zoomInBoundingBox, zoom + inc, $"LegRoute_{legNo:00}_zoom{inc + 1}");
-                Drawing.DrawRoute(tiles, zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}");
-                zoomInBoundingBox = Drawing.MakeSquare(zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}", zoom + inc, (int)Math.Pow(2, inc + 1));
-                Drawing.ConvertImageformat($"LegRoute_{legNo:00}_zoom{inc + 1}", "png", "jpg");
+                MapTileMontager.MontageTiles(zoomInBoundingBox, zoom + inc, $"LegRoute_{legNo:00}_zoom{inc + 1}");
+                ImageUtils.DrawRoute(tiles, zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}");
+                zoomInBoundingBox = ImageUtils.MakeSquare(zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}", zoom + inc, (int)Math.Pow(2, inc + 1));
+                ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom{inc + 1}", "png", "jpg");
             }
 
             SetLegImageBoundaries(zoomInBoundingBox, zoom + numberZoomLevels + 1);

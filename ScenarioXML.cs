@@ -574,7 +574,7 @@ namespace P3D_Scenario_Generator
             sr.Close();
             sw.Close();
             File.Copy(filePath + ".tmp", filePath, true);
-            Form.DeleteFile(filePath + ".tmp");
+            FileOps.TryDeleteFile(filePath + ".tmp");
         }
 
         #region Object creation/editing utilities

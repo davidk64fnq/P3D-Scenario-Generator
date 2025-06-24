@@ -55,73 +55,53 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="url">The URL of the file to download.</param>
         /// <param name="saveFile">The full path where the downloaded file will be saved.</param>
-        public static void DownloadBinaryFile(string url, string saveFile)
+        /// <returns><see langword="true"/> if the file was downloaded and saved successfully; otherwise, <see langword="false"/>.</returns>
+        public static bool DownloadBinaryFile(string url, string saveFile)
         {
             try
             {
-                // It's generally recommended to reuse HttpClient instances for performance.
-                // In a small, self-contained method like this, 'using' is acceptable.
-                using (HttpClient client = new())
+                using HttpClient client = new();
+                using HttpResponseMessage response = client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).Result;
+                response.EnsureSuccessStatusCode();
+
+                using Stream contentStream = response.Content.ReadAsStreamAsync().Result;
+
+                // Use the new FileOps.TryCopyStreamToFile method
+                if (!FileOps.TryCopyStreamToFile(contentStream, saveFile))
                 {
-                    // Send a GET request and get the response synchronously.
-                    // .Result waits for the async operation to complete.
-                    using (HttpResponseMessage response = client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).Result)
-                    {
-                        // Throw an exception if the HTTP response status is not a success code (2xx).
-                        response.EnsureSuccessStatusCode();
-
-                        // Ensure the directory exists before writing the file
-                        var directory = Path.GetDirectoryName(saveFile);
-                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                        {
-                            Directory.CreateDirectory(directory);
-                        }
-
-                        // Get the content as a stream synchronously.
-                        // .Result waits for the async operation to complete.
-                        using (Stream contentStream = response.Content.ReadAsStreamAsync().Result)
-                        {
-                            // Create a file stream to write the downloaded content.
-                            using (FileStream fileStream = new(saveFile, FileMode.Create, FileAccess.Write, FileShare.None))
-                            {
-                                // Copy the content stream to the file stream synchronously.
-                                // While CopyToAsync is available, CopyTo is the synchronous equivalent.
-                                contentStream.CopyTo(fileStream);
-                            }
-                        }
-                    }
+                    // TryCopyStreamToFile already handled logging and message box
+                    return false;
                 }
+
+                return true;
             }
             catch (AggregateException ae)
             {
-                // When using .Result on a Task, exceptions are wrapped in an AggregateException.
-                // You should unwrap them to get to the inner exception.
                 ae.Handle(innerEx =>
                 {
                     if (innerEx is HttpRequestException httpEx)
                     {
                         Log.Error($"HTTP error downloading file from URL \"{url}\": {httpEx.Message}");
-                        return true; // Mark as handled
+                        return true;
                     }
                     else if (innerEx is TaskCanceledException)
                     {
                         Log.Error($"Download from URL \"{url}\" was cancelled.");
-                        return true; // Mark as handled
+                        return true;
                     }
                     else
                     {
-                        // For any other unhandled exception within the AggregateException
-                        Log.Error($"An unexpected error occurred while downloading \"{url}\": {innerEx.Message}");
-                        return true; // Mark as handled
+                        Log.Error($"An unexpected error occurred during HTTP request for \"{url}\": {innerEx.Message}");
+                        return false;
                     }
                 });
+                return false;
             }
             catch (Exception ex)
             {
-                // Catches any other general exceptions not wrapped by AggregateException
-                Log.Error($"An unexpected error occurred while downloading \"{url}\": {ex.Message}");
+                Log.Error($"An unexpected error occurred while attempting to download from \"{url}\": {ex.Message}");
+                return false;
             }
         }
-
     }
 }

@@ -26,6 +26,21 @@ namespace P3D_Scenario_Generator
         public int yIndex;
         public int xOffset;
         public int yOffset;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Tile"/> class.
+        /// </summary>
+        /// <param name="xIndex">The horizontal index (X-coordinate) of the OSM tile.</param>
+        /// <param name="yIndex">The vertical index (Y-coordinate) of the OSM tile.</param>
+        /// <param name="xOffset">The X-offset of the coordinate within the tile (in pixels).</param>
+        /// <param name="yOffset">The Y-offset of the coordinate within the tile (in pixels).</param>
+        public Tile(int xIndex, int yIndex, int xOffset, int yOffset)
+        {
+            this.xIndex = xIndex;
+            this.yIndex = yIndex;
+            this.xOffset = xOffset;
+            this.yOffset = yOffset;
+        }
     }
 
     /// <summary>
@@ -52,7 +67,7 @@ namespace P3D_Scenario_Generator
         /// <param name="tiles">A list of OSM tile references and their associated coordinate</param>
         /// <param name="boundingBox">The bounding box to be populated</param>
         /// <param name="zoom">The zoom level required for the bounding box</param>
-        static internal BoundingBox GetBoundingBox(List<Tile> tiles, int zoom)
+        internal static BoundingBox GetBoundingBox(List<Tile> tiles, int zoom)
         {
             // Initialise boundingBox to the first tile
             BoundingBox boundingBox = new();
@@ -278,7 +293,7 @@ namespace P3D_Scenario_Generator
 
             if (tiles[tileNo].xOffset > Con.tileSize - Con.boundingBoxTrimMargin)
             {
-                newTileNo = Drawing.IncXtileNo(tiles[tileNo].xIndex, zoom);
+                newTileNo = MapTileCalculator.IncXtileNo(tiles[tileNo].xIndex, zoom);
                 if (newTileNo != boundingBox.xAxis[0])
                 {
                     boundingBox.xAxis.Add(newTileNo); // Only extend if not already using all tiles available in x axis
@@ -315,7 +330,7 @@ namespace P3D_Scenario_Generator
 
             if (tiles[tileNo].xOffset < Con.boundingBoxTrimMargin)
             {
-                newTileNo = Drawing.DecXtileNo(tiles[tileNo].xIndex, zoom);
+                newTileNo = MapTileCalculator.DecXtileNo(tiles[tileNo].xIndex, zoom);
                 if (newTileNo != boundingBox.xAxis[^1])
                 {
                     boundingBox.xAxis.Insert(0, newTileNo); // Only extend if not already using all tiles available in x axis
@@ -328,52 +343,94 @@ namespace P3D_Scenario_Generator
         #region Download OSM tiles region
 
         /// <summary>
-        /// Download an OSM tile using server and API key specified by user on settings tab. First checks
-        /// whether the OSM tile is in the tile cache. Stores the tile at the specified path given by filename.
-        /// (https://maptiles.p.rapidapi.com/en/map/v1, ?rapidapi-key=d9de94c22emsh6dc07cd7103e683p12be01jsn7014f38e1975)
+        /// Orchestrates the retrieval of a single OpenStreetMap (OSM) tile.
+        /// It attempts to fetch the tile from a local cache first; if not found, it downloads the tile
+        /// from the configured server using the provided API key. The retrieved tile is then stored
+        /// at the specified local path.
         /// </summary>
-        /// <param name="xTileNo">East/West reference number for required tile at specified zoom</param>
-        /// <param name="yTileNo">North/South reference number for required tile at specified zoom</param>
-        /// <param name="zoom">Required zoom level of OSM tile to be downloaded.</param>
-        /// <param name="filename">Path and filename where the OSM tile will be stored.</param>
-        static internal void DownloadOSMtile(int xTileNo, int yTileNo, int zoom, string filename)
+        /// <param name="xTileNo">The X (East/West) coordinate of the required tile at the specified zoom level, corresponding to the OSM tiling scheme.</param>
+        /// <param name="yTileNo">The Y (North/South) coordinate of the required tile at the specified zoom level, corresponding to the OSM tiling scheme.</param>
+        /// <param name="zoom">The specific zoom level for which the OSM tile is required.</param>
+        /// <param name="filename">The full local path and filename where the OSM tile will be stored after retrieval (e.g., "C:\Images\map_tile").</param>
+        /// <returns><see langword="true"/> if the OSM tile was successfully retrieved (either from cache or by download) and saved;
+        /// otherwise, <see langword="false"/> if any error occurred during the process (errors are logged by underlying methods).</returns>
+        static internal bool DownloadOSMtile(int xTileNo, int yTileNo, int zoom, string filename)
         {
+            // Construct the full URL for the OSM tile based on configured server URL, tile coordinates, zoom, and API key.
             string url = $"{Parameters.SettingsCacheServerURL}/{zoom}/{xTileNo}/{yTileNo}.png{Parameters.SettingsCacheServerAPIkey}";
-            Cache.GetOrCopyOSMtile($"{zoom}-{xTileNo}-{yTileNo}.png", url, $"{Parameters.ImageFolder}\\{filename}");
+
+            // Delegate the actual retrieval (from cache or download) and saving to the Cache class.
+            // The key is constructed using zoom, xTileNo, and yTileNo for cache lookup.
+            // Errors are handled and logged by the Cache.GetOrCopyOSMtile method and its dependencies.
+            return Cache.GetOrCopyOSMtile($"{zoom}-{xTileNo}-{yTileNo}.png", url, $"{Parameters.ImageFolder}\\{filename}");
         }
 
         /// <summary>
-        /// Download an OSM tile column using server and API key specified by user on settings tab. First checks
-        /// whether the OSM tiles are in the tile cache. Stores the tiles at the specified path given by filename.
+        /// Downloads a column of OpenStreetMap (OSM) tiles using server and API key specified by user settings.
+        /// It first checks whether the OSM tiles are in the tile cache. If not, they are downloaded.
+        /// All tiles are stored at the specified path given by filename.
         /// </summary>
-        /// <param name="xTileNo">East/West reference number for required tile column at specified zoom</param>
-        /// <param name="xIndex">Used to create the filename for the OSM tile column to be downloaded.</param>
-        /// <param name="boundingBox">The bounding box is used to get the height of the column of tiles to be downloaded</param>
-        /// <param name="zoom">Required zoom level of OSM tiles to be downloaded.</param>
-        /// <param name="filename">Path and filename where the OSM tiles will be stored.</param>
-        static internal void DownloadOSMtileColumn(int xTileNo, int xIndex, BoundingBox boundingBox, int zoom, string filename)
+        /// <param name="xTileNo">East/West reference number for the required tile column at specified zoom.</param>
+        /// <param name="xIndex">Used as part of the filename to uniquely identify tiles within the column.</param>
+        /// <param name="boundingBox">The bounding box containing the y-axis tile numbers, used to determine the height of the column of tiles to be downloaded.</param>
+        /// <param name="zoom">Required zoom level for the OSM tiles to be downloaded.</param>
+        /// <param name="filename">Base path and filename where the individual OSM tiles will be stored.
+        /// Each tile's filename will be suffixed with its xIndex and yIndex (e.g., "basefilename_xIndex_yIndex.png").</param>
+        /// <returns><see langword="true"/> if all tiles in the column were successfully downloaded or retrieved from cache;
+        /// otherwise, <see langword="false"/> if any tile operation failed.</returns>
+        static internal bool DownloadOSMtileColumn(int xTileNo, int xIndex, BoundingBox boundingBox, int zoom, string filename)
         {
+            // Iterate through each y-axis tile number in the bounding box
             for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++)
             {
-                DownloadOSMtile(xTileNo, boundingBox.yAxis[yIndex], zoom, $"{filename}_{xIndex}_{yIndex}.png");
+                // Construct the unique filename for the current tile
+                string tileFilename = $"{filename}_{xIndex}_{yIndex}.png";
+
+                // Attempt to download or copy the individual OSM tile.
+                // If DownloadOSMtile returns false (indicating a failure),
+                // we immediately return false for the entire column download.
+                if (!DownloadOSMtile(xTileNo, boundingBox.yAxis[yIndex], zoom, tileFilename))
+                {
+                    return false; // An individual tile failed to download/copy, so the column download fails.
+                }
             }
+
+            // If the loop completes, all individual tiles were successfully downloaded or copied.
+            return true;
         }
 
         /// <summary>
-        /// Download an OSM tile row using server and API key specified by user on settings tab. First checks
-        /// whether the OSM tiles are in the tile cache. Stores the tiles at the specified path given by filename.
+        /// Downloads a row of OpenStreetMap (OSM) tiles using server and API key specified by user settings.
+        /// It first checks whether the OSM tiles are in the tile cache. If not, they are downloaded.
+        /// All tiles are stored at the specified path given by filename.
         /// </summary>
-        /// <param name="xTileNo">North/South reference number for required tile row at specified zoom</param>
-        /// <param name="xIndex">Used to create the filename for the OSM tile row to be downloaded.</param>
-        /// <param name="boundingBox">The bounding box is used to get the width of the row of tiles to be downloaded</param>
-        /// <param name="zoom">Required zoom level of OSM tiles to be downloaded.</param>
-        /// <param name="filename">Path and filename where the OSM tiles will be stored.</param>
-        static internal void DownloadOSMtileRow(int yTileNo, int yIndex, BoundingBox boundingBox, int zoom, string filename)
+        /// <param name="yTileNo">North/South reference number for the required tile row at specified zoom.</param>
+        /// <param name="yIndex">Used as part of the filename to uniquely identify tiles within the row.</param>
+        /// <param name="boundingBox">The bounding box containing the x-axis tile numbers, used to determine the width of the row of tiles to be downloaded.</param>
+        /// <param name="zoom">Required zoom level for the OSM tiles to be downloaded.</param>
+        /// <param name="filename">Base path and filename where the individual OSM tiles will be stored.
+        /// Each tile's filename will be suffixed with its xIndex and yIndex (e.g., "basefilename_xIndex_yIndex.png").</param>
+        /// <returns><see langword="true"/> if all tiles in the row were successfully downloaded or retrieved from cache;
+        /// otherwise, <see langword="false"/> if any tile operation failed.</returns>
+        static internal bool DownloadOSMtileRow(int yTileNo, int yIndex, BoundingBox boundingBox, int zoom, string filename)
         {
+            // Iterate through each x-axis tile number in the bounding box
             for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
             {
-                DownloadOSMtile(boundingBox.xAxis[xIndex], yTileNo, zoom, $"{filename}_{xIndex}_{yIndex}.png");
+                // Construct the unique filename for the current tile
+                string tileFilename = $"{filename}_{xIndex}_{yIndex}.png";
+
+                // Attempt to download or copy the individual OSM tile.
+                // If DownloadOSMtile returns false (indicating a failure),
+                // we immediately return false for the entire row download.
+                if (!DownloadOSMtile(boundingBox.xAxis[xIndex], yTileNo, zoom, tileFilename))
+                {
+                    return false; // An individual tile failed to download/copy, so the row download fails.
+                }
             }
+
+            // If the loop completes, all individual tiles were successfully downloaded or copied.
+            return true;
         }
 
         // Finds OSM tile numbers and offsets for a sinle coordinate for one zoom level
@@ -381,7 +438,7 @@ namespace P3D_Scenario_Generator
         // $"{tileServer}{zoom}/{xTile}/{yTile}.png?{rapidApiKey}"
         static internal Tile GetOSMtile(string sLon, string sLat, int zoom)
         {
-            Tile tile = new();
+            Tile tile = new(0, 0, 0, 0);
             if (LonToDecimalDegree(sLon, out double dLon) && LatToDecimalDegree(sLat, out double dLat))
             {
                 LonToTileX(dLon, zoom, tile);
@@ -389,6 +446,17 @@ namespace P3D_Scenario_Generator
                 return tile;
             }
             return null;
+        }
+
+        // Finds OSM tile numbers and offsets for a sinle coordinate for one zoom level
+        // Tile number calculated using https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
+        // $"{tileServer}{zoom}/{xTile}/{yTile}.png?{rapidApiKey}"
+        static internal Tile GetTileInfo(double dLon, double dLat, int zoom)
+        {
+            Tile tile = new(0, 0, 0, 0);
+            LonToTileX(dLon, zoom, tile);
+            LatToTileY(dLat, zoom, tile);
+            return tile;
         }
 
         #endregion
