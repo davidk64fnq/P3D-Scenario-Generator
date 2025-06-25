@@ -381,7 +381,7 @@ namespace P3D_Scenario_Generator
                 SelectedAirportID = Form.form.ComboBoxGeneralRunwaySelected.Text.Split(" ")[1][1..^1]; // Strip '(' and ')'
             }
             SelectedAirportIndex = Form.form.ComboBoxGeneralRunwaySelected.SelectedIndex;
-            int index = Array.FindIndex(Con.scenarioNames, s => s == Form.form.ComboBoxGeneralScenarioType.Text);
+            int index = Array.FindIndex(Constants.scenarioNames, s => s == Form.form.ComboBoxGeneralScenarioType.Text);
             SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
             DayOfYear = Form.form.GeneralDatePicker.Value.DayOfYear;
             Day = Form.form.GeneralDatePicker.Value.Day;
@@ -427,8 +427,8 @@ namespace P3D_Scenario_Generator
             SignMessage = Form.form.ComboBoxSignMessage.GetItemText(Form.form.ComboBoxSignMessage.SelectedItem);
             SignTiltAngle = Convert.ToDouble(Form.form.TextBoxSignTilt.Text);
             SignGateHeight = Convert.ToDouble(Form.form.TextBoxSignGateHeight.Text);
-            SignSegmentLengthDeg = Convert.ToDouble(Form.form.TextBoxSignSegmentLength.Text) / Con.degreeLatFeet;
-            SignSegmentRadiusDeg = Convert.ToDouble(Form.form.TextBoxSignSegmentRadius.Text) / Con.degreeLatFeet;
+            SignSegmentLengthDeg = Convert.ToDouble(Form.form.TextBoxSignSegmentLength.Text) / Constants.degreeLatFeet;
+            SignSegmentRadiusDeg = Convert.ToDouble(Form.form.TextBoxSignSegmentRadius.Text) / Constants.degreeLatFeet;
             SignMonitorNumber = Convert.ToInt32(Form.form.TextBoxSignMonitorNumber.Text);
             SignMonitorWidth = Convert.ToInt32(Form.form.TextBoxSignMonitorWidth.Text);
             SignMonitorHeight = Convert.ToInt32(Form.form.TextBoxSignMonitorHeight.Text);
@@ -494,7 +494,7 @@ namespace P3D_Scenario_Generator
 
             if (errorMsg != "")
             {
-                MessageBox.Show($"Please attend to the following:\n{errorMsg}", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Please attend to the following:\n{errorMsg}", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             else
@@ -520,13 +520,13 @@ namespace P3D_Scenario_Generator
                 if (Directory.Exists(saveFolder))
                 {
                     string message = $"A scenario with the same title already exists. Either delete the folder \"{saveFolder}\" (you'll need to shut down Prepar3D first if it's running) or choose a different scenario title.";
-                    MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
             }
             else
             {
-                MessageBox.Show($"Invalid scenario title", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Invalid scenario title", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             return true;

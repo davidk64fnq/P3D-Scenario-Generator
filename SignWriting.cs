@@ -104,10 +104,10 @@
         {
             int zoom = GetBoundingBoxZoom(gates, 0, gates.Count - 1);
             List<Tile> tiles = SetSignWritingOSMtiles(gates, zoom, 0, gates.Count - 1);
-            BoundingBox boundingBox = OSM.GetBoundingBox(tiles, zoom);
+            BoundingBox boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
             MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01");
             ImageUtils.DrawRoute(tiles, boundingBox, "Charts_01");
-            ImageUtils.MakeSquare(boundingBox, "Charts_01", zoom, Con.tileFactor);
+            ImageUtils.MakeSquare(boundingBox, "Charts_01", zoom, Constants.tileFactor);
         }
 
         /// <summary>
@@ -117,21 +117,21 @@
         {
             int zoom = 15;
             List<Tile> tiles = SetSignWritingOSMtiles(gates, zoom, 0, 0);
-            BoundingBox boundingBox = OSM.GetBoundingBox(tiles, zoom);
+            BoundingBox boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
             MapTileMontager.MontageTiles(boundingBox, zoom, "chart_thumb");
-            if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
+            if (boundingBox.XAxis.Count != boundingBox.YAxis.Count)
             {
-                ImageUtils.MakeSquare(boundingBox, "chart_thumb", zoom, Con.locationImageTileFactor);
+                ImageUtils.MakeSquare(boundingBox, "chart_thumb", zoom, Constants.locationImageTileFactor);
             }
-            if (boundingBox.xAxis.Count == Con.tileFactor)
+            if (boundingBox.XAxis.Count == Constants.tileFactor)
             {
-                ImageUtils.Resize("chart_thumb.png", Con.tileSize, 0);
+                ImageUtils.Resize("chart_thumb.png", Constants.tileSize, 0);
             }
         }
 
         /// <summary>
         /// Works out most zoomed in level that includes all gates specified by startGateIndex and finishGateIndex, 
-        /// plus airport where the montage of OSM tiles doesn't exceed <see cref="Con.tileFactor"/> in size
+        /// plus airport where the montage of OSM tiles doesn't exceed <see cref="Constants.tileFactor"/> in size
         /// </summary>
         /// <param name="startGateIndex">Index of first gate in sign writing message</param>
         /// <param name="finishGateIndex">Index of last gate in sign writing message</param>
@@ -140,16 +140,16 @@
         {
             List<Tile> tiles;
             BoundingBox boundingBox;
-            for (int zoom = 2; zoom <= Con.maxZoomLevel; zoom++) // zoom of 1 is map of the world!
+            for (int zoom = 2; zoom <= Constants.maxZoomLevel; zoom++) // zoom of 1 is map of the world!
             {
                 tiles = SetSignWritingOSMtiles(gates, zoom, startGateIndex, finishGateIndex);
-                boundingBox = OSM.GetBoundingBox(tiles, zoom);
-                if ((boundingBox.xAxis.Count > Con.tileFactor) || (boundingBox.yAxis.Count > Con.tileFactor))
+                boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+                if ((boundingBox.XAxis.Count > Constants.tileFactor) || (boundingBox.YAxis.Count > Constants.tileFactor))
                 {
                     return zoom - 1;
                 }
             }
-            return Con.maxZoomLevel;
+            return Constants.maxZoomLevel;
         }
 
         /// <summary>
@@ -164,7 +164,7 @@
             List<Tile> tiles = [];
             for (int gateIndex = startItemIndex; gateIndex <= finishItemIndex; gateIndex++)
             {
-                tiles.Add(OSM.GetOSMtile(gates[gateIndex].lon.ToString(), gates[gateIndex].lat.ToString(), zoom));
+                tiles.Add(MapTileCalculator.GetOSMtile(gates[gateIndex].lon.ToString(), gates[gateIndex].lat.ToString(), zoom));
             }
             return tiles;
         }
@@ -206,7 +206,7 @@
         /// <returns></returns>
         static internal double GetSignWritingDistance()
         {
-            return gates.Count / 2 * Parameters.SignSegmentLengthDeg * Con.degreeLatFeet / Con.feetInNM * 1.5;
+            return gates.Count / 2 * Parameters.SignSegmentLengthDeg * Constants.degreeLatFeet / Constants.feetInNM * 1.5;
         }
     }
 }

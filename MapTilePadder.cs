@@ -57,22 +57,22 @@ namespace P3D_Scenario_Generator
             try
             {
                 // Adjust bounding box by enlarging in all four directions by one tile.
-                boundingBox.yAxis.Insert(0, newTileNorth);
-                boundingBox.xAxis.Insert(0, newTileWest);
-                boundingBox.xAxis.Add(newTileEast);
-                boundingBox.yAxis.Add(newTileSouth);
+                boundingBox.YAxis.Insert(0, newTileNorth);
+                boundingBox.XAxis.Insert(0, newTileWest);
+                boundingBox.XAxis.Add(newTileEast);
+                boundingBox.YAxis.Add(newTileSouth);
 
                 // Download eight additional tiles and rename the existing tile image to be in the centre.
                 // The filename_X_Y.png convention is used for temporary tiles where (1,1) is the original tile.
-                if (!OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false; // 0,0 0,1 0,2
-                if (!OSM.DownloadOSMtile(newTileWest, boundingBox.yAxis[1], zoom, $"{filename}_0_1.png")) return false; // 1,0
+                if (!MapTileDownloader.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false; // 0,0 0,1 0,2
+                if (!MapTileDownloader.DownloadOSMtile(newTileWest, boundingBox.YAxis[1], zoom, $"{filename}_0_1.png")) return false; // 1,0
 
                 string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
                 string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1_1.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false; // 1,1
 
-                if (!OSM.DownloadOSMtile(newTileEast, boundingBox.yAxis[1], zoom, $"{filename}_2_1.png")) return false; // 1,2
-                if (!OSM.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename)) return false; // 2,0 2,1 2,2
+                if (!MapTileDownloader.DownloadOSMtile(newTileEast, boundingBox.YAxis[1], zoom, $"{filename}_2_1.png")) return false; // 1,2
+                if (!MapTileDownloader.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename)) return false; // 2,0 2,1 2,2
 
                 // Montage the entire expanded 3x3 grid into a single image.
                 if (!MapTileMontager.MontageTiles(boundingBox, zoom, filename)) return false;
@@ -89,7 +89,7 @@ namespace P3D_Scenario_Generator
                 using MagickImage image = new(finalImagePath);
                 // Define geometry: (width, height, x-offset, y-offset)
                 // We want a 2x2 tile area, starting at (0.5 * tile size, 0.5 * tile size) from top-left of the 3x3 image.
-                IMagickGeometry geometry = new MagickGeometry(Con.tileSize * 2, Con.tileSize * 2, (uint)(Con.tileSize / 2), (uint)(Con.tileSize / 2));
+                IMagickGeometry geometry = new MagickGeometry(Constants.tileSize * 2, Constants.tileSize * 2, (uint)(Constants.tileSize / 2), (uint)(Constants.tileSize / 2));
                 image.Crop(geometry);
                 image.ResetPage();
                 image.Write(finalImagePath);
@@ -126,24 +126,24 @@ namespace P3D_Scenario_Generator
         {
             BoundingBox zoomInBoundingBox = new();
             List<int> ewAxis = [];
-            ewAxis.Add(2 * boundingBox.xAxis[0] + 1); // Left-most column (x=0) corresponds to 2*x + 1
-            for (int xIndex = 1; xIndex < boundingBox.xAxis.Count - 1; xIndex++)
+            ewAxis.Add(2 * boundingBox.XAxis[0] + 1); // Left-most column (x=0) corresponds to 2*x + 1
+            for (int xIndex = 1; xIndex < boundingBox.XAxis.Count - 1; xIndex++)
             {
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
             }
-            ewAxis.Add(2 * boundingBox.xAxis[^1]); // Right-most column (x=2) corresponds to 2*x
-            zoomInBoundingBox.xAxis = ewAxis;
+            ewAxis.Add(2 * boundingBox.XAxis[^1]); // Right-most column (x=2) corresponds to 2*x
+            zoomInBoundingBox.XAxis = ewAxis;
 
             List<int> nsAxis = [];
-            nsAxis.Add(2 * boundingBox.yAxis[0] + 1); // Top-most row (y=0) corresponds to 2*y + 1
-            for (int yIndex = 1; yIndex < boundingBox.yAxis.Count - 1; yIndex++) 
+            nsAxis.Add(2 * boundingBox.YAxis[0] + 1); // Top-most row (y=0) corresponds to 2*y + 1
+            for (int yIndex = 1; yIndex < boundingBox.YAxis.Count - 1; yIndex++) 
             {
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
             }
-            nsAxis.Add(2 * boundingBox.yAxis[^1]); // Bottom-most row (y=2) corresponds to 2*y
-            zoomInBoundingBox.yAxis = nsAxis;
+            nsAxis.Add(2 * boundingBox.YAxis[^1]); // Bottom-most row (y=2) corresponds to 2*y
+            zoomInBoundingBox.YAxis = nsAxis;
             return zoomInBoundingBox;
         }
 
@@ -175,8 +175,8 @@ namespace P3D_Scenario_Generator
             try
             {
                 // Create new western column (index 0)
-                if (!OSM.DownloadOSMtileColumn(newTileWest, 0, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToColumn(boundingBox.yAxis.Count, 0, filename)) return false;
+                if (!MapTileDownloader.DownloadOSMtileColumn(newTileWest, 0, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, 0, filename)) return false;
                 if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
 
                 // Rename source column to be the centre column (index 1)
@@ -185,12 +185,12 @@ namespace P3D_Scenario_Generator
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
 
                 // Create new eastern column (index 2)
-                if (!OSM.DownloadOSMtileColumn(newTileEast, 2, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToColumn(boundingBox.yAxis.Count, 2, filename)) return false;
+                if (!MapTileDownloader.DownloadOSMtileColumn(newTileEast, 2, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, 2, filename)) return false;
                 if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
 
                 // Montage the three columns (West, Original, East) into one image (3w x 2h).
-                if (!MapTileMontager.MontageColumns(3, boundingBox.yAxis.Count, filename)) return false;
+                if (!MapTileMontager.MontageColumns(3, boundingBox.YAxis.Count, filename)) return false;
                 if (!FileOps.DeleteTempOSMfiles(filename)) return false;
 
                 // Crop the central 2w x 2h area from the newly montaged 3w x 2h image.
@@ -204,7 +204,7 @@ namespace P3D_Scenario_Generator
                 using MagickImage image = new(finalImagePath);
                 // Define geometry: (width, height, x-offset, y-offset)
                 // We want a 2x2 tile area, starting at (0.5 * tile size, 0) from top-left of the 3x2 image.
-                IMagickGeometry geometry = new MagickGeometry(Con.tileSize / 2, 0, (uint)Con.tileSize * 2, (uint)Con.tileSize * 2);
+                IMagickGeometry geometry = new MagickGeometry(Constants.tileSize / 2, 0, (uint)Constants.tileSize * 2, (uint)Constants.tileSize * 2);
                 image.Crop(geometry);
                 image.ResetPage();
                 image.Write(finalImagePath);
@@ -241,22 +241,22 @@ namespace P3D_Scenario_Generator
         {
             BoundingBox zoomInBoundingBox = new();
             List<int> ewAxis = [];
-            ewAxis.Add(2 * boundingBox.xAxis[0] - 1); 
-            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
+            ewAxis.Add(2 * boundingBox.XAxis[0] - 1); 
+            for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
             {
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
             }
-            ewAxis.Add(2 * boundingBox.xAxis[^1] + 2); 
-            zoomInBoundingBox.xAxis = ewAxis;
+            ewAxis.Add(2 * boundingBox.XAxis[^1] + 2); 
+            zoomInBoundingBox.XAxis = ewAxis;
 
             List<int> nsAxis = [];
-            for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++) 
+            for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++) 
             {
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
             }
-            zoomInBoundingBox.yAxis = nsAxis;
+            zoomInBoundingBox.YAxis = nsAxis;
             return zoomInBoundingBox;
         }
 
@@ -288,8 +288,8 @@ namespace P3D_Scenario_Generator
             try
             {
                 // Create new northern row (index 0)
-                if (!OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.xAxis.Count, 0, filename)) return false;
+                if (!MapTileDownloader.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 0, filename)) return false;
                 if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
 
                 // Rename source row to be the centre row (index 1)
@@ -298,12 +298,12 @@ namespace P3D_Scenario_Generator
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
 
                 // Create new southern row (index 2)
-                if (!OSM.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.xAxis.Count, 2, filename)) return false;
+                if (!MapTileDownloader.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 2, filename)) return false;
                 if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
 
                 // Montage the three rows (North, Original, South) into one image (2w x 3h).
-                if (!MapTileMontager.MontageRows(boundingBox.xAxis.Count, 3, filename)) return false;
+                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 3, filename)) return false;
                 if (!FileOps.DeleteTempOSMfiles(filename)) return false;
 
                 // Crop the central 2w x 2h area from the newly montaged 2w x 3h image.
@@ -317,7 +317,7 @@ namespace P3D_Scenario_Generator
                 using MagickImage image = new(finalImagePath);
                 // Define geometry: (width, height, x-offset, y-offset)
                 // We want a 2x2 tile area, starting at (0, 0.5 * tile size) from top-left of the 2x3 image.
-                IMagickGeometry geometry = new MagickGeometry(0, Con.tileSize / 2, (uint)Con.tileSize * 2, (uint)Con.tileSize * 2);
+                IMagickGeometry geometry = new MagickGeometry(0, Constants.tileSize / 2, (uint)Constants.tileSize * 2, (uint)Constants.tileSize * 2);
                 image.Crop(geometry);
                 image.ResetPage();
                 image.Write(finalImagePath);
@@ -354,22 +354,22 @@ namespace P3D_Scenario_Generator
         {
             BoundingBox zoomInBoundingBox = new();
             List<int> ewAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
             {
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
             }
-            zoomInBoundingBox.xAxis = ewAxis;
+            zoomInBoundingBox.XAxis = ewAxis;
 
             List<int> nsAxis = [];
-            nsAxis.Add(2 * boundingBox.yAxis[0] - 1); 
-            for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++) 
+            nsAxis.Add(2 * boundingBox.YAxis[0] - 1); 
+            for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++) 
             {
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
             }
-            nsAxis.Add(2 * boundingBox.yAxis[^1] + 2); 
-            zoomInBoundingBox.yAxis = nsAxis;
+            nsAxis.Add(2 * boundingBox.YAxis[^1] + 2); 
+            zoomInBoundingBox.YAxis = nsAxis;
             return zoomInBoundingBox;
         }
 
@@ -398,8 +398,8 @@ namespace P3D_Scenario_Generator
             try
             {
                 // Create new northern row (index 0)
-                if (!OSM.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.xAxis.Count, 0, filename)) return false;
+                if (!MapTileDownloader.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 0, filename)) return false;
                 if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
 
                 // Rename source row to be the bottom row (index 1)
@@ -408,7 +408,7 @@ namespace P3D_Scenario_Generator
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
 
                 // Montage the two rows (North, Original) into one image (2w x 2h).
-                if (!MapTileMontager.MontageRows(boundingBox.xAxis.Count, 2, filename)) return false;
+                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 2, filename)) return false;
                 if (!FileOps.DeleteTempOSMfiles(filename)) return false;
 
                 // Calculate the new bounding box coordinates for the zoomed-in view.
@@ -443,22 +443,22 @@ namespace P3D_Scenario_Generator
         {
             BoundingBox zoomInBoundingBox = new();
             List<int> ewAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
             {
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
             }
-            zoomInBoundingBox.xAxis = ewAxis;
+            zoomInBoundingBox.XAxis = ewAxis;
 
             List<int> nsAxis = [];
-            nsAxis.Add(2 * boundingBox.yAxis[0] - 2); // Specific adjustment for North padding zoom
-            nsAxis.Add(2 * boundingBox.yAxis[0] - 1); // Specific adjustment for North padding zoom
-            for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++) 
+            nsAxis.Add(2 * boundingBox.YAxis[0] - 2); // Specific adjustment for North padding zoom
+            nsAxis.Add(2 * boundingBox.YAxis[0] - 1); // Specific adjustment for North padding zoom
+            for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++) 
             {
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
             }
-            zoomInBoundingBox.yAxis = nsAxis;
+            zoomInBoundingBox.YAxis = nsAxis;
             return zoomInBoundingBox;
         }
 
@@ -492,12 +492,12 @@ namespace P3D_Scenario_Generator
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
 
                 // Create new southern row (index 1)
-                if (!OSM.DownloadOSMtileRow(newTileSouth, 1, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.xAxis.Count, 1, filename)) return false;
+                if (!MapTileDownloader.DownloadOSMtileRow(newTileSouth, 1, boundingBox, zoom, filename)) return false;
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 1, filename)) return false;
                 if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
 
                 // Montage the two rows (Original, South) into one image (2w x 2h).
-                if (!MapTileMontager.MontageRows(boundingBox.xAxis.Count, 2, filename)) return false;
+                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 2, filename)) return false;
                 if (!FileOps.DeleteTempOSMfiles(filename)) return false;
 
                 // Calculate the new bounding box coordinates for the zoomed-in view.
@@ -532,22 +532,22 @@ namespace P3D_Scenario_Generator
         {
             BoundingBox zoomInBoundingBox = new();
             List<int> ewAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
             {
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
             }
-            zoomInBoundingBox.xAxis = ewAxis;
+            zoomInBoundingBox.XAxis = ewAxis;
 
             List<int> nsAxis = [];
-            for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++) 
+            for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++) 
             {
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
             }
-            nsAxis.Add(2 * boundingBox.yAxis[^1] + 2); // Specific adjustment for South padding zoom
-            nsAxis.Add(2 * boundingBox.yAxis[^1] + 3); // Specific adjustment for South padding zoom
-            zoomInBoundingBox.yAxis = nsAxis;
+            nsAxis.Add(2 * boundingBox.YAxis[^1] + 2); // Specific adjustment for South padding zoom
+            nsAxis.Add(2 * boundingBox.YAxis[^1] + 3); // Specific adjustment for South padding zoom
+            zoomInBoundingBox.YAxis = nsAxis;
             return zoomInBoundingBox;
         }
 
@@ -563,20 +563,20 @@ namespace P3D_Scenario_Generator
         {
             BoundingBox zoomInBoundingBox = new();
             List<int> ewAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
             {
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.xAxis[xIndex] + 1);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
             }
-            zoomInBoundingBox.xAxis = ewAxis;
+            zoomInBoundingBox.XAxis = ewAxis;
 
             List<int> nsAxis = [];
-            for (int yIndex = 0; yIndex < boundingBox.yAxis.Count; yIndex++) 
+            for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++) 
             {
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.yAxis[yIndex] + 1);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
             }
-            zoomInBoundingBox.yAxis = nsAxis;
+            zoomInBoundingBox.YAxis = nsAxis;
             return zoomInBoundingBox;
         }
     }

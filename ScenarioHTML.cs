@@ -57,7 +57,7 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
                     overview.Difficulty = "Beginner";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    double duration = ((Parameters.FinalLeg + (Runway.startRwy.Len / Con.feetInNM) + Parameters.UpwindLeg) * 2 + (Parameters.BaseLeg * 2)) / Parameters.Speed * 60;
+                    double duration = ((Parameters.FinalLeg + (Runway.startRwy.Len / Constants.feetInNM) + Parameters.UpwindLeg) * 2 + (Parameters.BaseLeg * 2)) / Parameters.Speed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{Parameters.AircraftTitle}";
                     overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.AircraftTitle}";

@@ -30,12 +30,12 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Stores 3 days x 24 hours of Aries GHA degrees star data extracted from web based almanac
         /// </summary>
-        internal static int[,] ariesGHAd = new int[Con.NumberOfDaysToExtract, Con.HoursPerDay];
+        internal static int[,] ariesGHAd = new int[Constants.NumberOfDaysToExtract, Constants.HoursPerDay];
 
         /// <summary>
         /// Stores 3 days x 24 hours of Aries GHA minutes star data extracted from web based almanac
         /// </summary>
-        internal static double[,] ariesGHAm = new double[Con.NumberOfDaysToExtract, Con.HoursPerDay];
+        internal static double[,] ariesGHAm = new double[Constants.NumberOfDaysToExtract, Constants.HoursPerDay];
 
         /// <summary>
         /// The number of stars for which data extracted from web based almanac
@@ -253,14 +253,14 @@ namespace P3D_Scenario_Generator
                         if (!TryParseMinutes(spaces[StarGHAminutesIndex], "Aries GHA", out ariesGHAm[day, hour++]))
                             return false;
 
-                        if (hour == Con.HoursPerDay) { hour = 0; day++; }
+                        if (hour == Constants.HoursPerDay) { hour = 0; day++; }
                     }
                 }
-                if (hour == 0 && day == Con.NumberOfDaysToExtract)
+                if (hour == 0 && day == Constants.NumberOfDaysToExtract)
                     return true;
                 else
                 {
-                    Log.Error($"Unable to extract {Con.NumberOfDaysToExtract} days of {Con.HoursPerDay} hours Aries GHA degrees and minutes data from almanac data.");
+                    Log.Error($"Unable to extract {Constants.NumberOfDaysToExtract} days of {Constants.HoursPerDay} hours Aries GHA degrees and minutes data from almanac data.");
                     return false;
                 }
             }
@@ -289,26 +289,26 @@ namespace P3D_Scenario_Generator
             hourDataLines = almanacData.Split("\n");
 
             // Check Aries GHA data block header line present
-            if (!HeaderLinePresent(hourDataLines, Con.AriesKeyword, Con.VenusKeyword, Con.MarsKeyword, out int firstBlockHeaderIndex))
+            if (!HeaderLinePresent(hourDataLines, Constants.AriesKeyword, Constants.VenusKeyword, Constants.MarsKeyword, out int firstBlockHeaderIndex))
             {
                 return false;
             }
 
             // Check second non Aries GHA data block header line present
-            if (!HeaderLinePresent(hourDataLines, Con.SunKeyword, Con.MoonKeyword, Con.StarsKeyword, out int secondBlockHeaderIndex))
+            if (!HeaderLinePresent(hourDataLines, Constants.SunKeyword, Constants.MoonKeyword, Constants.StarsKeyword, out int secondBlockHeaderIndex))
             {
                 return false;
             }
 
             // Check there is atleast 72 rows of data in first block being 3 days x 24 hours per day
-            if (firstBlockHeaderIndex + (Con.NumberOfDaysToExtract * Con.HoursPerDay) < secondBlockHeaderIndex)
+            if (firstBlockHeaderIndex + (Constants.NumberOfDaysToExtract * Constants.HoursPerDay) < secondBlockHeaderIndex)
             {
                 hourDataLines = hourDataLines[firstBlockHeaderIndex..secondBlockHeaderIndex];
                 return true;
             }
             else
             {
-                Log.Error($"There is less than 72 ({Con.NumberOfDaysToExtract} days x {Con.HoursPerDay} hours) rows of data in the Aries GHA block " +
+                Log.Error($"There is less than 72 ({Constants.NumberOfDaysToExtract} days x {Constants.HoursPerDay} hours) rows of data in the Aries GHA block " +
                     "within the downloaded almanac data");
                 return false;
             }
@@ -395,7 +395,7 @@ namespace P3D_Scenario_Generator
                 Log.Error($"Failed to parse {degreesName} degrees in string: '{degreesStringIn}'");
                 return false;
             }
-            if (degreesIntOut < 0 || degreesIntOut > Con.MaxDegrees)
+            if (degreesIntOut < 0 || degreesIntOut > Constants.MaxDegrees)
             {
                 Log.Error($"{degreesName} degrees out of range in string: {degreesStringIn}");
                 return false;
@@ -418,7 +418,7 @@ namespace P3D_Scenario_Generator
                 Log.Error($"Failed to parse {minutesName} minutes in string: '{minutesStringIn}'");
                 return false;
             }
-            if (minutesDoubleOut < 0 || minutesDoubleOut > Con.MaxMinutes)
+            if (minutesDoubleOut < 0 || minutesDoubleOut > Constants.MaxMinutes)
             {
                 Log.Error($"{minutesName} minutes out of range in string: {minutesStringIn}");
                 return false;
@@ -885,7 +885,7 @@ namespace P3D_Scenario_Generator
         {
             double dFinishLat = 0;
             double dFinishLon = 0;
-            double distFeet = distance * 1.1 * Con.feetInNM;
+            double distFeet = distance * 1.1 * Constants.feetInNM;
             MathRoutines.AdjCoords(midairStartLat, midairStartLon, 0, distFeet, ref celestialImageNorth, ref dFinishLon);
             MathRoutines.AdjCoords(midairStartLat, midairStartLon, 90, distFeet, ref dFinishLat, ref celestialImageEast);
             MathRoutines.AdjCoords(midairStartLat, midairStartLon, 180, distFeet, ref celestialImageSouth, ref dFinishLon);

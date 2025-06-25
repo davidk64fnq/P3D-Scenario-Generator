@@ -13,17 +13,17 @@ namespace P3D_Scenario_Generator
         static internal BoundingBox MakeSquare(BoundingBox boundingBox, string filename, int zoom, int size)
         {
             // Get next tile East and West - allow for possibile wrap around meridian
-            int newTileEast = MapTileCalculator.IncXtileNo(boundingBox.xAxis[^1], zoom);
-            int newTileWest = MapTileCalculator.DecXtileNo(boundingBox.xAxis[0], zoom);
+            int newTileEast = MapTileCalculator.IncXtileNo(boundingBox.XAxis[^1], zoom);
+            int newTileWest = MapTileCalculator.DecXtileNo(boundingBox.XAxis[0], zoom);
             // Get next tile South and North - don't go below bottom or top edge of map, -1 means no tile added that direction
-            int newTileSouth = MapTileCalculator.IncYtileNo(boundingBox.yAxis[^1], zoom);
-            int newTileNorth = MapTileCalculator.DecYtileNo(boundingBox.yAxis[0]);
+            int newTileSouth = MapTileCalculator.IncYtileNo(boundingBox.YAxis[^1], zoom);
+            int newTileNorth = MapTileCalculator.DecYtileNo(boundingBox.YAxis[0]);
 
-            if (boundingBox.xAxis.Count < boundingBox.yAxis.Count) // Padding on the x axis
+            if (boundingBox.XAxis.Count < boundingBox.YAxis.Count) // Padding on the x axis
             {
                 //    return MapTilePadder.PadWestEast(boundingBox, newTileWest, newTileEast, filename, zoom);
             }
-            else if (boundingBox.yAxis.Count < boundingBox.xAxis.Count) // Padding on the y axis
+            else if (boundingBox.YAxis.Count < boundingBox.XAxis.Count) // Padding on the y axis
             {
                 if (newTileSouth < 0)
                 {
@@ -38,7 +38,7 @@ namespace P3D_Scenario_Generator
                     //    return MapTilePadder.PadNorthSouth(boundingBox, newTileNorth, newTileSouth, filename, zoom);
                 }
             }
-            else if (boundingBox.yAxis.Count < size) // Padding on both axis
+            else if (boundingBox.YAxis.Count < size) // Padding on both axis
             {
                 //    return MapTilePadder.PadNorthSouthWestEast(boundingBox, newTileNorth, newTileSouth, newTileWest, newTileEast, filename, zoom);
             }
@@ -76,8 +76,8 @@ namespace P3D_Scenario_Generator
 
                 for (int tileNo = 0; tileNo < tiles.Count; tileNo++)
                 {
-                    int centreX = (boundingBox.xAxis.IndexOf(tiles[tileNo].XIndex) * Con.tileSize) + tiles[tileNo].XOffset;
-                    int centreY = (boundingBox.yAxis.IndexOf(tiles[tileNo].YIndex) * Con.tileSize) + tiles[tileNo].YOffset;
+                    int centreX = (boundingBox.XAxis.IndexOf(tiles[tileNo].XIndex) * Constants.tileSize) + tiles[tileNo].XOffset;
+                    int centreY = (boundingBox.YAxis.IndexOf(tiles[tileNo].YIndex) * Constants.tileSize) + tiles[tileNo].YOffset;
 
                     if (tileNo > 0)
                     {

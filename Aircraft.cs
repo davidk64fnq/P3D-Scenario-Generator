@@ -122,7 +122,7 @@ namespace P3D_Scenario_Generator
                 // Check user has selected a file "thumbnail.jpg"
                 if (!Path.GetFileName(thumbnailPath).Equals("thumbnail.jpg", StringComparison.OrdinalIgnoreCase))
                 {
-                    MessageBox.Show("Please select a \"thumbnail.jpg\" file (case insensitive)", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Please select a \"thumbnail.jpg\" file (case insensitive)", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return "";
                 }
 
@@ -131,7 +131,7 @@ namespace P3D_Scenario_Generator
                 if (GetTextureValue(thumbnailPath) == "")
                 {
                     MessageBox.Show($"Not a valid variant, please select from a texture folder containing a \".\"",
-                        Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return "";
                 }
 
@@ -141,7 +141,7 @@ namespace P3D_Scenario_Generator
                 if (Directory.GetDirectories(aircraftFolderPath, "panel*").Length == 0)
                 {
                     MessageBox.Show($"This is an AI aircraft, there is no panel folder in {aircraftFolderPath}",
-                        Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return "";
                 }
 
@@ -167,7 +167,7 @@ namespace P3D_Scenario_Generator
             if (key == null)
             {
                 MessageBox.Show($"Problem encountered referencing key value {keyString}, " +
-                    "check selected Simulator Version on Settings tab", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    "check selected Simulator Version on Settings tab", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return key;
             }
             return key;
@@ -225,7 +225,7 @@ namespace P3D_Scenario_Generator
             else
             {
                 MessageBox.Show($"Unable to locate aircraft.cfg or sim.cfg for selected aircraft variant, " +
-                    "rename equivalent file and advise developer", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    "rename equivalent file and advise developer", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return "";
             }
         }

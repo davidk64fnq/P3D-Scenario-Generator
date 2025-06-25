@@ -12,7 +12,7 @@ namespace P3D_Scenario_Generator
         /// <param name="drawRoute">Whether to draw route on the image.</param>
         static internal bool CreateOverviewImage(IEnumerable<Coordinate> coordinates, bool drawRoute)
         {
-            int zoom = MapTileCalculator.GetOptimalZoomLevel(coordinates, Con.overviewImageTileFactor, Con.overviewImageTileFactor);
+            int zoom = MapTileCalculator.GetOptimalZoomLevel(coordinates, Constants.overviewImageTileFactor, Constants.overviewImageTileFactor);
 
             // Build list of OSM tiles at required zoom for all coordinates
             List<Tile> tiles = [];      
@@ -20,7 +20,7 @@ namespace P3D_Scenario_Generator
 
             // Build list of x axis and y axis tile numbers that make up montage of tiles to cover set of coordinates
             BoundingBox boundingBox;
-            boundingBox = OSM.GetBoundingBox(tiles, zoom);
+            boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
 
             // Create montage of tiles in images folder
             string imageName = "Charts_01";
@@ -58,7 +58,7 @@ namespace P3D_Scenario_Generator
 
             // Build list of x axis and y axis tile numbers that make up montage of tiles to cover set of coordinates
             BoundingBox boundingBox;
-            boundingBox = OSM.GetBoundingBox(tiles, locationImageZoomLevel);
+            boundingBox = MapTileCalculator.GetBoundingBox(tiles, locationImageZoomLevel);
 
             // Create montage of tiles in images folder
             string imageName = "chart_thumb";
@@ -75,7 +75,7 @@ namespace P3D_Scenario_Generator
                 if (MakeSquare(boundingBox, imageName, locationImageZoomLevel, out _))
                 {
                     // ONLY if MakeSquare succeeds, then attempt to resize.
-                    if (!ImageUtils.Resize($"{imageName}.png", Con.tileSize, Con.tileSize))
+                    if (!ImageUtils.Resize($"{imageName}.png", Constants.tileSize, Constants.tileSize))
                     {
                         Log.Error("Failed to resize image after successful MakeSquare. Aborting.");
                         return false; // Resize failed after MakeSquare succeeded
@@ -113,21 +113,21 @@ namespace P3D_Scenario_Generator
             try
             {
                 // Get next tile East and West - allow for possible wrap around meridian
-                int newTileEast = MapTileCalculator.IncXtileNo(boundingBox.xAxis[^1], zoom);
-                int newTileWest = MapTileCalculator.DecXtileNo(boundingBox.xAxis[0], zoom);
+                int newTileEast = MapTileCalculator.IncXtileNo(boundingBox.XAxis[^1], zoom);
+                int newTileWest = MapTileCalculator.DecXtileNo(boundingBox.XAxis[0], zoom);
 
                 // Get next tile South and North - don't go below bottom or top edge of map.
                 // -1 means no tile can be added in that direction (pole reached).
-                int newTileSouth = MapTileCalculator.IncYtileNo(boundingBox.yAxis[^1], zoom);
-                int newTileNorth = MapTileCalculator.DecYtileNo(boundingBox.yAxis[0]);
+                int newTileSouth = MapTileCalculator.IncYtileNo(boundingBox.YAxis[^1], zoom);
+                int newTileNorth = MapTileCalculator.DecYtileNo(boundingBox.YAxis[0]);
 
                 // Determine padding strategy based on current bounding box dimensions
-                if (boundingBox.xAxis.Count < boundingBox.yAxis.Count) // Current image is taller than it is wide, pad horizontally
+                if (boundingBox.XAxis.Count < boundingBox.YAxis.Count) // Current image is taller than it is wide, pad horizontally
                 {
                     Log.Info($"MakeSquare: Padding West/East for {filename}.");
                     return MapTilePadder.PadWestEast(boundingBox, newTileWest, newTileEast, filename, zoom, out newBoundingBox);
                 }
-                else if (boundingBox.yAxis.Count < boundingBox.xAxis.Count) // Current image is wider than it is tall, pad vertically
+                else if (boundingBox.YAxis.Count < boundingBox.XAxis.Count) // Current image is wider than it is tall, pad vertically
                 {
                     Log.Info($"MakeSquare: Padding North/South for {filename}.");
                     if (newTileSouth < 0) // At or near South Pole, can only pad North
@@ -146,7 +146,7 @@ namespace P3D_Scenario_Generator
                         return MapTilePadder.PadNorthSouth(boundingBox, newTileNorth, newTileSouth, filename, zoom, out newBoundingBox);
                     }
                 }
-                else if (boundingBox.yAxis.Count < Con.tileFactor) // Image is square but smaller than target size of 2 x 2
+                else if (boundingBox.YAxis.Count < Constants.tileFactor) // Image is square but smaller than target size of 2 x 2
                 {
                     Log.Info($"MakeSquare: Image is square but smaller than target size of 2 x 2, attempting NorthSouthWestEast padding for {filename}.");
                     return MapTilePadder.PadNorthSouthWestEast(boundingBox, newTileNorth, newTileSouth, newTileWest, newTileEast, filename, zoom, out newBoundingBox);

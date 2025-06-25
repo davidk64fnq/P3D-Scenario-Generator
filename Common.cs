@@ -17,7 +17,7 @@ namespace P3D_Scenario_Generator
             BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = GetBoundingBoxZoom(tiles, 2, 2);
             SetOSMtiles(tiles, zoom);
-            boundingBox = OSM.GetBoundingBox(tiles, zoom);
+            boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
             MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01"); 
             if (Parameters.SelectedScenario != nameof(ScenarioTypes.Celestial))
             {
@@ -41,8 +41,8 @@ namespace P3D_Scenario_Generator
             {
                 tiles.Clear();
                 SetOSMtiles(tiles, zoom);
-                boundingBox = OSM.GetBoundingBox(tiles, zoom);
-                if ((boundingBox.xAxis.Count > tilesWidth) || (boundingBox.yAxis.Count > tilesHeight))
+                boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+                if ((boundingBox.XAxis.Count > tilesWidth) || (boundingBox.YAxis.Count > tilesHeight))
                 {
                     return zoom - 1;
                 }
@@ -65,8 +65,8 @@ namespace P3D_Scenario_Generator
             {
                 tiles.Clear();
                 SetOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
-                boundingBox = OSM.GetBoundingBox(tiles, zoom);
-                if ((boundingBox.xAxis.Count > tilesWidth) || (boundingBox.yAxis.Count > tilesHeight))
+                boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+                if ((boundingBox.XAxis.Count > tilesWidth) || (boundingBox.YAxis.Count > tilesHeight))
                 {
                     return zoom - 1;
                 }
@@ -129,13 +129,13 @@ namespace P3D_Scenario_Generator
             BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = 15;
             SetOSMtiles(tiles, zoom, 0, 0);
-            boundingBox = OSM.GetBoundingBox(tiles, zoom);
+            boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
             MapTileMontager.MontageTiles(boundingBox, zoom, "chart_thumb");
-            if (boundingBox.xAxis.Count != boundingBox.yAxis.Count)
+            if (boundingBox.XAxis.Count != boundingBox.YAxis.Count)
             {
                 ImageUtils.MakeSquare(boundingBox, "chart_thumb", zoom, 2);
             }
-            if (boundingBox.xAxis.Count == 2)
+            if (boundingBox.XAxis.Count == 2)
             {
                 ImageUtils.Resize("chart_thumb.png", 256, 0);
             }
@@ -167,13 +167,13 @@ namespace P3D_Scenario_Generator
 
             int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex);
             SetOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
-            boundingBox = OSM.GetBoundingBox(tiles, zoom);
+            boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
             int legNo = startItemIndex + 1;
 
             // zoom 1 image
             MapTileMontager.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1");
             ImageUtils.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
-            zoomInBoundingBox = ImageUtils.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Con.tileFactor);
+            zoomInBoundingBox = ImageUtils.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Constants.tileFactor);
             ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg");
 
             // zoom 2, 3 (and 4) images, zoom 1 is base level for map window size of 512 pixels, zoom 2 is base level for map window of 1024 pixels
@@ -205,12 +205,12 @@ namespace P3D_Scenario_Generator
             Coordinate c;
 
             // Get the lat/lon coordinates of top left corner of bounding box
-            c = OSM.TileNoToLatLon(boundingBox.xAxis[0], boundingBox.yAxis[0], zoom);
+            c = MapTileCalculator.TileNoToLatLon(boundingBox.XAxis[0], boundingBox.YAxis[0], zoom);
             legEdges.north = c.Latitude;
             legEdges.west = c.Longitude;
 
             // Get the lat/lon coordinates of top left corner of tile immediately below and right of bottom right corner of bounding box
-            c = OSM.TileNoToLatLon(boundingBox.xAxis[^1] + 1, boundingBox.yAxis[^1] + 1, zoom);
+            c = MapTileCalculator.TileNoToLatLon(boundingBox.XAxis[^1] + 1, boundingBox.YAxis[^1] + 1, zoom);
             legEdges.south = c.Latitude;
             legEdges.east = c.Longitude;
 

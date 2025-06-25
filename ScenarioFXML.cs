@@ -36,7 +36,7 @@ namespace P3D_Scenario_Generator
 			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Title");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.GeneralScenarioTitle}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Description");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Con.appTitle} - {Parameters.SelectedScenario}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Constants.appTitle} - {Parameters.SelectedScenario}";
 
 			// DateTimeSeason section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "DateTimeSeason");

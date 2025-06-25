@@ -49,7 +49,7 @@ namespace P3D_Scenario_Generator
         internal static double CalcTurnRadius()
         {
             // Calculate number of feet travelled by plane in an hour based on cruise speed
-            double speedInFeetPerHour = Parameters.Speed * Con.feetInNM;
+            double speedInFeetPerHour = Parameters.Speed * Constants.feetInNM;
 
             // Calculate number of feet travelled by plane to complete a circle in number of minutes given by TurnRate
             double turnCircumference = speedInFeetPerHour * (Parameters.TurnRate / 60);
@@ -71,7 +71,7 @@ namespace P3D_Scenario_Generator
             // Firstly work out climb rate angle from gate 1 to 3. Approx given by solving
             // tan(angle) = opposite(height change) / adjacent (over ground distance)
             double heightChange = Parameters.HeightDown - Parameters.HeightUpwind;
-            double overGroundDistance = turnRadius + Parameters.BaseLeg * Con.feetInNM; 
+            double overGroundDistance = turnRadius + Parameters.BaseLeg * Constants.feetInNM; 
             double gate1to3AngleRad = Math.Atan(heightChange / overGroundDistance);
 
             // Using climb rate angle calculated above and given adjacent (over ground distance) is turn radius we can calculate
@@ -92,7 +92,7 @@ namespace P3D_Scenario_Generator
             // Firstly work out descent rate angle from gate 6 to 8. Approx given by solving
             // tan(angle) = opposite(height change) / adjacent (over ground distance)
             double heightChange = Parameters.HeightDown - Parameters.HeightBase;
-            double overGroundDistance = turnRadius + Parameters.BaseLeg * Con.feetInNM;
+            double overGroundDistance = turnRadius + Parameters.BaseLeg * Constants.feetInNM;
             double gate6to8AngleRad = Math.Atan(heightChange / overGroundDistance);
 
             // Using descent rate angle calculated above and given adjacent (over ground distance) is turn radius we can calculate
@@ -117,26 +117,26 @@ namespace P3D_Scenario_Generator
             double turnDistance = turnRadius * Math.Sqrt(2.0);
             // Start theshold to gate 1
             legParams.Add(new LegParams(baseHeading % 360, 
-                Runway.startRwy.Len + (Parameters.UpwindLeg * Con.feetInNM), Runway.startRwy.Altitude + Parameters.HeightUpwind));
+                Runway.startRwy.Len + (Parameters.UpwindLeg * Constants.feetInNM), Runway.startRwy.Altitude + Parameters.HeightUpwind));
             // Gate 1 to gate 2
             legParams.Add(new LegParams((baseHeading - 45) % 360,
                 turnDistance, Runway.startRwy.Altitude + Parameters.HeightUpwind + gate1to2heightDif));
             // Gate 2 to gate 3
             legParams.Add(new LegParams((baseHeading - 90) % 360, 
-                Parameters.BaseLeg * Con.feetInNM, Runway.startRwy.Altitude + Parameters.HeightDown));
+                Parameters.BaseLeg * Constants.feetInNM, Runway.startRwy.Altitude + Parameters.HeightDown));
             // Gate 3 to gate 4
             legParams.Add(new LegParams((baseHeading - 135) % 360,
                 turnDistance, Runway.startRwy.Altitude + Parameters.HeightDown));
             // Gate 4 to gate 5
             legParams.Add(new LegParams((baseHeading - 180) % 360, 
-                (Parameters.FinalLeg * Con.feetInNM) + Runway.startRwy.Len + (Parameters.UpwindLeg * Con.feetInNM), 
+                (Parameters.FinalLeg * Constants.feetInNM) + Runway.startRwy.Len + (Parameters.UpwindLeg * Constants.feetInNM), 
                 Runway.startRwy.Altitude + Parameters.HeightDown));
             // Gate 5 to gate 6
             legParams.Add(new LegParams((baseHeading - 225) % 360,
                 turnDistance, Runway.startRwy.Altitude + Parameters.HeightDown));
             // Gate 6 to gate 7
             legParams.Add(new LegParams((baseHeading - 270) % 360, 
-                Parameters.BaseLeg * Con.feetInNM, Runway.startRwy.Altitude + Parameters.HeightBase + gate7to8heightDif));
+                Parameters.BaseLeg * Constants.feetInNM, Runway.startRwy.Altitude + Parameters.HeightBase + gate7to8heightDif));
             // Gate 7 to gate 8
             legParams.Add(new LegParams((baseHeading - 315) % 360,
                 turnDistance, Runway.startRwy.Altitude + Parameters.HeightBase));
@@ -369,7 +369,7 @@ namespace P3D_Scenario_Generator
             {
                 // do altitude change first before adjusting latitude, tilt is on longitude axis, latitudes reduced as segment
                 // length is constant but when tilted is shorter over ground
-                gates[index].amsl += Math.Abs(gates[index].lat) * Math.Sin(Parameters.SignTiltAngle * Math.PI / 180) * Con.degreeLatFeet;
+                gates[index].amsl += Math.Abs(gates[index].lat) * Math.Sin(Parameters.SignTiltAngle * Math.PI / 180) * Constants.degreeLatFeet;
                 gates[index].lat = gates[index].lat * Math.Cos(Parameters.SignTiltAngle * Math.PI / 180);
             }
         }

@@ -92,7 +92,7 @@ namespace P3D_Scenario_Generator
         static internal void PopulateWikiPage(string wikiURL, int columnNo)
         {
             string message = $"Reading {wikiURL} and column {columnNo}, will advise when complete";
-            MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
             WikiPage = [];
             HtmlAgilityPack.HtmlDocument htmlDoc = HttpRoutines.GetWebDoc(wikiURL);
             HtmlNodeCollection tables = null;
@@ -121,7 +121,7 @@ namespace P3D_Scenario_Generator
                 }
             }
             message = $"Finished reading {wikiURL} and column {columnNo}.";
-            MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         /// <summary>
@@ -467,7 +467,7 @@ namespace P3D_Scenario_Generator
             tiles.Clear();
             for (int itemNo = startItemIndex; itemNo <= finishItemIndex; itemNo++)
             {
-                tiles.Add(OSM.GetOSMtile(WikiTour[itemNo].longitude, WikiTour[itemNo].latitude, zoom));
+                tiles.Add(MapTileCalculator.GetOSMtile(WikiTour[itemNo].longitude, WikiTour[itemNo].latitude, zoom));
             }
         }
 

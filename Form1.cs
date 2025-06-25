@@ -48,9 +48,9 @@ namespace P3D_Scenario_Generator
 
         private void ComboBoxGeneralScenarioType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if ((ComboBoxGeneralScenarioType.SelectedItem.ToString() == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
-                || (ComboBoxGeneralScenarioType.SelectedItem.ToString() == Con.scenarioNames[(int)ScenarioTypes.Celestial])
-                || (ComboBoxGeneralScenarioType.SelectedItem.ToString() == Con.scenarioNames[(int)ScenarioTypes.WikiList]))
+            if ((ComboBoxGeneralScenarioType.SelectedItem.ToString() == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour])
+                || (ComboBoxGeneralScenarioType.SelectedItem.ToString() == Constants.scenarioNames[(int)ScenarioTypes.Celestial])
+                || (ComboBoxGeneralScenarioType.SelectedItem.ToString() == Constants.scenarioNames[(int)ScenarioTypes.WikiList]))
             {
                 ComboBoxGeneralRunwaySelected.Enabled = false;
                 TextBoxGeneralSearchRunway.Enabled = false;
@@ -85,32 +85,32 @@ namespace P3D_Scenario_Generator
         {
             Cursor.Current = Cursors.WaitCursor;
             string message = $"Creating scenario files in \"{Parameters.SettingsScenarioFolder}\" - will confirm when complete";
-            MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void DoScenarioSpecificTasks()
         {
-            if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.Circuit])
+            if (ComboBoxGeneralScenarioType.Text == Constants.scenarioNames[(int)ScenarioTypes.Circuit])
             {
                 Circuit.SetCircuit();
                 SaveUserSettings(TabPageCircuit.Controls);
             }
-            else if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.PhotoTour])
+            else if (ComboBoxGeneralScenarioType.Text == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour])
             {
                 PhotoTour.SetPhotoTour();
                 SaveUserSettings(TabPagePhotoTour.Controls);
             }
-            else if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.SignWriting])
+            else if (ComboBoxGeneralScenarioType.Text == Constants.scenarioNames[(int)ScenarioTypes.SignWriting])
             {
                 SignWriting.SetSignWriting();
                 SaveUserSettings(TabPageSign.Controls);
             }
-            else if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.Celestial])
+            else if (ComboBoxGeneralScenarioType.Text == Constants.scenarioNames[(int)ScenarioTypes.Celestial])
             {
                 if (CelestialNav.SetCelestial())
                     SaveUserSettings(TabPageWikiList.Controls);
             }
-            else if (ComboBoxGeneralScenarioType.Text == Con.scenarioNames[(int)ScenarioTypes.WikiList])
+            else if (ComboBoxGeneralScenarioType.Text == Constants.scenarioNames[(int)ScenarioTypes.WikiList])
             {
                 Wikipedia.SetWikiTour(ComboBoxWikiTableNames.SelectedIndex, ComboBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem,
                     ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text);
@@ -128,7 +128,7 @@ namespace P3D_Scenario_Generator
         {
             Cursor.Current = Cursors.Default;
             string message = $"Scenario files created in \"{Parameters.SettingsScenarioFolder}\" - enjoy your flight!";
-            MessageBox.Show(message, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         #endregion
@@ -420,7 +420,7 @@ namespace P3D_Scenario_Generator
         {
             if (ComboBoxGeneralAircraftSelection.Items.Count == 0)
             {
-                MessageBox.Show($"Select an aircraft to calculate default values", Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Select an aircraft to calculate default values", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
             {
@@ -488,7 +488,7 @@ namespace P3D_Scenario_Generator
         {
             if (ComboBoxWikiURL.SelectedItem.ToString() != "")
             {
-                Parameters.SelectedScenario = Con.scenarioNames[(int)ScenarioTypes.WikiList];
+                Parameters.SelectedScenario = Constants.scenarioNames[(int)ScenarioTypes.WikiList];
                 Wikipedia.PopulateWikiPage(ComboBoxWikiURL.SelectedItem.ToString(), int.Parse(TextBoxWikiItemLinkColumn.Text));
                 ComboBoxWikiTableNames.DataSource = Wikipedia.CreateWikiTablesDesc();
             }
@@ -718,7 +718,7 @@ namespace P3D_Scenario_Generator
                     string sceneryCfgMissingMessage = $"The scenery.cfg file is not in folder \"{sceneryCFGdirectory}\"." +
                         " The program uses scenery.cfg last modified date to check whether user created runways.xml is up-to-date." +
                         " You may need to update the simulator version number in settings.";
-                    MessageBox.Show(sceneryCfgMissingMessage, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(sceneryCfgMissingMessage, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -728,7 +728,7 @@ namespace P3D_Scenario_Generator
                     string runwaysXmlOutOfDateMessage = $"The scenery.cfg file has been modified more recently than the user created runways.xml file." +
                         " Consider rebuilding the runways.xml file to include recently added airports." +
                         " The program will now refresh the last modified date on runways.xml to prevent repeated warnings";
-                    MessageBox.Show(runwaysXmlOutOfDateMessage, Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(runwaysXmlOutOfDateMessage, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     DateTime currentTime = DateTime.Now;
                     File.SetLastWriteTime(xmlFilePath, currentTime);
                 }
@@ -736,17 +736,17 @@ namespace P3D_Scenario_Generator
             catch (UnauthorizedAccessException ex)
             {
                 MessageBox.Show($"Error: Access to a file is denied. Please check permissions. Details: {ex.Message}",
-                                Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (IOException ex)
             {
                 MessageBox.Show($"An I/O error occurred while checking file dates. Details: {ex.Message}",
-                                Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"An unexpected error occurred: {ex.Message}",
-                                Con.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

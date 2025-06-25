@@ -34,7 +34,7 @@ namespace P3D_Scenario_Generator
                 // TileGeometry defines the layout of the montage (1 column by yCount rows).
                 var settings = new MontageSettings
                 {
-                    Geometry = new MagickGeometry($"{Con.tileSize}x{Con.tileSize}"),
+                    Geometry = new MagickGeometry($"{Constants.tileSize}x{Constants.tileSize}"),
                     TileGeometry = new MagickGeometry($"1x{yCount}"),
                 };
 
@@ -117,7 +117,7 @@ namespace P3D_Scenario_Generator
                 // TileGeometry defines the layout of the montage (xCount columns by 1 row).
                 var settings = new MontageSettings
                 {
-                    Geometry = new MagickGeometry($"{Con.tileSize}x{Con.tileSize}"),
+                    Geometry = new MagickGeometry($"{Constants.tileSize}x{Constants.tileSize}"),
                     TileGeometry = new MagickGeometry($"{xCount}x1"),
                 };
 
@@ -200,7 +200,7 @@ namespace P3D_Scenario_Generator
                 // TileGeometry defines the layout of the montage (xCount columns by 1 row).
                 var settings = new MontageSettings
                 {
-                    Geometry = new MagickGeometry($"{Con.tileSize}x{Con.tileSize * yCount}"),
+                    Geometry = new MagickGeometry($"{Constants.tileSize}x{Constants.tileSize * yCount}"),
                     TileGeometry = new MagickGeometry($"{xCount}x1"),
                 };
 
@@ -283,7 +283,7 @@ namespace P3D_Scenario_Generator
                 // TileGeometry defines the layout of the montage (1 column by yCount rows).
                 var settings = new MontageSettings
                 {
-                    Geometry = new MagickGeometry($"{Con.tileSize * xCount}x{Con.tileSize}"),
+                    Geometry = new MagickGeometry($"{Constants.tileSize * xCount}x{Constants.tileSize}"),
                     TileGeometry = new MagickGeometry($"1x{yCount}"),
                 };
 
@@ -362,11 +362,11 @@ namespace P3D_Scenario_Generator
         {
             // Step 1: Download individual tiles column by column and montage them into vertical strips.
             // This loop processes each column (xIndex) within the specified bounding box.
-            for (int xIndex = 0; xIndex < boundingBox.xAxis.Count; xIndex++)
+            for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
             {
                 // Download all individual tiles for the current column.
                 // If the download of any tile in the column fails, the entire process fails.
-                if (!OSM.DownloadOSMtileColumn(boundingBox.xAxis[xIndex], xIndex, boundingBox, zoom, $"{filename}"))
+                if (!MapTileDownloader.DownloadOSMtileColumn(boundingBox.XAxis[xIndex], xIndex, boundingBox, zoom, $"{filename}"))
                 {
                     Log.Error($"MontageTiles: Failed to download OSM tile column for xIndex {xIndex}.");
                     return false; // Propagate failure from column download.
@@ -374,7 +374,7 @@ namespace P3D_Scenario_Generator
 
                 // Montage the individual tiles (downloaded in the previous step) into a single vertical column image.
                 // If the montage of any column fails, the entire process fails.
-                if (!MontageTilesToColumn(boundingBox.yAxis.Count, xIndex, filename))
+                if (!MontageTilesToColumn(boundingBox.YAxis.Count, xIndex, filename))
                 {
                     Log.Error($"MontageTiles: Failed to montage tiles to column for xIndex {xIndex}.");
                     return false; // Propagate failure from column montage.
@@ -383,7 +383,7 @@ namespace P3D_Scenario_Generator
 
             // Step 2: Montage the generated column strips horizontally to form the final complete image.
             // This combines all the vertical strips into one large map image.
-            if (!MontageColumns(boundingBox.xAxis.Count, boundingBox.yAxis.Count, filename))
+            if (!MontageColumns(boundingBox.XAxis.Count, boundingBox.YAxis.Count, filename))
             {
                 Log.Error($"MontageTiles: Failed to montage columns into final image.");
                 return false; // Propagate failure from final montage.

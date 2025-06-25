@@ -53,7 +53,7 @@
             tiles.Clear();
             for (int gateIndex = startItemIndex; gateIndex <= finishItemIndex; gateIndex++)
             {
-                tiles.Add(OSM.GetOSMtile(gates[gateIndex].lon.ToString(), gates[gateIndex].lat.ToString(), zoom));
+                tiles.Add(MapTileCalculator.GetOSMtile(gates[gateIndex].lon.ToString(), gates[gateIndex].lat.ToString(), zoom));
             }
         }
 

@@ -13,7 +13,7 @@ namespace P3D_Scenario_Generator
     };
 
     /// <summary>
-    /// List of scenario types in same order as <see cref="Con.scenarioNames"/>
+    /// List of scenario types in same order as <see cref="Constants.scenarioNames"/>
     /// </summary>
     public enum ScenarioTypes
     {
@@ -28,7 +28,7 @@ namespace P3D_Scenario_Generator
     /// <summary>
     /// Program constants
     /// </summary>
-    public class Con
+    public class Constants
     {
         #region Display related constants
 
