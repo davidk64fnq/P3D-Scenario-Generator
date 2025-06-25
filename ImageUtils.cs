@@ -76,8 +76,8 @@ namespace P3D_Scenario_Generator
 
                 for (int tileNo = 0; tileNo < tiles.Count; tileNo++)
                 {
-                    int centreX = (boundingBox.xAxis.IndexOf(tiles[tileNo].xIndex) * Con.tileSize) + tiles[tileNo].xOffset;
-                    int centreY = (boundingBox.yAxis.IndexOf(tiles[tileNo].yIndex) * Con.tileSize) + tiles[tileNo].yOffset;
+                    int centreX = (boundingBox.xAxis.IndexOf(tiles[tileNo].XIndex) * Con.tileSize) + tiles[tileNo].XOffset;
+                    int centreY = (boundingBox.yAxis.IndexOf(tiles[tileNo].YIndex) * Con.tileSize) + tiles[tileNo].YOffset;
 
                     if (tileNo > 0)
                     {

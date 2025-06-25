@@ -20,27 +20,19 @@ namespace P3D_Scenario_Generator
     /// First value is horizontal index xIndex, second value is vertical index yIndex. xOffset and yOffset are
     /// for the coordinate of interest within the tile.
     /// </summary>
-    public class Tile
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="Tile"/> class.
+    /// </remarks>
+    /// <param name="xIndex">The horizontal index (X-coordinate) of the OSM tile.</param>
+    /// <param name="yIndex">The vertical index (Y-coordinate) of the OSM tile.</param>
+    /// <param name="xOffset">The X-offset of the coordinate within the tile (in pixels).</param>
+    /// <param name="yOffset">The Y-offset of the coordinate within the tile (in pixels).</param>
+    public class Tile(int xIndex, int yIndex, int xOffset, int yOffset)
     {
-        public int xIndex;
-        public int yIndex;
-        public int xOffset;
-        public int yOffset;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Tile"/> class.
-        /// </summary>
-        /// <param name="xIndex">The horizontal index (X-coordinate) of the OSM tile.</param>
-        /// <param name="yIndex">The vertical index (Y-coordinate) of the OSM tile.</param>
-        /// <param name="xOffset">The X-offset of the coordinate within the tile (in pixels).</param>
-        /// <param name="yOffset">The Y-offset of the coordinate within the tile (in pixels).</param>
-        public Tile(int xIndex, int yIndex, int xOffset, int yOffset)
-        {
-            this.xIndex = xIndex;
-            this.yIndex = yIndex;
-            this.xOffset = xOffset;
-            this.yOffset = yOffset;
-        }
+        public int XIndex = xIndex;
+        public int YIndex = yIndex;
+        public int XOffset = xOffset;
+        public int YOffset = yOffset;
     }
 
     /// <summary>
@@ -71,9 +63,9 @@ namespace P3D_Scenario_Generator
         {
             // Initialise boundingBox to the first tile
             BoundingBox boundingBox = new();
-            List<int> xAxis = [tiles[0].xIndex];
+            List<int> xAxis = [tiles[0].XIndex];
             boundingBox.xAxis = xAxis;
-            List<int> yAxis = [tiles[0].yIndex];
+            List<int> yAxis = [tiles[0].YIndex];
             boundingBox.yAxis = yAxis;
 
             // Adjust boundingBox as needed to include remaining tiles
@@ -99,27 +91,27 @@ namespace P3D_Scenario_Generator
         static internal void ExtendBoundingBox(Tile newTile, BoundingBox boundingBox, int zoom)
         {
             // New tile is above BB i.e. tileNo < boundingBox[yAxis][0]
-            if (newTile.yIndex < boundingBox.yAxis[0])
+            if (newTile.YIndex < boundingBox.yAxis[0])
             {
                 ExtendBoundingBoxNorth(newTile, boundingBox);
             }
 
             // New tile is below BB i.e. tileNo > boundingBox[yAxis][^1]
-            if (newTile.yIndex > boundingBox.yAxis[^1])
+            if (newTile.YIndex > boundingBox.yAxis[^1])
             {
                 ExtendBoundingBoxSouth(newTile, boundingBox);
             }
 
             // New tile is right of BB i.e. tileNo > boundingBox[xAxis][^1], determine whether to move righthand
             // side of bounding box further to the right (usual case) or lefthand side further to the left (across meridian)
-            if (newTile.xIndex > boundingBox.xAxis[^1])
+            if (newTile.XIndex > boundingBox.xAxis[^1])
             {
                 ExtendBoundingBoxEast(newTile, boundingBox, zoom);
             }
 
             // New tile is left of BB i.e. tileNo < boundingBox[xAxis][0], determine whether to move lefthand
             // side of bounding box further to the left (usual case) or righthand side further to the right (across meridian)
-            if (newTile.xIndex < boundingBox.xAxis[0])
+            if (newTile.XIndex < boundingBox.xAxis[0])
             {
                 ExtendBoundingBoxWest(newTile, boundingBox, zoom);
             }
@@ -133,7 +125,7 @@ namespace P3D_Scenario_Generator
         static internal void ExtendBoundingBoxNorth(Tile newTile, BoundingBox boundingBox)
         {
             // Insert extra tile No's at beginning of yAxis list
-            for (int tileNo = boundingBox.yAxis[0] - 1; tileNo >= newTile.yIndex; tileNo--)
+            for (int tileNo = boundingBox.yAxis[0] - 1; tileNo >= newTile.YIndex; tileNo--)
             {
                 boundingBox.yAxis.Insert(0, tileNo);
             }
@@ -147,7 +139,7 @@ namespace P3D_Scenario_Generator
         static internal void ExtendBoundingBoxSouth(Tile newTile, BoundingBox boundingBox)
         {
             // Append extra tileNo's at end of yAxis list
-            for (int tileNo = boundingBox.yAxis[^1] + 1; tileNo <= newTile.yIndex; tileNo++)
+            for (int tileNo = boundingBox.yAxis[^1] + 1; tileNo <= newTile.YIndex; tileNo++)
             {
                 boundingBox.yAxis.Add(tileNo);
             }
@@ -164,12 +156,12 @@ namespace P3D_Scenario_Generator
         {
             int distEast, distWest;
 
-            distEast = newTile.xIndex - boundingBox.xAxis[^1];
-            distWest = boundingBox.xAxis[0] + Convert.ToInt32(Math.Pow(2, zoom)) - newTile.xIndex;
+            distEast = newTile.XIndex - boundingBox.xAxis[^1];
+            distWest = boundingBox.xAxis[0] + Convert.ToInt32(Math.Pow(2, zoom)) - newTile.XIndex;
             if (distEast <= distWest)
             {
                 // Append extra tileNo's at end of xAxis list
-                for (int tileNo = boundingBox.xAxis[^1] + 1; tileNo <= newTile.xIndex; tileNo++)
+                for (int tileNo = boundingBox.xAxis[^1] + 1; tileNo <= newTile.XIndex; tileNo++)
                 {
                     boundingBox.xAxis.Add(tileNo);
                 }
@@ -181,7 +173,7 @@ namespace P3D_Scenario_Generator
                 {
                     boundingBox.xAxis.Insert(0, tileNo);
                 }
-                for (int tileNo = Convert.ToInt32(Math.Pow(2, zoom)) - 1; tileNo >= newTile.xIndex; tileNo--)
+                for (int tileNo = Convert.ToInt32(Math.Pow(2, zoom)) - 1; tileNo >= newTile.XIndex; tileNo--)
                 {
                     boundingBox.xAxis.Insert(0, tileNo);
                 }
@@ -199,12 +191,12 @@ namespace P3D_Scenario_Generator
         {
             int distEast, distWest;
 
-            distWest = boundingBox.xAxis[0] - newTile.xIndex;
-            distEast = Convert.ToInt32(Math.Pow(2, zoom)) - boundingBox.xAxis[0] + newTile.xIndex;
+            distWest = boundingBox.xAxis[0] - newTile.XIndex;
+            distEast = Convert.ToInt32(Math.Pow(2, zoom)) - boundingBox.xAxis[0] + newTile.XIndex;
             if (distWest <= distEast)
             {
                 // Insert extra tileNo's at front of xAxis list
-                for (int tileNo = boundingBox.xAxis[0] - 1; tileNo >= newTile.xIndex; tileNo--)
+                for (int tileNo = boundingBox.xAxis[0] - 1; tileNo >= newTile.XIndex; tileNo--)
                 {
                     boundingBox.xAxis.Insert(0, tileNo);
                 }
@@ -216,7 +208,7 @@ namespace P3D_Scenario_Generator
                 {
                     boundingBox.xAxis.Add(tileNo);
                 }
-                for (int tileNo = 0; tileNo <= newTile.xIndex; tileNo++)
+                for (int tileNo = 0; tileNo <= newTile.XIndex; tileNo++)
                 {
                     boundingBox.xAxis.Add(tileNo);
                 }
@@ -239,25 +231,25 @@ namespace P3D_Scenario_Generator
             for (int tileNo = 0; tileNo < tiles.Count; tileNo++)
             {
                 // Check North edge of bounding box
-                if (tiles[tileNo].yIndex == boundingBox.yAxis[0])
+                if (tiles[tileNo].YIndex == boundingBox.yAxis[0])
                 {
                     CheckBBedgesNorth(tiles, boundingBox, tileNo);
                 }
 
                 // Check East edge of bounding box
-                if (tiles[tileNo].xIndex == boundingBox.xAxis[^1])
+                if (tiles[tileNo].XIndex == boundingBox.xAxis[^1])
                 {
                     CheckBBedgesEast(tiles, boundingBox, zoom, tileNo);
                 }
 
                 // Check South edge of bounding box
-                if (tiles[tileNo].yIndex == boundingBox.yAxis[^1])
+                if (tiles[tileNo].YIndex == boundingBox.yAxis[^1])
                 {
                     CheckBBedgesSouth(tiles, boundingBox, zoom, tileNo);
                 }
 
                 // Check West edge of bounding box
-                if (tiles[tileNo].xIndex == boundingBox.xAxis[0])
+                if (tiles[tileNo].XIndex == boundingBox.xAxis[0])
                 {
                     CheckBBedgesWest(tiles, boundingBox, zoom, tileNo);
                 }
@@ -273,9 +265,9 @@ namespace P3D_Scenario_Generator
         /// <param name="zoom">The zoom level required for the bounding box</param>
         static internal void CheckBBedgesNorth(List<Tile> tiles, BoundingBox boundingBox, int tileNo)
         {
-            if ((tiles[tileNo].yOffset < Con.boundingBoxTrimMargin) && (tiles[tileNo].yIndex > 0))
+            if ((tiles[tileNo].YOffset < Con.boundingBoxTrimMargin) && (tiles[tileNo].YIndex > 0))
             {
-                boundingBox.yAxis.Insert(0, tiles[tileNo].yIndex - 1); // Only extend as far as yTile = 0
+                boundingBox.yAxis.Insert(0, tiles[tileNo].YIndex - 1); // Only extend as far as yTile = 0
             }
         }
 
@@ -291,9 +283,9 @@ namespace P3D_Scenario_Generator
         {
             int newTileNo;
 
-            if (tiles[tileNo].xOffset > Con.tileSize - Con.boundingBoxTrimMargin)
+            if (tiles[tileNo].XOffset > Con.tileSize - Con.boundingBoxTrimMargin)
             {
-                newTileNo = MapTileCalculator.IncXtileNo(tiles[tileNo].xIndex, zoom);
+                newTileNo = MapTileCalculator.IncXtileNo(tiles[tileNo].XIndex, zoom);
                 if (newTileNo != boundingBox.xAxis[0])
                 {
                     boundingBox.xAxis.Add(newTileNo); // Only extend if not already using all tiles available in x axis
@@ -310,9 +302,9 @@ namespace P3D_Scenario_Generator
         /// <param name="zoom">The zoom level required for the bounding box</param>
         static internal void CheckBBedgesSouth(List<Tile> tiles, BoundingBox boundingBox, int zoom, int tileNo)
         {
-            if ((tiles[tileNo].yOffset > Con.tileSize - Con.boundingBoxTrimMargin) && (tiles[tileNo].yIndex < Convert.ToInt32(Math.Pow(2, zoom)) - 1))
+            if ((tiles[tileNo].YOffset > Con.tileSize - Con.boundingBoxTrimMargin) && (tiles[tileNo].YIndex < Convert.ToInt32(Math.Pow(2, zoom)) - 1))
             {
-                boundingBox.yAxis.Add(tiles[tileNo].yIndex + 1); // Only extend as far as xTile = Math.Pow(2, zoom) - 1
+                boundingBox.yAxis.Add(tiles[tileNo].YIndex + 1); // Only extend as far as xTile = Math.Pow(2, zoom) - 1
             }
         }
 
@@ -328,9 +320,9 @@ namespace P3D_Scenario_Generator
         {
             int newTileNo;
 
-            if (tiles[tileNo].xOffset < Con.boundingBoxTrimMargin)
+            if (tiles[tileNo].XOffset < Con.boundingBoxTrimMargin)
             {
-                newTileNo = MapTileCalculator.DecXtileNo(tiles[tileNo].xIndex, zoom);
+                newTileNo = MapTileCalculator.DecXtileNo(tiles[tileNo].XIndex, zoom);
                 if (newTileNo != boundingBox.xAxis[^1])
                 {
                     boundingBox.xAxis.Insert(0, newTileNo); // Only extend if not already using all tiles available in x axis
@@ -508,8 +500,8 @@ namespace P3D_Scenario_Generator
         internal static void LonToTileX(double dLon, int z, Tile tile)
         {
             double doubleTileX = (dLon + 180.0) / 360.0 * (1 << z);
-            tile.xIndex = Convert.ToInt32(Math.Floor(doubleTileX));
-            tile.xOffset = Convert.ToInt32(256 * (doubleTileX - tile.xIndex));
+            tile.XIndex = Convert.ToInt32(Math.Floor(doubleTileX));
+            tile.XOffset = Convert.ToInt32(256 * (doubleTileX - tile.XIndex));
         }
 
         /// <summary>
@@ -524,8 +516,8 @@ namespace P3D_Scenario_Generator
         {
             var latRad = dLat / 180 * Math.PI;
             double doubleTileY = (1 - Math.Log(Math.Tan(latRad) + 1 / Math.Cos(latRad)) / Math.PI) / 2 * (1 << z);
-            tile.yIndex = Convert.ToInt32(Math.Floor(doubleTileY));
-            tile.yOffset = Convert.ToInt32(256 * (doubleTileY - tile.yIndex));
+            tile.YIndex = Convert.ToInt32(Math.Floor(doubleTileY));
+            tile.YOffset = Convert.ToInt32(256 * (doubleTileY - tile.YIndex));
         }
 
         /// <summary>
