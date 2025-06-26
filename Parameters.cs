@@ -470,14 +470,12 @@ namespace P3D_Scenario_Generator
             // Settings
             SettingsScenarioFolder = $"{Form.form.ComboBoxSettingsScenarioFolder.Text}\\{Form.form.TextBoxGeneralScenarioTitle.Text}";
             ImageFolder = $"{SettingsScenarioFolder}\\images";
-            SettingsCacheServerURL = Form.form.ComboBoxSettingsCacheServers.Text.Split(',')[0].Trim();
-            if (Form.form.ComboBoxSettingsCacheServers.Text.Split(',').Length > 1)
-                SettingsCacheServerAPIkey = Form.form.ComboBoxSettingsCacheServers.Text.Split(',')[1].Trim();
             SettingsCacheUsage = Form.form.TextBoxSettingsCacheUsage.Text;
             SettingsCacheDailyTotal = Convert.ToInt32(Form.form.TextBoxSettingsCacheDailyTotal.Text);
             SettingsSimulatorVersion = Form.form.ComboBoxSettingsSimulatorVersion.GetItemText(Form.form.ComboBoxSettingsSimulatorVersion.SelectedItem);
-            SettingsP3DprogramData = Form.form.TextBoxSettingsP3DprogramData.Text; 
-            if (!ValidateMapTileServerKey())
+            SettingsP3DprogramData = Form.form.TextBoxSettingsP3DprogramData.Text;
+            SettingsCacheServerAPIkey = Form.form.TextBoxSettingsOSMServerAPIkey.Text;
+            if (!HttpRoutines.ValidateMapTileServerKey())
             {
                 return false;
             }
@@ -536,24 +534,6 @@ namespace P3D_Scenario_Generator
         {
             return !string.IsNullOrEmpty(fileName) &&
               fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
-        }
-
-        internal static bool ValidateMapTileServerKey()
-        {
-            string url = $"{Parameters.SettingsCacheServerURL}/0/0/0.png{Parameters.SettingsCacheServerAPIkey}";
-            HtmlAgilityPack.HtmlDocument htmlDoc = null;
-            try
-            {
-                HtmlWeb web = new();
-                htmlDoc = web.Load(url);
-            }
-            catch
-            {
-                string errorMessage = $"The MapTile Cache Info Server and API key specified on Settings tab are not valid";
-                MessageBox.Show(errorMessage, "Web document download", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return false;
-            }
-            return true;
         }
     }
 }

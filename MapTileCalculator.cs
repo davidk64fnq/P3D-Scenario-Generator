@@ -73,7 +73,7 @@ namespace P3D_Scenario_Generator
         /// <param name="sLat">The latitude value as a string.</param>
         /// <param name="zoom">The zoom level.</param>
         /// <returns>A Tile object if conversion is successful, otherwise null.</returns>
-        public static Tile GetOSMtile(string sLon, string sLat, int zoom) // Made public and nullable Tile
+        public static Tile GetOSMtile(string sLon, string sLat, int zoom) 
         {
             // Tile is now a class, so it can be null.
             // Initialize with default values, which will then be set by LonToTileX and LatToTileY.

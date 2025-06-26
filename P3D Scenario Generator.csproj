@@ -43,8 +43,10 @@
     <None Remove="Resources\Help\images\scenarioLoadScreen.jpg" />
     <None Remove="Resources\Help\index.htm" />
     <None Remove="Resources\Help\introduction.htm" />
+    <None Remove="Resources\Help\locationFilter.htm" />
     <None Remove="Resources\Help\photoTour.htm" />
     <None Remove="Resources\Help\runway.htm" />
+    <None Remove="Resources\Help\scenario.htm" />
     <None Remove="Resources\Help\style.css" />
     <None Remove="Resources\HTML\CelestialSextant.html" />
     <None Remove="Resources\HTML\MissionBriefSource.htm" />
@@ -146,6 +148,12 @@
     <EmbeddedResource Include="Resources\Help\introduction.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\locationFilter.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\folderInfo.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\photoTour.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -153,6 +161,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\dateTime.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\mapTileCacheInfo.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\scenario.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\style.css">

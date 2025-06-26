@@ -1,4 +1,6 @@
 ﻿
+using static System.Net.WebRequestMethods;
+
 namespace P3D_Scenario_Generator
 {
     /// <summary>
@@ -100,6 +102,11 @@ namespace P3D_Scenario_Generator
         /// use passed zoom value.
         /// </summary>
         public const int autoCalculateZoom = -1;
+
+        /// <summary>
+        /// All OSM tiles used in this program are 256x256 pixels
+        /// </summary>
+        public static readonly string OSMtileServerURLprefix = "https://maptiles.p.rapidapi.com/en/map/v1";
 
         #endregion
 

@@ -82,7 +82,6 @@ namespace P3D_Scenario_Generator
             label43 = new Label();
             groupBox3 = new GroupBox();
             TableLayoutPanelSettingsMapTileCacheInfo = new TableLayoutPanel();
-            ComboBoxSettingsCacheServers = new ComboBox();
             label39 = new Label();
             ComboBoxSettingsScenarioFolder = new ComboBox();
             label17 = new Label();
@@ -233,6 +232,7 @@ namespace P3D_Scenario_Generator
             GeneralTimePicker = new DateTimePicker();
             TabControlP3DSG = new TabControl();
             TabPageWikiList = new TabPage();
+            TextBoxSettingsOSMServerAPIkey = new TextBox();
             groupBox1.SuspendLayout();
             tableLayoutPanelPhotoTourPhotoWindowLocation.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -920,7 +920,7 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelSettingsMapTileCacheInfo.ColumnCount = 2;
             TableLayoutPanelSettingsMapTileCacheInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             TableLayoutPanelSettingsMapTileCacheInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(ComboBoxSettingsCacheServers, 1, 0);
+            TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(TextBoxSettingsOSMServerAPIkey, 1, 0);
             TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(label43, 0, 1);
             TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(label42, 0, 2);
             TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(label41, 0, 0);
@@ -937,21 +937,6 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             TableLayoutPanelSettingsMapTileCacheInfo.Size = new Size(253, 92);
             TableLayoutPanelSettingsMapTileCacheInfo.TabIndex = 36;
-            // 
-            // ComboBoxSettingsCacheServers
-            // 
-            ComboBoxSettingsCacheServers.AccessibleName = "Map Tile Cache Info: Server / API Key";
-            ComboBoxSettingsCacheServers.Anchor = AnchorStyles.None;
-            ComboBoxSettingsCacheServers.DropDownWidth = 640;
-            ComboBoxSettingsCacheServers.FormattingEnabled = true;
-            ComboBoxSettingsCacheServers.Location = new Point(139, 3);
-            ComboBoxSettingsCacheServers.Name = "ComboBoxSettingsCacheServers";
-            ComboBoxSettingsCacheServers.Size = new Size(100, 23);
-            ComboBoxSettingsCacheServers.TabIndex = 41;
-            ComboBoxSettingsCacheServers.Tag = "";
-            toolTip1.SetToolTip(ComboBoxSettingsCacheServers, "OSM tile server and API key if required, comma separated.");
-            ComboBoxSettingsCacheServers.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
-            ComboBoxSettingsCacheServers.KeyDown += ComboBox_KeyDown;
             // 
             // label39
             // 
@@ -2995,6 +2980,18 @@ namespace P3D_Scenario_Generator
             TabPageWikiList.TabIndex = 7;
             TabPageWikiList.Text = "Wikipedia List";
             // 
+            // TextBoxSettingsOSMServerAPIkey
+            // 
+            TextBoxSettingsOSMServerAPIkey.AccessibleName = "Map Tile Cache Info: Server / API key";
+            TextBoxSettingsOSMServerAPIkey.Anchor = AnchorStyles.None;
+            TextBoxSettingsOSMServerAPIkey.Location = new Point(139, 3);
+            TextBoxSettingsOSMServerAPIkey.Name = "TextBoxSettingsOSMServerAPIkey";
+            TextBoxSettingsOSMServerAPIkey.Size = new Size(100, 23);
+            TextBoxSettingsOSMServerAPIkey.TabIndex = 40;
+            TextBoxSettingsOSMServerAPIkey.Tag = "";
+            TextBoxSettingsOSMServerAPIkey.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxSettingsOSMServerAPIkey, "Paste in your OSM Server API key. See help topic \"Settings / Map Tile Cache Info / Server API key\" for instructions on how to register with Rapid to obtain your free API key for use with this program.");
+            // 
             // Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -3155,7 +3152,6 @@ namespace P3D_Scenario_Generator
         private Label label42;
         internal TextBox TextBoxSettingsCacheDailyTotal;
         private Label label43;
-        internal ComboBox ComboBoxSettingsCacheServers;
         private GroupBox groupBox4;
         private TableLayoutPanel tableLayoutPanel1;
         internal ComboBox ComboBoxSettingsScenarioFolder;
@@ -3275,6 +3271,7 @@ namespace P3D_Scenario_Generator
         private Button ButtonRandomLocation;
         internal TextBox TextBoxSettingsP3DprogramData;
         private Label label62;
+        internal TextBox TextBoxSettingsOSMServerAPIkey;
     }
 }
 

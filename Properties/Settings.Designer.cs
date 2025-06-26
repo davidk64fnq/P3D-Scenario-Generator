@@ -145,17 +145,6 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection ComboBoxSettingsCacheServers {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxSettingsCacheServers"]));
-            }
-            set {
-                this["ComboBoxSettingsCacheServers"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public string TextBoxSettingsCacheUsage {
             get {
@@ -174,18 +163,6 @@ namespace P3D_Scenario_Generator.Properties {
             }
             set {
                 this["ComboBoxSettingsScenarioFolder"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int ComboBoxSettingsCacheServersSelectedIndex {
-            get {
-                return ((int)(this["ComboBoxSettingsCacheServersSelectedIndex"]));
-            }
-            set {
-                this["ComboBoxSettingsCacheServersSelectedIndex"] = value;
             }
         }
         
@@ -976,6 +953,18 @@ namespace P3D_Scenario_Generator.Properties {
             }
             set {
                 this["TextBoxSettingsP3DprogramData"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxSettingsOSMServerAPIkey {
+            get {
+                return ((string)(this["TextBoxSettingsOSMServerAPIkey"]));
+            }
+            set {
+                this["TextBoxSettingsOSMServerAPIkey"] = value;
             }
         }
     }

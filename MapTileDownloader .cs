@@ -18,7 +18,7 @@
         static internal bool DownloadOSMtile(int xTileNo, int yTileNo, int zoom, string filename)
         {
             // Construct the full URL for the OSM tile based on configured server URL, tile coordinates, zoom, and API key.
-            string url = $"{Parameters.SettingsCacheServerURL}/{zoom}/{xTileNo}/{yTileNo}.png{Parameters.SettingsCacheServerAPIkey}";
+            string url = $"{Constants.OSMtileServerURLprefix}/{zoom}/{xTileNo}/{yTileNo}.png?rapidapi-key={Parameters.SettingsCacheServerAPIkey}";
 
             // Delegate the actual retrieval (from cache or download) and saving to the Cache class.
             // The key is constructed using zoom, xTileNo, and yTileNo for cache lookup.
