@@ -17,7 +17,7 @@ namespace P3D_Scenario_Generator
             BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = GetBoundingBoxZoom(tiles, 2, 2);
             SetOSMtiles(tiles, zoom);
-            boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+            boundingBox = MapTileBoundingBoxCalculator.GetBoundingBox(tiles, zoom);
             MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01"); 
             if (Parameters.SelectedScenario != nameof(ScenarioTypes.Celestial))
             {
@@ -41,7 +41,7 @@ namespace P3D_Scenario_Generator
             {
                 tiles.Clear();
                 SetOSMtiles(tiles, zoom);
-                boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+                boundingBox = MapTileBoundingBoxCalculator.GetBoundingBox(tiles, zoom);
                 if ((boundingBox.XAxis.Count > tilesWidth) || (boundingBox.YAxis.Count > tilesHeight))
                 {
                     return zoom - 1;
@@ -65,7 +65,7 @@ namespace P3D_Scenario_Generator
             {
                 tiles.Clear();
                 SetOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
-                boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+                boundingBox = MapTileBoundingBoxCalculator.GetBoundingBox(tiles, zoom);
                 if ((boundingBox.XAxis.Count > tilesWidth) || (boundingBox.YAxis.Count > tilesHeight))
                 {
                     return zoom - 1;
@@ -129,7 +129,7 @@ namespace P3D_Scenario_Generator
             BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = 15;
             SetOSMtiles(tiles, zoom, 0, 0);
-            boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+            boundingBox = MapTileBoundingBoxCalculator.GetBoundingBox(tiles, zoom);
             MapTileMontager.MontageTiles(boundingBox, zoom, "chart_thumb");
             if (boundingBox.XAxis.Count != boundingBox.YAxis.Count)
             {
@@ -167,7 +167,7 @@ namespace P3D_Scenario_Generator
 
             int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex);
             SetOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
-            boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+            boundingBox = MapTileBoundingBoxCalculator.GetBoundingBox(tiles, zoom);
             int legNo = startItemIndex + 1;
 
             // zoom 1 image

@@ -104,7 +104,7 @@
         {
             int zoom = GetBoundingBoxZoom(gates, 0, gates.Count - 1);
             List<Tile> tiles = SetSignWritingOSMtiles(gates, zoom, 0, gates.Count - 1);
-            BoundingBox boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+            BoundingBox boundingBox = MapTileBoundingBoxCalculator.GetBoundingBox(tiles, zoom);
             MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01");
             ImageUtils.DrawRoute(tiles, boundingBox, "Charts_01");
             ImageUtils.MakeSquare(boundingBox, "Charts_01", zoom, Constants.tileFactor);
@@ -117,7 +117,7 @@
         {
             int zoom = 15;
             List<Tile> tiles = SetSignWritingOSMtiles(gates, zoom, 0, 0);
-            BoundingBox boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+            BoundingBox boundingBox = MapTileBoundingBoxCalculator.GetBoundingBox(tiles, zoom);
             MapTileMontager.MontageTiles(boundingBox, zoom, "chart_thumb");
             if (boundingBox.XAxis.Count != boundingBox.YAxis.Count)
             {
@@ -143,7 +143,7 @@
             for (int zoom = 2; zoom <= Constants.maxZoomLevel; zoom++) // zoom of 1 is map of the world!
             {
                 tiles = SetSignWritingOSMtiles(gates, zoom, startGateIndex, finishGateIndex);
-                boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+                boundingBox = MapTileBoundingBoxCalculator.GetBoundingBox(tiles, zoom);
                 if ((boundingBox.XAxis.Count > Constants.tileFactor) || (boundingBox.YAxis.Count > Constants.tileFactor))
                 {
                     return zoom - 1;

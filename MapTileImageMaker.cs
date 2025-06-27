@@ -20,7 +20,7 @@ namespace P3D_Scenario_Generator
 
             // Build list of x axis and y axis tile numbers that make up montage of tiles to cover set of coordinates
             BoundingBox boundingBox;
-            boundingBox = MapTileCalculator.GetBoundingBox(tiles, zoom);
+            boundingBox = MapTileBoundingBoxCalculator.GetBoundingBox(tiles, zoom);
 
             // Create montage of tiles in images folder
             string imageName = "Charts_01";
@@ -58,7 +58,7 @@ namespace P3D_Scenario_Generator
 
             // Build list of x axis and y axis tile numbers that make up montage of tiles to cover set of coordinates
             BoundingBox boundingBox;
-            boundingBox = MapTileCalculator.GetBoundingBox(tiles, locationImageZoomLevel);
+            boundingBox = MapTileBoundingBoxCalculator.GetBoundingBox(tiles, locationImageZoomLevel);
 
             // Create montage of tiles in images folder
             string imageName = "chart_thumb";
