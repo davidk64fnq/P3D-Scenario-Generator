@@ -2,6 +2,12 @@
 
 namespace P3D_Scenario_Generator
 {
+    /// <summary>
+    /// Provides functionality for generating various OpenStreetMap (OSM) based map images,
+    /// including overview maps and location-specific thumbnails, by orchestrating
+    /// tile retrieval, montage creation, and image manipulation. It manages the
+    /// workflow from geographic coordinates to final image files.
+    /// </summary>
     internal class MapTileImageMaker
     {
         /// <summary>
@@ -67,8 +73,6 @@ namespace P3D_Scenario_Generator
 
             // Extend montage of tiles to make the image square (if it isn't already)
             BoundingBox newBoundingBoxAfterSquare; // New out parameter for MakeSquare
-            // Assuming 'MakeSquare' is a method within MapTileImageMaker or an accessible utility class.
-            // If MakeSquare also takes 'out BoundingBox newBoundingBoxAfterSquare', ensure it's defined.
             if (!MakeSquare(boundingBox, imageName, zoom, out newBoundingBoxAfterSquare))
             {
                 Log.Error($"MapTileImageMaker.CreateOverviewImage: Failed to make image '{imageName}' square.");
@@ -98,10 +102,10 @@ namespace P3D_Scenario_Generator
             int locationImageZoomLevel = 15;
             MapTileCalculator.SetOSMTilesForCoordinates(tiles, locationImageZoomLevel, coordinates);
 
-            // Ensure tiles were successfully retrieved before proceeding
-            if (tiles == null || tiles.Count == 0)
+            // Ensure tiles were successfully retrieved and the list is not empty before proceeding
+            if (!tiles.Any()) // Using .Any() for clarity and consistency
             {
-                Log.Error($"MapTileImageMaker.CreateLocationImage: No OSM tiles found for the given coordinates at zoom {locationImageZoomLevel}.");
+                Log.Error($"MapTileImageMaker.CreateLocationImage: No unique OSM tiles were found for the given coordinates at zoom {locationImageZoomLevel}. This may indicate an issue with coordinate data or tile calculation.");
                 return false;
             }
 
@@ -123,13 +127,13 @@ namespace P3D_Scenario_Generator
 
             // If image is 1 x 2 or 2 x 1 then extend montage of tiles to make the image 2 x 2 and then resize to 1 x 1
             // This situation arises where coordinate is too close to tile edge on 1 x 1.
-            if (tiles.Count > 1)
+            if (boundingBox.XAxis.Count != 1 || boundingBox.YAxis.Count != 1)
             {
                 BoundingBox newBoundingBoxAfterSquare; // New out parameter for MakeSquare
                 // Attempt to make the image square.
                 if (MakeSquare(boundingBox, imageName, locationImageZoomLevel, out newBoundingBoxAfterSquare)) // Update call to MakeSquare
                 {
-                    // ONLY if MakeSquare succeeds, then attempt to resize.
+                    // ONLY if MakeSquare succeeds, then attempt to resize to the final 1x1 target size.
                     if (!ImageUtils.Resize($"{imageName}.png", Constants.tileSize, Constants.tileSize))
                     {
                         Log.Error($"MapTileImageMaker.CreateLocationImage: Failed to resize image '{imageName}.png' after successful MakeSquare. Aborting.");
@@ -143,6 +147,7 @@ namespace P3D_Scenario_Generator
                     return false;
                 }
             }
+            // If boundingBox.XAxis.Count == boundingBox.YAxis.Count == 1, it means it's already a 1x1 tile, so no squaring or resizing is needed for the 1x1 location image.
 
             return true;
         }
@@ -236,13 +241,13 @@ namespace P3D_Scenario_Generator
                         return false;
                     }
                 }
-                else // Already square and at desired size, or larger. Only need to "zoom in" conceptually.
+                else // Already square and at desired size. Call ZoomIn to get bounding box for next zoom level.
                 {
-                    Log.Info($"MakeSquare: Image is already 2 x 2 square. Performing conceptual ZoomIn for {filename}.");
+                    Log.Info($"MakeSquare: Image is already 2 x 2 square. Calling ZoomIn to get bounding box for next zoom level for {filename}.");
                     // Assuming MapTilePadder.ZoomIn now returns bool and takes out BoundingBox
                     if (!MapTilePadder.ZoomIn(boundingBox, out newBoundingBox))
                     {
-                        Log.Error($"MakeSquare: Failed to perform conceptual ZoomIn for '{filename}'.");
+                        Log.Error($"MakeSquare: Failed to perform ZoomIn for '{filename}'.");
                         return false;
                     }
                 }
