@@ -42,7 +42,9 @@ namespace P3D_Scenario_Generator
             {
                 //    return MapTilePadder.PadNorthSouthWestEast(boundingBox, newTileNorth, newTileSouth, newTileWest, newTileEast, filename, zoom);
             }
-            return MapTilePadder.ZoomIn(boundingBox);
+            BoundingBox zoomInBB;
+            MapTilePadder.ZoomIn(boundingBox, out zoomInBB);
+            return zoomInBB;
         }
 
         /// <summary>

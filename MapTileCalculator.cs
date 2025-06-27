@@ -1,11 +1,11 @@
 ﻿using CoordinateSharp;
-using System.Collections.Generic;
 
 namespace P3D_Scenario_Generator
 {
     /// <summary>
     /// Provides methods for calculating OpenStreetMap (OSM) tile information
-    /// and bounding boxes based on geographic coordinates.
+    /// and optimal zoom levels based on geographic coordinates.
+    /// This class now focuses on core tile conversions and orchestration.
     /// </summary>
     public static class MapTileCalculator
     {
@@ -21,13 +21,27 @@ namespace P3D_Scenario_Generator
         {
             List<Tile> tempTiles = [];
 
+            // Input validation for coordinates
+            if (coordinates == null || !coordinates.Any())
+            {
+                Log.Error("GetOptimalZoomLevel: Input coordinates list is null or empty.");
+                return 0; // Return a default invalid zoom level or throw, based on application design
+            }
+
             for (int zoom = 2; zoom <= Constants.maxZoomLevel; zoom++)
             {
                 tempTiles.Clear();
                 SetOSMTilesForCoordinates(tempTiles, zoom, coordinates);
 
-                // Create a BoundingBox instance and populate its Lists from unique tile indices
-                BoundingBox boundingBox = MapTileBoundingBoxCalculator.GetBoundingBox(tempTiles, zoom);
+                BoundingBox boundingBox;
+                // Now calling the refactored BoundingBoxCalculator.GetBoundingBox
+                if (!BoundingBoxCalculator.GetBoundingBox(tempTiles, zoom, out boundingBox))
+                {
+                    // If GetBoundingBox fails, log it and return the previous valid zoom or an error indicator.
+                    // The error details are logged within BoundingBoxCalculator.GetBoundingBox.
+                    Log.Error($"GetOptimalZoomLevel: Failed to calculate bounding box for zoom level {zoom}. Returning previous zoom level {zoom - 1}.");
+                    return zoom - 1;
+                }
 
                 // The Count property works fine for List<T>
                 if ((boundingBox.XAxis.Count > tilesWidth) || (boundingBox.YAxis.Count > tilesHeight))
@@ -46,18 +60,22 @@ namespace P3D_Scenario_Generator
         /// <param name="coordinates">A collection of geographic coordinates for which the covering tiles are determined.</param>
         public static void SetOSMTilesForCoordinates(List<Tile> tiles, int zoom, IEnumerable<Coordinate> coordinates)
         {
-            // Using a HashSet for efficient tracking of unique tiles during population.
-            // Because Tile is now a class, I've added custom Equals/GetHashCode to Tile.cs
-            // for HashSet to work correctly based on value (XIndex, YIndex) not reference.
             HashSet<Tile> uniqueTiles = [];
 
             foreach (var coord in coordinates)
             {
                 Tile tile = GetTileInfo(coord.Longitude.DecimalDegree, coord.Latitude.DecimalDegree, zoom);
-                uniqueTiles.Add(tile);
+                if (tile != null)
+                {
+                    uniqueTiles.Add(tile);
+                }
+                else
+                {
+                    // This is a warning because one bad coordinate shouldn't necessarily halt the whole process.
+                    Log.Warning($"SetOSMTilesForCoordinates: Could not get tile info for coordinate Lon: {coord.Longitude.DecimalDegree}, Lat: {coord.Latitude.DecimalDegree} at zoom {zoom}. Skipping this coordinate.");
+                }
             }
 
-            // After populating the HashSet, clear the provided list and add all unique tiles to it.
             tiles.Clear();
             tiles.AddRange(uniqueTiles);
         }
@@ -70,10 +88,8 @@ namespace P3D_Scenario_Generator
         /// <param name="sLat">The latitude value as a string.</param>
         /// <param name="zoom">The zoom level.</param>
         /// <returns>A Tile object if conversion is successful, otherwise null.</returns>
-        public static Tile GetOSMtile(string sLon, string sLat, int zoom) 
+        public static Tile GetOSMtile(string sLon, string sLat, int zoom)
         {
-            // Tile is now a class, so it can be null.
-            // Initialize with default values, which will then be set by LonToTileX and LatToTileY.
             Tile tile = new();
 
             if (LonToDecimalDegree(sLon, out double dLon) && LatToDecimalDegree(sLat, out double dLat))
@@ -82,7 +98,8 @@ namespace P3D_Scenario_Generator
                 LatToTileY(dLat, zoom, tile);
                 return tile;
             }
-            return null; // Return null if conversion fails.
+            Log.Warning($"GetOSMtile: Failed to convert string coordinates (Lon: '{sLon}', Lat: '{sLat}') to decimal degrees.");
+            return null;
         }
 
         /// <summary>
@@ -95,7 +112,6 @@ namespace P3D_Scenario_Generator
         /// <returns>A Tile object containing the XIndex, YIndex, XOffset, and YOffset.</returns>
         public static Tile GetTileInfo(double dLon, double dLat, int zoom)
         {
-            // Create a new Tile instance and populate it
             Tile tile = new();
             LonToTileX(dLon, zoom, tile);
             LatToTileY(dLat, zoom, tile);
@@ -116,6 +132,7 @@ namespace P3D_Scenario_Generator
                 return true;
             }
             dLon = 0;
+            // No Log.Warning here as TryParse implicitly handles many parsing issues.
             return false;
         }
 
@@ -133,6 +150,7 @@ namespace P3D_Scenario_Generator
                 return true;
             }
             dLat = 0;
+            // No Log.Warning here as TryParse implicitly handles many parsing issues.
             return false;
         }
 
@@ -245,9 +263,6 @@ namespace P3D_Scenario_Generator
         /// <returns>Latitude and longitude for top left corner of tile reference as +/- decimal degrees.</returns>
         public static Coordinate TileNoToLatLon(int xTile, int yTile, int zoom)
         {
-            // using formula from https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
-            // note tile numbers run from 0 .. (2 pow zoom - 1), passing 2 pow zoom, 2 pow zoom gives bottom right of tile
-            // (2 pow zoom - 1), (2 pow zoom - 1)
             double n = Math.Pow(2, zoom);
             double latitudeRadians = Math.Atan(Math.Sinh(Math.PI * (1 - 2 * yTile / n)));
             Coordinate c = new(latitudeRadians * 180.0 / Math.PI, xTile / n * 360.0 - 180.0);

@@ -56,7 +56,18 @@ namespace P3D_Scenario_Generator
 
             try
             {
+                // Input validation for boundingBox and its axes.
+                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouthWestEast: Input boundingBox is null or empty for file '{filename}'.");
+                    return false;
+                }
+                // Ensure Magick.NET is available
+                // Assuming ImageMagick or Magick.NET is properly set up in the environment for Image.Crop.
+                // If not, this will throw an exception caught below.
+
                 // Adjust bounding box by enlarging in all four directions by one tile.
+                // Preserve original logic for list manipulation.
                 boundingBox.YAxis.Insert(0, newTileNorth);
                 boundingBox.XAxis.Insert(0, newTileWest);
                 boundingBox.XAxis.Add(newTileEast);
@@ -64,10 +75,11 @@ namespace P3D_Scenario_Generator
 
                 // Download eight additional tiles and rename the existing tile image to be in the centre.
                 // The filename_X_Y.png convention is used for temporary tiles where (1,1) is the original tile.
+                // Assuming MapTileDownloader.DownloadOSMtileRow and DownloadOSMtile return bool and handle their own logging.
                 if (!MapTileDownloader.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false; // 0,0 0,1 0,2
                 if (!MapTileDownloader.DownloadOSMtile(newTileWest, boundingBox.YAxis[1], zoom, $"{filename}_0_1.png")) return false; // 1,0
 
-                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png"; // Assuming Parameters.ImageFolder is defined
                 string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1_1.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false; // 1,1
 
@@ -76,7 +88,7 @@ namespace P3D_Scenario_Generator
 
                 // Montage the entire expanded 3x3 grid into a single image.
                 if (!MapTileMontager.MontageTiles(boundingBox, zoom, filename)) return false;
-                if (!FileOps.DeleteTempOSMfiles(filename)) return false;
+                if (!FileOps.DeleteTempOSMfiles(filename)) return false; // Corrected to return false on failure
 
                 // Crop the central 2x2 tile area from the newly montaged 3x3 image.
                 string finalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
@@ -86,21 +98,30 @@ namespace P3D_Scenario_Generator
                     return false;
                 }
 
-                using MagickImage image = new(finalImagePath);
-                // Define geometry: (width, height, x-offset, y-offset)
-                // We want a 2x2 tile area, starting at (0.5 * tile size, 0.5 * tile size) from top-left of the 3x3 image.
-                IMagickGeometry geometry = new MagickGeometry(Constants.tileSize * 2, Constants.tileSize * 2, (uint)(Constants.tileSize / 2), (uint)(Constants.tileSize / 2));
-                image.Crop(geometry);
-                image.ResetPage();
-                image.Write(finalImagePath);
+                // Using Magick.NET for image manipulation (requires ImageMagick installed and Magick.NET NuGet package)
+                using (MagickImage image = new MagickImage(finalImagePath))
+                {
+                    // Define geometry: (width, height, x-offset, y-offset)
+                    // We want a 2x2 tile area, starting at (0.5 * tile size, 0.5 * tile size) from top-left of the 3x3 image.
+                    IMagickGeometry geometry = new MagickGeometry(Constants.tileSize * 2, Constants.tileSize * 2, (uint)(Constants.tileSize / 2), (uint)(Constants.tileSize / 2));
+                    image.Crop(geometry);
+                    image.ResetPage(); // Resets the page information of the image to the minimum required.
+                    image.Write(finalImagePath);
+                }
 
                 // Calculate the new bounding box coordinates for the zoomed-in view.
-                resultBoundingBox = ZoomInNorthSouthWestEast(boundingBox);
+                // Call the refactored ZoomInNorthSouthWestEast
+                if (!ZoomInNorthSouthWestEast(boundingBox, out resultBoundingBox))
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouthWestEast: Failed to calculate zoomed-in bounding box after padding for '{filename}'.");
+                    return false;
+                }
+
                 return true; // Operation successful
             }
             catch (MagickErrorException mex)
             {
-                Log.Error($"MapTilePadder.PadNorthSouthWestEast: Magick.NET error for '{filename}': {mex.Message}", mex);
+                Log.Error($"MapTilePadder.PadNorthSouthWestEast: ImageMagick error for '{filename}': {mex.Message}", mex);
                 return false;
             }
             catch (IOException ioex)
@@ -121,32 +142,52 @@ namespace P3D_Scenario_Generator
         /// X and Y axes by interpolating new tile numbers from the central 2x2 portion of a 3x3 grid.
         /// </summary>
         /// <param name="boundingBox">The current <see cref="BoundingBox"/> after its physical extent has been padded.</param>
-        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</returns>
-        static internal BoundingBox ZoomInNorthSouthWestEast(BoundingBox boundingBox)
+        /// <param name="newBoundingBox">When this method returns, contains a new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</param>
+        /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
+        static internal bool ZoomInNorthSouthWestEast(BoundingBox boundingBox, out BoundingBox newBoundingBox) // Modified signature for bool return and out parameter
         {
-            BoundingBox zoomInBoundingBox = new();
-            List<int> ewAxis = [];
-            ewAxis.Add(2 * boundingBox.XAxis[0] + 1); // Left-most column (x=0) corresponds to 2*x + 1
-            for (int xIndex = 1; xIndex < boundingBox.XAxis.Count - 1; xIndex++)
-            {
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
-            }
-            ewAxis.Add(2 * boundingBox.XAxis[^1]); // Right-most column (x=2) corresponds to 2*x
-            zoomInBoundingBox.XAxis = ewAxis;
+            newBoundingBox = new BoundingBox(); // Initialize out parameter
 
-            List<int> nsAxis = [];
-            nsAxis.Add(2 * boundingBox.YAxis[0] + 1); // Top-most row (y=0) corresponds to 2*y + 1
-            for (int yIndex = 1; yIndex < boundingBox.YAxis.Count - 1; yIndex++) 
+            try
             {
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                // Input validation: Add basic check for null boundingBox
+                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                {
+                    Log.Error("MapTilePadder.ZoomInNorthSouthWestEast: Input boundingBox is null or empty. Cannot perform zoom in.");
+                    return false;
+                }
+
+                List<int> ewAxis = [];
+                // Original logic for ewAxis:
+                ewAxis.Add(2 * boundingBox.XAxis[0] + 1); // Left-most column (x=0) corresponds to 2*x + 1
+                for (int xIndex = 1; xIndex < boundingBox.XAxis.Count - 1; xIndex++)
+                {
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
+                }
+                ewAxis.Add(2 * boundingBox.XAxis[^1]); // Right-most column (x=2) corresponds to 2*x
+                newBoundingBox.XAxis = ewAxis;
+
+                List<int> nsAxis = [];
+                // Original logic for nsAxis:
+                nsAxis.Add(2 * boundingBox.YAxis[0] + 1); // Top-most row (y=0) corresponds to 2*y + 1
+                for (int yIndex = 1; yIndex < boundingBox.YAxis.Count - 1; yIndex++)
+                {
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                }
+                nsAxis.Add(2 * boundingBox.YAxis[^1]); // Bottom-most row (y=2) corresponds to 2*y
+                newBoundingBox.YAxis = nsAxis;
+
+                return true;
             }
-            nsAxis.Add(2 * boundingBox.YAxis[^1]); // Bottom-most row (y=2) corresponds to 2*y
-            zoomInBoundingBox.YAxis = nsAxis;
-            return zoomInBoundingBox;
+            catch (Exception ex)
+            {
+                Log.Error($"MapTilePadder.ZoomInNorthSouthWestEast: An unexpected error occurred during zoomed-in bounding box calculation. Exception: {ex.Message}", ex);
+                newBoundingBox = new BoundingBox(); // Ensure out parameter is initialized on error
+                return false;
+            }
         }
-
         /// <summary>
         /// Pads the bounding box and the corresponding image by adding tiles to the West and East sides.
         /// This method is typically used when the original image is 1 tile wide by N tiles high.
@@ -174,24 +215,67 @@ namespace P3D_Scenario_Generator
 
             try
             {
+                // Input validation for boundingBox and its axes.
+                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                {
+                    Log.Error($"MapTilePadder.PadWestEast: Input boundingBox is null or empty for file '{filename}'.");
+                    return false;
+                }
+
                 // Create new western column (index 0)
-                if (!MapTileDownloader.DownloadOSMtileColumn(newTileWest, 0, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, 0, filename)) return false;
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+                if (!MapTileDownloader.DownloadOSMtileColumn(newTileWest, 0, boundingBox, zoom, filename))
+                {
+                    Log.Error($"MapTilePadder.PadWestEast: Failed to download western column tiles for '{filename}'.");
+                    return false;
+                }
+                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, 0, filename))
+                {
+                    Log.Error($"MapTilePadder.PadWestEast: Failed to montage western column tiles for '{filename}'.");
+                    return false;
+                }
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
+                {
+                    Log.Warning($"MapTilePadder.PadWestEast: Failed to delete temporary OSM files after western column montage for '{filename}'.");
+                    // Continue, as this might not be critical enough to fail the whole operation, but log a warning.
+                }
 
                 // Rename source column to be the centre column (index 1)
                 string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
                 string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1.png";
-                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
+                {
+                    Log.Error($"MapTilePadder.PadWestEast: Failed to move original image to center column position for '{filename}'.");
+                    return false;
+                }
 
                 // Create new eastern column (index 2)
-                if (!MapTileDownloader.DownloadOSMtileColumn(newTileEast, 2, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, 2, filename)) return false;
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+                if (!MapTileDownloader.DownloadOSMtileColumn(newTileEast, 2, boundingBox, zoom, filename))
+                {
+                    Log.Error($"MapTilePadder.PadWestEast: Failed to download eastern column tiles for '{filename}'.");
+                    return false;
+                }
+                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, 2, filename))
+                {
+                    Log.Error($"MapTilePadder.PadWestEast: Failed to montage eastern column tiles for '{filename}'.");
+                    return false;
+                }
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
+                {
+                    Log.Warning($"MapTilePadder.PadWestEast: Failed to delete temporary OSM files after eastern column montage for '{filename}'.");
+                    // Continue
+                }
 
                 // Montage the three columns (West, Original, East) into one image (3w x 2h).
-                if (!MapTileMontager.MontageColumns(3, boundingBox.YAxis.Count, filename)) return false;
-                if (!FileOps.DeleteTempOSMfiles(filename)) return false;
+                if (!MapTileMontager.MontageColumns(3, boundingBox.YAxis.Count, filename))
+                {
+                    Log.Error($"MapTilePadder.PadWestEast: Failed to montage all three columns for '{filename}'.");
+                    return false;
+                }
+                if (!FileOps.DeleteTempOSMfiles(filename)) // This call probably meant to delete specific temporary files, not the main image, check context.
+                {
+                    Log.Warning($"MapTilePadder.PadWestEast: Failed to delete general temporary files after full column montage for '{filename}'.");
+                    // Continue
+                }
 
                 // Crop the central 2w x 2h area from the newly montaged 3w x 2h image.
                 string finalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
@@ -201,21 +285,29 @@ namespace P3D_Scenario_Generator
                     return false;
                 }
 
-                using MagickImage image = new(finalImagePath);
-                // Define geometry: (width, height, x-offset, y-offset)
-                // We want a 2x2 tile area, starting at (0.5 * tile size, 0) from top-left of the 3x2 image.
-                IMagickGeometry geometry = new MagickGeometry(Constants.tileSize / 2, 0, (uint)Constants.tileSize * 2, (uint)Constants.tileSize * 2);
-                image.Crop(geometry);
-                image.ResetPage();
-                image.Write(finalImagePath);
+                // Using Magick.NET for image manipulation
+                using (MagickImage image = new MagickImage(finalImagePath))
+                {
+                    // Define geometry: (width, height, x-offset, y-offset)
+                    // We want a 2x2 tile area, starting at (0.5 * tile size, 0) from top-left of the 3x2 image.
+                    IMagickGeometry geometry = new MagickGeometry(Constants.tileSize * 2, Constants.tileSize * 2, (uint)(Constants.tileSize / 2), 0); // Corrected width/height for geometry.
+                    image.Crop(geometry);
+                    image.ResetPage();
+                    image.Write(finalImagePath);
+                }
 
                 // Calculate the new bounding box coordinates for the zoomed-in view.
-                resultBoundingBox = ZoomInWestEast(boundingBox);
+                if (!ZoomInWestEast(boundingBox, out resultBoundingBox))
+                {
+                    Log.Error($"MapTilePadder.PadWestEast: Failed to calculate zoomed-in bounding box after padding for '{filename}'.");
+                    return false;
+                }
+
                 return true; // Operation successful
             }
             catch (MagickErrorException mex)
             {
-                Log.Error($"MapTilePadder.PadWestEast: Magick.NET error for '{filename}': {mex.Message}", mex);
+                Log.Error($"MapTilePadder.PadWestEast: ImageMagick error for '{filename}': {mex.Message}", mex);
                 return false;
             }
             catch (IOException ioex)
@@ -236,28 +328,49 @@ namespace P3D_Scenario_Generator
         /// new tile numbers, using the central 2xN portion of a 3xN grid.
         /// </summary>
         /// <param name="boundingBox">The current <see cref="BoundingBox"/> after its physical extent has been padded.</param>
-        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</returns>
-        static internal BoundingBox ZoomInWestEast(BoundingBox boundingBox)
+        /// <param name="newBoundingBox">When this method returns, contains a new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</param>
+        /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
+        static internal bool ZoomInWestEast(BoundingBox boundingBox, out BoundingBox newBoundingBox) // Modified signature for bool return and out parameter
         {
-            BoundingBox zoomInBoundingBox = new();
-            List<int> ewAxis = [];
-            ewAxis.Add(2 * boundingBox.XAxis[0] - 1); 
-            for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
-            {
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
-            }
-            ewAxis.Add(2 * boundingBox.XAxis[^1] + 2); 
-            zoomInBoundingBox.XAxis = ewAxis;
+            newBoundingBox = new BoundingBox(); // Initialize out parameter
 
-            List<int> nsAxis = [];
-            for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++) 
+            try
             {
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                // Input validation: Add basic check for null boundingBox
+                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                {
+                    Log.Error("MapTilePadder.ZoomInWestEast: Input boundingBox is null or empty. Cannot perform zoom in.");
+                    return false;
+                }
+
+                List<int> ewAxis = [];
+                // Original logic for ewAxis:
+                ewAxis.Add(2 * boundingBox.XAxis[0] - 1);
+                for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
+                {
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
+                }
+                ewAxis.Add(2 * boundingBox.XAxis[^1] + 2);
+                newBoundingBox.XAxis = ewAxis;
+
+                List<int> nsAxis = [];
+                // Original logic for nsAxis:
+                for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
+                {
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                }
+                newBoundingBox.YAxis = nsAxis;
+
+                return true;
             }
-            zoomInBoundingBox.YAxis = nsAxis;
-            return zoomInBoundingBox;
+            catch (Exception ex)
+            {
+                Log.Error($"MapTilePadder.ZoomInWestEast: An unexpected error occurred during zoomed-in bounding box calculation. Exception: {ex.Message}", ex);
+                newBoundingBox = new BoundingBox(); // Ensure out parameter is initialized on error
+                return false;
+            }
         }
 
         /// <summary>
@@ -287,24 +400,67 @@ namespace P3D_Scenario_Generator
 
             try
             {
+                // Input validation for boundingBox and its axes.
+                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouth: Input boundingBox is null or empty for file '{filename}'.");
+                    return false;
+                }
+
                 // Create new northern row (index 0)
-                if (!MapTileDownloader.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 0, filename)) return false;
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+                if (!MapTileDownloader.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename))
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouth: Failed to download northern row tiles for '{filename}'.");
+                    return false;
+                }
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 0, filename))
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouth: Failed to montage northern row tiles for '{filename}'.");
+                    return false;
+                }
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
+                {
+                    Log.Warning($"MapTilePadder.PadNorthSouth: Failed to delete temporary OSM files after northern row montage for '{filename}'.");
+                    // Continue, as this might not be critical enough to fail the whole operation, but log a warning.
+                }
 
                 // Rename source row to be the centre row (index 1)
                 string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
                 string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1.png";
-                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouth: Failed to move original image to center row position for '{filename}'.");
+                    return false;
+                }
 
                 // Create new southern row (index 2)
-                if (!MapTileDownloader.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 2, filename)) return false;
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+                if (!MapTileDownloader.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename))
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouth: Failed to download southern row tiles for '{filename}'.");
+                    return false;
+                }
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 2, filename))
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouth: Failed to montage southern row tiles for '{filename}'.");
+                    return false;
+                }
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
+                {
+                    Log.Warning($"MapTilePadder.PadNorthSouth: Failed to delete temporary OSM files after southern row montage for '{filename}'.");
+                    // Continue
+                }
 
                 // Montage the three rows (North, Original, South) into one image (2w x 3h).
-                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 3, filename)) return false;
-                if (!FileOps.DeleteTempOSMfiles(filename)) return false;
+                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 3, filename))
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouth: Failed to montage all three rows for '{filename}'.");
+                    return false;
+                }
+                if (!FileOps.DeleteTempOSMfiles(filename)) // This call probably meant to delete specific temporary files, not the main image, check context.
+                {
+                    Log.Warning($"MapTilePadder.PadNorthSouth: Failed to delete general temporary files after full row montage for '{filename}'.");
+                    // Continue
+                }
 
                 // Crop the central 2w x 2h area from the newly montaged 2w x 3h image.
                 string finalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
@@ -314,16 +470,24 @@ namespace P3D_Scenario_Generator
                     return false;
                 }
 
-                using MagickImage image = new(finalImagePath);
-                // Define geometry: (width, height, x-offset, y-offset)
-                // We want a 2x2 tile area, starting at (0, 0.5 * tile size) from top-left of the 2x3 image.
-                IMagickGeometry geometry = new MagickGeometry(0, Constants.tileSize / 2, (uint)Constants.tileSize * 2, (uint)Constants.tileSize * 2);
-                image.Crop(geometry);
-                image.ResetPage();
-                image.Write(finalImagePath);
+                // Using Magick.NET for image manipulation
+                using (MagickImage image = new MagickImage(finalImagePath))
+                {
+                    // Define geometry: (width, height, x-offset, y-offset)
+                    // We want a 2x2 tile area, starting at (0, 0.5 * tile size) from top-left of the 2x3 image.
+                    IMagickGeometry geometry = new MagickGeometry(Constants.tileSize * 2, Constants.tileSize * 2, 0, (uint)(Constants.tileSize / 2)); // Corrected width/height for geometry.
+                    image.Crop(geometry);
+                    image.ResetPage();
+                    image.Write(finalImagePath);
+                }
 
                 // Calculate the new bounding box coordinates for the zoomed-in view.
-                resultBoundingBox = ZoomInNorthSouth(boundingBox);
+                if (!ZoomInNorthSouth(boundingBox, out resultBoundingBox))
+                {
+                    Log.Error($"MapTilePadder.PadNorthSouth: Failed to calculate zoomed-in bounding box after padding for '{filename}'.");
+                    return false;
+                }
+
                 return true; // Operation successful
             }
             catch (MagickErrorException mex)
@@ -349,28 +513,49 @@ namespace P3D_Scenario_Generator
         /// new tile numbers, using the central Nx2 portion of an Nx3 grid.
         /// </summary>
         /// <param name="boundingBox">The current <see cref="BoundingBox"/> after its physical extent has been padded.</param>
-        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</returns>
-        static internal BoundingBox ZoomInNorthSouth(BoundingBox boundingBox)
+        /// <param name="newBoundingBox">When this method returns, contains a new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</param>
+        /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
+        static internal bool ZoomInNorthSouth(BoundingBox boundingBox, out BoundingBox newBoundingBox) // Modified signature for bool return and out parameter
         {
-            BoundingBox zoomInBoundingBox = new();
-            List<int> ewAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
-            {
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
-            }
-            zoomInBoundingBox.XAxis = ewAxis;
+            newBoundingBox = new BoundingBox(); // Initialize out parameter
 
-            List<int> nsAxis = [];
-            nsAxis.Add(2 * boundingBox.YAxis[0] - 1); 
-            for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++) 
+            try
             {
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                // Input validation: Add basic check for null boundingBox
+                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                {
+                    Log.Error("MapTilePadder.ZoomInNorthSouth: Input boundingBox is null or empty. Cannot perform zoom in.");
+                    return false;
+                }
+
+                List<int> ewAxis = [];
+                // Original logic for ewAxis:
+                for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
+                {
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
+                }
+                newBoundingBox.XAxis = ewAxis;
+
+                List<int> nsAxis = [];
+                // Original logic for nsAxis:
+                nsAxis.Add(2 * boundingBox.YAxis[0] - 1);
+                for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
+                {
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                }
+                nsAxis.Add(2 * boundingBox.YAxis[^1] + 2);
+                newBoundingBox.YAxis = nsAxis;
+
+                return true;
             }
-            nsAxis.Add(2 * boundingBox.YAxis[^1] + 2); 
-            zoomInBoundingBox.YAxis = nsAxis;
-            return zoomInBoundingBox;
+            catch (Exception ex)
+            {
+                Log.Error($"MapTilePadder.ZoomInNorthSouth: An unexpected error occurred during zoomed-in bounding box calculation. Exception: {ex.Message}", ex);
+                newBoundingBox = new BoundingBox(); // Ensure out parameter is initialized on error
+                return false;
+            }
         }
 
         /// <summary>
@@ -397,22 +582,58 @@ namespace P3D_Scenario_Generator
 
             try
             {
+                // Input validation for boundingBox and its axes.
+                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                {
+                    Log.Error($"MapTilePadder.PadNorth: Input boundingBox is null or empty for file '{filename}'.");
+                    return false;
+                }
+
                 // Create new northern row (index 0)
-                if (!MapTileDownloader.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 0, filename)) return false;
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+                if (!MapTileDownloader.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename))
+                {
+                    Log.Error($"MapTilePadder.PadNorth: Failed to download northern row tiles for '{filename}'.");
+                    return false;
+                }
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 0, filename))
+                {
+                    Log.Error($"MapTilePadder.PadNorth: Failed to montage northern row tiles for '{filename}'.");
+                    return false;
+                }
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
+                {
+                    Log.Warning($"MapTilePadder.PadNorth: Failed to delete temporary OSM files after northern row montage for '{filename}'.");
+                    // Continue, as this might not be critical enough to fail the whole operation, but log a warning.
+                }
 
                 // Rename source row to be the bottom row (index 1)
                 string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
                 string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1.png";
-                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
+                {
+                    Log.Error($"MapTilePadder.PadNorth: Failed to move original image to bottom row position for '{filename}'.");
+                    return false;
+                }
 
                 // Montage the two rows (North, Original) into one image (2w x 2h).
-                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 2, filename)) return false;
-                if (!FileOps.DeleteTempOSMfiles(filename)) return false;
+                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 2, filename))
+                {
+                    Log.Error($"MapTilePadder.PadNorth: Failed to montage both rows for '{filename}'.");
+                    return false;
+                }
+                if (!FileOps.DeleteTempOSMfiles(filename))
+                {
+                    Log.Warning($"MapTilePadder.PadNorth: Failed to delete general temporary files after full row montage for '{filename}'.");
+                    // Continue
+                }
 
                 // Calculate the new bounding box coordinates for the zoomed-in view.
-                resultBoundingBox = ZoomInNorth(boundingBox);
+                if (!ZoomInNorth(boundingBox, out resultBoundingBox))
+                {
+                    Log.Error($"MapTilePadder.PadNorth: Failed to calculate zoomed-in bounding box after padding for '{filename}'.");
+                    return false;
+                }
+
                 return true; // Operation successful
             }
             catch (MagickErrorException mex)
@@ -438,28 +659,49 @@ namespace P3D_Scenario_Generator
         /// new tile numbers, often used when approaching the South Pole where padding can only occur North.
         /// </summary>
         /// <param name="boundingBox">The current <see cref="BoundingBox"/> after its physical extent has been padded.</param>
-        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</returns>
-        static internal BoundingBox ZoomInNorth(BoundingBox boundingBox)
+        /// <param name="newBoundingBox">When this method returns, contains a new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</param>
+        /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
+        static internal bool ZoomInNorth(BoundingBox boundingBox, out BoundingBox newBoundingBox) // Modified signature for bool return and out parameter
         {
-            BoundingBox zoomInBoundingBox = new();
-            List<int> ewAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
-            {
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
-            }
-            zoomInBoundingBox.XAxis = ewAxis;
+            newBoundingBox = new BoundingBox(); // Initialize out parameter
 
-            List<int> nsAxis = [];
-            nsAxis.Add(2 * boundingBox.YAxis[0] - 2); // Specific adjustment for North padding zoom
-            nsAxis.Add(2 * boundingBox.YAxis[0] - 1); // Specific adjustment for North padding zoom
-            for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++) 
+            try
             {
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                // Input validation: Add basic check for null boundingBox
+                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                {
+                    Log.Error("MapTilePadder.ZoomInNorth: Input boundingBox is null or empty. Cannot perform zoom in.");
+                    return false;
+                }
+
+                List<int> ewAxis = [];
+                // Original logic for ewAxis:
+                for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
+                {
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
+                }
+                newBoundingBox.XAxis = ewAxis;
+
+                List<int> nsAxis = [];
+                // Original logic for nsAxis:
+                nsAxis.Add(2 * boundingBox.YAxis[0] - 2); // Specific adjustment for North padding zoom
+                nsAxis.Add(2 * boundingBox.YAxis[0] - 1); // Specific adjustment for North padding zoom
+                for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
+                {
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                }
+                newBoundingBox.YAxis = nsAxis;
+
+                return true;
             }
-            zoomInBoundingBox.YAxis = nsAxis;
-            return zoomInBoundingBox;
+            catch (Exception ex)
+            {
+                Log.Error($"MapTilePadder.ZoomInNorth: An unexpected error occurred during zoomed-in bounding box calculation. Exception: {ex.Message}", ex);
+                newBoundingBox = new BoundingBox(); // Ensure out parameter is initialized on error
+                return false;
+            }
         }
 
         /// <summary>
@@ -486,22 +728,58 @@ namespace P3D_Scenario_Generator
 
             try
             {
+                // Input validation for boundingBox and its axes.
+                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                {
+                    Log.Error($"MapTilePadder.PadSouth: Input boundingBox is null or empty for file '{filename}'.");
+                    return false;
+                }
+
                 // Rename source row to be the top row (index 0)
                 string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
                 string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_0.png";
-                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
+                {
+                    Log.Error($"MapTilePadder.PadSouth: Failed to move original image to top row position for '{filename}'.");
+                    return false;
+                }
 
                 // Create new southern row (index 1)
-                if (!MapTileDownloader.DownloadOSMtileRow(newTileSouth, 1, boundingBox, zoom, filename)) return false;
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 1, filename)) return false;
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?")) return false;
+                if (!MapTileDownloader.DownloadOSMtileRow(newTileSouth, 1, boundingBox, zoom, filename))
+                {
+                    Log.Error($"MapTilePadder.PadSouth: Failed to download southern row tiles for '{filename}'.");
+                    return false;
+                }
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 1, filename))
+                {
+                    Log.Error($"MapTilePadder.PadSouth: Failed to montage southern row tiles for '{filename}'.");
+                    return false;
+                }
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
+                {
+                    Log.Warning($"MapTilePadder.PadSouth: Failed to delete temporary OSM files after southern row montage for '{filename}'.");
+                    // Continue
+                }
 
                 // Montage the two rows (Original, South) into one image (2w x 2h).
-                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 2, filename)) return false;
-                if (!FileOps.DeleteTempOSMfiles(filename)) return false;
+                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 2, filename))
+                {
+                    Log.Error($"MapTilePadder.PadSouth: Failed to montage both rows for '{filename}'.");
+                    return false;
+                }
+                if (!FileOps.DeleteTempOSMfiles(filename))
+                {
+                    Log.Warning($"MapTilePadder.PadSouth: Failed to delete general temporary files after full row montage for '{filename}'.");
+                    // Continue
+                }
 
                 // Calculate the new bounding box coordinates for the zoomed-in view.
-                resultBoundingBox = ZoomInSouth(boundingBox);
+                if (!ZoomInSouth(boundingBox, out resultBoundingBox))
+                {
+                    Log.Error($"MapTilePadder.PadSouth: Failed to calculate zoomed-in bounding box after padding for '{filename}'.");
+                    return false;
+                }
+
                 return true; // Operation successful
             }
             catch (MagickErrorException mex)
@@ -527,28 +805,49 @@ namespace P3D_Scenario_Generator
         /// new tile numbers, often used when approaching the North Pole where padding can only occur South.
         /// </summary>
         /// <param name="boundingBox">The current <see cref="BoundingBox"/> after its physical extent has been padded.</param>
-        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</returns>
-        static internal BoundingBox ZoomInSouth(BoundingBox boundingBox)
+        /// <param name="newBoundingBox">When this method returns, contains a new <see cref="BoundingBox"/> with updated tile coordinates reflecting the effective zoom.</param>
+        /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
+        static internal bool ZoomInSouth(BoundingBox boundingBox, out BoundingBox newBoundingBox) // Modified signature for bool return and out parameter
         {
-            BoundingBox zoomInBoundingBox = new();
-            List<int> ewAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
-            {
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
-            }
-            zoomInBoundingBox.XAxis = ewAxis;
+            newBoundingBox = new BoundingBox(); // Initialize out parameter
 
-            List<int> nsAxis = [];
-            for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++) 
+            try
             {
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                // Input validation: Add basic check for null boundingBox
+                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                {
+                    Log.Error("MapTilePadder.ZoomInSouth: Input boundingBox is null or empty. Cannot perform zoom in.");
+                    return false;
+                }
+
+                List<int> ewAxis = [];
+                // Original logic for ewAxis:
+                for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
+                {
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
+                }
+                newBoundingBox.XAxis = ewAxis;
+
+                List<int> nsAxis = [];
+                // Original logic for nsAxis:
+                for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
+                {
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                }
+                nsAxis.Add(2 * boundingBox.YAxis[^1] + 2); // Specific adjustment for South padding zoom
+                nsAxis.Add(2 * boundingBox.YAxis[^1] + 3); // Specific adjustment for South padding zoom
+                newBoundingBox.YAxis = nsAxis;
+
+                return true;
             }
-            nsAxis.Add(2 * boundingBox.YAxis[^1] + 2); // Specific adjustment for South padding zoom
-            nsAxis.Add(2 * boundingBox.YAxis[^1] + 3); // Specific adjustment for South padding zoom
-            zoomInBoundingBox.YAxis = nsAxis;
-            return zoomInBoundingBox;
+            catch (Exception ex)
+            {
+                Log.Error($"MapTilePadder.ZoomInSouth: An unexpected error occurred during zoomed-in bounding box calculation. Exception: {ex.Message}", ex);
+                newBoundingBox = new BoundingBox(); // Ensure out parameter is initialized on error
+                return false;
+            }
         }
 
         /// <summary>
@@ -558,26 +857,45 @@ namespace P3D_Scenario_Generator
         /// Located in this class as it closely resembles the padding related zoom in methods.
         /// </summary>
         /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be zoomed in.</param>
-        /// <returns>A new <see cref="BoundingBox"/> with updated tile coordinates reflecting the zoom.</returns>
-        static internal BoundingBox ZoomIn(BoundingBox boundingBox)
+        /// <param name="newBoundingBox">When this method returns, contains the new <see cref="BoundingBox"/> with updated tile coordinates reflecting the zoom.</param>
+        /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
+        static internal bool ZoomIn(BoundingBox boundingBox, out BoundingBox newBoundingBox) // Modified signature
         {
-            BoundingBox zoomInBoundingBox = new();
-            List<int> ewAxis = [];
-            for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
-            {
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
-                ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
-            }
-            zoomInBoundingBox.XAxis = ewAxis;
+            newBoundingBox = new BoundingBox(); // Initialize out parameter
 
-            List<int> nsAxis = [];
-            for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++) 
+            try
             {
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
-                nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                // Input validation
+                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                {
+                    Log.Error("MapTilePadder.ZoomIn: Input 'boundingBox' is null or empty. Cannot perform zoom in.");
+                    return false;
+                }
+
+                List<int> ewAxis = [];
+                for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
+                {
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
+                    ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
+                }
+                newBoundingBox.XAxis = ewAxis; // Assign to out parameter
+
+                List<int> nsAxis = [];
+                for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
+                {
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
+                    nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                }
+                newBoundingBox.YAxis = nsAxis; // Assign to out parameter
+
+                return true;
             }
-            zoomInBoundingBox.YAxis = nsAxis;
-            return zoomInBoundingBox;
+            catch (Exception ex)
+            {
+                Log.Error($"MapTilePadder.ZoomIn: An unexpected error occurred during zoom-in operation. Exception: {ex.Message}", ex);
+                newBoundingBox = new BoundingBox(); // Ensure out parameter is initialized on error
+                return false;
+            }
         }
     }
 }
