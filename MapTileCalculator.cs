@@ -1,4 +1,5 @@
 ﻿using CoordinateSharp;
+using System.Collections.Generic;
 
 namespace P3D_Scenario_Generator
 {
@@ -26,11 +27,7 @@ namespace P3D_Scenario_Generator
                 SetOSMTilesForCoordinates(tempTiles, zoom, coordinates);
 
                 // Create a BoundingBox instance and populate its Lists from unique tile indices
-                BoundingBox boundingBox = new()
-                {
-                    XAxis = tempTiles.Select(t => t.XIndex).Distinct().ToList(),
-                    YAxis = tempTiles.Select(t => t.YIndex).Distinct().ToList()
-                };
+                BoundingBox boundingBox = GetBoundingBox(tempTiles, zoom);
 
                 // The Count property works fine for List<T>
                 if ((boundingBox.XAxis.Count > tilesWidth) || (boundingBox.YAxis.Count > tilesHeight))
@@ -151,7 +148,7 @@ namespace P3D_Scenario_Generator
         {
             double doubleTileX = (dLon + 180.0) / 360.0 * (1 << z);
             tile.XIndex = Convert.ToInt32(Math.Floor(doubleTileX));
-            tile.XOffset = Convert.ToInt32(Constants.tileFactor * (doubleTileX - tile.XIndex));
+            tile.XOffset = Convert.ToInt32(Constants.tileSize * (doubleTileX - tile.XIndex));
         }
 
         /// <summary>
@@ -167,7 +164,7 @@ namespace P3D_Scenario_Generator
             var latRad = dLat / 180 * Math.PI;
             double doubleTileY = (1 - Math.Log(Math.Tan(latRad) + 1 / Math.Cos(latRad)) / Math.PI) / 2 * (1 << z);
             tile.YIndex = Convert.ToInt32(Math.Floor(doubleTileY));
-            tile.YOffset = Convert.ToInt32(Constants.tileFactor * (doubleTileY - tile.YIndex));
+            tile.YOffset = Convert.ToInt32(Constants.tileSize * (doubleTileY - tile.YIndex));
         }
 
         /// <summary>
