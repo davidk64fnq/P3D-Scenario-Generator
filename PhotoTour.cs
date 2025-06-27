@@ -358,7 +358,7 @@ namespace P3D_Scenario_Generator
             tiles.Clear();
             for (int photoIndex = startItemIndex; photoIndex <= finishItemIndex; photoIndex++)
             {
-                tiles.Add(MapTileCalculator.GetOSMtile(GetPhotoLocation(photoIndex).longitude.ToString(), GetPhotoLocation(photoIndex).latitude.ToString(), zoom));
+        //        tiles.Add(MapTileCalculator.GetOSMtile(GetPhotoLocation(photoIndex).longitude.ToString(), GetPhotoLocation(photoIndex).latitude.ToString(), zoom));
             }
         }
 

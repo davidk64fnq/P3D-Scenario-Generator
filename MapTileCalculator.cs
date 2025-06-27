@@ -9,6 +9,7 @@ namespace P3D_Scenario_Generator
     /// </summary>
     public static class MapTileCalculator
     {
+
         /// <summary>
         /// Works out the most zoomed-in level that includes all specified coordinates,
         /// where the montage of OSM tiles doesn't exceed the given width and height.
@@ -16,40 +17,56 @@ namespace P3D_Scenario_Generator
         /// <param name="coordinates">A list of geographic coordinates to be covered by the tiles.</param>
         /// <param name="tilesWidth">Maximum number of tiles allowed for the X-axis.</param>
         /// <param name="tilesHeight">Maximum number of tiles allowed for the Y-axis.</param>
-        /// <returns>The maximum zoom level that meets the constraints.</returns>
-        public static int GetOptimalZoomLevel(IEnumerable<Coordinate> coordinates, int tilesWidth, int tilesHeight)
+        /// <param name="optimalZoomLevel">When this method returns, contains the maximum zoom level that meets the constraints, or 0 if the calculation fails.</param>
+        /// <returns>True if an optimal zoom level was found, false otherwise.</returns>
+        public static bool GetOptimalZoomLevel(IEnumerable<Coordinate> coordinates, int tilesWidth, int tilesHeight, out int optimalZoomLevel)
         {
-            List<Tile> tempTiles = [];
+            optimalZoomLevel = 0; // Initialize out parameter to a default/invalid value
 
             // Input validation for coordinates
             if (coordinates == null || !coordinates.Any())
             {
                 Log.Error("GetOptimalZoomLevel: Input coordinates list is null or empty.");
-                return 0; // Return a default invalid zoom level or throw, based on application design
+                return false; // Indicate failure
             }
+
+            // Store the last successfully calculated zoom level
+            int lastValidZoom = 0;
 
             for (int zoom = 2; zoom <= Constants.maxZoomLevel; zoom++)
             {
-                tempTiles.Clear();
-                SetOSMTilesForCoordinates(tempTiles, zoom, coordinates);
+                List<Tile> tempTiles = new List<Tile>();
+
+                if (!SetOSMTilesForCoordinates(tempTiles, zoom, coordinates))
+                {
+                    Log.Error($"GetOptimalZoomLevel: SetOSMTilesForCoordinates failed to process all coordinates for zoom level {zoom}. Aborting optimal zoom calculation.");
+                    optimalZoomLevel = 0; // Explicitly set to 0 to clearly indicate overall failure.
+                    return false; // Indicate overall failure for GetOptimalZoomLevel
+                }
 
                 BoundingBox boundingBox;
-                // Now calling the refactored BoundingBoxCalculator.GetBoundingBox
                 if (!BoundingBoxCalculator.GetBoundingBox(tempTiles, zoom, out boundingBox))
                 {
-                    // If GetBoundingBox fails, log it and return the previous valid zoom or an error indicator.
-                    // The error details are logged within BoundingBoxCalculator.GetBoundingBox.
-                    Log.Error($"GetOptimalZoomLevel: Failed to calculate bounding box for zoom level {zoom}. Returning previous zoom level {zoom - 1}.");
-                    return zoom - 1;
+                    Log.Error($"GetOptimalZoomLevel: Failed to calculate bounding box for zoom level {zoom}. Aborting optimal zoom calculation.");
+                    optimalZoomLevel = 0; // Explicitly set to 0 to clearly indicate overall failure.
+                    return false; // Indicate overall failure for GetOptimalZoomLevel
                 }
 
-                // The Count property works fine for List<T>
                 if ((boundingBox.XAxis.Count > tilesWidth) || (boundingBox.YAxis.Count > tilesHeight))
                 {
-                    return zoom - 1;
+                    // If current zoom level exceeds limits, the previous one was optimal.
+                    // If lastValidZoom is 0 here, it means no valid zoom was ever found.
+                    optimalZoomLevel = lastValidZoom;
+                    return lastValidZoom > 0; // Return true only if a *valid* previous zoom was found.
                 }
+
+                // If we reached here, the current zoom level is valid within constraints.
+                lastValidZoom = zoom;
             }
-            return Constants.maxZoomLevel;
+
+            // If the loop completes, it means even the maxZoomLevel fits the constraints.
+            optimalZoomLevel = Constants.maxZoomLevel;
+            return true; // Successfully found an optimal zoom up to maxZoomLevel.
         }
 
         /// <summary>
@@ -58,9 +75,11 @@ namespace P3D_Scenario_Generator
         /// <param name="tiles">The list to be populated with the calculated unique OSM tile references (XIndex, YIndex).</param>
         /// <param name="zoom">The OSM tile zoom level for which the tiles are determined.</param>
         /// <param name="coordinates">A collection of geographic coordinates for which the covering tiles are determined.</param>
-        public static void SetOSMTilesForCoordinates(List<Tile> tiles, int zoom, IEnumerable<Coordinate> coordinates)
+        /// <returns>True if all coordinates were successfully converted to tiles, false otherwise.</returns>
+        public static bool SetOSMTilesForCoordinates(List<Tile> tiles, int zoom, IEnumerable<Coordinate> coordinates)
         {
             HashSet<Tile> uniqueTiles = [];
+            bool allCoordinatesTiledSuccessfully = true; // Track if all coordinates were successfully converted
 
             foreach (var coord in coordinates)
             {
@@ -71,35 +90,27 @@ namespace P3D_Scenario_Generator
                 }
                 else
                 {
-                    // This is a warning because one bad coordinate shouldn't necessarily halt the whole process.
-                    Log.Warning($"SetOSMTilesForCoordinates: Could not get tile info for coordinate Lon: {coord.Longitude.DecimalDegree}, Lat: {coord.Latitude.DecimalDegree} at zoom {zoom}. Skipping this coordinate.");
+                    // Log the specific failure for this coordinate
+                    Log.Error($"SetOSMTilesForCoordinates: Could not get tile info for coordinate Lon: {coord.Longitude.DecimalDegree}, Lat: {coord.Latitude.DecimalDegree} at zoom {zoom}. This coordinate will be skipped, and the overall operation will be marked as failed.");
+                    allCoordinatesTiledSuccessfully = false; // Mark failure if even one coordinate fails
                 }
             }
 
             tiles.Clear();
             tiles.AddRange(uniqueTiles);
-        }
 
-        /// <summary>
-        /// Finds OSM tile numbers and offsets for a single coordinate for one zoom level.
-        /// Tile number calculated using https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames.
-        /// </summary>
-        /// <param name="sLon">The longitude value as a string.</param>
-        /// <param name="sLat">The latitude value as a string.</param>
-        /// <param name="zoom">The zoom level.</param>
-        /// <returns>A Tile object if conversion is successful, otherwise null.</returns>
-        public static Tile GetOSMtile(string sLon, string sLat, int zoom)
-        {
-            Tile tile = new();
-
-            if (LonToDecimalDegree(sLon, out double dLon) && LatToDecimalDegree(sLat, out double dLat))
+            // Double-check: if allCoordinatesTiledSuccessfully is true but uniqueTiles is empty,
+            // it means `GetTileInfo` never returned `null`, but no unique tiles were added.
+            // This suggests an issue with Tile.Equals/GetHashCode or all input coords being identical
+            // and somehow not being added, which is unexpected if GetTileInfo is correctly returning distinct Tile objects.
+            // This is a defensive check for pathological cases.
+            if (allCoordinatesTiledSuccessfully && coordinates.Any() && !uniqueTiles.Any())
             {
-                LonToTileX(dLon, zoom, tile);
-                LatToTileY(dLat, zoom, tile);
-                return tile;
+                Log.Error("SetOSMTilesForCoordinates: All coordinates reported successful tiling, but no unique tiles were added to the collection. This indicates a logical error in tile generation or uniqueness handling.");
+                allCoordinatesTiledSuccessfully = false;
             }
-            Log.Warning($"GetOSMtile: Failed to convert string coordinates (Lon: '{sLon}', Lat: '{sLat}') to decimal degrees.");
-            return null;
+
+            return allCoordinatesTiledSuccessfully;
         }
 
         /// <summary>
@@ -109,49 +120,45 @@ namespace P3D_Scenario_Generator
         /// <param name="dLon">The longitude in decimal degrees.</param>
         /// <param name="dLat">The latitude in decimal degrees.</param>
         /// <param name="zoom">The zoom level.</param>
-        /// <returns>A Tile object containing the XIndex, YIndex, XOffset, and YOffset.</returns>
+        /// <returns>A Tile object containing the XIndex, YIndex, XOffset, and YOffset if conversion is successful, otherwise null.</returns>
         public static Tile GetTileInfo(double dLon, double dLat, int zoom)
         {
+            // 1. Validate Zoom Level
+            if (zoom < 0 || zoom > Constants.maxZoomLevel) // Assuming 0 is minimum valid zoom, adjust if needed
+            {
+                Log.Error($"GetTileInfo: Invalid zoom level ({zoom}) provided. Zoom must be between 0 and {Constants.maxZoomLevel}.");
+                return null;
+            }
+
+            // 2. Validate Latitude and Longitude against Web Mercator Projection limits
+            // OSM Web Mercator uses approx. -85.05112878 to +85.05112878 for latitude
+            // and -180.0 to +180.0 for longitude.
+            const double minLatitude = -85.05112878;
+            const double maxLatitude = 85.05112878;
+            const double minLongitude = -180.0;
+            const double maxLongitude = 180.0;
+
+            if (dLat < minLatitude || dLat > maxLatitude || dLon < minLongitude || dLon > maxLongitude)
+            {
+                Log.Error($"GetTileInfo: Input coordinates (Lon: {dLon}, Lat: {dLat}) are outside standard OSM Web Mercator valid bounds (Lat: [{minLatitude}, {maxLatitude}], Lon: [{minLongitude}, {maxLongitude}]). Cannot generate a valid tile.");
+                return null;
+            }
+
             Tile tile = new();
             LonToTileX(dLon, zoom, tile);
             LatToTileY(dLat, zoom, tile);
+
+            // 3. Validate Calculated Tile Indices
+            // Tile indices for a given zoom level range from 0 to (2^zoom - 1).
+            int maxTileIndex = (1 << zoom) - 1; // 2^zoom - 1
+
+            if (tile.XIndex < 0 || tile.XIndex > maxTileIndex || tile.YIndex < 0 || tile.YIndex > maxTileIndex)
+            {
+                Log.Error($"GetTileInfo: Calculated tile indices (X:{tile.XIndex}, Y:{tile.YIndex}) are out of bounds for zoom {zoom}. Expected range [0, {maxTileIndex}]. This suggests a calculation error or an extreme edge case.");
+                return null;
+            }
+
             return tile;
-        }
-
-        /// <summary>
-        /// Uses CoordinateSharp library to convert longitude of point to decimal degrees.
-        /// </summary>
-        /// <param name="sLon">The longitude value in format other than decimal degrees.</param>
-        /// <param name="dLon">The longitude value converted to decimal degrees.</param>
-        /// <returns>True if longitude successfully converted to decimal degrees format.</returns>
-        internal static bool LonToDecimalDegree(string sLon, out double dLon)
-        {
-            if (CoordinatePart.TryParse(sLon, out CoordinatePart cLon))
-            {
-                dLon = cLon.DecimalDegree;
-                return true;
-            }
-            dLon = 0;
-            // No Log.Warning here as TryParse implicitly handles many parsing issues.
-            return false;
-        }
-
-        /// <summary>
-        /// Uses CoordinateSharp library to convert latitude of point to decimal degrees.
-        /// </summary>
-        /// <param name="sLat">The latitude value in format other than decimal degrees.</param>
-        /// <param name="dLat">The latitude value converted to decimal degrees.</param>
-        /// <returns>True if latitude successfully converted to decimal degrees format.</returns>
-        internal static bool LatToDecimalDegree(string sLat, out double dLat)
-        {
-            if (CoordinatePart.TryParse(sLat, out CoordinatePart cLat))
-            {
-                dLat = cLat.DecimalDegree;
-                return true;
-            }
-            dLat = 0;
-            // No Log.Warning here as TryParse implicitly handles many parsing issues.
-            return false;
         }
 
         /// <summary>

@@ -467,7 +467,7 @@ namespace P3D_Scenario_Generator
             tiles.Clear();
             for (int itemNo = startItemIndex; itemNo <= finishItemIndex; itemNo++)
             {
-                tiles.Add(MapTileCalculator.GetOSMtile(WikiTour[itemNo].longitude, WikiTour[itemNo].latitude, zoom));
+        //        tiles.Add(MapTileCalculator.GetOSMtile(WikiTour[itemNo].longitude, WikiTour[itemNo].latitude, zoom));
             }
         }
 

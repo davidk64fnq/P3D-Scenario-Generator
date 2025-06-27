@@ -20,11 +20,12 @@ namespace P3D_Scenario_Generator
                 return false;
             }
 
-            int zoom = MapTileCalculator.GetOptimalZoomLevel(coordinates, Constants.overviewImageTileFactor, Constants.overviewImageTileFactor);
-            // Check if GetOptimalZoomLevel returned an invalid zoom (e.g., 0 due to error)
-            if (zoom == 0) // Assuming 0 is an indicator of failure/no valid zoom found. Adjust if your logic uses another indicator.
+            // Call the updated GetOptimalZoomLevel method
+            int zoom;
+            if (!MapTileCalculator.GetOptimalZoomLevel(coordinates, Constants.overviewImageTileFactor, Constants.overviewImageTileFactor, out zoom))
             {
-                Log.Error("MapTileImageMaker.CreateOverviewImage: Failed to determine optimal zoom level.");
+                // GetOptimalZoomLevel already logs specific errors internally.
+                Log.Error("MapTileImageMaker.CreateOverviewImage: Failed to determine optimal zoom level. See previous logs for details.");
                 return false;
             }
 
@@ -33,6 +34,8 @@ namespace P3D_Scenario_Generator
             MapTileCalculator.SetOSMTilesForCoordinates(tiles, zoom, coordinates);
 
             // Ensure tiles were successfully retrieved before proceeding
+            // Note: SetOSMTilesForCoordinates logs warnings for skipped coordinates,
+            // but if the list is empty, it's a critical failure here.
             if (tiles == null || tiles.Count == 0)
             {
                 Log.Error($"MapTileImageMaker.CreateOverviewImage: No OSM tiles found for the given coordinates at zoom {zoom}.");
@@ -64,7 +67,9 @@ namespace P3D_Scenario_Generator
 
             // Extend montage of tiles to make the image square (if it isn't already)
             BoundingBox newBoundingBoxAfterSquare; // New out parameter for MakeSquare
-            if (!MakeSquare(boundingBox, imageName, zoom, out newBoundingBoxAfterSquare)) // Update call to MakeSquare
+            // Assuming 'MakeSquare' is a method within MapTileImageMaker or an accessible utility class.
+            // If MakeSquare also takes 'out BoundingBox newBoundingBoxAfterSquare', ensure it's defined.
+            if (!MakeSquare(boundingBox, imageName, zoom, out newBoundingBoxAfterSquare))
             {
                 Log.Error($"MapTileImageMaker.CreateOverviewImage: Failed to make image '{imageName}' square.");
                 return false;

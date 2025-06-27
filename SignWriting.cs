@@ -166,7 +166,7 @@
             List<Tile> tiles = [];
             for (int gateIndex = startItemIndex; gateIndex <= finishItemIndex; gateIndex++)
             {
-                tiles.Add(MapTileCalculator.GetOSMtile(gates[gateIndex].lon.ToString(), gates[gateIndex].lat.ToString(), zoom));
+        //        tiles.Add(MapTileCalculator.GetOSMtile(gates[gateIndex].lon.ToString(), gates[gateIndex].lat.ToString(), zoom));
             }
             return tiles;
         }
