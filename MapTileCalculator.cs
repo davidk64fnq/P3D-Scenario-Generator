@@ -35,7 +35,7 @@ namespace P3D_Scenario_Generator
 
             for (int zoom = 2; zoom <= Constants.maxZoomLevel; zoom++)
             {
-                List<Tile> tempTiles = new List<Tile>();
+                List<Tile> tempTiles = [];
 
                 if (!SetOSMTilesForCoordinates(tempTiles, zoom, coordinates))
                 {
@@ -44,8 +44,7 @@ namespace P3D_Scenario_Generator
                     return false; // Indicate overall failure for GetOptimalZoomLevel
                 }
 
-                BoundingBox boundingBox;
-                if (!BoundingBoxCalculator.GetBoundingBox(tempTiles, zoom, out boundingBox))
+                if (!BoundingBoxCalculator.GetBoundingBox(tempTiles, zoom, out BoundingBox boundingBox))
                 {
                     Log.Error($"GetOptimalZoomLevel: Failed to calculate bounding box for zoom level {zoom}. Aborting optimal zoom calculation.");
                     optimalZoomLevel = 0; // Explicitly set to 0 to clearly indicate overall failure.
@@ -104,7 +103,7 @@ namespace P3D_Scenario_Generator
             // This suggests an issue with Tile.Equals/GetHashCode or all input coords being identical
             // and somehow not being added, which is unexpected if GetTileInfo is correctly returning distinct Tile objects.
             // This is a defensive check for pathological cases.
-            if (allCoordinatesTiledSuccessfully && coordinates.Any() && !uniqueTiles.Any())
+            if (allCoordinatesTiledSuccessfully && coordinates.Any() && uniqueTiles.Count == 0)
             {
                 Log.Error("SetOSMTilesForCoordinates: All coordinates reported successful tiling, but no unique tiles were added to the collection. This indicates a logical error in tile generation or uniqueness handling.");
                 allCoordinatesTiledSuccessfully = false;

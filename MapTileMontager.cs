@@ -2,12 +2,10 @@
 
 namespace P3D_Scenario_Generator
 {
-
     /// <summary>
     /// Provides static methods for assembling OpenStreetMap (OSM) tiles into larger images.
     /// This class handles the process of combining individual tile images into vertical columns,
     /// horizontal rows, and ultimately a complete grid image, while also managing temporary files.
-    /// It centralizes image montage operations, ensuring robust error handling and clear separation of concerns.
     /// </summary>
     internal class MapTileMontager
     {
@@ -18,15 +16,14 @@ namespace P3D_Scenario_Generator
         /// and writes the resulting montage to a new image file.
         /// </summary>
         /// <param name="yCount">The number of tiles in the column (height of the montage in tiles).</param>
-        /// <param name="xIndex">The X-index of the column, used for naming the input and output files.</param>
+        /// <param name="columnID">The X-index of the column, used for naming the input and output files.</param>
         /// <param name="filename">The base filename for the input individual tiles and the output montaged column image.</param>
         /// <returns><see langword="true"/> if the tiles were successfully montaged into a column image; otherwise, <see langword="false"/>.</returns>
-        static internal bool MontageTilesToColumn(int yCount, int xIndex, string filename)
+        static internal bool MontageTilesToColumn(int yCount, int columnID, string filename)
         {
             try
             {
                 // MagickImageCollection will hold the individual tile images to be montaged.
-                // Using declaration ensures 'images' is disposed automatically.
                 using var images = new MagickImageCollection();
 
                 // Setup for the montage operation.
@@ -41,7 +38,7 @@ namespace P3D_Scenario_Generator
                 // Load each individual tile image into the collection.
                 for (int yIndex = 0; yIndex < yCount; yIndex++)
                 {
-                    string tilePath = $"{Parameters.ImageFolder}\\{filename}_{xIndex}_{yIndex}.png";
+                    string tilePath = $"{Parameters.ImageFolder}\\{filename}_{columnID}_{yIndex}.png";
                     if (!File.Exists(tilePath))
                     {
                         Log.Error($"MontageTilesToColumn: Required tile image not found: {tilePath}");
@@ -51,11 +48,10 @@ namespace P3D_Scenario_Generator
                 }
 
                 // Perform the montage operation. The result is a single MagickImage.
-                // Using declaration ensures 'result' is disposed automatically.
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
-                string outputPath = $"{Parameters.ImageFolder}\\{filename}_{xIndex}.png";
+                string outputPath = $"{Parameters.ImageFolder}\\{filename}_{columnID}.png";
 
                 // Ensure destination directory exists before writing
                 var directory = Path.GetDirectoryName(outputPath);
@@ -72,7 +68,7 @@ namespace P3D_Scenario_Generator
             catch (MagickErrorException mex)
             {
                 // Catch specific Magick.NET exceptions
-                Log.Error($"Magick.NET error during column montage for '{filename}_{xIndex}': {mex.Message}", mex);
+                Log.Error($"Magick.NET error during column montage for '{filename}_{columnID}': {mex.Message}", mex);
                 return false;
             }
             catch (FileNotFoundException fex)
@@ -84,13 +80,13 @@ namespace P3D_Scenario_Generator
             catch (IOException ioex)
             {
                 // Catch general I/O errors (e.g., file locked, disk full)
-                Log.Error($"I/O error during column montage for '{filename}_{xIndex}': {ioex.Message}", ioex);
+                Log.Error($"I/O error during column montage for '{filename}_{columnID}': {ioex.Message}", ioex);
                 return false;
             }
             catch (Exception ex)
             {
                 // Catch any other unexpected exceptions
-                Log.Error($"An unexpected error occurred during column montage for '{filename}_{xIndex}': {ex.Message}", ex);
+                Log.Error($"An unexpected error occurred during column montage for '{filename}_{columnID}': {ex.Message}", ex);
                 return false;
             }
         }
@@ -101,15 +97,14 @@ namespace P3D_Scenario_Generator
         /// and writes the resulting montage to a new image file.
         /// </summary>
         /// <param name="xCount">The number of tiles in the row (width of the montage in tiles).</param>
-        /// <param name="yIndex">The Y-index of the row, used for naming the input and output files.</param>
+        /// <param name="rowId">The Y-index of the row, used for naming the input and output files.</param>
         /// <param name="filename">The base filename for the input individual tiles and the output montaged row image.</param>
         /// <returns><see langword="true"/> if the tiles were successfully montaged into a row image; otherwise, <see langword="false"/>.</returns>
-        static internal bool MontageTilesToRow(int xCount, int yIndex, string filename)
+        static internal bool MontageTilesToRow(int xCount, int rowId, string filename)
         {
             try
             {
                 // MagickImageCollection will hold the individual tile images to be montaged.
-                // Using declaration ensures 'images' is disposed automatically.
                 using var images = new MagickImageCollection();
 
                 // Setup for the montage operation.
@@ -124,7 +119,7 @@ namespace P3D_Scenario_Generator
                 // Load each individual tile image into the collection.
                 for (int xIndex = 0; xIndex < xCount; xIndex++)
                 {
-                    string tilePath = $"{Parameters.ImageFolder}\\{filename}_{xIndex}_{yIndex}.png";
+                    string tilePath = $"{Parameters.ImageFolder}\\{filename}_{xIndex}_{rowId}.png";
                     if (!File.Exists(tilePath))
                     {
                         Log.Error($"MontageTilesToRow: Required tile image not found: {tilePath}");
@@ -134,11 +129,10 @@ namespace P3D_Scenario_Generator
                 }
 
                 // Perform the montage operation. The result is a single MagickImage.
-                // Using declaration ensures 'result' is disposed automatically.
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
-                string outputPath = $"{Parameters.ImageFolder}\\{filename}_{yIndex}.png";
+                string outputPath = $"{Parameters.ImageFolder}\\{filename}_{rowId}.png";
 
                 // Ensure destination directory exists before writing
                 var directory = Path.GetDirectoryName(outputPath);
@@ -155,7 +149,7 @@ namespace P3D_Scenario_Generator
             catch (MagickErrorException mex)
             {
                 // Catch specific Magick.NET exceptions
-                Log.Error($"Magick.NET error during row montage for '{filename}_{yIndex}': {mex.Message}", mex);
+                Log.Error($"Magick.NET error during row montage for '{filename}_{rowId}': {mex.Message}", mex);
                 return false;
             }
             catch (FileNotFoundException fex)
@@ -167,13 +161,13 @@ namespace P3D_Scenario_Generator
             catch (IOException ioex)
             {
                 // Catch general I/O errors (e.g., file locked, disk full)
-                Log.Error($"I/O error during row montage for '{filename}_{yIndex}': {ioex.Message}", ioex);
+                Log.Error($"I/O error during row montage for '{filename}_{rowId}': {ioex.Message}", ioex);
                 return false;
             }
             catch (Exception ex)
             {
                 // Catch any other unexpected exceptions
-                Log.Error($"An unexpected error occurred during row montage for '{filename}_{yIndex}': {ex.Message}", ex);
+                Log.Error($"An unexpected error occurred during row montage for '{filename}_{rowId}': {ex.Message}", ex);
                 return false;
             }
         }
@@ -192,7 +186,6 @@ namespace P3D_Scenario_Generator
             try
             {
                 // MagickImageCollection will hold the individual column images to be montaged.
-                // Using declaration ensures 'images' is disposed automatically.
                 using var images = new MagickImageCollection();
 
                 // Setup for the montage operation.
@@ -217,7 +210,6 @@ namespace P3D_Scenario_Generator
                 }
 
                 // Perform the montage operation. The result is a single MagickImage.
-                // Using declaration ensures 'result' is disposed automatically.
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
@@ -275,7 +267,6 @@ namespace P3D_Scenario_Generator
             try
             {
                 // MagickImageCollection will hold the individual column images to be montaged.
-                // Using declaration ensures 'images' is disposed automatically.
                 using var images = new MagickImageCollection();
 
                 // Setup for the montage operation.
@@ -300,13 +291,12 @@ namespace P3D_Scenario_Generator
                 }
 
                 // Perform the montage operation. The result is a single MagickImage.
-                // Using declaration ensures 'result' is disposed automatically.
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
                 string outputPath = $"{Parameters.ImageFolder}\\{filename}.png";
 
-                // Ensure destination directory exists before writing (though likely covered by previous steps)
+                // Ensure destination directory exists before writing 
                 var directory = Path.GetDirectoryName(outputPath);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
@@ -361,7 +351,7 @@ namespace P3D_Scenario_Generator
         static internal bool MontageTiles(BoundingBox boundingBox, int zoom, string filename)
         {
             // Step 1: Download individual tiles column by column and montage them into vertical strips.
-            // This loop processes each column (xIndex) within the specified bounding box.
+            // This loop processes each column (columnID) within the specified bounding box.
             for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
             {
                 // Download all individual tiles for the current column.

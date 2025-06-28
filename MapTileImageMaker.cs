@@ -27,8 +27,7 @@ namespace P3D_Scenario_Generator
             }
 
             // Call the updated GetOptimalZoomLevel method
-            int zoom;
-            if (!MapTileCalculator.GetOptimalZoomLevel(coordinates, Constants.overviewImageTileFactor, Constants.overviewImageTileFactor, out zoom))
+            if (!MapTileCalculator.GetOptimalZoomLevel(coordinates, Constants.overviewImageTileFactor, Constants.overviewImageTileFactor, out int zoom))
             {
                 // GetOptimalZoomLevel already logs specific errors internally.
                 Log.Error("MapTileImageMaker.CreateOverviewImage: Failed to determine optimal zoom level. See previous logs for details.");
@@ -40,7 +39,6 @@ namespace P3D_Scenario_Generator
             MapTileCalculator.SetOSMTilesForCoordinates(tiles, zoom, coordinates);
 
             // Ensure tiles were successfully retrieved before proceeding
-            // Note: SetOSMTilesForCoordinates logs warnings for skipped coordinates,
             // but if the list is empty, it's a critical failure here.
             if (tiles == null || tiles.Count == 0)
             {
@@ -49,8 +47,7 @@ namespace P3D_Scenario_Generator
             }
 
             // Build list of x axis and y axis tile numbers that make up montage of tiles to cover set of coordinates
-            BoundingBox boundingBox;
-            if (!BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox))
+            if (!BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out BoundingBox boundingBox))
             {
                 Log.Error($"MapTileImageMaker.CreateOverviewImage: Failed to calculate bounding box at zoom {zoom}.");
                 return false;
@@ -72,8 +69,8 @@ namespace P3D_Scenario_Generator
             }
 
             // Extend montage of tiles to make the image square (if it isn't already)
-            BoundingBox newBoundingBoxAfterSquare; // New out parameter for MakeSquare
-            if (!MakeSquare(boundingBox, imageName, zoom, out newBoundingBoxAfterSquare))
+            // New out parameter for MakeSquare
+            if (!MakeSquare(boundingBox, imageName, zoom, out _))
             {
                 Log.Error($"MapTileImageMaker.CreateOverviewImage: Failed to make image '{imageName}' square.");
                 return false;
@@ -103,15 +100,14 @@ namespace P3D_Scenario_Generator
             MapTileCalculator.SetOSMTilesForCoordinates(tiles, locationImageZoomLevel, coordinates);
 
             // Ensure tiles were successfully retrieved and the list is not empty before proceeding
-            if (!tiles.Any()) // Using .Any() for clarity and consistency
+            if (tiles.Count == 0) 
             {
                 Log.Error($"MapTileImageMaker.CreateLocationImage: No unique OSM tiles were found for the given coordinates at zoom {locationImageZoomLevel}. This may indicate an issue with coordinate data or tile calculation.");
                 return false;
             }
 
             // Build list of x axis and y axis tile numbers that make up montage of tiles to cover set of coordinates
-            BoundingBox boundingBox;
-            if (!BoundingBoxCalculator.GetBoundingBox(tiles, locationImageZoomLevel, out boundingBox)) // Update call to GetBoundingBox
+            if (!BoundingBoxCalculator.GetBoundingBox(tiles, locationImageZoomLevel, out BoundingBox boundingBox)) // Update call to GetBoundingBox
             {
                 Log.Error($"MapTileImageMaker.CreateLocationImage: Failed to calculate bounding box at zoom {locationImageZoomLevel}.");
                 return false;
@@ -129,9 +125,8 @@ namespace P3D_Scenario_Generator
             // This situation arises where coordinate is too close to tile edge on 1 x 1.
             if (boundingBox.XAxis.Count != 1 || boundingBox.YAxis.Count != 1)
             {
-                BoundingBox newBoundingBoxAfterSquare; // New out parameter for MakeSquare
                 // Attempt to make the image square.
-                if (MakeSquare(boundingBox, imageName, locationImageZoomLevel, out newBoundingBoxAfterSquare)) // Update call to MakeSquare
+                if (MakeSquare(boundingBox, imageName, locationImageZoomLevel, out _)) 
                 {
                     // ONLY if MakeSquare succeeds, then attempt to resize to the final 1x1 target size.
                     if (!ImageUtils.Resize($"{imageName}.png", Constants.tileSize, Constants.tileSize))
@@ -155,11 +150,11 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Adjusts the provided bounding box and corresponding image to a 2 x 2 square format, potentially by adding padding tiles and
         /// then cropping. This method determines which specific padding operation is required based on the current dimensions of the bounding
-        /// box relative to the target size. Possible input sizes are 1 x 1, 1 x 2, 2 x 1. The provided bounding box is modified to reflect
-        /// any padding of the image. An additional out parameter returns a bounding box calculated at the next higher zoom level.
+        /// box relative to the target size. Possible input sizes are 1 x 1, 1 x 2, 2 x 1. An additional out parameter returns a bounding box 
+        /// calculated at the next higher zoom level.
         /// </summary>
         /// <param name="boundingBox">The current <see cref="BoundingBox"/> representing the tile grid. This object is used
-        /// as input for padding operations and is updated based on the result.</param>
+        /// as input for padding operations.</param>
         /// <param name="filename">The base filename of the image being processed. This file will be modified.</param>
         /// <param name="zoom">The current zoom level of the map tiles.</param>
         /// <param name="newBoundingBox">When this method returns, contains the updated <see cref="BoundingBox"/>
@@ -172,27 +167,26 @@ namespace P3D_Scenario_Generator
             try
             {
                 // Input validation
-                if (boundingBox == null || !boundingBox.XAxis.Any() || !boundingBox.YAxis.Any())
+                if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
                 {
                     Log.Error($"MapTileImageMaker.MakeSquare: Input boundingBox is null or empty for file '{filename}'.");
                     return false;
                 }
 
                 // Get next tile East and West - allow for possible wrap around meridian
-                int newTileEast = MapTileCalculator.IncXtileNo(boundingBox.XAxis[^1], zoom);
-                int newTileWest = MapTileCalculator.DecXtileNo(boundingBox.XAxis[0], zoom);
+                int newEastXIndex = MapTileCalculator.IncXtileNo(boundingBox.XAxis[^1], zoom);
+                int newWestXindex = MapTileCalculator.DecXtileNo(boundingBox.XAxis[0], zoom);
 
                 // Get next tile South and North - don't go below bottom or top edge of map.
                 // -1 means no tile can be added in that direction (pole reached).
-                int newTileSouth = MapTileCalculator.IncYtileNo(boundingBox.YAxis[^1], zoom);
-                int newTileNorth = MapTileCalculator.DecYtileNo(boundingBox.YAxis[0]);
+                int newSouthYindex = MapTileCalculator.IncYtileNo(boundingBox.YAxis[^1], zoom);
+                int newNorthYindex = MapTileCalculator.DecYtileNo(boundingBox.YAxis[0]);
 
                 // Determine padding strategy based on current bounding box dimensions
                 if (boundingBox.XAxis.Count < boundingBox.YAxis.Count) // Current image is taller than it is wide, pad horizontally
                 {
                     Log.Info($"MakeSquare: Padding West/East for {filename}.");
-                    // Assuming MapTilePadder.PadWestEast now also returns bool and takes out BoundingBox
-                    if (!MapTilePadder.PadWestEast(boundingBox, newTileWest, newTileEast, filename, zoom, out newBoundingBox))
+                    if (!MapTilePadder.PadWestEast(boundingBox, newWestXindex, newEastXIndex, filename, zoom, out newBoundingBox))
                     {
                         Log.Error($"MakeSquare: Failed to pad West/East for '{filename}'.");
                         return false;
@@ -200,21 +194,19 @@ namespace P3D_Scenario_Generator
                 }
                 else if (boundingBox.YAxis.Count < boundingBox.XAxis.Count) // Current image is wider than it is tall, pad vertically
                 {
-                    if (newTileSouth < 0) // At or near South Pole, can only pad North
+                    if (newSouthYindex < 0) // At or near South Pole, can only pad North
                     {
                         Log.Info($"MakeSquare: At South Pole, padding North only for {filename}.");
-                        // Assuming MapTilePadder.PadNorth now also returns bool and takes out BoundingBox
-                        if (!MapTilePadder.PadNorth(boundingBox, newTileNorth, filename, zoom, out newBoundingBox))
+                        if (!MapTilePadder.PadNorth(boundingBox, newNorthYindex, filename, zoom, out newBoundingBox))
                         {
                             Log.Error($"MakeSquare: Failed to pad North (South Pole) for '{filename}'.");
                             return false;
                         }
                     }
-                    else if (newTileNorth < 0) // At or near North Pole, can only pad South
+                    else if (newNorthYindex < 0) // At or near North Pole, can only pad South
                     {
                         Log.Info($"MakeSquare: At North Pole, padding South only for {filename}.");
-                        // Assuming MapTilePadder.PadSouth now also returns bool and takes out BoundingBox
-                        if (!MapTilePadder.PadSouth(boundingBox, newTileSouth, filename, zoom, out newBoundingBox))
+                        if (!MapTilePadder.PadSouth(boundingBox, newSouthYindex, filename, zoom, out newBoundingBox))
                         {
                             Log.Error($"MakeSquare: Failed to pad South (North Pole) for '{filename}'.");
                             return false;
@@ -223,19 +215,18 @@ namespace P3D_Scenario_Generator
                     else // Can pad both North and South
                     {
                         Log.Info($"MakeSquare: Padding North/South (general) for {filename}.");
-                        // Assuming MapTilePadder.PadNorthSouth now also returns bool and takes out BoundingBox
-                        if (!MapTilePadder.PadNorthSouth(boundingBox, newTileNorth, newTileSouth, filename, zoom, out newBoundingBox))
+                        if (!MapTilePadder.PadNorthSouth(boundingBox, newNorthYindex, newSouthYindex, filename, zoom, out newBoundingBox))
                         {
                             Log.Error($"MakeSquare: Failed to pad North/South (general) for '{filename}'.");
                             return false;
                         }
                     }
                 }
-                else if (boundingBox.YAxis.Count < Constants.tileFactor) // Image is square but smaller than target size of 2 x 2
+                else if (boundingBox.XAxis.Count == boundingBox.YAxis.Count && boundingBox.XAxis.Count == 1) // Image is square but smaller than target size of 2 x 2
                 {
                     Log.Info($"MakeSquare: Image is square but smaller than target size of 2 x 2, attempting NorthSouthWestEast padding for {filename}.");
                     // Assuming MapTilePadder.PadNorthSouthWestEast now also returns bool and takes out BoundingBox
-                    if (!MapTilePadder.PadNorthSouthWestEast(boundingBox, newTileNorth, newTileSouth, newTileWest, newTileEast, filename, zoom, out newBoundingBox))
+                    if (!MapTilePadder.PadNorthSouthWestEast(boundingBox, newNorthYindex, newSouthYindex, newWestXindex, newEastXIndex, filename, zoom, out newBoundingBox))
                     {
                         Log.Error($"MakeSquare: Failed to pad North/South/West/East for '{filename}'.");
                         return false;

@@ -6,13 +6,13 @@
         /// <summary>
         /// Orchestrates the retrieval of a single OpenStreetMap (OSM) tile.
         /// It attempts to fetch the tile from a local cache first; if not found, it downloads the tile
-        /// from the configured server using the provided API key. The retrieved tile is then stored
+        /// from the configured server using the user provided API key. The retrieved tile is then stored
         /// at the specified local path.
         /// </summary>
         /// <param name="xTileNo">The X (East/West) coordinate of the required tile at the specified zoom level, corresponding to the OSM tiling scheme.</param>
         /// <param name="yTileNo">The Y (North/South) coordinate of the required tile at the specified zoom level, corresponding to the OSM tiling scheme.</param>
         /// <param name="zoom">The specific zoom level for which the OSM tile is required.</param>
-        /// <param name="filename">The full local path and filename where the OSM tile will be stored after retrieval (e.g., "C:\Images\map_tile").</param>
+        /// <param name="filename">The full local path and filename including extension where the OSM tile will be stored after retrieval.</param>
         /// <returns><see langword="true"/> if the OSM tile was successfully retrieved (either from cache or by download) and saved;
         /// otherwise, <see langword="false"/> if any error occurred during the process (errors are logged by underlying methods).</returns>
         static internal bool DownloadOSMtile(int xTileNo, int yTileNo, int zoom, string filename)
@@ -31,21 +31,21 @@
         /// It first checks whether the OSM tiles are in the tile cache. If not, they are downloaded.
         /// All tiles are stored at the specified path given by filename.
         /// </summary>
-        /// <param name="xTileNo">East/West reference number for the required tile column at specified zoom.</param>
-        /// <param name="xIndex">Used as part of the filename to uniquely identify tiles within the column.</param>
+        /// <param name="xTileNo">East/West OSM reference number for the required tile column at specified zoom.</param>
+        /// <param name="columnId">Used as part of the filename to uniquely identify the tile column.</param>
         /// <param name="boundingBox">The bounding box containing the y-axis tile numbers, used to determine the height of the column of tiles to be downloaded.</param>
         /// <param name="zoom">Required zoom level for the OSM tiles to be downloaded.</param>
         /// <param name="filename">Base path and filename where the individual OSM tiles will be stored.
-        /// Each tile's filename will be suffixed with its xIndex and yIndex (e.g., "basefilename_xIndex_yIndex.png").</param>
+        /// Each tile's filename will be suffixed with its columnId and rowId (e.g., "basefilename_xIndex_yIndex.png").</param>
         /// <returns><see langword="true"/> if all tiles in the column were successfully downloaded or retrieved from cache;
         /// otherwise, <see langword="false"/> if any tile operation failed.</returns>
-        static internal bool DownloadOSMtileColumn(int xTileNo, int xIndex, BoundingBox boundingBox, int zoom, string filename)
+        static internal bool DownloadOSMtileColumn(int xTileNo, int columnId, BoundingBox boundingBox, int zoom, string filename)
         {
             // Iterate through each y-axis tile number in the bounding box
             for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
             {
                 // Construct the unique filename for the current tile
-                string tileFilename = $"{filename}_{xIndex}_{yIndex}.png";
+                string tileFilename = $"{filename}_{columnId}_{yIndex}.png";
 
                 // Attempt to download or copy the individual OSM tile.
                 // If DownloadOSMtile returns false (indicating a failure),
@@ -66,20 +66,20 @@
         /// All tiles are stored at the specified path given by filename.
         /// </summary>
         /// <param name="yTileNo">North/South reference number for the required tile row at specified zoom.</param>
-        /// <param name="yIndex">Used as part of the filename to uniquely identify tiles within the row.</param>
+        /// <param name="rowId">Used as part of the filename to uniquely identify the tile row.</param>
         /// <param name="boundingBox">The bounding box containing the x-axis tile numbers, used to determine the width of the row of tiles to be downloaded.</param>
         /// <param name="zoom">Required zoom level for the OSM tiles to be downloaded.</param>
         /// <param name="filename">Base path and filename where the individual OSM tiles will be stored.
-        /// Each tile's filename will be suffixed with its xIndex and yIndex (e.g., "basefilename_xIndex_yIndex.png").</param>
+        /// Each tile's filename will be suffixed with its columnId and rowId (e.g., "basefilename_xIndex_yIndex.png").</param>
         /// <returns><see langword="true"/> if all tiles in the row were successfully downloaded or retrieved from cache;
         /// otherwise, <see langword="false"/> if any tile operation failed.</returns>
-        static internal bool DownloadOSMtileRow(int yTileNo, int yIndex, BoundingBox boundingBox, int zoom, string filename)
+        static internal bool DownloadOSMtileRow(int yTileNo, int rowId, BoundingBox boundingBox, int zoom, string filename)
         {
             // Iterate through each x-axis tile number in the bounding box
             for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
             {
                 // Construct the unique filename for the current tile
-                string tileFilename = $"{filename}_{xIndex}_{yIndex}.png";
+                string tileFilename = $"{filename}_{xIndex}_{rowId}.png";
 
                 // Attempt to download or copy the individual OSM tile.
                 // If DownloadOSMtile returns false (indicating a failure),

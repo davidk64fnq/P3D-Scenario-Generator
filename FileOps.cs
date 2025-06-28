@@ -226,6 +226,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Attempts to delete all temporary OSM tile files matching a specific filename pattern.
         /// These temporary files are typically generated during the montage process.
+        /// Files will be deleted if their names start with the filename string followed by "_*.png"
         /// </summary>
         /// <param name="filename">The base filename pattern to match. Files will be deleted if their names start with this filename followed by "_*.png".</param>
         /// <returns><see langword="true"/> if all matched temporary files were successfully deleted; otherwise, <see langword="false"/> if any deletion failed.</returns>

@@ -30,14 +30,13 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Pads the bounding box and the corresponding image by adding tiles to all four sides (North, South, West, East).
         /// This method is designed for an initial 1x1 tile image. It adds eight surrounding tiles to create a 3x3 conceptual grid,
-        /// then crops the central 2x2 area to effectively "zoom in" and expand the original image.
+        /// then crops the central 2x2 area to expand the original image.
         /// </summary>
-        /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be expanded. This object will be modified
-        /// to include the newly added tile indices *before* the zoom-in calculation.</param>
-        /// <param name="newTileNorth">The Y-index of the new tile row to be added to the North (top).</param>
-        /// <param name="newTileSouth">The Y-index of the new tile row to be added to the South (bottom).</param>
-        /// <param name="newTileWest">The X-index of the new tile column to be added to the West (left).</param>
-        /// <param name="newTileEast">The X-index of the new tile column to be added to the East (right).</param>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/>.</param>
+        /// <param name="newNorthYindex">The Y-index of the new tile row to be added to the North (top).</param>
+        /// <param name="newSouthYindex">The Y-index of the new tile row to be added to the South (bottom).</param>
+        /// <param name="newWestXindex">The X-index of the new tile column to be added to the West (left).</param>
+        /// <param name="newEastXindex">The X-index of the new tile column to be added to the East (right).</param>
         /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
@@ -48,37 +47,45 @@ namespace P3D_Scenario_Generator
         /// add a tile to the left and right of existing tile, montage them together 3w x 3h, then crop 0.5 w/h from all edges.
         /// Resulting file is 2w x 2h with original image in middle 1w x 1h.
         /// </remarks>
-        static internal bool PadNorthSouthWestEast(BoundingBox boundingBox, int newTileNorth, int newTileSouth,
-            int newTileWest, int newTileEast, string filename, int zoom, out BoundingBox resultBoundingBox)
+        static internal bool PadNorthSouthWestEast(BoundingBox boundingBox, int newNorthYindex, int newSouthYindex,
+            int newWestXindex, int newEastXindex, string filename, int zoom, out BoundingBox resultBoundingBox)
         {
             resultBoundingBox = new BoundingBox(); // Initialize out parameter
 
             try
             {
                 // Input validation for boundingBox and its axes.
-                if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
+                if (boundingBox == null || boundingBox.XAxis.Count != 1 || boundingBox.YAxis.Count != 1)
                 {
-                    Log.Error($"MapTilePadder.PadNorthSouthWestEast: Input boundingBox is null or empty for file '{filename}'.");
+                    Log.Error($"MapTilePadder.PadNorthSouthWestEast: Input boundingBox is not 1 x 1 for file '{filename}'.");
                     return false;
                 }
 
-                // Adjust bounding box by enlarging in all four directions by one tile.
-                boundingBox.YAxis.Insert(0, newTileNorth);
-                boundingBox.XAxis.Insert(0, newTileWest);
-                boundingBox.XAxis.Add(newTileEast);
-                boundingBox.YAxis.Add(newTileSouth);
-
                 // Download eight additional tiles and rename the existing tile image to be in the centre.
-                // The filename_X_Y.png convention is used for temporary tiles where (1,1) is the original tile.
-                if (!MapTileDownloader.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename)) return false;                  // 0,0 0,1 0,2
-                if (!MapTileDownloader.DownloadOSMtile(newTileWest, boundingBox.YAxis[1], zoom, $"{filename}_0_1.png")) return false;   // 1,0
+                // The filename_X_Y.png convention is used for temporary tiles where (1,1) is the original tile, (0,0) is top left and (2,2) is bottom right.
 
+                // Download new North row of tiles (0,0), (1,0), (2,0).
+                int rowId = 0;
+                if (!MapTileDownloader.DownloadOSMtileRow(newNorthYindex, rowId, boundingBox, zoom, filename)) return false;
+
+                // Download new West middle row tile (0,1).
+                rowId = 1;
+                int colId = 0;
+                if (!MapTileDownloader.DownloadOSMtile(newWestXindex, boundingBox.YAxis[1], zoom, $"{filename}_{colId}_{rowId}.png")) return false;     
+
+                // Move the original tile to the centre position (1,1).
+                colId = 1;
                 string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png"; 
-                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1_1.png";
-                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;                                              // 1,1
+                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_{colId}_{rowId}.png";
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;                                                  
 
-                if (!MapTileDownloader.DownloadOSMtile(newTileEast, boundingBox.YAxis[1], zoom, $"{filename}_2_1.png")) return false;   // 1,2
-                if (!MapTileDownloader.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename)) return false;                  // 2,0 2,1 2,2
+                // Download new East middle row tile (2,1).
+                colId = 2;
+                if (!MapTileDownloader.DownloadOSMtile(newEastXindex, boundingBox.YAxis[1], zoom, $"{filename}_{colId}_{rowId}.png")) return false;
+
+                // Download new South row of tiles (0,2), (1,2), (2,2).
+                rowId = 2;
+                if (!MapTileDownloader.DownloadOSMtileRow(newSouthYindex, rowId, boundingBox, zoom, filename)) return false;                    
 
                 // Montage the entire expanded 3x3 grid into a single image.
                 if (!MapTileMontager.MontageTiles(boundingBox, zoom, filename)) return false;
@@ -130,42 +137,35 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with bounding box resulting from <see cref="PadNorthSouthWestEast"/>. 
+        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with bounding box from <see cref="PadNorthSouthWestEast"/>. 
         /// </summary>
-        /// <param name="boundingBox">The bounding box resulting from <see cref="PadNorthSouthWestEast"/>.</param>
+        /// <param name="boundingBox">The bounding box from <see cref="PadNorthSouthWestEast"/>.</param>
         /// <param name="newBoundingBox">When this method returns, contains a new <see cref="BoundingBox"/> for next level of zoom.</param>
         /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
-        static internal bool ZoomInNorthSouthWestEast(BoundingBox boundingBox, out BoundingBox newBoundingBox) 
+        static private bool ZoomInNorthSouthWestEast(BoundingBox boundingBox, out BoundingBox newBoundingBox) 
         {
             newBoundingBox = new BoundingBox(); // Initialize out parameter
 
             try
             {
-                // Input validation: Add basic check for null boundingBox
-                if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
-                {
-                    Log.Error("MapTilePadder.ZoomInNorthSouthWestEast: Input boundingBox is null or empty. Cannot perform zoom in.");
-                    return false;
-                }
-
                 List<int> ewAxis = [];
-                ewAxis.Add(2 * boundingBox.XAxis[0] + 1); 
-                for (int xIndex = 1; xIndex < boundingBox.XAxis.Count - 1; xIndex++)
+                ewAxis.Add(2 * boundingBox.XAxis[0] - 1); 
+                for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
                 {
                     ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
                     ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
                 }
-                ewAxis.Add(2 * boundingBox.XAxis[^1]);  
+                ewAxis.Add(2 * boundingBox.XAxis[^1] + 2);  
                 newBoundingBox.XAxis = ewAxis;
 
                 List<int> nsAxis = [];
-                nsAxis.Add(2 * boundingBox.YAxis[0] + 1); 
-                for (int yIndex = 1; yIndex < boundingBox.YAxis.Count - 1; yIndex++)
+                nsAxis.Add(2 * boundingBox.YAxis[0] - 1); 
+                for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
                 {
                     nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
                     nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
                 }
-                nsAxis.Add(2 * boundingBox.YAxis[^1]); 
+                nsAxis.Add(2 * boundingBox.YAxis[^1] + 2); 
                 newBoundingBox.YAxis = nsAxis;
 
                 return true;
@@ -177,6 +177,7 @@ namespace P3D_Scenario_Generator
                 return false;
             }
         }
+
         /// <summary>
         /// Pads the bounding box and the corresponding image by adding tiles to the West and East sides.
         /// This method is used when the original image is 1 tile wide by 2 tiles high.
@@ -184,10 +185,9 @@ namespace P3D_Scenario_Generator
         /// (which becomes the central column), resulting in a 3x2 image. Then, it crops the central
         /// 2x2 area, effectively widening the view while maintaining height.
         /// </summary>
-        /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be expanded. This object will be modified
-        /// to include the newly added tile indices *before* the zoom-in calculation.</param>
-        /// <param name="newTileWest">The X-index of the new tile column to be added to the West (left).</param>
-        /// <param name="newTileEast">The X-index of the new tile column to be added to the East (right).</param>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/> .</param>
+        /// <param name="newWestXindex">The X-index of the new tile column to be added to the West (left).</param>
+        /// <param name="newEastXindex">The X-index of the new tile column to be added to the East (right).</param>
         /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
@@ -198,26 +198,27 @@ namespace P3D_Scenario_Generator
         /// montage them together 3w x 2h, then crop a column 0.5w x 2h from outside edges. Resulting file is 2w x 2h with original
         /// image in middle horizontally.
         /// </remarks>
-        static internal bool PadWestEast(BoundingBox boundingBox, int newTileWest, int newTileEast, string filename, int zoom, out BoundingBox resultBoundingBox)
+        static internal bool PadWestEast(BoundingBox boundingBox, int newWestXindex, int newEastXindex, string filename, int zoom, out BoundingBox resultBoundingBox)
         {
             resultBoundingBox = new BoundingBox(); // Initialize out parameter
 
             try
             {
                 // Input validation for boundingBox and its axes.
-                if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
+                if (boundingBox == null || boundingBox.XAxis.Count != 1 || boundingBox.YAxis.Count != 2)
                 {
-                    Log.Error($"MapTilePadder.PadWestEast: Input boundingBox is null or empty for file '{filename}'.");
+                    Log.Error($"MapTilePadder.PadWestEast: Input boundingBox is not 1 x 2 for file '{filename}'.");
                     return false;
                 }
 
-                // Create new western column (index 0)
-                if (!MapTileDownloader.DownloadOSMtileColumn(newTileWest, 0, boundingBox, zoom, filename))
+                // Create new western column 
+                int columnId = 0;
+                if (!MapTileDownloader.DownloadOSMtileColumn(newWestXindex, columnId, boundingBox, zoom, filename))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to download western column tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, 0, filename))
+                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, columnId, filename))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to montage western column tiles for '{filename}'.");
                     return false;
@@ -227,22 +228,24 @@ namespace P3D_Scenario_Generator
                     Log.Warning($"MapTilePadder.PadWestEast: Failed to delete temporary OSM files after western column montage for '{filename}'.");
                 }
 
-                // Rename source column to be the centre column (index 1)
+                // Rename source column to be the centre column 
+                columnId = 1;
                 string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
-                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1.png";
+                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_{columnId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to move original image to center column position for '{filename}'.");
                     return false;
                 }
 
-                // Create new eastern column (index 2)
-                if (!MapTileDownloader.DownloadOSMtileColumn(newTileEast, 2, boundingBox, zoom, filename))
+                // Create new eastern column 
+                columnId = 2;
+                if (!MapTileDownloader.DownloadOSMtileColumn(newEastXindex, columnId, boundingBox, zoom, filename))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to download eastern column tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, 2, filename))
+                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, columnId, filename))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to montage eastern column tiles for '{filename}'.");
                     return false;
@@ -272,7 +275,7 @@ namespace P3D_Scenario_Generator
                 }
 
                 // Using Magick.NET for image manipulation
-                using (MagickImage image = new MagickImage(finalImagePath))
+                using (MagickImage image = new(finalImagePath))
                 {
                     // Define geometry: (width, height, x-offset, y-offset)
                     // We want a 2x2 tile area, starting at (0.5 * tile size, 0) from top-left of the 3x2 image.
@@ -309,26 +312,18 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with bounding box resulting from <see cref="PadWestEast"/>. 
+        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with bounding box from <see cref="PadWestEast"/>. 
         /// </summary>
-        /// <param name="boundingBox">The bounding box resulting from <see cref="PadWestEast"/>.</param>
+        /// <param name="boundingBox">The bounding box from <see cref="PadWestEast"/>.</param>
         /// <param name="newBoundingBox">When this method returns, contains a new <see cref="BoundingBox"/> for next level of zoom.</param>
         /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
-        static internal bool ZoomInWestEast(BoundingBox boundingBox, out BoundingBox newBoundingBox) // Modified signature for bool return and out parameter
+        static private bool ZoomInWestEast(BoundingBox boundingBox, out BoundingBox newBoundingBox) 
         {
             newBoundingBox = new BoundingBox(); // Initialize out parameter
 
             try
             {
-                // Input validation: Add basic check for null boundingBox
-                if (boundingBox == null || boundingBox.XAxis.Count == 0 || !boundingBox.YAxis.Any())
-                {
-                    Log.Error("MapTilePadder.ZoomInWestEast: Input boundingBox is null or empty. Cannot perform zoom in.");
-                    return false;
-                }
-
                 List<int> ewAxis = [];
-                // Original logic for ewAxis:
                 ewAxis.Add(2 * boundingBox.XAxis[0] - 1);
                 for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
                 {
@@ -339,7 +334,6 @@ namespace P3D_Scenario_Generator
                 newBoundingBox.XAxis = ewAxis;
 
                 List<int> nsAxis = [];
-                // Original logic for nsAxis:
                 for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
                 {
                     nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
@@ -359,15 +353,14 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Pads the bounding box and the corresponding image by adding tiles to the North and South sides.
-        /// This method is typically used when the original image is 2 tiles wide by 1 tile high.
+        /// This method is used when the original image is 2 tiles wide by 1 tile high.
         /// It creates two new 2x1 rows (North and South), montages them with the original 2 tiles
         /// (which becomes the central row), resulting in an 2x3 image. Then, it crops the central
         /// 2x2 area, effectively heightening the view while maintaining width.
         /// </summary>
-        /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be expanded. This object will be modified
-        /// to include the newly added tile indices *before* the zoom-in calculation.</param>
-        /// <param name="newTileNorth">The Y-index of the new tile row to be added to the North (top).</param>
-        /// <param name="newTileSouth">The Y-index of the new tile row to be added to the South (bottom).</param>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/>.</param>
+        /// <param name="newNorthYindex">The Y-index of the new tile row to be added to the North (top).</param>
+        /// <param name="newSouthYindex">The Y-index of the new tile row to be added to the South (bottom).</param>
         /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
@@ -378,26 +371,27 @@ namespace P3D_Scenario_Generator
         /// montage them together 2w x 3h, then crop a row 2w x 0.5h from outside edges. Resulting file is 2w x 2h with original
         /// image in middle vertically.
         /// </remarks>
-        static internal bool PadNorthSouth(BoundingBox boundingBox, int newTileNorth, int newTileSouth, string filename, int zoom, out BoundingBox resultBoundingBox)
+        static internal bool PadNorthSouth(BoundingBox boundingBox, int newNorthYindex, int newSouthYindex, string filename, int zoom, out BoundingBox resultBoundingBox)
         {
             resultBoundingBox = new BoundingBox(); // Initialize out parameter
 
             try
             {
                 // Input validation for boundingBox and its axes.
-                if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
+                if (boundingBox == null || boundingBox.XAxis.Count != 2 || boundingBox.YAxis.Count != 1)
                 {
-                    Log.Error($"MapTilePadder.PadNorthSouth: Input boundingBox is null or empty for file '{filename}'.");
+                    Log.Error($"MapTilePadder.PadNorthSouth: Input boundingBox is not 1 x 2 for file '{filename}'.");
                     return false;
                 }
 
-                // Create new northern row (index 0)
-                if (!MapTileDownloader.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename))
+                // Create new northern row 
+                int rowId = 0;
+                if (!MapTileDownloader.DownloadOSMtileRow(newNorthYindex, rowId, boundingBox, zoom, filename))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to download northern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 0, filename))
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to montage northern row tiles for '{filename}'.");
                     return false;
@@ -407,22 +401,24 @@ namespace P3D_Scenario_Generator
                     Log.Warning($"MapTilePadder.PadNorthSouth: Failed to delete temporary OSM files after northern row montage for '{filename}'.");
                 }
 
-                // Rename source row to be the centre row (index 1)
+                // Rename source row to be the centre row
+                rowId = 1;
                 string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
-                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1.png";
+                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_{rowId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to move original image to center row position for '{filename}'.");
                     return false;
                 }
 
-                // Create new southern row (index 2)
-                if (!MapTileDownloader.DownloadOSMtileRow(newTileSouth, 2, boundingBox, zoom, filename))
+                // Create new southern row 
+                rowId = 2;
+                if (!MapTileDownloader.DownloadOSMtileRow(newSouthYindex, rowId, boundingBox, zoom, filename))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to download southern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 2, filename))
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to montage southern row tiles for '{filename}'.");
                     return false;
@@ -438,10 +434,9 @@ namespace P3D_Scenario_Generator
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to montage all three rows for '{filename}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles(filename)) // This call probably meant to delete specific temporary files, not the main image, check context.
+                if (!FileOps.DeleteTempOSMfiles(filename)) 
                 {
                     Log.Warning($"MapTilePadder.PadNorthSouth: Failed to delete general temporary files after full row montage for '{filename}'.");
-                    // Continue
                 }
 
                 // Crop the central 2w x 2h area from the newly montaged 2w x 3h image.
@@ -490,24 +485,17 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with bounding box resulting from <see cref="PadNorthSouth"/>. 
+        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with bounding box from <see cref="PadNorthSouth"/>. 
         /// </summary>
-        /// <param name="boundingBox">The bounding box resulting from <see cref="PadNorthSouth"/>.</param>
+        /// <param name="boundingBox">The bounding box from <see cref="PadNorthSouth"/>.</param>
         /// <param name="newBoundingBox">When this method returns, contains a new <see cref="BoundingBox"/> for next level of zoom.</param>
         /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
-        static internal bool ZoomInNorthSouth(BoundingBox boundingBox, out BoundingBox newBoundingBox) 
+        static private bool ZoomInNorthSouth(BoundingBox boundingBox, out BoundingBox newBoundingBox) 
         {
             newBoundingBox = new BoundingBox(); // Initialize out parameter
 
             try
             {
-                // Input validation: Add basic check for null boundingBox
-                if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
-                {
-                    Log.Error("MapTilePadder.ZoomInNorthSouth: Input boundingBox is null or empty. Cannot perform zoom in.");
-                    return false;
-                }
-
                 List<int> ewAxis = [];
                 for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
                 {
@@ -538,13 +526,12 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Pads the bounding box and the corresponding image by adding tiles to the North side,
-        /// typically when already at or near the South Pole. This method is used for an existing
+        /// when at or near the South Pole. This method is used for an existing
         /// image that is 2 tiles wide by 1 tile high. It adds a new 2x1 row to the North, montages
         /// it with the original image, shifting the original content to the bottom vertically.
         /// </summary>
-        /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be expanded. This object will be modified
-        /// to include the newly added tile indices *before* the zoom-in calculation.</param>
-        /// <param name="newTileNorth">The Y-index of the new tile row to be added to the North (top).</param>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/>.</param>
+        /// <param name="newNorthYindex">The Y-index of the new tile row to be added to the North (top).</param>
         /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
@@ -554,26 +541,27 @@ namespace P3D_Scenario_Generator
         /// The file to be padded is 2w x 1h (unit is Con.tileSize) and we're at the south pole. Create a row of tiles above 2w x 1h,
         /// montage them together. Resulting file is 2w x 2h with original image at bottom vertically.
         /// </remarks>
-        static internal bool PadNorth(BoundingBox boundingBox, int newTileNorth, string filename, int zoom, out BoundingBox resultBoundingBox)
+        static internal bool PadNorth(BoundingBox boundingBox, int newNorthYindex, string filename, int zoom, out BoundingBox resultBoundingBox)
         {
             resultBoundingBox = new BoundingBox(); // Initialize out parameter
 
             try
             {
                 // Input validation for boundingBox and its axes.
-                if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
+                if (boundingBox == null || boundingBox.XAxis.Count != 2 || boundingBox.YAxis.Count != 1)
                 {
-                    Log.Error($"MapTilePadder.PadNorth: Input boundingBox is null or empty for file '{filename}'.");
+                    Log.Error($"MapTilePadder.PadNorth: Input boundingBox is not 2 x 1 for file '{filename}'.");
                     return false;
                 }
 
-                // Create new northern row (index 0)
-                if (!MapTileDownloader.DownloadOSMtileRow(newTileNorth, 0, boundingBox, zoom, filename))
+                // Create new northern row
+                int rowId = 0;
+                if (!MapTileDownloader.DownloadOSMtileRow(newNorthYindex, rowId, boundingBox, zoom, filename))
                 {
                     Log.Error($"MapTilePadder.PadNorth: Failed to download northern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 0, filename))
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename))
                 {
                     Log.Error($"MapTilePadder.PadNorth: Failed to montage northern row tiles for '{filename}'.");
                     return false;
@@ -583,9 +571,10 @@ namespace P3D_Scenario_Generator
                     Log.Warning($"MapTilePadder.PadNorth: Failed to delete temporary OSM files after northern row montage for '{filename}'.");
                 }
 
-                // Rename source row to be the bottom row (index 1)
+                // Rename source row to be the bottom row 
+                rowId = 1;
                 string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
-                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_1.png";
+                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_{rowId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadNorth: Failed to move original image to bottom row position for '{filename}'.");
@@ -630,24 +619,17 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with bounding box resulting from <see cref="PadNorth"/>. 
+        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with bounding box from <see cref="PadNorth"/>. 
         /// </summary>
-        /// <param name="boundingBox">The bounding box resulting from <see cref="PadNorth"/>.</param>
+        /// <param name="boundingBox">The bounding box from <see cref="PadNorth"/>.</param>
         /// <param name="newBoundingBox">When this method returns, contains a new <see cref="BoundingBox"/> for next level of zoom.</param>
         /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
-        static internal bool ZoomInNorth(BoundingBox boundingBox, out BoundingBox newBoundingBox) 
+        static private bool ZoomInNorth(BoundingBox boundingBox, out BoundingBox newBoundingBox) 
         {
             newBoundingBox = new BoundingBox(); // Initialize out parameter
 
             try
             {
-                // Input validation: Add basic check for null boundingBox
-                if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
-                {
-                    Log.Error("MapTilePadder.ZoomInNorth: Input boundingBox is null or empty. Cannot perform zoom in.");
-                    return false;
-                }
-
                 List<int> ewAxis = [];
                 for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
                 {
@@ -678,13 +660,12 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Pads the bounding box and the corresponding image by adding tiles to the South side,
-        /// typically when already at or near the North Pole. This method is used for an existing
+        /// when at or near the North Pole. This method is used for an existing
         /// image that is 2 tiles wide by 1 tile high. It adds a new 2x1 row to the South, montages
         /// it with the original image, keeping the original content at the top vertically.
         /// </summary>
-        /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be expanded. This object will be modified
-        /// to include the newly added tile indices *before* the zoom-in calculation.</param>
-        /// <param name="newTileSouth">The Y-index of the new tile row to be added to the South (bottom).</param>
+        /// <param name="boundingBox">The current <see cref="BoundingBox"/>.</param>
+        /// <param name="newSouthYindex">The Y-index of the new tile row to be added to the South (bottom).</param>
         /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
@@ -694,35 +675,37 @@ namespace P3D_Scenario_Generator
         /// The file to be padded is 2w x 1h (unit is Con.tileSize) and we're at the north pole. Create a row of tiles below 2w x 1h,
         /// montage them together. Resulting file is 2w x 2h with original image at top vertically.
         /// </remarks>
-        static internal bool PadSouth(BoundingBox boundingBox, int newTileSouth, string filename, int zoom, out BoundingBox resultBoundingBox)
+        static internal bool PadSouth(BoundingBox boundingBox, int newSouthYindex, string filename, int zoom, out BoundingBox resultBoundingBox)
         {
             resultBoundingBox = new BoundingBox(); // Initialize out parameter
 
             try
             {
                 // Input validation for boundingBox and its axes.
-                if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
+                if (boundingBox == null || boundingBox.XAxis.Count != 2 || boundingBox.YAxis.Count != 1)
                 {
-                    Log.Error($"MapTilePadder.PadSouth: Input boundingBox is null or empty for file '{filename}'.");
+                    Log.Error($"MapTilePadder.PadSouth: Input boundingBox is not 2 x 1 for file '{filename}'.");
                     return false;
                 }
 
-                // Rename source row to be the top row (index 0)
+                // Rename source row to be the top row
+                int rowId = 0;
                 string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
-                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_0.png";
+                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_{rowId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadSouth: Failed to move original image to top row position for '{filename}'.");
                     return false;
                 }
 
-                // Create new southern row (index 1)
-                if (!MapTileDownloader.DownloadOSMtileRow(newTileSouth, 1, boundingBox, zoom, filename))
+                // Create new southern row
+                rowId = 1;
+                if (!MapTileDownloader.DownloadOSMtileRow(newSouthYindex, rowId, boundingBox, zoom, filename))
                 {
                     Log.Error($"MapTilePadder.PadSouth: Failed to download southern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, 1, filename))
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename))
                 {
                     Log.Error($"MapTilePadder.PadSouth: Failed to montage southern row tiles for '{filename}'.");
                     return false;
@@ -771,24 +754,17 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with bounding box resulting from <see cref="PadSouth"/>. 
+        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with bounding box from <see cref="PadSouth"/>. 
         /// </summary>
-        /// <param name="boundingBox">The bounding box resulting from <see cref="PadSouth"/>.</param>
+        /// <param name="boundingBox">The bounding box from <see cref="PadSouth"/>.</param>
         /// <param name="newBoundingBox">When this method returns, contains a new <see cref="BoundingBox"/> for next level of zoom.</param>
         /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
-        static internal bool ZoomInSouth(BoundingBox boundingBox, out BoundingBox newBoundingBox) // Modified signature for bool return and out parameter
+        static private bool ZoomInSouth(BoundingBox boundingBox, out BoundingBox newBoundingBox) 
         {
             newBoundingBox = new BoundingBox(); // Initialize out parameter
 
             try
             {
-                // Input validation: Add basic check for null boundingBox
-                if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
-                {
-                    Log.Error("MapTilePadder.ZoomInSouth: Input boundingBox is null or empty. Cannot perform zoom in.");
-                    return false;
-                }
-
                 List<int> ewAxis = [];
                 for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
                 {
