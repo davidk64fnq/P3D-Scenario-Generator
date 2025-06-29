@@ -1,5 +1,6 @@
 ﻿using CoordinateSharp;
 using HtmlAgilityPack;
+using P3D_Scenario_Generator.MapTiles;
 using System.Web;
 
 namespace P3D_Scenario_Generator

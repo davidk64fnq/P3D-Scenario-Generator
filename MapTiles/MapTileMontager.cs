@@ -1,6 +1,6 @@
 ﻿using ImageMagick;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.MapTiles
 {
     /// <summary>
     /// Provides static methods for assembling OpenStreetMap (OSM) tiles into larger images.

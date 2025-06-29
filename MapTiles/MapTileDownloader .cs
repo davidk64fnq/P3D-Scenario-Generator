@@ -1,4 +1,4 @@
-﻿namespace P3D_Scenario_Generator
+﻿namespace P3D_Scenario_Generator.MapTiles
 {
     internal class MapTileDownloader
     {

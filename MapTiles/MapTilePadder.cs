@@ -1,6 +1,6 @@
 ﻿using ImageMagick;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.MapTiles
 {
     /// <summary>
     /// Provides static methods for adjusting and "padding" the OpenStreetMap (OSM) tile grid

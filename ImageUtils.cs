@@ -1,5 +1,6 @@
 ﻿using ImageMagick;
 using ImageMagick.Drawing;
+using P3D_Scenario_Generator.MapTiles;
 
 namespace P3D_Scenario_Generator
 {

@@ -1,6 +1,7 @@
 ﻿
 using System.Xml.Serialization;
 using System.Reflection;
+using P3D_Scenario_Generator.Celestial;
 
 namespace P3D_Scenario_Generator
 {

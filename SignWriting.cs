@@ -1,4 +1,6 @@
-﻿namespace P3D_Scenario_Generator
+﻿using P3D_Scenario_Generator.MapTiles;
+
+namespace P3D_Scenario_Generator
 {
     /// <summary>
     /// Methods for creating a signwriting message scenario. Creation of gates done in gates.cs, also some methods

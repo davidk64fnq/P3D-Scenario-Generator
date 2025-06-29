@@ -1,4 +1,5 @@
 ﻿using CoordinateSharp;
+using P3D_Scenario_Generator.MapTiles;
 
 namespace P3D_Scenario_Generator
 {

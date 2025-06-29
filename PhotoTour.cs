@@ -1,4 +1,5 @@
-﻿using HtmlDocument = HtmlAgilityPack.HtmlDocument;
+﻿using P3D_Scenario_Generator.MapTiles;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace P3D_Scenario_Generator
 {

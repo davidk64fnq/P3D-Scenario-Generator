@@ -1,4 +1,4 @@
-﻿namespace P3D_Scenario_Generator
+﻿namespace P3D_Scenario_Generator.MapTiles
 {
     /// <summary>
     /// Provides methods for calculating, extending, and adjusting the bounding box of OpenStreetMap tiles.
@@ -198,7 +198,7 @@
                 }
                 else
                 {
-                    for (int tileNo = boundingBox.XAxis[^1] + 1; tileNo < (1 << zoom); tileNo++)
+                    for (int tileNo = boundingBox.XAxis[^1] + 1; tileNo < 1 << zoom; tileNo++)
                     {
                         boundingBox.XAxis.Add(tileNo);
                     }
@@ -273,7 +273,7 @@
         {
             try
             {
-                if ((tiles[tileIndexToCheck].YOffset < Constants.boundingBoxTrimMargin) && (tiles[tileIndexToCheck].YIndex > 0))
+                if (tiles[tileIndexToCheck].YOffset < Constants.boundingBoxTrimMargin && tiles[tileIndexToCheck].YIndex > 0)
                 {
                     boundingBox.YAxis.Insert(0, tiles[tileIndexToCheck].YIndex - 1);
                 }
@@ -325,7 +325,7 @@
         {
             try
             {
-                if ((tiles[tileIndexToCheck].YOffset > Constants.tileSize - Constants.boundingBoxTrimMargin) && (tiles[tileIndexToCheck].YIndex < (1 << zoom) - 1))
+                if (tiles[tileIndexToCheck].YOffset > Constants.tileSize - Constants.boundingBoxTrimMargin && tiles[tileIndexToCheck].YIndex < (1 << zoom) - 1)
                 {
                     boundingBox.YAxis.Add(tiles[tileIndexToCheck].YIndex + 1);
                 }

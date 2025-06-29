@@ -1,6 +1,6 @@
 ﻿using CoordinateSharp;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.MapTiles
 {
     /// <summary>
     /// Provides methods for calculating OpenStreetMap (OSM) tile information
@@ -51,7 +51,7 @@ namespace P3D_Scenario_Generator
                     return false; // Indicate overall failure for GetOptimalZoomLevel
                 }
 
-                if ((boundingBox.XAxis.Count > tilesWidth) || (boundingBox.YAxis.Count > tilesHeight))
+                if (boundingBox.XAxis.Count > tilesWidth || boundingBox.YAxis.Count > tilesHeight)
                 {
                     // If current zoom level exceeds limits, the previous one was optimal.
                     // If lastValidZoom is 0 here, it means no valid zoom was ever found.
@@ -236,7 +236,7 @@ namespace P3D_Scenario_Generator
         public static int IncXtileNo(int tileNo, int zoom)
         {
             int newTileNo = tileNo + 1;
-            if (newTileNo == (1 << zoom))
+            if (newTileNo == 1 << zoom)
             {
                 newTileNo = 0;
             }
@@ -253,7 +253,7 @@ namespace P3D_Scenario_Generator
         /// <returns>The incremented Y-tile number, or -1 if the southern boundary is reached.</returns>
         public static int IncYtileNo(int tileNo, int zoom)
         {
-            if (tileNo + 1 < (1 << zoom))
+            if (tileNo + 1 < 1 << zoom)
             {
                 return tileNo + 1;
             }

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using P3D_Scenario_Generator.Celestial;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace P3D_Scenario_Generator

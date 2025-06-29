@@ -1,4 +1,4 @@
-﻿namespace P3D_Scenario_Generator
+﻿namespace P3D_Scenario_Generator.MapTiles
 {
     /// <summary> 
     /// The bounding box is two lists of tile numbers, one for x axis the other y axis.

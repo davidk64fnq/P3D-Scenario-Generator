@@ -1,4 +1,6 @@
-﻿namespace P3D_Scenario_Generator
+﻿using P3D_Scenario_Generator.MapTiles;
+
+namespace P3D_Scenario_Generator
 {
     /// <summary>
     /// Provides routines for the Circuit scenario type
