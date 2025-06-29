@@ -33,6 +33,10 @@ namespace P3D_Scenario_Generator.Celestial
         {
             ExcelPackage.License.SetNonCommercialPersonal("David Kilpatrick");
 
+            stars.Clear();
+            navStarNames.Clear();
+            noStars = 0;
+
             Stream stream = Form.GetResourceStream("Excel.CelestialNavStars.xlsx");
             using ExcelPackage package = new(stream);
             var worksheet = package.Workbook.Worksheets[0];

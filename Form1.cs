@@ -1,4 +1,5 @@
 ﻿using P3D_Scenario_Generator.Celestial;
+using P3D_Scenario_Generator.Circuit;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -93,7 +94,7 @@ namespace P3D_Scenario_Generator
         {
             if (ComboBoxGeneralScenarioType.Text == Constants.scenarioNames[(int)ScenarioTypes.Circuit])
             {
-                Circuit.SetCircuit();
+                MakeCircuit.SetCircuit();
                 SaveUserSettings(TabPageCircuit.Controls);
             }
             else if (ComboBoxGeneralScenarioType.Text == Constants.scenarioNames[(int)ScenarioTypes.PhotoTour])

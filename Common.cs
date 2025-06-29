@@ -85,7 +85,7 @@ namespace P3D_Scenario_Generator
         {
             if (Parameters.SelectedScenario == nameof(ScenarioTypes.Circuit))
             {
-                Circuit.SetCircuitOSMtiles(tiles, zoom, 0, Circuit.gates.Count - 1);
+         //       Circuit.SetCircuitOSMtiles(tiles, zoom, 0, Circuit.gates.Count - 1);
             }
             else if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
@@ -109,7 +109,7 @@ namespace P3D_Scenario_Generator
         {
             if (Parameters.SelectedScenario == nameof(ScenarioTypes.Circuit))
             {
-                Circuit.SetCircuitOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
+        //        Circuit.SetCircuitOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             }
             else if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
