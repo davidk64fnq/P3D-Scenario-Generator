@@ -28,9 +28,11 @@
                     return false;
                 }
 
-                boundingBox = new BoundingBox();
-                boundingBox.XAxis = [tiles[0].XIndex];
-                boundingBox.YAxis = [tiles[0].YIndex];
+                boundingBox = new BoundingBox
+                {
+                    XAxis = [tiles[0].XIndex],
+                    YAxis = [tiles[0].YIndex]
+                };
 
                 // Adjust boundingBox as needed to include remaining tiles
                 for (int tileNo = 1; tileNo < tiles.Count; tileNo++)
@@ -103,14 +105,8 @@
             {
                 for (int tileNo = boundingBox.YAxis[0] - 1; tileNo >= newTile.YIndex; tileNo--)
                 {
-                    if (!boundingBox.YAxis.Contains(tileNo)) // Prevent adding duplicates
-                    {
-                        boundingBox.YAxis.Insert(0, tileNo);
-                    }
+                    boundingBox.YAxis.Insert(0, tileNo);
                 }
-                // Sort after additions to maintain order, crucial if later logic depends on sorted list.
-                // Could be optimized by only sorting once at the end of ExtendBoundingBox if many inserts happen.
-                boundingBox.YAxis.Sort();
             }
             catch (Exception ex)
             {
@@ -129,12 +125,8 @@
             {
                 for (int tileNo = boundingBox.YAxis[^1] + 1; tileNo <= newTile.YIndex; tileNo++)
                 {
-                    if (!boundingBox.YAxis.Contains(tileNo)) // Prevent adding duplicates
-                    {
                         boundingBox.YAxis.Add(tileNo);
-                    }
                 }
-                boundingBox.YAxis.Sort();
             }
             catch (Exception ex)
             {
@@ -161,30 +153,20 @@
                 {
                     for (int tileNo = boundingBox.XAxis[^1] + 1; tileNo <= newTile.XIndex; tileNo++)
                     {
-                        if (!boundingBox.XAxis.Contains(tileNo)) // Prevent adding duplicates
-                        {
-                            boundingBox.XAxis.Add(tileNo);
-                        }
+                        boundingBox.XAxis.Add(tileNo);
                     }
                 }
                 else
                 {
                     for (int tileNo = boundingBox.XAxis[0] - 1; tileNo >= 0; tileNo--)
                     {
-                        if (!boundingBox.XAxis.Contains(tileNo)) // Prevent adding duplicates
-                        {
-                            boundingBox.XAxis.Insert(0, tileNo);
-                        }
+                        boundingBox.XAxis.Insert(0, tileNo);
                     }
                     for (int tileNo = (1 << zoom) - 1; tileNo >= newTile.XIndex; tileNo--)
                     {
-                        if (!boundingBox.XAxis.Contains(tileNo)) // Prevent adding duplicates
-                        {
-                            boundingBox.XAxis.Insert(0, tileNo);
-                        }
+                        boundingBox.XAxis.Insert(0, tileNo);
                     }
                 }
-                boundingBox.XAxis.Sort();
             }
             catch (Exception ex)
             {
@@ -211,30 +193,20 @@
                 {
                     for (int tileNo = boundingBox.XAxis[0] - 1; tileNo >= newTile.XIndex; tileNo--)
                     {
-                        if (!boundingBox.XAxis.Contains(tileNo)) // Prevent adding duplicates
-                        {
-                            boundingBox.XAxis.Insert(0, tileNo);
-                        }
+                        boundingBox.XAxis.Insert(0, tileNo);
                     }
                 }
                 else
                 {
                     for (int tileNo = boundingBox.XAxis[^1] + 1; tileNo < (1 << zoom); tileNo++)
                     {
-                        if (!boundingBox.XAxis.Contains(tileNo)) // Prevent adding duplicates
-                        {
-                            boundingBox.XAxis.Add(tileNo);
-                        }
+                        boundingBox.XAxis.Add(tileNo);
                     }
                     for (int tileNo = 0; tileNo <= newTile.XIndex; tileNo++)
                     {
-                        if (!boundingBox.XAxis.Contains(tileNo)) // Prevent adding duplicates
-                        {
-                            boundingBox.XAxis.Add(tileNo);
-                        }
+                        boundingBox.XAxis.Add(tileNo);
                     }
                 }
-                boundingBox.XAxis.Sort();
             }
             catch (Exception ex)
             {
@@ -303,11 +275,7 @@
             {
                 if ((tiles[tileIndexToCheck].YOffset < Constants.boundingBoxTrimMargin) && (tiles[tileIndexToCheck].YIndex > 0))
                 {
-                    if (!boundingBox.YAxis.Contains(tiles[tileIndexToCheck].YIndex - 1))
-                    {
-                        boundingBox.YAxis.Insert(0, tiles[tileIndexToCheck].YIndex - 1);
-                        boundingBox.YAxis.Sort();
-                    }
+                    boundingBox.YAxis.Insert(0, tiles[tileIndexToCheck].YIndex - 1);
                 }
             }
             catch (Exception ex)
@@ -333,10 +301,9 @@
                 if (tiles[tileIndexToCheck].XOffset > Constants.tileSize - Constants.boundingBoxTrimMargin)
                 {
                     newTileNo = MapTileCalculator.IncXtileNo(tiles[tileIndexToCheck].XIndex, zoom);
-                    if (!boundingBox.XAxis.Contains(newTileNo)) // Removed `&& newTileNo != boundingBox.XAxis[0]` as Contains implies this
+                    if (newTileNo != boundingBox.XAxis[0]) // Avoid adding the same tile number if it's already at the west edge
                     {
                         boundingBox.XAxis.Add(newTileNo);
-                        boundingBox.XAxis.Sort();
                     }
                 }
             }
@@ -360,11 +327,7 @@
             {
                 if ((tiles[tileIndexToCheck].YOffset > Constants.tileSize - Constants.boundingBoxTrimMargin) && (tiles[tileIndexToCheck].YIndex < (1 << zoom) - 1))
                 {
-                    if (!boundingBox.YAxis.Contains(tiles[tileIndexToCheck].YIndex + 1))
-                    {
-                        boundingBox.YAxis.Add(tiles[tileIndexToCheck].YIndex + 1);
-                        boundingBox.YAxis.Sort();
-                    }
+                    boundingBox.YAxis.Add(tiles[tileIndexToCheck].YIndex + 1);
                 }
             }
             catch (Exception ex)
@@ -390,10 +353,9 @@
                 if (tiles[tileIndexToCheck].XOffset < Constants.boundingBoxTrimMargin)
                 {
                     newTileNo = MapTileCalculator.DecXtileNo(tiles[tileIndexToCheck].XIndex, zoom);
-                    if (!boundingBox.XAxis.Contains(newTileNo)) // Removed `&& newTileNo != boundingBox.XAxis[^1]` as Contains implies this
+                    if (newTileNo != boundingBox.XAxis[^1])
                     {
                         boundingBox.XAxis.Insert(0, newTileNo);
-                        boundingBox.XAxis.Sort();
                     }
                 }
             }
