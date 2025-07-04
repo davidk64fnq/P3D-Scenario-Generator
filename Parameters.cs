@@ -8,7 +8,6 @@ namespace P3D_Scenario_Generator
         #region General tab
 
         internal static string SelectedAirportICAO { get; set; }
-        internal static string SelectedAirportID { get; set; }
         internal static int SelectedAirportIndex { get; set; }
         internal static string ImageFolder { get; private set; }
         internal static string AircraftTitle { get; private set; }
@@ -164,6 +163,11 @@ namespace P3D_Scenario_Generator
         /// Which of four corners of monitor to position map window relative to or else in the center of monitor.
         /// </summary>
         internal static string PhotoTourMapAlignment { get; set; }
+
+        /// <summary>
+        /// Max number of attempts at creating photo tour.
+        /// </summary>
+        internal static int PhotoTourMaxSearchAttempts { get; set; }
 
         #endregion
 
@@ -376,10 +380,6 @@ namespace P3D_Scenario_Generator
                 AircraftImagePath = aircraftVariant.ThumbnailImagePath;
             }
             SelectedAirportICAO = Form.form.ComboBoxGeneralRunwaySelected.Text.Split(" ")[0];
-            if (Form.form.ComboBoxGeneralRunwaySelected.Text != "")
-            {
-                SelectedAirportID = Form.form.ComboBoxGeneralRunwaySelected.Text.Split(" ")[1][1..^1]; // Strip '(' and ')'
-            }
             SelectedAirportIndex = Form.form.ComboBoxGeneralRunwaySelected.SelectedIndex;
             int index = Array.FindIndex(Constants.scenarioNames, s => s == Form.form.ComboBoxGeneralScenarioType.Text);
             SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
@@ -422,6 +422,7 @@ namespace P3D_Scenario_Generator
             PhotoTourMapOffset = Convert.ToInt32(Form.form.TextBoxPhotoTourMapOffset.Text);
             PhotoTourMapAlignment = Form.form.ComboBoxPhotoTourMapAlignment.GetItemText(Form.form.ComboBoxPhotoTourMapAlignment.SelectedItem);
             PhotoTourMapWindowSize = Convert.ToInt32(Form.form.ComboBoxPhotoTourMapWindowSize.Text);
+            PhotoTourMaxSearchAttempts = 100;
 
             // Sign Writing
             SignMessage = Form.form.ComboBoxSignMessage.GetItemText(Form.form.ComboBoxSignMessage.SelectedItem);
@@ -435,7 +436,7 @@ namespace P3D_Scenario_Generator
             SignOffset = Convert.ToInt32(Form.form.TextBoxSignOffset.Text);
             SignAlignment = Form.form.ComboBoxSignAlignment.GetItemText(Form.form.ComboBoxSignAlignment.SelectedItem);
 
-            // Celestial Navigation
+            // CelestialScenario Navigation
             CelestialMinDistance = Convert.ToDouble(Form.form.TextBoxCelestialMinDist.Text);
             CelestialMaxDistance = Convert.ToDouble(Form.form.TextBoxCelestialMaxDist.Text);
 

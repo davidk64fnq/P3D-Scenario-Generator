@@ -11,11 +11,11 @@ namespace P3D_Scenario_Generator
     internal class ImageUtils
     {
         // MAKE SQUARE IS TEMPORARY - WILL BE REMOVED AFTER OTHER REFACTORS
-        static internal BoundingBox MakeSquare(BoundingBox boundingBox, string filename, int zoom, int size)
+        static internal BoundingBox MakeSquare(BoundingBox boundingBox, int zoom, int size)
         {
             // Get next tile East and West - allow for possibile wrap around meridian
-            int newTileEast = MapTileCalculator.IncXtileNo(boundingBox.XAxis[^1], zoom);
-            int newTileWest = MapTileCalculator.DecXtileNo(boundingBox.XAxis[0], zoom);
+        //    int newTileEast = MapTileCalculator.IncXtileNo(boundingBox.XAxis[^1], zoom);
+        //    int newTileWest = MapTileCalculator.DecXtileNo(boundingBox.XAxis[0], zoom);
             // Get next tile South and North - don't go below bottom or top edge of map, -1 means no tile added that direction
             int newTileSouth = MapTileCalculator.IncYtileNo(boundingBox.YAxis[^1], zoom);
             int newTileNorth = MapTileCalculator.DecYtileNo(boundingBox.YAxis[0]);
@@ -43,8 +43,7 @@ namespace P3D_Scenario_Generator
             {
                 //    return MapTilePadder.PadNorthSouthWestEast(boundingBox, newTileNorth, newTileSouth, newTileWest, newTileEast, filename, zoom);
             }
-            BoundingBox zoomInBB;
-            MapTilePadder.ZoomIn(boundingBox, out zoomInBB);
+            MapTilePadder.ZoomIn(boundingBox, out BoundingBox zoomInBB);
             return zoomInBB;
         }
 

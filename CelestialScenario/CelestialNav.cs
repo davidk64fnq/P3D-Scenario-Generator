@@ -1,7 +1,7 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.MapTiles;
 
-namespace P3D_Scenario_Generator.Celestial
+namespace P3D_Scenario_Generator.CelestialScenario
 {
     /// <summary>
     /// Manages all aspects of celestial navigation for the simulation, including loading star data,
@@ -12,17 +12,17 @@ namespace P3D_Scenario_Generator.Celestial
     class CelestialNav 
     {
         /// <summary>
-        /// Celestial scenario starts in mid air - this is the initial heading in degrees
+        /// CelestialScenario scenario starts in mid air - this is the initial heading in degrees
         /// </summary>
         internal static double midairStartHdg;
 
         /// <summary>
-        /// Celestial scenario starts in mid air - this is the initial latitude in degrees
+        /// CelestialScenario scenario starts in mid air - this is the initial latitude in degrees
         /// </summary>
         internal static double midairStartLat;
 
         /// <summary>
-        /// Celestial scenario starts in mid air - this is the initial longitude in degrees
+        /// CelestialScenario scenario starts in mid air - this is the initial longitude in degrees
         /// </summary>
         internal static double midairStartLon;
 

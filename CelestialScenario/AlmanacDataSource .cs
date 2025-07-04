@@ -1,4 +1,4 @@
-﻿namespace P3D_Scenario_Generator.Celestial
+﻿namespace P3D_Scenario_Generator.CelestialScenario
 {
     /// <summary>
     /// Manages the acquisition, parsing, and storage of celestial almanac data from a web-based source.

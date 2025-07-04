@@ -2,6 +2,16 @@
 
 namespace P3D_Scenario_Generator.MapTiles
 {
+    public enum PaddingMethod
+    {
+        NorthSouthWestEast,
+        WestEast,
+        NorthSouth,
+        North,
+        South,
+        None
+    }
+
     /// <summary>
     /// Provides static methods for adjusting and "padding" the OpenStreetMap (OSM) tile grid
     /// and corresponding images to achieve specific dimensions or zoom levels.
@@ -27,6 +37,29 @@ namespace P3D_Scenario_Generator.MapTiles
     /// </remarks>
     internal static class MapTilePadder
     {
+        static internal bool GetNextZoomBoundingBox(PaddingMethod paddingMethod, BoundingBox boundingBox, out BoundingBox newBoundingBox)
+        {
+            switch (paddingMethod)
+            {
+                case PaddingMethod.NorthSouthWestEast:
+                    return ZoomInNorthSouthWestEast(boundingBox, out newBoundingBox);
+                case PaddingMethod.WestEast:
+                    return ZoomInWestEast(boundingBox, out newBoundingBox);
+                case PaddingMethod.NorthSouth:
+                    return ZoomInNorthSouth(boundingBox, out newBoundingBox);
+                case PaddingMethod.North:
+                    return ZoomInNorth(boundingBox, out newBoundingBox);
+                case PaddingMethod.South:
+                    return ZoomInSouth(boundingBox, out newBoundingBox);
+                case PaddingMethod.None:
+                    return ZoomIn(boundingBox, out newBoundingBox);
+                default:
+                    Log.Error($"MapTilePadder.GetNextZoomBoundingBox: Unsupported padding method '{paddingMethod}'.");
+                    newBoundingBox = new BoundingBox(); // Initialize out parameter
+                    return false; // Unsupported padding method
+            }
+        }
+
         /// <summary>
         /// Pads the bounding box and the corresponding image by adding tiles to all four sides (North, South, West, East).
         /// This method is designed for an initial 1x1 tile image. It adds eight surrounding tiles to create a 3x3 conceptual grid,
@@ -39,8 +72,6 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="newEastXindex">The X-index of the new tile column to be added to the East (right).</param>
         /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
-        /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
-        /// the new zoomed-in tile coordinates if successful; otherwise, a default <see cref="BoundingBox"/>.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
         /// The file to be padded is 1w x 1h (unit is Con.tileSize). Add a row of tiles 1h x 3w on top and bottom of existing tile,
@@ -48,10 +79,8 @@ namespace P3D_Scenario_Generator.MapTiles
         /// Resulting file is 2w x 2h with original image in middle 1w x 1h.
         /// </remarks>
         static internal bool PadNorthSouthWestEast(BoundingBox boundingBox, int newNorthYindex, int newSouthYindex,
-            int newWestXindex, int newEastXindex, string filename, int zoom, out BoundingBox resultBoundingBox)
+            int newWestXindex, int newEastXindex, string filename, int zoom)
         {
-            resultBoundingBox = new BoundingBox(); // Initialize out parameter
-
             try
             {
                 // Input validation for boundingBox and its axes.
@@ -108,13 +137,6 @@ namespace P3D_Scenario_Generator.MapTiles
                     image.Crop(geometry);
                     image.ResetPage(); // Resets the page information of the image to the minimum required.
                     image.Write(finalImagePath);
-                }
-
-                // Calculate the new bounding box coordinates for the zoomed-in view.
-                if (!ZoomInNorthSouthWestEast(boundingBox, out resultBoundingBox))
-                {
-                    Log.Error($"MapTilePadder.PadNorthSouthWestEast: Failed to calculate zoomed-in bounding box after padding for '{filename}'.");
-                    return false;
                 }
 
                 return true; // Operation successful
@@ -190,18 +212,14 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="newEastXindex">The X-index of the new tile column to be added to the East (right).</param>
         /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
-        /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
-        /// the new zoomed-in tile coordinates if successful; otherwise, a default <see cref="BoundingBox"/>.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
         /// The file to be padded is 1w x 2h (unit is Con.tileSize). Create a column of tiles on left and right side 1w x 2h,
         /// montage them together 3w x 2h, then crop a column 0.5w x 2h from outside edges. Resulting file is 2w x 2h with original
         /// image in middle horizontally.
         /// </remarks>
-        static internal bool PadWestEast(BoundingBox boundingBox, int newWestXindex, int newEastXindex, string filename, int zoom, out BoundingBox resultBoundingBox)
+        static internal bool PadWestEast(BoundingBox boundingBox, int newWestXindex, int newEastXindex, string filename, int zoom)
         {
-            resultBoundingBox = new BoundingBox(); // Initialize out parameter
-
             try
             {
                 // Input validation for boundingBox and its axes.
@@ -285,13 +303,6 @@ namespace P3D_Scenario_Generator.MapTiles
                     image.Write(finalImagePath);
                 }
 
-                // Calculate the new bounding box coordinates for the zoomed-in view.
-                if (!ZoomInWestEast(boundingBox, out resultBoundingBox))
-                {
-                    Log.Error($"MapTilePadder.PadWestEast: Failed to calculate zoomed-in bounding box after padding for '{filename}'.");
-                    return false;
-                }
-
                 return true; // Operation successful
             }
             catch (MagickErrorException mex)
@@ -363,18 +374,14 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="newSouthYindex">The Y-index of the new tile row to be added to the South (bottom).</param>
         /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
-        /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
-        /// the new zoomed-in tile coordinates if successful; otherwise, a default <see cref="BoundingBox"/>.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
         /// The file to be padded is 2w x 1h (unit is Con.tileSize). Create a row of tiles above and below 2w x 1h,
         /// montage them together 2w x 3h, then crop a row 2w x 0.5h from outside edges. Resulting file is 2w x 2h with original
         /// image in middle vertically.
         /// </remarks>
-        static internal bool PadNorthSouth(BoundingBox boundingBox, int newNorthYindex, int newSouthYindex, string filename, int zoom, out BoundingBox resultBoundingBox)
+        static internal bool PadNorthSouth(BoundingBox boundingBox, int newNorthYindex, int newSouthYindex, string filename, int zoom)
         {
-            resultBoundingBox = new BoundingBox(); // Initialize out parameter
-
             try
             {
                 // Input validation for boundingBox and its axes.
@@ -458,13 +465,6 @@ namespace P3D_Scenario_Generator.MapTiles
                     image.Write(finalImagePath);
                 }
 
-                // Calculate the new bounding box coordinates for the zoomed-in view.
-                if (!ZoomInNorthSouth(boundingBox, out resultBoundingBox))
-                {
-                    Log.Error($"MapTilePadder.PadNorthSouth: Failed to calculate zoomed-in bounding box after padding for '{filename}'.");
-                    return false;
-                }
-
                 return true; // Operation successful
             }
             catch (MagickErrorException mex)
@@ -534,17 +534,13 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="newNorthYindex">The Y-index of the new tile row to be added to the North (top).</param>
         /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
-        /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
-        /// the new zoomed-in tile coordinates if successful; otherwise, a default <see cref="BoundingBox"/>.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
         /// The file to be padded is 2w x 1h (unit is Con.tileSize) and we're at the south pole. Create a row of tiles above 2w x 1h,
         /// montage them together. Resulting file is 2w x 2h with original image at bottom vertically.
         /// </remarks>
-        static internal bool PadNorth(BoundingBox boundingBox, int newNorthYindex, string filename, int zoom, out BoundingBox resultBoundingBox)
+        static internal bool PadNorth(BoundingBox boundingBox, int newNorthYindex, string filename, int zoom)
         {
-            resultBoundingBox = new BoundingBox(); // Initialize out parameter
-
             try
             {
                 // Input validation for boundingBox and its axes.
@@ -590,13 +586,6 @@ namespace P3D_Scenario_Generator.MapTiles
                 if (!FileOps.DeleteTempOSMfiles(filename))
                 {
                     Log.Warning($"MapTilePadder.PadNorth: Failed to delete general temporary files after full row montage for '{filename}'.");
-                }
-
-                // Calculate the new bounding box coordinates for the zoomed-in view.
-                if (!ZoomInNorth(boundingBox, out resultBoundingBox))
-                {
-                    Log.Error($"MapTilePadder.PadNorth: Failed to calculate zoomed-in bounding box after padding for '{filename}'.");
-                    return false;
                 }
 
                 return true; // Operation successful
@@ -668,17 +657,13 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="newSouthYindex">The Y-index of the new tile row to be added to the South (bottom).</param>
         /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
-        /// <param name="resultBoundingBox">When this method returns, contains the adjusted <see cref="BoundingBox"/> representing
-        /// the new zoomed-in tile coordinates if successful; otherwise, a default <see cref="BoundingBox"/>.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
         /// The file to be padded is 2w x 1h (unit is Con.tileSize) and we're at the north pole. Create a row of tiles below 2w x 1h,
         /// montage them together. Resulting file is 2w x 2h with original image at top vertically.
         /// </remarks>
-        static internal bool PadSouth(BoundingBox boundingBox, int newSouthYindex, string filename, int zoom, out BoundingBox resultBoundingBox)
+        static internal bool PadSouth(BoundingBox boundingBox, int newSouthYindex, string filename, int zoom)
         {
-            resultBoundingBox = new BoundingBox(); // Initialize out parameter
-
             try
             {
                 // Input validation for boundingBox and its axes.
@@ -725,13 +710,6 @@ namespace P3D_Scenario_Generator.MapTiles
                 {
                     Log.Warning($"MapTilePadder.PadSouth: Failed to delete general temporary files after full row montage for '{filename}'.");
                     // Continue
-                }
-
-                // Calculate the new bounding box coordinates for the zoomed-in view.
-                if (!ZoomInSouth(boundingBox, out resultBoundingBox))
-                {
-                    Log.Error($"MapTilePadder.PadSouth: Failed to calculate zoomed-in bounding box after padding for '{filename}'.");
-                    return false;
                 }
 
                 return true; // Operation successful
@@ -799,7 +777,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be zoomed in.</param>
         /// <param name="newBoundingBox">When this method returns, contains the new <see cref="BoundingBox"/> with updated tile coordinates reflecting the zoom.</param>
         /// <returns><see langword="true"/> if the zoom operation was successful; otherwise, <see langword="false"/>.</returns>
-        static internal bool ZoomIn(BoundingBox boundingBox, out BoundingBox newBoundingBox) // Modified signature
+        static internal bool ZoomIn(BoundingBox boundingBox, out BoundingBox newBoundingBox) 
         {
             newBoundingBox = new BoundingBox(); // Initialize out parameter
 

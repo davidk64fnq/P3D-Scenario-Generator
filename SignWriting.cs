@@ -110,7 +110,7 @@ namespace P3D_Scenario_Generator
             BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
             MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01");
             ImageUtils.DrawRoute(tiles, boundingBox, "Charts_01");
-            ImageUtils.MakeSquare(boundingBox, "Charts_01", zoom, Constants.tileFactor);
+        //    ImageUtils.MakeSquare(boundingBox, "Charts_01", zoom, Constants.tileFactor);
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace P3D_Scenario_Generator
             MapTileMontager.MontageTiles(boundingBox, zoom, "chart_thumb");
             if (boundingBox.XAxis.Count != boundingBox.YAxis.Count)
             {
-                ImageUtils.MakeSquare(boundingBox, "chart_thumb", zoom, Constants.locationImageTileFactor);
+        //        ImageUtils.MakeSquare(boundingBox, "chart_thumb", zoom, Constants.locationImageTileFactor);
             }
             if (boundingBox.XAxis.Count == Constants.tileFactor)
             {

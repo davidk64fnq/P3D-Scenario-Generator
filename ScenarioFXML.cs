@@ -1,7 +1,7 @@
 ﻿
 using System.Xml.Serialization;
 using System.Reflection;
-using P3D_Scenario_Generator.Celestial;
+using P3D_Scenario_Generator.CelestialScenario;
 
 namespace P3D_Scenario_Generator
 {
@@ -85,7 +85,7 @@ namespace P3D_Scenario_Generator
 			}
 		}
 
-		// Celestial scenario starts in air
+		// CelestialScenario scenario starts in air
 		static private void EditCelestialSourceFXML(SimBaseDocument simBaseDocument)
 		{
 			FlightSections fs;

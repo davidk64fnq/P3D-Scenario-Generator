@@ -1,5 +1,6 @@
-﻿using P3D_Scenario_Generator.Circuit;
+﻿using P3D_Scenario_Generator.CircuitScenario;
 using P3D_Scenario_Generator.MapTiles;
+using P3D_Scenario_Generator.PhotoTourScenario;
 using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator
@@ -190,7 +191,7 @@ namespace P3D_Scenario_Generator
 
                 // Create cylinder area objects to put over each photo location
                 SetCylinderArea(photoNo, "CylinderArea", "0.0,0.0,0.0", Parameters.PhotoTourConstraintsHotspotRadius.ToString(), "18520.0", "None");
-                string pwp = GetPhotoWorldPosition(PhotoTour.GetPhotoLocation(photoNo));
+                string pwp = GetPhotoWorldPosition(PhotoTourUtilities.GetPhotoLocation(PhotoTour.PhotoLocations, photoNo));
                 AttachedWorldPosition awp = GetAttachedWorldPosition(pwp, "True");
                 SetAttachedWorldPosition("CylinderArea", $"CylinderArea{photoNo:00}", awp);
 

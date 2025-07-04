@@ -1,6 +1,6 @@
 ﻿using CoordinateSharp;
 
-namespace P3D_Scenario_Generator.Circuit
+namespace P3D_Scenario_Generator.CircuitScenario
 {
     /// <summary>
     /// Manages the calculation and definition of parameters for a flight circuit within the simulator.

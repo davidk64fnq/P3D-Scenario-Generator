@@ -1,4 +1,4 @@
-﻿namespace P3D_Scenario_Generator.Celestial
+﻿namespace P3D_Scenario_Generator.CelestialScenario
 {
     /// <summary>
     /// Represents a celestial star with various astronomical properties.

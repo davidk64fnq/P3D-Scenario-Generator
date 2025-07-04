@@ -1,4 +1,5 @@
-﻿using P3D_Scenario_Generator.Celestial;
+﻿using P3D_Scenario_Generator.CelestialScenario;
+using P3D_Scenario_Generator.PhotoTourScenario;
 using System.Reflection;
 
 namespace P3D_Scenario_Generator
@@ -76,7 +77,7 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
                     overview.Difficulty = "Intermediate";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = PhotoTour.GetPhotoTourDistance() / Parameters.AircraftCruiseSpeed * 60;
+                    duration = PhotoTourUtilities.GetPhotoTourDistance(PhotoTour.PhotoLocations) / Parameters.AircraftCruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{Parameters.AircraftTitle}";
                     overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.AircraftTitle}";

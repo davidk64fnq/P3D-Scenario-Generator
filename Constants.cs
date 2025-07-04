@@ -99,6 +99,11 @@ namespace P3D_Scenario_Generator
         public const int overviewImageTileFactor = 2;
 
         /// <summary>
+        /// The target width of the generated leg route image in tiles.
+        /// </summary>
+        public const int legRouteImageTileFactor = 2;
+
+        /// <summary>
         /// Signals <see cref="MapTileImageMaker.CreateImage(IEnumerable{CoordinateSharp.Coordinate}, bool, int, int, string, int)"/> to calculate zoom rather than 
         /// use passed zoom value.
         /// </summary>
@@ -211,6 +216,35 @@ namespace P3D_Scenario_Generator
         /// Number of days of data extracted from almanac data retrieved from Internet
         /// </summary>
         public static readonly int NumberOfDaysToExtract = 3;
+
+        #endregion
+
+        #region PhotoTour scenario constants
+
+        /// <summary>
+        /// The number of nearby photos recorded on a Pic2Map photo page
+        /// </summary>
+        public static readonly int PhotoMaxNearby = 18;
+
+        /// <summary>
+        /// The length of id string expected for nearby photos on a Pic2Map photo page
+        /// </summary>
+        public static readonly int PhotoIdLength = 6;
+
+        /// <summary>
+        /// The minimum expected number of comma separated segments in id string for nearby photos on a Pic2Map photo page
+        /// </summary>
+        public static readonly int PhotoIdMinSegments = 3;
+
+        /// <summary>
+        /// The index in array of comma separated segments containing id string latitude for nearby photos on a Pic2Map photo page
+        /// </summary>
+        public static readonly int PhotoLatSegIndex = 1;
+
+        /// <summary>
+        /// The index in array of comma separated segments containing id string latitude for nearby photos on a Pic2Map photo page
+        /// </summary>
+        public static readonly int PhotoLonSegIndex = 2;
 
         #endregion
 

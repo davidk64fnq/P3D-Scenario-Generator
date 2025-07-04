@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace P3D_Scenario_Generator.Celestial
+namespace P3D_Scenario_Generator.CelestialScenario
 {
     /// <summary>
     /// Manages the generation and updating of files (HTML, JavaScript, and CSS)
@@ -201,7 +201,7 @@ namespace P3D_Scenario_Generator.Celestial
         }
 
         /// <summary>
-        /// Reads the Celestial Sextant CSS template from an embedded resource and writes it
+        /// Reads the CelestialScenario Sextant CSS template from an embedded resource and writes it
         /// to a specified file location.
         /// </summary>
         /// <param name="saveLocation">The full path, including filename, where the CSS file should be saved.</param>

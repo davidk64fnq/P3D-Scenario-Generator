@@ -1,7 +1,7 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.MapTiles;
 
-namespace P3D_Scenario_Generator.Circuit
+namespace P3D_Scenario_Generator.CircuitScenario
 {
     /// <summary>
     /// Manages the definition, calculation, and representation of a flight circuit scenario.

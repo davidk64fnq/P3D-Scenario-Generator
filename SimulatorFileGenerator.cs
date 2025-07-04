@@ -1,4 +1,4 @@
-﻿using P3D_Scenario_Generator.Celestial;
+﻿using P3D_Scenario_Generator.CelestialScenario;
 
 namespace P3D_Scenario_Generator
 {

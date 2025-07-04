@@ -1,6 +1,6 @@
 ﻿using OfficeOpenXml;
 
-namespace P3D_Scenario_Generator.Celestial
+namespace P3D_Scenario_Generator.CelestialScenario
 {
     /// <summary>
     /// Manages the loading, storage, and retrieval of star data from an embedded Excel resource.

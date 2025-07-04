@@ -1,5 +1,6 @@
-﻿using P3D_Scenario_Generator.Celestial;
-using P3D_Scenario_Generator.Circuit;
+﻿using P3D_Scenario_Generator.CelestialScenario;
+using P3D_Scenario_Generator.CircuitScenario;
+using P3D_Scenario_Generator.PhotoTourScenario;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -515,7 +516,7 @@ namespace P3D_Scenario_Generator
                 }
                 ComboBoxWikiStartingItem.DataSource = itemList;
                 ComboBoxWikiStartingItem.SelectedIndex = 0;
-                List<string> clonedItemList = new(itemList);
+                List<string> clonedItemList = [.. itemList];
                 ComboBoxWikiFinishingItem.DataSource = clonedItemList;
                 ComboBoxWikiFinishingItem.SelectedIndex = ComboBoxWikiFinishingItem.Items.Count - 1;
                 ComboBox_SelectedIndexChanged(sender, e);

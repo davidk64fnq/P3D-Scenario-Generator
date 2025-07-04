@@ -15,16 +15,16 @@ namespace P3D_Scenario_Generator
         static internal void SetOverviewImage()
         {
             List<Tile> tiles = [];      // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
-            BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
+        //    BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = GetBoundingBoxZoom(tiles, 2, 2);
             SetOSMtiles(tiles, zoom);
-            BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
-            MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01"); 
+        //    BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
+        //    MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01"); 
             if (Parameters.SelectedScenario != nameof(ScenarioTypes.Celestial))
             {
-                ImageUtils.DrawRoute(tiles, boundingBox, "Charts_01");
+        //        ImageUtils.DrawRoute(tiles, boundingBox, "Charts_01");
             }
-            ImageUtils.MakeSquare(boundingBox, "Charts_01", zoom, 2);
+        //    ImageUtils.MakeSquare(boundingBox, "Charts_01", zoom, 2);
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace P3D_Scenario_Generator
             }
             else if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
-                PhotoTour.SetPhotoTourOSMtiles(tiles, zoom, 0, PhotoTour.PhotoCount - 1);
+        //        PhotoTour.SetPhotoTourOSMtiles(tiles, zoom, 0, PhotoTour.PhotoCount - 1);
             }
             else if (Parameters.SelectedScenario == nameof(ScenarioTypes.WikiList))
             {
@@ -113,7 +113,7 @@ namespace P3D_Scenario_Generator
             }
             else if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
-                PhotoTour.SetPhotoTourOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
+        //        PhotoTour.SetPhotoTourOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             }
             else if (Parameters.SelectedScenario == nameof(ScenarioTypes.WikiList))
             {
@@ -134,7 +134,7 @@ namespace P3D_Scenario_Generator
             MapTileMontager.MontageTiles(boundingBox, zoom, "chart_thumb");
             if (boundingBox.XAxis.Count != boundingBox.YAxis.Count)
             {
-                ImageUtils.MakeSquare(boundingBox, "chart_thumb", zoom, 2);
+        //        ImageUtils.MakeSquare(boundingBox, "chart_thumb", zoom, 2);
             }
             if (boundingBox.XAxis.Count == 2)
             {
@@ -164,7 +164,7 @@ namespace P3D_Scenario_Generator
         {
             List<Tile> tiles = [];
             BoundingBox boundingBox;
-            BoundingBox zoomInBoundingBox;
+        //    BoundingBox zoomInBoundingBox;
 
             int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex);
             SetOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
@@ -174,7 +174,7 @@ namespace P3D_Scenario_Generator
             // zoom 1 image
             MapTileMontager.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1");
             ImageUtils.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
-            zoomInBoundingBox = ImageUtils.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Constants.tileFactor);
+        //    zoomInBoundingBox = ImageUtils.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Constants.tileFactor);
             ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg");
 
             // zoom 2, 3 (and 4) images, zoom 1 is base level for map window size of 512 pixels, zoom 2 is base level for map window of 1024 pixels
@@ -185,13 +185,13 @@ namespace P3D_Scenario_Generator
             for (int inc = 1; inc <= numberZoomLevels; inc++)
             {
                 SetOSMtiles(tiles, zoom + inc, startItemIndex, finishItemIndex);
-                MapTileMontager.MontageTiles(zoomInBoundingBox, zoom + inc, $"LegRoute_{legNo:00}_zoom{inc + 1}");
-                ImageUtils.DrawRoute(tiles, zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}");
-                zoomInBoundingBox = ImageUtils.MakeSquare(zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}", zoom + inc, (int)Math.Pow(2, inc + 1));
+        //        MapTileMontager.MontageTiles(zoomInBoundingBox, zoom + inc, $"LegRoute_{legNo:00}_zoom{inc + 1}");
+        //        ImageUtils.DrawRoute(tiles, zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}");
+         //       zoomInBoundingBox = ImageUtils.MakeSquare(zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}", zoom + inc, (int)Math.Pow(2, inc + 1));
                 ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom{inc + 1}", "png", "jpg");
             }
 
-            SetLegImageBoundaries(zoomInBoundingBox, zoom + numberZoomLevels + 1);
+        //    SetLegImageBoundaries(zoomInBoundingBox, zoom + numberZoomLevels + 1);
         }
 
         /// <summary>
@@ -218,7 +218,7 @@ namespace P3D_Scenario_Generator
             // Assumes this method called in leg number sequence starting with first leg
             if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
             {
-                PhotoTour.PhotoTourLegMapEdges.Add(legEdges);
+        //        PhotoTour.PhotoTourLegMapEdges.Add(legEdges);
             }
             else if (Parameters.SelectedScenario == nameof(ScenarioTypes.WikiList))
             {
