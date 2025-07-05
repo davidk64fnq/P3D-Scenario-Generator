@@ -35,6 +35,7 @@ function update(timestamp)
 		refreshMapNewPlanePosition();  // Re-center map based on new plane position and show new plane direction (and position if near edge of map image)
 	} else if (dragEnabled){           // Plane is hidden and map is only moved in response to mouse drag
                                        // See refreshMapMouseDrag, doMouseDown, doMouseMove, doMouseUp and addEventListeners
+		refeshMapImages();			   // Refresh map images if leg number has changed	
 	}
 
 	window.requestAnimationFrame(update);
