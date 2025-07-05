@@ -127,24 +127,12 @@
   <data name="label30.ToolTip" xml:space="preserve">
     <value>The default position of photo window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the photo window is positioned. Ignored if default position of photo window is centered.</value>
   </data>
-  <data name="label32.ToolTip" xml:space="preserve">
-    <value>The default position of map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the map window is positioned. Ignored if default position of map window is centered.</value>
-  </data>
-  <data name="TextBoxPhotoTourMapOffset.ToolTip" xml:space="preserve">
-    <value>The default position of map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the map window is positioned. Ignored if default position of map window is centered.</value>
-  </data>
   <data name="label27.ToolTip" xml:space="preserve">
     <value>The default position of sign window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the sign window is positioned. Ignored if default position of sign window is centered.</value>
   </data>
   <data name="TextBoxSignOffset.ToolTip" xml:space="preserve">
     <value>The default position of sign window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the sign window is positioned. Ignored if default position of sign window is centered.
 </value>
-  </data>
-  <data name="label47.ToolTip" xml:space="preserve">
-    <value>The default position of wikipedia list map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the wikipedia list map window is positioned. Ignored if default position of wikipedia list map window is centered.</value>
-  </data>
-  <data name="TextBoxWikiMapOffset.ToolTip" xml:space="preserve">
-    <value>The default position of wikipedia list map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the wikipedia list map window is positioned. Ignored if default position of wikipedia list map window is centered.</value>
   </data>
   <data name="label53.ToolTip" xml:space="preserve">
     <value>The default position of Wiki URL window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the Wiki URL Wiki URL window is positioned. Ignored if default position of Wiki URL window is centered.</value>
@@ -263,6 +251,12 @@ in the currently selected favourite.
 
 Select "None" and press "Enter" to clear runway selection filters based on country in 
 currently selected favourite. </value>
+  </data>
+  <data name="label63.ToolTip" xml:space="preserve">
+    <value>The default position of map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the map window is positioned. Ignored if default position of map window is centered.</value>
+  </data>
+  <data name="TextBoxSettingsMapOffset.ToolTip" xml:space="preserve">
+    <value>The default position of map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the map window is positioned. Ignored if default position of map window is centered.</value>
   </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>38</value>

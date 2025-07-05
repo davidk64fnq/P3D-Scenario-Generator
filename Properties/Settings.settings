@@ -8,16 +8,16 @@
     <Setting Name="TextBoxSettingsCacheDailyTotal" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="TextBoxPhotoTourMapMonitorNumber" Type="System.String" Scope="User">
+    <Setting Name="TextBoxSettingsMapMonitorNumber" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="TextBoxPhotoTourMapOffset" Type="System.String" Scope="User">
+    <Setting Name="TextBoxSettingsMapOffset" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="TextBoxPhotoTourMapMonitorWidth" Type="System.String" Scope="User">
+    <Setting Name="TextBoxSettingsMapMonitorWidth" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="TextBoxPhotoTourMapMonitorHeight" Type="System.String" Scope="User">
+    <Setting Name="TextBoxSettingsMapMonitorHeight" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="TextBoxPhotoTourPhotoMonitorNumber" Type="System.String" Scope="User">
@@ -44,13 +44,13 @@
     <Setting Name="ComboBoxPhotoTourPhotoAlignmentSelectedIndex" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="ComboBoxPhotoTourMapAlignmentSelectedIndex" Type="System.Int32" Scope="User">
+    <Setting Name="ComboBoxSettingsMapAlignmentSelectedIndex" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="ComboBoxPhotoTourMapWindowSizeSelectedIndex" Type="System.Int32" Scope="User">
+    <Setting Name="ComboBoxSettingsMapWindowSizeSelectedIndex" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="TextBoxPhotoTourMapHotspotRadius" Type="System.String" Scope="User">
+    <Setting Name="TextBoxPhotoTourConstraintsHotspotRadius" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
     <Setting Name="TextBoxPhotoTourConstraintsMinLegDist" Type="System.String" Scope="User">
@@ -68,10 +68,10 @@
     <Setting Name="TextBoxPhotoTourConstraintsMaxBearingChange" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="ComboBoxPhotoTourMapAlignment" Type="System.Collections.Specialized.StringCollection" Scope="User">
+    <Setting Name="ComboBoxSettingsMapAlignment" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ComboBoxPhotoTourMapWindowSize" Type="System.Collections.Specialized.StringCollection" Scope="User">
+    <Setting Name="ComboBoxSettingsMapWindowSize" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="ComboBoxPhotoTourPhotoAlignment" Type="System.Collections.Specialized.StringCollection" Scope="User">
@@ -146,30 +146,6 @@
     <Setting Name="TextBoxSignMonitorHeight" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="TextBoxWikiMapMonitorHeight" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
-    <Setting Name="TextBoxWikiMapMonitorNumber" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
-    <Setting Name="TextBoxWikiMapMonitorWidth" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
-    <Setting Name="TextBoxWikiMapOffset" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
-    <Setting Name="ComboBoxWikiMapAlignment" Type="System.Collections.Specialized.StringCollection" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="ComboBoxWikiMapAlignmentSelectedIndex" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
-    <Setting Name="ComboBoxWikiMapWindowSize" Type="System.Collections.Specialized.StringCollection" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="ComboBoxWikiMapWindowSizeSelectedIndex" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
     <Setting Name="ComboBoxWikiURL" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
@@ -240,6 +216,9 @@
       <Value Profile="(Default)">C:\ProgramData\Lockheed Martin\Prepar3D v</Value>
     </Setting>
     <Setting Name="TextBoxSettingsOSMServerAPIkey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="TextBoxPhotoTourConstraintsMaxAttempts" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>

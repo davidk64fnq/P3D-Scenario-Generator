@@ -410,19 +410,19 @@ namespace P3D_Scenario_Generator
             PhotoTourConstraintsMinNoLegs = Convert.ToDouble(Form.form.TextBoxPhotoTourConstraintsMinNoLegs.Text);
             PhotoTourConstraintsMaxNoLegs = Convert.ToDouble(Form.form.TextBoxPhotoTourConstraintsMaxNoLegs.Text);
             PhotoTourConstraintsMaxBearingChange = Convert.ToDouble(Form.form.TextBoxPhotoTourConstraintsMaxBearingChange.Text);
-            PhotoTourConstraintsHotspotRadius = Convert.ToDouble(Form.form.TextBoxPhotoTourMapHotspotRadius.Text) * 0.3084; // Convert feet to metres
+            PhotoTourConstraintsHotspotRadius = Convert.ToDouble(Form.form.TextBoxPhotoTourConstraintsHotspotRadius.Text) * 0.3084; // Convert feet to metres
             PhotoTourPhotoMonitorNumber = Convert.ToInt32(Form.form.TextBoxPhotoTourPhotoMonitorNumber.Text);
             PhotoTourPhotoMonitorWidth = Convert.ToInt32(Form.form.TextBoxPhotoTourPhotoMonitorWidth.Text);
             PhotoTourPhotoMonitorHeight = Convert.ToInt32(Form.form.TextBoxPhotoTourPhotoMonitorHeight.Text);
             PhotoTourPhotoOffset = Convert.ToInt32(Form.form.TextBoxPhotoTourPhotoOffset.Text);
             PhotoTourPhotoAlignment = Form.form.ComboBoxPhotoTourPhotoAlignment.GetItemText(Form.form.ComboBoxPhotoTourPhotoAlignment.SelectedItem);
-            PhotoTourMapMonitorNumber = Convert.ToInt32(Form.form.TextBoxPhotoTourMapMonitorNumber.Text);
-            PhotoTourMapMonitorWidth = Convert.ToInt32(Form.form.TextBoxPhotoTourMapMonitorWidth.Text);
-            PhotoTourMapMonitorHeight = Convert.ToInt32(Form.form.TextBoxPhotoTourMapMonitorHeight.Text);
-            PhotoTourMapOffset = Convert.ToInt32(Form.form.TextBoxPhotoTourMapOffset.Text);
-            PhotoTourMapAlignment = Form.form.ComboBoxPhotoTourMapAlignment.GetItemText(Form.form.ComboBoxPhotoTourMapAlignment.SelectedItem);
-            PhotoTourMapWindowSize = Convert.ToInt32(Form.form.ComboBoxPhotoTourMapWindowSize.Text);
-            PhotoTourMaxSearchAttempts = 100;
+            PhotoTourMapMonitorNumber = Convert.ToInt32(Form.form.TextBoxSettingsMapMonitorNumber.Text);
+            PhotoTourMapMonitorWidth = Convert.ToInt32(Form.form.TextBoxSettingsMapMonitorWidth.Text);
+            PhotoTourMapMonitorHeight = Convert.ToInt32(Form.form.TextBoxSettingsMapMonitorHeight.Text);
+            PhotoTourMapOffset = Convert.ToInt32(Form.form.TextBoxSettingsMapOffset.Text);
+            PhotoTourMapAlignment = Form.form.ComboBoxSettingsMapAlignment.GetItemText(Form.form.ComboBoxSettingsMapAlignment.SelectedItem);
+            PhotoTourMapWindowSize = Convert.ToInt32(Form.form.ComboBoxSettingsMapWindowSize.Text);
+            PhotoTourMaxSearchAttempts = Convert.ToInt32(Form.form.TextBoxPhotoTourConstraintsMaxAttempts.Text); 
 
             // Sign Writing
             SignMessage = Form.form.ComboBoxSignMessage.GetItemText(Form.form.ComboBoxSignMessage.SelectedItem);
@@ -461,12 +461,12 @@ namespace P3D_Scenario_Generator
             WikiURLAlignment = Form.form.ComboBoxWikiURLAlignment.GetItemText(Form.form.ComboBoxWikiURLAlignment.SelectedItem);
             WikiURLWindowWidth = Convert.ToInt32(Form.form.TextBoxWikiURLWindowWidth.Text);
             WikiURLWindowHeight = Convert.ToInt32(Form.form.TextBoxWikiURLWindowHeight.Text);
-            WikiMapMonitorNumber = Convert.ToInt32(Form.form.TextBoxWikiMapMonitorNumber.Text);
-            WikiMapMonitorWidth = Convert.ToInt32(Form.form.TextBoxWikiMapMonitorWidth.Text);
-            WikiMapMonitorHeight = Convert.ToInt32(Form.form.TextBoxWikiMapMonitorHeight.Text);
-            WikiMapOffset = Convert.ToInt32(Form.form.TextBoxWikiMapOffset.Text);
-            WikiMapAlignment = Form.form.ComboBoxWikiMapAlignment.GetItemText(Form.form.ComboBoxWikiMapAlignment.SelectedItem);
-            WikiMapWindowSize = Convert.ToInt32(Form.form.ComboBoxWikiMapWindowSize.Text);
+            WikiMapMonitorNumber = Convert.ToInt32(Form.form.TextBoxSettingsMapMonitorNumber.Text);
+            WikiMapMonitorWidth = Convert.ToInt32(Form.form.TextBoxSettingsMapMonitorWidth.Text);
+            WikiMapMonitorHeight = Convert.ToInt32(Form.form.TextBoxSettingsMapMonitorHeight.Text);
+            WikiMapOffset = Convert.ToInt32(Form.form.TextBoxSettingsMapOffset.Text);
+            WikiMapAlignment = Form.form.ComboBoxSettingsMapAlignment.GetItemText(Form.form.ComboBoxSettingsMapAlignment.SelectedItem);
+            WikiMapWindowSize = Convert.ToInt32(Form.form.ComboBoxSettingsMapWindowSize.Text);
 
             // Settings
             SettingsScenarioFolder = $"{Form.form.ComboBoxSettingsScenarioFolder.Text}\\{Form.form.TextBoxGeneralScenarioTitle.Text}";

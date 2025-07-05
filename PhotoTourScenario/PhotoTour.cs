@@ -341,7 +341,6 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             SetLegResult getNextPhotoResult = GetNextPhoto(pic2mapHtmlSaveLocation, ref distance, ref bearing, ref photoURL);
             if (getNextPhotoResult == SetLegResult.NoNextPhotoFound)
             {
-                Log.Warning("SetNextLeg: Could not find a suitable next photo that meets distance/bearing constraints or is not already in the tour.");
                 return SetLegResult.NoNextPhotoFound;
             }
             if (getNextPhotoResult == SetLegResult.HtmlParsingFailed)
@@ -481,8 +480,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
             else
             {
-                Log.Warning("SetLastLeg: Could not find a suitable destination airport for the last photo location within the specified range.");
-                return SetLegResult.NoAirportFound; // Re-use this specific enum value
+                return SetLegResult.NoAirportFound; 
             }
         }
     }

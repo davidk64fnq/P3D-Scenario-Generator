@@ -50,48 +50,48 @@ namespace P3D_Scenario_Generator.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxPhotoTourMapMonitorNumber {
+        public string TextBoxSettingsMapMonitorNumber {
             get {
-                return ((string)(this["TextBoxPhotoTourMapMonitorNumber"]));
+                return ((string)(this["TextBoxSettingsMapMonitorNumber"]));
             }
             set {
-                this["TextBoxPhotoTourMapMonitorNumber"] = value;
+                this["TextBoxSettingsMapMonitorNumber"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxPhotoTourMapOffset {
+        public string TextBoxSettingsMapOffset {
             get {
-                return ((string)(this["TextBoxPhotoTourMapOffset"]));
+                return ((string)(this["TextBoxSettingsMapOffset"]));
             }
             set {
-                this["TextBoxPhotoTourMapOffset"] = value;
+                this["TextBoxSettingsMapOffset"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxPhotoTourMapMonitorWidth {
+        public string TextBoxSettingsMapMonitorWidth {
             get {
-                return ((string)(this["TextBoxPhotoTourMapMonitorWidth"]));
+                return ((string)(this["TextBoxSettingsMapMonitorWidth"]));
             }
             set {
-                this["TextBoxPhotoTourMapMonitorWidth"] = value;
+                this["TextBoxSettingsMapMonitorWidth"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxPhotoTourMapMonitorHeight {
+        public string TextBoxSettingsMapMonitorHeight {
             get {
-                return ((string)(this["TextBoxPhotoTourMapMonitorHeight"]));
+                return ((string)(this["TextBoxSettingsMapMonitorHeight"]));
             }
             set {
-                this["TextBoxPhotoTourMapMonitorHeight"] = value;
+                this["TextBoxSettingsMapMonitorHeight"] = value;
             }
         }
         
@@ -193,36 +193,36 @@ namespace P3D_Scenario_Generator.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int ComboBoxPhotoTourMapAlignmentSelectedIndex {
+        public int ComboBoxSettingsMapAlignmentSelectedIndex {
             get {
-                return ((int)(this["ComboBoxPhotoTourMapAlignmentSelectedIndex"]));
+                return ((int)(this["ComboBoxSettingsMapAlignmentSelectedIndex"]));
             }
             set {
-                this["ComboBoxPhotoTourMapAlignmentSelectedIndex"] = value;
+                this["ComboBoxSettingsMapAlignmentSelectedIndex"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int ComboBoxPhotoTourMapWindowSizeSelectedIndex {
+        public int ComboBoxSettingsMapWindowSizeSelectedIndex {
             get {
-                return ((int)(this["ComboBoxPhotoTourMapWindowSizeSelectedIndex"]));
+                return ((int)(this["ComboBoxSettingsMapWindowSizeSelectedIndex"]));
             }
             set {
-                this["ComboBoxPhotoTourMapWindowSizeSelectedIndex"] = value;
+                this["ComboBoxSettingsMapWindowSizeSelectedIndex"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxPhotoTourMapHotspotRadius {
+        public string TextBoxPhotoTourConstraintsHotspotRadius {
             get {
-                return ((string)(this["TextBoxPhotoTourMapHotspotRadius"]));
+                return ((string)(this["TextBoxPhotoTourConstraintsHotspotRadius"]));
             }
             set {
-                this["TextBoxPhotoTourMapHotspotRadius"] = value;
+                this["TextBoxPhotoTourConstraintsHotspotRadius"] = value;
             }
         }
         
@@ -288,23 +288,23 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection ComboBoxPhotoTourMapAlignment {
+        public global::System.Collections.Specialized.StringCollection ComboBoxSettingsMapAlignment {
             get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxPhotoTourMapAlignment"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxSettingsMapAlignment"]));
             }
             set {
-                this["ComboBoxPhotoTourMapAlignment"] = value;
+                this["ComboBoxSettingsMapAlignment"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection ComboBoxPhotoTourMapWindowSize {
+        public global::System.Collections.Specialized.StringCollection ComboBoxSettingsMapWindowSize {
             get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxPhotoTourMapWindowSize"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxSettingsMapWindowSize"]));
             }
             set {
-                this["ComboBoxPhotoTourMapWindowSize"] = value;
+                this["ComboBoxSettingsMapWindowSize"] = value;
             }
         }
         
@@ -595,100 +595,6 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxWikiMapMonitorHeight {
-            get {
-                return ((string)(this["TextBoxWikiMapMonitorHeight"]));
-            }
-            set {
-                this["TextBoxWikiMapMonitorHeight"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxWikiMapMonitorNumber {
-            get {
-                return ((string)(this["TextBoxWikiMapMonitorNumber"]));
-            }
-            set {
-                this["TextBoxWikiMapMonitorNumber"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxWikiMapMonitorWidth {
-            get {
-                return ((string)(this["TextBoxWikiMapMonitorWidth"]));
-            }
-            set {
-                this["TextBoxWikiMapMonitorWidth"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxWikiMapOffset {
-            get {
-                return ((string)(this["TextBoxWikiMapOffset"]));
-            }
-            set {
-                this["TextBoxWikiMapOffset"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection ComboBoxWikiMapAlignment {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxWikiMapAlignment"]));
-            }
-            set {
-                this["ComboBoxWikiMapAlignment"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int ComboBoxWikiMapAlignmentSelectedIndex {
-            get {
-                return ((int)(this["ComboBoxWikiMapAlignmentSelectedIndex"]));
-            }
-            set {
-                this["ComboBoxWikiMapAlignmentSelectedIndex"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection ComboBoxWikiMapWindowSize {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxWikiMapWindowSize"]));
-            }
-            set {
-                this["ComboBoxWikiMapWindowSize"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int ComboBoxWikiMapWindowSizeSelectedIndex {
-            get {
-                return ((int)(this["ComboBoxWikiMapWindowSizeSelectedIndex"]));
-            }
-            set {
-                this["ComboBoxWikiMapWindowSizeSelectedIndex"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public global::System.Collections.Specialized.StringCollection ComboBoxWikiURL {
             get {
                 return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxWikiURL"]));
@@ -965,6 +871,18 @@ namespace P3D_Scenario_Generator.Properties {
             }
             set {
                 this["TextBoxSettingsOSMServerAPIkey"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxPhotoTourConstraintsMaxAttempts {
+            get {
+                return ((string)(this["TextBoxPhotoTourConstraintsMaxAttempts"]));
+            }
+            set {
+                this["TextBoxPhotoTourConstraintsMaxAttempts"] = value;
             }
         }
     }
