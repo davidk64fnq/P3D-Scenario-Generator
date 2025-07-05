@@ -193,6 +193,10 @@ namespace P3D_Scenario_Generator
             label69 = new Label();
             TextBoxSettingsMapMonitorWidth = new TextBox();
             TextBoxSettingsMapMonitorHeight = new TextBox();
+            groupBox2 = new GroupBox();
+            tableLayoutPanel5 = new TableLayoutPanel();
+            label25 = new Label();
+            label26 = new Label();
             groupBox16 = new GroupBox();
             tableLayoutPanel12 = new TableLayoutPanel();
             ButtonRandomLocation = new Button();
@@ -203,8 +207,6 @@ namespace P3D_Scenario_Generator
             groupBox4 = new GroupBox();
             tableLayoutPanel1 = new TableLayoutPanel();
             TabPageCelestial = new TabPage();
-            label26 = new Label();
-            label25 = new Label();
             TabPageSign = new TabPage();
             TabPageCircuit = new TabPage();
             ButtonCircuitDefault = new Button();
@@ -243,6 +245,8 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel9.SuspendLayout();
             groupBox17.SuspendLayout();
             tableLayoutPanel13.SuspendLayout();
+            groupBox2.SuspendLayout();
+            tableLayoutPanel5.SuspendLayout();
             groupBox16.SuspendLayout();
             tableLayoutPanel12.SuspendLayout();
             TabPagePhotoTour.SuspendLayout();
@@ -275,7 +279,8 @@ namespace P3D_Scenario_Generator
             // TextBoxCelestialMinDist
             // 
             TextBoxCelestialMinDist.AccessibleName = "Celestial: Minimum distance";
-            TextBoxCelestialMinDist.Location = new Point(148, 26);
+            TextBoxCelestialMinDist.Anchor = AnchorStyles.None;
+            TextBoxCelestialMinDist.Location = new Point(139, 3);
             TextBoxCelestialMinDist.Name = "TextBoxCelestialMinDist";
             TextBoxCelestialMinDist.Size = new Size(100, 23);
             TextBoxCelestialMinDist.TabIndex = 2;
@@ -288,7 +293,8 @@ namespace P3D_Scenario_Generator
             // TextBoxCelestialMaxDist
             // 
             TextBoxCelestialMaxDist.AccessibleName = "Celestial: Maximum distance";
-            TextBoxCelestialMaxDist.Location = new Point(148, 71);
+            TextBoxCelestialMaxDist.Anchor = AnchorStyles.None;
+            TextBoxCelestialMaxDist.Location = new Point(139, 33);
             TextBoxCelestialMaxDist.Name = "TextBoxCelestialMaxDist";
             TextBoxCelestialMaxDist.Size = new Size(100, 23);
             TextBoxCelestialMaxDist.TabIndex = 3;
@@ -691,7 +697,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox3.BackColor = Color.FromArgb(255, 192, 128);
             groupBox3.Controls.Add(TableLayoutPanelSettingsMapTileCacheInfo);
-            groupBox3.Location = new Point(54, 23);
+            groupBox3.Location = new Point(56, 27);
             groupBox3.Name = "groupBox3";
             groupBox3.Size = new Size(286, 127);
             groupBox3.TabIndex = 1;
@@ -1118,7 +1124,7 @@ namespace P3D_Scenario_Generator
             groupBox6.Anchor = AnchorStyles.None;
             groupBox6.BackColor = Color.FromArgb(255, 192, 128);
             groupBox6.Controls.Add(tableLayoutPanel3);
-            groupBox6.Location = new Point(21, 26);
+            groupBox6.Location = new Point(56, 27);
             groupBox6.Name = "groupBox6";
             groupBox6.Size = new Size(286, 175);
             groupBox6.TabIndex = 38;
@@ -1229,7 +1235,7 @@ namespace P3D_Scenario_Generator
             groupBox7.Anchor = AnchorStyles.None;
             groupBox7.BackColor = Color.FromArgb(255, 192, 128);
             groupBox7.Controls.Add(tableLayoutPanel4);
-            groupBox7.Location = new Point(21, 231);
+            groupBox7.Location = new Point(463, 27);
             groupBox7.Name = "groupBox7";
             groupBox7.Size = new Size(286, 175);
             groupBox7.TabIndex = 39;
@@ -1391,7 +1397,7 @@ namespace P3D_Scenario_Generator
             // 
             // ButtonSignWritingSaved
             // 
-            ButtonSignWritingSaved.Location = new Point(688, 383);
+            ButtonSignWritingSaved.Location = new Point(158, 383);
             ButtonSignWritingSaved.Name = "ButtonSignWritingSaved";
             ButtonSignWritingSaved.Size = new Size(75, 23);
             ButtonSignWritingSaved.TabIndex = 40;
@@ -1402,7 +1408,7 @@ namespace P3D_Scenario_Generator
             // 
             // ButtonSignWritingDefault
             // 
-            ButtonSignWritingDefault.Location = new Point(587, 383);
+            ButtonSignWritingDefault.Location = new Point(56, 383);
             ButtonSignWritingDefault.Name = "ButtonSignWritingDefault";
             ButtonSignWritingDefault.Size = new Size(75, 23);
             ButtonSignWritingDefault.TabIndex = 41;
@@ -1440,7 +1446,7 @@ namespace P3D_Scenario_Generator
             groupBox9.Anchor = AnchorStyles.None;
             groupBox9.BackColor = Color.FromArgb(255, 192, 128);
             groupBox9.Controls.Add(tableLayoutPanel6);
-            groupBox9.Location = new Point(64, 18);
+            groupBox9.Location = new Point(56, 27);
             groupBox9.Name = "groupBox9";
             groupBox9.Size = new Size(286, 238);
             groupBox9.TabIndex = 41;
@@ -1634,7 +1640,7 @@ namespace P3D_Scenario_Generator
             groupBox10.Anchor = AnchorStyles.None;
             groupBox10.BackColor = Color.FromArgb(255, 192, 128);
             groupBox10.Controls.Add(tableLayoutPanel7);
-            groupBox10.Location = new Point(456, 18);
+            groupBox10.Location = new Point(463, 27);
             groupBox10.Name = "groupBox10";
             groupBox10.Size = new Size(286, 238);
             groupBox10.TabIndex = 42;
@@ -1858,7 +1864,7 @@ namespace P3D_Scenario_Generator
             groupBox11.Anchor = AnchorStyles.None;
             groupBox11.BackColor = Color.FromArgb(255, 192, 128);
             groupBox11.Controls.Add(tableLayoutPanelCircuit);
-            groupBox11.Location = new Point(35, 36);
+            groupBox11.Location = new Point(56, 27);
             groupBox11.Name = "groupBox11";
             groupBox11.Size = new Size(286, 272);
             groupBox11.TabIndex = 42;
@@ -1931,7 +1937,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox12.BackColor = Color.FromArgb(255, 192, 128);
             groupBox12.Controls.Add(tableLayoutPanel8);
-            groupBox12.Location = new Point(67, 240);
+            groupBox12.Location = new Point(56, 240);
             groupBox12.Name = "groupBox12";
             groupBox12.Size = new Size(286, 95);
             groupBox12.TabIndex = 18;
@@ -1990,7 +1996,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox13.BackColor = Color.FromArgb(255, 192, 128);
             groupBox13.Controls.Add(tableLayoutPanel9);
-            groupBox13.Location = new Point(459, 260);
+            groupBox13.Location = new Point(463, 265);
             groupBox13.Name = "groupBox13";
             groupBox13.Size = new Size(286, 95);
             groupBox13.TabIndex = 19;
@@ -2245,7 +2251,7 @@ namespace P3D_Scenario_Generator
             groupBox17.Anchor = AnchorStyles.None;
             groupBox17.BackColor = Color.FromArgb(255, 192, 128);
             groupBox17.Controls.Add(tableLayoutPanel13);
-            groupBox17.Location = new Point(467, 23);
+            groupBox17.Location = new Point(463, 27);
             groupBox17.Name = "groupBox17";
             groupBox17.Size = new Size(286, 204);
             groupBox17.TabIndex = 38;
@@ -2433,11 +2439,68 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapMonitorHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSettingsMapMonitorHeight, "Resolution height in pixels of the monitor that map window will display on. ");
             // 
+            // groupBox2
+            // 
+            groupBox2.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox2.Controls.Add(tableLayoutPanel5);
+            groupBox2.Location = new Point(56, 27);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Size = new Size(286, 127);
+            groupBox2.TabIndex = 4;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "Celestial Constraints";
+            toolTip1.SetToolTip(groupBox2, "Minimum and maximum distance range for random midair starting point from destination airport.");
+            // 
+            // tableLayoutPanel5
+            // 
+            tableLayoutPanel5.AccessibleName = "";
+            tableLayoutPanel5.Anchor = AnchorStyles.None;
+            tableLayoutPanel5.ColumnCount = 2;
+            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel5.Controls.Add(label25, 0, 0);
+            tableLayoutPanel5.Controls.Add(TextBoxCelestialMaxDist, 1, 1);
+            tableLayoutPanel5.Controls.Add(TextBoxCelestialMinDist, 1, 0);
+            tableLayoutPanel5.Controls.Add(label26, 0, 1);
+            tableLayoutPanel5.ImeMode = ImeMode.On;
+            tableLayoutPanel5.Location = new Point(16, 22);
+            tableLayoutPanel5.Name = "tableLayoutPanel5";
+            tableLayoutPanel5.RowCount = 3;
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanel5.Size = new Size(253, 92);
+            tableLayoutPanel5.TabIndex = 36;
+            // 
+            // label25
+            // 
+            label25.Anchor = AnchorStyles.None;
+            label25.AutoSize = true;
+            label25.Location = new Point(9, 7);
+            label25.Name = "label25";
+            label25.Size = new Size(107, 15);
+            label25.TabIndex = 0;
+            label25.Text = "Minimum distance";
+            label25.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // label26
+            // 
+            label26.Anchor = AnchorStyles.None;
+            label26.AutoSize = true;
+            label26.Location = new Point(9, 37);
+            label26.Name = "label26";
+            label26.Size = new Size(108, 15);
+            label26.TabIndex = 1;
+            label26.Text = "Maximum distance";
+            label26.TextAlign = ContentAlignment.MiddleCenter;
+            // 
             // groupBox16
             // 
             groupBox16.BackColor = Color.FromArgb(255, 192, 128);
             groupBox16.Controls.Add(tableLayoutPanel12);
-            groupBox16.Location = new Point(67, 29);
+            groupBox16.Location = new Point(56, 27);
             groupBox16.Name = "groupBox16";
             groupBox16.Size = new Size(286, 188);
             groupBox16.TabIndex = 39;
@@ -2535,7 +2598,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox4.BackColor = Color.FromArgb(255, 192, 128);
             groupBox4.Controls.Add(tableLayoutPanel1);
-            groupBox4.Location = new Point(54, 173);
+            groupBox4.Location = new Point(56, 181);
             groupBox4.Name = "groupBox4";
             groupBox4.Size = new Size(286, 127);
             groupBox4.TabIndex = 2;
@@ -2567,34 +2630,13 @@ namespace P3D_Scenario_Generator
             // 
             // TabPageCelestial
             // 
-            TabPageCelestial.BackColor = Color.FromArgb(255, 192, 128);
-            TabPageCelestial.Controls.Add(TextBoxCelestialMaxDist);
-            TabPageCelestial.Controls.Add(TextBoxCelestialMinDist);
-            TabPageCelestial.Controls.Add(label26);
-            TabPageCelestial.Controls.Add(label25);
+            TabPageCelestial.BackColor = Color.FromArgb(64, 64, 64);
+            TabPageCelestial.Controls.Add(groupBox2);
             TabPageCelestial.Location = new Point(4, 24);
             TabPageCelestial.Name = "TabPageCelestial";
             TabPageCelestial.Size = new Size(812, 438);
             TabPageCelestial.TabIndex = 4;
             TabPageCelestial.Text = "Celestial Navigation";
-            // 
-            // label26
-            // 
-            label26.AutoSize = true;
-            label26.Location = new Point(16, 79);
-            label26.Name = "label26";
-            label26.Size = new Size(108, 15);
-            label26.TabIndex = 1;
-            label26.Text = "Maximum distance";
-            // 
-            // label25
-            // 
-            label25.AutoSize = true;
-            label25.Location = new Point(16, 34);
-            label25.Name = "label25";
-            label25.Size = new Size(107, 15);
-            label25.TabIndex = 0;
-            label25.Text = "Minimum distance";
             // 
             // TabPageSign
             // 
@@ -2652,7 +2694,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox15.BackColor = Color.FromArgb(255, 192, 128);
             groupBox15.Controls.Add(tableLayoutPanel11);
-            groupBox15.Location = new Point(459, 144);
+            groupBox15.Location = new Point(463, 146);
             groupBox15.Name = "groupBox15";
             groupBox15.Size = new Size(286, 95);
             groupBox15.TabIndex = 38;
@@ -2704,7 +2746,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox14.BackColor = Color.FromArgb(255, 192, 128);
             groupBox14.Controls.Add(tableLayoutPanel10);
-            groupBox14.Location = new Point(459, 29);
+            groupBox14.Location = new Point(463, 27);
             groupBox14.Name = "groupBox14";
             groupBox14.Size = new Size(286, 95);
             groupBox14.TabIndex = 37;
@@ -2848,6 +2890,9 @@ namespace P3D_Scenario_Generator
             groupBox17.ResumeLayout(false);
             tableLayoutPanel13.ResumeLayout(false);
             tableLayoutPanel13.PerformLayout();
+            groupBox2.ResumeLayout(false);
+            tableLayoutPanel5.ResumeLayout(false);
+            tableLayoutPanel5.PerformLayout();
             groupBox16.ResumeLayout(false);
             tableLayoutPanel12.ResumeLayout(false);
             tableLayoutPanel12.PerformLayout();
@@ -2857,7 +2902,6 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
             TabPageCelestial.ResumeLayout(false);
-            TabPageCelestial.PerformLayout();
             TabPageSign.ResumeLayout(false);
             TabPageCircuit.ResumeLayout(false);
             TabPageMenu.ResumeLayout(false);
@@ -3065,6 +3109,8 @@ namespace P3D_Scenario_Generator
         internal TextBox TextBoxSettingsMapMonitorHeight;
         internal TextBox TextBoxPhotoTourConstraintsMaxAttempts;
         private Label label15;
+        private GroupBox groupBox2;
+        private TableLayoutPanel tableLayoutPanel5;
     }
 }
 

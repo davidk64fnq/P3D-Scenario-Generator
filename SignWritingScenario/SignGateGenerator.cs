@@ -1,33 +1,81 @@
-﻿using CoordinateSharp;
-
-namespace P3D_Scenario_Generator
+﻿namespace P3D_Scenario_Generator.SignWritingScenario
 {
+    // Define the record to hold segment parameters
+    public record SegmentSpecification(
+        double LatCoef,
+        double LatOffsetCoef,
+        double LonCoef,
+        double LonOffsetCoef,
+        double Orientation,
+        double TopPixels,
+        double LeftPixels
+    );
 
-    /// <summary>
-    /// Used to store information needed for displaying a gate in a scenario
-    /// </summary>
-    /// <param name="lat">The latitude position for the gate</param>
-    /// <param name="lon">The longitude position for the gate</param>
-    /// <param name="amsl">The AMSL of the gate</param>
-    /// <param name="pitch">Signwriting messages can be tilted in vertical plane of message letters</param>
-    /// <param name="orientation">What direction must the gate be entered to trigger</param>
-    /// <param name="topPixels">Used in signwriting scenario for displaying segment of letter on HTML canvas</param>
-    /// <param name="leftPixels">Used in signwriting scenario for displaying segment of letter on HTML canvas</param>
-    public class Gate(double lat, double lon, double amsl, double pitch, double orientation, double topPixels, double leftPixels)
+    internal class SignGateGenerator
     {
-        public double lat = lat;
-        public double lon = lon;
-        public double amsl = amsl;
-        public double pitch = pitch;
-        public double orientation = orientation;
-        public double topPixels = topPixels;
-        public double leftPixels = leftPixels;
-    }
+        // This static readonly list will hold all 44 segment definitions
+        private static readonly List<SegmentSpecification> AllSegmentDefinitions =
+        [
+            // Bottom 2 horizontal segments left to right
+            new SegmentSpecification(0, 0, 0, 1, 90, 140, 2),    
+            new SegmentSpecification(0, 0, 1, -1, 90, 140, 34),  
+            new SegmentSpecification(0, 0, 1, 1, 90, 140, 37),   
+            new SegmentSpecification(0, 0, 2, -1, 90, 140, 69),  
 
-    internal class Gates
-    {
+            // Next 2 horizontal segments right to left
+            new SegmentSpecification(1, 0, 2, -1, 270, 105, 69), 
+            new SegmentSpecification(1, 0, 1, 1, 270, 105, 37),  
+            new SegmentSpecification(1, 0, 1, -1, 270, 105, 34),
+            new SegmentSpecification(1, 0, 0, 1, 270, 105, 2),   
 
-        #region Signwriting
+            // Next 2 horizontal segments left to right
+            new SegmentSpecification(2, 0, 0, 1, 90, 70, 2),     
+            new SegmentSpecification(2, 0, 1, -1, 90, 70, 34),  
+            new SegmentSpecification(2, 0, 1, 1, 90, 70, 37),   
+            new SegmentSpecification(2, 0, 2, -1, 90, 70, 69),  
+
+            // Next 2 horizontal segments right to left
+            new SegmentSpecification(3, 0, 2, -1, 270, 35, 69), 
+            new SegmentSpecification(3, 0, 1, 1, 270, 35, 37),  
+            new SegmentSpecification(3, 0, 1, -1, 270, 35, 34),
+            new SegmentSpecification(3, 0, 0, 1, 270, 35, 2),   
+
+            // Top 2 horizontal segments left to right
+            new SegmentSpecification(4, 0, 0, 1, 90, 0, 2),     
+            new SegmentSpecification(4, 0, 1, -1, 90, 0, 34),  
+            new SegmentSpecification(4, 0, 1, 1, 90, 0, 37),   
+            new SegmentSpecification(4, 0, 2, -1, 90, 0, 69),  
+
+            // Lefthand edge 4 vertical segments top to bottom
+            new SegmentSpecification(4, -1, 0, 0, 180, 2, 0),    
+            new SegmentSpecification(3, 1, 0, 0, 180, 34, 0),   
+            new SegmentSpecification(3, -1, 0, 0, 180, 37, 0),  
+            new SegmentSpecification(2, 1, 0, 0, 180, 69, 0),   
+            new SegmentSpecification(2, -1, 0, 0, 180, 72, 0),  
+            new SegmentSpecification(1, 1, 0, 0, 180, 104, 0),  
+            new SegmentSpecification(1, -1, 0, 0, 180, 107, 0), 
+            new SegmentSpecification(0, 1, 0, 0, 180, 139, 0),  
+
+            // Next 4 vertical segments bottom to top
+            new SegmentSpecification(0, 1, 1, 0, 0, 139, 35),   
+            new SegmentSpecification(1, -1, 1, 0, 0, 107, 35),  
+            new SegmentSpecification(1, 1, 1, 0, 0, 104, 35),   
+            new SegmentSpecification(2, -1, 1, 0, 0, 72, 35),   
+            new SegmentSpecification(2, 1, 1, 0, 0, 69, 35),    
+            new SegmentSpecification(3, -1, 1, 0, 0, 37, 35),   
+            new SegmentSpecification(3, 1, 1, 0, 0, 34, 35),    
+            new SegmentSpecification(4, -1, 1, 0, 0, 2, 35),    
+
+            // Righthand edge 4 vertical segments top to bottom
+            new SegmentSpecification(4, -1, 2, 0, 180, 2, 70),  
+            new SegmentSpecification(3, 1, 2, 0, 180, 34, 70),  
+            new SegmentSpecification(3, -1, 2, 0, 180, 37, 70), 
+            new SegmentSpecification(2, 1, 2, 0, 180, 69, 70),  
+            new SegmentSpecification(2, -1, 2, 0, 180, 72, 70), 
+            new SegmentSpecification(1, 1, 2, 0, 180, 104, 70), 
+            new SegmentSpecification(1, -1, 2, 0, 180, 107, 70),
+            new SegmentSpecification(0, 1, 2, 0, 180, 139, 70)  
+        ];
 
         /// <summary>
         /// Create a set of gates for signwriting message. Start and finish gate for a subset of the 22 possible
@@ -37,18 +85,17 @@ namespace P3D_Scenario_Generator
         internal static List<Gate> SetSignGatesMessage()
         {
             List<Gate> gates = [];
-            int currentLetterNoGates;
             for (int index = 0; index < Parameters.SignMessage.Length; index++)
             {
                 if (char.IsLetter(Parameters.SignMessage[index]))
                 {
                     // Add the gates needed for current letter to List<Gate> gates
-                    currentLetterNoGates = SetSignGatesLetter(gates, index);
+                    SetSignGatesLetter(gates, index, out int currentLetterNoOfGates);
 
                     // Move gates just added from 0 lat 0 lon 0 asml reference point to the end of letters in message processed so far
                     // only longitude is changed
-                    int startGateIndex = gates.Count - currentLetterNoGates;
-                    TranslateGates(gates, startGateIndex, currentLetterNoGates, 0, Parameters.SignSegmentLengthDeg * 3 * index, 0);
+                    int startGateIndex = gates.Count - currentLetterNoOfGates;
+                    TranslateGates(gates, startGateIndex, currentLetterNoOfGates, 0, Parameters.SignSegmentLengthDeg * 3 * index, 0);
                 }
             }
             TiltGates(gates, 0, gates.Count);
@@ -67,73 +114,27 @@ namespace P3D_Scenario_Generator
         /// <param name="gates">Where the gates are stored as they are created by <see cref="SetSegmentGate"/></param>
         /// <param name="letterIndex">Indicates which letter in the sign writing message is being processed</param>
         /// <returns>The number of gates created for the letter in the sign writing message</returns>
-        internal static int SetSignGatesLetter(List<Gate> gates, int letterIndex)
+        internal static bool SetSignGatesLetter(List<Gate> gates, int letterIndex, out int currentLetterNoOfGates)
         {
-            int gateNo = 0; // Integer division by 2 gives the segment index
             int currentLetterGateIndex = gates.Count - 1;
+            int gateNo = 0; // Integer division by 2 gives the segment index
 
-            // Bottom 2 horizontal segments left to right
-            SetSegmentGate(gates, 0, 0, 0, 1, 90, 140, 2, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 0, 0, 1, -1, 90, 140, 34, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 0, 0, 1, 1, 90, 140, 37, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 0, 0, 2, -1, 90, 140, 69, gateNo++/2, letterIndex);
+            foreach (var spec in AllSegmentDefinitions)
+            {
+                SetSegmentGate(gates,
+                               spec.LatCoef,
+                               spec.LatOffsetCoef,
+                               spec.LonCoef,
+                               spec.LonOffsetCoef,
+                               spec.Orientation,
+                               spec.TopPixels,
+                               spec.LeftPixels,
+                               gateNo++ / 2, // This calculates the segmentIndex
+                               letterIndex);
+            }
 
-            // Next 2 horizontal segments right to left
-            SetSegmentGate(gates, 1, 0, 2, -1, 270,105, 69, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 1, 0, 1, 1, 270, 105, 37, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 1, 0, 1, -1, 270, 105, 34, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 1, 0, 0, 1, 270, 105, 2, gateNo++/2, letterIndex);
-
-            // Next 2 horizontal segments left to right
-            SetSegmentGate(gates, 2, 0, 0, 1, 90, 70, 2, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 2, 0, 1, -1, 90, 70, 34, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 2, 0, 1, 1, 90, 70, 37, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 2, 0, 2, -1, 90, 70, 69, gateNo++/2, letterIndex);
-
-            // Next 2 horizontal segments right to left
-            SetSegmentGate(gates, 3, 0, 2, -1, 270, 35, 69, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 3, 0, 1, 1, 270, 35, 37, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 3, 0, 1, -1, 270, 35, 34, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 3, 0, 0, 1, 270, 35, 2, gateNo++/2, letterIndex);
-
-            // Top 2 horizontal segments left to right
-            SetSegmentGate(gates, 4, 0, 0, 1, 90, 0, 2, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 4, 0, 1, -1, 90, 0, 34, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 4, 0, 1, 1, 90, 0, 37, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 4, 0, 2, -1, 90, 0, 69, gateNo++/2, letterIndex);
-
-            // Lefthand edge 4 vertical segments top to bottom
-            SetSegmentGate(gates, 4, -1, 0, 0, 180, 2, 0, gateNo++ / 2, letterIndex);
-            SetSegmentGate(gates, 3, 1, 0, 0, 180, 34, 0, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 3, -1, 0, 0, 180, 37, 0, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 2, 1, 0, 0, 180, 69, 0, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 2, -1, 0, 0, 180, 72, 0, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 1, 1, 0, 0, 180, 104, 0, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 1, -1, 0, 0, 180, 107, 0, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 0, 1, 0, 0, 180, 139, 0, gateNo++/2, letterIndex);
-
-            // Next 4 vertical segments bottom to top
-            SetSegmentGate(gates, 0, 1, 1, 0, 0, 139, 35, gateNo++ / 2, letterIndex);
-            SetSegmentGate(gates, 1, -1, 1, 0, 0, 107, 35, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 1, 1, 1, 0, 0, 104, 35, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 2, -1, 1, 0, 0, 72, 35, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 2, 1, 1, 0, 0, 69, 35, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 3, -1, 1, 0, 0, 37, 35, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 3, 1, 1, 0, 0, 34, 35, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 4, -1, 1, 0, 0, 2, 35, gateNo++/2, letterIndex);
-
-            // Righthand edge 4 vertical segments top to bottom
-            SetSegmentGate(gates, 4, -1, 2, 0, 180, 2, 70, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 3, 1, 2, 0, 180, 34, 70, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 3, -1, 2, 0, 180, 37, 70, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 2, 1, 2, 0, 180, 69, 70, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 2, -1, 2, 0, 180, 72, 70, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 1, 1, 2, 0, 180, 104, 70, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 1, -1, 2, 0, 180, 107, 70, gateNo++/2, letterIndex);
-            SetSegmentGate(gates, 0, 1, 2, 0, 180, 139, 70, gateNo++/2, letterIndex);
-
-            int noOfGatesForCurrentLetter = gates.Count - 1 - currentLetterGateIndex;
-            return noOfGatesForCurrentLetter;
+            currentLetterNoOfGates = gates.Count - 1 - currentLetterGateIndex;
+            return true;
         }
 
         /// <summary>
@@ -162,7 +163,7 @@ namespace P3D_Scenario_Generator
             double amsl = 0;
 
             // Skip segments that don't form part of current letter in sign writing message
-            if (!SignWriting.SegmentIsSet(Parameters.SignMessage[letterIndex], segmentIndex))
+            if (!SignCharacterMap.SegmentIsSet(Parameters.SignMessage[letterIndex], segmentIndex))
             {
                 return;
             }
@@ -172,7 +173,7 @@ namespace P3D_Scenario_Generator
             // So for the gates marking start and finish of vertical segments in a letter the gates are pitched up or down
             // by tilt angle amount depending if the vertical sequence of gates is climbing or descending in altitude.
             double pitch;
-            if ((orientation == 90) || (orientation == 270))
+            if (orientation == 90 || orientation == 270)
             {
                 pitch = 0;
             }
@@ -226,7 +227,5 @@ namespace P3D_Scenario_Generator
                 gates[index].lat = gates[index].lat * Math.Cos(Parameters.SignTiltAngle * Math.PI / 180);
             }
         }
-
-        #endregion
     }
 }

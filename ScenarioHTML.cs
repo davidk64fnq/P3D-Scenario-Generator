@@ -1,5 +1,6 @@
 ﻿using P3D_Scenario_Generator.CelestialScenario;
 using P3D_Scenario_Generator.PhotoTourScenario;
+using P3D_Scenario_Generator.SignWritingScenario;
 using System.Reflection;
 
 namespace P3D_Scenario_Generator
