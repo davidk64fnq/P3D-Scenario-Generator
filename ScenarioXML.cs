@@ -2,6 +2,7 @@
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.SignWritingScenario;
+using P3D_Scenario_Generator.WikipediaScenario;
 using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator

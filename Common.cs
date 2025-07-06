@@ -1,5 +1,6 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.MapTiles;
+using P3D_Scenario_Generator.WikipediaScenario;
 
 namespace P3D_Scenario_Generator
 {

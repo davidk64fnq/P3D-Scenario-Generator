@@ -1,6 +1,16 @@
 ﻿namespace P3D_Scenario_Generator.SignWritingScenario
 {
-    // Define the record to hold segment parameters
+    /// <summary>
+    /// Defines a record to hold the parameters for a segment, used in generating signwriting messages.
+    /// </summary>
+    /// <param name="LatCoef">How many straight segment portions this segment is right of letter lefthand edge</param>
+    /// <param name="LatOffsetCoef">How many pointy cap segment portions this segment is right of letter lefthand edge</param>
+    /// <param name="LonCoef">How many straight segment portions this segment is above letter bottom edge</param>
+    /// <param name="LonOffsetCoef">How many pointy cap segment portions this segment is above letter bottom edge</param>
+    /// <param name="Orientation">The direction of front side of gate, e.g. 90 means the gate will be triggered when 
+    /// flying through it from the west heading east</param>
+    /// <param name="TopPixels">Top pixel reference for segment in letter</param>
+    /// <param name="LeftPixels">Left pixel reference for segment in letter</param>
     public record SegmentSpecification(
         double LatCoef,
         double LatOffsetCoef,
@@ -11,9 +21,19 @@
         double LeftPixels
     );
 
+    /// <summary>
+    /// Provides methods for generating and manipulating gates to form signwriting messages in a simulated environment.
+    /// This includes defining segment specifications, creating gates for individual letters,
+    /// and applying transformations such as translation and tilting to the generated gates.
+    /// </summary>
     internal class SignGateGenerator
     {
-        // This static readonly list will hold all 44 segment definitions
+        /// <summary>
+        /// A static readonly list containing all 44 predefined <see cref="SegmentSpecification"/> instances.
+        /// These specifications define the geometric and orientational properties for each of the
+        /// possible segments that can be used to construct letters in the signwriting message.
+        /// The segments are ordered to facilitate the sequential generation of gates for a letter.
+        /// </summary>
         private static readonly List<SegmentSpecification> AllSegmentDefinitions =
         [
             // Bottom 2 horizontal segments left to right
@@ -114,7 +134,7 @@
         /// <param name="gates">Where the gates are stored as they are created by <see cref="SetSegmentGate"/></param>
         /// <param name="letterIndex">Indicates which letter in the sign writing message is being processed</param>
         /// <returns>The number of gates created for the letter in the sign writing message</returns>
-        internal static bool SetSignGatesLetter(List<Gate> gates, int letterIndex, out int currentLetterNoOfGates)
+        internal static void SetSignGatesLetter(List<Gate> gates, int letterIndex, out int currentLetterNoOfGates)
         {
             int currentLetterGateIndex = gates.Count - 1;
             int gateNo = 0; // Integer division by 2 gives the segment index
@@ -134,7 +154,6 @@
             }
 
             currentLetterNoOfGates = gates.Count - 1 - currentLetterGateIndex;
-            return true;
         }
 
         /// <summary>
@@ -154,19 +173,19 @@
         internal static void SetSegmentGate(List<Gate> gates, double latCoef, double latOffsetCoef, double lonCoef, double lonOffsetCoef,
             double orientation, double topPixels, double leftPixels, int segmentIndex, int letterIndex)
         {
-            // At this point the letter bottom lefthand edge is at 0 latitude and 0 longitude. Work out
-            // from this referenc epoint the lat/lon of segment being processed in current message letter
-            double lat = Parameters.SignSegmentLengthDeg * latCoef + Parameters.SignSegmentRadiusDeg * latOffsetCoef;
-            double lon = Parameters.SignSegmentLengthDeg * lonCoef + Parameters.SignSegmentRadiusDeg * lonOffsetCoef;
-
-            // Letter starts at 0 amsl and later gets translated to correct height.
-            double amsl = 0;
-
             // Skip segments that don't form part of current letter in sign writing message
             if (!SignCharacterMap.SegmentIsSet(Parameters.SignMessage[letterIndex], segmentIndex))
             {
                 return;
             }
+
+            // At this point the letter bottom lefthand edge is at 0 latitude and 0 longitude. Work out
+            // from this reference point the lat/lon of segment being processed in current message letter
+            double lat = Parameters.SignSegmentLengthDeg * latCoef + Parameters.SignSegmentRadiusDeg * latOffsetCoef;
+            double lon = Parameters.SignSegmentLengthDeg * lonCoef + Parameters.SignSegmentRadiusDeg * lonOffsetCoef;
+
+            // Letter starts at 0 amsl and later gets translated to correct height.
+            double amsl = 0;
 
             // The tilt angle of message refers to the segments in the vertical plane e.g. the sides of letter 'A'
             // while the horizontal segments are unaffected by tilt angle e.g. the middle and top horizontal lines of letter 'A'

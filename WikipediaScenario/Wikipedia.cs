@@ -3,7 +3,7 @@ using HtmlAgilityPack;
 using P3D_Scenario_Generator.MapTiles;
 using System.Web;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.WikipediaScenario
 {
     /// <summary>
     /// Stores information pertaining to a Wikipedia item in the Wikipedia list tour, also used for start and destination airports
@@ -74,185 +74,12 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Table(s) of items scraped from user supplied Wikipedia URL
         /// </summary>
-        internal static List<List<WikiItemParams>> WikiPage { get; private set; }
+        internal static List<List<WikiItemParams>> WikiPage { get; set; }
 
         /// <summary>
         /// List of user selected Wikipedia items
         /// </summary>
         internal static List<WikiItemParams> WikiTour { get; private set; } 
-
-        #region Populating WikiPage when user pastes in Wikipedia URL, called from main form
-
-        /// <summary>
-        /// Parses user supplied URL for table(s) identified by class='sortable wikitable'.
-        /// Using specified column extracts items that have a title and link. The link must
-        /// supply latitude and longitude. Stores items in <see cref="WikiPage"/>.
-        /// </summary>
-        /// <param name="wikiURL">User supplied Wikipedia URL</param>
-        /// <param name="columnNo">User supplied column number of items in table</param>
-        static internal void PopulateWikiPage(string wikiURL, int columnNo)
-        {
-            string message = $"Reading {wikiURL} and column {columnNo}, will advise when complete";
-            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            WikiPage = [];
-            HtmlAgilityPack.HtmlDocument htmlDoc = HttpRoutines.GetWebDoc(wikiURL);
-            HtmlNodeCollection tables = null;
-            HtmlNodeCollection rows = null;
-            HtmlNodeCollection cells = null;
-            string tableSelection = "//table[contains(@class, 'sortable wikitable') or contains(@class, 'wikitable sortable')]";
-            if (htmlDoc != null && GetNodeCollection(htmlDoc.DocumentNode, ref tables, tableSelection, true))
-            {
-                foreach (var table in tables)
-                {
-                    List<WikiItemParams> curTable = [];
-                    if (GetNodeCollection(table, ref rows, ".//tr", true))
-                    {
-                        foreach (var row in rows)
-                        {
-                            if (GetNodeCollection(row, ref cells, ".//th | .//td", true) && cells.Count >= columnNo)
-                            {
-                                ReadWikiCell(cells[columnNo - 1], curTable);
-                            }
-                        }
-                    }
-                    if (curTable.Count > 0)
-                    {
-                        WikiPage.Add(curTable);
-                    }
-                }
-            }
-            message = $"Finished reading {wikiURL} and column {columnNo}.";
-            MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        /// <summary>
-        /// Stores one item in a table of <see cref="WikiPage"/>. Item includes a title, URL to Wikipedia item page 
-        /// and latitude and longitude.
-        /// </summary>
-        /// <param name="cell">The cell in a table row containing item title and hyperlink</param>
-        /// <param name="curTable">The current table being populated in <see cref="WikiPage"/></param>
-        static internal void ReadWikiCell(HtmlNode cell, List<WikiItemParams> curTable)
-        {
-            WikiItemParams wikiItem = new();
-            List<HtmlNode> cellDescendants = cell.Descendants("a").ToList();
-            string title = "", link = "";
-            if (cellDescendants.Count > 0)
-            {
-                title = cellDescendants[0].GetAttributeValue("title", "");
-                link = cellDescendants[0].GetAttributeValue("href", "");
-            }
-            if (title != "" && link != "")
-            {
-                wikiItem.title = HttpUtility.HtmlDecode(title);
-                wikiItem.itemURL = link;
-                if (GetWikiItemCoordinates(wikiItem))
-                {
-                    wikiItem.hrefs = GetWikiItemHREFs(wikiItem);
-                    curTable.Add(wikiItem);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Retrieves any href="# links in the item. These are used to allow user to step through sections
-        /// of the item page using joystick mapped buttons as an alternative to scrolling with a mouse.
-        /// </summary>
-        /// <param name="wikiItem">The current row in table being populated in <see cref="WikiPage"/></param>
-        static internal List<string> GetWikiItemHREFs(WikiItemParams wikiItem)
-        {
-            var htmlDoc = HttpRoutines.GetWebDoc($"https://en.wikipedia.org/{wikiItem.itemURL}");
-            string htmlDocContents = htmlDoc.Text;
-            int indexSearchFrom = 0;
-            string hrefTag = "href=\"#";
-            List<string> hrefs = [];
-            int indexHREFtagStart = htmlDocContents.IndexOf(hrefTag, indexSearchFrom);
-            while (indexHREFtagStart >= 0)
-            {
-                int indexHREFvalueStart = indexHREFtagStart + hrefTag.Length;
-                int indexHREFvalueFinish = htmlDocContents.IndexOf('\"', indexHREFvalueStart);
-                string hrefValue = htmlDocContents[indexHREFvalueStart..indexHREFvalueFinish];
-                if (hrefValue.Length > 0 && !hrefValue.Contains("cite", StringComparison.OrdinalIgnoreCase))
-                {
-                    hrefs.Add(hrefValue);
-                }
-                indexSearchFrom = indexHREFvalueFinish + 1;
-                indexHREFtagStart = htmlDocContents.IndexOf(hrefTag, indexSearchFrom);
-            }
-            return hrefs;
-        }
-
-        /// <summary>
-        /// Checks that the item hyperlink is pointing to a page with lat/long coordinate in expected place
-        /// and retrieves them for storage in a table in <see cref="WikiPage"/>.
-        /// </summary>
-        /// <param name="wikiItem">The current row in table being populated in <see cref="WikiPage"/></param>
-        /// <returns></returns>
-        static internal bool GetWikiItemCoordinates(WikiItemParams wikiItem)
-        {
-            var htmlDoc = HttpRoutines.GetWebDoc($"https://en.wikipedia.org/{wikiItem.itemURL}");
-            HtmlNodeCollection spans = null;
-            if (htmlDoc != null && GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='latitude']", false))
-            {
-                if (spans != null && spans.Count > 0)
-                {
-                    wikiItem.latitude = ConvertWikiCoOrd(spans[0].InnerText);
-                    GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='longitude']", false);
-                    wikiItem.longitude = ConvertWikiCoOrd(spans[0].InnerText);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Convert Wikipedia coordinate format string to format that can be parsed by CoordinateSharp package
-        /// </summary>
-        /// <param name="wikiCoOrd">Wikipedia coordinate format string</param>
-        /// <returns>CoordinateSharp package format readable string</returns>
-        static internal string ConvertWikiCoOrd(string wikiCoOrd)
-        {
-            // Insert space after degree symbol
-            int degPos = wikiCoOrd.IndexOf('°');
-            wikiCoOrd = wikiCoOrd.Insert(degPos + 1, " ");
-
-            // Insert space after minute symbol
-            int minPos = degPos + 2;
-            while (Char.IsDigit(wikiCoOrd[minPos]) || wikiCoOrd[minPos] == '.')
-            {
-                minPos++;
-            }
-            wikiCoOrd = wikiCoOrd.Insert(minPos + 1, " ");
-
-            // Copy last char N/S/E/W to front with space after it
-            char final = wikiCoOrd[^1];
-            wikiCoOrd = $"{final} {wikiCoOrd}";
-
-            // Delete last char
-            wikiCoOrd = wikiCoOrd.Remove(wikiCoOrd.Length - 1);
-
-            return wikiCoOrd;
-        }
-
-        /// <summary>
-        /// Parses parent HtmlNode using specified selection string for collection of child HtmlNodes
-        /// </summary>
-        /// <param name="parentNode">The HtmlNode to be searched</param>
-        /// <param name="childNodeCollection">The collection of HtmlNodes resulting from selction string</param>
-        /// <param name="selection">The string used to collect child HtmlNodes from the parent HtmlNode</param>
-        /// <returns></returns>
-        static internal bool GetNodeCollection(HtmlNode parentNode, ref HtmlNodeCollection childNodeCollection, string selection, bool verbose)
-        {
-            childNodeCollection = parentNode.SelectNodes(selection);
-            if (childNodeCollection == null && verbose)
-            {
-                string errorMessage = $"Node collection failed for {selection}";
-                MessageBox.Show(errorMessage, $"{Parameters.SelectedScenario}", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return false;
-            }
-            return true;
-        }
-
-        #endregion
 
         #region Form routines - populate UI, list of tables and route for selected table including all valid items
 

@@ -2,6 +2,7 @@
 using P3D_Scenario_Generator.CircuitScenario;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.SignWritingScenario;
+using P3D_Scenario_Generator.WikipediaScenario;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -482,19 +483,82 @@ namespace P3D_Scenario_Generator
             Properties.Settings.Default.Save();
         }
 
-        private void ComboBoxWikiURL_TextChanged(object sender, EventArgs e)
+        private async void ComboBoxWikiURL_TextChanged(object sender, EventArgs e) // Make it async
         {
-            ComboBoxWikiURL_TextChanged();
-            ComboBox_SelectedIndexChanged(sender, e);
-        }
+            // 1. Capture UI control values while still on the UI thread
+            string selectedWikiUrl = ComboBoxWikiURL.SelectedItem?.ToString();
+            string wikiUrlText = ComboBoxWikiURL.Text;
+            string columnNumberText = TextBoxWikiItemLinkColumn.Text;
 
-        private void ComboBoxWikiURL_TextChanged()
-        {
-            if (ComboBoxWikiURL.SelectedItem.ToString() != "")
+            // Perform initial validation of captured values
+            if (string.IsNullOrEmpty(selectedWikiUrl))
             {
-                Parameters.SelectedScenario = Constants.scenarioNames[(int)ScenarioTypes.WikiList];
-                Wikipedia.PopulateWikiPage(ComboBoxWikiURL.SelectedItem.ToString(), int.Parse(TextBoxWikiItemLinkColumn.Text));
-                ComboBoxWikiTableNames.DataSource = Wikipedia.CreateWikiTablesDesc();
+                // Optionally update status and return if no URL selected
+                toolStripStatusLabel1.Text = "Please select a Wikipedia URL.";
+                return;
+            }
+
+            if (!int.TryParse(columnNumberText, out int columnNo))
+            {
+                // Handle invalid column number input
+                toolStripStatusLabel1.Text = "Invalid column number. Please enter a valid integer.";
+                return;
+            }
+
+            Parameters.SelectedScenario = Constants.scenarioNames[(int)ScenarioTypes.WikiList];
+
+            // Create a Progress instance for status updates from the background task
+            var progress = new Progress<string>(message =>
+            {
+                // This lambda is automatically marshaled back to the UI thread
+                toolStripStatusLabel1.Text = message;
+            });
+
+            // 2. Update UI with initial status and disable controls (on UI thread)
+            toolStripStatusLabel1.Text = $"Reading {wikiUrlText} and column {columnNumberText}, please wait...";
+            Enabled = false; // Disable entire form to prevent further interaction
+
+            try
+            {
+                // 3. Offload the long-running task to a background thread
+                // Pass the CAPTURED values as arguments to the lambda
+                // Also pass the progress reporter
+                bool success = await Task.Run(() =>
+                {
+                    // This code runs on a background thread.
+                    // It uses the 'captured' variables (selectedWikiUrl, columnNo)
+                    // and the 'progress' reporter.
+                    return WikipediaScenario.WikiPageHtmlParser.PopulateWikiPage(
+                        selectedWikiUrl,
+                        columnNo,
+                        progress // Pass the progress reporter here
+                    );
+                });
+
+                // 4. Update UI with results after the background task completes (back on UI thread)
+                if (success)
+                {
+                    ComboBoxWikiTableNames.DataSource = Wikipedia.CreateWikiTablesDesc();
+                    toolStripStatusLabel1.Text = "Wiki page data loaded successfully.";
+                }
+                else
+                {
+                    // Error message already reported by the progress reporter from the parser,
+                    // but you can add a final one or specific handling here.
+                    toolStripStatusLabel1.Text = "Failed to load Wiki page data. Check logs for details.";
+                }
+            }
+            catch (Exception ex)
+            {
+                // 5. Handle any unexpected exceptions from the background task
+                Log.Error($"An unhandled error occurred during Wiki page loading: {ex.Message}");
+                toolStripStatusLabel1.Text = "An unexpected error occurred. See logs.";
+            }
+            finally
+            {
+                // 6. Re-enable UI controls regardless of success or failure
+                Enabled = true;
+                ComboBox_SelectedIndexChanged(sender, e);
             }
         }
 

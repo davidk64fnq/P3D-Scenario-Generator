@@ -258,6 +258,9 @@ currently selected favourite. </value>
   <data name="TextBoxSettingsMapOffset.ToolTip" xml:space="preserve">
     <value>The default position of map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the map window is positioned. Ignored if default position of map window is centered.</value>
   </data>
+  <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>115, 17</value>
+  </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>38</value>
   </metadata>

@@ -223,6 +223,8 @@ namespace P3D_Scenario_Generator
             GeneralTimePicker = new DateTimePicker();
             TabControlP3DSG = new TabControl();
             TabPageWikiList = new TabPage();
+            statusStrip1 = new StatusStrip();
+            toolStripStatusLabel1 = new ToolStripStatusLabel();
             groupBox1.SuspendLayout();
             tableLayoutPanelPhotoTourPhotoWindowLocation.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -263,12 +265,13 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel10.SuspendLayout();
             TabControlP3DSG.SuspendLayout();
             TabPageWikiList.SuspendLayout();
+            statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // ButtonGenerateScenario
             // 
             ButtonGenerateScenario.ImageAlign = ContentAlignment.BottomLeft;
-            ButtonGenerateScenario.Location = new Point(348, 493);
+            ButtonGenerateScenario.Location = new Point(349, 485);
             ButtonGenerateScenario.Name = "ButtonGenerateScenario";
             ButtonGenerateScenario.Size = new Size(152, 43);
             ButtonGenerateScenario.TabIndex = 1;
@@ -2573,7 +2576,7 @@ namespace P3D_Scenario_Generator
             // 
             // ButtonHelp
             // 
-            ButtonHelp.Location = new Point(721, 513);
+            ButtonHelp.Location = new Point(757, 7);
             ButtonHelp.Name = "ButtonHelp";
             ButtonHelp.Size = new Size(75, 23);
             ButtonHelp.TabIndex = 2;
@@ -2842,12 +2845,29 @@ namespace P3D_Scenario_Generator
             TabPageWikiList.TabIndex = 7;
             TabPageWikiList.Text = "Wikipedia List";
             // 
+            // statusStrip1
+            // 
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
+            statusStrip1.Location = new Point(0, 531);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new Size(844, 22);
+            statusStrip1.TabIndex = 3;
+            statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            toolStripStatusLabel1.BackColor = SystemColors.Window;
+            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(798, 17);
+            toolStripStatusLabel1.Spring = true;
+            // 
             // Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(844, 553);
+            Controls.Add(statusStrip1);
             Controls.Add(ButtonHelp);
             Controls.Add(ButtonGenerateScenario);
             Controls.Add(TabControlP3DSG);
@@ -2912,7 +2932,10 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel10.ResumeLayout(false);
             TabControlP3DSG.ResumeLayout(false);
             TabPageWikiList.ResumeLayout(false);
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         private void TabControl_SelectedIndexChanged(object sender, EventArgs e)
@@ -3111,6 +3134,8 @@ namespace P3D_Scenario_Generator
         private Label label15;
         private GroupBox groupBox2;
         private TableLayoutPanel tableLayoutPanel5;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel toolStripStatusLabel1;
     }
 }
 

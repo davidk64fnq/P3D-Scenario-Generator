@@ -1,7 +1,13 @@
-﻿using P3D_Scenario_Generator.MapTiles;
+﻿using CoordinateSharp;
+using P3D_Scenario_Generator.MapTiles;
 
 namespace P3D_Scenario_Generator.SignWritingScenario
 {
+    /// <summary>
+    /// Manages the overall setup and generation of a signwriting scenario within the simulator.
+    /// This includes initializing character segment mappings, generating flight gates for the sign message,
+    /// and preparing map images for scenario overview and location display.
+    /// </summary>
     internal class SignWriting
     {
 
@@ -15,11 +21,14 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// </summary>
         static internal bool SetSignWriting()
         {
+            // Scenario starts and finishes at user selected airport
             Runway.startRwy = Runway.Runways[Parameters.SelectedAirportIndex];
             Runway.destRwy = Runway.Runways[Parameters.SelectedAirportIndex];
+
+            // Set the letter segment paths for the sign writing letters
             SignCharacterMap.InitLetterPaths();
 
-            // First, try to generate the random photo tour
+            // Create the gates for the sign writing scenario
             gates = SignGateGenerator.SetSignGatesMessage();
             if (gates.Count == 0)
             {
@@ -27,91 +36,63 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 return false;
             }
 
-            SetSignWritingOverviewImage(gates);
-            SetSignWritingLocationImage(gates);
+            bool drawRoute = false;
+            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute))
+            {
+                Log.Error("Failed to create overview image during sign writing setup.");
+                return false;
+            }
+
+            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords()))
+            {
+                Log.Error("Failed to create location image during sign writing setup.");
+                return false;
+            }
 
             return true;
         }
 
         /// <summary>
-        /// Creates "Charts_01.jpg" using a montage of OSM tiles that covers airport and sign writing gates/>
+        /// Creates and returns an enumerable collection of <see cref="Coordinate"/> objects
+        /// representing the sign writing gates and start/destination runway.
         /// </summary>
-        static internal void SetSignWritingOverviewImage(List<Gate> gates)
+        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
+        /// the the sign writing gate's latitude/longitude and start/destination runway's latitude/longitude.</returns>
+        public static IEnumerable<Coordinate> SetOverviewCoords()
         {
-            int zoom = GetBoundingBoxZoom(gates, 0, gates.Count - 1);
-            List<Tile> tiles = SetSignWritingOSMtiles(gates, zoom, 0, gates.Count - 1);
-            BoundingBox boundingBox;
-            BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
-            MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01");
-            ImageUtils.DrawRoute(tiles, boundingBox, "Charts_01");
-        //    ImageUtils.MakeSquare(boundingBox, "Charts_01", zoom, Constants.tileFactor);
+            IEnumerable<Coordinate> coordinates = gates.Select(gate => new Coordinate(gate.lat, gate.lon));
+
+            // Add the start runway to the beginning
+            coordinates = coordinates.Prepend(new Coordinate(Runway.startRwy.AirportLat, Runway.startRwy.AirportLon));
+
+            // Add the destination runway to the end
+            coordinates = coordinates.Append(new Coordinate(Runway.destRwy.AirportLat, Runway.destRwy.AirportLon));
+
+            return coordinates;
         }
 
         /// <summary>
-        /// Creates "chart_thumb.jpg" using an OSM tile that covers the starting airport
+        /// Creates and returns an enumerable collection containing a single <see cref="Coordinate"/> object
+        /// that represents the geographical location (latitude and longitude) of the start/destination runway.
         /// </summary>
-        static internal void SetSignWritingLocationImage(List<Gate> gates)
+        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
+        /// only the start/destination runway's latitude and longitude.</returns>
+        static internal IEnumerable<Coordinate> SetLocationCoords()
         {
-            int zoom = 15;
-            List<Tile> tiles = SetSignWritingOSMtiles(gates, zoom, 0, 0);
-            BoundingBox boundingBox;
-            BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
-            MapTileMontager.MontageTiles(boundingBox, zoom, "chart_thumb");
-            if (boundingBox.XAxis.Count != boundingBox.YAxis.Count)
-            {
-        //        ImageUtils.MakeSquare(boundingBox, "chart_thumb", zoom, Constants.locationImageTileFactor);
-            }
-            if (boundingBox.XAxis.Count == Constants.tileFactor)
-            {
-                ImageUtils.Resize("chart_thumb.png", Constants.tileSize, 0);
-            }
+            IEnumerable<Coordinate> coordinates =
+            [
+                new Coordinate(Runway.startRwy.AirportLat, Runway.startRwy.AirportLon)
+            ];
+            return coordinates;
         }
 
         /// <summary>
-        /// Works out most zoomed in level that includes all gates specified by startGateIndex and finishGateIndex, 
-        /// plus airport where the montage of OSM tiles doesn't exceed <see cref="Constants.tileFactor"/> in size
+        /// Calculates the approximate distance flown in nautical miles for the sign writing message.
+        /// The calculation is based on the total number of segments (half the number of gates) multiplied
+        /// by the length of a single segment, with an additional 50% added to account for the flight path
+        /// between segments.
         /// </summary>
-        /// <param name="startGateIndex">Index of first gate in sign writing message</param>
-        /// <param name="finishGateIndex">Index of last gate in sign writing message</param>
-        /// <returns>The maximum zoom level that meets constraints</returns>
-        static internal int GetBoundingBoxZoom(List<Gate> gates, int startGateIndex, int finishGateIndex)
-        {
-            List<Tile> tiles;
-            BoundingBox boundingBox;
-            for (int zoom = 2; zoom <= Constants.maxZoomLevel; zoom++) // zoom of 1 is map of the world!
-            {
-                tiles = SetSignWritingOSMtiles(gates, zoom, startGateIndex, finishGateIndex);
-                BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
-                if (boundingBox.XAxis.Count > Constants.tileFactor || boundingBox.YAxis.Count > Constants.tileFactor)
-                {
-                    return zoom - 1;
-                }
-            }
-            return Constants.maxZoomLevel;
-        }
-
-        /// <summary>
-        /// Finds OSM tile numbers and offsets for a sign writing message (all gates plus airport)
-        /// </summary>
-        /// <param name="zoom">The zoom level to get OSM tiles at</param>
-        /// <param name="startItemIndex">Index of first gate in sign writing message</param>
-        /// <param name="finishItemIndex">Index of last gate in sign writing message</param>
-        /// <returns>The list of tiles</returns>
-        static internal List<Tile> SetSignWritingOSMtiles(List<Gate> gates, int zoom, int startItemIndex, int finishItemIndex)
-        {
-            List<Tile> tiles = [];
-            for (int gateIndex = startItemIndex; gateIndex <= finishItemIndex; gateIndex++)
-            {
-        //        tiles.Add(MapTileCalculator.GetOSMtile(gates[gateIndex].lon.ToString(), gates[gateIndex].lat.ToString(), zoom));
-            }
-            return tiles;
-        }
-
-        /// <summary>
-        /// Approximate distance flown in miles as number of segments (number of gates divided by two) times length of a segment
-        /// plus 50% for flying between segments.
-        /// </summary>
-        /// <returns></returns>
+        /// <returns>The estimated flight distance in nautical miles.</returns>
         static internal double GetSignWritingDistance()
         {
             return gates.Count / 2 * Parameters.SignSegmentLengthDeg * Constants.degreeLatFeet / Constants.feetInNM * 1.5;

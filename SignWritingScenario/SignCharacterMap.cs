@@ -1,5 +1,11 @@
 ﻿namespace P3D_Scenario_Generator.SignWritingScenario
 {
+    /// <summary>
+    /// Provides a mapping for characters to their corresponding 22-segment binary representations,
+    /// enabling the determination of which segments are "on" for a given letter in signwriting.
+    /// This class also includes a method to initialize these mappings and to check if a specific
+    /// segment is set for a character.
+    /// </summary>
     internal class SignCharacterMap
     {
         /// <summary>
