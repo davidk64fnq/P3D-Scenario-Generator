@@ -618,7 +618,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public string TextBoxWikiItemLinkColumn {
             get {
                 return ((string)(this["TextBoxWikiItemLinkColumn"]));

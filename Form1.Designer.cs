@@ -1524,6 +1524,7 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiURL.Anchor = AnchorStyles.None;
             ComboBoxWikiURL.DropDownWidth = 540;
             ComboBoxWikiURL.FormattingEnabled = true;
+            ComboBoxWikiURL.Items.AddRange(new object[] { "", "https://en.wikipedia.org/wiki/List_of_lighthouses_in_Hawaii" });
             ComboBoxWikiURL.Location = new Point(139, 3);
             ComboBoxWikiURL.Name = "ComboBoxWikiURL";
             ComboBoxWikiURL.Size = new Size(100, 23);
@@ -1540,11 +1541,11 @@ namespace P3D_Scenario_Generator
             TextBoxWikiItemLinkColumn.Name = "TextBoxWikiItemLinkColumn";
             TextBoxWikiItemLinkColumn.Size = new Size(100, 23);
             TextBoxWikiItemLinkColumn.TabIndex = 19;
-            TextBoxWikiItemLinkColumn.Tag = "1, natural";
+            TextBoxWikiItemLinkColumn.Tag = "";
             TextBoxWikiItemLinkColumn.Text = "1";
             TextBoxWikiItemLinkColumn.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiItemLinkColumn, "The column in Wikipdeia URL table or lists containing the link to each item");
-            TextBoxWikiItemLinkColumn.Validating += TextBox_Validating;
+            toolTip1.SetToolTip(TextBoxWikiItemLinkColumn, "The column in Wikipdeia URL table or lists containing the link to each item. Lefthand column is 1.");
+            TextBoxWikiItemLinkColumn.TextChanged += TextBoxWikiItemLinkColumn_TextChanged;
             // 
             // ComboBoxWikiFinishingItem
             // 
@@ -1614,7 +1615,7 @@ namespace P3D_Scenario_Generator
             LabelWikiColumn.Size = new Size(102, 15);
             LabelWikiColumn.TabIndex = 6;
             LabelWikiColumn.Text = "Item Link Column";
-            toolTip1.SetToolTip(LabelWikiColumn, "The column in Wikipdeia URL table or lists containing the link to each item");
+            toolTip1.SetToolTip(LabelWikiColumn, "The column in Wikipdeia URL table or lists containing the link to each item. Lefthand column is 1.\r\n");
             // 
             // LabelWikiTableNames
             // 
@@ -2858,7 +2859,7 @@ namespace P3D_Scenario_Generator
             // 
             toolStripStatusLabel1.BackColor = SystemColors.Window;
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            toolStripStatusLabel1.Size = new Size(798, 17);
+            toolStripStatusLabel1.Size = new Size(829, 17);
             toolStripStatusLabel1.Spring = true;
             // 
             // Form

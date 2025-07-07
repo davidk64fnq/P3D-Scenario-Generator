@@ -3,7 +3,10 @@ using P3D_Scenario_Generator.CircuitScenario;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.SignWritingScenario;
 using P3D_Scenario_Generator.WikipediaScenario;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Configuration;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace P3D_Scenario_Generator
@@ -11,10 +14,20 @@ namespace P3D_Scenario_Generator
     public partial class Form : System.Windows.Forms.Form
     {
         internal static readonly Form form = (Form)Application.OpenForms[0];
+        private readonly IProgress<string> _statusProgress;
 
         public Form()
         {
             InitializeComponent();
+
+            _statusProgress = new Progress<string>(message =>
+            {
+                if (toolStripStatusLabel1 != null)
+                {
+                    toolStripStatusLabel1.Text = message;
+                }
+            });
+
             PrepareFormFields();
         }
 
@@ -494,72 +507,71 @@ namespace P3D_Scenario_Generator
             if (string.IsNullOrEmpty(selectedWikiUrl))
             {
                 // Optionally update status and return if no URL selected
-                toolStripStatusLabel1.Text = "Please select a Wikipedia URL.";
+                _statusProgress.Report("Please select a Wikipedia URL.");
                 return;
             }
 
-            if (!int.TryParse(columnNumberText, out int columnNo))
+            if (!int.TryParse(columnNumberText, out int columnNo) || columnNo <= 0)
             {
-                // Handle invalid column number input
-                toolStripStatusLabel1.Text = "Invalid column number. Please enter a valid integer.";
+                _statusProgress.Report("Invalid column number. Please enter a positive integer.");
                 return;
             }
 
+            // In case user clicks Generate Scenario button not having selected scenario type on general tab first
             Parameters.SelectedScenario = Constants.scenarioNames[(int)ScenarioTypes.WikiList];
 
-            // Create a Progress instance for status updates from the background task
-            var progress = new Progress<string>(message =>
-            {
-                // This lambda is automatically marshaled back to the UI thread
-                toolStripStatusLabel1.Text = message;
-            });
-
-            // 2. Update UI with initial status and disable controls (on UI thread)
-            toolStripStatusLabel1.Text = $"Reading {wikiUrlText} and column {columnNumberText}, please wait...";
+            _statusProgress.Report($"Reading {wikiUrlText} and column {columnNumberText}, please wait...");
             Enabled = false; // Disable entire form to prevent further interaction
 
             try
             {
-                // 3. Offload the long-running task to a background thread
-                // Pass the CAPTURED values as arguments to the lambda
-                // Also pass the progress reporter
                 bool success = await Task.Run(() =>
                 {
-                    // This code runs on a background thread.
-                    // It uses the 'captured' variables (selectedWikiUrl, columnNo)
-                    // and the 'progress' reporter.
-                    return WikipediaScenario.WikiPageHtmlParser.PopulateWikiPage(
+                    return WikiPageHtmlParser.PopulateWikiPage(
                         selectedWikiUrl,
                         columnNo,
-                        progress // Pass the progress reporter here
+                        _statusProgress 
                     );
                 });
 
-                // 4. Update UI with results after the background task completes (back on UI thread)
                 if (success)
                 {
                     ComboBoxWikiTableNames.DataSource = Wikipedia.CreateWikiTablesDesc();
-                    toolStripStatusLabel1.Text = "Wiki page data loaded successfully.";
+                    _statusProgress.Report("Wiki page data loaded successfully.");
                 }
                 else
                 {
-                    // Error message already reported by the progress reporter from the parser,
-                    // but you can add a final one or specific handling here.
-                    toolStripStatusLabel1.Text = "Failed to load Wiki page data. Check logs for details.";
+                    _statusProgress.Report("Failed to load Wiki page data. Check logs for details.");
                 }
             }
             catch (Exception ex)
             {
-                // 5. Handle any unexpected exceptions from the background task
                 Log.Error($"An unhandled error occurred during Wiki page loading: {ex.Message}");
-                toolStripStatusLabel1.Text = "An unexpected error occurred. See logs.";
+                _statusProgress.Report("An unexpected error occurred. See logs.");
             }
             finally
             {
-                // 6. Re-enable UI controls regardless of success or failure
                 Enabled = true;
                 ComboBox_SelectedIndexChanged(sender, e);
             }
+        }
+
+        /// <summary>
+        /// Handles the TextChanged event for the ComboBoxWikiURL. This method orchestrates the retrieval
+        /// and parsing of Wikipedia page data based on the selected URL and column number.
+        /// It performs UI validation, offloads the data processing to a background task,
+        /// provides progress updates, and updates the UI upon completion or error.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the ComboBoxWikiURL.</param>
+        /// <param name="e">An EventArgs that contains no event data.</param>
+        private void TextBoxWikiItemLinkColumn_TextChanged(object sender, EventArgs e)
+        {
+            if (!int.TryParse(TextBoxWikiItemLinkColumn.Text, out int columnNo) || columnNo <= 0)
+            {
+                _statusProgress.Report("Invalid column number. Please enter a positive integer.");
+                return;
+            }
+            ComboBoxWikiURL_TextChanged(ComboBoxWikiURL, EventArgs.Empty);
         }
 
         private void ComboBoxWikiTableNames_SelectedIndexChanged(object sender, EventArgs e)
@@ -854,91 +866,198 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Recursively processes all controls to copy the associated user setting values if they exist into the text field.
+        /// Recursively processes all controls to copy the associated user setting values into the control's properties.
+        /// Settings are retrieved by control.Name. For ComboBoxes, it restores items and SelectedIndex.
         /// </summary>
         /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
         private static void RestoreUserSettings(Control.ControlCollection controlCollection)
         {
             foreach (Control control in controlCollection)
             {
-                if (control.Controls.Count == 0)
+                // Process child controls recursively first
+                if (control.Controls.Count > 0)
+                {
+                    RestoreUserSettings(control.Controls);
+                }
+
+                // Now process the current control
+                string settingName = control.Name; // Base setting name for the control
+
+                // Handle TextBox
+                if (control is TextBox textBox)
                 {
                     try
                     {
-                        var settingsValue = Properties.Settings.Default[control.Name];
+                        object settingsValue = Properties.Settings.Default[settingName];
+
                         if (settingsValue != null)
-                            if (control is TextBox)
-                                control.Text = settingsValue.ToString();
-                            else if (control is ComboBox box)
-                            {
-                                int itemCount = ((System.Collections.Specialized.StringCollection)Properties.Settings.Default[control.Name]).Count;
-                                if (itemCount > 0)
-                                {
-                                    box.Items.Clear();
-                                    foreach (string item in (System.Collections.Specialized.StringCollection)Properties.Settings.Default[control.Name])
-                                    {
-                                        box.Items.Add(item);
-                                    }
-                                    box.SelectedIndex = (int)Properties.Settings.Default[control.Name + "SelectedIndex"];
-                                }
-                            }
+                        {
+                            textBox.Text = settingsValue.ToString();
+                        }
+                        else
+                        {
+                            textBox.Text = string.Empty;
+                        }
                     }
-                    catch
+                    catch (SettingsPropertyNotFoundException)
                     {
-                        continue;
+                        // Use Log.Info or Log.Warning, as not finding a setting isn't necessarily an error.
+                        // For example, if a new control is added but no setting for it yet.
+                        Log.Info($"RestoreUserSettings: Setting '{settingName}' not found for TextBox. Skipping.");
+                    }
+                    catch (InvalidCastException ex)
+                    {
+                        Log.Error($"RestoreUserSettings: Type mismatch for TextBox setting '{settingName}'. Exception: {ex.Message}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"RestoreUserSettings: An unexpected error occurred for TextBox '{settingName}'. Exception: {ex.Message}", ex);
                     }
                 }
-                else
+                // Handle ComboBox
+                else if (control is ComboBox comboBox)
                 {
-                    foreach (Control childControl in control.Controls)
+                    string itemsSettingName = settingName;
+                    string selectedIndexSettingName = settingName + "SelectedIndex";
+
+                    // Restore ComboBox Items (StringCollection)
+                    try
                     {
-                        RestoreUserSettings(childControl.Controls);
+                        object itemsValue = Properties.Settings.Default[itemsSettingName];
+
+                        if (itemsValue is StringCollection savedItems && savedItems.Count > 0)
+                        {
+                            comboBox.Items.Clear();
+                            foreach (string item in savedItems)
+                            {
+                                comboBox.Items.Add(item);
+                            }
+                        }
+                    }
+                    catch (SettingsPropertyNotFoundException)
+                    {
+                        Log.Info($"RestoreUserSettings: Items setting '{itemsSettingName}' not found for ComboBox. Skipping items restoration.");
+                    }
+                    catch (InvalidCastException ex)
+                    {
+                        Log.Error($"RestoreUserSettings: Type mismatch for ComboBox items setting '{itemsSettingName}'. Exception: {ex.Message}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"RestoreUserSettings: An unexpected error occurred for ComboBox items '{itemsSettingName}'. Exception: {ex.Message}", ex);
+                    }
+
+                    // Restore ComboBox SelectedIndex
+                    try
+                    {
+                        object selectedIndexValue = Properties.Settings.Default[selectedIndexSettingName];
+
+                        if (selectedIndexValue is int savedIndex)
+                        {
+                            if (savedIndex >= 0 && savedIndex < comboBox.Items.Count)
+                            {
+                                comboBox.SelectedIndex = savedIndex;
+                            }
+                            else if (comboBox.Items.Count > 0)
+                            {
+                                Log.Warning($"RestoreUserSettings: Invalid saved SelectedIndex for '{selectedIndexSettingName}' ({savedIndex}). Defaulted to 0.");
+                            }
+                            else
+                            {
+                                comboBox.SelectedIndex = -1;
+                            }
+                        }
+                    }
+                    catch (SettingsPropertyNotFoundException)
+                    {
+                        Log.Info($"RestoreUserSettings: SelectedIndex setting '{selectedIndexSettingName}' not found for ComboBox. Skipping index restoration.");
+                    }
+                    catch (InvalidCastException ex)
+                    {
+                        Log.Error($"RestoreUserSettings: Type mismatch for ComboBox SelectedIndex setting '{selectedIndexSettingName}'. Exception: {ex.Message}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"RestoreUserSettings: An unexpected error occurred for ComboBox SelectedIndex '{selectedIndexSettingName}'. Exception: {ex.Message}", ex);
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Recursively processes all controls to copy the text field into the associated user setting value if it exists.
+        /// Recursively processes all controls to copy their relevant property values into associated user setting values.
+        /// Settings are saved by control.Name. For ComboBoxes, it saves items and SelectedIndex.
+        /// All changes are saved to disk once at the end.
         /// </summary>
         /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
         private static void SaveUserSettings(Control.ControlCollection controlCollection)
         {
             foreach (Control control in controlCollection)
             {
-                if (control.Controls.Count == 0)
+                // Process child controls recursively first
+                if (control.Controls.Count > 0)
+                {
+                    SaveUserSettings(control.Controls);
+                }
+
+                // Now process the current control
+                string settingName = control.Name;
+
+                // Handle TextBox
+                if (control is TextBox textBox)
                 {
                     try
                     {
-                        if (control is TextBox)
-                        {
-                            Properties.Settings.Default[control.Name] = control.Text;
-                        }
-                        else if (control is ComboBox box)
-                        {
-                            var newList = new System.Collections.Specialized.StringCollection();
-                            foreach (object item in box.Items)
-                            {
-                                newList.Add(item.ToString());
-                            }
-                            Properties.Settings.Default[control.Name] = newList;
-                            Properties.Settings.Default[control.Name + "SelectedIndex"] = box.SelectedIndex;
-                        }
+                        Properties.Settings.Default[settingName] = textBox.Text;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        continue;
+                        Log.Error($"SaveUserSettings: Error saving TextBox '{settingName}'. Exception: {ex.Message}", ex);
                     }
                 }
-                else
+                // Handle ComboBox
+                else if (control is ComboBox comboBox)
                 {
-                    foreach (Control childControl in control.Controls)
+                    string itemsSettingName = settingName;
+                    string selectedIndexSettingName = settingName + "SelectedIndex";
+
+                    // Save ComboBox Items (StringCollection)
+                    try
                     {
-                        SaveUserSettings(childControl.Controls);
+                        var newList = new StringCollection();
+                        foreach (object item in comboBox.Items)
+                        {
+                            newList.Add(item?.ToString() ?? string.Empty);
+                        }
+                        Properties.Settings.Default[itemsSettingName] = newList;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"SaveUserSettings: Error saving ComboBox items for '{itemsSettingName}'. Exception: {ex.Message}", ex);
+                    }
+
+                    // Save ComboBox SelectedIndex
+                    try
+                    {
+                        Properties.Settings.Default[selectedIndexSettingName] = comboBox.SelectedIndex;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"SaveUserSettings: Error saving ComboBox SelectedIndex for '{selectedIndexSettingName}'. Exception: {ex.Message}", ex);
                     }
                 }
             }
-            Properties.Settings.Default.Save();
+
+            // Save all changes to disk once after processing all controls
+            try
+            {
+                Properties.Settings.Default.Save();
+                Log.Info("SaveUserSettings: All user settings saved successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"SaveUserSettings: Failed to save all user settings. Exception: {ex.Message}", ex);
+            }
         }
 
         private void TextBox_Validating(object sender, CancelEventArgs e)
