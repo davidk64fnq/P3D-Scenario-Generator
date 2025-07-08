@@ -123,7 +123,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             for (int index = 1; index < photoLocations.Count - 1; index++)
             {
                 string filename = $"photo_{index:00}.jpg";
-                string filePath = Path.Combine(Parameters.ImageFolder, filename);
+                string filePath = Path.Combine(Parameters.SettingsImageFolder, filename);
 
                 // 1. Download the photo
                 if (!HttpRoutines.DownloadBinaryFile(photoLocations[index].photoURL, filePath))

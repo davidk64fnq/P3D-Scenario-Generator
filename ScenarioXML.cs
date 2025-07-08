@@ -719,7 +719,7 @@ namespace P3D_Scenario_Generator
 
         static private string[] GetPhotoWindowParameters(int photoNo)
         {
-            string bitmapFilename = $"{Parameters.ImageFolder}\\photo_{photoNo:00}.jpg";
+            string bitmapFilename = $"{Parameters.SettingsImageFolder}\\photo_{photoNo:00}.jpg";
             using Bitmap drawing = new(bitmapFilename);
             return GetWindowParameters(drawing.Width, drawing.Height, Parameters.PhotoTourPhotoAlignment,
                 Parameters.PhotoTourPhotoMonitorWidth, Parameters.PhotoTourPhotoMonitorHeight, Parameters.PhotoTourPhotoOffset);
@@ -951,7 +951,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetMovingMapJS(List<MapEdges> mapEdges, int count)
         {
-            string saveLocation = $"{Parameters.ImageFolder}\\scriptsMovingMap.js";
+            string saveLocation = $"{Parameters.SettingsImageFolder}\\scriptsMovingMap.js";
             Stream stream = Form.GetResourceStream("Javascript.scriptsMovingMap.js");
             StreamReader reader = new(stream);
             string movingMapJS = reader.ReadToEnd();
@@ -1197,7 +1197,7 @@ namespace P3D_Scenario_Generator
             Stream stream = Form.GetResourceStream("CSS.styleSignWriting.css");
             StreamReader reader = new(stream);
             signWritingCSS = reader.ReadToEnd();
-            string saveLocation = $"{Parameters.ImageFolder}\\styleSignWriting.css";
+            string saveLocation = $"{Parameters.SettingsImageFolder}\\styleSignWriting.css";
             File.WriteAllText(saveLocation, signWritingCSS);
             stream.Dispose();
         }
@@ -1244,7 +1244,7 @@ namespace P3D_Scenario_Generator
             signWritingHTML = signWritingHTML.Replace("gateTopPixelsX", topPixels);
             signWritingHTML = signWritingHTML.Replace("gateLeftPixelsX", leftPixels);
             signWritingHTML = signWritingHTML.Replace("gateBearingsX", bearings);
-            string saveLocation = $"{Parameters.ImageFolder}\\htmlSignWriting.html";
+            string saveLocation = $"{Parameters.SettingsImageFolder}\\htmlSignWriting.html";
             File.WriteAllText(saveLocation, signWritingHTML);
             stream.Dispose();
         }
@@ -1256,7 +1256,7 @@ namespace P3D_Scenario_Generator
             Stream stream = Form.GetResourceStream("Javascript.scriptsSignWriting.js");
             StreamReader reader = new(stream);
             signWritingJS = reader.ReadToEnd();
-            string saveLocation = $"{Parameters.ImageFolder}\\scriptsSignWriting.js";
+            string saveLocation = $"{Parameters.SettingsImageFolder}\\scriptsSignWriting.js";
             File.WriteAllText(saveLocation, signWritingJS);
             stream.Dispose();
         }
@@ -1313,7 +1313,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetWikiTourJS()
         {
-            string saveLocation = $"{Parameters.ImageFolder}\\scriptsWikipediaItem.js";
+            string saveLocation = $"{Parameters.SettingsImageFolder}\\scriptsWikipediaItem.js";
             Stream stream = Form.GetResourceStream("Javascript.scriptsWikipediaItem.js");
             StreamReader reader = new(stream);
             string wikipediaJS = reader.ReadToEnd();

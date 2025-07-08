@@ -238,7 +238,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         static internal SetLegResult SetFirstLeg()
         {
             PhotoLocParams airportLocation;
-            string pic2mapHtmlSaveLocation = $"{Parameters.ImageFolder}\\random_pic2map.html";
+            string pic2mapHtmlSaveLocation = $"{Parameters.SettingsImageFolder}\\random_pic2map.html";
 
             // Clear last attempt
             PhotoLocations = [];
@@ -326,7 +326,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         {
             double distance = 9999;
             double bearing = 0;
-            string pic2mapHtmlSaveLocation = $"{Parameters.ImageFolder}\\random_pic2map.html"; // Re-using for the next photo page
+            string pic2mapHtmlSaveLocation = $"{Parameters.SettingsImageFolder}\\random_pic2map.html"; // Re-using for the next photo page
             string photoURL = "";
 
             // Ensure there's a previous photo location to work from
@@ -462,7 +462,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
             // Clean up the temporary pic2map HTML file.
             // Even if this fails, we might still have a valid tour, but log the issue.
-            string tempHtmlFile = $"{Parameters.ImageFolder}\\random_pic2map.html";
+            string tempHtmlFile = $"{Parameters.SettingsImageFolder}\\random_pic2map.html";
             if (!FileOps.TryDeleteFile(tempHtmlFile))
             {
                 Log.Warning($"SetLastLeg: Failed to delete temporary HTML file at '{tempHtmlFile}'. This is not critical for tour generation but should be investigated.");

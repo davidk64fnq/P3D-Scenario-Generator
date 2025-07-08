@@ -58,7 +58,7 @@ namespace P3D_Scenario_Generator
         /// <returns><see langword="true"/> if the route was successfully drawn and saved; otherwise, <see langword="false"/>.</returns>
         static internal bool DrawRoute(List<Tile> tiles, BoundingBox boundingBox, string filename)
         {
-            string imagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+            string imagePath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
 
             try
             {
@@ -161,7 +161,7 @@ namespace P3D_Scenario_Generator
         /// <returns><see langword="true"/> if the scenario load image was drawn and converted successfully; otherwise, <see langword="false"/>.</returns>
         static internal bool DrawScenarioLoadImage(string iconName, string outputName)
         {
-            string outputPngPath = $"{Parameters.ImageFolder}\\{outputName}.png";
+            string outputPngPath = $"{Parameters.SettingsImageFolder}\\{outputName}.png";
             string iconPngResourcePath = $"Images.{iconName}.png";
 
             try
@@ -250,8 +250,8 @@ namespace P3D_Scenario_Generator
         /// <returns><see langword="true"/> if the image was converted successfully; otherwise, <see langword="false"/>.</returns>
         static internal bool ConvertImageformat(string filename, string oldExt, string newExt)
         {
-            string oldFullPath = $"{Parameters.ImageFolder}\\{filename}.{oldExt}";
-            string newFullPath = $"{Parameters.ImageFolder}\\{filename}.{newExt}";
+            string oldFullPath = $"{Parameters.SettingsImageFolder}\\{filename}.{oldExt}";
+            string newFullPath = $"{Parameters.SettingsImageFolder}\\{filename}.{newExt}";
 
             if (!File.Exists(oldFullPath))
             {
@@ -313,7 +313,7 @@ namespace P3D_Scenario_Generator
         /// <returns><see langword="true"/> if the image was resized successfully; otherwise, <see langword="false"/>.</returns>
         static internal bool Resize(string filename, int width, int height)
         {
-            string fullPath = $"{Parameters.ImageFolder}\\{filename}";
+            string fullPath = $"{Parameters.SettingsImageFolder}\\{filename}";
 
             if (!File.Exists(fullPath))
             {

@@ -225,7 +225,7 @@ namespace P3D_Scenario_Generator
         {
             // Copy selected aircraft thumbnail imageURL from P3D instal
             string aircraftImageSource = Parameters.AircraftImagePath;
-            string aircraftImageDest = $"{Parameters.ImageFolder}\\Overview_01.jpg";
+            string aircraftImageDest = $"{Parameters.SettingsImageFolder}\\Overview_01.jpg";
             if (File.Exists(aircraftImageSource))
             {
                 File.Copy(aircraftImageSource, aircraftImageDest, true);
@@ -269,7 +269,7 @@ namespace P3D_Scenario_Generator
 
             // Copy aircraft imageURL used in moving maps
             stream = Form.GetResourceStream($"Images.aircraft.png");
-            using (FileStream outputFileStream = new($"{Parameters.ImageFolder}\\aircraft.png", FileMode.Create))
+            using (FileStream outputFileStream = new($"{Parameters.SettingsImageFolder}\\aircraft.png", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
@@ -277,7 +277,7 @@ namespace P3D_Scenario_Generator
 
             // Copy header banner imageURL
             stream = Form.GetResourceStream($"Images.header.png");
-            using (FileStream outputFileStream = new($"{Parameters.ImageFolder}\\header.png", FileMode.Create))
+            using (FileStream outputFileStream = new($"{Parameters.SettingsImageFolder}\\header.png", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }

@@ -20,7 +20,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// <returns>True if the HTML file is successfully generated and written; otherwise, false.</returns>
         static internal bool SetCelestialSextantHTML()
         {
-            string htmlOutputPath = Path.Combine(Parameters.ImageFolder, "htmlCelestialSextant.html");
+            string htmlOutputPath = Path.Combine(Parameters.SettingsImageFolder, "htmlCelestialSextant.html");
 
             try
             {
@@ -62,7 +62,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// <returns>True if both JavaScript files are successfully generated and saved; otherwise, false.</returns>
         static internal bool SetCelestialSextantJS()
         {
-            string saveLocation = Parameters.ImageFolder;
+            string saveLocation = Parameters.SettingsImageFolder;
             string sextantJsOutputPath = Path.Combine(saveLocation, "scriptsCelestialSextant.js");
             string astroCalcsJsOutputPath = Path.Combine(saveLocation, "scriptsCelestialAstroCalcs.js");
 
@@ -156,7 +156,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
                 // Copy plotImage used in Plotting tab
                 Stream plotStream = Form.GetResourceStream($"Images.plotImage.jpg");
-                using (FileStream outputFileStream = new($"{Parameters.ImageFolder}\\plotImage.jpg", FileMode.Create))
+                using (FileStream outputFileStream = new($"{Parameters.SettingsImageFolder}\\plotImage.jpg", FileMode.Create))
                 {
                     plotStream.CopyTo(outputFileStream);
                 }
@@ -208,7 +208,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         static internal bool SetCelestialSextantCSS()
         {
             string signWritingCSS;
-            string cssOutputPath = Path.Combine(Parameters.ImageFolder, "styleCelestialSextant.css");
+            string cssOutputPath = Path.Combine(Parameters.SettingsImageFolder, "styleCelestialSextant.css");
 
             // Use 'using' statements to ensure streams are properly disposed, even if errors occur.
             // Also, incorporate FileOps for robust error handling.

@@ -104,8 +104,8 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Move the original tile to the centre position (1,1).
                 colId = 1;
-                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png"; 
-                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_{colId}_{rowId}.png";
+                string originalImagePath = $"{Parameters.SettingsImageFolder}\\{filename}.png"; 
+                string movedImagePath = $"{Parameters.SettingsImageFolder}\\{filename}_{colId}_{rowId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;                                                  
 
                 // Download new East middle row tile (2,1).
@@ -121,7 +121,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 if (!FileOps.DeleteTempOSMfiles(filename)) return false; 
 
                 // Crop the central 2x2 tile area from the newly montaged 3x3 image.
-                string finalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                string finalImagePath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
                 if (!File.Exists(finalImagePath))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouthWestEast: Montaged image not found at '{finalImagePath}'. Cannot crop.");
@@ -248,8 +248,8 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Rename source column to be the centre column 
                 columnId = 1;
-                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
-                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_{columnId}.png";
+                string originalImagePath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
+                string movedImagePath = $"{Parameters.SettingsImageFolder}\\{filename}_{columnId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to move original image to center column position for '{filename}'.");
@@ -285,7 +285,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 }
 
                 // Crop the central 2w x 2h area from the newly montaged 3w x 2h image.
-                string finalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                string finalImagePath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
                 if (!File.Exists(finalImagePath))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Montaged image not found at '{finalImagePath}'. Cannot crop.");
@@ -410,8 +410,8 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Rename source row to be the centre row
                 rowId = 1;
-                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
-                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_{rowId}.png";
+                string originalImagePath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
+                string movedImagePath = $"{Parameters.SettingsImageFolder}\\{filename}_{rowId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to move original image to center row position for '{filename}'.");
@@ -447,7 +447,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 }
 
                 // Crop the central 2w x 2h area from the newly montaged 2w x 3h image.
-                string finalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
+                string finalImagePath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
                 if (!File.Exists(finalImagePath))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Montaged image not found at '{finalImagePath}'. Cannot crop.");
@@ -569,8 +569,8 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Rename source row to be the bottom row 
                 rowId = 1;
-                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
-                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_{rowId}.png";
+                string originalImagePath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
+                string movedImagePath = $"{Parameters.SettingsImageFolder}\\{filename}_{rowId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadNorth: Failed to move original image to bottom row position for '{filename}'.");
@@ -675,8 +675,8 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Rename source row to be the top row
                 int rowId = 0;
-                string originalImagePath = $"{Parameters.ImageFolder}\\{filename}.png";
-                string movedImagePath = $"{Parameters.ImageFolder}\\{filename}_{rowId}.png";
+                string originalImagePath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
+                string movedImagePath = $"{Parameters.SettingsImageFolder}\\{filename}_{rowId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadSouth: Failed to move original image to top row position for '{filename}'.");

@@ -38,7 +38,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // Load each individual tile image into the collection.
                 for (int yIndex = 0; yIndex < yCount; yIndex++)
                 {
-                    string tilePath = $"{Parameters.ImageFolder}\\{filename}_{columnID}_{yIndex}.png";
+                    string tilePath = $"{Parameters.SettingsImageFolder}\\{filename}_{columnID}_{yIndex}.png";
                     if (!File.Exists(tilePath))
                     {
                         Log.Error($"MontageTilesToColumn: Required tile image not found: {tilePath}");
@@ -51,7 +51,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
-                string outputPath = $"{Parameters.ImageFolder}\\{filename}_{columnID}.png";
+                string outputPath = $"{Parameters.SettingsImageFolder}\\{filename}_{columnID}.png";
 
                 // Ensure destination directory exists before writing
                 var directory = Path.GetDirectoryName(outputPath);
@@ -119,7 +119,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // Load each individual tile image into the collection.
                 for (int xIndex = 0; xIndex < xCount; xIndex++)
                 {
-                    string tilePath = $"{Parameters.ImageFolder}\\{filename}_{xIndex}_{rowId}.png";
+                    string tilePath = $"{Parameters.SettingsImageFolder}\\{filename}_{xIndex}_{rowId}.png";
                     if (!File.Exists(tilePath))
                     {
                         Log.Error($"MontageTilesToRow: Required tile image not found: {tilePath}");
@@ -132,7 +132,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
-                string outputPath = $"{Parameters.ImageFolder}\\{filename}_{rowId}.png";
+                string outputPath = $"{Parameters.SettingsImageFolder}\\{filename}_{rowId}.png";
 
                 // Ensure destination directory exists before writing
                 var directory = Path.GetDirectoryName(outputPath);
@@ -200,7 +200,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // Load each individual column image into the collection.
                 for (int xIndex = 0; xIndex < xCount; xIndex++)
                 {
-                    string columnPath = $"{Parameters.ImageFolder}\\{filename}_{xIndex}.png";
+                    string columnPath = $"{Parameters.SettingsImageFolder}\\{filename}_{xIndex}.png";
                     if (!File.Exists(columnPath))
                     {
                         Log.Error($"MontageColumns: Required column image not found: {columnPath}");
@@ -213,7 +213,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
-                string outputPath = $"{Parameters.ImageFolder}\\{filename}.png";
+                string outputPath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
 
                 // Ensure destination directory exists before writing (though likely covered by previous steps)
                 var directory = Path.GetDirectoryName(outputPath);
@@ -281,7 +281,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // Load each individual row image into the collection.
                 for (int yIndex = 0; yIndex < yCount; yIndex++)
                 {
-                    string rowPath = $"{Parameters.ImageFolder}\\{filename}_{yIndex}.png";
+                    string rowPath = $"{Parameters.SettingsImageFolder}\\{filename}_{yIndex}.png";
                     if (!File.Exists(rowPath))
                     {
                         Log.Error($"MontageRows: Required row image not found: {rowPath}");
@@ -294,7 +294,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
-                string outputPath = $"{Parameters.ImageFolder}\\{filename}.png";
+                string outputPath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
 
                 // Ensure destination directory exists before writing 
                 var directory = Path.GetDirectoryName(outputPath);
@@ -344,7 +344,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// for which OSM tiles need to be processed.</param>
         /// <param name="zoom">The specific zoom level for all tiles in the montage.</param>
         /// <param name="filename">The base filename used for all intermediate and final image files.
-        /// The final montaged image will typically be saved as 'filename.png' in Parameters.ImageFolder.</param>
+        /// The final montaged image will typically be saved as 'filename.png' in Parameters.SettingsImageFolder.</param>
         /// <returns><see langword="true"/> if the entire montage process (downloading, montaging, and cleanup)
         /// completes successfully; otherwise, <see langword="false"/> if any step fails (errors are logged by
         /// underlying methods).</returns>

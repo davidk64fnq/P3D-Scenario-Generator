@@ -235,7 +235,7 @@ namespace P3D_Scenario_Generator
             bool allDeletedSuccessfully = true; // Assume success initially
 
             // Use Directory.EnumerateFiles for potentially large numbers of files to avoid loading all paths into memory at once.
-            foreach (string f in Directory.EnumerateFiles(Parameters.ImageFolder, $"{filename}_*.png"))
+            foreach (string f in Directory.EnumerateFiles(Parameters.SettingsImageFolder, $"{filename}_*.png"))
             {
                 // Use your FileOps.TryDeleteFile method to attempt deletion.
                 // It handles its own error logging and message display.

@@ -16,7 +16,7 @@
         /// <param name="url">The URL from which the OSM tile should be downloaded if not found in the cache.
         /// This URL includes the cache server address, tile coordinates, and API key.</param>
         /// <param name="saveFile">The full path and filename where the retrieved (copied or downloaded)
-        /// OSM tile should be saved. Example: `Parameters.ImageFolder\\filename`.</param>
+        /// OSM tile should be saved. Example: `Parameters.SettingsImageFolder\\filename`.</param>
         /// <returns>Returns <see langword="true"/> if the tile was successfully retrieved (copied from cache or downloaded) and saved;
         /// otherwise, <see langword="false"/> if an error occurred during file operations or download.</returns>
         static internal bool GetOrCopyOSMtile(string key, string url, string saveFile)

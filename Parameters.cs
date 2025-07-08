@@ -8,10 +8,10 @@ namespace P3D_Scenario_Generator
         #region General tab
 
         internal static int SelectedRunwayIndex { get; set; }
-        internal static string ImageFolder { get; private set; }
-        internal static string AircraftTitle { get; private set; }
-        internal static double AircraftCruiseSpeed { get; private set; }
-        internal static string AircraftImagePath { get; private set; }
+
+        /// <summary>
+        /// The selected scenario type as an enum value.
+        /// </summary>
         internal static ScenarioTypes SelectedScenarioType { get; set; }
         internal static int DayOfYear { get; private set; }
         internal static int Day { get; private set; }
@@ -22,6 +22,9 @@ namespace P3D_Scenario_Generator
         internal static int Minutes { get; private set; }
         internal static int Seconds { get; private set; }
         internal static string GeneralScenarioTitle { get; private set; }
+        internal static string AircraftTitle { get; private set; }
+        internal static double AircraftCruiseSpeed { get; private set; }
+        internal static string AircraftImagePath { get; private set; }
 
         #endregion
 
@@ -342,9 +345,10 @@ namespace P3D_Scenario_Generator
         internal static string SettingsCacheServerAPIkey { get; set; }
         internal static string SettingsCacheUsage { get; set; }
         internal static int SettingsCacheDailyTotal { get; set; }
-        internal static string SettingsScenarioFolder { get; private set; }
-        internal static string SettingsSimulatorVersion { get; private set; }
-        internal static string SettingsP3DprogramData { get; private set; }
+        internal static string SettingsScenarioFolder { get; set; }
+        internal static string SettingsSimulatorVersion { get; set; }
+        internal static string SettingsP3DprogramData { get; set; }
+        internal static string SettingsImageFolder { get; set; }
 
         #endregion
 
@@ -467,7 +471,7 @@ namespace P3D_Scenario_Generator
 
             // Settings
             SettingsScenarioFolder = $"{Form.form.ComboBoxSettingsScenarioFolder.Text}\\{Form.form.TextBoxGeneralScenarioTitle.Text}";
-            ImageFolder = $"{SettingsScenarioFolder}\\images";
+            SettingsImageFolder = $"{SettingsScenarioFolder}\\images";
             SettingsCacheUsage = Form.form.TextBoxSettingsCacheUsage.Text;
             SettingsCacheDailyTotal = Convert.ToInt32(Form.form.TextBoxSettingsCacheDailyTotal.Text);
             SettingsSimulatorVersion = Form.form.ComboBoxSettingsSimulatorVersion.GetItemText(Form.form.ComboBoxSettingsSimulatorVersion.SelectedItem);
@@ -496,7 +500,7 @@ namespace P3D_Scenario_Generator
             else
             {
                 Directory.CreateDirectory(SettingsScenarioFolder);
-                Directory.CreateDirectory(ImageFolder);
+                Directory.CreateDirectory(SettingsImageFolder);
                 return true;
             }
         }
