@@ -21,7 +21,7 @@ namespace P3D_Scenario_Generator
             SetOSMtiles(tiles, zoom);
         //    BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
         //    MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01"); 
-            if (Parameters.SelectedScenario != nameof(ScenarioTypes.Celestial))
+            if (Parameters.SelectedScenario != ScenarioTypes.Celestial)
             {
         //        ImageUtils.DrawRoute(tiles, boundingBox, "Charts_01");
             }
@@ -84,15 +84,15 @@ namespace P3D_Scenario_Generator
         /// <param name="zoom">The OSM tile zoom level for the boundingBox</param>
         static internal void SetOSMtiles(List<Tile> tiles, int zoom)
         {
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Circuit))
+            if (Parameters.SelectedScenario == ScenarioTypes.Circuit)
             {
          //       Circuit.SetCircuitOSMtiles(tiles, zoom, 0, Circuit.gates.Count - 1);
             }
-            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
+            else if (Parameters.SelectedScenario == ScenarioTypes.PhotoTour)
             {
         //        PhotoTour.SetPhotoTourOSMtiles(tiles, zoom, 0, PhotoTour.PhotoCount - 1);
             }
-            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.WikiList))
+            else if (Parameters.SelectedScenario == ScenarioTypes.WikiList)
             {
                 Wikipedia.SetWikiOSMtiles(tiles, zoom, 0, Wikipedia.WikiTour.Count - 1);
             }
@@ -108,15 +108,15 @@ namespace P3D_Scenario_Generator
         /// <param name="finishItemIndex">Index of finish item</param>
         static internal void SetOSMtiles(List<Tile> tiles, int zoom, int startItemIndex, int finishItemIndex)
         {
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.Circuit))
+            if (Parameters.SelectedScenario == ScenarioTypes.Circuit)
             {
         //        Circuit.SetCircuitOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             }
-            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
+            else if (Parameters.SelectedScenario == ScenarioTypes.PhotoTour)
             {
         //        PhotoTour.SetPhotoTourOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             }
-            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.WikiList))
+            else if (Parameters.SelectedScenario == ScenarioTypes.WikiList)
             {
                 Wikipedia.SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             }
@@ -217,11 +217,11 @@ namespace P3D_Scenario_Generator
             legEdges.east = c.Longitude;
 
             // Assumes this method called in leg number sequence starting with first leg
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
+            if (Parameters.SelectedScenario == ScenarioTypes.PhotoTour)
             {
         //        PhotoTour.PhotoTourLegMapEdges.Add(legEdges);
             }
-            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.WikiList))
+            else if (Parameters.SelectedScenario == ScenarioTypes.WikiList)
             {
                 Wikipedia.WikiLegMapEdges.Add(legEdges); ;
             }

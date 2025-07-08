@@ -2053,12 +2053,12 @@ namespace P3D_Scenario_Generator
             // 
             // ComboBoxGeneralScenarioType
             // 
-            ComboBoxGeneralScenarioType.AccessibleName = "Runway Selection: Selected";
+            ComboBoxGeneralScenarioType.AccessibleName = "Scenario Selection: Selected";
+            ComboBoxGeneralScenarioType.AllowDrop = true;
             ComboBoxGeneralScenarioType.Anchor = AnchorStyles.None;
             ComboBoxGeneralScenarioType.DropDownStyle = ComboBoxStyle.DropDownList;
             ComboBoxGeneralScenarioType.DropDownWidth = 120;
             ComboBoxGeneralScenarioType.FormattingEnabled = true;
-            ComboBoxGeneralScenarioType.Items.AddRange(new object[] { "Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation", "Wikipedia List", "Testing" });
             ComboBoxGeneralScenarioType.Location = new Point(139, 3);
             ComboBoxGeneralScenarioType.MaxDropDownItems = 20;
             ComboBoxGeneralScenarioType.Name = "ComboBoxGeneralScenarioType";

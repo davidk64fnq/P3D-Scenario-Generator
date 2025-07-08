@@ -24,8 +24,7 @@ namespace P3D_Scenario_Generator
         PhotoTour,
         SignWriting,
         Celestial,
-        WikiList,
-        Testing
+        WikiList
     };
 
     /// <summary>

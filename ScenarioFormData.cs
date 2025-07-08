@@ -11,9 +11,9 @@
         public int SelectedRunwayIndex { get; set; }
 
         /// <summary>
-        /// Corresponds to SelectedScenario in Parameters.cs (string representation of enum)
+        /// The selected scenario type as an enum value.
         /// </summary>
-        public string SelectedScenarioType { get; set; }
+        public ScenarioTypes SelectedScenarioType { get; set; }
 
         /// <summary>
         /// Used to derive DayOfYear, Day, Month, Year, Season

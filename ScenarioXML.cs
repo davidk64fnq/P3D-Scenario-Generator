@@ -31,23 +31,20 @@ namespace P3D_Scenario_Generator
         {
             switch (Parameters.SelectedScenario)
             {
-                case nameof(ScenarioTypes.Circuit):
+                case ScenarioTypes.Circuit:
 					SetCircuitWorldBaseFlightXML();
                     break;
-                case nameof(ScenarioTypes.PhotoTour):
+                case ScenarioTypes.PhotoTour:
                     SetPhotoTourWorldBaseFlightXML();
                     break;
-                case nameof(ScenarioTypes.SignWriting):
+                case ScenarioTypes.SignWriting:
                     SetSignWritingWorldBaseFlightXML();
                     break;
-                case nameof(ScenarioTypes.Celestial):
+                case ScenarioTypes.Celestial:
                     SetCelestialWorldBaseFlightXML();
                     break;
-                case nameof(ScenarioTypes.WikiList):
+                case ScenarioTypes.WikiList:
                     SetWikiListWorldBaseFlightXML();
-                    break;
-                case nameof(ScenarioTypes.Testing):
-                    SetTestingWorldBaseFlightXML();
                     break;
                 default:
                     break;
@@ -705,12 +702,12 @@ namespace P3D_Scenario_Generator
                 mapWindowWidth = 1024;
                 mapWindowHeight = 1024;
             }
-            if (Parameters.SelectedScenario == nameof(ScenarioTypes.PhotoTour))
+            if (Parameters.SelectedScenario == ScenarioTypes.PhotoTour)
             {
                 return GetWindowParameters(mapWindowWidth, mapWindowHeight, Parameters.PhotoTourMapAlignment,
                 Parameters.PhotoTourMapMonitorWidth, Parameters.PhotoTourMapMonitorHeight, Parameters.PhotoTourMapOffset);
             }
-            else if (Parameters.SelectedScenario == nameof(ScenarioTypes.WikiList))
+            else if (Parameters.SelectedScenario == ScenarioTypes.WikiList)
             {
                 return GetWindowParameters(mapWindowWidth, mapWindowHeight, Parameters.WikiMapAlignment,
                 Parameters.WikiMapMonitorWidth, Parameters.WikiMapMonitorHeight, Parameters.WikiMapOffset);

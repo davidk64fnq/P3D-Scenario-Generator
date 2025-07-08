@@ -22,8 +22,8 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// </summary>
         static internal bool SetCircuit()
         {
-            Runway.startRwy = Runway.Runways[Parameters.SelectedAirportIndex];
-            Runway.destRwy = Runway.Runways[Parameters.SelectedAirportIndex];
+            Runway.startRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
+            Runway.destRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
 
             if (!CircuitGates.SetCircuitGates(gates))
             {

@@ -84,7 +84,9 @@ namespace P3D_Scenario_Generator
 
         private void ButtonGenerateScenario_Click(object sender, EventArgs e)
         {
-            if (Parameters.SetParams())
+            ScenarioFormData formData = new();
+            PopulateScenarioFormData(formData);
+            if (Parameters.SetParams(formData))
             {
                 CheckRunwaysXMLupToDate();
                 Runway.SetRunwaysSubset();
@@ -137,8 +139,8 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                Runway.startRwy = Runway.Runways[Parameters.SelectedAirportIndex];
-                Runway.destRwy = Runway.Runways[Parameters.SelectedAirportIndex];
+                Runway.startRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
+                Runway.destRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
             }
         }
 
@@ -518,7 +520,7 @@ namespace P3D_Scenario_Generator
             }
 
             // In case user clicks Generate Scenario button not having selected scenario type on general tab first
-            Parameters.SelectedScenario = Constants.scenarioNames[(int)ScenarioTypes.WikiList];
+            Parameters.SelectedScenario = ScenarioTypes.WikiList;
 
             _statusProgress.Report($"Reading {wikiUrlText} and column {columnNumberText}, please wait...");
             Enabled = false; // Disable entire form to prevent further interaction
@@ -660,6 +662,22 @@ namespace P3D_Scenario_Generator
 
         #region Utilities
 
+        private bool PopulateScenarioFormData(ScenarioFormData formData)
+        {
+            // Convert the selected string from the ComboBox to the enum value
+            if (Enum.TryParse(ComboBoxGeneralScenarioType.SelectedItem.ToString(), out ScenarioTypes selectedType))
+            {
+                formData.SelectedScenarioType = selectedType;
+            }
+            else
+            {
+                Log.Error("Invalid scenario type selected.");
+                return false;
+            }
+
+            return true;
+        }
+
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
             Help.ShowHelp(this, "Resources/help/index.htm");
@@ -733,7 +751,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
 
             //  Scenario type
-            ComboBoxGeneralScenarioType.SelectedIndex = 0;
+            SetScenarioTypesComboBox();
 
             //  Aircraft variants
             Aircraft.LoadAircraftVariants();
@@ -762,6 +780,24 @@ namespace P3D_Scenario_Generator
             // Settings tab
             Cache.CheckCache();
             RestoreUserSettings(TabPageSettings.Controls);
+        }
+
+        internal void SetScenarioTypesComboBox()
+        {
+            // Clear any existing items
+            ComboBoxGeneralScenarioType.Items.Clear();
+
+            // Loop through each name in the ScenarioTypes enum and add it to the ComboBox
+            foreach (string scenarioName in Enum.GetNames(typeof(ScenarioTypes)))
+            {
+                ComboBoxGeneralScenarioType.Items.Add(scenarioName);
+            }
+
+            // Optionally, select a default item
+            if (ComboBoxGeneralScenarioType.Items.Count > 0)
+            {
+                ComboBoxGeneralScenarioType.SelectedIndex = 0; // Select the first item
+            }
         }
 
         /// <summary>

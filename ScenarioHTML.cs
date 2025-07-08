@@ -55,7 +55,7 @@ namespace P3D_Scenario_Generator
 
             switch (Parameters.SelectedScenario)
             {
-                case nameof(ScenarioTypes.Circuit):
+                case ScenarioTypes.Circuit:
                     overview.Title = "Circuit Practise";
                     overview.Heading1 = "Circuit Practise";
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
@@ -73,7 +73,7 @@ namespace P3D_Scenario_Generator
                     overview.Objective = "Take off and fly through the eight gates before landing on the same runway.";
                     overview.Tips = "Each pair of gates marks the start and finish of a 90 degree turn. ";
                     break;
-                case nameof(ScenarioTypes.PhotoTour):
+                case ScenarioTypes.PhotoTour:
                     overview.Title = "Photo Tour";
                     overview.Heading1 = "Photo Tour";
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
@@ -91,7 +91,7 @@ namespace P3D_Scenario_Generator
                     overview.Objective = $"Take off and visit a series of photo locations before landing at {Runway.destRwy.IcaoName} (any runway)";
                     overview.Tips = "Never do today what you can put off till tomorrow";
                     break;
-                case nameof(ScenarioTypes.SignWriting):
+                case ScenarioTypes.SignWriting:
                     overview.Title = "Sign Writing";
                     overview.Heading1 = "Sign Writing";
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
@@ -109,7 +109,7 @@ namespace P3D_Scenario_Generator
                     overview.Objective = "Take off and fly through a series of gates before landing on the same runway.";
                     overview.Tips = "When life gives you lemons, squirt someone in the eye.";
                     break;
-                case nameof(ScenarioTypes.Celestial):
+                case ScenarioTypes.Celestial:
                     overview.Title = "Celestial Navigation";
                     overview.Heading1 = "Celestial Navigation";
                     overview.Location = $"{Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) {Runway.destRwy.City}, {Runway.destRwy.Country}";
@@ -125,7 +125,7 @@ namespace P3D_Scenario_Generator
                     overview.Objective = "Navigate using celestial navigation before landing at the destination airport (any runway)";
                     overview.Tips = "Never go to bed mad. Stay up and fight.";
                     break;
-                case nameof(ScenarioTypes.WikiList):
+                case ScenarioTypes.WikiList:
                     overview.Title = "Wikipedia List Tour";
                     overview.Heading1 = "Wikipedia List Tour";
                     overview.Location = $"{Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) {Runway.destRwy.City}, {Runway.destRwy.Country}";
@@ -157,11 +157,11 @@ namespace P3D_Scenario_Generator
 
             switch (Parameters.SelectedScenario)
             {
-                case nameof(ScenarioTypes.Circuit):
-                case nameof(ScenarioTypes.PhotoTour):
-                case nameof(ScenarioTypes.SignWriting):
-                case nameof(ScenarioTypes.Celestial):
-                case nameof(ScenarioTypes.WikiList):
+                case ScenarioTypes.Circuit:
+                case ScenarioTypes.PhotoTour:
+                case ScenarioTypes.SignWriting:
+                case ScenarioTypes.Celestial:
+                case ScenarioTypes.WikiList:
                     missionBrief.title = overview.Title;
                     missionBrief.h1 = overview.Title;
                     missionBrief.h2Location = overview.Location;

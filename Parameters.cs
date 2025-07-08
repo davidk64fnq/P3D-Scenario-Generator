@@ -7,13 +7,12 @@ namespace P3D_Scenario_Generator
     {
         #region General tab
 
-        internal static string SelectedAirportICAO { get; set; }
-        internal static int SelectedAirportIndex { get; set; }
+        internal static int SelectedRunwayIndex { get; set; }
         internal static string ImageFolder { get; private set; }
         internal static string AircraftTitle { get; private set; }
         internal static double AircraftCruiseSpeed { get; private set; }
         internal static string AircraftImagePath { get; private set; }
-        internal static string SelectedScenario { get; set; }
+        internal static ScenarioTypes SelectedScenario { get; set; }
         internal static int DayOfYear { get; private set; }
         internal static int Day { get; private set; }
         internal static int Month { get; private set; }
@@ -360,7 +359,7 @@ namespace P3D_Scenario_Generator
         /// some error checking, and creates scenario and images directories
         /// </summary>
         /// <returns>True if parameters okay and directories created</returns>
-        internal static bool SetParams()
+        internal static bool SetParams(ScenarioFormData formData)
         {
             // General tab
             string errorMsg = "";
@@ -379,10 +378,8 @@ namespace P3D_Scenario_Generator
                 AircraftCruiseSpeed = Convert.ToDouble(aircraftVariant.CruiseSpeed);
                 AircraftImagePath = aircraftVariant.ThumbnailImagePath;
             }
-            SelectedAirportICAO = Form.form.ComboBoxGeneralRunwaySelected.Text.Split(" ")[0];
-            SelectedAirportIndex = Form.form.ComboBoxGeneralRunwaySelected.SelectedIndex;
-            int index = Array.FindIndex(Constants.scenarioNames, s => s == Form.form.ComboBoxGeneralScenarioType.Text);
-            SelectedScenario = Enum.GetNames(typeof(ScenarioTypes))[index];
+            SelectedRunwayIndex = Form.form.ComboBoxGeneralRunwaySelected.SelectedIndex;
+            SelectedScenario = formData.SelectedScenarioType;
             DayOfYear = Form.form.GeneralDatePicker.Value.DayOfYear;
             Day = Form.form.GeneralDatePicker.Value.Day;
             Month = Form.form.GeneralDatePicker.Value.Month;
@@ -441,7 +438,7 @@ namespace P3D_Scenario_Generator
             CelestialMaxDistance = Convert.ToDouble(Form.form.TextBoxCelestialMaxDist.Text);
 
             // Wikipedia List
-            if (SelectedScenario == nameof(ScenarioTypes.WikiList))
+            if (SelectedScenario == ScenarioTypes.WikiList)
             {
                 if (Form.form.TextBoxWikiDistance.Text == "")
                 {
@@ -482,11 +479,11 @@ namespace P3D_Scenario_Generator
             }
 
             // Common
-            if (SelectedScenario == nameof(ScenarioTypes.PhotoTour))
+            if (SelectedScenario == ScenarioTypes.PhotoTour)
             {
                 CommonMovingMapWindowSize = PhotoTourMapWindowSize;
             }
-            else if (SelectedScenario == nameof(ScenarioTypes.WikiList))
+            else if (SelectedScenario == ScenarioTypes.WikiList)
             {
                 CommonMovingMapWindowSize = WikiMapWindowSize;
             }

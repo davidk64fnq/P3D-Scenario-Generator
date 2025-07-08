@@ -22,8 +22,8 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         static internal bool SetSignWriting()
         {
             // Scenario starts and finishes at user selected airport
-            Runway.startRwy = Runway.Runways[Parameters.SelectedAirportIndex];
-            Runway.destRwy = Runway.Runways[Parameters.SelectedAirportIndex];
+            Runway.startRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
+            Runway.destRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
 
             // Set the letter segment paths for the sign writing letters
             SignCharacterMap.InitLetterPaths();

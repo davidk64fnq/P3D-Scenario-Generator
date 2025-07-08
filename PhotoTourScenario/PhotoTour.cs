@@ -271,9 +271,8 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             {
                 return SetLegResult.NoAirportFound;
             }
-            Parameters.SelectedAirportICAO = airportLocation.airportICAO;
-            Parameters.SelectedAirportIndex = airportLocation.airportIndex;
-            Runway.startRwy = Runway.Runways[Parameters.SelectedAirportIndex];
+            Parameters.SelectedRunwayIndex = airportLocation.airportIndex;
+            Runway.startRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
             airportLocation.forwardBearing = MathRoutines.GetReciprocalHeading(airportLocation.forwardBearing);
             PhotoLocations.Add(airportLocation);
             PhotoLocations.Add(photoLocation);
