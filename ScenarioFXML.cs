@@ -37,7 +37,7 @@ namespace P3D_Scenario_Generator
 			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Title");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.GeneralScenarioTitle}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Description");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Constants.appTitle} - {Parameters.SelectedScenario}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Constants.appTitle} - {Parameters.SelectedScenarioType}";
 
 			// DateTimeSeason section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "DateTimeSeason");
@@ -79,7 +79,7 @@ namespace P3D_Scenario_Generator
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "File");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.GeneralScenarioTitle}";
 
-			if (Parameters.SelectedScenario == ScenarioTypes.Celestial)
+			if (Parameters.SelectedScenarioType == ScenarioTypes.Celestial)
             {
 				EditCelestialSourceFXML(simBaseDocument);
 			}

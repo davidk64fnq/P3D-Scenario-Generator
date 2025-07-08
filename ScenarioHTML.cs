@@ -53,7 +53,7 @@ namespace P3D_Scenario_Generator
         {
             Overview overview = new();
 
-            switch (Parameters.SelectedScenario)
+            switch (Parameters.SelectedScenarioType)
             {
                 case ScenarioTypes.Circuit:
                     overview.Title = "Circuit Practise";
@@ -155,7 +155,7 @@ namespace P3D_Scenario_Generator
         {
             MissionBrief missionBrief = new();
 
-            switch (Parameters.SelectedScenario)
+            switch (Parameters.SelectedScenarioType)
             {
                 case ScenarioTypes.Circuit:
                 case ScenarioTypes.PhotoTour:

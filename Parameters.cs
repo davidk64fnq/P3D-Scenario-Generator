@@ -12,7 +12,7 @@ namespace P3D_Scenario_Generator
         internal static string AircraftTitle { get; private set; }
         internal static double AircraftCruiseSpeed { get; private set; }
         internal static string AircraftImagePath { get; private set; }
-        internal static ScenarioTypes SelectedScenario { get; set; }
+        internal static ScenarioTypes SelectedScenarioType { get; set; }
         internal static int DayOfYear { get; private set; }
         internal static int Day { get; private set; }
         internal static int Month { get; private set; }
@@ -379,7 +379,7 @@ namespace P3D_Scenario_Generator
                 AircraftImagePath = aircraftVariant.ThumbnailImagePath;
             }
             SelectedRunwayIndex = Form.form.ComboBoxGeneralRunwaySelected.SelectedIndex;
-            SelectedScenario = formData.SelectedScenarioType;
+            SelectedScenarioType = formData.SelectedScenarioType;
             DayOfYear = Form.form.GeneralDatePicker.Value.DayOfYear;
             Day = Form.form.GeneralDatePicker.Value.Day;
             Month = Form.form.GeneralDatePicker.Value.Month;
@@ -438,7 +438,7 @@ namespace P3D_Scenario_Generator
             CelestialMaxDistance = Convert.ToDouble(Form.form.TextBoxCelestialMaxDist.Text);
 
             // Wikipedia List
-            if (SelectedScenario == ScenarioTypes.WikiList)
+            if (SelectedScenarioType == ScenarioTypes.WikiList)
             {
                 if (Form.form.TextBoxWikiDistance.Text == "")
                 {
@@ -479,11 +479,11 @@ namespace P3D_Scenario_Generator
             }
 
             // Common
-            if (SelectedScenario == ScenarioTypes.PhotoTour)
+            if (SelectedScenarioType == ScenarioTypes.PhotoTour)
             {
                 CommonMovingMapWindowSize = PhotoTourMapWindowSize;
             }
-            else if (SelectedScenario == ScenarioTypes.WikiList)
+            else if (SelectedScenarioType == ScenarioTypes.WikiList)
             {
                 CommonMovingMapWindowSize = WikiMapWindowSize;
             }

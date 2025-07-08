@@ -189,7 +189,7 @@ namespace P3D_Scenario_Generator
 
                     image.Settings.Font = "SegoeUI";
                     image.Settings.FontPointsize = 36;
-                    image.Annotate(Parameters.SelectedScenario.ToString(), geometry, Gravity.Center);
+                    image.Annotate(Parameters.SelectedScenarioType.ToString(), geometry, Gravity.Center);
 
                     using (Stream iconStream = Form.GetResourceStream(iconPngResourcePath))
                     {

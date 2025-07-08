@@ -520,7 +520,7 @@ namespace P3D_Scenario_Generator
             }
 
             // In case user clicks Generate Scenario button not having selected scenario type on general tab first
-            Parameters.SelectedScenario = ScenarioTypes.WikiList;
+            Parameters.SelectedScenarioType = ScenarioTypes.WikiList;
 
             _statusProgress.Report($"Reading {wikiUrlText} and column {columnNumberText}, please wait...");
             Enabled = false; // Disable entire form to prevent further interaction

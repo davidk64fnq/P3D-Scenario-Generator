@@ -92,7 +92,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             if (childNodeCollection == null && verbose)
             {
                 string errorMessage = $"Node collection failed for {selection}";
-                MessageBox.Show(errorMessage, $"{Parameters.SelectedScenario}", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(errorMessage, $"{Parameters.SelectedScenarioType}", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
             return true;
