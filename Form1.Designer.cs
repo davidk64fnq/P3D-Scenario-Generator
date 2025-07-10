@@ -69,8 +69,6 @@ namespace P3D_Scenario_Generator
             groupBox3 = new GroupBox();
             TableLayoutPanelSettingsMapTileCacheInfo = new TableLayoutPanel();
             TextBoxSettingsOSMServerAPIkey = new TextBox();
-            label39 = new Label();
-            ComboBoxSettingsScenarioFolder = new ComboBox();
             label17 = new Label();
             label14 = new Label();
             label13 = new Label();
@@ -197,6 +195,8 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel5 = new TableLayoutPanel();
             label25 = new Label();
             label26 = new Label();
+            ButtonBrowseScenarioFolder = new Button();
+            TextBoxSettingsScenarioFolderBase = new TextBox();
             groupBox16 = new GroupBox();
             tableLayoutPanel12 = new TableLayoutPanel();
             ButtonRandomLocation = new Button();
@@ -225,6 +225,7 @@ namespace P3D_Scenario_Generator
             TabPageWikiList = new TabPage();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            errorProvider1 = new ErrorProvider(components);
             groupBox1.SuspendLayout();
             tableLayoutPanelPhotoTourPhotoWindowLocation.SuspendLayout();
             groupBox3.SuspendLayout();
@@ -266,6 +267,7 @@ namespace P3D_Scenario_Generator
             TabControlP3DSG.SuspendLayout();
             TabPageWikiList.SuspendLayout();
             statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)errorProvider1).BeginInit();
             SuspendLayout();
             // 
             // ButtonGenerateScenario
@@ -742,34 +744,8 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsOSMServerAPIkey.Size = new Size(100, 23);
             TextBoxSettingsOSMServerAPIkey.TabIndex = 40;
             TextBoxSettingsOSMServerAPIkey.Tag = "";
-            TextBoxSettingsOSMServerAPIkey.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSettingsOSMServerAPIkey, "Paste in your OSM Server API key. See help topic \"Settings / Map Tile Cache Info / Server API key\" for instructions on how to register with Rapid to obtain your free API key for use with this program.");
-            // 
-            // label39
-            // 
-            label39.Anchor = AnchorStyles.None;
-            label39.AutoSize = true;
-            label39.Location = new Point(19, 7);
-            label39.Name = "label39";
-            label39.Size = new Size(88, 15);
-            label39.TabIndex = 31;
-            label39.Text = "Scenario Folder";
-            toolTip1.SetToolTip(label39, "Location where generated scenarios are stored. Usually \"Prepar3D v5 Files\"");
-            // 
-            // ComboBoxSettingsScenarioFolder
-            // 
-            ComboBoxSettingsScenarioFolder.AccessibleName = "Folder Info: Scenario Folder";
-            ComboBoxSettingsScenarioFolder.Anchor = AnchorStyles.None;
-            ComboBoxSettingsScenarioFolder.DropDownWidth = 640;
-            ComboBoxSettingsScenarioFolder.FormattingEnabled = true;
-            ComboBoxSettingsScenarioFolder.Location = new Point(139, 3);
-            ComboBoxSettingsScenarioFolder.Name = "ComboBoxSettingsScenarioFolder";
-            ComboBoxSettingsScenarioFolder.Size = new Size(100, 23);
-            ComboBoxSettingsScenarioFolder.TabIndex = 42;
-            ComboBoxSettingsScenarioFolder.Tag = "";
-            toolTip1.SetToolTip(ComboBoxSettingsScenarioFolder, "Location where generated scenarios are stored. Usually \"Prepar3D v5 Files\"");
-            ComboBoxSettingsScenarioFolder.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
-            ComboBoxSettingsScenarioFolder.KeyDown += ComboBox_KeyDown;
+            TextBoxSettingsOSMServerAPIkey.Leave += TextBoxSettingsOSMServerAPIkey_Leave;
             // 
             // label17
             // 
@@ -928,11 +904,11 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitSpeed.Name = "TextBoxCircuitSpeed";
             TextBoxCircuitSpeed.Size = new Size(80, 23);
             TextBoxCircuitSpeed.TabIndex = 4;
-            TextBoxCircuitSpeed.Tag = "60,double";
+            TextBoxCircuitSpeed.Tag = "";
             TextBoxCircuitSpeed.Text = "60";
             TextBoxCircuitSpeed.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitSpeed, "Cruise speed between gates 1 and 8 in knots");
-            TextBoxCircuitSpeed.Validating += TextBox_Validating;
+            TextBoxCircuitSpeed.Leave += TextBoxCircuitSpeed_Leave;
             // 
             // TextBoxCircuitTurnRate
             // 
@@ -942,11 +918,11 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitTurnRate.Name = "TextBoxCircuitTurnRate";
             TextBoxCircuitTurnRate.Size = new Size(80, 23);
             TextBoxCircuitTurnRate.TabIndex = 17;
-            TextBoxCircuitTurnRate.Tag = "2.0,double";
+            TextBoxCircuitTurnRate.Tag = "";
             TextBoxCircuitTurnRate.Text = "2.0";
             TextBoxCircuitTurnRate.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitTurnRate, "360 degrees turn rate in minutes");
-            TextBoxCircuitTurnRate.Validating += TextBox_Validating;
+            TextBoxCircuitTurnRate.Leave += TextBoxCircuitTurnRate_Leave;
             // 
             // TextBoxCircuitHeightDown
             // 
@@ -956,11 +932,11 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitHeightDown.Name = "TextBoxCircuitHeightDown";
             TextBoxCircuitHeightDown.Size = new Size(80, 23);
             TextBoxCircuitHeightDown.TabIndex = 3;
-            TextBoxCircuitHeightDown.Tag = "1000,double,>=,TextBoxCircuitHeightUpwind,>=,TextBoxCircuitHeightBase";
+            TextBoxCircuitHeightDown.Tag = "";
             TextBoxCircuitHeightDown.Text = "1000";
             TextBoxCircuitHeightDown.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitHeightDown, "Height of circuit above runway in feet (gates 3 to 6)");
-            TextBoxCircuitHeightDown.Validating += TextBox_Validating;
+            TextBoxCircuitHeightDown.Leave += TextBoxCircuitHeightDown_Leave;
             // 
             // TextBoxCircuitHeightUpwind
             // 
@@ -970,11 +946,11 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitHeightUpwind.Name = "TextBoxCircuitHeightUpwind";
             TextBoxCircuitHeightUpwind.Size = new Size(80, 23);
             TextBoxCircuitHeightUpwind.TabIndex = 13;
-            TextBoxCircuitHeightUpwind.Tag = "500, double,<=,TextBoxCircuitHeightDown";
+            TextBoxCircuitHeightUpwind.Tag = "";
             TextBoxCircuitHeightUpwind.Text = "500";
             TextBoxCircuitHeightUpwind.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitHeightUpwind, "Height of circuit above runway in feet (gate 1)");
-            TextBoxCircuitHeightUpwind.Validating += TextBox_Validating;
+            TextBoxCircuitHeightUpwind.Leave += TextBoxCircuitHeightUpwind_Leave;
             // 
             // TextBoxCircuitFinal
             // 
@@ -984,11 +960,11 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitFinal.Name = "TextBoxCircuitFinal";
             TextBoxCircuitFinal.Size = new Size(80, 23);
             TextBoxCircuitFinal.TabIndex = 2;
-            TextBoxCircuitFinal.Tag = "1,double";
+            TextBoxCircuitFinal.Tag = "";
             TextBoxCircuitFinal.Text = "1";
             TextBoxCircuitFinal.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitFinal, "Distance between gate 8 and runway in miles");
-            TextBoxCircuitFinal.Validating += TextBox_Validating;
+            TextBoxCircuitFinal.Leave += TextBoxCircuitFinal_Leave;
             // 
             // TextBoxCircuitBase
             // 
@@ -998,11 +974,11 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitBase.Name = "TextBoxCircuitBase";
             TextBoxCircuitBase.Size = new Size(80, 23);
             TextBoxCircuitBase.TabIndex = 1;
-            TextBoxCircuitBase.Tag = "0.5,double";
+            TextBoxCircuitBase.Tag = "";
             TextBoxCircuitBase.Text = "0.5";
             TextBoxCircuitBase.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitBase, "Distance between gates 2 and 3 (6 and 7) in miles");
-            TextBoxCircuitBase.Validating += TextBox_Validating;
+            TextBoxCircuitBase.Leave += TextBoxCircuitBase_Leave;
             // 
             // label28
             // 
@@ -1023,11 +999,11 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitHeightBase.Name = "TextBoxCircuitHeightBase";
             TextBoxCircuitHeightBase.Size = new Size(80, 23);
             TextBoxCircuitHeightBase.TabIndex = 12;
-            TextBoxCircuitHeightBase.Tag = "500, double,<=,TextBoxCircuitHeightDown";
+            TextBoxCircuitHeightBase.Tag = "";
             TextBoxCircuitHeightBase.Text = "500";
             TextBoxCircuitHeightBase.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitHeightBase, "Height of circuit above runway in feet (gate 8)");
-            TextBoxCircuitHeightBase.Validating += TextBox_Validating;
+            TextBoxCircuitHeightBase.Leave += TextBoxCircuitHeightBase_Leave;
             // 
             // label10
             // 
@@ -1093,11 +1069,11 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitUpwind.Name = "TextBoxCircuitUpwind";
             TextBoxCircuitUpwind.Size = new Size(80, 23);
             TextBoxCircuitUpwind.TabIndex = 5;
-            TextBoxCircuitUpwind.Tag = "1,double";
+            TextBoxCircuitUpwind.Tag = "";
             TextBoxCircuitUpwind.Text = "1";
             TextBoxCircuitUpwind.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCircuitUpwind, "Distance between runway and gate 1 in miles");
-            TextBoxCircuitUpwind.Validating += TextBox_Validating;
+            TextBoxCircuitUpwind.Leave += TextBoxCircuitUpwind_Leave;
             // 
             // label6
             // 
@@ -2047,9 +2023,8 @@ namespace P3D_Scenario_Generator
             TextBoxGeneralScenarioTitle.Name = "TextBoxGeneralScenarioTitle";
             TextBoxGeneralScenarioTitle.Size = new Size(100, 23);
             TextBoxGeneralScenarioTitle.TabIndex = 13;
-            TextBoxGeneralScenarioTitle.Tag = ", string";
-            toolTip1.SetToolTip(TextBoxGeneralScenarioTitle, "Specify an alphabetic characters title for the scenario");
-            TextBoxGeneralScenarioTitle.Validating += TextBox_Validating;
+            TextBoxGeneralScenarioTitle.Tag = "";
+            toolTip1.SetToolTip(TextBoxGeneralScenarioTitle, "Specify a valid filename for the sceanrio title.");
             // 
             // ComboBoxGeneralScenarioType
             // 
@@ -2500,6 +2475,28 @@ namespace P3D_Scenario_Generator
             label26.Text = "Maximum distance";
             label26.TextAlign = ContentAlignment.MiddleCenter;
             // 
+            // ButtonBrowseScenarioFolder
+            // 
+            ButtonBrowseScenarioFolder.Anchor = AnchorStyles.None;
+            ButtonBrowseScenarioFolder.Location = new Point(13, 3);
+            ButtonBrowseScenarioFolder.Name = "ButtonBrowseScenarioFolder";
+            ButtonBrowseScenarioFolder.Size = new Size(100, 23);
+            ButtonBrowseScenarioFolder.TabIndex = 47;
+            ButtonBrowseScenarioFolder.Text = "Scenario Folder";
+            toolTip1.SetToolTip(ButtonBrowseScenarioFolder, "Click to choose folder where scenario folders generated by the program will be placed");
+            ButtonBrowseScenarioFolder.UseVisualStyleBackColor = true;
+            ButtonBrowseScenarioFolder.Click += ButtonBrowseScenarioFolder_Click;
+            // 
+            // TextBoxSettingsScenarioFolderBase
+            // 
+            TextBoxSettingsScenarioFolderBase.Anchor = AnchorStyles.None;
+            TextBoxSettingsScenarioFolderBase.Location = new Point(139, 3);
+            TextBoxSettingsScenarioFolderBase.Name = "TextBoxSettingsScenarioFolderBase";
+            TextBoxSettingsScenarioFolderBase.Size = new Size(100, 23);
+            TextBoxSettingsScenarioFolderBase.TabIndex = 48;
+            toolTip1.SetToolTip(TextBoxSettingsScenarioFolderBase, "Folder where scenario folders generated by the program will be placed");
+            TextBoxSettingsScenarioFolderBase.Leave += TextBoxSettingsScenarioFolderBase_Leave;
+            // 
             // groupBox16
             // 
             groupBox16.BackColor = Color.FromArgb(255, 192, 128);
@@ -2559,7 +2556,7 @@ namespace P3D_Scenario_Generator
             TextBoxGeneralLocationFilters.Size = new Size(100, 23);
             TextBoxGeneralLocationFilters.TabIndex = 47;
             TextBoxGeneralLocationFilters.Tag = "";
-            TextBoxGeneralLocationFilters.MouseHover += TextBoxGeneralLocationFilters_MouseHover;
+            TextBoxGeneralLocationFilters.MouseEnter += TextBoxGeneralLocationFilters_MouseEnter;
             // 
             // TabPagePhotoTour
             // 
@@ -2620,8 +2617,8 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel1.Controls.Add(label62, 0, 2);
             tableLayoutPanel1.Controls.Add(ComboBoxSettingsSimulatorVersion, 1, 1);
             tableLayoutPanel1.Controls.Add(label8, 0, 1);
-            tableLayoutPanel1.Controls.Add(ComboBoxSettingsScenarioFolder, 1, 0);
-            tableLayoutPanel1.Controls.Add(label39, 0, 0);
+            tableLayoutPanel1.Controls.Add(ButtonBrowseScenarioFolder, 0, 0);
+            tableLayoutPanel1.Controls.Add(TextBoxSettingsScenarioFolderBase, 1, 0);
             tableLayoutPanel1.ImeMode = ImeMode.On;
             tableLayoutPanel1.Location = new Point(16, 22);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -2671,7 +2668,7 @@ namespace P3D_Scenario_Generator
             // 
             ButtonCircuitDefault.BackColor = Color.FromArgb(255, 192, 128);
             ButtonCircuitDefault.ForeColor = SystemColors.ControlText;
-            ButtonCircuitDefault.Location = new Point(35, 378);
+            ButtonCircuitDefault.Location = new Point(56, 383);
             ButtonCircuitDefault.Name = "ButtonCircuitDefault";
             ButtonCircuitDefault.Size = new Size(75, 23);
             ButtonCircuitDefault.TabIndex = 11;
@@ -2744,7 +2741,7 @@ namespace P3D_Scenario_Generator
             TextBoxGeneralAircraftValues.Size = new Size(100, 23);
             TextBoxGeneralAircraftValues.TabIndex = 48;
             TextBoxGeneralAircraftValues.Tag = "";
-            TextBoxGeneralAircraftValues.MouseHover += TextBoxGeneralAircraftValues_MouseHover;
+            TextBoxGeneralAircraftValues.MouseEnter += TextBoxGeneralAircraftValues_MouseEnter;
             // 
             // groupBox14
             // 
@@ -2862,6 +2859,10 @@ namespace P3D_Scenario_Generator
             toolStripStatusLabel1.Size = new Size(829, 17);
             toolStripStatusLabel1.Spring = true;
             // 
+            // errorProvider1
+            // 
+            errorProvider1.ContainerControl = this;
+            // 
             // Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -2935,6 +2936,7 @@ namespace P3D_Scenario_Generator
             TabPageWikiList.ResumeLayout(false);
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)errorProvider1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -3015,8 +3017,6 @@ namespace P3D_Scenario_Generator
         private Label label43;
         private GroupBox groupBox4;
         private TableLayoutPanel tableLayoutPanel1;
-        internal ComboBox ComboBoxSettingsScenarioFolder;
-        private Label label39;
         internal ComboBox ComboBoxPhotoTourPhotoAlignment;
         private TableLayoutPanel tableLayoutPanel2;
         private GroupBox groupBox5;
@@ -3137,6 +3137,9 @@ namespace P3D_Scenario_Generator
         private TableLayoutPanel tableLayoutPanel5;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
+        private ErrorProvider errorProvider1;
+        private Button ButtonBrowseScenarioFolder;
+        private TextBox TextBoxSettingsScenarioFolderBase;
     }
 }
 

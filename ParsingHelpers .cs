@@ -51,5 +51,47 @@
             }
             return true;
         }
+
+        /// <summary>
+        /// Attempts to parse a string into a double and validates its range (inclusive).
+        /// Returns an error message if parsing fails or if the value is out of the valid range.
+        /// </summary>
+        /// <param name="valueStringIn">The string containing the double value to parse.</param>
+        /// <param name="valueName">A descriptive name for the value (e.g., "Circuit Upwind Leg") used in error messages.</param>
+        /// <param name="minValue">The minimum allowed value (inclusive).</param>
+        /// <param name="maxValue">The maximum allowed value (inclusive).</param>
+        /// <param name="doubleOut">When this method returns, contains the parsed double value if successful; otherwise, 0.</param>
+        /// <param name="errorMessage">When this method returns, contains an error message if parsing fails or the value is out of range; otherwise, null or empty.</param>
+        /// <param name="units">Optional: A string representing the units of the value (e.g., "miles", "knots").</param>
+        /// <returns>True if the string was successfully parsed into a double and is within the specified range; otherwise, false.</returns>
+        // Modified method with 'units' parameter
+        internal static bool TryParseDouble(
+            string valueStringIn,
+            string valueName,
+            double minValue,
+            double maxValue,
+            out double doubleOut,
+            out string errorMessage,
+            string units = "") 
+        {
+            errorMessage = null; // Initialize error message
+
+            if (!double.TryParse(valueStringIn, out doubleOut))
+            {
+                errorMessage = $"Invalid format for '{valueName}'. Please enter a valid number.";
+                return false;
+            }
+
+            // Append units to the error message if provided
+            string unitSuffix = string.IsNullOrWhiteSpace(units) ? "" : $" {units}";
+
+            if (doubleOut < minValue || doubleOut > maxValue)
+            {
+                errorMessage = $"{valueName} ({doubleOut}{unitSuffix}) is out of range. Please enter a value between {minValue}{unitSuffix} and {maxValue}{unitSuffix}.";
+                return false;
+            }
+
+            return true;
+        }
     }
 }

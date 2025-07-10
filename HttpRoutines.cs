@@ -122,11 +122,11 @@ namespace P3D_Scenario_Generator
         /// Validates the OSM tile server API key by making a test request and checking the HTTP status code synchronously.
         /// This method uses HttpClient, which provides direct access to HTTP status codes.
         /// </summary>
+        /// <param name="apiKey">The API key string to be validated.</param>
         /// <returns><see langword="true"/> if the API key is valid and a successful response (2xx status code) is received; otherwise, <see langword="false"/>.</returns>
-        internal static bool ValidateMapTileServerKey()
+        internal static bool ValidateMapTileServerKey(string apiKey)
         {
             // Use a minimal tile URL for validation, e.g., zoom 0, x 0, y 0
-            string apiKey = Parameters.SettingsCacheServerAPIkey;       // Get the user-supplied key
             apiKey = apiKey.Replace("\"", "").Replace("'", "").Trim();  // Remove quotes and trim whitespace
             string url = $"{Constants.OSMtileServerURLprefix}/0/0/0.png?rapidapi-key={apiKey}";
 
@@ -198,7 +198,6 @@ namespace P3D_Scenario_Generator
             catch (Exception ex) // Catch any other unexpected exceptions
             {
                 string errorMessage = $"An unexpected error occurred during API key validation: {ex.Message}";
-                MessageBox.Show(errorMessage, "OSM tile server API key", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Log.Error($"Unexpected error during API key validation for URL \"{url}\": {ex.Message}");
                 return false;
             }

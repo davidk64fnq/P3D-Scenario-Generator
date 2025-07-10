@@ -157,29 +157,6 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection ComboBoxSettingsScenarioFolder {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxSettingsScenarioFolder"]));
-            }
-            set {
-                this["ComboBoxSettingsScenarioFolder"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int ComboBoxSettingsScenarioFolderSelectedIndex {
-            get {
-                return ((int)(this["ComboBoxSettingsScenarioFolderSelectedIndex"]));
-            }
-            set {
-                this["ComboBoxSettingsScenarioFolderSelectedIndex"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public int ComboBoxPhotoTourPhotoAlignmentSelectedIndex {
             get {
@@ -321,7 +298,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.0")]
         public string TextBoxCircuitUpwind {
             get {
                 return ((string)(this["TextBoxCircuitUpwind"]));
@@ -333,7 +310,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.5")]
         public string TextBoxCircuitBase {
             get {
                 return ((string)(this["TextBoxCircuitBase"]));
@@ -345,7 +322,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1.0")]
         public string TextBoxCircuitFinal {
             get {
                 return ((string)(this["TextBoxCircuitFinal"]));
@@ -357,7 +334,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
         public string TextBoxCircuitHeightUpwind {
             get {
                 return ((string)(this["TextBoxCircuitHeightUpwind"]));
@@ -369,7 +346,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
         public string TextBoxCircuitHeightDown {
             get {
                 return ((string)(this["TextBoxCircuitHeightDown"]));
@@ -381,7 +358,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
         public string TextBoxCircuitHeightBase {
             get {
                 return ((string)(this["TextBoxCircuitHeightBase"]));
@@ -393,7 +370,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("2.0")]
         public string TextBoxCircuitTurnRate {
             get {
                 return ((string)(this["TextBoxCircuitTurnRate"]));
@@ -405,7 +382,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("60")]
         public string TextBoxCircuitSpeed {
             get {
                 return ((string)(this["TextBoxCircuitSpeed"]));
@@ -864,7 +841,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string TextBoxSettingsOSMServerAPIkey {
             get {
                 return ((string)(this["TextBoxSettingsOSMServerAPIkey"]));
@@ -883,6 +860,18 @@ namespace P3D_Scenario_Generator.Properties {
             }
             set {
                 this["TextBoxPhotoTourConstraintsMaxAttempts"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\")]
+        public string TextBoxSettingsScenarioFolderBase {
+            get {
+                return ((string)(this["TextBoxSettingsScenarioFolderBase"]));
+            }
+            set {
+                this["TextBoxSettingsScenarioFolderBase"] = value;
             }
         }
     }

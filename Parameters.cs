@@ -21,10 +21,10 @@ namespace P3D_Scenario_Generator
         internal static int Hours { get; private set; }
         internal static int Minutes { get; private set; }
         internal static int Seconds { get; private set; }
-        internal static string GeneralScenarioTitle { get; private set; }
-        internal static string AircraftTitle { get; private set; }
-        internal static double AircraftCruiseSpeed { get; private set; }
-        internal static string AircraftImagePath { get; private set; }
+        internal static string GeneralScenarioTitle { get; set; }
+        internal static string ScenarioAircraftTitle { get; private set; }
+        internal static double ScenarioAircraftCruiseSpeed { get; private set; }
+        internal static string ScenarioAircraftImagePath { get; private set; }
 
         #endregion
 
@@ -33,43 +33,43 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Distance between runway and gate 1 in miles
         /// </summary>
-        internal static double UpwindLeg { get; private set; }
+        internal static double CircuitUpwindLeg { get; private set; }
 
         /// <summary>
-        /// Distance from gate 2 to gate 3 and from gate 6 to gate 7
+        /// Distance from gate 2 to gate 3 and from gate 6 to gate 7 in miles
         /// </summary>
-        internal static double BaseLeg { get; private set; }
+        internal static double CircuitBaseLeg { get; private set; }
 
         /// <summary>
         /// Distance between gate 8 and runway in miles
         /// </summary>
-        internal static double FinalLeg { get; private set; }
+        internal static double CircuitFinalLeg { get; private set; }
 
         /// <summary>
         /// User specified height of gate 1
         /// </summary>
-        internal static double HeightUpwind { get; private set; }
+        internal static double CircuitHeightUpwind { get; private set; }
 
         /// <summary>
         /// User specified height of gates 3 to 6
         /// </summary>
-        internal static double HeightDown { get; private set; }
+        internal static double CircuitHeightDown { get; private set; }
 
         /// <summary>
         /// User specified height of gate 8
         /// </summary>
-        internal static double HeightBase { get; private set; }
+        internal static double CircuitHeightBase { get; private set; }
 
         /// <summary>
         /// User specified cruise speed of <see cref="SelectedAircraft"/> in knots nm/hr (default value read from aircraft.cfg)
         /// </summary>
-        internal static double Speed { get; private set; }
+        internal static double CircuitSpeed { get; private set; }
 
         /// <summary>
         /// User specified turn rate of <see cref="SelectedAircraft"/> in minutes (standard turn rate is 360 degrees in 2 minutes 
         /// but default value of 4 minutes seems to work better)
         /// </summary>
-        internal static double TurnRate { get; private set; }
+        internal static double CircuitTurnRate { get; private set; }
 
         #endregion
 
@@ -365,45 +365,31 @@ namespace P3D_Scenario_Generator
         /// <returns>True if parameters okay and directories created</returns>
         internal static bool SetParams(ScenarioFormData formData)
         {
-            // General tab
             string errorMsg = "";
-            if (!ValidateScenarioTitle())
-            {
-                return false;
-            }
-            if (Form.form.ComboBoxGeneralAircraftSelection.Items.Count == 0)
-            {
-                errorMsg += "\n\tSelect an aircraft";
-            }
-            else
-            {
-                AircraftVariant aircraftVariant = Aircraft.AircraftVariants[Aircraft.CurrentAircraftVariantIndex];
-                AircraftTitle = aircraftVariant.Title;
-                AircraftCruiseSpeed = Convert.ToDouble(aircraftVariant.CruiseSpeed);
-                AircraftImagePath = aircraftVariant.ThumbnailImagePath;
-            }
-            SelectedRunwayIndex = Form.form.ComboBoxGeneralRunwaySelected.SelectedIndex;
-            SelectedScenarioType = formData.SelectedScenarioType;
-            DayOfYear = Form.form.GeneralDatePicker.Value.DayOfYear;
-            Day = Form.form.GeneralDatePicker.Value.Day;
-            Month = Form.form.GeneralDatePicker.Value.Month;
-            Year = Form.form.GeneralDatePicker.Value.Year;
-            var persianMonth = new PersianCalendar().GetMonth(Form.form.GeneralDatePicker.Value);
+
+            // General tab
+            SelectedRunwayIndex = formData.RunwayIndex;
+            SelectedScenarioType = formData.ScenarioType;
+            DayOfYear = formData.DatePickerValue.DayOfYear;
+            Day = formData.DatePickerValue.Day;
+            Month = formData.DatePickerValue.Month;
+            Year = formData.DatePickerValue.Year;
+            var persianMonth = new PersianCalendar().GetMonth(formData.DatePickerValue);
             Season = (Season)Math.Ceiling(persianMonth / 3.0);
-            Hours = Form.form.GeneralTimePicker.Value.Hour;
-            Minutes = Form.form.GeneralTimePicker.Value.Minute;
-            Seconds = Form.form.GeneralTimePicker.Value.Second;
-            GeneralScenarioTitle = Form.form.TextBoxGeneralScenarioTitle.Text;
+            Hours = formData.TimePickerValue.Hour;
+            Minutes = formData.TimePickerValue.Minute;
+            Seconds = formData.TimePickerValue.Second;
+            GeneralScenarioTitle = formData.ScenarioTitle;
 
             // Circuit tab
-            UpwindLeg = Convert.ToDouble(Form.form.TextBoxCircuitUpwind.Text);
-            BaseLeg = Convert.ToDouble(Form.form.TextBoxCircuitBase.Text);
-            FinalLeg = Convert.ToDouble(Form.form.TextBoxCircuitFinal.Text);
-            HeightUpwind = Convert.ToDouble(Form.form.TextBoxCircuitHeightUpwind.Text);
-            HeightDown = Convert.ToDouble(Form.form.TextBoxCircuitHeightDown.Text);
-            HeightBase = Convert.ToDouble(Form.form.TextBoxCircuitHeightBase.Text);
-            Speed = Convert.ToDouble(Form.form.TextBoxCircuitSpeed.Text);
-            TurnRate = Convert.ToDouble(Form.form.TextBoxCircuitTurnRate.Text);
+            CircuitUpwindLeg = formData.CircuitUpwindLeg;
+            CircuitBaseLeg = formData.CircuitBaseLeg;
+            CircuitFinalLeg = formData.CircuitFinalLeg;
+            CircuitHeightUpwind = formData.CircuitHeightUpwind;
+            CircuitHeightDown = formData.CircuitHeightDown;
+            CircuitHeightBase = formData.CircuitHeightBase;
+            CircuitSpeed = formData.CircuitSpeed;
+            CircuitTurnRate = formData.CircuitTurnDuration360Degrees;
 
             // Photo Tour
             PhotoTourConstraintsMaxLegDist = Convert.ToDouble(Form.form.TextBoxPhotoTourConstraintsMaxLegDist.Text);
@@ -470,14 +456,14 @@ namespace P3D_Scenario_Generator
             WikiMapWindowSize = Convert.ToInt32(Form.form.ComboBoxSettingsMapWindowSize.Text);
 
             // Settings
-            SettingsScenarioFolder = $"{Form.form.ComboBoxSettingsScenarioFolder.Text}\\{Form.form.TextBoxGeneralScenarioTitle.Text}";
+        //    SettingsScenarioFolder = $"{Form.form.ComboBoxSettingsScenarioFolder.Text}\\{Form.form.TextBoxGeneralScenarioTitle.Text}";
             SettingsImageFolder = $"{SettingsScenarioFolder}\\images";
             SettingsCacheUsage = Form.form.TextBoxSettingsCacheUsage.Text;
             SettingsCacheDailyTotal = Convert.ToInt32(Form.form.TextBoxSettingsCacheDailyTotal.Text);
             SettingsSimulatorVersion = Form.form.ComboBoxSettingsSimulatorVersion.GetItemText(Form.form.ComboBoxSettingsSimulatorVersion.SelectedItem);
             SettingsP3DprogramData = Form.form.TextBoxSettingsP3DprogramData.Text;
             SettingsCacheServerAPIkey = Form.form.TextBoxSettingsOSMServerAPIkey.Text;
-            if (!HttpRoutines.ValidateMapTileServerKey())
+            if (!HttpRoutines.ValidateMapTileServerKey("blah"))
             {
                 return false;
             }
@@ -506,36 +492,35 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Checks that the user supplied scenario title will make a valid filename and that a folder of that name doesn't
-        /// already exist.
+        /// Checks if the provided string is a valid filename in terms of character set and not being null or empty.
+        /// This method validates against characters deemed invalid by the operating system.
+        /// If validation fails, a descriptive error message is provided via an out parameter.
         /// </summary>
-        /// <returns>True for valid scenario title.</returns>
-        internal static bool ValidateScenarioTitle()
+        /// <param name="fileName">The string to validate as a filename.</param>
+        /// <param name="errorMessage">
+        /// When this method returns, contains an error message if the filename is invalid;
+        /// otherwise, an empty string. This parameter is passed uninitialized.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the string is a valid filename (not null, not empty, and contains no invalid characters);
+        /// otherwise, <see langword="false"/>.
+        /// </returns>
+        internal static bool IsValidFilename(string fileName, out string errorMessage)
         {
-            string saveFolder;
-
-            if (IsValidFilename(Form.form.TextBoxGeneralScenarioTitle.Text))
+            if (string.IsNullOrEmpty(fileName))
             {
-                saveFolder = $"{Form.form.ComboBoxSettingsScenarioFolder.Text}\\{Form.form.TextBoxGeneralScenarioTitle.Text}";
-                if (Directory.Exists(saveFolder))
-                {
-                    string message = $"A scenario with the same title already exists. Either delete the folder \"{saveFolder}\" (you'll need to shut down Prepar3D first if it's running) or choose a different scenario title.";
-                    MessageBox.Show(message, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return false;
-                }
-            }
-            else
-            {
-                MessageBox.Show($"Invalid scenario title", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                errorMessage = "Filename cannot be empty or null.";
                 return false;
             }
-            return true;
-        }
 
-        internal static bool IsValidFilename(string fileName)
-        {
-            return !string.IsNullOrEmpty(fileName) &&
-              fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
+            if (fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                errorMessage = $"Filename {fileName} contains invalid characters. Please remove illegal characters (e.g., \\ / : * ? \" < > |).";
+                return false;
+            }
+
+            errorMessage = "";
+            return true;
         }
     }
 }

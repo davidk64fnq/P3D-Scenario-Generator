@@ -55,7 +55,7 @@ namespace P3D_Scenario_Generator
 			// Sim.0 section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "Sim.0");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Sim");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.AircraftTitle}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.ScenarioAircraftTitle}";
 
             // Simvars.0 section
             sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");

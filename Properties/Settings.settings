@@ -35,12 +35,6 @@
     <Setting Name="TextBoxSettingsCacheUsage" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="ComboBoxSettingsScenarioFolder" Type="System.Collections.Specialized.StringCollection" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="ComboBoxSettingsScenarioFolderSelectedIndex" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
     <Setting Name="ComboBoxPhotoTourPhotoAlignmentSelectedIndex" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
@@ -78,28 +72,28 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="TextBoxCircuitUpwind" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">1.0</Value>
     </Setting>
     <Setting Name="TextBoxCircuitBase" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">0.5</Value>
     </Setting>
     <Setting Name="TextBoxCircuitFinal" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">1.0</Value>
     </Setting>
     <Setting Name="TextBoxCircuitHeightUpwind" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">500</Value>
     </Setting>
     <Setting Name="TextBoxCircuitHeightDown" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">1000</Value>
     </Setting>
     <Setting Name="TextBoxCircuitHeightBase" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">500</Value>
     </Setting>
     <Setting Name="TextBoxCircuitTurnRate" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">2.0</Value>
     </Setting>
     <Setting Name="TextBoxCircuitSpeed" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">60</Value>
     </Setting>
     <Setting Name="TextBoxSignTilt" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
@@ -216,10 +210,13 @@
       <Value Profile="(Default)">C:\ProgramData\Lockheed Martin\Prepar3D v</Value>
     </Setting>
     <Setting Name="TextBoxSettingsOSMServerAPIkey" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="TextBoxPhotoTourConstraintsMaxAttempts" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="TextBoxSettingsScenarioFolderBase" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\</Value>
     </Setting>
   </Settings>
 </SettingsFile>

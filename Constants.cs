@@ -32,17 +32,35 @@ namespace P3D_Scenario_Generator
     /// </summary>
     public class Constants
     {
+        #region General constants
+
+        /// <summary>
+        /// The practical maximum speed in knots for aircraft in this program.
+        /// </summary>
+        public const double PracticalMaxSpeed = 2500;
+        
+        /// <summary>
+        /// The minimum practical time (in minutes) to complete a 360-degree turn,
+        /// accommodating very high-performance aircraft.
+        /// (Corresponds to approx 60 degrees/second turn rate)
+        /// </summary>
+        internal const double MinTurnTime360DegreesMinutes = 0.1;
+
+        /// <summary>
+        /// The maximum practical time (in minutes) to complete a 360-degree turn,
+        /// accommodating very gentle maneuvers without being excessively long.
+        /// (Corresponds to approx 0.2 degrees/second turn rate)
+        /// </summary>
+        internal const double MaxTurnTime360DegreesMinutes = 30.0;
+
+        #endregion
+
         #region Display related constants
 
         /// <summary>
         /// The application title for display purposes
         /// </summary>
         public static readonly string appTitle = "P3D Scenario Generator";
-
-        /// <summary>
-        /// The scenario type names for display purposes
-        /// </summary>
-        public static readonly string[] scenarioNames = ["Circuit", "Photo Tour", "Sign Writing", "Celestial Navigation", "Wikipedia List", "Testing"];
 
         #endregion
 
@@ -158,6 +176,16 @@ namespace P3D_Scenario_Generator
         /// </summary>
         public static readonly double numBlueVertOffset = 110;
 
+        /// <summary>
+        /// A minimum value in miles to separate adjacent gates in Circuit scenario.
+        /// </summary>
+        internal const double MinCircuitGateSeparation = 0.1;
+
+        /// <summary>
+        /// A maximum value in feet for gate heights in e.g. Circuit scenario.
+        /// </summary>
+        internal const double MaxCircuitGateHeight = 100000;
+
         #endregion
 
         #region Astronomy constants
@@ -215,6 +243,12 @@ namespace P3D_Scenario_Generator
         /// Number of days of data extracted from almanac data retrieved from Internet
         /// </summary>
         public static readonly int NumberOfDaysToExtract = 3;
+
+        /// <summary>
+        /// The approximate equatorial circumference of Earth in miles, used as a practical
+        /// upper limit for scenario leg distances.
+        /// </summary>
+        internal const double EarthCircumferenceMiles = 24901.0;
 
         #endregion
 

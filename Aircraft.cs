@@ -22,7 +22,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// The cruise speed in knots of the aircraft variant as recorded in the aircraft.cfg file
         /// </summary>
-        public string CruiseSpeed { get; set; }
+        public double CruiseSpeed { get; set; }
 
         /// <summary>
         /// Full path including filename of selected thumbnail.jpg file or empty string
@@ -164,12 +164,6 @@ namespace P3D_Scenario_Generator
             string keyString = $"Software\\Lockheed Martin\\Prepar3D v{simulatorVersion}";
             RegistryKey key;
             key = Registry.LocalMachine.OpenSubKey(keyString);
-            if (key == null)
-            {
-                MessageBox.Show($"Problem encountered referencing key value {keyString}, " +
-                    "check selected Simulator Version on Settings tab", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return key;
-            }
             return key;
         }
 
@@ -259,7 +253,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="thumbnailPath">From this is extracted the aircraft folder which contains the aircraft.cfg file</param>
         /// <returns>The aircraft variant cruise speed string or an empty string</returns>
-        internal static string GetAircraftCruiseSpeed(string thumbnailPath)
+        internal static double GetAircraftCruiseSpeed(string thumbnailPath)
         {
             string aircraftCFG = GetAircraftCFG(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
@@ -273,10 +267,26 @@ namespace P3D_Scenario_Generator
                     string cruiseSpeed = splitOnEqualsSign[1].Trim();
                     string[] splitOnCommentIndicator = cruiseSpeed.Split("//"); // Remove any comment at end of line
                     string cruiseSpeedWithoutAnyComment = splitOnCommentIndicator[0].Trim();
-                    return cruiseSpeedWithoutAnyComment;
+                    const double minCruiseSpeed = 0.0;
+                    const double maxCruiseSpeed = Constants.PracticalMaxSpeed;
+                    if (ParsingHelpers.TryParseDouble(
+                        cruiseSpeedWithoutAnyComment,
+                        "Aircraft cruise speed",
+                        minCruiseSpeed,
+                        maxCruiseSpeed,
+                        out double cruiseSpeedOut,
+                        out string validationMessage,
+                        "knots"))
+                    {
+                        return cruiseSpeedOut;
+                    }
+                    else
+                    {
+                        return 0.0;
+                    }
                 }
             }
-            return "";
+            return 0.0;
         }
 
         /// <summary>
@@ -483,6 +493,21 @@ namespace P3D_Scenario_Generator
             aircraftValues += " \nHas Floats = ";
             aircraftValues += AircraftVariants[CurrentAircraftVariantIndex].HasFloats.ToString();
             return aircraftValues;
+        }
+
+        /// <summary>
+        /// Retrieves the currently selected aircraft variant.
+        /// Handles cases where no variant is selected or the index is invalid.
+        /// </summary>
+        /// <returns>The selected AircraftVariant, or null if no valid variant is currently selected.</returns>
+        public static AircraftVariant GetCurrentVariant()
+        {
+            if (AircraftVariants == null || CurrentAircraftVariantIndex < 0 || CurrentAircraftVariantIndex >= AircraftVariants.Count)
+            {
+                Log.Warning("Attempted to retrieve current aircraft variant with no variants loaded or an invalid index.");
+                return null; // No valid aircraft selected or available
+            }
+            return AircraftVariants[CurrentAircraftVariantIndex];
         }
 
         #endregion
