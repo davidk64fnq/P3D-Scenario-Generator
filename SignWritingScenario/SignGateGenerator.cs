@@ -102,26 +102,26 @@
         /// segments used to represent a alphabet letter
         /// </summary>
         /// <returns>The list of gates</returns>
-        internal static List<Gate> SetSignGatesMessage()
+        internal static List<Gate> SetSignGatesMessage(ScenarioFormData formData)
         {
             List<Gate> gates = [];
-            for (int index = 0; index < Parameters.SignMessage.Length; index++)
+            for (int index = 0; index < formData.SignMessage.Length; index++)
             {
-                if (char.IsLetter(Parameters.SignMessage[index]))
+                if (char.IsLetter(formData.SignMessage[index]))
                 {
                     // Add the gates needed for current letter to List<Gate> gates
-                    SetSignGatesLetter(gates, index, out int currentLetterNoOfGates);
+                    SetSignGatesLetter(gates, index, out int currentLetterNoOfGates, formData);
 
                     // Move gates just added from 0 lat 0 lon 0 asml reference point to the end of letters in message processed so far
                     // only longitude is changed
                     int startGateIndex = gates.Count - currentLetterNoOfGates;
-                    TranslateGates(gates, startGateIndex, currentLetterNoOfGates, 0, Parameters.SignSegmentLengthDeg * 3 * index, 0);
+                    TranslateGates(gates, startGateIndex, currentLetterNoOfGates, 0, formData.SignSegmentLength * 3 * index, 0);
                 }
             }
-            TiltGates(gates, 0, gates.Count);
+            TiltGates(gates, 0, gates.Count, formData);
 
             // Move gates to airport and correct height
-            TranslateGates(gates, 0, gates.Count, Runway.startRwy.AirportLat, Runway.startRwy.AirportLon, Runway.startRwy.Altitude + Parameters.SignGateHeight);
+            TranslateGates(gates, 0, gates.Count, Runway.startRwy.AirportLat, Runway.startRwy.AirportLon, Runway.startRwy.Altitude + formData.SignGateHeight);
             return gates;
         }
 
@@ -134,7 +134,7 @@
         /// <param name="gates">Where the gates are stored as they are created by <see cref="SetSegmentGate"/></param>
         /// <param name="letterIndex">Indicates which letter in the sign writing message is being processed</param>
         /// <returns>The number of gates created for the letter in the sign writing message</returns>
-        internal static void SetSignGatesLetter(List<Gate> gates, int letterIndex, out int currentLetterNoOfGates)
+        internal static void SetSignGatesLetter(List<Gate> gates, int letterIndex, out int currentLetterNoOfGates, ScenarioFormData formData)
         {
             int currentLetterGateIndex = gates.Count - 1;
             int gateNo = 0; // Integer division by 2 gives the segment index
@@ -150,7 +150,8 @@
                                spec.TopPixels,
                                spec.LeftPixels,
                                gateNo++ / 2, // This calculates the segmentIndex
-                               letterIndex);
+                               letterIndex,
+                               formData);
             }
 
             currentLetterNoOfGates = gates.Count - 1 - currentLetterGateIndex;
@@ -171,18 +172,18 @@
         /// <param name="segmentIndex">Which of the 22 possible segments is being processed</param>
         /// <param name="letterIndex">Indicates which letter in the sign writing message is being processed</param>
         internal static void SetSegmentGate(List<Gate> gates, double latCoef, double latOffsetCoef, double lonCoef, double lonOffsetCoef,
-            double orientation, double topPixels, double leftPixels, int segmentIndex, int letterIndex)
+            double orientation, double topPixels, double leftPixels, int segmentIndex, int letterIndex, ScenarioFormData formData)
         {
             // Skip segments that don't form part of current letter in sign writing message
-            if (!SignCharacterMap.SegmentIsSet(Parameters.SignMessage[letterIndex], segmentIndex))
+            if (!SignCharacterMap.SegmentIsSet(formData.SignMessage[letterIndex], segmentIndex))
             {
                 return;
             }
 
             // At this point the letter bottom lefthand edge is at 0 latitude and 0 longitude. Work out
             // from this reference point the lat/lon of segment being processed in current message letter
-            double lat = Parameters.SignSegmentLengthDeg * latCoef + Parameters.SignSegmentRadiusDeg * latOffsetCoef;
-            double lon = Parameters.SignSegmentLengthDeg * lonCoef + Parameters.SignSegmentRadiusDeg * lonOffsetCoef;
+            double lat = formData.SignSegmentLength * latCoef + formData.SignSegmentRadius * latOffsetCoef;
+            double lon = formData.SignSegmentLength * lonCoef + formData.SignSegmentRadius * lonOffsetCoef;
 
             // Letter starts at 0 amsl and later gets translated to correct height.
             double amsl = 0;
@@ -198,11 +199,11 @@
             }
             else if (orientation == 180)
             {
-                pitch = Parameters.SignTiltAngle;
+                pitch = formData.SignTiltAngle;
             }
             else
             {
-                pitch = -Parameters.SignTiltAngle;
+                pitch = -formData.SignTiltAngle;
             }
 
             // Shift leftPixels based on which letter it is in message
@@ -236,14 +237,14 @@
         /// <param name="gates">Where the gates are stored</param>
         /// <param name="startGateIndex">Index of first gate in list of gates to be translated</param>
         /// <param name="noGates">The number of gates in list of gates to be translated </param>
-        internal static void TiltGates(List<Gate> gates, int startGateIndex, int noGates)
+        internal static void TiltGates(List<Gate> gates, int startGateIndex, int noGates, ScenarioFormData formData)
         {
             for (int index = startGateIndex; index < startGateIndex + noGates; index++)
             {
                 // do altitude change first before adjusting latitude, tilt is on longitude axis, latitudes reduced as segment
                 // length is constant but when tilted is shorter over ground
-                gates[index].amsl += Math.Abs(gates[index].lat) * Math.Sin(Parameters.SignTiltAngle * Math.PI / 180) * Constants.degreeLatFeet;
-                gates[index].lat = gates[index].lat * Math.Cos(Parameters.SignTiltAngle * Math.PI / 180);
+                gates[index].amsl += Math.Abs(gates[index].lat) * Math.Sin(formData.SignTiltAngle * Math.PI / 180) * Constants.degreeLatFeet;
+                gates[index].lat = gates[index].lat * Math.Cos(formData.SignTiltAngle * Math.PI / 180);
             }
         }
     }

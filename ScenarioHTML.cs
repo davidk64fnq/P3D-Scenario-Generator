@@ -36,24 +36,24 @@ namespace P3D_Scenario_Generator
 
         internal static Overview overview;
 
-        static internal void GenerateHTMLfiles()
+        static internal void GenerateHTMLfiles(ScenarioFormData formData)
         {
-            overview = SetOverviewStruct();
+            overview = SetOverviewStruct(formData);
             string overviewHTML = SetOverviewHTML(overview);
-            File.WriteAllText($"{Parameters.SettingsScenarioFolder}\\Overview.htm", overviewHTML);
+            File.WriteAllText($"{formData.ScenarioFolder}\\Overview.htm", overviewHTML);
 
-            MissionBrief missionBrief = SetMissionBriefStruct(overview);
+            MissionBrief missionBrief = SetMissionBriefStruct(overview, formData);
             string missionBriefHTML = SetMissionBriefHTML(missionBrief);
-            File.WriteAllText($"{Parameters.SettingsScenarioFolder}\\{Parameters.GeneralScenarioTitle}.htm", missionBriefHTML);
+            File.WriteAllText($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.htm", missionBriefHTML);
 
-            CopyFiles();
+            CopyFiles(formData);
         }
 
-        static private Overview SetOverviewStruct()
+        static private Overview SetOverviewStruct(ScenarioFormData formData)
         {
             Overview overview = new();
 
-            switch (Parameters.SelectedScenarioType)
+            switch (formData.ScenarioType)
             {
                 case ScenarioTypes.Circuit:
                     overview.Title = "Circuit Practise";
@@ -61,10 +61,11 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
                     overview.Difficulty = "Beginner";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    double duration = ((Parameters.CircuitFinalLeg + (Runway.startRwy.Len / Constants.feetInNM) + Parameters.CircuitUpwindLeg) * 2 + (Parameters.CircuitBaseLeg * 2)) / Parameters.CircuitSpeed * 60;
+                    double duration = ((formData.CircuitFinalLeg + (Runway.startRwy.Len / Constants.feetInNM) + formData.CircuitUpwindLeg) 
+                        * 2 + (formData.CircuitBaseLeg * 2)) / formData.CircuitSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{Parameters.ScenarioAircraftTitle}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.ScenarioAircraftTitle}";
+                    overview.Aircraft = $"{formData.AircraftTitle}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
                     overview.Briefing += " by doing that most fundamental of tasks, flying a circuit! ";
                     overview.Briefing += "You'll take off, fly through eight gates as you complete a circuit, ";
                     overview.Briefing += "and land back on the runway. The scenario begins on runway ";
@@ -79,10 +80,10 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
                     overview.Difficulty = "Intermediate";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = PhotoTourUtilities.GetPhotoTourDistance(PhotoTour.PhotoLocations) / Parameters.ScenarioAircraftCruiseSpeed * 60;
+                    duration = PhotoTourUtilities.GetPhotoTourDistance(PhotoTour.PhotoLocations) / formData.AircraftCruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{Parameters.ScenarioAircraftTitle}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.ScenarioAircraftTitle}";
+                    overview.Aircraft = $"{formData.AircraftTitle}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
                     overview.Briefing += " as you navigate from one photo location to the next using IFR (I follow roads) ";
                     overview.Briefing += "You'll take off, fly to a series of photo locations, ";
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
@@ -97,10 +98,10 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
                     overview.Difficulty = "Advanced";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = SignWriting.GetSignWritingDistance() / Parameters.ScenarioAircraftCruiseSpeed * 60;
+                    duration = SignWriting.GetSignWritingDistance(formData) / formData.AircraftCruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{Parameters.ScenarioAircraftTitle}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.ScenarioAircraftTitle}";
+                    overview.Aircraft = $"{formData.AircraftTitle}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
                     overview.Briefing += " as you take on the role of sign writer in the sky! ";
                     overview.Briefing += "You'll take off, fly through a series of gates to spell out a message ";
                     overview.Briefing += "and land again when you've finished. The scenario begins on runway ";
@@ -115,11 +116,11 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) {Runway.destRwy.City}, {Runway.destRwy.Country}";
                     overview.Difficulty = "Advanced";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = CelestialNav.GetCelestialDistance() / Parameters.ScenarioAircraftCruiseSpeed * 60;
+                    duration = CelestialNav.GetCelestialDistance() / formData.AircraftCruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{Parameters.ScenarioAircraftTitle}";
+                    overview.Aircraft = $"{formData.AircraftTitle}";
                     overview.Briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
-                    overview.Briefing += $"as you test your navigation skills flying a {Parameters.ScenarioAircraftTitle}.";
+                    overview.Briefing += $"as you test your navigation skills flying a {formData.AircraftTitle}.";
                     overview.Briefing += $" The scenario finishes at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
                     overview.Briefing += $"{Runway.destRwy.City}, {Runway.destRwy.Country}.";
                     overview.Objective = "Navigate using celestial navigation before landing at the destination airport (any runway)";
@@ -131,10 +132,10 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) {Runway.destRwy.City}, {Runway.destRwy.Country}";
                     overview.Difficulty = "Intermediate";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = Wikipedia.WikiDistance / Parameters.ScenarioAircraftCruiseSpeed * 60;
+                    duration = Wikipedia.WikiDistance / formData.AircraftCruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{Parameters.ScenarioAircraftTitle}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {Parameters.ScenarioAircraftTitle}";
+                    overview.Aircraft = $"{formData.AircraftTitle}";
+                    overview.Briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
                     overview.Briefing += " as you navigate from one Wikipedia list location to the next using IFR (I follow roads) ";
                     overview.Briefing += "You'll take off, fly to a series of list locations, ";
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
@@ -151,11 +152,11 @@ namespace P3D_Scenario_Generator
             return overview;
         }
 
-        static private MissionBrief SetMissionBriefStruct(Overview overview)
+        static private MissionBrief SetMissionBriefStruct(Overview overview, ScenarioFormData formData)
         {
             MissionBrief missionBrief = new();
 
-            switch (Parameters.SelectedScenarioType)
+            switch (formData.ScenarioType)
             {
                 case ScenarioTypes.Circuit:
                 case ScenarioTypes.PhotoTour:
@@ -221,11 +222,11 @@ namespace P3D_Scenario_Generator
             return missionBriefHTML;
         }
 
-        static private void CopyFiles()
+        static private void CopyFiles(ScenarioFormData formData)
         {
             // Copy selected aircraft thumbnail imageURL from P3D instal
-            string aircraftImageSource = Parameters.ScenarioAircraftImagePath;
-            string aircraftImageDest = $"{Parameters.SettingsImageFolder}\\Overview_01.jpg";
+            string aircraftImageSource = formData.AircraftImagePath;
+            string aircraftImageDest = $"{formData.ScenarioImageFolder}\\Overview_01.jpg";
             if (File.Exists(aircraftImageSource))
             {
                 File.Copy(aircraftImageSource, aircraftImageDest, true);
@@ -242,26 +243,26 @@ namespace P3D_Scenario_Generator
 
             // Copy style files
             Stream stream = Form.GetResourceStream($"CSS.style_kneeboard.css"); 
-            using (FileStream outputFileStream = new($"{Parameters.SettingsScenarioFolder}\\style_kneeboard.css", FileMode.Create))
+            using (FileStream outputFileStream = new($"{formData.ScenarioFolder}\\style_kneeboard.css", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
             stream.Dispose();
 
             stream = Form.GetResourceStream($"CSS.style_load_flight.css");
-            using (FileStream outputFileStream = new($"{Parameters.SettingsScenarioFolder}\\style_load_flight.css", FileMode.Create))
+            using (FileStream outputFileStream = new($"{formData.ScenarioFolder}\\style_load_flight.css", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
             stream.Dispose();
 
             // Copy sound files
-            if (!Directory.Exists($"{Parameters.SettingsScenarioFolder}\\sound"))
+            if (!Directory.Exists($"{formData.ScenarioFolder}\\sound"))
             {
-                Directory.CreateDirectory($"{Parameters.SettingsScenarioFolder}\\sound");
+                Directory.CreateDirectory($"{formData.ScenarioFolder}\\sound");
             }
             stream = Form.GetResourceStream($"Sounds.ThruHoop.wav");
-            using (FileStream outputFileStream = new($"{Parameters.SettingsScenarioFolder}\\sound\\ThruHoop.wav", FileMode.Create))
+            using (FileStream outputFileStream = new($"{formData.ScenarioFolder}\\sound\\ThruHoop.wav", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
@@ -269,7 +270,7 @@ namespace P3D_Scenario_Generator
 
             // Copy aircraft imageURL used in moving maps
             stream = Form.GetResourceStream($"Images.aircraft.png");
-            using (FileStream outputFileStream = new($"{Parameters.SettingsImageFolder}\\aircraft.png", FileMode.Create))
+            using (FileStream outputFileStream = new($"{formData.ScenarioImageFolder}\\aircraft.png", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
@@ -277,7 +278,7 @@ namespace P3D_Scenario_Generator
 
             // Copy header banner imageURL
             stream = Form.GetResourceStream($"Images.header.png");
-            using (FileStream outputFileStream = new($"{Parameters.SettingsImageFolder}\\header.png", FileMode.Create))
+            using (FileStream outputFileStream = new($"{formData.ScenarioImageFolder}\\header.png", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }

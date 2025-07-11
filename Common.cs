@@ -13,18 +13,18 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Creates "Charts_01.jpg" using a montage of OSM tiles
         /// </summary>
-        static internal void SetOverviewImage()
+        static internal void SetOverviewImage(ScenarioFormData formData)
         {
             List<Tile> tiles = [];      // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
         //    BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
-            int zoom = GetBoundingBoxZoom(tiles, 2, 2);
-            SetOSMtiles(tiles, zoom);
+            int zoom = GetBoundingBoxZoom(tiles, 2, 2, formData);
+            SetOSMtiles(tiles, zoom, formData);
         //    BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
         //    MapTileMontager.MontageTiles(boundingBox, zoom, "Charts_01"); 
-            if (Parameters.SelectedScenarioType != ScenarioTypes.Celestial)
-            {
+        //    if (formData.ScenarioImageFolder != ScenarioTypes.Celestial)
+        //    {
         //        ImageUtils.DrawRoute(tiles, boundingBox, "Charts_01");
-            }
+        //    }
         //    ImageUtils.MakeSquare(boundingBox, "Charts_01", zoom, 2);
         }
 
@@ -36,14 +36,13 @@ namespace P3D_Scenario_Generator
         /// <param name="tilesWidth">Maximum number of tiles allowed for x axis</param>
         /// <param name="tilesHeight">Maximum number of tiles allowed for x axis</param>
         /// <returns>The maximum zoom level that meets constraints</returns>
-        static internal int GetBoundingBoxZoom(List<Tile> tiles, int tilesWidth, int tilesHeight)
+        static internal int GetBoundingBoxZoom(List<Tile> tiles, int tilesWidth, int tilesHeight, ScenarioFormData formData)
         {
-            BoundingBox boundingBox;
             for (int zoom = 2; zoom <= 18; zoom++)
             {
                 tiles.Clear();
-                SetOSMtiles(tiles, zoom);
-                BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
+                SetOSMtiles(tiles, zoom, formData);
+                BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out BoundingBox boundingBox);
                 if ((boundingBox.XAxis.Count > tilesWidth) || (boundingBox.YAxis.Count > tilesHeight))
                 {
                     return zoom - 1;
@@ -60,14 +59,13 @@ namespace P3D_Scenario_Generator
         /// <param name="tilesWidth">Maximum number of tiles allowed for x axis</param>
         /// <param name="tilesHeight">Maximum number of tiles allowed for x axis</param>
         /// <returns>The maximum zoom level that meets constraints</returns>
-        static internal int GetBoundingBoxZoom(List<Tile> tiles, int tilesWidth, int tilesHeight, int startItemIndex, int finishItemIndex)
+        static internal int GetBoundingBoxZoom(List<Tile> tiles, int tilesWidth, int tilesHeight, int startItemIndex, int finishItemIndex, ScenarioFormData formData)
         {
-            BoundingBox boundingBox;
             for (int zoom = 2; zoom <= 18; zoom++)
             {
                 tiles.Clear();
-                SetOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
-                BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
+                SetOSMtiles(tiles, zoom, startItemIndex, finishItemIndex, formData);
+                BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out BoundingBox boundingBox);
                 if ((boundingBox.XAxis.Count > tilesWidth) || (boundingBox.YAxis.Count > tilesHeight))
                 {
                     return zoom - 1;
@@ -82,17 +80,17 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="tiles">List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile</param>
         /// <param name="zoom">The OSM tile zoom level for the boundingBox</param>
-        static internal void SetOSMtiles(List<Tile> tiles, int zoom)
+        static internal void SetOSMtiles(List<Tile> tiles, int zoom, ScenarioFormData formData)
         {
-            if (Parameters.SelectedScenarioType == ScenarioTypes.Circuit)
+            if (formData.ScenarioType == ScenarioTypes.Circuit)
             {
          //       Circuit.SetCircuitOSMtiles(tiles, zoom, 0, Circuit.gates.Count - 1);
             }
-            else if (Parameters.SelectedScenarioType == ScenarioTypes.PhotoTour)
+            else if (formData.ScenarioType == ScenarioTypes.PhotoTour)
             {
         //        PhotoTour.SetPhotoTourOSMtiles(tiles, zoom, 0, PhotoTour.PhotoCount - 1);
             }
-            else if (Parameters.SelectedScenarioType == ScenarioTypes.WikiList)
+            else if (formData.ScenarioType == ScenarioTypes.WikiList)
             {
                 Wikipedia.SetWikiOSMtiles(tiles, zoom, 0, Wikipedia.WikiTour.Count - 1);
             }
@@ -106,17 +104,17 @@ namespace P3D_Scenario_Generator
         /// <param name="zoom">The OSM tile zoom level for the boundingBox</param>
         /// <param name="startItemIndex">Index of start item</param>
         /// <param name="finishItemIndex">Index of finish item</param>
-        static internal void SetOSMtiles(List<Tile> tiles, int zoom, int startItemIndex, int finishItemIndex)
+        static internal void SetOSMtiles(List<Tile> tiles, int zoom, int startItemIndex, int finishItemIndex, ScenarioFormData formData)
         {
-            if (Parameters.SelectedScenarioType == ScenarioTypes.Circuit)
+            if (formData.ScenarioType == ScenarioTypes.Circuit)
             {
         //        Circuit.SetCircuitOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             }
-            else if (Parameters.SelectedScenarioType == ScenarioTypes.PhotoTour)
+            else if (formData.ScenarioType == ScenarioTypes.PhotoTour)
             {
         //        PhotoTour.SetPhotoTourOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             }
-            else if (Parameters.SelectedScenarioType == ScenarioTypes.WikiList)
+            else if (formData.ScenarioType == ScenarioTypes.WikiList)
             {
                 Wikipedia.SetWikiOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
             }
@@ -125,21 +123,21 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Creates "chart_thumb.jpg" using an OSM tile that covers the starting airport
         /// </summary>
-        static internal void SetLocationImage()
+        static internal void SetLocationImage(ScenarioFormData formData)
         {
             List<Tile> tiles = [];      // List of OSM tiles defined by x and y tile numbers plus x and y offsets for coordinate on tile
-            BoundingBox boundingBox;    // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
+                                        // List of x axis and y axis tile numbers that make up montage of tiles to cover set of coords
             int zoom = 15;
-            SetOSMtiles(tiles, zoom, 0, 0);
-            BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
-            MapTileMontager.MontageTiles(boundingBox, zoom, "chart_thumb");
+            SetOSMtiles(tiles, zoom, 0, 0, formData);
+            BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out BoundingBox boundingBox);
+            MapTileMontager.MontageTiles(boundingBox, zoom, "chart_thumb", formData);
             if (boundingBox.XAxis.Count != boundingBox.YAxis.Count)
             {
         //        ImageUtils.MakeSquare(boundingBox, "chart_thumb", zoom, 2);
             }
             if (boundingBox.XAxis.Count == 2)
             {
-                ImageUtils.Resize("chart_thumb.png", 256, 0);
+                ImageUtils.Resize("chart_thumb.png", 256, 0, formData);
             }
         }
 
@@ -148,11 +146,11 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="startItemIndex">Index of start item</param>
         /// <param name="finishItemIndex">Index of finish item</param>
-        static internal void SetAllLegRouteImages(int startItemIndex, int finishItemIndex)
+        static internal void SetAllLegRouteImages(int startItemIndex, int finishItemIndex, ScenarioFormData formData)
         {
             for (int itemNo = startItemIndex; itemNo <= finishItemIndex; itemNo++)
             {
-                SetOneRouteImages(itemNo, itemNo + 1);
+                SetOneRouteImages(itemNo, itemNo + 1, formData);
             }
         }
 
@@ -161,35 +159,34 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="startItemIndex">Index of start item</param>
         /// <param name="finishItemIndex">Index of finish item</param>
-        static internal void SetOneRouteImages(int startItemIndex, int finishItemIndex)
+        static internal void SetOneRouteImages(int startItemIndex, int finishItemIndex, ScenarioFormData formData)
         {
             List<Tile> tiles = [];
-            BoundingBox boundingBox;
-        //    BoundingBox zoomInBoundingBox;
+            //    BoundingBox zoomInBoundingBox;
 
-            int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex);
-            SetOSMtiles(tiles, zoom, startItemIndex, finishItemIndex);
-            BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox);
+            int zoom = GetBoundingBoxZoom(tiles, 2, 2, startItemIndex, finishItemIndex, formData);
+            SetOSMtiles(tiles, zoom, startItemIndex, finishItemIndex, formData);
+            BoundingBoxCalculator.GetBoundingBox(tiles, zoom, out BoundingBox boundingBox);
             int legNo = startItemIndex + 1;
 
             // zoom 1 image
-            MapTileMontager.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1");
-            ImageUtils.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
+            MapTileMontager.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1", formData);
+            ImageUtils.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1", formData);
         //    zoomInBoundingBox = ImageUtils.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Constants.tileFactor);
-            ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg");
+            ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg", formData);
 
             // zoom 2, 3 (and 4) images, zoom 1 is base level for map window size of 512 pixels, zoom 2 is base level for map window of 1024 pixels
             // then there are two additional map images for the higher zoom levels.
             int numberZoomLevels = 2;
-            if (Parameters.CommonMovingMapWindowSize == 1024)
+            if (formData.MapWindowSize == 1024)
                 numberZoomLevels = 3;
             for (int inc = 1; inc <= numberZoomLevels; inc++)
             {
-                SetOSMtiles(tiles, zoom + inc, startItemIndex, finishItemIndex);
+                SetOSMtiles(tiles, zoom + inc, startItemIndex, finishItemIndex, formData);
         //        MapTileMontager.MontageTiles(zoomInBoundingBox, zoom + inc, $"LegRoute_{legNo:00}_zoom{inc + 1}");
         //        ImageUtils.DrawRoute(tiles, zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}");
          //       zoomInBoundingBox = ImageUtils.MakeSquare(zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}", zoom + inc, (int)Math.Pow(2, inc + 1));
-                ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom{inc + 1}", "png", "jpg");
+                ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom{inc + 1}", "png", "jpg", formData);
             }
 
         //    SetLegImageBoundaries(zoomInBoundingBox, zoom + numberZoomLevels + 1);
@@ -201,7 +198,7 @@ namespace P3D_Scenario_Generator
         /// <param name="legNo">Leg numbers run from 0</param>
         /// <param name="boundingBox">The OSM tile numbers for x and y axis that cover the set of coordinates depicted in an image</param>
         /// <param name="zoom">The OSM tile zoom level for the boundingBox</param>
-        static internal void SetLegImageBoundaries(BoundingBox boundingBox, int zoom)
+        static internal void SetLegImageBoundaries(BoundingBox boundingBox, int zoom, ScenarioFormData formData)
         {
             MapEdges legEdges = new();
             Coordinate c;
@@ -217,11 +214,11 @@ namespace P3D_Scenario_Generator
             legEdges.east = c.Longitude;
 
             // Assumes this method called in leg number sequence starting with first leg
-            if (Parameters.SelectedScenarioType == ScenarioTypes.PhotoTour)
+            if (formData.ScenarioType == ScenarioTypes.PhotoTour)
             {
         //        PhotoTour.PhotoTourLegMapEdges.Add(legEdges);
             }
-            else if (Parameters.SelectedScenarioType == ScenarioTypes.WikiList)
+            else if (formData.ScenarioType == ScenarioTypes.WikiList)
             {
                 Wikipedia.WikiLegMapEdges.Add(legEdges); ;
             }

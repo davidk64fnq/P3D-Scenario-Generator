@@ -230,12 +230,12 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="filename">The base filename pattern to match. Files will be deleted if their names start with this filename followed by "_*.png".</param>
         /// <returns><see langword="true"/> if all matched temporary files were successfully deleted; otherwise, <see langword="false"/> if any deletion failed.</returns>
-        static internal bool DeleteTempOSMfiles(string filename)
+        static internal bool DeleteTempOSMfiles(string filename, ScenarioFormData formData)
         {
             bool allDeletedSuccessfully = true; // Assume success initially
 
             // Use Directory.EnumerateFiles for potentially large numbers of files to avoid loading all paths into memory at once.
-            foreach (string f in Directory.EnumerateFiles(Parameters.SettingsImageFolder, $"{filename}_*.png"))
+            foreach (string f in Directory.EnumerateFiles(formData.ScenarioImageFolder, $"{filename}_*.png"))
             {
                 // Use your FileOps.TryDeleteFile method to attempt deletion.
                 // It handles its own error logging and message display.

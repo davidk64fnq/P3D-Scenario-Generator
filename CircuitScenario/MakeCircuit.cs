@@ -20,12 +20,12 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// <summary>
         /// Sets start/destination airports, calculates gate positions, creates overview and location images
         /// </summary>
-        static internal bool SetCircuit()
+        static internal bool SetCircuit(ScenarioFormData formData)
         {
-            Runway.startRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
-            Runway.destRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
+            Runway.startRwy = Runway.Runways[formData.RunwayIndex];
+            Runway.destRwy = Runway.Runways[formData.RunwayIndex];
 
-            if (!CircuitGates.SetCircuitGates(gates))
+            if (!CircuitGates.SetCircuitGates(gates, formData))
             {
                 Log.Error("Failed to set gates during circuit setup.");
                 return false;
@@ -34,13 +34,13 @@ namespace P3D_Scenario_Generator.CircuitScenario
             SetCircuitAirport(gates);
 
             bool drawRoute = true;
-            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute))
+            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute, formData))
             {
                 Log.Error("Failed to create overview image during circuit setup.");
                 return false;
             }
 
-            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords()))
+            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(), formData))
             {
                 Log.Error("Failed to create location image during circuit setup.");
                 return false;

@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using CoordinateSharp;
+using Microsoft.Win32;
 using MS.WindowsAPICodePack.Internal;
 using P3D_Scenario_Generator.CelestialScenario;
 using P3D_Scenario_Generator.CircuitScenario;
@@ -9,6 +10,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Windows.Forms;
 
@@ -16,7 +18,6 @@ namespace P3D_Scenario_Generator
 {
     public partial class Form : System.Windows.Forms.Form
     {
-        internal static readonly Form form = (Form)Application.OpenForms[0];
         private readonly IProgress<string> _progressReporter;
         private ScenarioTypes _selectedScenarioType = ScenarioTypes.Circuit;
         private readonly ScenarioFormData _formData;
@@ -120,98 +121,69 @@ namespace P3D_Scenario_Generator
 
         private void ButtonGenerateScenario_Click(object sender, EventArgs e)
         {
-            if (GetValidatedScenarioFormData(_formData, _progressReporter) && Parameters.SetParams(_formData))
+            if (GetValidatedScenarioFormData())
             {
-                DisplayStartMessage(_progressReporter);
+                DisplayStartMessage();
                 CheckRunwaysXMLupToDate();
                 Runway.SetRunwaysSubset();
                 SaveUserSettings(TabPageSettings.Controls);
-                ImageUtils.DrawScenarioImages();
+                ImageUtils.DrawScenarioImages(_formData);
                 DoScenarioSpecificTasks();
-                ScenarioFXML.GenerateFXMLfile();
-                ScenarioHTML.GenerateHTMLfiles();
-                ScenarioXML.GenerateXMLfile();
-                DisplayFinishMessage(_progressReporter);
+                ScenarioFXML.GenerateFXMLfile(_formData);
+                ScenarioHTML.GenerateHTMLfiles(_formData);
+                ScenarioXML.GenerateXMLfile(_formData);
+                DisplayFinishMessage();
             }
         }
 
-        private static void DisplayStartMessage(IProgress<string> progressReporter = null)
+        private void DisplayStartMessage()
         {
             Cursor.Current = Cursors.WaitCursor;
-            string message = $"Creating scenario files in \"{Parameters.SettingsScenarioFolder}\" - will confirm when complete";
-            progressReporter?.Report(message);
+            string message = $"Creating scenario files in \"{_formData.ScenarioFolderBase}\" - will confirm when complete";
+            _progressReporter?.Report(message);
         }
 
         private void DoScenarioSpecificTasks()
         {
             if (_selectedScenarioType == ScenarioTypes.Circuit)
             {
-                MakeCircuit.SetCircuit();
+                MakeCircuit.SetCircuit(_formData);
                 SaveUserSettings(TabPageCircuit.Controls);
             }
             else if (_selectedScenarioType == ScenarioTypes.PhotoTour)
             {
-                PhotoTour.SetPhotoTour();
+                PhotoTour.SetPhotoTour(_formData);
                 SaveUserSettings(TabPagePhotoTour.Controls);
             }
             else if (_selectedScenarioType == ScenarioTypes.SignWriting)
             {
-                SignWriting.SetSignWriting();
+                SignWriting.SetSignWriting(_formData);
                 SaveUserSettings(TabPageSign.Controls);
             }
             else if (_selectedScenarioType == ScenarioTypes.Celestial)
             {
-                if (CelestialNav.SetCelestial())
+                if (CelestialNav.SetCelestial(_formData))
                     SaveUserSettings(TabPageWikiList.Controls);
             }
             else if (_selectedScenarioType == ScenarioTypes.WikiList)
             {
                 Wikipedia.SetWikiTour(ComboBoxWikiTableNames.SelectedIndex, ComboBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem,
-                    ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text);
+                    ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text, _formData);
                 SaveUserSettings(TabPageWikiList.Controls);
                 ClearWikiListSettingsFields();
             }
             else
             {
-                Runway.startRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
-                Runway.destRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
+                Runway.startRwy = Runway.Runways[_formData.RunwayIndex];
+                Runway.destRwy = Runway.Runways[_formData.RunwayIndex];
             }
         }
 
-        private static void DisplayFinishMessage(IProgress<string> progressReporter = null)
+        private void DisplayFinishMessage()
         {
             Cursor.Current = Cursors.Default;
-            string message = $"Scenario files created in \"{Parameters.SettingsScenarioFolder}\" - enjoy your flight!";
-            progressReporter?.Report(message);
-        }
-
-        /// <summary>
-        /// Handles the Click event for the ButtonBrowseScenarioFolder.
-        /// Opens a FolderBrowserDialog to allow the user to select a scenario output folder,
-        /// populates the TextBoxSettingsScenarioFolderBase, and performs immediate validation.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">An EventArgs that contains the event data.</param>
-        private void ButtonBrowseScenarioFolder_Click(object sender, EventArgs e)
-        {
-            using FolderBrowserDialog folderBrowserDialog = new();
-            // Set the initial selected path to the current value in the textbox if it's a valid directory
-            if (Directory.Exists(form.TextBoxSettingsScenarioFolderBase.Text))
-            {
-                folderBrowserDialog.SelectedPath = form.TextBoxSettingsScenarioFolderBase.Text;
-            }
-            else
-            {
-                // Optionally, set a default starting path if the current one is invalid
-                // e.g., Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            }
-
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-            {
-                form.TextBoxSettingsScenarioFolderBase.Text = folderBrowserDialog.SelectedPath;
-                // Trigger immediate validation after selection
-                ValidateScenarioFolderBase(_formData);
-            }
+            string message = $"Scenario files created in \"{_formData.ScenarioFolderBase}\" - enjoy your flight!";
+            _progressReporter?.Report(message);
         }
 
         internal void SetScenarioTypesComboBox()
@@ -365,15 +337,7 @@ namespace P3D_Scenario_Generator
 
         private void TextBoxGeneralAircraftValues_MouseEnter(object sender, EventArgs e)
         {
-            TextBox tb = (TextBox)sender;
-            if (TextRenderer.MeasureText(tb.Text, tb.Font).Width > tb.ClientSize.Width)
-            {
-                toolTip1.SetToolTip(tb, tb.Text);
-            }
-            else
-            {
-                toolTip1.SetToolTip(tb, "");
-            }
+            TextBoxMouseEnterExpandTooltip(sender, e);
         }
 
         #endregion
@@ -448,17 +412,7 @@ namespace P3D_Scenario_Generator
 
         private void TextBoxGeneralLocationFilters_MouseEnter(object sender, EventArgs e)
         {
-            TextBox tb = (TextBox)sender;
-            // Simple check for truncation (you might need a more robust one)
-            if (TextRenderer.MeasureText(tb.Text, tb.Font).Width > tb.ClientSize.Width)
-            {
-                toolTip1.SetToolTip(tb, tb.Text);
-            }
-            else
-            {
-                // If not truncated, ensure no tooltip or set a default empty one
-                toolTip1.SetToolTip(tb, "");
-            }
+            TextBoxMouseEnterExpandTooltip(sender, e);
         }
 
         /// <summary>
@@ -568,7 +522,7 @@ namespace P3D_Scenario_Generator
             const double minUpwindLeg = 0.0;
             const double maxUpwindLeg = Constants.EarthCircumferenceMiles;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitUpwind.Text,
+                TextBoxCircuitUpwind.Text,
                 "Circuit Upwind Leg",
                 minUpwindLeg,
                 maxUpwindLeg,
@@ -576,12 +530,13 @@ namespace P3D_Scenario_Generator
                 out string validationMessage,
                 "miles"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitUpwind, validationMessage);
+                errorProvider1.SetError(TextBoxCircuitUpwind, validationMessage);
                 _progressReporter?.Report(validationMessage);
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitUpwind, "");
+                errorProvider1.SetError(TextBoxCircuitUpwind, "");
+                _progressReporter?.Report("");
             }
         }
 
@@ -600,7 +555,7 @@ namespace P3D_Scenario_Generator
             const double minBaseLeg = Constants.MinCircuitGateSeparation;
             const double maxBaseLeg = Constants.EarthCircumferenceMiles;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitBase.Text,
+                TextBoxCircuitBase.Text,
                 "Circuit Base Leg",
                 minBaseLeg,
                 maxBaseLeg,
@@ -608,12 +563,13 @@ namespace P3D_Scenario_Generator
                 out string validationMessage,
                 "miles"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitBase, validationMessage);
+                errorProvider1.SetError(TextBoxCircuitBase, validationMessage);
                 _progressReporter?.Report(validationMessage);
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitBase, "");
+                errorProvider1.SetError(TextBoxCircuitBase, "");
+                _progressReporter?.Report("");
             }
         }
 
@@ -632,7 +588,7 @@ namespace P3D_Scenario_Generator
             const double minFinalLeg = 0.0;
             const double maxFinalLeg = Constants.EarthCircumferenceMiles;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitFinal.Text,
+                TextBoxCircuitFinal.Text,
                 "Circuit Final Leg",
                 minFinalLeg,
                 maxFinalLeg,
@@ -640,12 +596,13 @@ namespace P3D_Scenario_Generator
                 out string validationMessage,
                 "miles"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitFinal, validationMessage);
+                errorProvider1.SetError(TextBoxCircuitFinal, validationMessage);
                 _progressReporter?.Report(validationMessage);
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitFinal, "");
+                errorProvider1.SetError(TextBoxCircuitFinal, "");
+                _progressReporter?.Report("");
             }
         }
 
@@ -664,7 +621,7 @@ namespace P3D_Scenario_Generator
             const double minHeightUpwind = 0.0;
             const double maxHeightUpwind = Constants.MaxCircuitGateHeight;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitHeightUpwind.Text,
+                TextBoxCircuitHeightUpwind.Text,
                 "Circuit Height Upwind Leg",
                 minHeightUpwind,
                 maxHeightUpwind,
@@ -672,12 +629,13 @@ namespace P3D_Scenario_Generator
                 out string validationMessage,
                 "feet"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightUpwind, validationMessage);
+                errorProvider1.SetError(TextBoxCircuitHeightUpwind, validationMessage);
                 _progressReporter?.Report(validationMessage);
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightUpwind, "");
+                errorProvider1.SetError(TextBoxCircuitHeightUpwind, "");
+                _progressReporter?.Report("");
             }
         }
 
@@ -696,7 +654,7 @@ namespace P3D_Scenario_Generator
             const double minHeightDown = 0.0;
             const double maxHeightDown = Constants.MaxCircuitGateHeight;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitHeightDown.Text,
+                TextBoxCircuitHeightDown.Text,
                 "Circuit Height Down Leg",
                 minHeightDown,
                 maxHeightDown,
@@ -704,12 +662,13 @@ namespace P3D_Scenario_Generator
                 out string validationMessage,
                 "feet"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightDown, validationMessage);
+                errorProvider1.SetError(TextBoxCircuitHeightDown, validationMessage);
                 _progressReporter?.Report(validationMessage);
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightDown, "");
+                errorProvider1.SetError(TextBoxCircuitHeightDown, "");
+                _progressReporter?.Report("");
             }
         }
 
@@ -728,7 +687,7 @@ namespace P3D_Scenario_Generator
             const double minHeightBase = 0.0;
             const double maxHeightBase = Constants.MaxCircuitGateHeight;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitHeightBase.Text,
+                TextBoxCircuitHeightBase.Text,
                 "Circuit Height Base Leg",
                 minHeightBase,
                 maxHeightBase,
@@ -736,12 +695,13 @@ namespace P3D_Scenario_Generator
                 out string validationMessage,
                 "feet"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightBase, validationMessage);
+                errorProvider1.SetError(TextBoxCircuitHeightBase, validationMessage);
                 _progressReporter?.Report(validationMessage);
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightBase, "");
+                errorProvider1.SetError(TextBoxCircuitHeightBase, "");
+                _progressReporter?.Report("");
             }
         }
 
@@ -760,7 +720,7 @@ namespace P3D_Scenario_Generator
             const double minCircuitSpeed = 0.0;
             const double maxCircuitSpeed = Constants.PracticalMaxSpeed;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitSpeed.Text,
+                TextBoxCircuitSpeed.Text,
                 "Circuit Speed",
                 minCircuitSpeed,
                 maxCircuitSpeed,
@@ -768,12 +728,13 @@ namespace P3D_Scenario_Generator
                 out string validationMessage,
                 "knots"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitSpeed, validationMessage);
+                errorProvider1.SetError(TextBoxCircuitSpeed, validationMessage);
                 _progressReporter?.Report(validationMessage);
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitSpeed, "");
+                errorProvider1.SetError(TextBoxCircuitSpeed, "");
+                _progressReporter?.Report("");
             }
         }
 
@@ -792,7 +753,7 @@ namespace P3D_Scenario_Generator
             const double minTurnRate = Constants.MinTurnTime360DegreesMinutes;
             const double maxTurnRate = Constants.MaxTurnTime360DegreesMinutes;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitTurnRate.Text,
+                TextBoxCircuitTurnRate.Text,
                 "Circuit Turn Rate",
                 minTurnRate,
                 maxTurnRate,
@@ -800,12 +761,13 @@ namespace P3D_Scenario_Generator
                 out string validationMessage,
                 "minutes"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitTurnRate, validationMessage);
+                errorProvider1.SetError(TextBoxCircuitTurnRate, validationMessage);
                 _progressReporter?.Report(validationMessage);
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitTurnRate, "");
+                errorProvider1.SetError(TextBoxCircuitTurnRate, "");
+                _progressReporter?.Report("");
             }
         }
 
@@ -868,7 +830,7 @@ namespace P3D_Scenario_Generator
             }
 
             // In case user clicks Generate Scenario button not having selected scenario type on general tab first
-            Parameters.SelectedScenarioType = ScenarioTypes.WikiList;
+            _formData.ScenarioType = ScenarioTypes.WikiList;
 
             _progressReporter.Report($"Reading {wikiUrlText} and column {columnNumberText}, please wait...");
             Enabled = false; // Disable entire form to prevent further interaction
@@ -880,6 +842,7 @@ namespace P3D_Scenario_Generator
                     return WikiPageHtmlParser.PopulateWikiPage(
                         selectedWikiUrl,
                         columnNo,
+                        _formData,
                         _progressReporter
                     );
                 });
@@ -1006,27 +969,98 @@ namespace P3D_Scenario_Generator
 
         #region Settings Tab
 
-        /// <summary>
-        /// Handles the Leave event for the TextBoxSettingsOSMServerAPIkey control.
-        /// This provides immediate validation feedback when the user leaves the textbox.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">An EventArgs that contains the event data.</param>
         private void TextBoxSettingsOSMServerAPIkey_Leave(object sender, EventArgs e)
         {
-            ValidateOSMServerAPIkeyField(_formData);
+            ValidateOSMServerAPIkeyField();
+        }
+
+        private void TextBoxSettingsP3DprogramInstall_MouseEnter(object sender, EventArgs e)
+        {
+            TextBoxMouseEnterExpandTooltip(sender, e);
+        }
+
+        private void TextBoxSettingsP3DprogramData_MouseEnter(object sender, EventArgs e)
+        {
+            TextBoxMouseEnterExpandTooltip(sender, e);
+        }
+
+        private void TextBoxSettingsScenarioFolderBase_MouseEnter(object sender, EventArgs e)
+        {
+            TextBoxMouseEnterExpandTooltip(sender, e);
+        }
+
+        private void ComboBoxSettingsSimulatorVersion_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ValidateComboBoxSettingsSimulatorVersion();
         }
 
         /// <summary>
-        /// Handles the Leave event for the TextBoxSettingsScenarioFolderBase control.
-        /// This provides a fallback validation if the user manually types a path and leaves the textbox.
+        /// Handles the Click event for the ButtonBrowseScenarioFolder.
+        /// Opens a FolderBrowserDialog to allow the user to select a scenario output folder,
+        /// populates the TextBoxSettingsScenarioFolderBase, and performs immediate validation.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An EventArgs that contains the event data.</param>
-        private void TextBoxSettingsScenarioFolderBase_Leave(object sender, EventArgs e)
+        private void ButtonBrowseScenarioFolder_Click(object sender, EventArgs e)
         {
-            // Re-validate when the user leaves the text box, in case they typed manually.
-            ValidateScenarioFolderBase(_formData);
+            using FolderBrowserDialog folderBrowserDialog = new();
+            // Set the initial selected path to the current value in the textbox if it's a valid directory
+            if (Directory.Exists(TextBoxSettingsScenarioFolderBase.Text))
+            {
+                folderBrowserDialog.SelectedPath = TextBoxSettingsScenarioFolderBase.Text;
+            }
+
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                TextBoxSettingsScenarioFolderBase.Text = folderBrowserDialog.SelectedPath;
+                ValidateScenarioFolderBase();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event for the ButtonBrowseP3DInstallFolder.
+        /// Opens a FolderBrowserDialog to allow the user to select the P3D install folder,
+        /// populates the TextBoxSettingsP3DprogramInstall, and performs immediate validation.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An EventArgs that contains the event data.</param>
+        private void ButtonBrowseP3DInstallFolder_Click(object sender, EventArgs e)
+        {
+            using FolderBrowserDialog folderBrowserDialog = new();
+            // Set the initial selected path to the current value in the textbox if it's a valid directory
+            if (Directory.Exists(TextBoxSettingsP3DprogramInstall.Text))
+            {
+                folderBrowserDialog.SelectedPath = TextBoxSettingsP3DprogramInstall.Text;
+            }
+
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                TextBoxSettingsP3DprogramInstall.Text = folderBrowserDialog.SelectedPath;
+                ValidateP3DInstallFolder();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event for the ButtonBrowseP3DDataFolder.
+        /// Opens a FolderBrowserDialog to allow the user to select the P3D data folder,
+        /// populates the TextBoxSettingsP3DprogramData, and performs immediate validation.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An EventArgs that contains the event data.</param>
+        private void ButtonBrowseP3DDataFolder_Click(object sender, EventArgs e)
+        {
+            using FolderBrowserDialog folderBrowserDialog = new();
+            // Set the initial selected path to the current value in the textbox if it's a valid directory
+            if (Directory.Exists(TextBoxSettingsP3DprogramData.Text))
+            {
+                folderBrowserDialog.SelectedPath = TextBoxSettingsP3DprogramData.Text;
+            }
+
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                TextBoxSettingsP3DprogramData.Text = folderBrowserDialog.SelectedPath;
+                ValidateP3DDataFolder();
+            }
         }
 
         #endregion
@@ -1148,10 +1182,10 @@ namespace P3D_Scenario_Generator
         /// on subsequent program runs until the user has addressed the underlying issue
         /// by recreating the runways.xml file.
         /// </remarks>
-        internal static void CheckRunwaysXMLupToDate()
+        internal void CheckRunwaysXMLupToDate()
         {
             string xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "runways.xml");
-            string sceneryCFGdirectory = Parameters.SettingsP3DprogramData + Parameters.SettingsSimulatorVersion;
+            string sceneryCFGdirectory = _formData.P3DProgramData;
             string sceneryCFGfilePath = Path.Combine(sceneryCFGdirectory, "scenery.cfg");
 
             try
@@ -1473,73 +1507,14 @@ namespace P3D_Scenario_Generator
                 return;
 
             // Do any custom checks
-            if (parameterTokens.Length > 2)
-            {
-                for (int index = 2; index < parameterTokens.Length; index += 2)
-                {
-                    if (!TextboxComparison(parameterTokens[index].Trim(), parameterTokens[index + 1].Trim(), ((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
-                        return;
-                }
-            }
-        }
-
-        private static bool TextboxComparison(string operatorToken, string comparedAgainstToken, string comparedToToken, string title, CancelEventArgs e)
-        {
-            // Get the value to be compared against, either a numeric value or the name of a textbox containing a numeric value
-            double comparedAgainstDouble;
-            string comparedAgainstString = "";
-            string accessibleName = "";
-            try
-            {
-                comparedAgainstDouble = Convert.ToDouble(comparedAgainstToken);
-            }
-            catch
-            {
-                GetFormTextField(form.Controls, comparedAgainstToken, ref comparedAgainstString, ref accessibleName);
-                comparedAgainstDouble = Convert.ToDouble(comparedAgainstString);
-            }
-
-            // Get the value to be compared
-            double comparedToDouble = Convert.ToDouble(comparedToToken);
-
-
-            // Do comparison
-            accessibleName = string.IsNullOrEmpty(accessibleName) ? comparedAgainstDouble.ToString() : accessibleName;
-            switch (operatorToken)
-            {
-                case "<":
-                    if (comparedToDouble >= comparedAgainstDouble)
-                    {
-                        DisplayParameterValidationMsg($"Value must be less than {accessibleName}", title, e);
-                        return false;
-                    }
-                    break;
-                case "<=":
-                    if (comparedToDouble > comparedAgainstDouble)
-                    {
-                        DisplayParameterValidationMsg($"Value must be less than or equal to {accessibleName}", title, e);
-                        return false;
-                    }
-                    break;
-                case ">":
-                    if (comparedToDouble <= comparedAgainstDouble)
-                    {
-                        DisplayParameterValidationMsg($"Value must be greater than {accessibleName}", title, e);
-                        return false;
-                    }
-                    break;
-                case ">=":
-                    if (comparedToDouble < comparedAgainstDouble)
-                    {
-                        DisplayParameterValidationMsg($"Value must be greater than or equal to {accessibleName}", title, e);
-                        return false;
-                    }
-                    break;
-                default:
-                    DisplayParameterValidationMsg($"Developer has incorrectly set tag field of textbox control!", title, e);
-                    return false;
-            }
-            return true;
+         //   if (parameterTokens.Length > 2)
+         //   {
+         //       for (int index = 2; index < parameterTokens.Length; index += 2)
+         //       {
+                //    if (!TextboxComparison(parameterTokens[index].Trim(), parameterTokens[index + 1].Trim(), ((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+        //                return;
+         //       }
+         //   }
         }
 
         private static bool TextboxIsDouble(string text, string title, CancelEventArgs e)
@@ -1665,6 +1640,28 @@ namespace P3D_Scenario_Generator
             SaveUserSettings(TabPageSettings.Controls);
         }
 
+        /// <summary>
+        /// Handles the MouseEnter event for a TextBox. Checks if the text content of the TextBox is truncated
+        /// and displays a tooltip containing the full text if truncation is detected.
+        /// If the text is not truncated, the tooltip is cleared.
+        /// </summary>
+        /// <param name="sender">The source of the event, expected to be a TextBox control.</param>
+        /// <param name="e">The EventArgs instance containing the event data.</param>
+        private void TextBoxMouseEnterExpandTooltip(object sender, EventArgs e)
+        {
+            TextBox tb = (TextBox)sender;
+            // Simple check for truncation (you might need a more robust one)
+            if (TextRenderer.MeasureText(tb.Text, tb.Font).Width > tb.ClientSize.Width)
+            {
+                toolTip1.SetToolTip(tb, tb.Text);
+            }
+            else
+            {
+                // If not truncated, ensure no tooltip or set a default empty one
+                toolTip1.SetToolTip(tb, "");
+            }
+        }
+
         #endregion
 
         #region Populate ScenarioFormData
@@ -1674,48 +1671,52 @@ namespace P3D_Scenario_Generator
         /// This method ensures a specific order of validation due to dependencies between tabs (e.g., General tab's
         /// scenario title validation depends on the Settings tab's scenario folder base path).
         /// </summary>
-        /// <param name="formData">The DTO to populate and validate.</param>
-        /// <param name="progressReporter">The progress reporter for error messages.</param>
         /// <returns>True if all user input across all relevant tabs is valid; otherwise, false.</returns>
-        private bool GetValidatedScenarioFormData(ScenarioFormData formData, IProgress<string> progressReporter)
+        private bool GetValidatedScenarioFormData()
         {
             errorProvider1.Clear();
             bool allValid = true;
 
             // 1. Settings Tab Data - Validate first as other tabs might depend on these settings.
-            if (!PopulateAndValidateSettingsTabData(formData, progressReporter))
+            if (!PopulateAndValidateSettingsTabData())
             {
                 allValid = false;
             }
 
-            // 2. General Tab Data - Only proceed if settings data (and thus 'allValid') is still true.
-            if (!PopulateAndValidateGeneralTabData(formData, progressReporter, Aircraft.GetCurrentVariant()))
+            // 2. General Tab Data 
+            if (!PopulateAndValidateGeneralTabData(Aircraft.GetCurrentVariant()))
             {
                 allValid = false;
             }
 
-            // 3. Circuit Tab Data - Only proceed if previous validations (and thus 'allValid') are still true.
-            if (!PopulateAndValidateCircuitTabData(formData, progressReporter))
+            // Derived fields based on General and/or Settings tab data
+            if (allValid)
+            {
+                // Scenario folder path based on the scenario folder base path
+                _formData.ScenarioFolder = Path.Combine(_formData.ScenarioFolderBase, _formData.ScenarioTitle);
+
+                // Scenario image folder path based on the scenario folder path
+                _formData.ScenarioImageFolder = Path.Combine(_formData.ScenarioFolder, "Images");
+
+                // Season based on DatePickerValue
+                var persianMonth = new PersianCalendar().GetMonth(_formData.DatePickerValue);
+                _formData.Season = (Season)Math.Ceiling(persianMonth / 3.0);
+            }
+
+            // 3. Circuit Tab Data 
+            if (!PopulateAndValidateCircuitTabData())
             {
                 allValid = false;
             }
-
-            // TODO: Add calls to other tab validation methods here, following the 'if (!...)' pattern.
-            // Example:
-            // if (!PopulateAndValidateCelestialTabData(formData, progressReporter))
-            // {
-            //     allValid = false;
-            // }
-
 
             if (!allValid)
             {
-                progressReporter?.Report("Please correct the highlighted errors on all relevant tabs. Hover over error icon(s) for details.");
+                _progressReporter?.Report("Please correct the highlighted errors on all relevant tabs. Hover over error icon(s) for details.");
                 return false;
             }
             else
             {
-                progressReporter?.Report("Scenario data validated successfully.");
+                _progressReporter?.Report("Scenario data validated successfully.");
             }
 
             return true;
@@ -1724,137 +1725,110 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Populates and validates data from the Settings tab.
         /// </summary>
-        /// <param name="formData">The DTO to populate.</param>
-        /// <param name="progressReporter">The progress reporter for error messages.</param>
         /// <returns>True if all Settings tab data is valid; otherwise, false.</returns>
-        private bool PopulateAndValidateSettingsTabData(ScenarioFormData formData, IProgress<string> progressReporter)
+        private bool PopulateAndValidateSettingsTabData()
         {
             bool allValid = true;
 
             // Validate and populate CacheServerAPIkey
-            if (!ValidateOSMServerAPIkeyField(formData))
-            {
-                allValid = false;
-            }
+            allValid &= ValidateOSMServerAPIkeyField();
+
+            // Validate the populate Simulator Version
+            allValid &= ValidateComboBoxSettingsSimulatorVersion();
+
+            // Validate and populate P3DInstallFolder
+            allValid &= ValidateP3DInstallFolder();
+
+            // Validate and populate P3DDataFolder
+            allValid &= ValidateP3DDataFolder();
 
             // Validate and populate ScenarioFolderBase
-            if (!ValidateScenarioFolderBase(formData))
-            {
-                allValid = false;
-            }
-
-            // Validate the Simulator Version
-            if (!ValidateComboBoxSettingsSimulatorVersion(formData))
-            {
-                allValid = false;
-            }
-
-            // Validate and populate P3DProgramData
-            string p3dProgramData = form.TextBoxSettingsP3DprogramData.Text.Trim(); // Corrected field name
-            if (string.IsNullOrEmpty(p3dProgramData))
-            {
-                string message = "P3D Program Data path cannot be empty.";
-                errorProvider1.SetError(form.TextBoxSettingsP3DprogramData, message);
-                progressReporter?.Report(message);
-                allValid = false;
-            }
-            else if (!Directory.Exists(p3dProgramData))
-            {
-                string message = $"P3D Program Data path does not exist: '{p3dProgramData}'. Please ensure the directory exists.";
-                errorProvider1.SetError(form.TextBoxSettingsP3DprogramData, message);
-                progressReporter?.Report(message);
-                allValid = false;
-            }
-            else
-            {
-                errorProvider1.SetError(form.TextBoxSettingsP3DprogramData, "");
-                formData.P3DProgramData = p3dProgramData;
-            }
+            allValid &= ValidateScenarioFolderBase();
 
             // Validate and populate Map Window settings
             // TextBoxSettingsMapMonitorNumber
-            if (!int.TryParse(form.TextBoxSettingsMapMonitorNumber.Text, out int mapMonitorNumber) || mapMonitorNumber < 0)
+            if (!int.TryParse(TextBoxSettingsMapMonitorNumber.Text, out int mapMonitorNumber) || mapMonitorNumber < 0)
             {
                 string message = "Map Monitor Number must be a non-negative whole number.";
-                errorProvider1.SetError(form.TextBoxSettingsMapMonitorNumber, message);
-                progressReporter?.Report(message);
+                errorProvider1.SetError(TextBoxSettingsMapMonitorNumber, message);
+                _progressReporter?.Report(message);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxSettingsMapMonitorNumber, "");
-                formData.MapMonitorNumber = mapMonitorNumber; // Assuming formData has this property
+                errorProvider1.SetError(TextBoxSettingsMapMonitorNumber, "");
+                _formData.MapMonitorNumber = mapMonitorNumber; // Assuming formData has this property
             }
 
             // TextBoxSettingsMapOffset
-            if (!int.TryParse(form.TextBoxSettingsMapOffset.Text, out int mapOffset) || mapOffset < 0)
+            if (!int.TryParse(TextBoxSettingsMapOffset.Text, out int mapOffset) || mapOffset < 0)
             {
                 string message = "Map Offset must be a non-negative whole number.";
-                errorProvider1.SetError(form.TextBoxSettingsMapOffset, message);
-                progressReporter?.Report(message);
+                errorProvider1.SetError(TextBoxSettingsMapOffset, message);
+                _progressReporter?.Report(message);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxSettingsMapOffset, "");
-                formData.MapOffset = mapOffset; // Assuming formData has this property
+                errorProvider1.SetError(TextBoxSettingsMapOffset, "");
+                _formData.MapOffset = mapOffset; // Assuming formData has this property
             }
 
             // ComboBoxSettingsMapAlignment
-            string mapAlignment = form.ComboBoxSettingsMapAlignment.Text.Trim();
+            string mapAlignment = ComboBoxSettingsMapAlignment.Text.Trim();
             if (string.IsNullOrEmpty(mapAlignment))
             {
                 string message = "Map Alignment cannot be empty.";
-                errorProvider1.SetError(form.ComboBoxSettingsMapAlignment, message);
-                progressReporter?.Report(message);
+                errorProvider1.SetError(ComboBoxSettingsMapAlignment, message);
+                _progressReporter?.Report(message);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.ComboBoxSettingsMapAlignment, "");
-                formData.MapAlignment = mapAlignment; // Assuming formData has this property
+                errorProvider1.SetError(ComboBoxSettingsMapAlignment, "");
+                _formData.MapAlignment = mapAlignment; // Assuming formData has this property
             }
 
             // TextBoxSettingsMapMonitorWidth
-            if (!int.TryParse(form.TextBoxSettingsMapMonitorWidth.Text, out int mapMonitorWidth) || mapMonitorWidth <= 0)
+            if (!int.TryParse(TextBoxSettingsMapMonitorWidth.Text, out int mapMonitorWidth) || mapMonitorWidth <= 0)
             {
                 string message = "Map Monitor Width must be a positive whole number.";
-                errorProvider1.SetError(form.TextBoxSettingsMapMonitorWidth, message);
-                progressReporter?.Report(message);
+                errorProvider1.SetError(TextBoxSettingsMapMonitorWidth, message);
+                _progressReporter?.Report(message);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxSettingsMapMonitorWidth, "");
-                formData.MapMonitorWidth = mapMonitorWidth; // Assuming formData has this property
+                errorProvider1.SetError(TextBoxSettingsMapMonitorWidth, "");
+                _formData.MapMonitorWidth = mapMonitorWidth; // Assuming formData has this property
             }
 
             // TextBoxSettingsMapMonitorHeight
-            if (!int.TryParse(form.TextBoxSettingsMapMonitorHeight.Text, out int mapMonitorHeight) || mapMonitorHeight <= 0)
+            if (!int.TryParse(TextBoxSettingsMapMonitorHeight.Text, out int mapMonitorHeight) || mapMonitorHeight <= 0)
             {
                 string message = "Map Monitor Height must be a positive whole number.";
-                errorProvider1.SetError(form.TextBoxSettingsMapMonitorHeight, message);
-                progressReporter?.Report(message);
+                errorProvider1.SetError(TextBoxSettingsMapMonitorHeight, message);
+                _progressReporter?.Report(message);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxSettingsMapMonitorHeight, "");
-                formData.MapMonitorHeight = mapMonitorHeight; // Assuming formData has this property
+                errorProvider1.SetError(TextBoxSettingsMapMonitorHeight, "");
+                _formData.MapMonitorHeight = mapMonitorHeight; // Assuming formData has this property
             }
 
             // ComboBoxSettingsMapWindowSize
-            if (!int.TryParse(form.ComboBoxSettingsMapWindowSize.Text, out int mapWindowSize) || (mapWindowSize != 512 && mapWindowSize != 1024))
+            if (!int.TryParse(ComboBoxSettingsMapWindowSize.Text, out int mapWindowSize) || (mapWindowSize != 512 && mapWindowSize != 1024))
             {
                 string message = "Map Window Size must be either 512 or 1024.";
-                errorProvider1.SetError(form.ComboBoxSettingsMapWindowSize, message);
-                progressReporter?.Report(message);
+                errorProvider1.SetError(ComboBoxSettingsMapWindowSize, message);
+                _progressReporter?.Report(message);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.ComboBoxSettingsMapWindowSize, "");
-                formData.MapWindowSize = mapWindowSize; // Assuming formData has this property
+                errorProvider1.SetError(ComboBoxSettingsMapWindowSize, "");
+                _formData.MapWindowSize = mapWindowSize; // Assuming formData has this property
             }
 
             return allValid;
@@ -1864,17 +1838,16 @@ namespace P3D_Scenario_Generator
         /// Validates the OSM Server API Key field and populates the <see cref="ScenarioFormData.CacheServerAPIkey"/> property.
         /// Sets an error message via <see cref="ErrorProvider"/> and reports progress if validation fails.
         /// </summary>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> object to populate with the validated API key.</param>
         /// <returns><see langword="true"/> if the API key is valid; otherwise, <see langword="false"/>.</returns>
-        private bool ValidateOSMServerAPIkeyField(ScenarioFormData formData)
+        private bool ValidateOSMServerAPIkeyField()
         {
             bool isValid = true;
-            string apiKey = form.TextBoxSettingsOSMServerAPIkey.Text.Trim();
+            string apiKey = TextBoxSettingsOSMServerAPIkey.Text.Trim();
             string message = string.Empty;
 
             if (string.IsNullOrEmpty(apiKey))
             {
-                message = "OSM Server API Key cannot be empty.";
+                message = "OSM Server API Key cannot be empty. Check documentation for details on registering for a free key";
                 isValid = false;
             }
             else
@@ -1892,15 +1865,131 @@ namespace P3D_Scenario_Generator
 
             if (!isValid)
             {
-                errorProvider1.SetError(form.TextBoxSettingsOSMServerAPIkey, message);
+                errorProvider1.SetError(TextBoxSettingsOSMServerAPIkey, message);
                 _progressReporter?.Report(message);
             }
             else
             {
                 // Clear previous error for API key
-                errorProvider1.SetError(form.TextBoxSettingsOSMServerAPIkey, "");
+                errorProvider1.SetError(TextBoxSettingsOSMServerAPIkey, "");
                 _progressReporter?.Report("OSM Server API Key looks valid.");
-                formData.CacheServerAPIkey = apiKey;
+                _formData.CacheServerAPIkey = apiKey;
+            }
+
+            return isValid;
+        }
+
+        /// <summary>
+        /// Validates the selected Simulator Version from the ComboBox and populates the <see cref="ScenarioFormData.SimulatorVersion"/> property.
+        /// Checks for the corresponding Prepar3D registry key, retrieves the installation and program data paths, and populates the relevant TextBoxes.
+        /// It then validates these paths and reports errors via <see cref="ErrorProvider"/> and <see cref="_progressReporter"/> if validation fails.
+        /// </summary>
+        /// <returns><see langword="true"/> if the selected simulator version is valid and installed; otherwise, <see langword="false"/>.</returns>
+        private bool ValidateComboBoxSettingsSimulatorVersion()
+        {
+            bool isValid = true;
+            string simulatorVersion = ComboBoxSettingsSimulatorVersion.Text;
+
+            // Attempt to get the registry key using the refactored method
+            RegistryKey simKey = Aircraft.GetSimProgramFolderKey(simulatorVersion);
+
+            if (simKey == null)
+            {
+                string validationMessage = $"Problem encountered referencing simulator version '{simulatorVersion}'. " +
+                                           $"Please check if Prepar3D v{simulatorVersion} is installed or select a different version.";
+                errorProvider1.SetError(ComboBoxSettingsSimulatorVersion, validationMessage);
+                _progressReporter?.Report(validationMessage);
+                isValid = false;
+            }
+            else
+            {
+                // If the key is found, clear any previous error and store the valid version
+                errorProvider1.SetError(ComboBoxSettingsSimulatorVersion, "");
+                _progressReporter?.Report("");
+                _formData.SimulatorVersion = simulatorVersion;
+
+                // Populate the TextBoxSettingsP3DprogramInstall and TextBoxSettingsP3DprogramData paths
+                string installPath = simKey.GetValue("SetupPath") as string;
+                if (!string.IsNullOrEmpty(installPath))
+                {
+                    string driveLetter = Path.GetPathRoot(installPath);
+                    char[] separators = [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
+                    TextBoxSettingsP3DprogramInstall.Text = installPath.TrimEnd(separators);
+                    ValidateP3DInstallFolder();
+                    TextBoxSettingsP3DprogramData.Text = $"{driveLetter}ProgramData\\Lockheed Martin\\Prepar3D v{simulatorVersion}";
+                    ValidateP3DDataFolder();
+                }
+
+                simKey.Close(); // Always close registry keys when done
+            }
+
+            return isValid;
+        }
+
+        /// <summary>
+        /// Validates the P3D Program Install path and populates the <see cref="ScenarioFormData.P3DProgramInstall"/> property.
+        /// Checks if the path is not empty and if the directory exists.
+        /// Sets an error message via <see cref="ErrorProvider"/> and reports progress if validation fails.
+        /// </summary>
+        /// <returns><see langword="true"/> if the P3D Program Install path is valid and the directory exists; otherwise, <see langword="false"/>.</returns>
+        private bool ValidateP3DInstallFolder()
+        {
+            bool isValid = true;
+            string folderPath = TextBoxSettingsP3DprogramInstall.Text.Trim(); // Get path from control
+
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                string message = "P3D Program Install path cannot be empty.";
+                errorProvider1.SetError(TextBoxSettingsP3DprogramInstall, message);
+                _progressReporter?.Report(message);
+                isValid = false;
+            }
+            else if (!Directory.Exists(folderPath))
+            {
+                string message = $"P3D Program Install path does not exist: '{folderPath}'. Please ensure the directory exists.";
+                errorProvider1.SetError(TextBoxSettingsP3DprogramInstall, message);
+                _progressReporter?.Report(message);
+                isValid = false;
+            }
+            else
+            {
+                errorProvider1.SetError(TextBoxSettingsP3DprogramInstall, "");
+                _progressReporter?.Report("");
+                _formData.P3DProgramInstall = folderPath;
+            }
+            return isValid;
+        }
+
+        /// <summary>
+        /// Validates the P3D Data path and populates the <see cref="ScenarioFormData.P3DProgramData"/> property.
+        /// Checks if the path is not empty and if the directory exists.
+        /// Sets an error message via <see cref="ErrorProvider"/> and reports progress if validation fails.
+        /// </summary>
+        /// <returns><see langword="true"/> if the P3D Program Data path is valid and the directory exists; otherwise, <see langword="false"/>.</returns>
+        private bool ValidateP3DDataFolder()
+        {
+            bool isValid = true;
+            string folderPath = TextBoxSettingsP3DprogramData.Text.Trim(); // Get path from control
+
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                string message = "P3D Program Data path cannot be empty.";
+                errorProvider1.SetError(TextBoxSettingsP3DprogramData, message);
+                _progressReporter?.Report(message);
+                isValid = false;
+            }
+            else if (!Directory.Exists(folderPath))
+            {
+                string message = $"P3D Program Data path does not exist: '{folderPath}'. Please ensure the directory exists.";
+                errorProvider1.SetError(TextBoxSettingsP3DprogramData, message);
+                _progressReporter?.Report(message);
+                isValid = false;
+            }
+            else
+            {
+                errorProvider1.SetError(TextBoxSettingsP3DprogramData, "");
+                _progressReporter?.Report("");
+                _formData.P3DProgramInstall = folderPath;
             }
             return isValid;
         }
@@ -1910,120 +1999,80 @@ namespace P3D_Scenario_Generator
         /// Checks if the path is not empty and if the directory exists.
         /// Sets an error message via <see cref="ErrorProvider"/> and reports progress if validation fails.
         /// </summary>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> object to populate with the validated folder path.</param>
         /// <returns><see langword="true"/> if the scenario folder path is valid and the directory exists; otherwise, <see langword="false"/>.</returns>
-        private bool ValidateScenarioFolderBase(ScenarioFormData formData)
+        private bool ValidateScenarioFolderBase()
         {
             bool isValid = true;
-            string folderPath = form.TextBoxSettingsScenarioFolderBase.Text.Trim(); // Get path from control
+            string folderPath = TextBoxSettingsScenarioFolderBase.Text.Trim(); // Get path from control
 
             if (string.IsNullOrEmpty(folderPath))
             {
                 string message = "Scenario Folder Base path cannot be empty.";
-                errorProvider1.SetError(form.TextBoxSettingsScenarioFolderBase, message);
+                errorProvider1.SetError(TextBoxSettingsScenarioFolderBase, message);
                 _progressReporter?.Report(message);
                 isValid = false;
             }
             else if (!Directory.Exists(folderPath))
             {
                 string message = $"Scenario Folder Base path does not exist: '{folderPath}'. Please ensure the directory exists.";
-                errorProvider1.SetError(form.TextBoxSettingsScenarioFolderBase, message);
+                errorProvider1.SetError(TextBoxSettingsScenarioFolderBase, message);
                 _progressReporter?.Report(message);
                 isValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxSettingsScenarioFolderBase, "");
-                formData.ScenarioFolderBase = folderPath; // Populate formData here
+                errorProvider1.SetError(TextBoxSettingsScenarioFolderBase, "");
+                _progressReporter?.Report("");
+                _formData.ScenarioFolderBase = folderPath;
             }
-            return isValid;
-        }
-
-        /// <summary>
-        /// Validates the selected Simulator Version from the ComboBox and populates the <see cref="ScenarioFormData.SimulatorVersion"/> property.
-        /// Checks if the corresponding Prepar3D registry key exists for the selected version.
-        /// Sets an error message via <see cref="ErrorProvider"/> and reports progress if validation fails.
-        /// </summary>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> object to populate with the validated simulator version.</param>
-        /// <returns><see langword="true"/> if the selected simulator version is valid and installed; otherwise, <see langword="false"/>.</returns>
-        private bool ValidateComboBoxSettingsSimulatorVersion(ScenarioFormData formData)
-        {
-            bool isValid = true;
-            string simulatorVersion = ComboBoxSettingsSimulatorVersion.Text; // Assuming this is your ComboBox
-
-            // Attempt to get the registry key using the refactored method
-            RegistryKey simKey = Aircraft.GetSimProgramFolderKey(simulatorVersion);
-
-            if (simKey == null)
-            {
-                string validationMessage = $"Problem encountered referencing simulator version '{simulatorVersion}'. " +
-                                           "Please check if Prepar3D v{simulatorVersion} is installed or select a different version.";
-                errorProvider1.SetError(ComboBoxSettingsSimulatorVersion, validationMessage);
-                _progressReporter?.Report(validationMessage);
-                isValid = false;
-            }
-            else
-            {
-                // If the key is found, clear any previous error and store the valid version
-                errorProvider1.SetError(ComboBoxSettingsSimulatorVersion, "");
-                formData.SimulatorVersion = simulatorVersion;
-                simKey.Close(); // Always close registry keys when done
-            }
-
             return isValid;
         }
 
         /// <summary>
         /// Orchestrates the population and validation of data from the General tab by calling smaller, focused helper methods.
         /// </summary>
-        /// <param name="formData">The DTO to populate.</param>
-        /// <param name="progressReporter">The progress reporter for error messages.</param>
         /// <param name="selectedAircraftVariant">The currently selected AircraftVariant object.</param>
         /// <returns>True if all General tab data is valid; otherwise, false.</returns>
-        private bool PopulateAndValidateGeneralTabData(ScenarioFormData formData, IProgress<string> progressReporter, AircraftVariant selectedAircraftVariant)
+        private bool PopulateAndValidateGeneralTabData(AircraftVariant selectedAircraftVariant)
         {
-            bool allValidForGeneralTab = true;
+            bool allValid = true;
 
             // Handle direct UI element assignments and basic type parsing
-            allValidForGeneralTab &= PopulateBasicGeneralTabValues(formData, progressReporter);
+            allValid &= PopulateBasicGeneralTabValues();
 
             // Validate and populate the Scenario Title
-            allValidForGeneralTab &= ValidateAndPopulateScenarioTitle(formData, progressReporter);
+            allValid &= ValidateAndPopulateScenarioTitle();
 
             // Validate and populate Aircraft Properties sourced from the selectedAircraftVariant
-            allValidForGeneralTab &= ValidateAndPopulateAircraftDetails(formData, progressReporter, selectedAircraftVariant);
+            allValid &= ValidateAndPopulateAircraftDetails(selectedAircraftVariant);
 
-            // Add other general tab validations here if they don't fit the above categories.
-
-            return allValidForGeneralTab;
+            return allValid;
         }
 
         /// <summary>
         /// Populates basic values from General tab UI elements into formData.
         /// </summary>
-        /// <param name="formData">The DTO to populate.</param>
-        /// <param name="progressReporter">The progress reporter for error messages.</param>
         /// <returns>True if basic values are successfully populated; otherwise, false.</returns>
-        private static bool PopulateBasicGeneralTabValues(ScenarioFormData formData, IProgress<string> progressReporter)
+        private bool PopulateBasicGeneralTabValues()
         {
             bool isValid = true;
 
-            formData.RunwayIndex = form.ComboBoxGeneralRunwaySelected.SelectedIndex;
+            _formData.RunwayIndex = ComboBoxGeneralRunwaySelected.SelectedIndex;
 
-            if (Enum.TryParse(form.ComboBoxGeneralScenarioType.SelectedItem.ToString(), out ScenarioTypes selectedType))
+            if (Enum.TryParse(ComboBoxGeneralScenarioType.SelectedItem.ToString(), out ScenarioTypes selectedType))
             {
-                formData.ScenarioType = selectedType;
+                _formData.ScenarioType = selectedType;
             }
             else
             {
                 Log.Error("Invalid scenario type selected unexpectedly.");
                 isValid = false;
                 string message = "Invalid scenario type selected. An unexpected error occurred; please notify the developer.";
-                progressReporter?.Report(message);
+                _progressReporter?.Report(message);
             }
 
-            formData.DatePickerValue = form.GeneralDatePicker.Value;
-            formData.TimePickerValue = form.GeneralTimePicker.Value;
+            _formData.DatePickerValue = GeneralDatePicker.Value;
+            _formData.TimePickerValue = GeneralTimePicker.Value;
 
             return isValid;
         }
@@ -2032,46 +2081,77 @@ namespace P3D_Scenario_Generator
         /// Validates the General Scenario Title, including filename validity and folder existence,
         /// and populates it into formData.
         /// </summary>
-        /// <param name="formData">The DTO to populate.</param>
-        /// <param name="progressReporter">The progress reporter for error messages.</param>
         /// <returns>True if the scenario title is valid; otherwise, false.</returns>
-        private bool ValidateAndPopulateScenarioTitle(ScenarioFormData formData, IProgress<string> progressReporter)
+        private bool ValidateAndPopulateScenarioTitle()
         {
-            string settingsScenarioFolderBase = formData.ScenarioFolderBase;
-            string scenarioTitle = form.TextBoxGeneralScenarioTitle.Text;
+            string settingsScenarioFolderBase = _formData.ScenarioFolderBase;
+            string scenarioTitle = TextBoxGeneralScenarioTitle.Text;
             bool isValid = true;
 
-            if (!Parameters.IsValidFilename(scenarioTitle, out string titleFilenameErrorMessage))
+            if (!IsValidFilename(scenarioTitle, out string titleFilenameErrorMessage))
             {
-                errorProvider1.SetError(form.TextBoxGeneralScenarioTitle, titleFilenameErrorMessage);
-                progressReporter?.Report(titleFilenameErrorMessage);
+                errorProvider1.SetError(TextBoxGeneralScenarioTitle, titleFilenameErrorMessage);
+                _progressReporter?.Report(titleFilenameErrorMessage);
                 isValid = false;
             }
             else if (string.IsNullOrEmpty(settingsScenarioFolderBase))
             {
                 string message = "Cannot fully validate scenario path: Scenario folder base path is not set or invalid. Please check settings tab.";
-                errorProvider1.SetError(form.TextBoxGeneralScenarioTitle, message);
-                progressReporter?.Report(message);
+                errorProvider1.SetError(TextBoxGeneralScenarioTitle, message);
+                _progressReporter?.Report(message);
                 isValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxGeneralScenarioTitle, ""); // Clear error
+                errorProvider1.SetError(TextBoxGeneralScenarioTitle, "");
                 string proposedSaveFolder = Path.Combine(settingsScenarioFolderBase, scenarioTitle);
 
                 if (Directory.Exists(proposedSaveFolder))
                 {
                     string message = $"Scenario exists: '{proposedSaveFolder}'. Delete folder (close P3D) or pick a new title.";
-                    errorProvider1.SetError(form.TextBoxGeneralScenarioTitle, message);
-                    progressReporter?.Report(message);
+                    errorProvider1.SetError(TextBoxGeneralScenarioTitle, message);
+                    _progressReporter?.Report(message);
                     isValid = false;
                 }
                 else
                 {
-                    formData.ScenarioTitle = scenarioTitle;
+                    _progressReporter?.Report("");
+                    _formData.ScenarioTitle = scenarioTitle;
                 }
             }
             return isValid;
+        }
+
+        /// <summary>
+        /// Checks if the provided string is a valid filename in terms of character set and not being null or empty.
+        /// This method validates against characters deemed invalid by the operating system.
+        /// If validation fails, a descriptive error message is provided via an out parameter.
+        /// </summary>
+        /// <param name="fileName">The string to validate as a filename.</param>
+        /// <param name="errorMessage">
+        /// When this method returns, contains an error message if the filename is invalid;
+        /// otherwise, an empty string. This parameter is passed uninitialized.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if the string is a valid filename (not null, not empty, and contains no invalid characters);
+        /// otherwise, <see langword="false"/>.
+        /// </returns>
+        internal static bool IsValidFilename(string fileName, out string errorMessage)
+        {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                errorMessage = "Filename cannot be empty or null.";
+                return false;
+            }
+
+            if (fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                errorMessage = $"Filename {fileName} contains invalid characters. Please remove illegal characters (e.g., \\ / : * ? \" < > |).";
+                return false;
+            }
+
+            errorMessage = "";
+            return true;
         }
 
         /// <summary>
@@ -2080,48 +2160,47 @@ namespace P3D_Scenario_Generator
         /// assuming DisplayName and CruiseSpeed are validated when the variant is initially read.
         /// Reports errors via ErrorProvider on TextBoxGeneralAircraftValues and ProgressReporter.
         /// </summary>
-        /// <param name="formData">The DTO to populate.</param>
-        /// <param name="progressReporter">The progress reporter for error messages.</param>
         /// <param name="selectedAircraftVariant">The currently selected AircraftVariant object.</param>
         /// <returns>True if aircraft details are valid; otherwise, false.</returns>
-        private bool ValidateAndPopulateAircraftDetails(ScenarioFormData formData, IProgress<string> progressReporter, AircraftVariant selectedAircraftVariant)
+        private bool ValidateAndPopulateAircraftDetails(AircraftVariant selectedAircraftVariant)
         {
             bool isValid = true;
             // Clear any previous errors on the combined aircraft values textbox before new validation
-            errorProvider1.SetError(form.TextBoxGeneralAircraftValues, "");
+            errorProvider1.SetError(TextBoxGeneralAircraftValues, "");
 
             if (selectedAircraftVariant == null)
             {
                 string message = "No aircraft variant has been selected. Please select an aircraft.";
-                errorProvider1.SetError(form.TextBoxGeneralAircraftValues, "No aircraft selected.");
-                progressReporter?.Report(message);
+                errorProvider1.SetError(TextBoxGeneralAircraftValues, "No aircraft selected.");
+                _progressReporter?.Report(message);
                 isValid = false;
             }
             else
             {
                 // Assign DisplayName and CruiseSpeed directly, as their validation is assumed to be handled
                 // when the variant is initially read into the program in Aircraft.cs.
-                formData.AircraftTitle = selectedAircraftVariant.DisplayName;
-                formData.AircraftCruiseSpeed = selectedAircraftVariant.CruiseSpeed;
+                _formData.AircraftTitle = selectedAircraftVariant.DisplayName;
+                _formData.AircraftCruiseSpeed = selectedAircraftVariant.CruiseSpeed;
 
                 // Validate Aircraft Image Path (ThumbnailImagePath string from AircraftVariant)
                 if (!File.Exists(selectedAircraftVariant.ThumbnailImagePath))
                 {
                     string message = $"Aircraft Thumbnail Image file does not exist at the specified path: '{selectedAircraftVariant.ThumbnailImagePath}'.";
-                    errorProvider1.SetError(form.TextBoxGeneralAircraftValues, "Aircraft Image file not found.");
-                    progressReporter?.Report(message);
+                    errorProvider1.SetError(TextBoxGeneralAircraftValues, "Aircraft Image file not found.");
+                    _progressReporter?.Report(message);
                     isValid = false;
                 }
                 else
                 {
-                    formData.AircraftImagePath = selectedAircraftVariant.ThumbnailImagePath;
+                    _formData.AircraftImagePath = selectedAircraftVariant.ThumbnailImagePath;
                 }
             }
             // Only clear the error on TextBoxGeneralAircraftValues if all checks in THIS method passed.
             // If any check fails, isValid will be false, and the error will remain.
             if (isValid)
             {
-                errorProvider1.SetError(form.TextBoxGeneralAircraftValues, "");
+                _progressReporter?.Report("");
+                errorProvider1.SetError(TextBoxGeneralAircraftValues, "");
             }
             return isValid;
         }
@@ -2129,10 +2208,8 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Populates and validates data from the Circuit tab.
         /// </summary>
-        /// <param name="formData">The DTO to populate.</param>
-        /// <param name="progressReporter">The progress reporter for error messages.</param>
         /// <returns>True if all Circuit tab data is valid; otherwise, false.</returns>
-        private bool PopulateAndValidateCircuitTabData(ScenarioFormData formData, IProgress<string> progressReporter)
+        private bool PopulateAndValidateCircuitTabData()
         {
             bool allValid = true;
 
@@ -2140,7 +2217,7 @@ namespace P3D_Scenario_Generator
             const double minUpwindLeg = 0.0;
             const double maxUpwindLeg = Constants.EarthCircumferenceMiles;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitUpwind.Text,
+                TextBoxCircuitUpwind.Text,
                 "Circuit Upwind Leg",
                 minUpwindLeg,
                 maxUpwindLeg,
@@ -2148,21 +2225,22 @@ namespace P3D_Scenario_Generator
                 out string validationMessage,
                 "miles"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitUpwind, validationMessage);
-                progressReporter?.Report(validationMessage);
+                errorProvider1.SetError(TextBoxCircuitUpwind, validationMessage);
+                _progressReporter?.Report(validationMessage);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitUpwind, "");
-                formData.CircuitUpwindLeg = parsedValue;
+                _progressReporter?.Report("");
+                errorProvider1.SetError(TextBoxCircuitUpwind, "");
+                _formData.CircuitUpwindLeg = parsedValue;
             }
 
             // CircuitBaseLeg
             const double minBaseLeg = Constants.MinCircuitGateSeparation;
             const double maxBaseLeg = Constants.EarthCircumferenceMiles;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitBase.Text,
+                TextBoxCircuitBase.Text,
                 "Circuit Base Leg",
                 minBaseLeg,
                 maxBaseLeg,
@@ -2170,21 +2248,22 @@ namespace P3D_Scenario_Generator
                 out validationMessage,
                 "miles"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitBase, validationMessage);
-                progressReporter?.Report(validationMessage);
+                errorProvider1.SetError(TextBoxCircuitBase, validationMessage);
+                _progressReporter?.Report(validationMessage);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitBase, "");
-                formData.CircuitBaseLeg = parsedValue;
+                _progressReporter?.Report("");
+                errorProvider1.SetError(TextBoxCircuitBase, "");
+                _formData.CircuitBaseLeg = parsedValue;
             }
 
             // CircuitFinalLeg
             const double minFinalLeg = 0.0;
             const double maxFinalLeg = Constants.EarthCircumferenceMiles;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitFinal.Text,
+                TextBoxCircuitFinal.Text,
                 "Circuit Final Leg",
                 minFinalLeg,
                 maxFinalLeg,
@@ -2192,21 +2271,22 @@ namespace P3D_Scenario_Generator
                 out validationMessage,
                 "miles"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitFinal, validationMessage);
-                progressReporter?.Report(validationMessage);
+                errorProvider1.SetError(TextBoxCircuitFinal, validationMessage);
+                _progressReporter?.Report(validationMessage);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitFinal, "");
-                formData.CircuitFinalLeg = parsedValue;
+                _progressReporter?.Report("");
+                errorProvider1.SetError(TextBoxCircuitFinal, "");
+                _formData.CircuitFinalLeg = parsedValue;
             }
 
             // CircuitHeightUpwind
             const double minHeightUpwind = 0.0;
             const double maxHeightUpwind = Constants.MaxCircuitGateHeight;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitHeightUpwind.Text,
+                TextBoxCircuitHeightUpwind.Text,
                 "Circuit Height Upwind Leg",
                 minHeightUpwind,
                 maxHeightUpwind,
@@ -2214,21 +2294,22 @@ namespace P3D_Scenario_Generator
                 out validationMessage,
                 "feet"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightUpwind, validationMessage);
-                progressReporter?.Report(validationMessage);
+                errorProvider1.SetError(TextBoxCircuitHeightUpwind, validationMessage);
+                _progressReporter?.Report(validationMessage);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightUpwind, "");
-                formData.CircuitHeightUpwind = parsedValue;
+                _progressReporter?.Report("");
+                errorProvider1.SetError(TextBoxCircuitHeightUpwind, "");
+                _formData.CircuitHeightUpwind = parsedValue;
             }
 
             // CircuitHeightDown
             const double minHeightDown = 0.0;
             const double maxHeightDown = Constants.MaxCircuitGateHeight;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitHeightDown.Text,
+                TextBoxCircuitHeightDown.Text,
                 "Circuit Height Down Leg",
                 minHeightDown,
                 maxHeightDown,
@@ -2236,21 +2317,22 @@ namespace P3D_Scenario_Generator
                 out validationMessage,
                 "feet"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightDown, validationMessage);
-                progressReporter?.Report(validationMessage);
+                errorProvider1.SetError(TextBoxCircuitHeightDown, validationMessage);
+                _progressReporter?.Report(validationMessage);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightDown, "");
-                formData.CircuitHeightDown = parsedValue;
+                _progressReporter?.Report("");
+                errorProvider1.SetError(TextBoxCircuitHeightDown, "");
+                _formData.CircuitHeightDown = parsedValue;
             }
 
             // CircuitHeightBase
             const double minHeightBase = 0.0;
             const double maxHeightBase = Constants.MaxCircuitGateHeight;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitHeightBase.Text,
+                TextBoxCircuitHeightBase.Text,
                 "Circuit Height Base Leg",
                 minHeightBase,
                 maxHeightBase,
@@ -2258,21 +2340,22 @@ namespace P3D_Scenario_Generator
                 out validationMessage,
                 "feet"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightBase, validationMessage);
-                progressReporter?.Report(validationMessage);
+                errorProvider1.SetError(TextBoxCircuitHeightBase, validationMessage);
+                _progressReporter?.Report(validationMessage);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitHeightBase, "");
-                formData.CircuitHeightBase = parsedValue;
+                _progressReporter?.Report("");
+                errorProvider1.SetError(TextBoxCircuitHeightBase, "");
+                _formData.CircuitHeightBase = parsedValue;
             }
 
             // CircuitSpeed
             const double minCircuitSpeed = 0.0;
             const double maxCircuitSpeed = Constants.PracticalMaxSpeed;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitSpeed.Text,
+                TextBoxCircuitSpeed.Text,
                 "Circuit Speed",
                 minCircuitSpeed,
                 maxCircuitSpeed,
@@ -2280,21 +2363,22 @@ namespace P3D_Scenario_Generator
                 out validationMessage,
                 "knots"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitSpeed, validationMessage);
-                progressReporter?.Report(validationMessage);
+                errorProvider1.SetError(TextBoxCircuitSpeed, validationMessage);
+                _progressReporter?.Report(validationMessage);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitSpeed, "");
-                formData.CircuitSpeed = parsedValue;
+                _progressReporter?.Report("");
+                errorProvider1.SetError(TextBoxCircuitSpeed, "");
+                _formData.CircuitSpeed = parsedValue;
             }
 
             // CircuitTurnDuration360Degrees
             const double minTurnRate = Constants.MinTurnTime360DegreesMinutes;
             const double maxTurnRate = Constants.MaxTurnTime360DegreesMinutes;
             if (!ParsingHelpers.TryParseDouble(
-                form.TextBoxCircuitTurnRate.Text,
+                TextBoxCircuitTurnRate.Text,
                 "Circuit Turn Rate",
                 minTurnRate,
                 maxTurnRate,
@@ -2302,22 +2386,20 @@ namespace P3D_Scenario_Generator
                 out validationMessage,
                 "minutes"))
             {
-                errorProvider1.SetError(form.TextBoxCircuitTurnRate, validationMessage);
-                progressReporter?.Report(validationMessage);
+                errorProvider1.SetError(TextBoxCircuitTurnRate, validationMessage);
+                _progressReporter?.Report(validationMessage);
                 allValid = false;
             }
             else
             {
-                errorProvider1.SetError(form.TextBoxCircuitTurnRate, "");
-                formData.CircuitTurnDuration360Degrees = parsedValue;
+                _progressReporter?.Report("");
+                errorProvider1.SetError(TextBoxCircuitTurnRate, "");
+                _formData.CircuitTurnDuration360Degrees = parsedValue;
             }
 
             return allValid;
         }
 
         #endregion
-
-
-
     }
 }

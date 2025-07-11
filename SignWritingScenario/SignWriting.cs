@@ -19,17 +19,17 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// <summary>
         /// Called from Form1.cs to do the scenario specific work in creating a signwriting scenario
         /// </summary>
-        static internal bool SetSignWriting()
+        static internal bool SetSignWriting(ScenarioFormData formData)
         {
             // Scenario starts and finishes at user selected airport
-            Runway.startRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
-            Runway.destRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
+            Runway.startRwy = Runway.Runways[formData.RunwayIndex];
+            Runway.destRwy = Runway.Runways[formData.RunwayIndex];
 
             // Set the letter segment paths for the sign writing letters
             SignCharacterMap.InitLetterPaths();
 
             // Create the gates for the sign writing scenario
-            gates = SignGateGenerator.SetSignGatesMessage();
+            gates = SignGateGenerator.SetSignGatesMessage(formData);
             if (gates.Count == 0)
             {
                 Log.Error("Failed to generate the sign writing scenario.");
@@ -37,13 +37,13 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             }
 
             bool drawRoute = false;
-            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute))
+            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute, formData))
             {
                 Log.Error("Failed to create overview image during sign writing setup.");
                 return false;
             }
 
-            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords()))
+            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(), formData))
             {
                 Log.Error("Failed to create location image during sign writing setup.");
                 return false;
@@ -93,9 +93,9 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// between segments.
         /// </summary>
         /// <returns>The estimated flight distance in nautical miles.</returns>
-        static internal double GetSignWritingDistance()
+        static internal double GetSignWritingDistance(ScenarioFormData formData)
         {
-            return gates.Count / 2 * Parameters.SignSegmentLengthDeg * Constants.degreeLatFeet / Constants.feetInNM * 1.5;
+            return gates.Count / 2 * formData.SignSegmentLength * Constants.degreeLatFeet / Constants.feetInNM * 1.5;
         }
     }
 }

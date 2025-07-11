@@ -47,9 +47,9 @@
         /// and for the list of navigational stars SHA and Declination in degrees and minutes
         /// </summary>
         /// <returns>True if able to retrieve the almanac data from the web and everything on the page is still where expected!</returns>
-        static internal bool GetAlmanacData()
+        internal static bool GetAlmanacData(ScenarioFormData formData)
         {
-            string almanacData = DownloadAlmanac();
+            string almanacData = DownloadAlmanac(formData);
             if (almanacData == null) return false;
 
             if (!ExtractAriesGHA(almanacData)) return false;
@@ -63,9 +63,10 @@
         /// Download the almanac data for the three days centered on the selected scenario date
         /// </summary>
         /// <returns>The webpage outerHTML containing the alamanac data</returns>
-        static internal string DownloadAlmanac()
+        internal static string DownloadAlmanac(ScenarioFormData formData)
         {
-            DateTime startDate = new(Parameters.Year, Parameters.Month, Parameters.Day, Parameters.Hours, Parameters.Minutes, Parameters.Seconds, DateTimeKind.Local);
+            DateTime startDate = new(formData.DatePickerValue.Year, formData.DatePickerValue.Month, formData.DatePickerValue.Day,
+                formData.TimePickerValue.Hour, formData.TimePickerValue.Minute, formData.TimePickerValue.Second, DateTimeKind.Local);
             startDate = startDate.AddDays(-1);
             string url = $"http://www.tecepe.com.br/scripts/AlmanacPagesISAPI.dll/pages?date={startDate.Month}%2F{startDate.Day}%2F{startDate.Year}";
 

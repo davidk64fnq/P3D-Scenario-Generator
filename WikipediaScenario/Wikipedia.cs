@@ -233,14 +233,14 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <param name="tourStartItem">User specified first item of tour</param>
         /// <param name="tourFinishItem">User specified last item of tour</param>
         /// <param name="tourDistance">The distance from first to last item in miles</param>
-        static internal void SetWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance)
+        static internal void SetWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance, ScenarioFormData formData)
         {
             PopulateWikiTour(tableNo, route, tourStartItem, tourFinishItem, tourDistance);
             SetWikiAirports();
-            Common.SetOverviewImage();
-            Common.SetLocationImage();
+            Common.SetOverviewImage(formData);
+            Common.SetLocationImage(formData);
             WikiLegMapEdges = [];
-            Common.SetAllLegRouteImages(0, WikiTour.Count - 2);
+            Common.SetAllLegRouteImages(0, WikiTour.Count - 2, formData);
         }
 
         /// <summary>

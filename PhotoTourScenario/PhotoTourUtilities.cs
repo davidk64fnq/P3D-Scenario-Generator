@@ -118,12 +118,12 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <see langword="true"/> if all photos are successfully downloaded and resized as needed;
         /// <see langword="false"/> if any photo download or resize operation fails.
         /// </returns>
-        static internal bool GetPhotos(List<PhotoLocParams> photoLocations)
+        static internal bool GetPhotos(List<PhotoLocParams> photoLocations, ScenarioFormData formData)
         {
             for (int index = 1; index < photoLocations.Count - 1; index++)
             {
                 string filename = $"photo_{index:00}.jpg";
-                string filePath = Path.Combine(Parameters.SettingsImageFolder, filename);
+                string filePath = Path.Combine(formData.ScenarioImageFolder, filename);
 
                 // 1. Download the photo
                 if (!HttpRoutines.DownloadBinaryFile(photoLocations[index].photoURL, filePath))
@@ -163,14 +163,14 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 bool needsResize = false;
 
                 // Check if either dimension exceeds 95% of the monitor dimensions
-                if (originalWidth > Parameters.PhotoTourPhotoMonitorWidth * 0.95 ||
-                    originalHeight > Parameters.PhotoTourPhotoMonitorHeight * 0.95)
+                if (originalWidth > formData.PhotoTourPhotoMonitorWidth * 0.95 ||
+                    originalHeight > formData.PhotoTourPhotoMonitorHeight * 0.95)
                 {
                     needsResize = true;
 
                     // Calculate scaling factors for both dimensions relative to the "safe" monitor size (MonitorDim - 40)
-                    double targetWidth = Parameters.PhotoTourPhotoMonitorWidth - 40;
-                    double targetHeight = Parameters.PhotoTourPhotoMonitorHeight - 40;
+                    double targetWidth = formData.PhotoTourPhotoMonitorWidth - 40;
+                    double targetHeight = formData.PhotoTourPhotoMonitorHeight - 40;
 
                     // Calculate ratios of target dimensions to original dimensions
                     double ratioX = targetWidth / originalWidth;
@@ -193,7 +193,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 if (needsResize)
                 {
                     // ImageUtils.Resize should now be able to open and modify the file
-                    if (!ImageUtils.Resize(filePath, newWidth, newHeight))
+                    if (!ImageUtils.Resize(filePath, newWidth, newHeight, formData))
                     {
                         Log.Error($"PhotoTour.GetPhotos: Failed to resize image '{filename}'.");
                         return false;

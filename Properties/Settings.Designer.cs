@@ -829,7 +829,7 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\ProgramData\\Lockheed Martin\\Prepar3D v")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string TextBoxSettingsP3DprogramData {
             get {
                 return ((string)(this["TextBoxSettingsP3DprogramData"]));
@@ -865,13 +865,25 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string TextBoxSettingsScenarioFolderBase {
             get {
                 return ((string)(this["TextBoxSettingsScenarioFolderBase"]));
             }
             set {
                 this["TextBoxSettingsScenarioFolderBase"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TextBoxSettingsP3DprogramInstall {
+            get {
+                return ((string)(this["TextBoxSettingsP3DprogramInstall"]));
+            }
+            set {
+                this["TextBoxSettingsP3DprogramInstall"] = value;
             }
         }
     }

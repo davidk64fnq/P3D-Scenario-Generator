@@ -15,15 +15,15 @@
         /// <param name="filename">The full local path and filename including extension where the OSM tile will be stored after retrieval.</param>
         /// <returns><see langword="true"/> if the OSM tile was successfully retrieved (either from cache or by download) and saved;
         /// otherwise, <see langword="false"/> if any error occurred during the process (errors are logged by underlying methods).</returns>
-        static internal bool DownloadOSMtile(int xTileNo, int yTileNo, int zoom, string filename)
+        static internal bool DownloadOSMtile(int xTileNo, int yTileNo, int zoom, string filename, ScenarioFormData formData)
         {
             // Construct the full URL for the OSM tile based on configured server URL, tile coordinates, zoom, and API key.
-            string url = $"{Constants.OSMtileServerURLprefix}/{zoom}/{xTileNo}/{yTileNo}.png?rapidapi-key={Parameters.SettingsCacheServerAPIkey}";
+            string url = $"{Constants.OSMtileServerURLprefix}/{zoom}/{xTileNo}/{yTileNo}.png?rapidapi-key={formData.CacheServerAPIkey}";
 
             // Delegate the actual retrieval (from cache or download) and saving to the Cache class.
             // The key is constructed using zoom, xTileNo, and yTileNo for cache lookup.
             // Errors are handled and logged by the Cache.GetOrCopyOSMtile method and its dependencies.
-            return Cache.GetOrCopyOSMtile($"{zoom}-{xTileNo}-{yTileNo}.png", url, $"{Parameters.SettingsImageFolder}\\{filename}");
+            return Cache.GetOrCopyOSMtile($"{zoom}-{xTileNo}-{yTileNo}.png", url, $"{formData.ScenarioImageFolder}\\{filename}");
         }
 
         /// <summary>
@@ -39,7 +39,7 @@
         /// Each tile's filename will be suffixed with its columnId and rowId (e.g., "basefilename_xIndex_yIndex.png").</param>
         /// <returns><see langword="true"/> if all tiles in the column were successfully downloaded or retrieved from cache;
         /// otherwise, <see langword="false"/> if any tile operation failed.</returns>
-        static internal bool DownloadOSMtileColumn(int xTileNo, int columnId, BoundingBox boundingBox, int zoom, string filename)
+        static internal bool DownloadOSMtileColumn(int xTileNo, int columnId, BoundingBox boundingBox, int zoom, string filename, ScenarioFormData formData)
         {
             // Iterate through each y-axis tile number in the bounding box
             for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
@@ -50,7 +50,7 @@
                 // Attempt to download or copy the individual OSM tile.
                 // If DownloadOSMtile returns false (indicating a failure),
                 // we immediately return false for the entire column download.
-                if (!DownloadOSMtile(xTileNo, boundingBox.YAxis[yIndex], zoom, tileFilename))
+                if (!DownloadOSMtile(xTileNo, boundingBox.YAxis[yIndex], zoom, tileFilename, formData))
                 {
                     return false; // An individual tile failed to download/copy, so the column download fails.
                 }
@@ -73,7 +73,7 @@
         /// Each tile's filename will be suffixed with its columnId and rowId (e.g., "basefilename_xIndex_yIndex.png").</param>
         /// <returns><see langword="true"/> if all tiles in the row were successfully downloaded or retrieved from cache;
         /// otherwise, <see langword="false"/> if any tile operation failed.</returns>
-        static internal bool DownloadOSMtileRow(int yTileNo, int rowId, BoundingBox boundingBox, int zoom, string filename)
+        static internal bool DownloadOSMtileRow(int yTileNo, int rowId, BoundingBox boundingBox, int zoom, string filename, ScenarioFormData formData)
         {
             // Iterate through each x-axis tile number in the bounding box
             for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
@@ -84,7 +84,7 @@
                 // Attempt to download or copy the individual OSM tile.
                 // If DownloadOSMtile returns false (indicating a failure),
                 // we immediately return false for the entire row download.
-                if (!DownloadOSMtile(boundingBox.XAxis[xIndex], yTileNo, zoom, tileFilename))
+                if (!DownloadOSMtile(boundingBox.XAxis[xIndex], yTileNo, zoom, tileFilename, formData))
                 {
                     return false; // An individual tile failed to download/copy, so the row download fails.
                 }

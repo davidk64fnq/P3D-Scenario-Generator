@@ -19,7 +19,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="columnID">The X-index of the column, used for naming the input and output files.</param>
         /// <param name="filename">The base filename for the input individual tiles and the output montaged column image.</param>
         /// <returns><see langword="true"/> if the tiles were successfully montaged into a column image; otherwise, <see langword="false"/>.</returns>
-        static internal bool MontageTilesToColumn(int yCount, int columnID, string filename)
+        static internal bool MontageTilesToColumn(int yCount, int columnID, string filename, ScenarioFormData formData)
         {
             try
             {
@@ -38,7 +38,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // Load each individual tile image into the collection.
                 for (int yIndex = 0; yIndex < yCount; yIndex++)
                 {
-                    string tilePath = $"{Parameters.SettingsImageFolder}\\{filename}_{columnID}_{yIndex}.png";
+                    string tilePath = $"{formData.ScenarioImageFolder}\\{filename}_{columnID}_{yIndex}.png";
                     if (!File.Exists(tilePath))
                     {
                         Log.Error($"MontageTilesToColumn: Required tile image not found: {tilePath}");
@@ -51,7 +51,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
-                string outputPath = $"{Parameters.SettingsImageFolder}\\{filename}_{columnID}.png";
+                string outputPath = $"{formData.ScenarioImageFolder}\\{filename}_{columnID}.png";
 
                 // Ensure destination directory exists before writing
                 var directory = Path.GetDirectoryName(outputPath);
@@ -100,7 +100,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="rowId">The Y-index of the row, used for naming the input and output files.</param>
         /// <param name="filename">The base filename for the input individual tiles and the output montaged row image.</param>
         /// <returns><see langword="true"/> if the tiles were successfully montaged into a row image; otherwise, <see langword="false"/>.</returns>
-        static internal bool MontageTilesToRow(int xCount, int rowId, string filename)
+        static internal bool MontageTilesToRow(int xCount, int rowId, string filename, ScenarioFormData formData)
         {
             try
             {
@@ -119,7 +119,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // Load each individual tile image into the collection.
                 for (int xIndex = 0; xIndex < xCount; xIndex++)
                 {
-                    string tilePath = $"{Parameters.SettingsImageFolder}\\{filename}_{xIndex}_{rowId}.png";
+                    string tilePath = $"{formData.ScenarioImageFolder}\\{filename}_{xIndex}_{rowId}.png";
                     if (!File.Exists(tilePath))
                     {
                         Log.Error($"MontageTilesToRow: Required tile image not found: {tilePath}");
@@ -132,7 +132,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
-                string outputPath = $"{Parameters.SettingsImageFolder}\\{filename}_{rowId}.png";
+                string outputPath = $"{formData.ScenarioImageFolder}\\{filename}_{rowId}.png";
 
                 // Ensure destination directory exists before writing
                 var directory = Path.GetDirectoryName(outputPath);
@@ -181,7 +181,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="yCount">The height of each individual column image in tiles, used for geometry calculation.</param>
         /// <param name="filename">The base filename for the input individual column images and the output final montaged image.</param>
         /// <returns><see langword="true"/> if the columns were successfully montaged into a single image; otherwise, <see langword="false"/>.</returns>
-        static internal bool MontageColumns(int xCount, int yCount, string filename)
+        static internal bool MontageColumns(int xCount, int yCount, string filename, ScenarioFormData formData)
         {
             try
             {
@@ -200,7 +200,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // Load each individual column image into the collection.
                 for (int xIndex = 0; xIndex < xCount; xIndex++)
                 {
-                    string columnPath = $"{Parameters.SettingsImageFolder}\\{filename}_{xIndex}.png";
+                    string columnPath = $"{formData.ScenarioImageFolder}\\{filename}_{xIndex}.png";
                     if (!File.Exists(columnPath))
                     {
                         Log.Error($"MontageColumns: Required column image not found: {columnPath}");
@@ -213,7 +213,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
-                string outputPath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
+                string outputPath = $"{formData.ScenarioImageFolder}\\{filename}.png";
 
                 // Ensure destination directory exists before writing (though likely covered by previous steps)
                 var directory = Path.GetDirectoryName(outputPath);
@@ -262,7 +262,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="yCount">The number of rows to montage (height of the montage in rows).</param>
         /// <param name="filename">The base filename for the input individual row images and the output final montaged image.</param>
         /// <returns><see langword="true"/> if the rows were successfully montaged into a single image; otherwise, <see langword="false"/>.</returns>
-        static internal bool MontageRows(int xCount, int yCount, string filename)
+        static internal bool MontageRows(int xCount, int yCount, string filename, ScenarioFormData formData)
         {
             try
             {
@@ -281,7 +281,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // Load each individual row image into the collection.
                 for (int yIndex = 0; yIndex < yCount; yIndex++)
                 {
-                    string rowPath = $"{Parameters.SettingsImageFolder}\\{filename}_{yIndex}.png";
+                    string rowPath = $"{formData.ScenarioImageFolder}\\{filename}_{yIndex}.png";
                     if (!File.Exists(rowPath))
                     {
                         Log.Error($"MontageRows: Required row image not found: {rowPath}");
@@ -294,7 +294,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
-                string outputPath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
+                string outputPath = $"{formData.ScenarioImageFolder}\\{filename}.png";
 
                 // Ensure destination directory exists before writing 
                 var directory = Path.GetDirectoryName(outputPath);
@@ -344,11 +344,11 @@ namespace P3D_Scenario_Generator.MapTiles
         /// for which OSM tiles need to be processed.</param>
         /// <param name="zoom">The specific zoom level for all tiles in the montage.</param>
         /// <param name="filename">The base filename used for all intermediate and final image files.
-        /// The final montaged image will typically be saved as 'filename.png' in Parameters.SettingsImageFolder.</param>
+        /// The final montaged image will typically be saved as 'filename.png' in formData.ScenarioImageFolder.</param>
         /// <returns><see langword="true"/> if the entire montage process (downloading, montaging, and cleanup)
         /// completes successfully; otherwise, <see langword="false"/> if any step fails (errors are logged by
         /// underlying methods).</returns>
-        static internal bool MontageTiles(BoundingBox boundingBox, int zoom, string filename)
+        static internal bool MontageTiles(BoundingBox boundingBox, int zoom, string filename, ScenarioFormData formData)
         {
             // Step 1: Download individual tiles column by column and montage them into vertical strips.
             // This loop processes each column (columnID) within the specified bounding box.
@@ -356,7 +356,7 @@ namespace P3D_Scenario_Generator.MapTiles
             {
                 // Download all individual tiles for the current column.
                 // If the download of any tile in the column fails, the entire process fails.
-                if (!MapTileDownloader.DownloadOSMtileColumn(boundingBox.XAxis[xIndex], xIndex, boundingBox, zoom, $"{filename}"))
+                if (!MapTileDownloader.DownloadOSMtileColumn(boundingBox.XAxis[xIndex], xIndex, boundingBox, zoom, $"{filename}", formData))
                 {
                     Log.Error($"MontageTiles: Failed to download OSM tile column for xIndex {xIndex}.");
                     return false; // Propagate failure from column download.
@@ -364,7 +364,7 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Montage the individual tiles (downloaded in the previous step) into a single vertical column image.
                 // If the montage of any column fails, the entire process fails.
-                if (!MontageTilesToColumn(boundingBox.YAxis.Count, xIndex, filename))
+                if (!MontageTilesToColumn(boundingBox.YAxis.Count, xIndex, filename, formData))
                 {
                     Log.Error($"MontageTiles: Failed to montage tiles to column for xIndex {xIndex}.");
                     return false; // Propagate failure from column montage.
@@ -373,7 +373,7 @@ namespace P3D_Scenario_Generator.MapTiles
 
             // Step 2: Montage the generated column strips horizontally to form the final complete image.
             // This combines all the vertical strips into one large map image.
-            if (!MontageColumns(boundingBox.XAxis.Count, boundingBox.YAxis.Count, filename))
+            if (!MontageColumns(boundingBox.XAxis.Count, boundingBox.YAxis.Count, filename, formData))
             {
                 Log.Error($"MontageTiles: Failed to montage columns into final image.");
                 return false; // Propagate failure from final montage.
@@ -382,7 +382,7 @@ namespace P3D_Scenario_Generator.MapTiles
             // Step 3: Delete all temporary individual tile and column strip files.
             // Although cleanup is typically a post-process, if it fails, it's still considered
             // a failure of the overall operation to ensure a clean state (or at least report an issue).
-            if (!FileOps.DeleteTempOSMfiles(filename)) // Assuming DeleteTempOSMfiles is still in Drawing or moved to FileOps
+            if (!FileOps.DeleteTempOSMfiles(filename, formData)) // Assuming DeleteTempOSMfiles is still in Drawing or moved to FileOps
             {
                 Log.Error($"MontageTiles: Failed to delete temporary OSM files.");
                 return false; // Propagate failure from temporary file deletion.

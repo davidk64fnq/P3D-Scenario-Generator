@@ -56,9 +56,9 @@ namespace P3D_Scenario_Generator
         /// used to translate tile indices and offsets into pixel coordinates.</param>
         /// <param name="filename">The base filename of the existing map image to draw on, and where the modified image will be saved.</param>
         /// <returns><see langword="true"/> if the route was successfully drawn and saved; otherwise, <see langword="false"/>.</returns>
-        static internal bool DrawRoute(List<Tile> tiles, BoundingBox boundingBox, string filename)
+        static internal bool DrawRoute(List<Tile> tiles, BoundingBox boundingBox, string filename, ScenarioFormData formData)
         {
-            string imagePath = $"{Parameters.SettingsImageFolder}\\{filename}.png";
+            string imagePath = $"{formData.ScenarioImageFolder}\\{filename}.png";
 
             try
             {
@@ -127,17 +127,17 @@ namespace P3D_Scenario_Generator
         /// Draws the complete and incomplete images that display in the load scenario dialog.
         /// </summary>
         /// <returns><see langword="true"/> if all scenario images were drawn successfully; otherwise, <see langword="false"/>.</returns>
-        static internal bool DrawScenarioImages()
+        static internal bool DrawScenarioImages(ScenarioFormData formData)
         {
             try
             {
-                if (!DrawScenarioLoadImage("success-icon", "imgM_c"))
+                if (!DrawScenarioLoadImage("success-icon", "imgM_c", formData))
                 {
                     Log.Error("ImageUtils.DrawScenarioImages: Failed to draw success scenario image.");
                     return false;
                 }
 
-                if (!DrawScenarioLoadImage("failure-icon", "imgM_i"))
+                if (!DrawScenarioLoadImage("failure-icon", "imgM_i", formData))
                 {
                     Log.Error("ImageUtils.DrawScenarioImages: Failed to draw failure scenario image.");
                     return false;
@@ -159,9 +159,9 @@ namespace P3D_Scenario_Generator
         /// <param name="iconName">The name of the icon resource file to be overlaid (no extension).</param>
         /// <param name="outputName">The name for the base output image file (no extension).</param>
         /// <returns><see langword="true"/> if the scenario load image was drawn and converted successfully; otherwise, <see langword="false"/>.</returns>
-        static internal bool DrawScenarioLoadImage(string iconName, string outputName)
+        static internal bool DrawScenarioLoadImage(string iconName, string outputName, ScenarioFormData formData)
         {
-            string outputPngPath = $"{Parameters.SettingsImageFolder}\\{outputName}.png";
+            string outputPngPath = $"{formData.ScenarioImageFolder}\\{outputName}.png";
             string iconPngResourcePath = $"Images.{iconName}.png";
 
             try
@@ -189,7 +189,7 @@ namespace P3D_Scenario_Generator
 
                     image.Settings.Font = "SegoeUI";
                     image.Settings.FontPointsize = 36;
-                    image.Annotate(Parameters.SelectedScenarioType.ToString(), geometry, Gravity.Center);
+                    image.Annotate(formData.ScenarioType.ToString(), geometry, Gravity.Center);
 
                     using (Stream iconStream = Form.GetResourceStream(iconPngResourcePath))
                     {
@@ -210,7 +210,7 @@ namespace P3D_Scenario_Generator
                     image.Write(outputPngPath);
                 }
 
-                if (!ConvertImageformat(outputName, "png", "bmp"))
+                if (!ConvertImageformat(outputName, "png", "bmp", formData))
                 {
                     Log.Error($"ImageUtils.DrawScenarioLoadImage: Failed to convert image '{outputName}.png' to BMP.");
                     return false;
@@ -248,10 +248,10 @@ namespace P3D_Scenario_Generator
         /// <param name="oldExt">The original file extension (e.g., "png", "bmp").</param>
         /// <param name="newExt">The new file extension (e.g., "jpg", "webp").</param>
         /// <returns><see langword="true"/> if the image was converted successfully; otherwise, <see langword="false"/>.</returns>
-        static internal bool ConvertImageformat(string filename, string oldExt, string newExt)
+        static internal bool ConvertImageformat(string filename, string oldExt, string newExt, ScenarioFormData formData)
         {
-            string oldFullPath = $"{Parameters.SettingsImageFolder}\\{filename}.{oldExt}";
-            string newFullPath = $"{Parameters.SettingsImageFolder}\\{filename}.{newExt}";
+            string oldFullPath = $"{formData.ScenarioImageFolder}\\{filename}.{oldExt}";
+            string newFullPath = $"{formData.ScenarioImageFolder}\\{filename}.{newExt}";
 
             if (!File.Exists(oldFullPath))
             {
@@ -311,9 +311,9 @@ namespace P3D_Scenario_Generator
         /// <param name="width">New size, if zero proportional based on height parameter</param>
         /// <param name="height">New size, if zero proportional based on width parameter</param>
         /// <returns><see langword="true"/> if the image was resized successfully; otherwise, <see langword="false"/>.</returns>
-        static internal bool Resize(string filename, int width, int height)
+        static internal bool Resize(string filename, int width, int height, ScenarioFormData formData)
         {
-            string fullPath = $"{Parameters.SettingsImageFolder}\\{filename}";
+            string fullPath = $"{formData.ScenarioImageFolder}\\{filename}";
 
             if (!File.Exists(fullPath))
             {

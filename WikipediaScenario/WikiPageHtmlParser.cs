@@ -15,7 +15,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// </summary>
         /// <param name="wikiURL">User supplied Wikipedia URL</param>
         /// <param name="columnNo">User supplied column number of items in table</param>
-        static internal bool PopulateWikiPage(string wikiURL, int columnNo, IProgress<string> progressReporter = null)
+        static internal bool PopulateWikiPage(string wikiURL, int columnNo, ScenarioFormData formData, IProgress<string> progressReporter = null)
         {
             // Report initial status when starting the overall operation
             progressReporter?.Report($"Fetching data from {wikiURL}, please wait...");
@@ -34,7 +34,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 return false; // Return false on failure to get HTML
             }
 
-            if (!GetNodeCollection(htmlDoc.DocumentNode, ref tables, tableSelection, true))
+            if (!GetNodeCollection(htmlDoc.DocumentNode, ref tables, tableSelection, true, formData))
             {
                 progressReporter?.Report($"No relevant tables found at {wikiURL}.");
                 Log.Warning($"No tables matching selection '{tableSelection}' found at {wikiURL}.");
@@ -52,7 +52,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 // Report progress for the current table
                 progressReporter?.Report($"Reading table {currentTableIndex} of {totalTables}, please wait...");
 
-                if (GetNodeCollection(table, ref rows, ".//tr", true))
+                if (GetNodeCollection(table, ref rows, ".//tr", true, formData))
                 {
                     // You could add row-level progress here if needed, but it might be too chatty
                     // int totalRows = rows.Count;
@@ -61,9 +61,9 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                     foreach (var row in rows)
                     {
                         // currentRowIndex++;
-                        if (GetNodeCollection(row, ref cells, ".//th | .//td", true) && cells.Count >= columnNo)
+                        if (GetNodeCollection(row, ref cells, ".//th | .//td", true, formData) && cells.Count >= columnNo)
                         {
-                            ReadWikiCell(cells[columnNo - 1], curTable);
+                            ReadWikiCell(cells[columnNo - 1], curTable, formData);
                         }
                     }
                 }
@@ -86,13 +86,13 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <param name="childNodeCollection">The collection of HtmlNodes resulting from selction string</param>
         /// <param name="selection">The string used to collect child HtmlNodes from the parent HtmlNode</param>
         /// <returns></returns>
-        static internal bool GetNodeCollection(HtmlNode parentNode, ref HtmlNodeCollection childNodeCollection, string selection, bool verbose)
+        static internal bool GetNodeCollection(HtmlNode parentNode, ref HtmlNodeCollection childNodeCollection, string selection, bool verbose, ScenarioFormData formData)
         {
             childNodeCollection = parentNode.SelectNodes(selection);
             if (childNodeCollection == null && verbose)
             {
                 string errorMessage = $"Node collection failed for {selection}";
-                MessageBox.Show(errorMessage, $"{Parameters.SelectedScenarioType}", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(errorMessage, $"{formData.ScenarioType}", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return false;
             }
             return true;
@@ -104,7 +104,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// </summary>
         /// <param name="cell">The cell in a table row containing item title and hyperlink</param>
         /// <param name="curTable">The current table being populated in <see cref="WikiPage"/></param>
-        static internal void ReadWikiCell(HtmlNode cell, List<WikiItemParams> curTable)
+        static internal void ReadWikiCell(HtmlNode cell, List<WikiItemParams> curTable, ScenarioFormData formData)
         {
             WikiItemParams wikiItem = new();
             List<HtmlNode> cellDescendants = [.. cell.Descendants("a")];
@@ -118,7 +118,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             {
                 wikiItem.title = HttpUtility.HtmlDecode(title);
                 wikiItem.itemURL = link;
-                if (GetWikiItemCoordinates(wikiItem))
+                if (GetWikiItemCoordinates(wikiItem, formData))
                 {
                     wikiItem.hrefs = GetWikiItemHREFs(wikiItem);
                     curTable.Add(wikiItem);
@@ -132,16 +132,16 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// </summary>
         /// <param name="wikiItem">The current row in table being populated in <see cref="WikiPage"/></param>
         /// <returns></returns>
-        static internal bool GetWikiItemCoordinates(WikiItemParams wikiItem)
+        static internal bool GetWikiItemCoordinates(WikiItemParams wikiItem, ScenarioFormData formData)
         {
             var htmlDoc = HttpRoutines.GetWebDoc($"https://en.wikipedia.org/{wikiItem.itemURL}");
             HtmlNodeCollection spans = null;
-            if (htmlDoc != null && GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='latitude']", false))
+            if (htmlDoc != null && GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='latitude']", false, formData))
             {
                 if (spans != null && spans.Count > 0)
                 {
                     wikiItem.latitude = ConvertWikiCoOrd(spans[0].InnerText);
-                    GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='longitude']", false);
+                    GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='longitude']", false, formData);
                     wikiItem.longitude = ConvertWikiCoOrd(spans[0].InnerText);
                     return true;
                 }

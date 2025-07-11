@@ -178,12 +178,12 @@
         public double SignGateHeight { get; set; }
 
         /// <summary>
-        /// The length of a segment measured in feet. 
+        /// The length of a segment measured in degrees of latitude. 
         /// </summary>
         public double SignSegmentLength { get; set; }
 
         /// <summary>
-        /// The radius of pointy caps of segment measured in feet. 
+        /// The radius of pointy caps of segment measured in degrees of latitude. 
         /// </summary>
         public double SignSegmentRadius { get; set; }
 
@@ -275,11 +275,6 @@
         public string CacheServerAPIkey { get; set; }
 
         /// <summary>
-        /// Location where generated scenarios are stored. Usually e.g. "Prepar3D v5 Files"
-        /// </summary>
-        public string ScenarioFolderBase { get; set; }
-
-        /// <summary>
         /// Used to identify registry entry that specifies location of P3D program files, including SimObjects for aircraft selection
         /// </summary>
         public string SimulatorVersion { get; set; }
@@ -287,7 +282,17 @@
         /// <summary>
         /// P3D Program Data folder path excluding version number suffix
         /// </summary>
+        public string P3DProgramInstall { get; set; }
+
+        /// <summary>
+        /// P3D Program Install folder path excluding version number suffix
+        /// </summary>
         public string P3DProgramData { get; set; }
+
+        /// <summary>
+        /// Location where generated scenarios are stored. Usually e.g. "Prepar3D v5 Files"
+        /// </summary>
+        public string ScenarioFolderBase { get; set; }
 
         /// <summary>
         /// Reference integer for the monitor that map window is to be displayed in initially. Values from 0 to the number of 
@@ -319,6 +324,25 @@
         /// User can select a map window size of either 512 or 1024 pixels square.
         /// </summary>
         public int MapWindowSize { get; set; }
+
+        #endregion
+
+        #region Derived Properties
+
+        /// <summary>
+        /// Location of scenario folder.
+        /// </summary>
+        public string ScenarioFolder { get; set; }
+
+        /// <summary>
+        /// Location of images folder for the scenario.
+        /// </summary>
+        public string ScenarioImageFolder { get; set; }
+
+        /// <summary>
+        /// Season corresponding to selected scenario date.
+        /// </summary>
+        public Season Season { get; set; }
 
         #endregion
     }

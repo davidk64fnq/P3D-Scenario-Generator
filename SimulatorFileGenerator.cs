@@ -16,10 +16,10 @@ namespace P3D_Scenario_Generator
         /// a dummy copy of "stars.dat" is created so that user isn't asked again.
         /// </summary>
         /// <returns>True if all needed file operations complete successfully</returns>
-        static internal bool CreateStarsDat()
+        static internal bool CreateStarsDat(ScenarioFormData formData)
         {
-            string starsDatPath = Path.Combine(Parameters.SettingsP3DprogramData + Parameters.SettingsSimulatorVersion, "stars.dat");
-            string starsDatBackupPath = Path.Combine(Parameters.SettingsP3DprogramData + Parameters.SettingsSimulatorVersion, "stars.dat.P3DscenarioGenerator.backup");
+            string starsDatPath = Path.Combine(formData.P3DProgramData, "stars.dat");
+            string starsDatBackupPath = Path.Combine(formData.P3DProgramData, "stars.dat.P3DscenarioGenerator.backup");
 
             string starsDatContent = $"[Star Settings]\nIntensity=230\nNumStars={StarDataManager.noStars}\n[Star Locations]\n";
 

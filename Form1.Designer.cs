@@ -175,7 +175,6 @@ namespace P3D_Scenario_Generator
             label58 = new Label();
             label59 = new Label();
             label60 = new Label();
-            label62 = new Label();
             TextBoxSettingsP3DprogramData = new TextBox();
             groupBox17 = new GroupBox();
             tableLayoutPanel13 = new TableLayoutPanel();
@@ -197,6 +196,9 @@ namespace P3D_Scenario_Generator
             label26 = new Label();
             ButtonBrowseScenarioFolder = new Button();
             TextBoxSettingsScenarioFolderBase = new TextBox();
+            TextBoxSettingsP3DprogramInstall = new TextBox();
+            button1 = new Button();
+            button2 = new Button();
             groupBox16 = new GroupBox();
             tableLayoutPanel12 = new TableLayoutPanel();
             ButtonRandomLocation = new Button();
@@ -642,7 +644,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsCacheUsage.AccessibleName = "Map Tile Cache Info: Cache Usage";
             TextBoxSettingsCacheUsage.Anchor = AnchorStyles.None;
             TextBoxSettingsCacheUsage.Enabled = false;
-            TextBoxSettingsCacheUsage.Location = new Point(139, 64);
+            TextBoxSettingsCacheUsage.Location = new Point(141, 63);
             TextBoxSettingsCacheUsage.Name = "TextBoxSettingsCacheUsage";
             TextBoxSettingsCacheUsage.Size = new Size(100, 23);
             TextBoxSettingsCacheUsage.TabIndex = 39;
@@ -655,7 +657,7 @@ namespace P3D_Scenario_Generator
             // 
             label41.Anchor = AnchorStyles.None;
             label41.AutoSize = true;
-            label41.Location = new Point(18, 7);
+            label41.Location = new Point(19, 7);
             label41.Name = "label41";
             label41.Size = new Size(89, 15);
             label41.TabIndex = 30;
@@ -666,7 +668,7 @@ namespace P3D_Scenario_Generator
             // 
             label42.Anchor = AnchorStyles.None;
             label42.AutoSize = true;
-            label42.Location = new Point(25, 68);
+            label42.Location = new Point(26, 67);
             label42.Name = "label42";
             label42.Size = new Size(75, 15);
             label42.TabIndex = 31;
@@ -678,7 +680,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsCacheDailyTotal.AccessibleName = "Map Tile Cache Info: Cache Daily Total";
             TextBoxSettingsCacheDailyTotal.Anchor = AnchorStyles.None;
             TextBoxSettingsCacheDailyTotal.Enabled = false;
-            TextBoxSettingsCacheDailyTotal.Location = new Point(139, 33);
+            TextBoxSettingsCacheDailyTotal.Location = new Point(141, 33);
             TextBoxSettingsCacheDailyTotal.Name = "TextBoxSettingsCacheDailyTotal";
             TextBoxSettingsCacheDailyTotal.Size = new Size(100, 23);
             TextBoxSettingsCacheDailyTotal.TabIndex = 32;
@@ -704,7 +706,7 @@ namespace P3D_Scenario_Generator
             groupBox3.Controls.Add(TableLayoutPanelSettingsMapTileCacheInfo);
             groupBox3.Location = new Point(56, 27);
             groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(286, 127);
+            groupBox3.Size = new Size(285, 130);
             groupBox3.TabIndex = 1;
             groupBox3.TabStop = false;
             groupBox3.Text = "Map Tile Cache Info";
@@ -724,22 +726,20 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(TextBoxSettingsCacheDailyTotal, 1, 1);
             TableLayoutPanelSettingsMapTileCacheInfo.Controls.Add(TextBoxSettingsCacheUsage, 1, 2);
             TableLayoutPanelSettingsMapTileCacheInfo.ImeMode = ImeMode.On;
-            TableLayoutPanelSettingsMapTileCacheInfo.Location = new Point(16, 22);
+            TableLayoutPanelSettingsMapTileCacheInfo.Location = new Point(14, 25);
             TableLayoutPanelSettingsMapTileCacheInfo.Name = "TableLayoutPanelSettingsMapTileCacheInfo";
             TableLayoutPanelSettingsMapTileCacheInfo.RowCount = 3;
-            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TableLayoutPanelSettingsMapTileCacheInfo.Size = new Size(253, 92);
+            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelSettingsMapTileCacheInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelSettingsMapTileCacheInfo.Size = new Size(255, 90);
             TableLayoutPanelSettingsMapTileCacheInfo.TabIndex = 36;
             // 
             // TextBoxSettingsOSMServerAPIkey
             // 
             TextBoxSettingsOSMServerAPIkey.AccessibleName = "Map Tile Cache Info: Server / API key";
             TextBoxSettingsOSMServerAPIkey.Anchor = AnchorStyles.None;
-            TextBoxSettingsOSMServerAPIkey.Location = new Point(139, 3);
+            TextBoxSettingsOSMServerAPIkey.Location = new Point(141, 3);
             TextBoxSettingsOSMServerAPIkey.Name = "TextBoxSettingsOSMServerAPIkey";
             TextBoxSettingsOSMServerAPIkey.Size = new Size(100, 23);
             TextBoxSettingsOSMServerAPIkey.TabIndex = 40;
@@ -2073,7 +2073,7 @@ namespace P3D_Scenario_Generator
             // 
             label8.Anchor = AnchorStyles.None;
             label8.AutoSize = true;
-            label8.Location = new Point(40, 37);
+            label8.Location = new Point(41, 7);
             label8.Name = "label8";
             label8.Size = new Size(45, 15);
             label8.TabIndex = 43;
@@ -2087,12 +2087,13 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsSimulatorVersion.DropDownWidth = 100;
             ComboBoxSettingsSimulatorVersion.FormattingEnabled = true;
             ComboBoxSettingsSimulatorVersion.Items.AddRange(new object[] { "4", "5", "6" });
-            ComboBoxSettingsSimulatorVersion.Location = new Point(139, 33);
+            ComboBoxSettingsSimulatorVersion.Location = new Point(141, 3);
             ComboBoxSettingsSimulatorVersion.Name = "ComboBoxSettingsSimulatorVersion";
             ComboBoxSettingsSimulatorVersion.Size = new Size(100, 23);
             ComboBoxSettingsSimulatorVersion.TabIndex = 44;
             ComboBoxSettingsSimulatorVersion.Tag = "";
             toolTip1.SetToolTip(ComboBoxSettingsSimulatorVersion, "Used to identify registry entry that specifies location of P3D program files, including SimObjects for aircraft selection");
+            ComboBoxSettingsSimulatorVersion.SelectedIndexChanged += ComboBoxSettingsSimulatorVersion_SelectedIndexChanged;
             // 
             // ComboBoxGeneralLocationFavourites
             // 
@@ -2201,29 +2202,18 @@ namespace P3D_Scenario_Generator
             label60.Text = "Country";
             toolTip1.SetToolTip(label60, resources.GetString("label60.ToolTip"));
             // 
-            // label62
-            // 
-            label62.Anchor = AnchorStyles.None;
-            label62.AutoSize = true;
-            label62.Location = new Point(11, 68);
-            label62.Name = "label62";
-            label62.Size = new Size(104, 15);
-            label62.TabIndex = 45;
-            label62.Text = "P3D Program Data";
-            toolTip1.SetToolTip(label62, "Location where generated scenarios are stored. Usually \"Prepar3D v5 Files\"");
-            // 
             // TextBoxSettingsP3DprogramData
             // 
             TextBoxSettingsP3DprogramData.AccessibleName = "Folder Info: P3D Program Data";
             TextBoxSettingsP3DprogramData.Anchor = AnchorStyles.None;
-            TextBoxSettingsP3DprogramData.Location = new Point(139, 64);
+            TextBoxSettingsP3DprogramData.Location = new Point(141, 63);
             TextBoxSettingsP3DprogramData.Name = "TextBoxSettingsP3DprogramData";
+            TextBoxSettingsP3DprogramData.ReadOnly = true;
             TextBoxSettingsP3DprogramData.Size = new Size(100, 23);
             TextBoxSettingsP3DprogramData.TabIndex = 46;
-            TextBoxSettingsP3DprogramData.Tag = "C:\\ProgramData\\Lockheed Martin\\Prepar3D v";
-            TextBoxSettingsP3DprogramData.Text = "C:\\ProgramData\\Lockheed Martin\\Prepar3D v";
-            TextBoxSettingsP3DprogramData.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSettingsP3DprogramData, "P3D Program Data folder path excluding version number suffix");
+            TextBoxSettingsP3DprogramData.Tag = "";
+            toolTip1.SetToolTip(TextBoxSettingsP3DprogramData, "P3D Program Data folder path, typically e.g. \"C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\"");
+            TextBoxSettingsP3DprogramData.MouseEnter += TextBoxSettingsP3DprogramData_MouseEnter;
             // 
             // groupBox17
             // 
@@ -2232,7 +2222,7 @@ namespace P3D_Scenario_Generator
             groupBox17.Controls.Add(tableLayoutPanel13);
             groupBox17.Location = new Point(463, 27);
             groupBox17.Name = "groupBox17";
-            groupBox17.Size = new Size(286, 204);
+            groupBox17.Size = new Size(285, 220);
             groupBox17.TabIndex = 38;
             groupBox17.TabStop = false;
             groupBox17.Text = "Map Window";
@@ -2258,16 +2248,16 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel13.Controls.Add(TextBoxSettingsMapMonitorWidth, 1, 3);
             tableLayoutPanel13.Controls.Add(TextBoxSettingsMapMonitorHeight, 1, 4);
             tableLayoutPanel13.ImeMode = ImeMode.On;
-            tableLayoutPanel13.Location = new Point(15, 22);
+            tableLayoutPanel13.Location = new Point(15, 25);
             tableLayoutPanel13.Name = "tableLayoutPanel13";
             tableLayoutPanel13.RowCount = 6;
-            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Percent, 16.67F));
-            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Percent, 16.67F));
-            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Percent, 16.67F));
-            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Percent, 16.67F));
-            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Percent, 16.67F));
-            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Percent, 16.65F));
-            tableLayoutPanel13.Size = new Size(253, 172);
+            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel13.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel13.Size = new Size(255, 180);
             tableLayoutPanel13.TabIndex = 35;
             // 
             // ComboBoxSettingsMapWindowSize
@@ -2277,7 +2267,7 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsMapWindowSize.DropDownWidth = 200;
             ComboBoxSettingsMapWindowSize.FormattingEnabled = true;
             ComboBoxSettingsMapWindowSize.Items.AddRange(new object[] { "512", "1024" });
-            ComboBoxSettingsMapWindowSize.Location = new Point(139, 144);
+            ComboBoxSettingsMapWindowSize.Location = new Point(141, 153);
             ComboBoxSettingsMapWindowSize.Name = "ComboBoxSettingsMapWindowSize";
             ComboBoxSettingsMapWindowSize.Size = new Size(100, 23);
             ComboBoxSettingsMapWindowSize.TabIndex = 45;
@@ -2292,7 +2282,7 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsMapAlignment.DropDownWidth = 100;
             ComboBoxSettingsMapAlignment.FormattingEnabled = true;
             ComboBoxSettingsMapAlignment.Items.AddRange(new object[] { "Centered", "Top Left", "Top Right", "Bottom Right", "Bottom Left" });
-            ComboBoxSettingsMapAlignment.Location = new Point(139, 59);
+            ComboBoxSettingsMapAlignment.Location = new Point(141, 63);
             ComboBoxSettingsMapAlignment.Name = "ComboBoxSettingsMapAlignment";
             ComboBoxSettingsMapAlignment.Size = new Size(100, 23);
             ComboBoxSettingsMapAlignment.TabIndex = 44;
@@ -2304,7 +2294,7 @@ namespace P3D_Scenario_Generator
             // 
             label63.Anchor = AnchorStyles.None;
             label63.AutoSize = true;
-            label63.Location = new Point(43, 34);
+            label63.Location = new Point(44, 37);
             label63.Name = "label63";
             label63.Size = new Size(39, 15);
             label63.TabIndex = 30;
@@ -2315,7 +2305,7 @@ namespace P3D_Scenario_Generator
             // 
             TextBoxSettingsMapOffset.AccessibleName = "Map Window: Horizontal Offset";
             TextBoxSettingsMapOffset.Anchor = AnchorStyles.None;
-            TextBoxSettingsMapOffset.Location = new Point(139, 31);
+            TextBoxSettingsMapOffset.Location = new Point(141, 33);
             TextBoxSettingsMapOffset.Name = "TextBoxSettingsMapOffset";
             TextBoxSettingsMapOffset.Size = new Size(100, 23);
             TextBoxSettingsMapOffset.TabIndex = 33;
@@ -2328,7 +2318,7 @@ namespace P3D_Scenario_Generator
             // 
             label64.Anchor = AnchorStyles.None;
             label64.AutoSize = true;
-            label64.Location = new Point(31, 62);
+            label64.Location = new Point(32, 67);
             label64.Name = "label64";
             label64.Size = new Size(63, 15);
             label64.TabIndex = 31;
@@ -2339,7 +2329,7 @@ namespace P3D_Scenario_Generator
             // 
             TextBoxSettingsMapMonitorNumber.AccessibleName = "Map Window: Monitor Number";
             TextBoxSettingsMapMonitorNumber.Anchor = AnchorStyles.None;
-            TextBoxSettingsMapMonitorNumber.Location = new Point(139, 3);
+            TextBoxSettingsMapMonitorNumber.Location = new Point(141, 3);
             TextBoxSettingsMapMonitorNumber.Name = "TextBoxSettingsMapMonitorNumber";
             TextBoxSettingsMapMonitorNumber.Size = new Size(100, 23);
             TextBoxSettingsMapMonitorNumber.TabIndex = 32;
@@ -2352,7 +2342,7 @@ namespace P3D_Scenario_Generator
             // 
             label66.Anchor = AnchorStyles.None;
             label66.AutoSize = true;
-            label66.Location = new Point(14, 6);
+            label66.Location = new Point(15, 7);
             label66.Name = "label66";
             label66.Size = new Size(97, 15);
             label66.TabIndex = 29;
@@ -2363,7 +2353,7 @@ namespace P3D_Scenario_Generator
             // 
             label67.Anchor = AnchorStyles.None;
             label67.AutoSize = true;
-            label67.Location = new Point(20, 90);
+            label67.Location = new Point(21, 97);
             label67.Name = "label67";
             label67.Size = new Size(85, 15);
             label67.TabIndex = 35;
@@ -2374,7 +2364,7 @@ namespace P3D_Scenario_Generator
             // 
             label68.Anchor = AnchorStyles.None;
             label68.AutoSize = true;
-            label68.Location = new Point(18, 118);
+            label68.Location = new Point(19, 127);
             label68.Name = "label68";
             label68.Size = new Size(89, 15);
             label68.TabIndex = 36;
@@ -2385,7 +2375,7 @@ namespace P3D_Scenario_Generator
             // 
             label69.Anchor = AnchorStyles.None;
             label69.AutoSize = true;
-            label69.Location = new Point(26, 148);
+            label69.Location = new Point(26, 157);
             label69.Name = "label69";
             label69.Size = new Size(74, 15);
             label69.TabIndex = 21;
@@ -2396,7 +2386,7 @@ namespace P3D_Scenario_Generator
             // 
             TextBoxSettingsMapMonitorWidth.AccessibleName = "Map Window: Monitor Width";
             TextBoxSettingsMapMonitorWidth.Anchor = AnchorStyles.None;
-            TextBoxSettingsMapMonitorWidth.Location = new Point(139, 87);
+            TextBoxSettingsMapMonitorWidth.Location = new Point(141, 93);
             TextBoxSettingsMapMonitorWidth.Name = "TextBoxSettingsMapMonitorWidth";
             TextBoxSettingsMapMonitorWidth.Size = new Size(100, 23);
             TextBoxSettingsMapMonitorWidth.TabIndex = 37;
@@ -2409,7 +2399,7 @@ namespace P3D_Scenario_Generator
             // 
             TextBoxSettingsMapMonitorHeight.AccessibleName = "Map Window: Monitor Height";
             TextBoxSettingsMapMonitorHeight.Anchor = AnchorStyles.None;
-            TextBoxSettingsMapMonitorHeight.Location = new Point(139, 115);
+            TextBoxSettingsMapMonitorHeight.Location = new Point(141, 123);
             TextBoxSettingsMapMonitorHeight.Name = "TextBoxSettingsMapMonitorHeight";
             TextBoxSettingsMapMonitorHeight.Size = new Size(100, 23);
             TextBoxSettingsMapMonitorHeight.TabIndex = 38;
@@ -2478,7 +2468,7 @@ namespace P3D_Scenario_Generator
             // ButtonBrowseScenarioFolder
             // 
             ButtonBrowseScenarioFolder.Anchor = AnchorStyles.None;
-            ButtonBrowseScenarioFolder.Location = new Point(13, 3);
+            ButtonBrowseScenarioFolder.Location = new Point(13, 93);
             ButtonBrowseScenarioFolder.Name = "ButtonBrowseScenarioFolder";
             ButtonBrowseScenarioFolder.Size = new Size(100, 23);
             ButtonBrowseScenarioFolder.TabIndex = 47;
@@ -2490,12 +2480,50 @@ namespace P3D_Scenario_Generator
             // TextBoxSettingsScenarioFolderBase
             // 
             TextBoxSettingsScenarioFolderBase.Anchor = AnchorStyles.None;
-            TextBoxSettingsScenarioFolderBase.Location = new Point(139, 3);
+            TextBoxSettingsScenarioFolderBase.Location = new Point(141, 93);
             TextBoxSettingsScenarioFolderBase.Name = "TextBoxSettingsScenarioFolderBase";
+            TextBoxSettingsScenarioFolderBase.ReadOnly = true;
             TextBoxSettingsScenarioFolderBase.Size = new Size(100, 23);
             TextBoxSettingsScenarioFolderBase.TabIndex = 48;
             toolTip1.SetToolTip(TextBoxSettingsScenarioFolderBase, "Folder where scenario folders generated by the program will be placed");
-            TextBoxSettingsScenarioFolderBase.Leave += TextBoxSettingsScenarioFolderBase_Leave;
+            TextBoxSettingsScenarioFolderBase.MouseEnter += TextBoxSettingsScenarioFolderBase_MouseEnter;
+            // 
+            // TextBoxSettingsP3DprogramInstall
+            // 
+            TextBoxSettingsP3DprogramInstall.AccessibleName = "Folder Info: P3D Program Data";
+            TextBoxSettingsP3DprogramInstall.Anchor = AnchorStyles.None;
+            TextBoxSettingsP3DprogramInstall.Location = new Point(141, 33);
+            TextBoxSettingsP3DprogramInstall.Name = "TextBoxSettingsP3DprogramInstall";
+            TextBoxSettingsP3DprogramInstall.ReadOnly = true;
+            TextBoxSettingsP3DprogramInstall.Size = new Size(100, 23);
+            TextBoxSettingsP3DprogramInstall.TabIndex = 50;
+            TextBoxSettingsP3DprogramInstall.Tag = "";
+            toolTip1.SetToolTip(TextBoxSettingsP3DprogramInstall, "P3D Program Install folder path, typically e.g. \"C:\\Program Files\\Lockheed Martin\\Prepar3D v5\"");
+            TextBoxSettingsP3DprogramInstall.MouseEnter += TextBoxSettingsP3DprogramInstall_MouseEnter;
+            // 
+            // button1
+            // 
+            button1.Anchor = AnchorStyles.None;
+            button1.Location = new Point(13, 33);
+            button1.Name = "button1";
+            button1.Size = new Size(100, 23);
+            button1.TabIndex = 51;
+            button1.Text = "P3D Install";
+            toolTip1.SetToolTip(button1, "Click to choose P3D Program Install folder path, typically e.g. \"C:\\Program Files\\Lockheed Martin\\Prepar3D v5\"");
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += ButtonBrowseP3DInstallFolder_Click;
+            // 
+            // button2
+            // 
+            button2.Anchor = AnchorStyles.None;
+            button2.Location = new Point(13, 63);
+            button2.Name = "button2";
+            button2.Size = new Size(100, 23);
+            button2.TabIndex = 52;
+            button2.Text = "P3D Data";
+            toolTip1.SetToolTip(button2, "Click to choose P3D Program Data folder path, typically e.g. \"C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\"");
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += ButtonBrowseP3DDataFolder_Click;
             // 
             // groupBox16
             // 
@@ -2597,11 +2625,13 @@ namespace P3D_Scenario_Generator
             // 
             // groupBox4
             // 
+            groupBox4.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox4.BackColor = Color.FromArgb(255, 192, 128);
             groupBox4.Controls.Add(tableLayoutPanel1);
             groupBox4.Location = new Point(56, 181);
+            groupBox4.MinimumSize = new Size(285, 0);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(286, 127);
+            groupBox4.Size = new Size(285, 160);
             groupBox4.TabIndex = 2;
             groupBox4.TabStop = false;
             groupBox4.Text = "Folder Info";
@@ -2610,23 +2640,29 @@ namespace P3D_Scenario_Generator
             // 
             tableLayoutPanel1.AccessibleName = "";
             tableLayoutPanel1.Anchor = AnchorStyles.None;
+            tableLayoutPanel1.AutoSize = true;
+            tableLayoutPanel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             tableLayoutPanel1.ColumnCount = 2;
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(button2, 0, 2);
+            tableLayoutPanel1.Controls.Add(button1, 0, 1);
             tableLayoutPanel1.Controls.Add(TextBoxSettingsP3DprogramData, 1, 2);
-            tableLayoutPanel1.Controls.Add(label62, 0, 2);
-            tableLayoutPanel1.Controls.Add(ComboBoxSettingsSimulatorVersion, 1, 1);
-            tableLayoutPanel1.Controls.Add(label8, 0, 1);
-            tableLayoutPanel1.Controls.Add(ButtonBrowseScenarioFolder, 0, 0);
-            tableLayoutPanel1.Controls.Add(TextBoxSettingsScenarioFolderBase, 1, 0);
+            tableLayoutPanel1.Controls.Add(ButtonBrowseScenarioFolder, 0, 3);
+            tableLayoutPanel1.Controls.Add(label8, 0, 0);
+            tableLayoutPanel1.Controls.Add(ComboBoxSettingsSimulatorVersion, 1, 0);
+            tableLayoutPanel1.Controls.Add(TextBoxSettingsP3DprogramInstall, 1, 1);
+            tableLayoutPanel1.Controls.Add(TextBoxSettingsScenarioFolderBase, 1, 3);
             tableLayoutPanel1.ImeMode = ImeMode.On;
-            tableLayoutPanel1.Location = new Point(16, 22);
+            tableLayoutPanel1.Location = new Point(14, 24);
+            tableLayoutPanel1.MinimumSize = new Size(255, 0);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 3;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 33F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 33F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 34F));
-            tableLayoutPanel1.Size = new Size(253, 92);
+            tableLayoutPanel1.RowCount = 4;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanel1.Size = new Size(255, 120);
             tableLayoutPanel1.TabIndex = 36;
             // 
             // TabPageCelestial
@@ -2921,6 +2957,7 @@ namespace P3D_Scenario_Generator
             TabPagePhotoTour.ResumeLayout(false);
             TabPageSettings.ResumeLayout(false);
             groupBox4.ResumeLayout(false);
+            groupBox4.PerformLayout();
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
             TabPageCelestial.ResumeLayout(false);
@@ -3115,7 +3152,6 @@ namespace P3D_Scenario_Generator
         internal TextBox TextBoxGeneralAircraftValues;
         private Button ButtonRandomLocation;
         internal TextBox TextBoxSettingsP3DprogramData;
-        private Label label62;
         internal TextBox TextBoxSettingsOSMServerAPIkey;
         private GroupBox groupBox17;
         private TableLayoutPanel tableLayoutPanel13;
@@ -3140,6 +3176,9 @@ namespace P3D_Scenario_Generator
         private ErrorProvider errorProvider1;
         private Button ButtonBrowseScenarioFolder;
         private TextBox TextBoxSettingsScenarioFolderBase;
+        internal TextBox TextBoxSettingsP3DprogramInstall;
+        private Button button2;
+        private Button button1;
     }
 }
 

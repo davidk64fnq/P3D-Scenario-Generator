@@ -54,14 +54,14 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// If all these steps are successful, it also updates the overview and location images.
         /// </summary>
         /// <returns>True if all celestial setup operations complete successfully; otherwise, false.</returns>
-        static internal bool SetCelestial()
+        internal static bool SetCelestial(ScenarioFormData formData)
         {
             Runway.destRwy = Runway.GetRandomRunway();
-            ScenarioLocationGenerator.SetMidairStartLocation(Parameters.CelestialMinDistance, Parameters.CelestialMaxDistance, Runway.destRwy, 
+            ScenarioLocationGenerator.SetMidairStartLocation(formData.CelestialMinDistance, formData.CelestialMaxDistance, Runway.destRwy, 
                 out midairStartHdg, out midairStartLat, out midairStartLon, out double randomRadiusNM);
             SextantViewGenerator.SetCelestialMapEdges(midairStartLat, midairStartLon, randomRadiusNM);
 
-            if (!AlmanacDataSource.GetAlmanacData())
+            if (!AlmanacDataSource.GetAlmanacData(formData))
             {
                 Log.Error("Failed to get almanac data during celestial setup.");
                 return false;
@@ -73,38 +73,38 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 return false;
             }
 
-            if (!SimulatorFileGenerator.CreateStarsDat())
+            if (!SimulatorFileGenerator.CreateStarsDat(formData))
             {
                 Log.Error("Failed to create stars.dat file during celestial setup.");
                 return false;
             }
 
-            if (!SextantViewGenerator.SetCelestialSextantHTML())
+            if (!SextantViewGenerator.SetCelestialSextantHTML(formData))
             {
                 Log.Error("Failed to set celestial sextant HTML during celestial setup.");
                 return false;
             }
 
-            if (!SextantViewGenerator.SetCelestialSextantJS())
+            if (!SextantViewGenerator.SetCelestialSextantJS(formData))
             {
                 Log.Error("Failed to set celestial sextant JavaScript during celestial setup.");
                 return false;
             }
 
-            if (!SextantViewGenerator.SetCelestialSextantCSS())
+            if (!SextantViewGenerator.SetCelestialSextantCSS(formData))
             {
                 Log.Error("Failed to set celestial sextant CSS during celestial setup.");
                 return false;
             }
 
             bool drawRoute = false;
-            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute))
+            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute, formData))
             {
                 Log.Error("Failed to create overview image during celestial setup.");
                 return false;
             }
 
-            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords()))
+            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(), formData))
             {
                 Log.Error("Failed to create location image during celestial setup.");
                 return false;

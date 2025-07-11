@@ -117,23 +117,23 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <summary>
         /// Populate PhotoLocations plus set airport(s) and create OSM images
         /// </summary>
-        static internal bool SetPhotoTour()
+        static internal bool SetPhotoTour(ScenarioFormData formData)
         {
             // First, try to generate the random photo tour
-            if (!SetRandomPhotoTour()) 
+            if (!SetRandomPhotoTour(formData)) 
             {
                 Log.Error("Failed to generate a random photo tour.");
                 return false; 
             }
 
             bool drawRoute = false;
-            if (!MapTileImageMaker.CreateOverviewImage(PhotoTourUtilities.SetOverviewCoords(PhotoLocations), drawRoute))
+            if (!MapTileImageMaker.CreateOverviewImage(PhotoTourUtilities.SetOverviewCoords(PhotoLocations), drawRoute, formData))
             {
                 Log.Error("Failed to create overview image during photo tour setup.");
                 return false;
             }
 
-            if (!MapTileImageMaker.CreateLocationImage(PhotoTourUtilities.SetLocationCoords()))
+            if (!MapTileImageMaker.CreateLocationImage(PhotoTourUtilities.SetLocationCoords(), formData))
             {
                 Log.Error("Failed to create location image during photo tour setup.");
                 return false;
@@ -144,7 +144,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             for (int index = 0; index < PhotoLocations.Count - 1; index++)
             {
                 int legNo = index + 1; 
-                if (!MapTileImageMaker.SetLegRouteImages(PhotoTourUtilities.SetRouteCoords(PhotoLocations, index), PhotoTourLegMapEdges, legNo, drawRoute))
+                if (!MapTileImageMaker.SetLegRouteImages(PhotoTourUtilities.SetRouteCoords(PhotoLocations, index), PhotoTourLegMapEdges, legNo, drawRoute, formData))
                 {
                     Log.Error($"Failed to create route image for leg {index} during photo tour setup.");
                     return false;
@@ -160,10 +160,10 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// a finish airport is the required distance range from the last photo location.
         /// </summary>
         /// <returns>True if a complete photo tour was successfully created; otherwise, false.</returns>
-        static internal bool SetRandomPhotoTour()
+        static internal bool SetRandomPhotoTour(ScenarioFormData formData)
         {
             // Define max attempts to prevent infinite loops if tour generation is consistently difficult
-            int maxOverallAttempts = Parameters.PhotoTourMaxSearchAttempts;
+            int maxOverallAttempts = formData.PhotoTourMaxSearchAttempts;
             int currentOverallAttempt = 0;
             bool tourSuccessfullyFormed = false;
 
@@ -177,7 +177,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 PhotoLocations.Clear(); // Clear for each new attempt to find a tour
 
                 // 1. Try to find the first leg (starting airport and first photo)
-                SetLegResult firstLegResult = SetFirstLeg();
+                SetLegResult firstLegResult = SetFirstLeg(formData);
                 if (firstLegResult == SetLegResult.NoAirportFound)
                 {
                     continue; // Skip to next overall attempt
@@ -190,9 +190,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
                 // 2. Try to add subsequent photos up to the maximum number of legs
                 SetLegResult nextLegResult = SetLegResult.Success;
-                while (PhotoLocations.Count < Parameters.PhotoTourConstraintsMaxNoLegs && nextLegResult != SetLegResult.NoNextPhotoFound)
+                while (PhotoLocations.Count < formData.PhotoTourMaxNoLegs && nextLegResult != SetLegResult.NoNextPhotoFound)
                 {
-                    nextLegResult = SetNextLeg();
+                    nextLegResult = SetNextLeg(formData);
                     if (nextLegResult != SetLegResult.NoNextPhotoFound && nextLegResult != SetLegResult.Success)
                     {
                         Log.Error($"SetRandomPhotoTour: Failed while attempting to set subsequent leg.");
@@ -201,9 +201,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 }
 
                 // 3. If candidate route has enough legs, try to locate a destination airport
-                if (PhotoLocations.Count >= Parameters.PhotoTourConstraintsMinNoLegs)
+                if (PhotoLocations.Count >= formData.PhotoTourMinNoLegs)
                 {
-                    SetLegResult lastLegResult = SetLastLeg();
+                    SetLegResult lastLegResult = SetLastLeg(formData);
                     if (lastLegResult == SetLegResult.NoAirportFound)
                     {
                         continue; // Skip to next overall attempt
@@ -235,10 +235,10 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// the required distance range. If found adds the starting airport and first photo to the photo tour.
         /// </summary>
         /// <returns>True if first leg created</returns>
-        static internal SetLegResult SetFirstLeg()
+        static internal SetLegResult SetFirstLeg(ScenarioFormData formData)
         {
             PhotoLocParams airportLocation;
-            string pic2mapHtmlSaveLocation = $"{Parameters.SettingsImageFolder}\\random_pic2map.html";
+            string pic2mapHtmlSaveLocation = $"{formData.ScenarioImageFolder}\\random_pic2map.html";
 
             // Clear last attempt
             PhotoLocations = [];
@@ -266,13 +266,13 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
 
             // Find nearby airport to starting random photo
-            airportLocation = GetNearbyAirport(photoLocation.latitude, photoLocation.longitude, Parameters.PhotoTourConstraintsMinLegDist, Parameters.PhotoTourConstraintsMaxLegDist);
+            airportLocation = GetNearbyAirport(photoLocation.latitude, photoLocation.longitude, formData.PhotoTourMinLegDist, formData.PhotoTourMaxLegDist);
             if (airportLocation == null)
             {
                 return SetLegResult.NoAirportFound;
             }
-            Parameters.SelectedRunwayIndex = airportLocation.airportIndex;
-            Runway.startRwy = Runway.Runways[Parameters.SelectedRunwayIndex];
+            formData.RunwayIndex = airportLocation.airportIndex;
+            Runway.startRwy = Runway.Runways[formData.RunwayIndex];
             airportLocation.forwardBearing = MathRoutines.GetReciprocalHeading(airportLocation.forwardBearing);
             PhotoLocations.Add(airportLocation);
             PhotoLocations.Add(photoLocation);
@@ -322,11 +322,11 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <see cref="SetLegResult.FileOperationError"/> if there's a problem deleting temporary files.
         /// <see cref="SetLegResult.WebDownloadFailed"/> if the next photo's web page cannot be downloaded.
         /// </returns>
-        static internal SetLegResult SetNextLeg() 
+        static internal SetLegResult SetNextLeg(ScenarioFormData formData) 
         {
             double distance = 9999;
             double bearing = 0;
-            string pic2mapHtmlSaveLocation = $"{Parameters.SettingsImageFolder}\\random_pic2map.html"; // Re-using for the next photo page
+            string pic2mapHtmlSaveLocation = $"{formData.ScenarioImageFolder}\\random_pic2map.html"; // Re-using for the next photo page
             string photoURL = "";
 
             // Ensure there's a previous photo location to work from
@@ -337,7 +337,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
 
             // Get next nearest unselected photo URL, distance, and bearing (that meets constraints)
-            SetLegResult getNextPhotoResult = GetNextPhoto(pic2mapHtmlSaveLocation, ref distance, ref bearing, ref photoURL);
+            SetLegResult getNextPhotoResult = GetNextPhoto(pic2mapHtmlSaveLocation, ref distance, ref bearing, ref photoURL, formData);
             if (getNextPhotoResult == SetLegResult.NoNextPhotoFound)
             {
                 return SetLegResult.NoNextPhotoFound;
@@ -402,7 +402,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <see cref="SetLegResult.HtmlParsingFailed"/> if there are issues retrieving the HTML document
         /// or if the helper method encounters errors extracting or parsing data from the HTML document for a candidate photo.
         /// </returns>
-        static private SetLegResult GetNextPhoto(string curPhotoFileLocation, ref double distance, ref double bearing, ref string photoURL)
+        static private SetLegResult GetNextPhoto(string curPhotoFileLocation, ref double distance, ref double bearing, ref string photoURL, ScenarioFormData formData)
         {
             var htmlDoc = HttpRoutines.GetHtmlDocumentFromFile(curPhotoFileLocation);
             if (htmlDoc == null)
@@ -428,8 +428,8 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 int headingChange = MathRoutines.CalcHeadingChange(PhotoLocations[^2].forwardBearing, bearing);
 
                 // Does candidate next photo satisfy distance and bearing constraints and has not already been included
-                if (distance <= Parameters.PhotoTourConstraintsMaxLegDist && distance >= Parameters.PhotoTourConstraintsMinLegDist &&
-                    Math.Abs(headingChange) < Parameters.PhotoTourConstraintsMaxBearingChange &&
+                if (distance <= formData.PhotoTourMaxLegDist && distance >= formData.PhotoTourMinLegDist &&
+                    Math.Abs(headingChange) < formData.PhotoTourMaxBearingChange &&
                     PhotoLocations.FindIndex(leg => nextPhotoURL.Contains(leg.legId)) == -1)
                 {
                     photoURL = nextPhotoURL; // Set the output parameter to the found photo URL
@@ -445,7 +445,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// If found adds the airport to the photo tour.
         /// </summary>
         /// <returns>SetLegResult indicating success or type of failure.</returns>
-        static internal SetLegResult SetLastLeg() // Changed return type to SetLegResult
+        static internal SetLegResult SetLastLeg(ScenarioFormData formData) // Changed return type to SetLegResult
         {
             PhotoLocParams airportLocation;
 
@@ -458,11 +458,11 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
             // Find nearby airport to last photo
             airportLocation = GetNearbyAirport(PhotoLocations[^1].latitude, PhotoLocations[^1].longitude,
-                Parameters.PhotoTourConstraintsMinLegDist, Parameters.PhotoTourConstraintsMaxLegDist);
+                formData.PhotoTourMinLegDist, formData.PhotoTourMaxLegDist);
 
             // Clean up the temporary pic2map HTML file.
             // Even if this fails, we might still have a valid tour, but log the issue.
-            string tempHtmlFile = $"{Parameters.SettingsImageFolder}\\random_pic2map.html";
+            string tempHtmlFile = $"{formData.ScenarioImageFolder}\\random_pic2map.html";
             if (!FileOps.TryDeleteFile(tempHtmlFile))
             {
                 Log.Warning($"SetLastLeg: Failed to delete temporary HTML file at '{tempHtmlFile}'. This is not critical for tour generation but should be investigated.");
@@ -474,7 +474,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 Runway.destRwy = Runway.Runways[airportLocation.airportIndex];
                 PhotoLocations.Add(airportLocation);
                 PhotoCount = PhotoLocations.Count;
-                PhotoTourUtilities.GetPhotos(PhotoLocations); // Call GetPhotos only when the tour is fully established
+                PhotoTourUtilities.GetPhotos(PhotoLocations, formData); // Call GetPhotos only when the tour is fully established
                 return SetLegResult.Success;
             }
             else

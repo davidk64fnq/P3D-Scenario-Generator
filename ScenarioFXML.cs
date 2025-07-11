@@ -11,11 +11,11 @@ namespace P3D_Scenario_Generator
         private static object formattedLatitude;
         private static object formattedLongitude;
 
-        static internal void GenerateFXMLfile()
+        static internal void GenerateFXMLfile(ScenarioFormData formData)
 		{
 			SimBaseDocument simBaseDocument = ReadSourceFXML();
-			EditSourceFXML(simBaseDocument);
-			WriteSourceFXML(simBaseDocument);
+			EditSourceFXML(simBaseDocument, formData);
+			WriteSourceFXML(simBaseDocument, formData);
         }
 
 		static private SimBaseDocument ReadSourceFXML()
@@ -27,7 +27,7 @@ namespace P3D_Scenario_Generator
 			return simBaseDocument;
 		}
 
-		static private void EditSourceFXML(SimBaseDocument simBaseDocument)
+		static private void EditSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)
 		{
 			FlightSections fs;
 			fs = simBaseDocument.FlightSections;
@@ -35,27 +35,27 @@ namespace P3D_Scenario_Generator
 			// Main section
 			int sectionIndex = fs.Section.FindIndex(s => s.Name == "Main");
 			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Title");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.GeneralScenarioTitle}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.ScenarioTitle}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Description");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Constants.appTitle} - {Parameters.SelectedScenarioType}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Constants.appTitle} - {formData.ScenarioType}";
 
 			// DateTimeSeason section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "DateTimeSeason");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Season");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.Season}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.Season}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Year");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.Year}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.DatePickerValue.Year}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Day");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.DayOfYear}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.DatePickerValue.DayOfYear}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Hours");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.Hours}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.TimePickerValue.Hour}";
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Minutes");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.Minutes}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.TimePickerValue.Minute}";
 
 			// Sim.0 section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "Sim.0");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Sim");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.ScenarioAircraftTitle}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.AircraftTitle}";
 
             // Simvars.0 section
             sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
@@ -77,9 +77,9 @@ namespace P3D_Scenario_Generator
 			// ObjectFile section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "ObjectFile");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "File");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Parameters.GeneralScenarioTitle}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.ScenarioTitle}";
 
-			if (Parameters.SelectedScenarioType == ScenarioTypes.Celestial)
+			if (formData.ScenarioType == ScenarioTypes.Celestial)
             {
 				EditCelestialSourceFXML(simBaseDocument);
 			}
@@ -166,15 +166,15 @@ namespace P3D_Scenario_Generator
 			return sCoordLine;
 		}
 
-		static private void WriteSourceFXML(SimBaseDocument simBaseDocument)
+		static private void WriteSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)
         {
 			XmlSerializer xmlSerializer = new(simBaseDocument.GetType());
 
-            using StreamWriter writer = new($"{Parameters.SettingsScenarioFolder}\\{Parameters.GeneralScenarioTitle}.fxml");
+            using StreamWriter writer = new($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.fxml");
             xmlSerializer.Serialize(writer, simBaseDocument);
 			writer.Close();
 
-            ScenarioXML.RemoveXMLNSattributes($"{Parameters.SettingsScenarioFolder}\\{Parameters.GeneralScenarioTitle}.fxml");
+            ScenarioXML.RemoveXMLNSattributes($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.fxml");
         }
 
 	}

@@ -9,6 +9,10 @@
 	<ImplicitUsings>enable</ImplicitUsings>
 	<ApplicationIcon>application.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Parameters.cs" />
+  </ItemGroup>
 	
   <ItemGroup>
     <None Remove="aircraft.png" />

@@ -18,9 +18,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// writes the modified HTML to the scenario folder.
         /// </summary>
         /// <returns>True if the HTML file is successfully generated and written; otherwise, false.</returns>
-        static internal bool SetCelestialSextantHTML()
+        static internal bool SetCelestialSextantHTML(ScenarioFormData formData)
         {
-            string htmlOutputPath = Path.Combine(Parameters.SettingsImageFolder, "htmlCelestialSextant.html");
+            string htmlOutputPath = Path.Combine(formData.ScenarioImageFolder, "htmlCelestialSextant.html");
 
             try
             {
@@ -60,9 +60,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// Includes robust error handling for file operations.
         /// </summary>
         /// <returns>True if both JavaScript files are successfully generated and saved; otherwise, false.</returns>
-        static internal bool SetCelestialSextantJS()
+        static internal bool SetCelestialSextantJS(ScenarioFormData formData)
         {
-            string saveLocation = Parameters.SettingsImageFolder;
+            string saveLocation = formData.ScenarioImageFolder;
             string sextantJsOutputPath = Path.Combine(saveLocation, "scriptsCelestialSextant.js");
             string astroCalcsJsOutputPath = Path.Combine(saveLocation, "scriptsCelestialAstroCalcs.js");
 
@@ -120,7 +120,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                     { "starNameListX", string.Join(",", StarDataManager.navStarNames.Select(name => $"\"{name}\"")) },
 
                     // Date and Image Edge Parameters
-                    { "startDateX", $"\"{Parameters.Month}/{Parameters.Day}/{Parameters.Year}\"" },
+                    { "startDateX", $"\"{formData.DatePickerValue.Month}/{formData.DatePickerValue.Day}/{formData.DatePickerValue.Year}\"" },
                     { "northEdgeX", CelestialNav.celestialImageNorth.ToString() },
                     { "eastEdgeX", CelestialNav.celestialImageEast.ToString() },
                     { "southEdgeX", CelestialNav.celestialImageSouth.ToString() },
@@ -156,7 +156,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
                 // Copy plotImage used in Plotting tab
                 Stream plotStream = Form.GetResourceStream($"Images.plotImage.jpg");
-                using (FileStream outputFileStream = new($"{Parameters.SettingsImageFolder}\\plotImage.jpg", FileMode.Create))
+                using (FileStream outputFileStream = new($"{formData.ScenarioImageFolder}\\plotImage.jpg", FileMode.Create))
                 {
                     plotStream.CopyTo(outputFileStream);
                 }
@@ -205,10 +205,10 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// to a specified file location.
         /// </summary>
         /// <param name="saveLocation">The full path, including filename, where the CSS file should be saved.</param>
-        static internal bool SetCelestialSextantCSS()
+        static internal bool SetCelestialSextantCSS(ScenarioFormData formData)
         {
             string signWritingCSS;
-            string cssOutputPath = Path.Combine(Parameters.SettingsImageFolder, "styleCelestialSextant.css");
+            string cssOutputPath = Path.Combine(formData.ScenarioImageFolder, "styleCelestialSextant.css");
 
             // Use 'using' statements to ensure streams are properly disposed, even if errors occur.
             // Also, incorporate FileOps for robust error handling.
