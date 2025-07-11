@@ -1069,7 +1069,21 @@ namespace P3D_Scenario_Generator
 
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
-            Help.ShowHelp(this, "Resources/help/index.htm");
+            // Define the path to the CHM file relative to the application's executable directory.
+            // Assuming the CHM file is located in a 'Resources/Help' folder in the output directory.
+            string chmFilePath = Path.Combine(Application.StartupPath, "Resources", "Help", "Help.chm");
+
+            // Check if the file exists before attempting to open it.
+            if (File.Exists(chmFilePath))
+            {
+                // Open the CHM file.
+                Help.ShowHelp(this, chmFilePath);
+            }
+            else
+            {
+                // Handle the case where the CHM file is not found (optional)
+                MessageBox.Show("Help file not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void ButtonDefault_Click(object sender, EventArgs e)

@@ -1,0 +1,24 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=Help.chm
+Contents file=Table of Contents.hhc
+Default topic=introduction.htm
+Display compile progress=No
+Index file=Index.hhk
+Language=0xc09 English (Australia)
+
+
+[FILES]
+aircraft.htm
+circuit.htm
+dateTime.htm
+folderInfo.htm
+introduction.htm
+locationFilter.htm
+mapTileCacheInfo.htm
+photoTour.htm
+runway.htm
+scenario.htm
+
+[INFOTYPES]
+
