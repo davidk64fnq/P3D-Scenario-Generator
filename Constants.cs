@@ -1,5 +1,6 @@
 ﻿
 using P3D_Scenario_Generator.MapTiles;
+using System.ComponentModel;
 using static System.Net.WebRequestMethods;
 
 namespace P3D_Scenario_Generator
@@ -20,12 +21,46 @@ namespace P3D_Scenario_Generator
     /// </summary>
     public enum ScenarioTypes
     {
+        [Description("Circuit")]
         Circuit,
+        [Description("Photo Tour")]
         PhotoTour,
+        [Description("Sign Writing")]
         SignWriting,
+        [Description("Celestial")]
         Celestial,
+        [Description("Wiki List")]
         WikiList
-    };
+    }
+
+    /// <summary>
+    /// Defines the possible alignment options for a window within a monitor.
+    /// </summary>
+    public enum WindowAlignment
+    {
+        [Description("Centered")]
+        Centered,
+        [Description("Top Left")]
+        TopLeft,
+        [Description("Top Right")]
+        TopRight,
+        [Description("Bottom Right")]
+        BottomRight,
+        [Description("Bottom Left")]
+        BottomLeft
+    }
+
+    /// <summary>
+    /// Defines the supported map window size options.
+    /// The integer values correspond to the pixel dimensions (e.g., 512x512, 1024x1024).
+    /// </summary>
+    public enum MapWindowSizeOption
+    {
+        [Description("512")] // Added Description attribute
+        Size512 = 512,
+        [Description("1024")] // Added Description attribute
+        Size1024 = 1024
+    }
 
     /// <summary>
     /// Program constants
@@ -52,6 +87,42 @@ namespace P3D_Scenario_Generator
         /// (Corresponds to approx 0.2 degrees/second turn rate)
         /// </summary>
         internal const double MaxTurnTime360DegreesMinutes = 30.0;
+
+        /// <summary>
+        /// Represents the likely maximum number of monitors in use by a user of the program. Used for validation of user input
+        /// </summary>
+        public const int MaxMonitorNumber = 8;
+
+        /// <summary>
+        /// Used in calculating where to position program windows within a monitor. The offset is how much space to ensure
+        /// there is between the edge of a window and the monitor edge. Measured in pixels.
+        /// </summary>
+        public const int MaxWindowOffset = (4320 - 1024) / 2; // Calculated to 1648
+
+        /// <summary>
+        /// Represents the maximum supported width, in pixels, for a monitor.
+        /// </summary>
+        /// <remarks>This constant can be used to validate or constrain monitor-related operations to
+        /// ensure compatibility with supported resolutions.</remarks>
+        public const int MaxMonitorWidth = 7680;
+
+        /// <summary>
+        /// Represents the maximum supported monitor height, in pixels, for this system.
+        /// </summary>
+        /// <remarks>This constant is typically used to validate or constrain monitor-related
+        /// configurations or resolutions. The value corresponds to 4320 pixels, which is the vertical resolution of an
+        /// 8K display.</remarks>
+        public const int MaxMonitorHeight = 4320;
+
+        /// <summary>
+        /// Represents the minimum supported width, in pixels, for a monitor.
+        /// </summary>
+        public const int MinMonitorWidth = 640;
+
+        /// <summary>
+        /// Represents the minimum supported width, in pixels, for a monitor.
+        /// </summary>
+        public const int MinMonitorHeight = 480;
 
         #endregion
 

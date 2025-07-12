@@ -2266,14 +2266,14 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsMapWindowSize.Anchor = AnchorStyles.None;
             ComboBoxSettingsMapWindowSize.DropDownWidth = 200;
             ComboBoxSettingsMapWindowSize.FormattingEnabled = true;
-            ComboBoxSettingsMapWindowSize.Items.AddRange(new object[] { "512", "1024" });
             ComboBoxSettingsMapWindowSize.Location = new Point(141, 153);
             ComboBoxSettingsMapWindowSize.Name = "ComboBoxSettingsMapWindowSize";
             ComboBoxSettingsMapWindowSize.Size = new Size(100, 23);
             ComboBoxSettingsMapWindowSize.TabIndex = 45;
-            ComboBoxSettingsMapWindowSize.Tag = "512";
+            ComboBoxSettingsMapWindowSize.Tag = "";
             ComboBoxSettingsMapWindowSize.Text = "512";
             toolTip1.SetToolTip(ComboBoxSettingsMapWindowSize, "Size of the square map window in pixels.");
+            ComboBoxSettingsMapWindowSize.SelectedIndexChanged += ComboBoxSettingsMapWindowSize_SelectedIndexChanged;
             // 
             // ComboBoxSettingsMapAlignment
             // 
@@ -2281,14 +2281,14 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsMapAlignment.Anchor = AnchorStyles.None;
             ComboBoxSettingsMapAlignment.DropDownWidth = 100;
             ComboBoxSettingsMapAlignment.FormattingEnabled = true;
-            ComboBoxSettingsMapAlignment.Items.AddRange(new object[] { "Centered", "Top Left", "Top Right", "Bottom Right", "Bottom Left" });
             ComboBoxSettingsMapAlignment.Location = new Point(141, 63);
             ComboBoxSettingsMapAlignment.Name = "ComboBoxSettingsMapAlignment";
             ComboBoxSettingsMapAlignment.Size = new Size(100, 23);
             ComboBoxSettingsMapAlignment.TabIndex = 44;
-            ComboBoxSettingsMapAlignment.Tag = "Top Left";
+            ComboBoxSettingsMapAlignment.Tag = "";
             ComboBoxSettingsMapAlignment.Text = "Top Left";
             toolTip1.SetToolTip(ComboBoxSettingsMapAlignment, "Default location of map window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            ComboBoxSettingsMapAlignment.SelectedIndexChanged += ComboBoxSettingsMapAlignment_SelectedIndexChanged;
             // 
             // label63
             // 
@@ -2313,6 +2313,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapOffset.Text = "20";
             TextBoxSettingsMapOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSettingsMapOffset, resources.GetString("TextBoxSettingsMapOffset.ToolTip"));
+            TextBoxSettingsMapOffset.Leave += TextBoxSettingsMapOffset_Leave;
             // 
             // label64
             // 
@@ -2337,6 +2338,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapMonitorNumber.Text = "0";
             TextBoxSettingsMapMonitorNumber.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSettingsMapMonitorNumber, "The default monitor that the map window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            TextBoxSettingsMapMonitorNumber.Leave += TextBoxSettingsMapMonitorNumber_Leave;
             // 
             // label66
             // 
@@ -2394,6 +2396,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapMonitorWidth.Text = "1920";
             TextBoxSettingsMapMonitorWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSettingsMapMonitorWidth, "Resolution width in pixels of the monitor that map window will display on. ");
+            TextBoxSettingsMapMonitorWidth.Leave += TextBoxSettingsMapMonitorWidth_Leave;
             // 
             // TextBoxSettingsMapMonitorHeight
             // 
@@ -2407,6 +2410,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapMonitorHeight.Text = "1080";
             TextBoxSettingsMapMonitorHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSettingsMapMonitorHeight, "Resolution height in pixels of the monitor that map window will display on. ");
+            TextBoxSettingsMapMonitorHeight.Leave += TextBoxSettingsMapMonitorHeight_Leave;
             // 
             // groupBox2
             // 

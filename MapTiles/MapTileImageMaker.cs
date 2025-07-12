@@ -272,7 +272,7 @@ namespace P3D_Scenario_Generator.MapTiles
             // zoom 2, 3 (and 4) images, zoom 1 is base level for map window size of 512 pixels, zoom 2 is base level for map window of 1024 pixels
             // then there are two additional map images for the higher zoom levels.
             int numberZoomLevels = 2;
-            if (formData.MapWindowSize == 1024)
+            if (formData.MapWindowSize == MapWindowSizeOption.Size1024)
                 numberZoomLevels = 3;
             BoundingBox nextBoundingBox = zoomInBoundingBox.DeepCopy(); // Use the updated bounding box for the next zoom level
             for (int inc = 1; inc <= numberZoomLevels; inc++)

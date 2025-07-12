@@ -146,7 +146,7 @@
         /// <summary>
         /// Which of four corners of monitor to position photo window relative to or else in the center of monitor.
         /// </summary>
-        public string PhotoTourPhotoAlignment { get; set; }
+        public WindowAlignment PhotoTourPhotoAlignment { get; set; }
 
         /// <summary>
         /// In pixels, used to aid in calculating where photo window is positioned relative to monitor
@@ -243,7 +243,7 @@
         /// <summary>
         /// Which of four corners of monitor to position URL window relative to or else in the center of monitor.
         /// </summary>
-        public string WikiURLAlignment { get; set; }
+        public WindowAlignment WikiURLAlignment { get; set; }
 
         /// <summary>
         /// In pixels, used to aid in calculating where the URL window is positioned relative to monitor
@@ -308,7 +308,7 @@
         /// <summary>
         /// Which of four corners of monitor to position map window relative to or else in the center of monitor.
         /// </summary>
-        public string MapAlignment { get; set; }
+        public WindowAlignment MapAlignment { get; set; }
 
         /// <summary>
         /// In pixels, used to aid in calculating where the map window is positioned relative to monitor
@@ -323,7 +323,7 @@
         /// <summary>
         /// User can select a map window size of either 512 or 1024 pixels square.
         /// </summary>
-        public int MapWindowSize { get; set; }
+        public MapWindowSizeOption MapWindowSize { get; set; }
 
         #endregion
 
@@ -343,6 +343,11 @@
         /// Season corresponding to selected scenario date.
         /// </summary>
         public Season Season { get; set; }
+
+        /// <summary>
+        /// Used to store all temporary files created during scenario generation.
+        /// </summary>
+        public string TempScenarioDirectory { get; set; }
 
         #endregion
     }

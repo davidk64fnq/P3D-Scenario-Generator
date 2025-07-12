@@ -93,5 +93,46 @@
 
             return true;
         }
+
+        /// <summary>
+        /// Attempts to parse a string into an integer and validates its range (inclusive).
+        /// Returns an error message if parsing fails or if the value is out of the valid range.
+        /// </summary>
+        /// <param name="valueStringIn">The string containing the integer value to parse.</param>
+        /// <param name="valueName">A descriptive name for the value (e.g., "Altitude") used in error messages.</param>
+        /// <param name="minValue">The minimum allowed value (inclusive).</param>
+        /// <param name="maxValue">The maximum allowed value (inclusive).</param>
+        /// <param name="intOut">When this method returns, contains the parsed integer value if successful; otherwise, 0.</param>
+        /// <param name="errorMessage">When this method returns, contains an error message if parsing fails or the value is out of range; otherwise, null or empty.</param>
+        /// <param name="units">Optional: A string representing the units of the value (e.g., "feet", "meters").</param>
+        /// <returns>True if the string was successfully parsed into an integer and is within the specified range; otherwise, false.</returns>
+        internal static bool TryParseInteger(
+            string valueStringIn,
+            string valueName,
+            int minValue,
+            int maxValue,
+            out int intOut,
+            out string errorMessage,
+            string units = "")
+        {
+            errorMessage = null; // Initialize error message
+
+            if (!int.TryParse(valueStringIn, out intOut))
+            {
+                errorMessage = $"Invalid format for '{valueName}'. Please enter a valid whole number.";
+                return false;
+            }
+
+            // Append units to the error message if provided
+            string unitSuffix = string.IsNullOrWhiteSpace(units) ? "" : $" {units}";
+
+            if (intOut < minValue || intOut > maxValue)
+            {
+                errorMessage = $"{valueName} ({intOut}{unitSuffix}) is out of range. Please enter a value between {minValue}{unitSuffix} and {maxValue}{unitSuffix}.";
+                return false;
+            }
+
+            return true;
+        }
     }
 }

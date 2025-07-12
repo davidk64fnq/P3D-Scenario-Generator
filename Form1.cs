@@ -1,4 +1,5 @@
 ﻿using CoordinateSharp;
+using ImageMagick;
 using Microsoft.Win32;
 using MS.WindowsAPICodePack.Internal;
 using P3D_Scenario_Generator.CelestialScenario;
@@ -132,6 +133,7 @@ namespace P3D_Scenario_Generator
                 ScenarioFXML.GenerateFXMLfile(_formData);
                 ScenarioHTML.GenerateHTMLfiles(_formData);
                 ScenarioXML.GenerateXMLfile(_formData);
+                DeleteTempScenarioDirectory();
                 DisplayFinishMessage();
             }
         }
@@ -188,20 +190,7 @@ namespace P3D_Scenario_Generator
 
         internal void SetScenarioTypesComboBox()
         {
-            // Clear any existing items
-            ComboBoxGeneralScenarioType.Items.Clear();
-
-            // Loop through each name in the ScenarioTypes enum and add it to the ComboBox
-            foreach (string scenarioName in Enum.GetNames(typeof(ScenarioTypes)))
-            {
-                ComboBoxGeneralScenarioType.Items.Add(scenarioName);
-            }
-
-            // Optionally, select a default item
-            if (ComboBoxGeneralScenarioType.Items.Count > 0)
-            {
-                ComboBoxGeneralScenarioType.SelectedIndex = 0; // Select the first item
-            }
+            PopulateComboBoxWithEnum<ScenarioTypes>(ComboBoxGeneralScenarioType);
         }
 
         #endregion
@@ -519,25 +508,13 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An EventArgs that contains the event data.</param>
         private void TextBoxCircuitUpwind_Leave(object sender, EventArgs e)
         {
-            const double minUpwindLeg = 0.0;
-            const double maxUpwindLeg = Constants.EarthCircumferenceMiles;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitUpwind.Text,
+            ValidateAndSetDouble(
+                TextBoxCircuitUpwind,
                 "Circuit Upwind Leg",
-                minUpwindLeg,
-                maxUpwindLeg,
-                out _,
-                out string validationMessage,
-                "miles"))
-            {
-                errorProvider1.SetError(TextBoxCircuitUpwind, validationMessage);
-                _progressReporter?.Report(validationMessage);
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxCircuitUpwind, "");
-                _progressReporter?.Report("");
-            }
+                0.0,
+                Constants.EarthCircumferenceMiles,
+                "miles",
+                value => _formData.CircuitUpwindLeg = value);
         }
 
         /// <summary>
@@ -552,25 +529,13 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An EventArgs that contains the event data.</param>
         private void TextBoxCircuitBase_Leave(object sender, EventArgs e)
         {
-            const double minBaseLeg = Constants.MinCircuitGateSeparation;
-            const double maxBaseLeg = Constants.EarthCircumferenceMiles;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitBase.Text,
+            ValidateAndSetDouble(
+                TextBoxCircuitBase,
                 "Circuit Base Leg",
-                minBaseLeg,
-                maxBaseLeg,
-                out _,
-                out string validationMessage,
-                "miles"))
-            {
-                errorProvider1.SetError(TextBoxCircuitBase, validationMessage);
-                _progressReporter?.Report(validationMessage);
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxCircuitBase, "");
-                _progressReporter?.Report("");
-            }
+                Constants.MinCircuitGateSeparation,
+                Constants.EarthCircumferenceMiles,
+                "miles",
+                value => _formData.CircuitBaseLeg = value);
         }
 
         /// <summary>
@@ -585,25 +550,13 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An EventArgs that contains the event data.</param>
         private void TextBoxCircuitFinal_Leave(object sender, EventArgs e)
         {
-            const double minFinalLeg = 0.0;
-            const double maxFinalLeg = Constants.EarthCircumferenceMiles;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitFinal.Text,
+            ValidateAndSetDouble(
+                TextBoxCircuitFinal,
                 "Circuit Final Leg",
-                minFinalLeg,
-                maxFinalLeg,
-                out _,
-                out string validationMessage,
-                "miles"))
-            {
-                errorProvider1.SetError(TextBoxCircuitFinal, validationMessage);
-                _progressReporter?.Report(validationMessage);
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxCircuitFinal, "");
-                _progressReporter?.Report("");
-            }
+                0.0,
+                Constants.EarthCircumferenceMiles,
+                "miles",
+                value => _formData.CircuitFinalLeg = value);
         }
 
         /// <summary>
@@ -618,25 +571,13 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An EventArgs that contains the event data.</param>
         private void TextBoxCircuitHeightUpwind_Leave(object sender, EventArgs e)
         {
-            const double minHeightUpwind = 0.0;
-            const double maxHeightUpwind = Constants.MaxCircuitGateHeight;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitHeightUpwind.Text,
+            ValidateAndSetDouble(
+                TextBoxCircuitHeightUpwind,
                 "Circuit Height Upwind Leg",
-                minHeightUpwind,
-                maxHeightUpwind,
-                out _,
-                out string validationMessage,
-                "feet"))
-            {
-                errorProvider1.SetError(TextBoxCircuitHeightUpwind, validationMessage);
-                _progressReporter?.Report(validationMessage);
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxCircuitHeightUpwind, "");
-                _progressReporter?.Report("");
-            }
+                0.0,
+                Constants.MaxCircuitGateHeight,
+                "feet",
+                value => _formData.CircuitHeightUpwind = value);
         }
 
         /// <summary>
@@ -651,25 +592,13 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An EventArgs that contains the event data.</param>
         private void TextBoxCircuitHeightDown_Leave(object sender, EventArgs e)
         {
-            const double minHeightDown = 0.0;
-            const double maxHeightDown = Constants.MaxCircuitGateHeight;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitHeightDown.Text,
+            ValidateAndSetDouble(
+                TextBoxCircuitHeightDown,
                 "Circuit Height Down Leg",
-                minHeightDown,
-                maxHeightDown,
-                out _,
-                out string validationMessage,
-                "feet"))
-            {
-                errorProvider1.SetError(TextBoxCircuitHeightDown, validationMessage);
-                _progressReporter?.Report(validationMessage);
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxCircuitHeightDown, "");
-                _progressReporter?.Report("");
-            }
+                0.0,
+                Constants.MaxCircuitGateHeight,
+                "feet",
+                value => _formData.CircuitHeightDown = value);
         }
 
         /// <summary>
@@ -684,25 +613,13 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An EventArgs that contains the event data.</param>
         private void TextBoxCircuitHeightBase_Leave(object sender, EventArgs e)
         {
-            const double minHeightBase = 0.0;
-            const double maxHeightBase = Constants.MaxCircuitGateHeight;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitHeightBase.Text,
+            ValidateAndSetDouble(
+                TextBoxCircuitHeightBase,
                 "Circuit Height Base Leg",
-                minHeightBase,
-                maxHeightBase,
-                out _,
-                out string validationMessage,
-                "feet"))
-            {
-                errorProvider1.SetError(TextBoxCircuitHeightBase, validationMessage);
-                _progressReporter?.Report(validationMessage);
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxCircuitHeightBase, "");
-                _progressReporter?.Report("");
-            }
+                0.0,
+                Constants.MaxCircuitGateHeight,
+                "feet",
+                value => _formData.CircuitHeightBase = value);
         }
 
         /// <summary>
@@ -717,25 +634,13 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An EventArgs that contains the event data.</param>
         private void TextBoxCircuitSpeed_Leave(object sender, EventArgs e)
         {
-            const double minCircuitSpeed = 0.0;
-            const double maxCircuitSpeed = Constants.PracticalMaxSpeed;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitSpeed.Text,
+            ValidateAndSetDouble(
+                TextBoxCircuitSpeed,
                 "Circuit Speed",
-                minCircuitSpeed,
-                maxCircuitSpeed,
-                out _,
-                out string validationMessage,
-                "knots"))
-            {
-                errorProvider1.SetError(TextBoxCircuitSpeed, validationMessage);
-                _progressReporter?.Report(validationMessage);
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxCircuitSpeed, "");
-                _progressReporter?.Report("");
-            }
+                0.0,
+                Constants.PracticalMaxSpeed,
+                "knots",
+                value => _formData.CircuitSpeed = value);
         }
 
         /// <summary>
@@ -750,26 +655,15 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An EventArgs that contains the event data.</param>
         private void TextBoxCircuitTurnRate_Leave(object sender, EventArgs e)
         {
-            const double minTurnRate = Constants.MinTurnTime360DegreesMinutes;
-            const double maxTurnRate = Constants.MaxTurnTime360DegreesMinutes;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitTurnRate.Text,
+            ValidateAndSetDouble(
+                TextBoxCircuitTurnRate,
                 "Circuit Turn Rate",
-                minTurnRate,
-                maxTurnRate,
-                out _,
-                out string validationMessage,
-                "minutes"))
-            {
-                errorProvider1.SetError(TextBoxCircuitTurnRate, validationMessage);
-                _progressReporter?.Report(validationMessage);
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxCircuitTurnRate, "");
-                _progressReporter?.Report("");
-            }
+                Constants.MinTurnTime360DegreesMinutes,
+                Constants.MaxTurnTime360DegreesMinutes,
+                "minutes",
+                value => _formData.CircuitTurnDuration360Degrees = value);
         }
+
 
         #endregion
 
@@ -1063,6 +957,16 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        internal void SetMapAlignmentComboBox()
+        {
+            PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxSettingsMapAlignment);
+        }
+
+        internal void SetMapWindowSizeComboBox()
+        {
+            PopulateComboBoxWithEnum<MapWindowSizeOption>(ComboBoxSettingsMapWindowSize);
+        }
+
         #endregion
 
         #region Utilities
@@ -1181,6 +1085,8 @@ namespace P3D_Scenario_Generator
             RestoreUserSettings(TabPageWikiList.Controls);
 
             // Settings tab
+            SetMapAlignmentComboBox();
+            SetMapWindowSizeComboBox();
             Cache.CheckCache();
             RestoreUserSettings(TabPageSettings.Controls);
         }
@@ -1521,14 +1427,14 @@ namespace P3D_Scenario_Generator
                 return;
 
             // Do any custom checks
-         //   if (parameterTokens.Length > 2)
-         //   {
-         //       for (int index = 2; index < parameterTokens.Length; index += 2)
-         //       {
-                //    if (!TextboxComparison(parameterTokens[index].Trim(), parameterTokens[index + 1].Trim(), ((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
-        //                return;
-         //       }
-         //   }
+            //   if (parameterTokens.Length > 2)
+            //   {
+            //       for (int index = 2; index < parameterTokens.Length; index += 2)
+            //       {
+            //    if (!TextboxComparison(parameterTokens[index].Trim(), parameterTokens[index + 1].Trim(), ((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
+            //                return;
+            //       }
+            //   }
         }
 
         private static bool TextboxIsDouble(string text, string title, CancelEventArgs e)
@@ -1676,6 +1582,70 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// Populates a given ComboBox with the string representations (Description attributes if available)
+        /// of the values from a specified Enum type.
+        /// </summary>
+        /// <typeparam name="TEnum">The Enum type whose values will populate the ComboBox.</typeparam>
+        /// <param name="comboBox">The ComboBox control to populate.</param>
+        private static void PopulateComboBoxWithEnum<TEnum>(ComboBox comboBox) where TEnum : struct, Enum
+        {
+            // Clear any existing items
+            comboBox.Items.Clear();
+
+            // Loop through each value in the enum and add its Description to the ComboBox
+            foreach (TEnum enumValue in Enum.GetValues(typeof(TEnum)))
+            {
+                comboBox.Items.Add(enumValue.GetDescription());
+            }
+
+            // Optionally, select the first item if available
+            if (comboBox.Items.Count > 0)
+            {
+                comboBox.SelectedIndex = 0;
+            }
+        }
+
+        /// <summary>
+        /// Deletes the temporary directory and its contents stored in ScenarioFormData.
+        /// Reports progress and logs errors.
+        /// </summary>
+        private void DeleteTempScenarioDirectory()
+        {
+            if (!string.IsNullOrEmpty(_formData.TempScenarioDirectory) && Directory.Exists(_formData.TempScenarioDirectory))
+            {
+                try
+                {
+                    Directory.Delete(_formData.TempScenarioDirectory, true); // 'true' for recursive delete
+                    _progressReporter?.Report($"Temporary directory deleted: {_formData.TempScenarioDirectory}");
+                    Log.Info($"Temporary directory deleted: {_formData.TempScenarioDirectory}");
+                    _formData.TempScenarioDirectory = null; // Clear the path after deletion
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    string errorMessage = $"Access denied when deleting temporary directory. Please check permissions for '{_formData.TempScenarioDirectory}'. Error: {ex.Message}";
+                    _progressReporter?.Report(errorMessage);
+                    Log.Error(errorMessage, ex);
+                }
+                catch (IOException ex)
+                {
+                    string errorMessage = $"I/O error when deleting temporary directory. It might be in use. Error: {ex.Message}";
+                    _progressReporter?.Report(errorMessage);
+                    Log.Error(errorMessage, ex);
+                }
+                catch (Exception ex)
+                {
+                    string errorMessage = $"An unexpected error occurred while deleting temporary directory. Error: {ex.Message}";
+                    _progressReporter?.Report(errorMessage);
+                    Log.Error(errorMessage, ex);
+                }
+            }
+            else if (!string.IsNullOrEmpty(_formData.TempScenarioDirectory))
+            {
+                Log.Warning($"Attempted to delete temporary directory, but path was set but directory did not exist: {_formData.TempScenarioDirectory}");
+            }
+        }
+
         #endregion
 
         #region Populate ScenarioFormData
@@ -1690,6 +1660,11 @@ namespace P3D_Scenario_Generator
         {
             errorProvider1.Clear();
             bool allValid = true;
+
+            if (!PopulateAndValidateTempScenarioDirectory())
+            {
+                return false; 
+            }
 
             // 1. Settings Tab Data - Validate first as other tabs might depend on these settings.
             if (!PopulateAndValidateSettingsTabData())
@@ -1706,7 +1681,7 @@ namespace P3D_Scenario_Generator
             // Derived fields based on General and/or Settings tab data
             if (allValid)
             {
-                // Scenario folder path based on the scenario folder base path
+                // Scenario folder path based on the scenario folder base path (settings tab) and scenario title (general tab)
                 _formData.ScenarioFolder = Path.Combine(_formData.ScenarioFolderBase, _formData.ScenarioTitle);
 
                 // Scenario image folder path based on the scenario folder path
@@ -1726,6 +1701,7 @@ namespace P3D_Scenario_Generator
             if (!allValid)
             {
                 _progressReporter?.Report("Please correct the highlighted errors on all relevant tabs. Hover over error icon(s) for details.");
+                DeleteTempScenarioDirectory();
                 return false;
             }
             else
@@ -1734,6 +1710,47 @@ namespace P3D_Scenario_Generator
             }
 
             return true;
+        }
+        
+        /// <summary>
+        /// Creates a unique temporary directory for scenario generation files and stores its path
+        /// in the ScenarioFormData. Reports progress and logs errors.
+        /// </summary>
+        /// <returns>True if the temporary directory was successfully created; otherwise, false.</returns>
+        private bool PopulateAndValidateTempScenarioDirectory()
+        {
+            try
+            {
+                string tempBasePath = Path.GetTempPath();
+                // Use a GUID to ensure a unique directory name for each scenario generation session
+                _formData.TempScenarioDirectory = Path.Combine(tempBasePath, "P3DScenarioGeneratorTemp", Guid.NewGuid().ToString());
+
+                Directory.CreateDirectory(_formData.TempScenarioDirectory);
+                _progressReporter?.Report($"Temporary directory created at: {_formData.TempScenarioDirectory}");
+                Log.Info($"Temporary directory created at: {_formData.TempScenarioDirectory}");
+                return true;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                string errorMessage = $"Access denied when creating temporary directory. Please check permissions for '{Path.GetTempPath()}'. Error: {ex.Message}";
+                _progressReporter?.Report(errorMessage);
+                Log.Error(errorMessage, ex);
+                return false;
+            }
+            catch (IOException ex)
+            {
+                string errorMessage = $"I/O error when creating temporary directory. Error: {ex.Message}";
+                _progressReporter?.Report(errorMessage);
+                Log.Error(errorMessage, ex);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"An unexpected error occurred while creating temporary directory. Error: {ex.Message}";
+                _progressReporter?.Report(errorMessage);
+                Log.Error(errorMessage, ex);
+                return false;
+            }
         }
 
         /// <summary>
@@ -1759,91 +1776,8 @@ namespace P3D_Scenario_Generator
             // Validate and populate ScenarioFolderBase
             allValid &= ValidateScenarioFolderBase();
 
-            // Validate and populate Map Window settings
-            // TextBoxSettingsMapMonitorNumber
-            if (!int.TryParse(TextBoxSettingsMapMonitorNumber.Text, out int mapMonitorNumber) || mapMonitorNumber < 0)
-            {
-                string message = "Map Monitor Number must be a non-negative whole number.";
-                errorProvider1.SetError(TextBoxSettingsMapMonitorNumber, message);
-                _progressReporter?.Report(message);
-                allValid = false;
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxSettingsMapMonitorNumber, "");
-                _formData.MapMonitorNumber = mapMonitorNumber; // Assuming formData has this property
-            }
-
-            // TextBoxSettingsMapOffset
-            if (!int.TryParse(TextBoxSettingsMapOffset.Text, out int mapOffset) || mapOffset < 0)
-            {
-                string message = "Map Offset must be a non-negative whole number.";
-                errorProvider1.SetError(TextBoxSettingsMapOffset, message);
-                _progressReporter?.Report(message);
-                allValid = false;
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxSettingsMapOffset, "");
-                _formData.MapOffset = mapOffset; // Assuming formData has this property
-            }
-
-            // ComboBoxSettingsMapAlignment
-            string mapAlignment = ComboBoxSettingsMapAlignment.Text.Trim();
-            if (string.IsNullOrEmpty(mapAlignment))
-            {
-                string message = "Map Alignment cannot be empty.";
-                errorProvider1.SetError(ComboBoxSettingsMapAlignment, message);
-                _progressReporter?.Report(message);
-                allValid = false;
-            }
-            else
-            {
-                errorProvider1.SetError(ComboBoxSettingsMapAlignment, "");
-                _formData.MapAlignment = mapAlignment; // Assuming formData has this property
-            }
-
-            // TextBoxSettingsMapMonitorWidth
-            if (!int.TryParse(TextBoxSettingsMapMonitorWidth.Text, out int mapMonitorWidth) || mapMonitorWidth <= 0)
-            {
-                string message = "Map Monitor Width must be a positive whole number.";
-                errorProvider1.SetError(TextBoxSettingsMapMonitorWidth, message);
-                _progressReporter?.Report(message);
-                allValid = false;
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxSettingsMapMonitorWidth, "");
-                _formData.MapMonitorWidth = mapMonitorWidth; // Assuming formData has this property
-            }
-
-            // TextBoxSettingsMapMonitorHeight
-            if (!int.TryParse(TextBoxSettingsMapMonitorHeight.Text, out int mapMonitorHeight) || mapMonitorHeight <= 0)
-            {
-                string message = "Map Monitor Height must be a positive whole number.";
-                errorProvider1.SetError(TextBoxSettingsMapMonitorHeight, message);
-                _progressReporter?.Report(message);
-                allValid = false;
-            }
-            else
-            {
-                errorProvider1.SetError(TextBoxSettingsMapMonitorHeight, "");
-                _formData.MapMonitorHeight = mapMonitorHeight; // Assuming formData has this property
-            }
-
-            // ComboBoxSettingsMapWindowSize
-            if (!int.TryParse(ComboBoxSettingsMapWindowSize.Text, out int mapWindowSize) || (mapWindowSize != 512 && mapWindowSize != 1024))
-            {
-                string message = "Map Window Size must be either 512 or 1024.";
-                errorProvider1.SetError(ComboBoxSettingsMapWindowSize, message);
-                _progressReporter?.Report(message);
-                allValid = false;
-            }
-            else
-            {
-                errorProvider1.SetError(ComboBoxSettingsMapWindowSize, "");
-                _formData.MapWindowSize = mapWindowSize; // Assuming formData has this property
-            }
+            // Validate and populate Map Window settings as a group
+            allValid &= ValidateMapWindowSettingsGroup(null);
 
             return allValid;
         }
@@ -1895,7 +1829,7 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Validates the selected Simulator Version from the ComboBox and populates the <see cref="ScenarioFormData.SimulatorVersion"/> property.
-        /// Checks for the corresponding Prepar3D registry key, retrieves the installation and program data paths, and populates the relevant TextBoxes.
+        /// Checks for the corresponding Prepar3D registry key, retrieves the installation, program data, and sceanrio folder paths, and populates the relevant TextBoxes.
         /// It then validates these paths and reports errors via <see cref="ErrorProvider"/> and <see cref="_progressReporter"/> if validation fails.
         /// </summary>
         /// <returns><see langword="true"/> if the selected simulator version is valid and installed; otherwise, <see langword="false"/>.</returns>
@@ -1922,7 +1856,7 @@ namespace P3D_Scenario_Generator
                 _progressReporter?.Report("");
                 _formData.SimulatorVersion = simulatorVersion;
 
-                // Populate the TextBoxSettingsP3DprogramInstall and TextBoxSettingsP3DprogramData paths
+                // Populate the TextBoxSettingsP3DprogramInstall, TextBoxSettingsP3DprogramData, and TextBoxSettingsScenarioFolderBase paths
                 string installPath = simKey.GetValue("SetupPath") as string;
                 if (!string.IsNullOrEmpty(installPath))
                 {
@@ -1932,6 +1866,9 @@ namespace P3D_Scenario_Generator
                     ValidateP3DInstallFolder();
                     TextBoxSettingsP3DprogramData.Text = $"{driveLetter}ProgramData\\Lockheed Martin\\Prepar3D v{simulatorVersion}";
                     ValidateP3DDataFolder();
+                    string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    TextBoxSettingsScenarioFolderBase.Text = Path.Combine(documentsPath, $"Prepar3D v{simulatorVersion} Files");
+                    ValidateScenarioFolderBase();
                 }
 
                 simKey.Close(); // Always close registry keys when done
@@ -2040,6 +1977,135 @@ namespace P3D_Scenario_Generator
                 _formData.ScenarioFolderBase = folderPath;
             }
             return isValid;
+        }
+
+        /// <summary>
+        /// Validates the group of map window settings (monitor number, offset, alignment, width, height, window size).
+        /// Performs individual validation for each control and then checks interdependencies.
+        /// Reports errors via ErrorProvider for specific controls and _progressReporter for general messages.
+        /// </summary>
+        /// <param name="triggeringControl">The control that initiated this validation, or null if called from a general validation.</param>
+        /// <returns>True if all map window settings are valid individually and as a group; otherwise, false.</returns>
+        private bool ValidateMapWindowSettingsGroup(Control triggeringControl)
+        {
+            bool allValid = true;
+            string groupErrorMessage = ""; // To accumulate group-level errors
+
+            // Clear any existing errors on these controls before re-validating the group
+            errorProvider1.SetError(TextBoxSettingsMapMonitorNumber, "");
+            errorProvider1.SetError(TextBoxSettingsMapOffset, "");
+            errorProvider1.SetError(ComboBoxSettingsMapAlignment, "");
+            errorProvider1.SetError(TextBoxSettingsMapMonitorWidth, "");
+            errorProvider1.SetError(TextBoxSettingsMapMonitorHeight, "");
+            errorProvider1.SetError(ComboBoxSettingsMapWindowSize, "");
+            _progressReporter?.Report(""); // Clear previous group messages
+
+            // 1. Individual Validation and Population
+            allValid &= ValidateAndSetInteger(
+                TextBoxSettingsMapMonitorNumber,
+                "Map Monitor Number",
+                0,
+                Constants.MaxMonitorNumber,
+                "",
+                value => _formData.MapMonitorNumber = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxSettingsMapOffset,
+                "Map Offset",
+                0,
+                Constants.MaxWindowOffset,
+                "pixels",
+                value => _formData.MapOffset = value);
+
+            allValid &= ValidateAndSetEnum<WindowAlignment>(
+                ComboBoxSettingsMapAlignment,
+                "Map Alignment",
+                value => _formData.MapAlignment = value); 
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxSettingsMapMonitorWidth,
+                "Map Monitor Width",
+                Constants.MinMonitorWidth,
+                Constants.MaxMonitorWidth,
+                "pixels",
+                value => _formData.MapMonitorWidth = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxSettingsMapMonitorHeight,
+                "Map Monitor Height",
+                Constants.MinMonitorHeight,
+                Constants.MaxMonitorHeight,
+                "pixels",
+                value => _formData.MapMonitorHeight = value);
+
+            // Validate and set Map Window Size using the new enum
+            allValid &= ValidateAndSetEnum<MapWindowSizeOption>(
+                ComboBoxSettingsMapWindowSize,
+                "Map Window Size",
+                value => _formData.MapWindowSize = value); 
+
+            // If any individual validation failed, return false immediately.
+            // The specific error providers are already set.
+            if (!allValid)
+            {
+                groupErrorMessage = "Please correct individual errors in Map Window settings.";
+                _progressReporter?.Report(groupErrorMessage);
+                // No need to set group error here, individual errors are already set.
+                return false;
+            }
+
+            // 2. Interdependent Validation (only if all individual fields are valid)
+            // No need for re-parsing from string; use _formData.WindowAlignment and _formData.MapWindowSize directly
+            WindowAlignment currentAlignment = _formData.MapAlignment;
+            int mapWindowSize = (int)_formData.MapWindowSize; // Cast enum to int for calculations
+
+            bool groupValidationPassed = true;
+
+            switch (currentAlignment)
+            {
+                case WindowAlignment.Centered:
+                    // For Centered, map window just has to fit on the monitor
+                    if (mapWindowSize > _formData.MapMonitorWidth || mapWindowSize > _formData.MapMonitorHeight)
+                    {
+                        groupErrorMessage = $"Map Window size ({mapWindowSize}px square) exceeds Monitor size ({_formData.MapMonitorWidth} x {_formData.MapMonitorHeight}px).";
+                        groupValidationPassed = false;
+                    }
+                    break;
+
+                case WindowAlignment.TopLeft:
+                case WindowAlignment.TopRight:
+                case WindowAlignment.BottomRight:
+                case WindowAlignment.BottomLeft:
+                    // For corner alignments, map window + 2 * offset must fit
+                    if ((mapWindowSize + (2 * _formData.MapOffset)) > _formData.MapMonitorWidth ||
+                        (mapWindowSize + (2 * _formData.MapOffset)) > _formData.MapMonitorHeight)
+                    {
+                        groupErrorMessage = $"Map Window size ({mapWindowSize}px square) + offset ({_formData.MapOffset}px) exceeds Monitor size ({_formData.MapMonitorWidth} x {_formData.MapMonitorHeight}px).";
+                        groupValidationPassed = false;
+                    }
+                    break;
+            }
+
+            if (!groupValidationPassed)
+            {
+                _progressReporter?.Report(groupErrorMessage);
+                // Set the error on the triggering control if available, otherwise fall back to TextBoxSettingsMapOffset
+                if (triggeringControl != null)
+                {
+                    errorProvider1.SetError(triggeringControl, groupErrorMessage);
+                }
+                else
+                {
+                    errorProvider1.SetError(TextBoxSettingsMapOffset, groupErrorMessage);
+                }
+                allValid = false;
+            }
+            else
+            {
+                _progressReporter?.Report("Map Window settings are valid.");
+            }
+
+            return allValid && groupValidationPassed;
         }
 
         /// <summary>
@@ -2228,190 +2294,259 @@ namespace P3D_Scenario_Generator
             bool allValid = true;
 
             // CircuitUpwindLeg
-            const double minUpwindLeg = 0.0;
-            const double maxUpwindLeg = Constants.EarthCircumferenceMiles;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitUpwind.Text,
+            allValid &= ValidateAndSetDouble(
+                TextBoxCircuitUpwind,
                 "Circuit Upwind Leg",
-                minUpwindLeg,
-                maxUpwindLeg,
-                out double parsedValue,
-                out string validationMessage,
-                "miles"))
-            {
-                errorProvider1.SetError(TextBoxCircuitUpwind, validationMessage);
-                _progressReporter?.Report(validationMessage);
-                allValid = false;
-            }
-            else
-            {
-                _progressReporter?.Report("");
-                errorProvider1.SetError(TextBoxCircuitUpwind, "");
-                _formData.CircuitUpwindLeg = parsedValue;
-            }
+                0.0,
+                Constants.EarthCircumferenceMiles,
+                "nautical miles",
+                value => _formData.CircuitUpwindLeg = value);
 
             // CircuitBaseLeg
-            const double minBaseLeg = Constants.MinCircuitGateSeparation;
-            const double maxBaseLeg = Constants.EarthCircumferenceMiles;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitBase.Text,
+            allValid &= ValidateAndSetDouble(
+                TextBoxCircuitBase,
                 "Circuit Base Leg",
-                minBaseLeg,
-                maxBaseLeg,
-                out parsedValue,
-                out validationMessage,
-                "miles"))
-            {
-                errorProvider1.SetError(TextBoxCircuitBase, validationMessage);
-                _progressReporter?.Report(validationMessage);
-                allValid = false;
-            }
-            else
-            {
-                _progressReporter?.Report("");
-                errorProvider1.SetError(TextBoxCircuitBase, "");
-                _formData.CircuitBaseLeg = parsedValue;
-            }
+                Constants.MinCircuitGateSeparation,
+                Constants.EarthCircumferenceMiles,
+                "nautical miles",
+                value => _formData.CircuitBaseLeg = value);
 
             // CircuitFinalLeg
-            const double minFinalLeg = 0.0;
-            const double maxFinalLeg = Constants.EarthCircumferenceMiles;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitFinal.Text,
+            allValid &= ValidateAndSetDouble(
+                TextBoxCircuitFinal,
                 "Circuit Final Leg",
-                minFinalLeg,
-                maxFinalLeg,
-                out parsedValue,
-                out validationMessage,
-                "miles"))
-            {
-                errorProvider1.SetError(TextBoxCircuitFinal, validationMessage);
-                _progressReporter?.Report(validationMessage);
-                allValid = false;
-            }
-            else
-            {
-                _progressReporter?.Report("");
-                errorProvider1.SetError(TextBoxCircuitFinal, "");
-                _formData.CircuitFinalLeg = parsedValue;
-            }
+                0.0,
+                Constants.EarthCircumferenceMiles,
+                "nautical miles",
+                value => _formData.CircuitFinalLeg = value);
 
             // CircuitHeightUpwind
-            const double minHeightUpwind = 0.0;
-            const double maxHeightUpwind = Constants.MaxCircuitGateHeight;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitHeightUpwind.Text,
+            allValid &= ValidateAndSetDouble(
+                TextBoxCircuitHeightUpwind,
                 "Circuit Height Upwind Leg",
-                minHeightUpwind,
-                maxHeightUpwind,
-                out parsedValue,
-                out validationMessage,
-                "feet"))
-            {
-                errorProvider1.SetError(TextBoxCircuitHeightUpwind, validationMessage);
-                _progressReporter?.Report(validationMessage);
-                allValid = false;
-            }
-            else
-            {
-                _progressReporter?.Report("");
-                errorProvider1.SetError(TextBoxCircuitHeightUpwind, "");
-                _formData.CircuitHeightUpwind = parsedValue;
-            }
+                0.0,
+                Constants.MaxCircuitGateHeight,
+                "feet",
+                value => _formData.CircuitHeightUpwind = value);
 
             // CircuitHeightDown
-            const double minHeightDown = 0.0;
-            const double maxHeightDown = Constants.MaxCircuitGateHeight;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitHeightDown.Text,
+            allValid &= ValidateAndSetDouble(
+                TextBoxCircuitHeightDown,
                 "Circuit Height Down Leg",
-                minHeightDown,
-                maxHeightDown,
-                out parsedValue,
-                out validationMessage,
-                "feet"))
-            {
-                errorProvider1.SetError(TextBoxCircuitHeightDown, validationMessage);
-                _progressReporter?.Report(validationMessage);
-                allValid = false;
-            }
-            else
-            {
-                _progressReporter?.Report("");
-                errorProvider1.SetError(TextBoxCircuitHeightDown, "");
-                _formData.CircuitHeightDown = parsedValue;
-            }
+                0.0,
+                Constants.MaxCircuitGateHeight,
+                "feet",
+                value => _formData.CircuitHeightDown = value);
 
             // CircuitHeightBase
-            const double minHeightBase = 0.0;
-            const double maxHeightBase = Constants.MaxCircuitGateHeight;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitHeightBase.Text,
+            allValid &= ValidateAndSetDouble(
+                TextBoxCircuitHeightBase,
                 "Circuit Height Base Leg",
-                minHeightBase,
-                maxHeightBase,
-                out parsedValue,
-                out validationMessage,
-                "feet"))
-            {
-                errorProvider1.SetError(TextBoxCircuitHeightBase, validationMessage);
-                _progressReporter?.Report(validationMessage);
-                allValid = false;
-            }
-            else
-            {
-                _progressReporter?.Report("");
-                errorProvider1.SetError(TextBoxCircuitHeightBase, "");
-                _formData.CircuitHeightBase = parsedValue;
-            }
+                0.0,
+                Constants.MaxCircuitGateHeight,
+                "feet",
+                value => _formData.CircuitHeightBase = value);
 
             // CircuitSpeed
-            const double minCircuitSpeed = 0.0;
-            const double maxCircuitSpeed = Constants.PracticalMaxSpeed;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitSpeed.Text,
+            allValid &= ValidateAndSetDouble(
+                TextBoxCircuitSpeed,
                 "Circuit Speed",
-                minCircuitSpeed,
-                maxCircuitSpeed,
-                out parsedValue,
-                out validationMessage,
-                "knots"))
-            {
-                errorProvider1.SetError(TextBoxCircuitSpeed, validationMessage);
-                _progressReporter?.Report(validationMessage);
-                allValid = false;
-            }
-            else
-            {
-                _progressReporter?.Report("");
-                errorProvider1.SetError(TextBoxCircuitSpeed, "");
-                _formData.CircuitSpeed = parsedValue;
-            }
+                0.0,
+                Constants.PracticalMaxSpeed,
+                "knots",
+                value => _formData.CircuitSpeed = value);
 
             // CircuitTurnDuration360Degrees
-            const double minTurnRate = Constants.MinTurnTime360DegreesMinutes;
-            const double maxTurnRate = Constants.MaxTurnTime360DegreesMinutes;
-            if (!ParsingHelpers.TryParseDouble(
-                TextBoxCircuitTurnRate.Text,
+            allValid &= ValidateAndSetDouble(
+                TextBoxCircuitTurnRate,
                 "Circuit Turn Rate",
-                minTurnRate,
-                maxTurnRate,
-                out parsedValue,
-                out validationMessage,
-                "minutes"))
+                Constants.MinTurnTime360DegreesMinutes,
+                Constants.MaxTurnTime360DegreesMinutes,
+                "minutes",
+                value => _formData.CircuitTurnDuration360Degrees = value);
+
+            return allValid;
+        }
+
+        /// <summary>
+        /// Generic validation method for integer text boxes.
+        /// Parses the text, validates its range, sets error messages, reports progress,
+        /// and assigns the parsed value to the specified formData property via an Action delegate.
+        /// </summary>
+        /// <param name="textBox">The TextBox control to validate.</param>
+        /// <param name="valueName">A descriptive name for the value (e.g., "Map Monitor Number") used in error messages.</param>
+        /// <param name="minValue">The minimum allowed value (inclusive).</param>
+        /// <param name="maxValue">The maximum allowed value (inclusive).</param>
+        /// <param name="units">Optional: A string representing the units of the value (e.g., "pixels").</param>
+        /// <param name="setFormDataProperty">An Action delegate that takes the parsed integer value and assigns it to the corresponding ScenarioFormData property.</param>
+        /// <returns>True if the string was successfully parsed into an integer and is within the specified range; otherwise, false.</returns>
+        private bool ValidateAndSetInteger(
+            TextBox textBox,
+            string valueName,
+            int minValue,
+            int maxValue,
+            string units,
+            Action<int> setFormDataProperty)
+        {
+            if (!ParsingHelpers.TryParseInteger(
+                textBox.Text,
+                valueName,
+                minValue,
+                maxValue,
+                out int parsedValue,
+                out string validationMessage,
+                units))
             {
-                errorProvider1.SetError(TextBoxCircuitTurnRate, validationMessage);
+                errorProvider1.SetError(textBox, validationMessage);
                 _progressReporter?.Report(validationMessage);
-                allValid = false;
+                return false;
             }
             else
             {
+                errorProvider1.SetError(textBox, "");
                 _progressReporter?.Report("");
-                errorProvider1.SetError(TextBoxCircuitTurnRate, "");
-                _formData.CircuitTurnDuration360Degrees = parsedValue;
+                setFormDataProperty(parsedValue); // Assign the parsed value using the delegate
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Generic validation method for double text boxes.
+        /// Parses the text, validates its range, sets error messages, reports progress,
+        /// and assigns the parsed value to the specified formData property via an Action delegate.
+        /// </summary>
+        /// <param name="textBox">The TextBox control to validate.</param>
+        /// <param name="valueName">A descriptive name for the value (e.g., "Circuit Speed") used in error messages.</param>
+        /// <param name="minValue">The minimum allowed value (inclusive).</param>
+        /// <param name="maxValue">The maximum allowed value (inclusive).</param>
+        /// <param name="units">Optional: A string representing the units of the value (e.g., "knots").</param>
+        /// <param name="setFormDataProperty">An Action delegate that takes the parsed double value and assigns it to the corresponding ScenarioFormData property.</param>
+        /// <returns>True if the string was successfully parsed into a double and is within the specified range; otherwise, false.</returns>
+        private bool ValidateAndSetDouble(
+            TextBox textBox,
+            string valueName,
+            double minValue,
+            double maxValue,
+            string units,
+            Action<double> setFormDataProperty)
+        {
+            if (!ParsingHelpers.TryParseDouble(
+                textBox.Text,
+                valueName,
+                minValue,
+                maxValue,
+                out double parsedValue,
+                out string validationMessage,
+                units))
+            {
+                errorProvider1.SetError(textBox, validationMessage);
+                _progressReporter?.Report(validationMessage);
+                return false;
+            }
+            else
+            {
+                errorProvider1.SetError(textBox, "");
+                _progressReporter?.Report("");
+                setFormDataProperty(parsedValue); // Assign the parsed value using the delegate
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Leave event for TextBoxSettingsMapMonitorNumber.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void TextBoxSettingsMapMonitorNumber_Leave(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
+
+        /// <summary>
+        /// Handles the Leave event for TextBoxSettingsMapOffset.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void TextBoxSettingsMapOffset_Leave(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event for ComboBoxSettingsMapAlignment.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void ComboBoxSettingsMapAlignment_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
+
+        /// <summary>
+        /// Handles the Leave event for TextBoxSettingsMapMonitorWidth.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void TextBoxSettingsMapMonitorWidth_Leave(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
+
+        /// <summary>
+        /// Handles the Leave event for TextBoxSettingsMapMonitorHeight.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void TextBoxSettingsMapMonitorHeight_Leave(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event for ComboBoxSettingsMapWindowSize.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void ComboBoxSettingsMapWindowSize_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
+
+        /// <summary>
+        /// Generic validation method for ComboBoxes representing an Enum.
+        /// Parses the selected text into the specified Enum type, sets error messages, reports progress,
+        /// and assigns the parsed enum value to the specified formData property via an Action delegate.
+        /// </summary>
+        /// <typeparam name="TEnum">The Enum type to parse to.</typeparam>
+        /// <param name="comboBox">The ComboBox control to validate.</param>
+        /// <param name="valueName">A descriptive name for the value (e.g., "Map Alignment") used in error messages.</param>
+        /// <param name="setFormDataProperty">An Action delegate that takes the parsed enum value and assigns it to the corresponding ScenarioFormData property.</param>
+        /// <returns>True if the string was successfully parsed into the Enum type; otherwise, false.</returns>
+        private bool ValidateAndSetEnum<TEnum>(
+            ComboBox comboBox,
+            string valueName,
+            Action<TEnum> setFormDataProperty) where TEnum : struct, Enum
+        {
+            string selectedText = comboBox.Text.Trim();
+            if (string.IsNullOrEmpty(selectedText))
+            {
+                string message = $"{valueName} cannot be empty.";
+                errorProvider1.SetError(comboBox, message);
+                _progressReporter?.Report(message);
+                return false;
             }
 
-            return allValid;
+            // Iterate through enum values to find a match by description
+            foreach (TEnum enumValue in Enum.GetValues(typeof(TEnum)))
+            {
+                if (enumValue.GetDescription().Equals(selectedText, StringComparison.OrdinalIgnoreCase))
+                {
+                    errorProvider1.SetError(comboBox, "");
+                    _progressReporter?.Report("");
+                    setFormDataProperty(enumValue); // Assign the actual enum value
+                    return true;
+                }
+            }
+
+            // If no match by description or name
+            string noMatchMessage = $"Invalid selection for '{valueName}'. Please select a valid option.";
+            errorProvider1.SetError(comboBox, noMatchMessage);
+            _progressReporter?.Report(noMatchMessage);
+            return false;
         }
 
         #endregion

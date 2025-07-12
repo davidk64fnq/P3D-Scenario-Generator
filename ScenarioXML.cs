@@ -695,13 +695,9 @@ namespace P3D_Scenario_Generator
         static private string[] GetMapWindowParameters(ScenarioFormData formData)
         {
             // Dimensions
-            int mapWindowWidth = 512;
-            int mapWindowHeight = 512;
-            if (formData.MapWindowSize == 1024)
-            {
-                mapWindowWidth = 1024;
-                mapWindowHeight = 1024;
-            }
+            int mapWindowWidth = (int)formData.MapWindowSize;
+            int mapWindowHeight = (int)formData.MapWindowSize;
+
             if (formData.ScenarioType == ScenarioTypes.PhotoTour)
             {
                 return GetWindowParameters(mapWindowWidth, mapWindowHeight, formData.MapAlignment,
@@ -731,26 +727,26 @@ namespace P3D_Scenario_Generator
                 formData.WikiURLMonitorWidth, formData.WikiURLMonitorHeight, formData.WikiURLOffset);
         }
 
-        static private string[] GetWindowParameters(int windowWidth, int windowHeight, string alignment, int monitorWidth, int monitorHeight, int offset)
+        static private string[] GetWindowParameters(int windowWidth, int windowHeight, WindowAlignment alignment, int monitorWidth, int monitorHeight, int offset)
         {
             int horizontalOffset, verticalOffset;
             // Offsets
-            if (alignment == "Top Left")
+            if (alignment == WindowAlignment.TopLeft)
             {
                 horizontalOffset = offset;
                 verticalOffset = offset;
             }
-            else if (alignment == "Top Right")
+            else if (alignment == WindowAlignment.TopRight)
             {
                 horizontalOffset = monitorWidth - offset - windowWidth;
                 verticalOffset = offset;
             }
-            else if (alignment == "Bottom Right")
+            else if (alignment == WindowAlignment.BottomRight)
             {
                 horizontalOffset = monitorWidth - offset - windowWidth;
                 verticalOffset = monitorHeight - offset - windowHeight;
             }
-            else if (alignment == "Bottom Left")
+            else if (alignment == WindowAlignment.BottomLeft)
             {
                 horizontalOffset = offset;
                 verticalOffset = monitorHeight - offset - windowHeight;
@@ -974,7 +970,7 @@ namespace P3D_Scenario_Generator
             movingMapJS = movingMapJS.Replace("mapWestX", mapWest);
 
             // Set map size related values
-            if (formData.MapWindowSize == 512)
+            if (formData.MapWindowSize == MapWindowSizeOption.Size512)
             {
                 movingMapJS = movingMapJS.Replace("imagePixelsX", "512, 1024, 2048");
                 movingMapJS = movingMapJS.Replace("viewPortWidthX", "512");
