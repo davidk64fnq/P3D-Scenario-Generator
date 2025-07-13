@@ -1,4 +1,6 @@
-﻿namespace P3D_Scenario_Generator.MapTiles
+﻿using P3D_Scenario_Generator.ConstantsEnums;
+
+namespace P3D_Scenario_Generator.MapTiles
 {
     /// <summary>
     /// Provides methods for calculating, extending, and adjusting the bounding box of OpenStreetMap tiles.
@@ -9,7 +11,7 @@
     {
         /// <summary>
         /// Creates bounding box of tiles needed at given zoom level to include all tiles in list. Each tile
-        /// coordinate must be more than boundingBoxTrimMargin pixels from any edge of the bounding box.
+        /// coordinate must be more than BoundingBoxTrimMarginPixels pixels from any edge of the bounding box.
         /// </summary>
         /// <param name="tiles">A list of OSM tile references and their associated coordinate</param>
         /// <param name="zoom">The zoom level required for the bounding box</param>
@@ -273,7 +275,7 @@
         {
             try
             {
-                if (tiles[tileIndexToCheck].YOffset < Constants.boundingBoxTrimMargin && tiles[tileIndexToCheck].YIndex > 0)
+                if (tiles[tileIndexToCheck].YOffset < Constants.BoundingBoxTrimMarginPixels && tiles[tileIndexToCheck].YIndex > 0)
                 {
                     boundingBox.YAxis.Insert(0, tiles[tileIndexToCheck].YIndex - 1);
                 }
@@ -298,7 +300,7 @@
             {
                 int newTileNo;
 
-                if (tiles[tileIndexToCheck].XOffset > Constants.tileSize - Constants.boundingBoxTrimMargin)
+                if (tiles[tileIndexToCheck].XOffset > Constants.TileSizePixels - Constants.BoundingBoxTrimMarginPixels)
                 {
                     newTileNo = MapTileCalculator.IncXtileNo(tiles[tileIndexToCheck].XIndex, zoom);
                     if (newTileNo != boundingBox.XAxis[0]) // Avoid adding the same tile number if it's already at the west edge
@@ -325,7 +327,7 @@
         {
             try
             {
-                if (tiles[tileIndexToCheck].YOffset > Constants.tileSize - Constants.boundingBoxTrimMargin && tiles[tileIndexToCheck].YIndex < (1 << zoom) - 1)
+                if (tiles[tileIndexToCheck].YOffset > Constants.TileSizePixels - Constants.BoundingBoxTrimMarginPixels && tiles[tileIndexToCheck].YIndex < (1 << zoom) - 1)
                 {
                     boundingBox.YAxis.Add(tiles[tileIndexToCheck].YIndex + 1);
                 }
@@ -350,7 +352,7 @@
             {
                 int newTileNo;
 
-                if (tiles[tileIndexToCheck].XOffset < Constants.boundingBoxTrimMargin)
+                if (tiles[tileIndexToCheck].XOffset < Constants.BoundingBoxTrimMarginPixels)
                 {
                     newTileNo = MapTileCalculator.DecXtileNo(tiles[tileIndexToCheck].XIndex, zoom);
                     if (newTileNo != boundingBox.XAxis[^1])

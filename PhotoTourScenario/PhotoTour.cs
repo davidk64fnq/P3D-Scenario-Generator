@@ -1,4 +1,5 @@
-﻿using P3D_Scenario_Generator.MapTiles;
+﻿using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.MapTiles;
 
 namespace P3D_Scenario_Generator.PhotoTourScenario
 {

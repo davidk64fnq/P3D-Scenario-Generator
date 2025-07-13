@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using P3D_Scenario_Generator.ConstantsEnums;
+using System.Text;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
@@ -246,7 +247,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         {
             double dFinishLat = 0;
             double dFinishLon = 0;
-            double distFeet = distance * 1.1 * Constants.feetInNM;
+            double distFeet = distance * 1.1 * Constants.FeetInNauticalMile;
             MathRoutines.AdjCoords(midairStartLat, midairStartLon, 0, distFeet, ref CelestialNav.celestialImageNorth, ref dFinishLon);
             MathRoutines.AdjCoords(midairStartLat, midairStartLon, 90, distFeet, ref dFinishLat, ref CelestialNav.celestialImageEast);
             MathRoutines.AdjCoords(midairStartLat, midairStartLon, 180, distFeet, ref CelestialNav.celestialImageSouth, ref dFinishLon);

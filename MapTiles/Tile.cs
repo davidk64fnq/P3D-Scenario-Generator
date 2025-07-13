@@ -1,4 +1,4 @@
-﻿namespace P3D_Scenario_Generator
+﻿namespace P3D_Scenario_Generator.MapTiles
 {
     /// <summary>
     /// Represents an OpenStreetMap (OSM) tile, defined by its horizontal (X) and vertical (Y) indices

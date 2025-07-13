@@ -1,4 +1,5 @@
 ﻿using ImageMagick;
+using P3D_Scenario_Generator.ConstantsEnums;
 
 namespace P3D_Scenario_Generator.MapTiles
 {
@@ -31,7 +32,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // TileGeometry defines the layout of the montage (1 column by yCount rows).
                 var settings = new MontageSettings
                 {
-                    Geometry = new MagickGeometry($"{Constants.tileSize}x{Constants.tileSize}"),
+                    Geometry = new MagickGeometry($"{Constants.TileSizePixels}x{Constants.TileSizePixels}"),
                     TileGeometry = new MagickGeometry($"1x{yCount}"),
                 };
 
@@ -112,7 +113,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // TileGeometry defines the layout of the montage (xCount columns by 1 row).
                 var settings = new MontageSettings
                 {
-                    Geometry = new MagickGeometry($"{Constants.tileSize}x{Constants.tileSize}"),
+                    Geometry = new MagickGeometry($"{Constants.TileSizePixels}x{Constants.TileSizePixels}"),
                     TileGeometry = new MagickGeometry($"{xCount}x1"),
                 };
 
@@ -189,11 +190,11 @@ namespace P3D_Scenario_Generator.MapTiles
                 using var images = new MagickImageCollection();
 
                 // Setup for the montage operation.
-                // Geometry defines the size of each individual column image (Con.tileSize width, yCount * Con.tileSize height).
+                // Geometry defines the size of each individual column image (Con.TileSizePixels width, yCount * Con.TileSizePixels height).
                 // TileGeometry defines the layout of the montage (xCount columns by 1 row).
                 var settings = new MontageSettings
                 {
-                    Geometry = new MagickGeometry($"{Constants.tileSize}x{Constants.tileSize * yCount}"),
+                    Geometry = new MagickGeometry($"{Constants.TileSizePixels}x{Constants.TileSizePixels * yCount}"),
                     TileGeometry = new MagickGeometry($"{xCount}x1"),
                 };
 
@@ -270,11 +271,11 @@ namespace P3D_Scenario_Generator.MapTiles
                 using var images = new MagickImageCollection();
 
                 // Setup for the montage operation.
-                // Geometry defines the size of each individual row image (xCount * Con.tileSize width, Con.tileSize height).
+                // Geometry defines the size of each individual row image (xCount * Con.TileSizePixels width, Con.TileSizePixels height).
                 // TileGeometry defines the layout of the montage (1 column by yCount rows).
                 var settings = new MontageSettings
                 {
-                    Geometry = new MagickGeometry($"{Constants.tileSize * xCount}x{Constants.tileSize}"),
+                    Geometry = new MagickGeometry($"{Constants.TileSizePixels * xCount}x{Constants.TileSizePixels}"),
                     TileGeometry = new MagickGeometry($"1x{yCount}"),
                 };
 

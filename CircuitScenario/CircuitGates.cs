@@ -1,4 +1,5 @@
 ﻿using CoordinateSharp;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.SignWritingScenario;
 
 namespace P3D_Scenario_Generator.CircuitScenario
@@ -32,7 +33,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
         internal static double CalcTurnRadius(ScenarioFormData formData)
         {
             // Calculate number of feet travelled by plane in an hour based on cruise speed
-            double speedInFeetPerHour = formData.CircuitSpeed * Constants.feetInNM;
+            double speedInFeetPerHour = formData.CircuitSpeed * Constants.FeetInNauticalMile;
 
             // Calculate number of feet travelled by plane to complete a circle in number of minutes given by CircuitTurnDuration360Degrees
             double turnCircumference = speedInFeetPerHour * (formData.CircuitTurnDuration360Degrees / 60);
@@ -54,7 +55,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
             // Firstly work out climb rate angle from gate 1 to 3. Approx given by solving
             // tan(angle) = opposite(height change) / adjacent (over ground distance)
             double heightChange = formData.CircuitHeightDown - formData.CircuitHeightUpwind;
-            double overGroundDistance = turnRadius + formData.CircuitBaseLeg * Constants.feetInNM;
+            double overGroundDistance = turnRadius + formData.CircuitBaseLeg * Constants.FeetInNauticalMile;
             double gate1to3AngleRad = Math.Atan(heightChange / overGroundDistance);
 
             // Using climb rate angle calculated above and given adjacent (over ground distance) is turn radius we can calculate
@@ -75,7 +76,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
             // Firstly work out descent rate angle from gate 6 to 8. Approx given by solving
             // tan(angle) = opposite(height change) / adjacent (over ground distance)
             double heightChange = formData.CircuitHeightDown - formData.CircuitHeightBase;
-            double overGroundDistance = turnRadius + formData.CircuitBaseLeg * Constants.feetInNM;
+            double overGroundDistance = turnRadius + formData.CircuitBaseLeg * Constants.FeetInNauticalMile;
             double gate6to8AngleRad = Math.Atan(heightChange / overGroundDistance);
 
             // Using descent rate angle calculated above and given adjacent (over ground distance) is turn radius we can calculate
@@ -100,26 +101,26 @@ namespace P3D_Scenario_Generator.CircuitScenario
             double turnDistance = turnRadius * Math.Sqrt(2.0);
             // Start theshold to gate 1
             legParams.Add(new LegParams(baseHeading % 360,
-                Runway.startRwy.Len + formData.CircuitUpwindLeg * Constants.feetInNM, Runway.startRwy.Altitude + formData.CircuitHeightUpwind));
+                Runway.startRwy.Len + formData.CircuitUpwindLeg * Constants.FeetInNauticalMile, Runway.startRwy.Altitude + formData.CircuitHeightUpwind));
             // Gate 1 to gate 2
             legParams.Add(new LegParams((baseHeading - 45) % 360,
                 turnDistance, Runway.startRwy.Altitude + formData.CircuitHeightUpwind + gate1to2heightDif));
             // Gate 2 to gate 3
             legParams.Add(new LegParams((baseHeading - 90) % 360,
-                formData.CircuitBaseLeg * Constants.feetInNM, Runway.startRwy.Altitude + formData.CircuitHeightDown));
+                formData.CircuitBaseLeg * Constants.FeetInNauticalMile, Runway.startRwy.Altitude + formData.CircuitHeightDown));
             // Gate 3 to gate 4
             legParams.Add(new LegParams((baseHeading - 135) % 360,
                 turnDistance, Runway.startRwy.Altitude + formData.CircuitHeightDown));
             // Gate 4 to gate 5
             legParams.Add(new LegParams((baseHeading - 180) % 360,
-                formData.CircuitFinalLeg * Constants.feetInNM + Runway.startRwy.Len + formData.CircuitUpwindLeg * Constants.feetInNM,
+                formData.CircuitFinalLeg * Constants.FeetInNauticalMile + Runway.startRwy.Len + formData.CircuitUpwindLeg * Constants.FeetInNauticalMile,
                 Runway.startRwy.Altitude + formData.CircuitHeightDown));
             // Gate 5 to gate 6
             legParams.Add(new LegParams((baseHeading - 225) % 360,
                 turnDistance, Runway.startRwy.Altitude + formData.CircuitHeightDown));
             // Gate 6 to gate 7
             legParams.Add(new LegParams((baseHeading - 270) % 360,
-                formData.CircuitBaseLeg * Constants.feetInNM, Runway.startRwy.Altitude + formData.CircuitHeightBase + gate7to8heightDif));
+                formData.CircuitBaseLeg * Constants.FeetInNauticalMile, Runway.startRwy.Altitude + formData.CircuitHeightBase + gate7to8heightDif));
             // Gate 7 to gate 8
             legParams.Add(new LegParams((baseHeading - 315) % 360,
                 turnDistance, Runway.startRwy.Altitude + formData.CircuitHeightBase));

@@ -1,4 +1,6 @@
-﻿namespace P3D_Scenario_Generator
+﻿using P3D_Scenario_Generator.ConstantsEnums;
+
+namespace P3D_Scenario_Generator
 {
     /// <summary>
     /// Provides helper methods for parsing and validating numerical string inputs,
@@ -21,7 +23,7 @@
                 Log.Error($"Failed to parse {degreesName} degrees in string: '{degreesStringIn}'");
                 return false;
             }
-            if (degreesIntOut < 0 || degreesIntOut > Constants.MaxDegrees)
+            if (degreesIntOut < 0 || degreesIntOut > Constants.DegreesInACircle)
             {
                 Log.Error($"{degreesName} degrees out of range in string: {degreesStringIn}");
                 return false;
@@ -44,7 +46,7 @@
                 Log.Error($"Failed to parse {minutesName} minutes in string: '{minutesStringIn}'");
                 return false;
             }
-            if (minutesDoubleOut < 0 || minutesDoubleOut > Constants.MaxMinutes)
+            if (minutesDoubleOut < 0 || minutesDoubleOut > Constants.MinutesInAnHour)
             {
                 Log.Error($"{minutesName} minutes out of range in string: {minutesStringIn}");
                 return false;

@@ -806,29 +806,6 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection ComboBoxSettingsSimulatorVersion {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxSettingsSimulatorVersion"]));
-            }
-            set {
-                this["ComboBoxSettingsSimulatorVersion"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int ComboBoxSettingsSimulatorVersionSelectedIndex {
-            get {
-                return ((int)(this["ComboBoxSettingsSimulatorVersionSelectedIndex"]));
-            }
-            set {
-                this["ComboBoxSettingsSimulatorVersionSelectedIndex"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string TextBoxSettingsP3DprogramData {
             get {

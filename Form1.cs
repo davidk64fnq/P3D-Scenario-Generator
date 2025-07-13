@@ -1,19 +1,14 @@
-﻿using CoordinateSharp;
-using ImageMagick;
-using Microsoft.Win32;
-using MS.WindowsAPICodePack.Internal;
-using P3D_Scenario_Generator.CelestialScenario;
+﻿using P3D_Scenario_Generator.CelestialScenario;
 using P3D_Scenario_Generator.CircuitScenario;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.SignWritingScenario;
 using P3D_Scenario_Generator.WikipediaScenario;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Configuration;
-using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
-using System.Windows.Forms;
 
 namespace P3D_Scenario_Generator
 {
@@ -127,9 +122,9 @@ namespace P3D_Scenario_Generator
                 DisplayStartMessage();
                 CheckRunwaysXMLupToDate();
                 Runway.SetRunwaysSubset();
-                SaveUserSettings(TabPageSettings.Controls);
                 ImageUtils.DrawScenarioImages(_formData);
                 DoScenarioSpecificTasks();
+                SaveUserSettings(TabPageSettings.Controls);
                 ScenarioFXML.GenerateFXMLfile(_formData);
                 ScenarioHTML.GenerateHTMLfiles(_formData);
                 ScenarioXML.GenerateXMLfile(_formData);
@@ -193,6 +188,11 @@ namespace P3D_Scenario_Generator
             PopulateComboBoxWithEnum<ScenarioTypes>(ComboBoxGeneralScenarioType);
         }
 
+        private void TextBoxGeneralScenarioTitle_Leave(object sender, EventArgs e)
+        {
+            ValidateAndPopulateScenarioTitle();
+        }
+
         #endregion
 
         #region Date and Time selection
@@ -221,17 +221,24 @@ namespace P3D_Scenario_Generator
 
         private void ButtonAddAircraft_Click(object sender, EventArgs e)
         {
-            string displayName = Aircraft.ChooseAircraftVariant(ComboBoxSettingsSimulatorVersion.Text);
-            if (displayName != "")
+            if (ValidateP3DInstallFolder())
             {
-                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+                string displayName = Aircraft.ChooseAircraftVariant(_formData);
+                if (displayName != "")
+                {
+                    ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
 
-                // Refreshing ComboBoxGeneralAircraftSelection.DataSource triggers ComboBoxGeneralAircraftSelection_SelectedIndexChanged
-                // so restore correct Aircraft.CurrentAircraftVariantIndex
-                Aircraft.ChangeCurrentAircraftVariantIndex(displayName);
+                    // Refreshing ComboBoxGeneralAircraftSelection.DataSource triggers ComboBoxGeneralAircraftSelection_SelectedIndexChanged
+                    // so restore correct Aircraft.CurrentAircraftVariantIndex
+                    Aircraft.ChangeCurrentAircraftVariantIndex(displayName);
 
-                // Set selected index for ComboBoxGeneralAircraftSelection 
-                ComboBoxGeneralAircraftSelection.SelectedIndex = Aircraft.CurrentAircraftVariantIndex;
+                    // Set selected index for ComboBoxGeneralAircraftSelection 
+                    ComboBoxGeneralAircraftSelection.SelectedIndex = Aircraft.CurrentAircraftVariantIndex;
+                }
+            }
+            else
+            {
+                _progressReporter?.Report("Please set the P3D Install folder on settings tab before selecting a new variant aircraft.");
             }
         }
 
@@ -300,12 +307,16 @@ namespace P3D_Scenario_Generator
         private void ComboBoxGeneralAircraftSelection_SelectedIndexChanged(object sender, EventArgs e)
         {
             AircraftVariant aircraftVariant = Aircraft.AircraftVariants.Find(aircraft => aircraft.DisplayName == ((ComboBox)sender).Text);
-            Aircraft.ChangeCurrentAircraftVariantIndex(aircraftVariant.DisplayName);
 
-            // Refresh TextBoxGeneralLocationFilters field on form
-            TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
+            if (ValidateAndPopulateAircraftDetails(aircraftVariant))
+            {
+                Aircraft.ChangeCurrentAircraftVariantIndex(aircraftVariant.DisplayName);
 
-            SetDefaultCircuitParams();
+                // Refresh TextBoxGeneralLocationFilters field on form
+                TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
+
+                SetDefaultCircuitParams();
+            }
         }
 
         private void ButtonRandomAircraft_Click(object sender, EventArgs e)
@@ -471,35 +482,71 @@ namespace P3D_Scenario_Generator
             SetDefaultCircuitParams();
         }
 
+        /// <summary>
+        /// Sets the default circuit parameters based on the current aircraft variant's performance.
+        /// </summary>
         private void SetDefaultCircuitParams()
         {
-            if (ComboBoxGeneralAircraftSelection.Items.Count == 0)
+            AircraftVariant aircraftVariant = Aircraft.GetCurrentVariant();
+            if (aircraftVariant == null)
             {
-                MessageBox.Show($"Select an aircraft to calculate default values", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                _progressReporter?.Report("Select an aircraft to calculate default values");
+                return;
             }
             else
             {
-                if (Aircraft.AircraftVariants.Count == 0)
-                    return;
-                double cruiseSpeed = Convert.ToDouble(Aircraft.AircraftVariants[Aircraft.CurrentAircraftVariantIndex].CruiseSpeed);
-                TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", cruiseSpeed);
-                TextBoxCircuitHeightDown.Text = "1000";
-                TextBoxCircuitHeightUpwind.Text = "500";
-                TextBoxCircuitHeightBase.Text = "500";
-                // Upwind distance (miles) approx by speed (knots) * number of minutes / 60 (assume 1.25 minutes to climb 1000ft at 800ft/min)
-                TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", cruiseSpeed * 1.25 / 60);
-                // Base distance (miles) approx by speed (knots) * number of minutes / 60 (assume 30 seconds to prepare for next gate after completing turn)
-                TextBoxCircuitBase.Text = string.Format("{0:0.0}", cruiseSpeed * 0.5 / 60);
-                // Final distance (miles) approx by speed (knots) * number of minutes / 60 (assume 1.25 minutes to descend 1000ft at 800ft/min)
-                TextBoxCircuitFinal.Text = string.Format("{0:0.0}", cruiseSpeed * 1.25 / 60);
-                TextBoxCircuitTurnRate.Text = "2.0";
+                // Find the appropriate performance profile based on the aircraft's cruise speed.
+                var profile = Constants.DefaultAircraftProfiles
+                    .FirstOrDefault(p => aircraftVariant.CruiseSpeed >= p.MinCruiseSpeedKnots);
+
+                // If a matching profile is found, use its associated values.
+                if (profile != null)
+                {
+                    // Set default circuit parameters based on the profile
+                    TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed);
+
+                    // Set circuit heights based on the profile's CircuitHeightFeet.
+                    TextBoxCircuitHeightDown.Text = profile.CircuitHeightFeet.ToString();
+                    // Typically, Upwind and Base circuit heights are half the Downwind height for standard circuits.
+                    TextBoxCircuitHeightUpwind.Text = (profile.CircuitHeightFeet / 2).ToString();
+                    TextBoxCircuitHeightBase.Text = (profile.CircuitHeightFeet / 2).ToString();
+
+                    // Calculate the time required to climb/descend the circuit height using the profile's climb rate.
+                    // Time (minutes) = Circuit Height (feet) / Climb Rate (fpm)
+                    double timeToClimbMinutes = (double)profile.CircuitHeightFeet / profile.ClimbRateFpm;
+
+                    // Recalculate Upwind distance using the calculated time to climb.
+                    // Distance (miles) = Speed (knots) * Time (minutes) / MinutesInAnHour (60)
+                    TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * timeToClimbMinutes / Constants.MinutesInAnHour);
+
+                    // Recalculate Final distance using the calculated time to descend (assuming descent rate equals climb rate for this calculation).
+                    TextBoxCircuitFinal.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * timeToClimbMinutes / Constants.MinutesInAnHour);
+
+                    // Base distance remains based on fixed time (0.5 minutes for preparation/turn)
+                    TextBoxCircuitBase.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 0.5 / Constants.MinutesInAnHour);
+
+                    TextBoxCircuitTurnRate.Text = "2.0";
+                }
+                else
+                {
+                    // Fallback for cases where no profile is matched (e.g., if DefaultAircraftProfiles is empty).
+                    // Revert to original hardcoded defaults if a profile cannot be found.
+                    TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed);
+                    TextBoxCircuitHeightDown.Text = "1000";
+                    TextBoxCircuitHeightUpwind.Text = "500";
+                    TextBoxCircuitHeightBase.Text = "500";
+                    TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 1.25 / Constants.MinutesInAnHour);
+                    TextBoxCircuitBase.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 0.5 / Constants.MinutesInAnHour);
+                    TextBoxCircuitFinal.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 1.25 / Constants.MinutesInAnHour);
+                    TextBoxCircuitTurnRate.Text = "2.0";
+                }
             }
         }
 
         /// <summary>
         /// Handles the Leave event for the TextBoxCircuitUpwind control.
         /// Validates the input in the text box as a double representing the Circuit Upwind Leg,
-        /// ensuring it falls within the specified valid range (0.0 to Constants.EarthCircumferenceMiles).
+        /// ensuring it falls within the specified valid range (0.0 to Constants.MilesInEarthCircumference).
         /// Displays an error message using an ErrorProvider if validation fails,
         /// and reports the validation status via the progress reporter.
         /// Clears any existing error if the input is valid.
@@ -512,7 +559,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitUpwind,
                 "Circuit Upwind Leg",
                 0.0,
-                Constants.EarthCircumferenceMiles,
+                Constants.MilesInEarthCircumference,
                 "miles",
                 value => _formData.CircuitUpwindLeg = value);
         }
@@ -520,7 +567,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Handles the Leave event for the TextBoxCircuitBase control.
         /// Validates the input in the text box as a double representing the Circuit Base Leg,
-        /// ensuring it falls within the specified valid range (Constants.MinCircuitGateSeparation to Constants.EarthCircumferenceMiles).
+        /// ensuring it falls within the specified valid range (Constants.MinCircuitGateSeparationMiles to Constants.MilesInEarthCircumference).
         /// Displays an error message using an ErrorProvider if validation fails,
         /// and reports the validation status via the progress reporter.
         /// Clears any existing error if the input is valid.
@@ -532,8 +579,8 @@ namespace P3D_Scenario_Generator
             ValidateAndSetDouble(
                 TextBoxCircuitBase,
                 "Circuit Base Leg",
-                Constants.MinCircuitGateSeparation,
-                Constants.EarthCircumferenceMiles,
+                Constants.MinCircuitGateSeparationMiles,
+                Constants.MilesInEarthCircumference,
                 "miles",
                 value => _formData.CircuitBaseLeg = value);
         }
@@ -541,7 +588,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Handles the Leave event for the TextBoxCircuitFinal control.
         /// Validates the input in the text box as a double representing the Circuit Final Leg,
-        /// ensuring it falls within the specified valid range (0.0 to Constants.EarthCircumferenceMiles).
+        /// ensuring it falls within the specified valid range (0.0 to Constants.MilesInEarthCircumference).
         /// Displays an error message using an ErrorProvider if validation fails,
         /// and reports the validation status via the progress reporter.
         /// Clears any existing error if the input is valid.
@@ -554,7 +601,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitFinal,
                 "Circuit Final Leg",
                 0.0,
-                Constants.EarthCircumferenceMiles,
+                Constants.MilesInEarthCircumference,
                 "miles",
                 value => _formData.CircuitFinalLeg = value);
         }
@@ -562,7 +609,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Handles the Leave event for the TextBoxCircuitHeightUpwind control.
         /// Validates the input in the text box as a double representing the Circuit Upwind Leg Height,
-        /// ensuring it falls within the specified valid range (0.0 to Constants.MaxCircuitGateHeight).
+        /// ensuring it falls within the specified valid range (0.0 to Constants.MaxGateHeightFeet).
         /// Displays an error message using an ErrorProvider if validation fails,
         /// and reports the validation status via the progress reporter.
         /// Clears any existing error if the input is valid.
@@ -575,7 +622,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitHeightUpwind,
                 "Circuit Height Upwind Leg",
                 0.0,
-                Constants.MaxCircuitGateHeight,
+                Constants.MaxGateHeightFeet,
                 "feet",
                 value => _formData.CircuitHeightUpwind = value);
         }
@@ -583,7 +630,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Handles the Leave event for the TextBoxCircuitHeightDown control.
         /// Validates the input in the text box as a double representing the Circuit Down Leg Height,
-        /// ensuring it falls within the specified valid range (0.0 to Constants.MaxCircuitGateHeight).
+        /// ensuring it falls within the specified valid range (0.0 to Constants.MaxGateHeightFeet).
         /// Displays an error message using an ErrorProvider if validation fails,
         /// and reports the validation status via the progress reporter.
         /// Clears any existing error if the input is valid.
@@ -596,7 +643,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitHeightDown,
                 "Circuit Height Down Leg",
                 0.0,
-                Constants.MaxCircuitGateHeight,
+                Constants.MaxGateHeightFeet,
                 "feet",
                 value => _formData.CircuitHeightDown = value);
         }
@@ -604,7 +651,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Handles the Leave event for the TextBoxCircuitHeightBase control.
         /// Validates the input in the text box as a double representing the Circuit Base Leg Height,
-        /// ensuring it falls within the specified valid range (0.0 to Constants.MaxCircuitGateHeight).
+        /// ensuring it falls within the specified valid range (0.0 to Constants.MaxGateHeightFeet).
         /// Displays an error message using an ErrorProvider if validation fails,
         /// and reports the validation status via the progress reporter.
         /// Clears any existing error if the input is valid.
@@ -617,7 +664,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitHeightBase,
                 "Circuit Height Base Leg",
                 0.0,
-                Constants.MaxCircuitGateHeight,
+                Constants.MaxGateHeightFeet,
                 "feet",
                 value => _formData.CircuitHeightBase = value);
         }
@@ -625,7 +672,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Handles the Leave event for the TextBoxCircuitSpeed control.
         /// Validates the input in the text box as a double representing the Circuit Speed,
-        /// ensuring it falls within the specified valid range (0.0 to Constants.PracticalMaxSpeed).
+        /// ensuring it falls within the specified valid range (0.0 to Constants.PlausibleMaxCruiseSpeedKnots).
         /// Displays an error message using an ErrorProvider if validation fails,
         /// and reports the validation status via the progress reporter.
         /// Clears any existing error if the input is valid.
@@ -638,7 +685,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitSpeed,
                 "Circuit Speed",
                 0.0,
-                Constants.PracticalMaxSpeed,
+                Constants.PlausibleMaxCruiseSpeedKnots,
                 "knots",
                 value => _formData.CircuitSpeed = value);
         }
@@ -646,7 +693,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Handles the Leave event for the TextBoxCircuitTurnRate control.
         /// Validates the input in the text box as a double representing the Circuit Turn Rate,
-        /// ensuring it falls within the specified valid range (Constants.MinTurnTime360DegreesMinutes to Constants.MaxTurnTime360DegreesMinutes).
+        /// ensuring it falls within the specified valid range (Constants.MinTimeToTurn360DegreesMinutes to Constants.MaxTimeToTurn360DegreesMinutes).
         /// Displays an error message using an ErrorProvider if validation fails,
         /// and reports the validation status via the progress reporter.
         /// Clears any existing error if the input is valid.
@@ -658,8 +705,8 @@ namespace P3D_Scenario_Generator
             ValidateAndSetDouble(
                 TextBoxCircuitTurnRate,
                 "Circuit Turn Rate",
-                Constants.MinTurnTime360DegreesMinutes,
-                Constants.MaxTurnTime360DegreesMinutes,
+                Constants.MinTimeToTurn360DegreesMinutes,
+                Constants.MaxTimeToTurn360DegreesMinutes,
                 "minutes",
                 value => _formData.CircuitTurnDuration360Degrees = value);
         }
@@ -881,11 +928,6 @@ namespace P3D_Scenario_Generator
         private void TextBoxSettingsScenarioFolderBase_MouseEnter(object sender, EventArgs e)
         {
             TextBoxMouseEnterExpandTooltip(sender, e);
-        }
-
-        private void ComboBoxSettingsSimulatorVersion_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ValidateComboBoxSettingsSimulatorVersion();
         }
 
         /// <summary>
@@ -1157,7 +1199,6 @@ namespace P3D_Scenario_Generator
             }
         }
 
-
         /// <summary>
         /// Gets the last write time of a file. Returns null if the file does not exist.
         /// </summary>
@@ -1376,14 +1417,27 @@ namespace P3D_Scenario_Generator
             }
 
             // Save all changes to disk once after processing all controls
+
+            string collectionIdentifier = "Unknown Collection";
+
+            if (controlCollection.Count > 0)
+            {
+                Control parentControl = controlCollection[0].Parent;
+                if (parentControl != null)
+                {
+                    collectionIdentifier = parentControl.Name;
+                }
+            }
+
             try
             {
-                Properties.Settings.Default.Save();
-                Log.Info("SaveUserSettings: All user settings saved successfully.");
+                Properties.Settings.Default.Save(); 
+
+                Log.Info($"SaveUserSettings: {collectionIdentifier} settings saved successfully.");
             }
             catch (Exception ex)
             {
-                Log.Error($"SaveUserSettings: Failed to save all user settings. Exception: {ex.Message}", ex);
+                Log.Error($"SaveUserSettings: Failed to save {collectionIdentifier} settings. Exception: {ex.Message}", ex);
             }
         }
 
@@ -1617,7 +1671,6 @@ namespace P3D_Scenario_Generator
                 try
                 {
                     Directory.Delete(_formData.TempScenarioDirectory, true); // 'true' for recursive delete
-                    _progressReporter?.Report($"Temporary directory deleted: {_formData.TempScenarioDirectory}");
                     Log.Info($"Temporary directory deleted: {_formData.TempScenarioDirectory}");
                     _formData.TempScenarioDirectory = null; // Clear the path after deletion
                 }
@@ -1663,7 +1716,7 @@ namespace P3D_Scenario_Generator
 
             if (!PopulateAndValidateTempScenarioDirectory())
             {
-                return false; 
+                return false;
             }
 
             // 1. Settings Tab Data - Validate first as other tabs might depend on these settings.
@@ -1711,7 +1764,7 @@ namespace P3D_Scenario_Generator
 
             return true;
         }
-        
+
         /// <summary>
         /// Creates a unique temporary directory for scenario generation files and stores its path
         /// in the ScenarioFormData. Reports progress and logs errors.
@@ -1763,9 +1816,6 @@ namespace P3D_Scenario_Generator
 
             // Validate and populate CacheServerAPIkey
             allValid &= ValidateOSMServerAPIkeyField();
-
-            // Validate the populate Simulator Version
-            allValid &= ValidateComboBoxSettingsSimulatorVersion();
 
             // Validate and populate P3DInstallFolder
             allValid &= ValidateP3DInstallFolder();
@@ -1822,56 +1872,6 @@ namespace P3D_Scenario_Generator
                 errorProvider1.SetError(TextBoxSettingsOSMServerAPIkey, "");
                 _progressReporter?.Report("OSM Server API Key looks valid.");
                 _formData.CacheServerAPIkey = apiKey;
-            }
-
-            return isValid;
-        }
-
-        /// <summary>
-        /// Validates the selected Simulator Version from the ComboBox and populates the <see cref="ScenarioFormData.SimulatorVersion"/> property.
-        /// Checks for the corresponding Prepar3D registry key, retrieves the installation, program data, and sceanrio folder paths, and populates the relevant TextBoxes.
-        /// It then validates these paths and reports errors via <see cref="ErrorProvider"/> and <see cref="_progressReporter"/> if validation fails.
-        /// </summary>
-        /// <returns><see langword="true"/> if the selected simulator version is valid and installed; otherwise, <see langword="false"/>.</returns>
-        private bool ValidateComboBoxSettingsSimulatorVersion()
-        {
-            bool isValid = true;
-            string simulatorVersion = ComboBoxSettingsSimulatorVersion.Text;
-
-            // Attempt to get the registry key using the refactored method
-            RegistryKey simKey = Aircraft.GetSimProgramFolderKey(simulatorVersion);
-
-            if (simKey == null)
-            {
-                string validationMessage = $"Problem encountered referencing simulator version '{simulatorVersion}'. " +
-                                           $"Please check if Prepar3D v{simulatorVersion} is installed or select a different version.";
-                errorProvider1.SetError(ComboBoxSettingsSimulatorVersion, validationMessage);
-                _progressReporter?.Report(validationMessage);
-                isValid = false;
-            }
-            else
-            {
-                // If the key is found, clear any previous error and store the valid version
-                errorProvider1.SetError(ComboBoxSettingsSimulatorVersion, "");
-                _progressReporter?.Report("");
-                _formData.SimulatorVersion = simulatorVersion;
-
-                // Populate the TextBoxSettingsP3DprogramInstall, TextBoxSettingsP3DprogramData, and TextBoxSettingsScenarioFolderBase paths
-                string installPath = simKey.GetValue("SetupPath") as string;
-                if (!string.IsNullOrEmpty(installPath))
-                {
-                    string driveLetter = Path.GetPathRoot(installPath);
-                    char[] separators = [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
-                    TextBoxSettingsP3DprogramInstall.Text = installPath.TrimEnd(separators);
-                    ValidateP3DInstallFolder();
-                    TextBoxSettingsP3DprogramData.Text = $"{driveLetter}ProgramData\\Lockheed Martin\\Prepar3D v{simulatorVersion}";
-                    ValidateP3DDataFolder();
-                    string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    TextBoxSettingsScenarioFolderBase.Text = Path.Combine(documentsPath, $"Prepar3D v{simulatorVersion} Files");
-                    ValidateScenarioFolderBase();
-                }
-
-                simKey.Close(); // Always close registry keys when done
             }
 
             return isValid;
@@ -1940,7 +1940,7 @@ namespace P3D_Scenario_Generator
             {
                 errorProvider1.SetError(TextBoxSettingsP3DprogramData, "");
                 _progressReporter?.Report("");
-                _formData.P3DProgramInstall = folderPath;
+                _formData.P3DProgramData = folderPath;
             }
             return isValid;
         }
@@ -2013,28 +2013,28 @@ namespace P3D_Scenario_Generator
                 TextBoxSettingsMapOffset,
                 "Map Offset",
                 0,
-                Constants.MaxWindowOffset,
+                Constants.MaxWindowOffsetPixels,
                 "pixels",
                 value => _formData.MapOffset = value);
 
             allValid &= ValidateAndSetEnum<WindowAlignment>(
                 ComboBoxSettingsMapAlignment,
                 "Map Alignment",
-                value => _formData.MapAlignment = value); 
+                value => _formData.MapAlignment = value);
 
             allValid &= ValidateAndSetInteger(
                 TextBoxSettingsMapMonitorWidth,
                 "Map Monitor Width",
-                Constants.MinMonitorWidth,
-                Constants.MaxMonitorWidth,
+                Constants.MinMonitorWidthPixels,
+                Constants.MaxMonitorWidthPixels,
                 "pixels",
                 value => _formData.MapMonitorWidth = value);
 
             allValid &= ValidateAndSetInteger(
                 TextBoxSettingsMapMonitorHeight,
                 "Map Monitor Height",
-                Constants.MinMonitorHeight,
-                Constants.MaxMonitorHeight,
+                Constants.MinMonitorHeightPixels,
+                Constants.MaxMonitorHeightPixels,
                 "pixels",
                 value => _formData.MapMonitorHeight = value);
 
@@ -2042,7 +2042,7 @@ namespace P3D_Scenario_Generator
             allValid &= ValidateAndSetEnum<MapWindowSizeOption>(
                 ComboBoxSettingsMapWindowSize,
                 "Map Window Size",
-                value => _formData.MapWindowSize = value); 
+                value => _formData.MapWindowSize = value);
 
             // If any individual validation failed, return false immediately.
             // The specific error providers are already set.
@@ -2164,7 +2164,6 @@ namespace P3D_Scenario_Generator
         /// <returns>True if the scenario title is valid; otherwise, false.</returns>
         private bool ValidateAndPopulateScenarioTitle()
         {
-            string settingsScenarioFolderBase = _formData.ScenarioFolderBase;
             string scenarioTitle = TextBoxGeneralScenarioTitle.Text;
             bool isValid = true;
 
@@ -2174,7 +2173,7 @@ namespace P3D_Scenario_Generator
                 _progressReporter?.Report(titleFilenameErrorMessage);
                 isValid = false;
             }
-            else if (string.IsNullOrEmpty(settingsScenarioFolderBase))
+            else if (!ValidateScenarioFolderBase())
             {
                 string message = "Cannot fully validate scenario path: Scenario folder base path is not set or invalid. Please check settings tab.";
                 errorProvider1.SetError(TextBoxGeneralScenarioTitle, message);
@@ -2184,7 +2183,7 @@ namespace P3D_Scenario_Generator
             else
             {
                 errorProvider1.SetError(TextBoxGeneralScenarioTitle, "");
-                string proposedSaveFolder = Path.Combine(settingsScenarioFolderBase, scenarioTitle);
+                string proposedSaveFolder = Path.Combine(_formData.ScenarioFolderBase, scenarioTitle);
 
                 if (Directory.Exists(proposedSaveFolder))
                 {
@@ -2298,7 +2297,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitUpwind,
                 "Circuit Upwind Leg",
                 0.0,
-                Constants.EarthCircumferenceMiles,
+                Constants.MilesInEarthCircumference,
                 "nautical miles",
                 value => _formData.CircuitUpwindLeg = value);
 
@@ -2306,8 +2305,8 @@ namespace P3D_Scenario_Generator
             allValid &= ValidateAndSetDouble(
                 TextBoxCircuitBase,
                 "Circuit Base Leg",
-                Constants.MinCircuitGateSeparation,
-                Constants.EarthCircumferenceMiles,
+                Constants.MinCircuitGateSeparationMiles,
+                Constants.MilesInEarthCircumference,
                 "nautical miles",
                 value => _formData.CircuitBaseLeg = value);
 
@@ -2316,7 +2315,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitFinal,
                 "Circuit Final Leg",
                 0.0,
-                Constants.EarthCircumferenceMiles,
+                Constants.MilesInEarthCircumference,
                 "nautical miles",
                 value => _formData.CircuitFinalLeg = value);
 
@@ -2325,7 +2324,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitHeightUpwind,
                 "Circuit Height Upwind Leg",
                 0.0,
-                Constants.MaxCircuitGateHeight,
+                Constants.MaxGateHeightFeet,
                 "feet",
                 value => _formData.CircuitHeightUpwind = value);
 
@@ -2334,7 +2333,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitHeightDown,
                 "Circuit Height Down Leg",
                 0.0,
-                Constants.MaxCircuitGateHeight,
+                Constants.MaxGateHeightFeet,
                 "feet",
                 value => _formData.CircuitHeightDown = value);
 
@@ -2343,7 +2342,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitHeightBase,
                 "Circuit Height Base Leg",
                 0.0,
-                Constants.MaxCircuitGateHeight,
+                Constants.MaxGateHeightFeet,
                 "feet",
                 value => _formData.CircuitHeightBase = value);
 
@@ -2352,7 +2351,7 @@ namespace P3D_Scenario_Generator
                 TextBoxCircuitSpeed,
                 "Circuit Speed",
                 0.0,
-                Constants.PracticalMaxSpeed,
+                Constants.PlausibleMaxCruiseSpeedKnots,
                 "knots",
                 value => _formData.CircuitSpeed = value);
 
@@ -2360,8 +2359,8 @@ namespace P3D_Scenario_Generator
             allValid &= ValidateAndSetDouble(
                 TextBoxCircuitTurnRate,
                 "Circuit Turn Rate",
-                Constants.MinTurnTime360DegreesMinutes,
-                Constants.MaxTurnTime360DegreesMinutes,
+                Constants.MinTimeToTurn360DegreesMinutes,
+                Constants.MaxTimeToTurn360DegreesMinutes,
                 "minutes",
                 value => _formData.CircuitTurnDuration360Degrees = value);
 

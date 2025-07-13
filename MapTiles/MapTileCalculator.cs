@@ -1,4 +1,5 @@
 ﻿using CoordinateSharp;
+using P3D_Scenario_Generator.ConstantsEnums;
 
 namespace P3D_Scenario_Generator.MapTiles
 {
@@ -33,7 +34,7 @@ namespace P3D_Scenario_Generator.MapTiles
             // Store the last successfully calculated zoom level
             int lastValidZoom = 0;
 
-            for (int zoom = 2; zoom <= Constants.maxZoomLevel; zoom++)
+            for (int zoom = 2; zoom <= Constants.MaxZoomLevel; zoom++)
             {
                 List<Tile> tempTiles = [];
 
@@ -63,9 +64,9 @@ namespace P3D_Scenario_Generator.MapTiles
                 lastValidZoom = zoom;
             }
 
-            // If the loop completes, it means even the maxZoomLevel fits the constraints.
-            optimalZoomLevel = Constants.maxZoomLevel;
-            return true; // Successfully found an optimal zoom up to maxZoomLevel.
+            // If the loop completes, it means even the MaxZoomLevel fits the constraints.
+            optimalZoomLevel = Constants.MaxZoomLevel;
+            return true; // Successfully found an optimal zoom up to MaxZoomLevel.
         }
 
         /// <summary>
@@ -123,9 +124,9 @@ namespace P3D_Scenario_Generator.MapTiles
         public static Tile GetTileInfo(double dLon, double dLat, int zoom)
         {
             // 1. Validate Zoom Level
-            if (zoom < 0 || zoom > Constants.maxZoomLevel) // Assuming 0 is minimum valid zoom, adjust if needed
+            if (zoom < 0 || zoom > Constants.MaxZoomLevel) // Assuming 0 is minimum valid zoom, adjust if needed
             {
-                Log.Error($"GetTileInfo: Invalid zoom level ({zoom}) provided. Zoom must be between 0 and {Constants.maxZoomLevel}.");
+                Log.Error($"GetTileInfo: Invalid zoom level ({zoom}) provided. Zoom must be between 0 and {Constants.MaxZoomLevel}.");
                 return null;
             }
 
@@ -172,7 +173,7 @@ namespace P3D_Scenario_Generator.MapTiles
         {
             double doubleTileX = (dLon + 180.0) / 360.0 * (1 << z);
             tile.XIndex = Convert.ToInt32(Math.Floor(doubleTileX));
-            tile.XOffset = Convert.ToInt32(Constants.tileSize * (doubleTileX - tile.XIndex));
+            tile.XOffset = Convert.ToInt32(Constants.TileSizePixels * (doubleTileX - tile.XIndex));
         }
 
         /// <summary>
@@ -188,7 +189,7 @@ namespace P3D_Scenario_Generator.MapTiles
             var latRad = dLat / 180 * Math.PI;
             double doubleTileY = (1 - Math.Log(Math.Tan(latRad) + 1 / Math.Cos(latRad)) / Math.PI) / 2 * (1 << z);
             tile.YIndex = Convert.ToInt32(Math.Floor(doubleTileY));
-            tile.YOffset = Convert.ToInt32(Constants.tileSize * (doubleTileY - tile.YIndex));
+            tile.YOffset = Convert.ToInt32(Constants.TileSizePixels * (doubleTileY - tile.YIndex));
         }
 
         /// <summary>

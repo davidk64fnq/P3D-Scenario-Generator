@@ -1,4 +1,5 @@
 ﻿using ImageMagick;
+using P3D_Scenario_Generator.ConstantsEnums;
 
 namespace P3D_Scenario_Generator.MapTiles
 {
@@ -74,7 +75,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
-        /// The file to be padded is 1w x 1h (unit is Con.tileSize). Add a row of tiles 1h x 3w on top and bottom of existing tile,
+        /// The file to be padded is 1w x 1h (unit is Con.TileSizePixels). Add a row of tiles 1h x 3w on top and bottom of existing tile,
         /// add a tile to the left and right of existing tile, montage them together 3w x 3h, then crop 0.5 w/h from all edges.
         /// Resulting file is 2w x 2h with original image in middle 1w x 1h.
         /// </remarks>
@@ -133,7 +134,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 {
                     // Define geometry: (width, height, x-offset, y-offset)
                     // We want a 2x2 tile area, starting at (0.5 * tile size, 0.5 * tile size) from top-left of the 3x3 image.
-                    IMagickGeometry geometry = new MagickGeometry(Constants.tileSize / 2, Constants.tileSize / 2, (uint)Constants.tileSize * 2, (uint)Constants.tileSize * 2);
+                    IMagickGeometry geometry = new MagickGeometry(Constants.TileSizePixels / 2, Constants.TileSizePixels / 2, (uint)Constants.TileSizePixels * 2, (uint)Constants.TileSizePixels * 2);
                     image.Crop(geometry);
                     image.ResetPage(); // Resets the page information of the image to the minimum required.
                     image.Write(finalImagePath);
@@ -214,7 +215,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
-        /// The file to be padded is 1w x 2h (unit is Con.tileSize). Create a column of tiles on left and right side 1w x 2h,
+        /// The file to be padded is 1w x 2h (unit is Con.TileSizePixels). Create a column of tiles on left and right side 1w x 2h,
         /// montage them together 3w x 2h, then crop a column 0.5w x 2h from outside edges. Resulting file is 2w x 2h with original
         /// image in middle horizontally.
         /// </remarks>
@@ -297,7 +298,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 {
                     // Define geometry: (width, height, x-offset, y-offset)
                     // We want a 2x2 tile area, starting at (0.5 * tile size, 0) from top-left of the 3x2 image.
-                    IMagickGeometry geometry = new MagickGeometry(Constants.tileSize / 2, 0, (uint)Constants.tileSize * 2, (uint)Constants.tileSize * 2); 
+                    IMagickGeometry geometry = new MagickGeometry(Constants.TileSizePixels / 2, 0, (uint)Constants.TileSizePixels * 2, (uint)Constants.TileSizePixels * 2); 
                     image.Crop(geometry);
                     image.ResetPage();
                     image.Write(finalImagePath);
@@ -376,7 +377,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
-        /// The file to be padded is 2w x 1h (unit is Con.tileSize). Create a row of tiles above and below 2w x 1h,
+        /// The file to be padded is 2w x 1h (unit is Con.TileSizePixels). Create a row of tiles above and below 2w x 1h,
         /// montage them together 2w x 3h, then crop a row 2w x 0.5h from outside edges. Resulting file is 2w x 2h with original
         /// image in middle vertically.
         /// </remarks>
@@ -459,7 +460,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 {
                     // Define geometry: (width, height, x-offset, y-offset)
                     // We want a 2x2 tile area, starting at (0, 0.5 * tile size) from top-left of the 2x3 image.
-                    IMagickGeometry geometry = new MagickGeometry(0, Constants.tileSize / 2, (uint)Constants.tileSize * 2, (uint)Constants.tileSize * 2); 
+                    IMagickGeometry geometry = new MagickGeometry(0, Constants.TileSizePixels / 2, (uint)Constants.TileSizePixels * 2, (uint)Constants.TileSizePixels * 2); 
                     image.Crop(geometry);
                     image.ResetPage();
                     image.Write(finalImagePath);
@@ -536,7 +537,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
-        /// The file to be padded is 2w x 1h (unit is Con.tileSize) and we're at the south pole. Create a row of tiles above 2w x 1h,
+        /// The file to be padded is 2w x 1h (unit is Con.TileSizePixels) and we're at the south pole. Create a row of tiles above 2w x 1h,
         /// montage them together. Resulting file is 2w x 2h with original image at bottom vertically.
         /// </remarks>
         static internal bool PadNorth(BoundingBox boundingBox, int newNorthYindex, string filename, int zoom, ScenarioFormData formData)
@@ -659,7 +660,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
-        /// The file to be padded is 2w x 1h (unit is Con.tileSize) and we're at the north pole. Create a row of tiles below 2w x 1h,
+        /// The file to be padded is 2w x 1h (unit is Con.TileSizePixels) and we're at the north pole. Create a row of tiles below 2w x 1h,
         /// montage them together. Resulting file is 2w x 2h with original image at top vertically.
         /// </remarks>
         static internal bool PadSouth(BoundingBox boundingBox, int newSouthYindex, string filename, int zoom, ScenarioFormData formData)

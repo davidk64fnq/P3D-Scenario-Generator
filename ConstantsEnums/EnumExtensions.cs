@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Reflection;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.ConstantsEnums
 {
     /// <summary>
     /// Provides extension methods for Enum types.

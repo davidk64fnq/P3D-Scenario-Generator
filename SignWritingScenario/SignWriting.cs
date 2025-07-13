@@ -1,4 +1,5 @@
 ﻿using CoordinateSharp;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
 
 namespace P3D_Scenario_Generator.SignWritingScenario
@@ -95,7 +96,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// <returns>The estimated flight distance in nautical miles.</returns>
         static internal double GetSignWritingDistance(ScenarioFormData formData)
         {
-            return gates.Count / 2 * formData.SignSegmentLength * Constants.degreeLatFeet / Constants.feetInNM * 1.5;
+            return gates.Count / 2 * formData.SignSegmentLength * Constants.FeetInDegreeOfLatitude / Constants.FeetInNauticalMile * 1.5;
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace P3D_Scenario_Generator.SignWritingScenario
+﻿using P3D_Scenario_Generator.ConstantsEnums;
+
+namespace P3D_Scenario_Generator.SignWritingScenario
 {
     /// <summary>
     /// Defines a record to hold the parameters for a segment, used in generating signwriting messages.
@@ -243,7 +245,7 @@
             {
                 // do altitude change first before adjusting latitude, tilt is on longitude axis, latitudes reduced as segment
                 // length is constant but when tilted is shorter over ground
-                gates[index].amsl += Math.Abs(gates[index].lat) * Math.Sin(formData.SignTiltAngle * Math.PI / 180) * Constants.degreeLatFeet;
+                gates[index].amsl += Math.Abs(gates[index].lat) * Math.Sin(formData.SignTiltAngle * Math.PI / 180) * Constants.FeetInDegreeOfLatitude;
                 gates[index].lat = gates[index].lat * Math.Cos(formData.SignTiltAngle * Math.PI / 180);
             }
         }

@@ -1,5 +1,6 @@
 ﻿using ImageMagick;
 using ImageMagick.Drawing;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
 
 namespace P3D_Scenario_Generator
@@ -78,8 +79,8 @@ namespace P3D_Scenario_Generator
 
                 for (int tileNo = 0; tileNo < tiles.Count; tileNo++)
                 {
-                    int centreX = (boundingBox.XAxis.IndexOf(tiles[tileNo].XIndex) * Constants.tileSize) + tiles[tileNo].XOffset;
-                    int centreY = (boundingBox.YAxis.IndexOf(tiles[tileNo].YIndex) * Constants.tileSize) + tiles[tileNo].YOffset;
+                    int centreX = (boundingBox.XAxis.IndexOf(tiles[tileNo].XIndex) * Constants.TileSizePixels) + tiles[tileNo].XOffset;
+                    int centreY = (boundingBox.YAxis.IndexOf(tiles[tileNo].YIndex) * Constants.TileSizePixels) + tiles[tileNo].YOffset;
 
                     if (tileNo > 0)
                     {

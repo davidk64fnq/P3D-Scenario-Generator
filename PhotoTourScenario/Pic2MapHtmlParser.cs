@@ -1,4 +1,5 @@
-﻿using HtmlDocument = HtmlAgilityPack.HtmlDocument;
+﻿using P3D_Scenario_Generator.ConstantsEnums;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace P3D_Scenario_Generator.PhotoTourScenario
 {

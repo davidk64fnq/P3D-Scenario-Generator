@@ -1,4 +1,5 @@
 ﻿using P3D_Scenario_Generator.CircuitScenario;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.SignWritingScenario;
@@ -65,12 +66,12 @@ namespace P3D_Scenario_Generator
 			for (int gateNo = 1; gateNo < MakeCircuit.gates.Count - 1; gateNo++)
             {
 				// Create gate objects (hoop active, hoop inactive and number)
-				string hwp = GetGateWorldPosition(MakeCircuit.GetGate(gateNo), Constants.hoopActVertOffset);
-                string nwp = GetGateWorldPosition(MakeCircuit.GetGate(gateNo), Constants.numBlueVertOffset);
+				string hwp = GetGateWorldPosition(MakeCircuit.GetGate(gateNo), Constants.HoopActVertOffsetFeet);
+                string nwp = GetGateWorldPosition(MakeCircuit.GetGate(gateNo), Constants.NumBlueVertOffsetFeet);
                 string go = GetGateOrientation(MakeCircuit.GetGate(gateNo));
-                SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Constants.hoopActGuid, hwp, go, "False", "1", "False");
-                SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Constants.hoopInactGuid, hwp, go, "False", "1", "True");
-                SetLibraryObject(gateNo, "GEN_game_blue", Constants.numBlueGuid[gateNo], nwp, go, "False", "1", "True");
+                SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Constants.HoopActGuid, hwp, go, "False", "1", "False");
+                SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Constants.HoopInactGuid, hwp, go, "False", "1", "True");
+                SetLibraryObject(gateNo, "GEN_game_blue", Constants.NumBlueGuid[gateNo], nwp, go, "False", "1", "True");
 
                 // Create sound action to play when each new gate entered
                 SetOneShotSoundAction(gateNo, "ThruHoop", "ThruHoop.wav");
@@ -271,10 +272,10 @@ namespace P3D_Scenario_Generator
             for (int gateNo = 1; gateNo <= SignWriting.gates.Count; gateNo++)
 			{
                 // Create gate objects (hoop active, hoop inactive and number)
-                string hwp = GetGateWorldPosition(SignWriting.gates[gateNo - 1], Constants.hoopActVertOffset);
+                string hwp = GetGateWorldPosition(SignWriting.gates[gateNo - 1], Constants.HoopActVertOffsetFeet);
                 string go = GetGateOrientation(SignWriting.gates[gateNo - 1]);
-                SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Constants.hoopActGuid, hwp, go, "False", "1", "False");
-                SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Constants.hoopInactGuid, hwp, go, "False", "1", "False");
+                SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Constants.HoopActGuid, hwp, go, "False", "1", "False");
+                SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Constants.HoopInactGuid, hwp, go, "False", "1", "False");
 
                 // Create sound action to play when each new gate entered
                 SetOneShotSoundAction(gateNo, "ThruHoop", "ThruHoop.wav");

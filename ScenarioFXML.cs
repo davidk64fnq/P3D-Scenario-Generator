@@ -2,6 +2,7 @@
 using System.Xml.Serialization;
 using System.Reflection;
 using P3D_Scenario_Generator.CelestialScenario;
+using P3D_Scenario_Generator.ConstantsEnums;
 
 namespace P3D_Scenario_Generator
 {

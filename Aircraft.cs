@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using Newtonsoft.Json;
+using P3D_Scenario_Generator.ConstantsEnums;
 
 namespace P3D_Scenario_Generator
 {
@@ -72,11 +73,11 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="simulatorVersion">Which of version 4, 5, 6 etc. Prepar3D is being used.</param>
         /// <returns>True if new aircraft variant selected and added to <see cref="AircraftVariants"/></returns>
-        internal static string ChooseAircraftVariant(string simulatorVersion)
+        internal static string ChooseAircraftVariant(ScenarioFormData formData)
         {
             AircraftVariant aircraftVariant = new();
 
-            string thumbnailPath = GetThumbnail(simulatorVersion);
+            string thumbnailPath = GetThumbnail(formData);
 
             if (thumbnailPath != "")
             {
@@ -97,13 +98,8 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="simulatorVersion">Which of version 4, 5, 6 etc. Prepar3D is being used.</param>
         /// <returns>Full path including filename of selected thumbnail.jpg file or empty string</returns>
-        internal static string GetThumbnail(string simulatorVersion)
+        internal static string GetThumbnail(ScenarioFormData formData)
         {
-            // Exit if we can't get the simulator program folder key
-            RegistryKey key = GetSimProgramFolderKey(simulatorVersion);
-            if (key == null)
-                return "";
-
             // Prompt user to select an aircraft variant thumbnail image
             using OpenFileDialog openFileDialog1 = new()
             {
@@ -111,7 +107,7 @@ namespace P3D_Scenario_Generator
                 DefaultExt = "jpg",
                 Filter = "JPG files (*.jpg)|*.jpg|All files (*.*)|*.*",
                 FilterIndex = 1,
-                InitialDirectory = $"{key.GetValue("SetupPath")}SimObjects\\Airplanes",
+                InitialDirectory = Path.Combine(formData.P3DProgramInstall, "SimObjects\\Airplanes"),
                 RestoreDirectory = false
             };
 
@@ -268,7 +264,7 @@ namespace P3D_Scenario_Generator
                     string[] splitOnCommentIndicator = cruiseSpeed.Split("//"); // Remove any comment at end of line
                     string cruiseSpeedWithoutAnyComment = splitOnCommentIndicator[0].Trim();
                     const double minCruiseSpeed = 0.0;
-                    const double maxCruiseSpeed = Constants.PracticalMaxSpeed;
+                    const double maxCruiseSpeed = Constants.PlausibleMaxCruiseSpeedKnots;
                     if (ParsingHelpers.TryParseDouble(
                         cruiseSpeedWithoutAnyComment,
                         "Aircraft cruise speed",

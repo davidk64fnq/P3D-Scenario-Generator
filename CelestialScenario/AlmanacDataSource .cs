@@ -1,4 +1,6 @@
-﻿namespace P3D_Scenario_Generator.CelestialScenario
+﻿using P3D_Scenario_Generator.ConstantsEnums;
+
+namespace P3D_Scenario_Generator.CelestialScenario
 {
     /// <summary>
     /// Manages the acquisition, parsing, and storage of celestial almanac data from a web-based source.
@@ -10,12 +12,12 @@
         /// <summary>
         /// Stores 3 days x 24 hours of Aries GHA degrees star data extracted from web based almanac
         /// </summary>
-        internal static int[,] ariesGHAd = new int[Constants.NumberOfDaysToExtract, Constants.HoursPerDay];
+        internal static int[,] ariesGHAd = new int[Constants.AlmanacExtractDaysCount, Constants.HoursInADay];
 
         /// <summary>
         /// Stores 3 days x 24 hours of Aries GHA minutes star data extracted from web based almanac
         /// </summary>
-        internal static double[,] ariesGHAm = new double[Constants.NumberOfDaysToExtract, Constants.HoursPerDay];
+        internal static double[,] ariesGHAm = new double[Constants.AlmanacExtractDaysCount, Constants.HoursInADay];
 
         /// <summary>
         /// The number of stars for which data extracted from web based almanac
@@ -110,14 +112,14 @@
                         if (!ParsingHelpers.TryParseMinutes(spaces[StarGHAminutesIndex], "Aries GHA", out ariesGHAm[day, hour++]))
                             return false;
 
-                        if (hour == Constants.HoursPerDay) { hour = 0; day++; }
+                        if (hour == Constants.HoursInADay) { hour = 0; day++; }
                     }
                 }
-                if (hour == 0 && day == Constants.NumberOfDaysToExtract)
+                if (hour == 0 && day == Constants.AlmanacExtractDaysCount)
                     return true;
                 else
                 {
-                    Log.Error($"Unable to extract {Constants.NumberOfDaysToExtract} days of {Constants.HoursPerDay} hours Aries GHA degrees and minutes data from almanac data.");
+                    Log.Error($"Unable to extract {Constants.AlmanacExtractDaysCount} days of {Constants.HoursInADay} hours Aries GHA degrees and minutes data from almanac data.");
                     return false;
                 }
             }
@@ -189,53 +191,51 @@
             hourDataLines = almanacData.Split("\n");
 
             // Check Aries GHA data block header line present
-            if (!HeaderLinePresent(hourDataLines, Constants.AriesKeyword, Constants.VenusKeyword, Constants.MarsKeyword, out int firstBlockHeaderIndex))
+            if (!HeaderLinePresent(hourDataLines, Constants.FirstGhaBlockKeywords, out int firstBlockHeaderIndex))
             {
                 return false;
             }
 
             // Check second non Aries GHA data block header line present
-            if (!HeaderLinePresent(hourDataLines, Constants.SunKeyword, Constants.MoonKeyword, Constants.StarsKeyword, out int secondBlockHeaderIndex))
+            if (!HeaderLinePresent(hourDataLines, Constants.SecondGhaBlockKeywords, out int secondBlockHeaderIndex))
             {
                 return false;
             }
 
             // Check there is atleast 72 rows of data in first block being 3 days x 24 hours per day
-            if (firstBlockHeaderIndex + Constants.NumberOfDaysToExtract * Constants.HoursPerDay < secondBlockHeaderIndex)
+            if (firstBlockHeaderIndex + Constants.AlmanacExtractDaysCount * Constants.HoursInADay < secondBlockHeaderIndex)
             {
                 hourDataLines = hourDataLines[firstBlockHeaderIndex..secondBlockHeaderIndex];
                 return true;
             }
             else
             {
-                Log.Error($"There is less than 72 ({Constants.NumberOfDaysToExtract} days x {Constants.HoursPerDay} hours) rows of data in the Aries GHA block " +
+                Log.Error($"There is less than 72 ({Constants.AlmanacExtractDaysCount} days x {Constants.HoursInADay} hours) rows of data in the Aries GHA block " +
                     "within the downloaded almanac data");
                 return false;
             }
         }
 
         /// <summary>
-        /// Checks if a header line containing all three specified keywords (case-sensitive) is present
+        /// Checks if a header line containing all specified keywords (case-sensitive) is present
         /// within the provided array of data lines.
         /// </summary>
         /// <param name="hourDataLines">The array of strings to search within.</param>
-        /// <param name="keyword1">The first keyword to search for.</param>
-        /// <param name="keyword2">The second keyword to search for.</param>
-        /// <param name="keyword3">The third keyword to search for.</param>
+        /// <param name="keywords">The collection of keywords to search for.</param>
         /// <param name="headerLineIndex">
         /// When this method returns, contains the zero-based index of the first line
-        /// that contains all three keywords if found; otherwise, returns -1.
+        /// that contains all keywords if found; otherwise, returns -1.
         /// </param>
         /// <returns>True if a matching header line is found; otherwise, false.</returns>
-        static internal bool HeaderLinePresent(string[] hourDataLines, string keyword1, string keyword2, string keyword3, out int headerLineIndex)
+        static internal bool HeaderLinePresent(string[] hourDataLines, IEnumerable<string> keywords, out int headerLineIndex)
         {
             var matchingLineInfo = hourDataLines
                 .Select((line, index) => new { Line = line, Index = index })
                 .FirstOrDefault(item =>
-                    item.Line.Contains(keyword1) &&
-                    item.Line.Contains(keyword2) &&
-                    item.Line.Contains(keyword3)
+                    // Check if the current line contains ALL keywords in the 'keywords' collection
+                    keywords.All(keyword => item.Line.Contains(keyword))
                 );
+
             if (matchingLineInfo != null)
             {
                 headerLineIndex = matchingLineInfo.Index;
@@ -244,7 +244,8 @@
             else
             {
                 headerLineIndex = -1;
-                Log.Error($"Header line containing '{keyword1}', '{keyword2}', and '{keyword3}' not found in almanac data.");
+                // Updated logging to display all keywords from the collection
+                Log.Error($"Header line containing '{string.Join("', '", keywords)}' not found in almanac data.");
                 return false;
             }
         }

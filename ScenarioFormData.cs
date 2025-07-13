@@ -1,4 +1,6 @@
-﻿namespace P3D_Scenario_Generator
+﻿using P3D_Scenario_Generator.ConstantsEnums;
+
+namespace P3D_Scenario_Generator
 {
     /// <summary>
     /// Data Transfer Object (DTO) to encapsulate all user input from the main form
@@ -273,11 +275,6 @@
         /// OSM Server API key
         /// </summary>
         public string CacheServerAPIkey { get; set; }
-
-        /// <summary>
-        /// Used to identify registry entry that specifies location of P3D program files, including SimObjects for aircraft selection
-        /// </summary>
-        public string SimulatorVersion { get; set; }
 
         /// <summary>
         /// P3D Program Data folder path excluding version number suffix

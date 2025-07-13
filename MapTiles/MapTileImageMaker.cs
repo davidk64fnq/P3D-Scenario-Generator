@@ -1,4 +1,5 @@
 ﻿using CoordinateSharp;
+using P3D_Scenario_Generator.ConstantsEnums;
 using System.Collections.Generic;
 
 namespace P3D_Scenario_Generator.MapTiles
@@ -28,7 +29,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Call the updated GetOptimalZoomLevel method
-            if (!MapTileCalculator.GetOptimalZoomLevel(coordinates, Constants.overviewImageTileFactor, Constants.overviewImageTileFactor, out int zoom))
+            if (!MapTileCalculator.GetOptimalZoomLevel(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor, out int zoom))
             {
                 // GetOptimalZoomLevel already logs specific errors internally.
                 Log.Error("MapTileImageMaker.CreateOverviewImage: Failed to determine optimal zoom level. See previous logs for details.");
@@ -130,7 +131,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 if (MakeSquare(boundingBox, imageName, locationImageZoomLevel, out _, formData)) 
                 {
                     // ONLY if MakeSquare succeeds, then attempt to resize to the final 1x1 target size.
-                    if (!ImageUtils.Resize($"{imageName}.png", Constants.tileSize, Constants.tileSize, formData))
+                    if (!ImageUtils.Resize($"{imageName}.png", Constants.TileSizePixels, Constants.TileSizePixels, formData))
                     {
                         Log.Error($"MapTileImageMaker.CreateLocationImage: Failed to resize image '{imageName}.png' after successful MakeSquare. Aborting.");
                         return false;
@@ -321,7 +322,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Call the updated GetOptimalZoomLevel method
-            if (!MapTileCalculator.GetOptimalZoomLevel(coordinates, Constants.legRouteImageTileFactor, Constants.legRouteImageTileFactor, out zoom))
+            if (!MapTileCalculator.GetOptimalZoomLevel(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor, out zoom))
             {
                 // GetOptimalZoomLevel already logs specific errors internally.
                 Log.Error("MapTileImageMaker.SetLegRouteImage: Failed to determine optimal zoom level. See previous logs for details.");

@@ -1,4 +1,5 @@
 ﻿using P3D_Scenario_Generator.CelestialScenario;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.SignWritingScenario;
 using P3D_Scenario_Generator.WikipediaScenario;
@@ -61,7 +62,7 @@ namespace P3D_Scenario_Generator
                     overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
                     overview.Difficulty = "Beginner";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    double duration = ((formData.CircuitFinalLeg + (Runway.startRwy.Len / Constants.feetInNM) + formData.CircuitUpwindLeg) 
+                    double duration = ((formData.CircuitFinalLeg + (Runway.startRwy.Len / Constants.FeetInNauticalMile) + formData.CircuitUpwindLeg) 
                         * 2 + (formData.CircuitBaseLeg * 2)) / formData.CircuitSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{formData.AircraftTitle}";
