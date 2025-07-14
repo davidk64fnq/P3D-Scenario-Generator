@@ -55,8 +55,8 @@ namespace P3D_Scenario_Generator.MapTiles
                 return false;
             }
 
-            // Create montage of tiles in images folder
-            string imageName = "Charts_01";
+            // Create montage of tiles in temp folder
+            string imageName = Path.Combine(formData.TempScenarioDirectory, "Charts_01");
             if (!MapTileMontager.MontageTiles(boundingBox, zoom, imageName, formData))
             {
                 Log.Error($"MapTileImageMaker.CreateOverviewImage: Failed to montage tiles for image '{imageName}'.");
@@ -64,17 +64,25 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Draw a line connecting coordinates onto image
-            if (drawRoute && !ImageUtils.DrawRoute(tiles, boundingBox, imageName, formData))
+            if (drawRoute && !ImageUtils.DrawRoute(tiles, boundingBox, imageName))
             {
                 Log.Error($"MapTileImageMaker.CreateOverviewImage: Failed to draw route on image '{imageName}'.");
                 return false;
             }
 
             // Extend montage of tiles to make the image square (if it isn't already)
-            // New out parameter for MakeSquare
             if (!MakeSquare(boundingBox, imageName, zoom, out _, formData))
             {
                 Log.Error($"MapTileImageMaker.CreateOverviewImage: Failed to make image '{imageName}' square.");
+                return false;
+            }
+
+            // Move image from temp folder to scenario images folder
+            string sourceFilePath = Path.Combine(formData.TempScenarioDirectory, "Charts_01.png");
+            string destinationFilePath = Path.Combine(formData.ScenarioImageFolder, "Charts_01.png");
+            if (!FileOps.TryMoveFile(sourceFilePath, destinationFilePath))
+            {
+                Log.Error($"MapTileImageMaker.CreateOverviewImage: Failed to copy image '{sourceFilePath}' to scenario images directory '{destinationFilePath}'.");
                 return false;
             }
 
@@ -116,7 +124,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Create montage of tiles in images folder
-            string imageName = "chart_thumb";
+            string imageName = Path.Combine(formData.TempScenarioDirectory, "chart_thumb");
             if (!MapTileMontager.MontageTiles(boundingBox, locationImageZoomLevel, imageName, formData))
             {
                 Log.Error($"MapTileImageMaker.CreateLocationImage: Failed to montage tiles for image '{imageName}'.");
@@ -131,7 +139,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 if (MakeSquare(boundingBox, imageName, locationImageZoomLevel, out _, formData)) 
                 {
                     // ONLY if MakeSquare succeeds, then attempt to resize to the final 1x1 target size.
-                    if (!ImageUtils.Resize($"{imageName}.png", Constants.TileSizePixels, Constants.TileSizePixels, formData))
+                    if (!ImageUtils.Resize($"{imageName}.png", Constants.TileSizePixels, Constants.TileSizePixels))
                     {
                         Log.Error($"MapTileImageMaker.CreateLocationImage: Failed to resize image '{imageName}.png' after successful MakeSquare. Aborting.");
                         return false;
@@ -146,6 +154,15 @@ namespace P3D_Scenario_Generator.MapTiles
             }
             // If boundingBox.XAxis.Count == boundingBox.YAxis.Count == 1, it means it's already a 1x1 tile, so no squaring or resizing is needed for the 1x1 location image.
 
+            // Move image from temp folder to scenario images folder
+            string sourceFilePath = Path.Combine(formData.TempScenarioDirectory, "chart_thumb.png");
+            string destinationFilePath = Path.Combine(formData.ScenarioImageFolder, "chart_thumb.png");
+            if (!FileOps.TryMoveFile(sourceFilePath, destinationFilePath))
+            {
+                Log.Error($"MapTileImageMaker.CreateLocationImage: Failed to copy image '{sourceFilePath}' to scenario images directory '{destinationFilePath}'.");
+                return false;
+            }
+
             return true;
         }
 
@@ -157,7 +174,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// </summary>
         /// <param name="boundingBox">The current <see cref="BoundingBox"/> representing the tile grid. This object is used
         /// as input for padding operations.</param>
-        /// <param name="filename">The base filename of the image being processed. This file will be modified.</param>
+        /// <param name="filename">The base path and filename of the image being processed. This file will be modified.</param>
         /// <param name="zoom">The current zoom level of the map tiles.</param>
         /// <param name="newBoundingBox">When this method returns, contains the updated <see cref="BoundingBox"/>
         /// reflecting the new tile coordinates after padding and/or zooming; otherwise, a default <see cref="BoundingBox"/>.</param>
@@ -349,7 +366,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Create montage of tiles in images folder
-            string imageName = $"LegRoute_{legNo:00}_zoom{legZoomLabel}";
+            string imageName = Path.Combine(formData.TempScenarioDirectory, $"LegRoute_{legNo:00}_zoom{legZoomLabel}");
             if (!MapTileMontager.MontageTiles(boundingBox, zoom, imageName, formData))
             {
                 Log.Error($"MapTileImageMaker.SetLegRouteImage: Failed to montage tiles for image '{imageName}'.");
@@ -357,7 +374,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Draw a line connecting coordinates onto image
-            if (drawRoute && !ImageUtils.DrawRoute(tiles, boundingBox, imageName, formData))
+            if (drawRoute && !ImageUtils.DrawRoute(tiles, boundingBox, imageName))
             {
                 Log.Error($"MapTileImageMaker.SetLegRouteImage: Failed to draw route on image '{imageName}'.");
                 return false;
@@ -374,6 +391,15 @@ namespace P3D_Scenario_Generator.MapTiles
             if (!ImageUtils.ConvertImageformat(imageName, "png", "jpg", formData))
             {
                 Log.Error($"MapTileImageMaker.SetLegRouteImage: Failed to convert from png to jpg on image '{imageName}'.");
+                return false;
+            }
+
+            // Move image from temp folder to scenario images folder
+            string sourceFilePath = $"{imageName}.jpg";
+            string destinationFilePath = Path.Combine(formData.ScenarioImageFolder, Path.GetFileNameWithoutExtension(imageName) + "jpg");
+            if (!FileOps.TryMoveFile(sourceFilePath, destinationFilePath))
+            {
+                Log.Error($"MapTileImageMaker.CreateLocationImage: Failed to copy image '{sourceFilePath}' to scenario images directory '{destinationFilePath}'.");
                 return false;
             }
 
@@ -396,7 +422,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Create montage of tiles in images folder
-            string imageName = $"LegRoute_{legNo:00}_zoom{legZoomLabel}";
+            string imageName = Path.Combine(formData.TempScenarioDirectory, $"LegRoute_{legNo:00}_zoom{legZoomLabel}");
             if (!MapTileMontager.MontageTiles(nextBoundingBox, zoom, imageName, formData))
             {
                 Log.Error($"MapTileImageMaker.SetLegRouteImage: Failed to montage tiles for image '{imageName}'.");
@@ -404,7 +430,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Draw a line connecting coordinates onto image
-            if (drawRoute && !ImageUtils.DrawRoute(tiles, nextBoundingBox, imageName, formData))
+            if (drawRoute && !ImageUtils.DrawRoute(tiles, nextBoundingBox, imageName))
             {
                 Log.Error($"MapTileImageMaker.SetLegRouteImage: Failed to draw route on image '{imageName}'.");
                 return false;
@@ -414,6 +440,15 @@ namespace P3D_Scenario_Generator.MapTiles
             if (!ImageUtils.ConvertImageformat(imageName, "png", "jpg", formData))
             {
                 Log.Error($"MapTileImageMaker.SetLegRouteImage: Failed to convert from png to jpg on image '{imageName}'.");
+                return false;
+            }
+
+            // Move image from temp folder to scenario images folder
+            string sourceFilePath = $"{imageName}.jpg";
+            string destinationFilePath = Path.Combine(formData.ScenarioImageFolder, Path.GetFileNameWithoutExtension(imageName) + "jpg");
+            if (!FileOps.TryMoveFile(sourceFilePath, destinationFilePath))
+            {
+                Log.Error($"MapTileImageMaker.CreateLocationImage: Failed to copy image '{sourceFilePath}' to scenario images directory '{destinationFilePath}'.");
                 return false;
             }
 

@@ -138,7 +138,7 @@ namespace P3D_Scenario_Generator
             }
             if (boundingBox.XAxis.Count == 2)
             {
-                ImageUtils.Resize("chart_thumb.png", 256, 0, formData);
+                ImageUtils.Resize("chart_thumb.png", 256, 0);
             }
         }
 
@@ -172,7 +172,7 @@ namespace P3D_Scenario_Generator
 
             // zoom 1 image
             MapTileMontager.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1", formData);
-            ImageUtils.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1", formData);
+            ImageUtils.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
         //    zoomInBoundingBox = ImageUtils.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Constants.tileFactor);
             ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg", formData);
 

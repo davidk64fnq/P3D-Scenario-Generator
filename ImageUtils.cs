@@ -55,11 +55,11 @@ namespace P3D_Scenario_Generator
         /// <param name="tiles">A list of <see cref="Tile"/> objects representing the route points.</param>
         /// <param name="boundingBox">The <see cref="BoundingBox"/> representing the overall area of the map image,
         /// used to translate tile indices and offsets into pixel coordinates.</param>
-        /// <param name="filename">The base filename of the existing map image to draw on, and where the modified image will be saved.</param>
+        /// <param name="filename">The base path and filename of the existing map image to draw on, and where the modified image will be saved.</param>
         /// <returns><see langword="true"/> if the route was successfully drawn and saved; otherwise, <see langword="false"/>.</returns>
-        static internal bool DrawRoute(List<Tile> tiles, BoundingBox boundingBox, string filename, ScenarioFormData formData)
+        static internal bool DrawRoute(List<Tile> tiles, BoundingBox boundingBox, string filename)
         {
-            string imagePath = $"{formData.ScenarioImageFolder}\\{filename}.png";
+            string imagePath = $"{filename}.png";
 
             try
             {
@@ -312,13 +312,11 @@ namespace P3D_Scenario_Generator
         /// <param name="width">New size, if zero proportional based on height parameter</param>
         /// <param name="height">New size, if zero proportional based on width parameter</param>
         /// <returns><see langword="true"/> if the image was resized successfully; otherwise, <see langword="false"/>.</returns>
-        static internal bool Resize(string filename, int width, int height, ScenarioFormData formData)
+        static internal bool Resize(string filename, int width, int height)
         {
-            string fullPath = $"{formData.ScenarioImageFolder}\\{filename}";
-
-            if (!File.Exists(fullPath))
+            if (!File.Exists(filename))
             {
-                Log.Error($"ImageUtils.Resize: Source image not found at '{fullPath}'. Cannot resize.");
+                Log.Error($"ImageUtils.Resize: Source image not found at '{filename}'. Cannot resize.");
                 return false;
             }
 
@@ -333,9 +331,9 @@ namespace P3D_Scenario_Generator
 
             try
             {
-                using MagickImage image = new(fullPath);
+                using MagickImage image = new(filename);
                 image.Resize(widthUint, heightUint);
-                image.Write(fullPath);
+                image.Write(filename);
                 return true;
             }
             catch (MagickErrorException mex)

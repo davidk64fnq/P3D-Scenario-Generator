@@ -25,7 +25,7 @@ namespace P3D_Scenario_Generator.MapTiles
             // Delegate the actual retrieval (from cache or download) and saving to the Cache class.
             // The key is constructed using zoom, xTileNo, and yTileNo for cache lookup.
             // Errors are handled and logged by the Cache.GetOrCopyOSMtile method and its dependencies.
-            return Cache.GetOrCopyOSMtile($"{zoom}-{xTileNo}-{yTileNo}.png", url, $"{formData.ScenarioImageFolder}\\{filename}");
+            return Cache.GetOrCopyOSMtile($"{zoom}-{xTileNo}-{yTileNo}.png", url, filename);
         }
 
         /// <summary>

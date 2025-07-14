@@ -193,7 +193,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 if (needsResize)
                 {
                     // ImageUtils.Resize should now be able to open and modify the file
-                    if (!ImageUtils.Resize(filePath, newWidth, newHeight, formData))
+                    if (!ImageUtils.Resize(filePath, newWidth, newHeight))
                     {
                         Log.Error($"PhotoTour.GetPhotos: Failed to resize image '{filename}'.");
                         return false;

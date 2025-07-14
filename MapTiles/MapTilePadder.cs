@@ -71,7 +71,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="newSouthYindex">The Y-index of the new tile row to be added to the South (bottom).</param>
         /// <param name="newWestXindex">The X-index of the new tile column to be added to the West (left).</param>
         /// <param name="newEastXindex">The X-index of the new tile column to be added to the East (right).</param>
-        /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
+        /// <param name="filename">The base path and filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
@@ -105,8 +105,8 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Move the original tile to the centre position (1,1).
                 colId = 1;
-                string originalImagePath = $"{formData.ScenarioImageFolder}\\{filename}.png"; 
-                string movedImagePath = $"{formData.ScenarioImageFolder}\\{filename}_{colId}_{rowId}.png";
+                string originalImagePath = $"{filename}.png"; 
+                string movedImagePath = $"{filename}_{colId}_{rowId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;                                                  
 
                 // Download new East middle row tile (2,1).
@@ -119,10 +119,10 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Montage the entire expanded 3x3 grid into a single image.
                 if (!MapTileMontager.MontageTiles(boundingBox, zoom, filename, formData)) return false;
-                if (!FileOps.DeleteTempOSMfiles(filename, formData)) return false; 
+                if (!FileOps.DeleteTempOSMfiles(filename)) return false; 
 
                 // Crop the central 2x2 tile area from the newly montaged 3x3 image.
-                string finalImagePath = $"{formData.ScenarioImageFolder}\\{filename}.png";
+                string finalImagePath = $"{filename}.png";
                 if (!File.Exists(finalImagePath))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouthWestEast: Montaged image not found at '{finalImagePath}'. Cannot crop.");
@@ -130,15 +130,13 @@ namespace P3D_Scenario_Generator.MapTiles
                 }
 
                 // Using Magick.NET for image manipulation 
-                using (MagickImage image = new(finalImagePath))
-                {
-                    // Define geometry: (width, height, x-offset, y-offset)
-                    // We want a 2x2 tile area, starting at (0.5 * tile size, 0.5 * tile size) from top-left of the 3x3 image.
-                    IMagickGeometry geometry = new MagickGeometry(Constants.TileSizePixels / 2, Constants.TileSizePixels / 2, (uint)Constants.TileSizePixels * 2, (uint)Constants.TileSizePixels * 2);
-                    image.Crop(geometry);
-                    image.ResetPage(); // Resets the page information of the image to the minimum required.
-                    image.Write(finalImagePath);
-                }
+                using MagickImage image = new(finalImagePath);
+                // Define geometry: (width, height, x-offset, y-offset)
+                // We want a 2x2 tile area, starting at (0.5 * tile size, 0.5 * tile size) from top-left of the 3x3 image.
+                IMagickGeometry geometry = new MagickGeometry(Constants.TileSizePixels / 2, Constants.TileSizePixels / 2, (uint)Constants.TileSizePixels * 2, (uint)Constants.TileSizePixels * 2);
+                image.Crop(geometry);
+                image.ResetPage(); // Resets the page information of the image to the minimum required.
+                image.Write(finalImagePath);
 
                 return true; // Operation successful
             }
@@ -211,7 +209,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="boundingBox">The current <see cref="BoundingBox"/> .</param>
         /// <param name="newWestXindex">The X-index of the new tile column to be added to the West (left).</param>
         /// <param name="newEastXindex">The X-index of the new tile column to be added to the East (right).</param>
-        /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
+        /// <param name="filename">The base path and filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
@@ -237,20 +235,20 @@ namespace P3D_Scenario_Generator.MapTiles
                     Log.Error($"MapTilePadder.PadWestEast: Failed to download western column tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, columnId, filename, formData))
+                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, columnId, filename))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to montage western column tiles for '{filename}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?", formData))
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
                 {
                     Log.Warning($"MapTilePadder.PadWestEast: Failed to delete temporary OSM files after western column montage for '{filename}'.");
                 }
 
                 // Rename source column to be the centre column 
                 columnId = 1;
-                string originalImagePath = $"{formData.ScenarioImageFolder}\\{filename}.png";
-                string movedImagePath = $"{formData.ScenarioImageFolder}\\{filename}_{columnId}.png";
+                string originalImagePath = $"{filename}.png";
+                string movedImagePath = $"{filename}_{columnId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to move original image to center column position for '{filename}'.");
@@ -264,29 +262,29 @@ namespace P3D_Scenario_Generator.MapTiles
                     Log.Error($"MapTilePadder.PadWestEast: Failed to download eastern column tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, columnId, filename, formData))
+                if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, columnId, filename))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to montage eastern column tiles for '{filename}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?", formData))
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
                 {
                     Log.Warning($"MapTilePadder.PadWestEast: Failed to delete temporary OSM files after eastern column montage for '{filename}'.");
                 }
 
                 // Montage the three columns (West, Original, East) into one image (3w x 2h).
-                if (!MapTileMontager.MontageColumns(3, boundingBox.YAxis.Count, filename, formData))
+                if (!MapTileMontager.MontageColumns(3, boundingBox.YAxis.Count, filename))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to montage all three columns for '{filename}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles(filename, formData)) 
+                if (!FileOps.DeleteTempOSMfiles(filename)) 
                 {
                     Log.Warning($"MapTilePadder.PadWestEast: Failed to delete general temporary files after full column montage for '{filename}'.");
                 }
 
                 // Crop the central 2w x 2h area from the newly montaged 3w x 2h image.
-                string finalImagePath = $"{formData.ScenarioImageFolder}\\{filename}.png";
+                string finalImagePath = $"{filename}.png";
                 if (!File.Exists(finalImagePath))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Montaged image not found at '{finalImagePath}'. Cannot crop.");
@@ -294,15 +292,13 @@ namespace P3D_Scenario_Generator.MapTiles
                 }
 
                 // Using Magick.NET for image manipulation
-                using (MagickImage image = new(finalImagePath))
-                {
-                    // Define geometry: (width, height, x-offset, y-offset)
-                    // We want a 2x2 tile area, starting at (0.5 * tile size, 0) from top-left of the 3x2 image.
-                    IMagickGeometry geometry = new MagickGeometry(Constants.TileSizePixels / 2, 0, (uint)Constants.TileSizePixels * 2, (uint)Constants.TileSizePixels * 2); 
-                    image.Crop(geometry);
-                    image.ResetPage();
-                    image.Write(finalImagePath);
-                }
+                using MagickImage image = new(finalImagePath);
+                // Define geometry: (width, height, x-offset, y-offset)
+                // We want a 2x2 tile area, starting at (0.5 * tile size, 0) from top-left of the 3x2 image.
+                IMagickGeometry geometry = new MagickGeometry(Constants.TileSizePixels / 2, 0, (uint)Constants.TileSizePixels * 2, (uint)Constants.TileSizePixels * 2);
+                image.Crop(geometry);
+                image.ResetPage();
+                image.Write(finalImagePath);
 
                 return true; // Operation successful
             }
@@ -373,7 +369,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="boundingBox">The current <see cref="BoundingBox"/>.</param>
         /// <param name="newNorthYindex">The Y-index of the new tile row to be added to the North (top).</param>
         /// <param name="newSouthYindex">The Y-index of the new tile row to be added to the South (bottom).</param>
-        /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
+        /// <param name="filename">The base path and filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
@@ -399,20 +395,20 @@ namespace P3D_Scenario_Generator.MapTiles
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to download northern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename, formData))
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to montage northern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?", formData))
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
                 {
                     Log.Warning($"MapTilePadder.PadNorthSouth: Failed to delete temporary OSM files after northern row montage for '{filename}'.");
                 }
 
                 // Rename source row to be the centre row
                 rowId = 1;
-                string originalImagePath = $"{formData.ScenarioImageFolder}\\{filename}.png";
-                string movedImagePath = $"{formData.ScenarioImageFolder}\\{filename}_{rowId}.png";
+                string originalImagePath = $"{filename}.png";
+                string movedImagePath = $"{filename}_{rowId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to move original image to center row position for '{filename}'.");
@@ -426,29 +422,29 @@ namespace P3D_Scenario_Generator.MapTiles
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to download southern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename, formData))
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to montage southern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?", formData))
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
                 {
                     Log.Warning($"MapTilePadder.PadNorthSouth: Failed to delete temporary OSM files after southern row montage for '{filename}'.");
                 }
 
                 // Montage the three rows (North, Original, South) into one image (2w x 3h).
-                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 3, filename, formData))
+                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 3, filename))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to montage all three rows for '{filename}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles(filename, formData)) 
+                if (!FileOps.DeleteTempOSMfiles(filename)) 
                 {
                     Log.Warning($"MapTilePadder.PadNorthSouth: Failed to delete general temporary files after full row montage for '{filename}'.");
                 }
 
                 // Crop the central 2w x 2h area from the newly montaged 2w x 3h image.
-                string finalImagePath = $"{formData.ScenarioImageFolder}\\{filename}.png";
+                string finalImagePath = $"{filename}.png";
                 if (!File.Exists(finalImagePath))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Montaged image not found at '{finalImagePath}'. Cannot crop.");
@@ -456,15 +452,13 @@ namespace P3D_Scenario_Generator.MapTiles
                 }
 
                 // Using Magick.NET for image manipulation
-                using (MagickImage image = new(finalImagePath))
-                {
-                    // Define geometry: (width, height, x-offset, y-offset)
-                    // We want a 2x2 tile area, starting at (0, 0.5 * tile size) from top-left of the 2x3 image.
-                    IMagickGeometry geometry = new MagickGeometry(0, Constants.TileSizePixels / 2, (uint)Constants.TileSizePixels * 2, (uint)Constants.TileSizePixels * 2); 
-                    image.Crop(geometry);
-                    image.ResetPage();
-                    image.Write(finalImagePath);
-                }
+                using MagickImage image = new(finalImagePath);
+                // Define geometry: (width, height, x-offset, y-offset)
+                // We want a 2x2 tile area, starting at (0, 0.5 * tile size) from top-left of the 2x3 image.
+                IMagickGeometry geometry = new MagickGeometry(0, Constants.TileSizePixels / 2, (uint)Constants.TileSizePixels * 2, (uint)Constants.TileSizePixels * 2);
+                image.Crop(geometry);
+                image.ResetPage();
+                image.Write(finalImagePath);
 
                 return true; // Operation successful
             }
@@ -533,7 +527,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// </summary>
         /// <param name="boundingBox">The current <see cref="BoundingBox"/>.</param>
         /// <param name="newNorthYindex">The Y-index of the new tile row to be added to the North (top).</param>
-        /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
+        /// <param name="filename">The base path and filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
@@ -558,20 +552,20 @@ namespace P3D_Scenario_Generator.MapTiles
                     Log.Error($"MapTilePadder.PadNorth: Failed to download northern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename, formData))
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename))
                 {
                     Log.Error($"MapTilePadder.PadNorth: Failed to montage northern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?", formData))
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
                 {
                     Log.Warning($"MapTilePadder.PadNorth: Failed to delete temporary OSM files after northern row montage for '{filename}'.");
                 }
 
                 // Rename source row to be the bottom row 
                 rowId = 1;
-                string originalImagePath = $"{formData.ScenarioImageFolder}\\{filename}.png";
-                string movedImagePath = $"{formData.ScenarioImageFolder}\\{filename}_{rowId}.png";
+                string originalImagePath = $"{filename}.png";
+                string movedImagePath = $"{filename}_{rowId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadNorth: Failed to move original image to bottom row position for '{filename}'.");
@@ -579,12 +573,12 @@ namespace P3D_Scenario_Generator.MapTiles
                 }
 
                 // Montage the two rows (North, Original) into one image (2w x 2h).
-                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 2, filename, formData))
+                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 2, filename))
                 {
                     Log.Error($"MapTilePadder.PadNorth: Failed to montage both rows for '{filename}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles(filename, formData))
+                if (!FileOps.DeleteTempOSMfiles(filename))
                 {
                     Log.Warning($"MapTilePadder.PadNorth: Failed to delete general temporary files after full row montage for '{filename}'.");
                 }
@@ -656,7 +650,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// </summary>
         /// <param name="boundingBox">The current <see cref="BoundingBox"/>.</param>
         /// <param name="newSouthYindex">The Y-index of the new tile row to be added to the South (bottom).</param>
-        /// <param name="filename">The base filename of the image being padded. The final padded image will overwrite this file.</param>
+        /// <param name="filename">The base path and filename of the image being padded. The final padded image will overwrite this file.</param>
         /// <param name="zoom">The current zoom level, used for downloading new tiles.</param>
         /// <returns><see langword="true"/> if the padding and image processing were successful; otherwise, <see langword="false"/>.</returns>
         /// <remarks>
@@ -676,8 +670,8 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Rename source row to be the top row
                 int rowId = 0;
-                string originalImagePath = $"{formData.ScenarioImageFolder}\\{filename}.png";
-                string movedImagePath = $"{formData.ScenarioImageFolder}\\{filename}_{rowId}.png";
+                string originalImagePath = $"{filename}.png";
+                string movedImagePath = $"{filename}_{rowId}.png";
                 if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
                 {
                     Log.Error($"MapTilePadder.PadSouth: Failed to move original image to top row position for '{filename}'.");
@@ -691,23 +685,23 @@ namespace P3D_Scenario_Generator.MapTiles
                     Log.Error($"MapTilePadder.PadSouth: Failed to download southern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename, formData))
+                if (!MapTileMontager.MontageTilesToRow(boundingBox.XAxis.Count, rowId, filename))
                 {
                     Log.Error($"MapTilePadder.PadSouth: Failed to montage southern row tiles for '{filename}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles($"{filename}_?", formData))
+                if (!FileOps.DeleteTempOSMfiles($"{filename}_?"))
                 {
                     Log.Warning($"MapTilePadder.PadSouth: Failed to delete temporary OSM files after southern row montage for '{filename}'.");
                 }
 
                 // Montage the two rows (Original, South) into one image (2w x 2h).
-                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 2, filename, formData))
+                if (!MapTileMontager.MontageRows(boundingBox.XAxis.Count, 2, filename))
                 {
                     Log.Error($"MapTilePadder.PadSouth: Failed to montage both rows for '{filename}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles(filename, formData))
+                if (!FileOps.DeleteTempOSMfiles(filename))
                 {
                     Log.Warning($"MapTilePadder.PadSouth: Failed to delete general temporary files after full row montage for '{filename}'.");
                     // Continue
