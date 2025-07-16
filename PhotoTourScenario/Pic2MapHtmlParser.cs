@@ -194,7 +194,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
             // Get id of candidate next photo - used to check hasn't already been included in tour
             string id = Path.GetFileNameWithoutExtension(nextPhotoURL);
-            if (id == null || id.Length > Constants.PhotoIdLength || !id.All(c => char.IsLetter(c) && char.IsLower(c)))
+            if (id == null || id.Length > Constants.PhotoIdLengthChars || !id.All(c => char.IsLetter(c) && char.IsLower(c)))
             {
                 Log.Error($"Next candidate photo id string '{id}' is not the expected 5 or 6 lowercase alphabetic characters format");
                 return SetLegResult.HtmlParsingFailed;

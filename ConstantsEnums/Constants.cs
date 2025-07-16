@@ -211,6 +211,55 @@ namespace P3D_Scenario_Generator.ConstantsEnums
 
         #endregion
 
+        #region Form layout constants
+
+        // --- Layout Constants (compile-time) ---
+        public const int SimpleControlWidth = 120;
+        public const int SimpleControlHeight = 23;
+        public const int SimpleMarginValueTopBottom = 5;
+        public const int SimpleMarginValueLeftRight = 15;
+        public const int LeafTableLayoutOffsetLeft = 20;
+        public const int LeafTableLayoutOffsetBottom = 10;
+        public const int LeafTableLayoutOffsetTop = 25;
+        public const int LeafTableLayoutNoCols = 2;
+        public const int NestedTableLayoutHeight = 400;
+        public const int ParentTableLayoutWidth = 812;
+        public const int ParentTableLayoutHeight = 438;
+
+        // --- Layout Constants (runtime, initialized in static constructor) ---
+        public static readonly Padding SimpleMargin;
+        public static readonly AnchorStyles SimpleAnchor;
+        public static readonly AnchorStyles LeafTableLayoutAnchor;
+        public static readonly Padding GroupboxMargin;
+        public static readonly Padding GroupboxPadding;
+        public static readonly AnchorStyles GroupboxAnchor;
+        public static readonly Padding NestedTableLayoutMargin;
+        public static readonly AnchorStyles NestedTableLayoutAnchor;
+        public static readonly Padding ParentTableLayoutMargin;
+        public static readonly AnchorStyles ParentTableLayoutAnchor;
+
+        /// <summary>
+        /// Static constructor for the Constants class.
+        /// This block is executed once, before any static members of the class are accessed.
+        /// It's used to initialize static readonly fields, especially derived constants.
+        /// </summary>
+        static Constants()
+        {
+            // Initialize Padding and AnchorStyles (which cannot be 'const')
+            SimpleMargin = new Padding(SimpleMarginValueLeftRight, SimpleMarginValueTopBottom, SimpleMarginValueLeftRight, SimpleMarginValueTopBottom);
+            SimpleAnchor = AnchorStyles.None;
+            LeafTableLayoutAnchor = AnchorStyles.None;
+            GroupboxMargin = new Padding(0);
+            GroupboxPadding = new Padding(0);
+            GroupboxAnchor = AnchorStyles.None;
+            NestedTableLayoutMargin = new Padding(0);
+            NestedTableLayoutAnchor = AnchorStyles.None;
+            ParentTableLayoutMargin = new Padding(0);
+            ParentTableLayoutAnchor = AnchorStyles.None;
+        }
+
+        #endregion
+
         #region Gate display related constants
 
         /// <summary>
@@ -369,14 +418,14 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         #region PhotoTour scenario constants
 
         /// <summary>
-        /// The number of nearby photos recorded on a Pic2Map photo page
+        /// The maximum radius of area the user must fly into to trigger next leg of phototour in metres
         /// </summary>
-        public const int PhotoMaxNearby = 18;
+        public const int PhotoMaxHotspotRadius = 10000;
 
         /// <summary>
         /// The length of id string expected for nearby photos on a Pic2Map photo page
         /// </summary>
-        public const int PhotoIdLength = 6;
+        public const int PhotoIdLengthChars = 6;
 
         /// <summary>
         /// The minimum expected number of comma separated segments in id string for nearby photos on a Pic2Map photo page
@@ -392,6 +441,32 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         /// The index in array of comma separated segments containing id string latitude for nearby photos on a Pic2Map photo page
         /// </summary>
         public const int PhotoLonSegIndex = 2;
+
+        /// <summary>
+        /// The maximum bearing change for a leg of the photo tour left or right of previous leg bearing in degrees
+        /// </summary>
+        public const double PhotMaxBearingChangeDegrees = 180;
+
+        /// <summary>
+        /// The number of nearby photos recorded on a Pic2Map photo page
+        /// </summary>
+        public const int PhotoMaxNearby = 18;
+
+        /// <summary>
+        /// The maximum number of attempts at creating a phototour with current user parameters before returning to user
+        /// </summary>
+        public const int PhotoMaxSearchAttempts = 10000;
+
+        /// <summary>
+        /// The minimum number of legs in a phototour consisting of a trip from start airport to a single photo location and then onto destination airport
+        /// </summary>
+        public const int PhotoMinNumberLegs = 2;
+
+        /// <summary>
+        /// How much gap to leave as a minimum around a photo to ensure there is room for the photo window borders and still have the photo 
+        /// window fit on the monitor
+        /// </summary>
+        public const int PhotoSizeEdgeMarginPixels = 50;
 
         #endregion
 

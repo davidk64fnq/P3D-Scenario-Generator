@@ -112,13 +112,13 @@ namespace P3D_Scenario_Generator
         /// A photo tour from starting airport to one photo location and then onto destination airport,
         /// which may be the same as starting airport, is 2 legs. Every additional photo location adds one leg.
         /// </summary>
-        public double PhotoTourMinNoLegs { get; set; }
+        public int PhotoTourMinNoLegs { get; set; }
 
         /// <summary>
         /// The maximum number of legs in the photo tour where the leg from last photo location to destination airport is included.
         /// So for a given value of this parameter the maximum number of photo locations will be one less.
         /// </summary>
-        public double PhotoTourMaxNoLegs { get; set; }
+        public int PhotoTourMaxNoLegs { get; set; }
 
         /// <summary>
         /// Refers to the maximum bearing change allowed between successive legs of the photo tour.
@@ -126,7 +126,7 @@ namespace P3D_Scenario_Generator
         public double PhotoTourMaxBearingChange { get; set; }
 
         /// <summary>
-        /// The radius of a column user has to fly into at a photo location to set off the proximity trigger in feet.
+        /// The radius of a column user has to fly into at a photo location to set off the proximity trigger in metres.
         /// </summary>
         public double PhotoTourHotspotRadius { get; set; }
 

@@ -22,6 +22,11 @@ namespace P3D_Scenario_Generator
         {
             InitializeComponent();
 
+            if (!PostInitializeComponent())
+            {
+                return;
+            }
+
             toolTip1.Popup += ToolTip1_Popup;
 
             _progressReporter = new Progress<string>(message =>
@@ -35,6 +40,130 @@ namespace P3D_Scenario_Generator
             _formData = new ScenarioFormData();
 
             PrepareFormFields();
+        }
+
+        /// <summary>
+        /// Performs custom initialization tasks after the designer-generated components are set up.
+        /// This method applies layout constants and derived calculations to various controls
+        /// within the form's TabControl, TableLayoutPanels, and GroupBoxes.
+        /// </summary>
+        private bool PostInitializeComponent()
+        {
+            // Find the single TabControl on the form
+            TabControl mainTabControl = Controls.OfType<TabControl>().FirstOrDefault();
+            if (mainTabControl == null)
+            {
+                Log.Error("PostInitializeComponent: No TabControl found on the form.");
+                return false;
+            }
+
+            // One tabPage for each scenario type plus general and settings tabs
+            foreach (TabPage tabPage in mainTabControl.TabPages)
+            {
+                // parentTableLayoutPanel settings
+                TableLayoutPanel parentTableLayoutPanel = tabPage.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
+                if (parentTableLayoutPanel == null)
+                {
+                    Log.Error($"PostInitializeComponent: No parent TableLayoutPanel found on TabPage: {tabPage.Name}");
+                    return false;
+                }
+                parentTableLayoutPanel.Margin = Constants.ParentTableLayoutMargin;
+                parentTableLayoutPanel.Location = new Point(0, 0);
+                parentTableLayoutPanel.Size = new Size(Constants.ParentTableLayoutWidth, Constants.ParentTableLayoutHeight);
+                parentTableLayoutPanel.Anchor = Constants.ParentTableLayoutAnchor;
+                parentTableLayoutPanel.AutoSize = false;
+
+                // On each tab there is a parent tableLayoutPanel with two columns each containing a single nested lableLayoutPanel
+                foreach (TableLayoutPanel nestedTableLayoutPanel in parentTableLayoutPanel.Controls.OfType<TableLayoutPanel>())
+                {
+                    // nestedTableLayoutPanel settings
+                    nestedTableLayoutPanel.Margin = Constants.NestedTableLayoutMargin;
+                    int calculatedNestedTableLayoutWidth = Constants.ParentTableLayoutWidth / 2;
+                    nestedTableLayoutPanel.Size = new Size(calculatedNestedTableLayoutWidth, Constants.NestedTableLayoutHeight);
+                    nestedTableLayoutPanel.Anchor = Constants.NestedTableLayoutAnchor;
+                    nestedTableLayoutPanel.AutoSize = false;
+
+                    // in the nested lableLayoutPanel there are one or more groupboxes each in a separate row
+                    foreach (GroupBox groupBox in nestedTableLayoutPanel.Controls.OfType<GroupBox>())
+                    {
+                        // groupbox settings
+                        groupBox.Margin = Constants.GroupboxMargin;
+                        groupBox.Padding = Constants.GroupboxPadding;
+                        groupBox.Anchor = Constants.GroupboxAnchor;
+                        groupBox.AutoSize = false;
+
+                        // leafTableLayoutPanel row count
+                        TableLayoutPanel leafTableLayoutPanel = groupBox.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
+                        if (leafTableLayoutPanel == null)
+                        {
+                            Log.Error($"PostInitializeComponent: No leaf TableLayoutPanel found in GroupBox: {groupBox.Name}");
+                            return false;
+                        }
+                        int numberOfLeafRows = leafTableLayoutPanel.RowCount;
+                        if (numberOfLeafRows == 0)
+                        {
+                            Log.Error($"PostInitializeComponent: Leaf TableLayoutPanel '{leafTableLayoutPanel.Name}' in GroupBox '{groupBox.Name}' has 0 rows.");
+                            return false;
+                        }
+
+                        // leafTableLayoutPanel height
+                        int calculatedLeafTableLayoutPanelHeight = numberOfLeafRows * (Constants.SimpleMarginValueTopBottom * 2 + Constants.SimpleControlHeight);
+                        leafTableLayoutPanel.Height = calculatedLeafTableLayoutPanelHeight;
+
+                        // leafTableLayoutPanel width
+                        int calculatedLeafTableLayoutPanelWidth = Constants.LeafTableLayoutNoCols * (Constants.SimpleMarginValueLeftRight * 2 + Constants.SimpleControlWidth);
+                        leafTableLayoutPanel.Width = calculatedLeafTableLayoutPanelWidth;
+
+                        // groupBox width and height
+                        groupBox.Width = calculatedLeafTableLayoutPanelWidth + 2 * Constants.LeafTableLayoutOffsetLeft;
+                        groupBox.Height = calculatedLeafTableLayoutPanelHeight + Constants.LeafTableLayoutOffsetTop + Constants.LeafTableLayoutOffsetBottom;
+
+                        // leafTableLayoutPanel settings, note: set leafTableLayoutPanel location AFTER groupBox width and height
+                        leafTableLayoutPanel.Location = new Point(Constants.LeafTableLayoutOffsetLeft, Constants.LeafTableLayoutOffsetTop);
+                        leafTableLayoutPanel.Anchor = Constants.LeafTableLayoutAnchor;
+                        leafTableLayoutPanel.AutoSize = false;
+
+                        // leafTableLayoutPanel ColumnStyles to be Percent and equally sized
+                        leafTableLayoutPanel.ColumnStyles.Clear();
+                        float colPercentage = 100f / leafTableLayoutPanel.ColumnCount;
+                        for (int i = 0; i < leafTableLayoutPanel.ColumnCount; i++)
+                        {
+                            leafTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, colPercentage));
+                        }
+
+                        // leafTableLayoutPanel RowStyles to be Percent and equally sized
+                        leafTableLayoutPanel.RowStyles.Clear();
+                        float rowPercentage = 100f / numberOfLeafRows;
+                        for (int i = 0; i < numberOfLeafRows; i++)
+                        {
+                            leafTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, rowPercentage));
+                        }
+
+                        // simple control settings
+                        foreach (Control control in leafTableLayoutPanel.Controls)
+                        {
+                            control.Size = new Size(Constants.SimpleControlWidth, Constants.SimpleControlHeight);
+                            control.Anchor = Constants.SimpleAnchor;
+                            control.Margin = Constants.SimpleMargin;
+                            control.AutoSize = false;
+                            if (control is TextBox textBox)
+                            {
+                                textBox.TextAlign = HorizontalAlignment.Center;
+                            }
+                            else if (control is Label label)
+                            {
+                                label.TextAlign = ContentAlignment.MiddleCenter;
+                            }
+                            else if (control is Button button)
+                            {
+                                button.TextAlign = ContentAlignment.MiddleCenter;
+                            }
+                        }
+
+                    }
+                }
+            }
+            return true;
         }
 
         private void ToolTip1_Popup(object sender, PopupEventArgs e)
@@ -496,8 +625,9 @@ namespace P3D_Scenario_Generator
             else
             {
                 // Find the appropriate performance profile based on the aircraft's cruise speed.
+                // Using LastOrDefault with MinCruiseSpeedKnots in ascending order ensures the highest matching range is selected.
                 var profile = Constants.DefaultAircraftProfiles
-                    .FirstOrDefault(p => aircraftVariant.CruiseSpeed >= p.MinCruiseSpeedKnots);
+                    .LastOrDefault(p => aircraftVariant.CruiseSpeed >= p.MinCruiseSpeedKnots);
 
                 // If a matching profile is found, use its associated values.
                 if (profile != null)
@@ -512,10 +642,10 @@ namespace P3D_Scenario_Generator
                     TextBoxCircuitHeightBase.Text = (profile.CircuitHeightFeet / 2).ToString();
 
                     // Calculate the time required to climb/descend the circuit height using the profile's climb rate.
-                    // Time (minutes) = Circuit Height (feet) / Climb Rate (fpm)
+                    // This time is then used to estimate the horizontal distance covered during those phases.
                     double timeToClimbMinutes = (double)profile.CircuitHeightFeet / profile.ClimbRateFpm;
 
-                    // Recalculate Upwind distance using the calculated time to climb.
+                    // Recalculate Upwind distance using the calculated time to climb to full circuit height.
                     // Distance (miles) = Speed (knots) * Time (minutes) / MinutesInAnHour (60)
                     TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * timeToClimbMinutes / Constants.MinutesInAnHour);
 
@@ -529,8 +659,11 @@ namespace P3D_Scenario_Generator
                 }
                 else
                 {
-                    // Fallback for cases where no profile is matched (e.g., if DefaultAircraftProfiles is empty).
+                    // Fallback for cases where no profile is matched (e.g., if DefaultAircraftProfiles is empty
+                    // or aircraftVariant.CruiseSpeed is exceptionally low/negative, though it should be >= 0).
                     // Revert to original hardcoded defaults if a profile cannot be found.
+                    _progressReporter?.Report("No matching aircraft performance profile found. Using default circuit parameters.");
+
                     TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed);
                     TextBoxCircuitHeightDown.Text = "1000";
                     TextBoxCircuitHeightUpwind.Text = "500";
@@ -715,6 +848,108 @@ namespace P3D_Scenario_Generator
         #endregion
 
         #region Photo Tour Tab
+
+        private void TextBoxPhotoTourConstraintsMinLegDist_Leave(object sender, EventArgs e)
+        {
+            ValidateAndSetDouble(
+                TextBoxPhotoTourConstraintsMinLegDist,
+                "Minimum PhotoTour Leg Distance",
+                0,
+                Constants.MilesInEarthCircumference,
+                "",
+                value => _formData.PhotoTourMinLegDist = value);
+        }
+
+        private void TextBoxPhotoTourConstraintsMaxLegDist_Leave(object sender, EventArgs e)
+        {
+            ValidateAndSetDouble(
+                TextBoxPhotoTourConstraintsMaxLegDist,
+                "Maximum PhotoTour Leg Distance",
+                0,
+                Constants.MilesInEarthCircumference,
+                "",
+                value => _formData.PhotoTourMaxLegDist = value);
+        }
+
+        private void TextBoxPhotoTourConstraintsMinNoLegs_Leave(object sender, EventArgs e)
+        {
+            ValidateAndSetInteger(
+                TextBoxPhotoTourConstraintsMinNoLegs,
+                "Minimum PhotoTour Number of Legs",
+                2,
+                Constants.PhotoMaxNearby,
+                "",
+                value => _formData.PhotoTourMinNoLegs = value);
+        }
+
+        private void TextBoxPhotoTourConstraintsMaxNoLegs_Leave(object sender, EventArgs e)
+        {
+            ValidateAndSetInteger(
+                TextBoxPhotoTourConstraintsMaxNoLegs,
+                "Maximum PhotoTour Number of Legs",
+                2,
+                Constants.PhotoMaxNearby,
+                "",
+                value => _formData.PhotoTourMaxNoLegs = value);
+        }
+
+        private void TextBoxPhotoTourConstraintsMaxBearingChange_Leave(object sender, EventArgs e)
+        {
+            ValidateAndSetDouble(
+                TextBoxPhotoTourConstraintsMaxBearingChange,
+                "Maximum PhotoTour Bearing Change",
+                0,
+                Constants.PhotMaxBearingChangeDegrees,
+                "",
+                value => _formData.PhotoTourMaxBearingChange = value);
+        }
+
+        private void TextBoxPhotoTourConstraintsHotspotRadius_Leave(object sender, EventArgs e)
+        {
+            ValidateAndSetDouble(
+                TextBoxPhotoTourConstraintsHotspotRadius,
+                "PhotoTour Hotspot Radius",
+                0,
+                Constants.PhotoMaxHotspotRadius,
+                "",
+                value => _formData.PhotoTourHotspotRadius = value);
+        }
+
+        private void TextBoxPhotoTourConstraintsMaxAttempts_Leave(object sender, EventArgs e)
+        {
+            ValidateAndSetInteger(
+                TextBoxPhotoTourConstraintsMaxAttempts,
+                "Maximum PhotoTour Search Attempts",
+                1,
+                Constants.PhotoMaxSearchAttempts,
+                "",
+                value => _formData.PhotoTourMaxSearchAttempts = value);
+        }
+
+        private void TextBoxPhotoTourPhotoMonitorNumber_Leave(object sender, EventArgs e)
+        {
+            ValidatePhotoWindowSettingsGroup((Control)sender);
+        }
+
+        private void TextBoxPhotoTourPhotoOffset_Leave(object sender, EventArgs e)
+        {
+            ValidatePhotoWindowSettingsGroup((Control)sender);
+        }
+
+        private void ComboBoxPhotoTourPhotoAlignment_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ValidatePhotoWindowSettingsGroup((Control)sender);
+        }
+
+        private void TextBoxPhotoTourPhotoMonitorWidth_Leave(object sender, EventArgs e)
+        {
+            ValidatePhotoWindowSettingsGroup((Control)sender);
+        }
+
+        private void TextBoxPhotoTourPhotoMonitorHeight_Leave(object sender, EventArgs e)
+        {
+            ValidatePhotoWindowSettingsGroup((Control)sender);
+        }
 
         #endregion
 
@@ -909,6 +1144,65 @@ namespace P3D_Scenario_Generator
         #endregion
 
         #region Settings Tab
+
+        private void TextBoxSettingsOSMServerAPIkey_MouseEnter(object sender, EventArgs e)
+        {
+            TextBoxMouseEnterExpandTooltip(sender, e);
+        }
+
+        /// <summary>
+        /// Handles the Leave event for TextBoxSettingsMapMonitorNumber.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void TextBoxSettingsMapMonitorNumber_Leave(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
+
+        /// <summary>
+        /// Handles the Leave event for TextBoxSettingsMapOffset.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void TextBoxSettingsMapOffset_Leave(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event for ComboBoxSettingsMapAlignment.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void ComboBoxSettingsMapAlignment_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
+
+        /// <summary>
+        /// Handles the Leave event for TextBoxSettingsMapMonitorWidth.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void TextBoxSettingsMapMonitorWidth_Leave(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
+
+        /// <summary>
+        /// Handles the Leave event for TextBoxSettingsMapMonitorHeight.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void TextBoxSettingsMapMonitorHeight_Leave(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event for ComboBoxSettingsMapWindowSize.
+        /// Triggers group validation for map window settings.
+        /// </summary>
+        private void ComboBoxSettingsMapWindowSize_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ValidateMapWindowSettingsGroup((Control)sender);
+        }
 
         private void TextBoxSettingsOSMServerAPIkey_Leave(object sender, EventArgs e)
         {
@@ -1431,7 +1725,7 @@ namespace P3D_Scenario_Generator
 
             try
             {
-                Properties.Settings.Default.Save(); 
+                Properties.Settings.Default.Save();
 
                 Log.Info($"SaveUserSettings: {collectionIdentifier} settings saved successfully.");
             }
@@ -1624,8 +1918,20 @@ namespace P3D_Scenario_Generator
         private void TextBoxMouseEnterExpandTooltip(object sender, EventArgs e)
         {
             TextBox tb = (TextBox)sender;
-            // Simple check for truncation (you might need a more robust one)
-            if (TextRenderer.MeasureText(tb.Text, tb.Font).Width > tb.ClientSize.Width)
+
+            // Get the size of the text when rendered with the TextBox's font.
+            // Use TextFormatFlags.WordBreak to accurately measure multiline text if AcceptsReturn is true.
+            TextFormatFlags flags = TextFormatFlags.NoPadding | TextFormatFlags.WordBreak; // Added WordBreak for multiline
+
+            // Measure the actual size required for the text given the TextBox's width.
+            // The measurement should consider the TextBox's current width to determine height for wrapping.
+            Size textSize = TextRenderer.MeasureText(tb.Text, tb.Font, new Size(tb.ClientSize.Width, 0), flags);
+
+            // Check for truncation in either width or height.
+            // Width truncation occurs if the measured width is greater than the client width.
+            // Height truncation occurs if the measured height is greater than the client height,
+            // which is relevant for multiline text boxes.
+            if (textSize.Width > tb.ClientSize.Width || textSize.Height > tb.ClientSize.Height)
             {
                 toolTip1.SetToolTip(tb, tb.Text);
             }
@@ -1731,7 +2037,19 @@ namespace P3D_Scenario_Generator
                 allValid = false;
             }
 
-            // Derived fields based on General and/or Settings tab data
+            // 3. Circuit Tab Data 
+            if (!PopulateAndValidateCircuitTabData())
+            {
+                allValid = false;
+            }
+
+            // 4. PhotoTour Tab Data 
+            if (!PopulateAndValidatePhotoTourTabData())
+            {
+                allValid = false;
+            }
+
+            // Derived fields 
             if (allValid)
             {
                 // Scenario folder path based on the scenario folder base path (settings tab) and scenario title (general tab)
@@ -1740,15 +2058,9 @@ namespace P3D_Scenario_Generator
                 // Scenario image folder path based on the scenario folder path
                 _formData.ScenarioImageFolder = Path.Combine(_formData.ScenarioFolder, "Images");
 
-                // Season based on DatePickerValue
+                // Season based on DatePickerValue (general tab)
                 var persianMonth = new PersianCalendar().GetMonth(_formData.DatePickerValue);
                 _formData.Season = (Season)Math.Ceiling(persianMonth / 3.0);
-            }
-
-            // 3. Circuit Tab Data 
-            if (!PopulateAndValidateCircuitTabData())
-            {
-                allValid = false;
             }
 
             if (!allValid)
@@ -2055,7 +2367,6 @@ namespace P3D_Scenario_Generator
             }
 
             // 2. Interdependent Validation (only if all individual fields are valid)
-            // No need for re-parsing from string; use _formData.WindowAlignment and _formData.MapWindowSize directly
             WindowAlignment currentAlignment = _formData.MapAlignment;
             int mapWindowSize = (int)_formData.MapWindowSize; // Cast enum to int for calculations
 
@@ -2368,6 +2679,216 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
+        /// Populates and validates data from the PhotoTour tab.
+        /// </summary>
+        /// <returns>True if all PhotoTour tab data is valid; otherwise, false.</returns>
+        private bool PopulateAndValidatePhotoTourTabData()
+        {
+            bool allValid = true;
+
+            // PhotoTourMinLegDist
+            allValid &= ValidateAndSetDouble(
+                TextBoxPhotoTourConstraintsMinLegDist,
+                "Minimum PhotoTour Leg Distance",
+                0,
+                Constants.MilesInEarthCircumference,
+                "",
+                value => _formData.PhotoTourMinLegDist = value);
+
+            // PhotoTourMaxLegDist
+            allValid &= ValidateAndSetDouble(
+                TextBoxPhotoTourConstraintsMaxLegDist,
+                "Maximum PhotoTour Leg Distance",
+                0,
+                Constants.MilesInEarthCircumference,
+                "",
+                value => _formData.PhotoTourMaxLegDist = value);
+
+            if (_formData.PhotoTourMinLegDist >= _formData.PhotoTourMaxLegDist)
+            {
+                string message = "Minimum photo tour leg distance must be less than maximum photo tour leg distance.";
+                errorProvider1.SetError(TextBoxPhotoTourConstraintsMinLegDist, message);
+                _progressReporter?.Report(message);
+                allValid = false;
+            }
+
+            // PhotoTourMinNoLegs
+            allValid &= ValidateAndSetInteger(
+                TextBoxPhotoTourConstraintsMinNoLegs,
+                "Minimum PhotoTour Number of Legs",
+                Constants.PhotoMinNumberLegs,
+                Constants.PhotoMaxNearby,
+                "",
+                value => _formData.PhotoTourMinNoLegs = value);
+
+            // PhotoTourMaxNoLegs
+            allValid &= ValidateAndSetInteger(
+                TextBoxPhotoTourConstraintsMaxNoLegs,
+                "Maximum PhotoTour Number of Legs",
+                Constants.PhotoMinNumberLegs,
+                Constants.PhotoMaxNearby,
+                "",
+                value => _formData.PhotoTourMaxNoLegs = value);
+
+            if (_formData.PhotoTourMinNoLegs > _formData.PhotoTourMaxNoLegs)
+            {
+                string message = "Minimum photo tour number of legs must be less than or equal to maximum photo tour number of legs.";
+                errorProvider1.SetError(TextBoxPhotoTourConstraintsMinNoLegs, message);
+                _progressReporter?.Report(message);
+                allValid = false;
+            }
+
+            // PhotoTourMaxBearingChange
+            allValid &= ValidateAndSetDouble(
+                TextBoxPhotoTourConstraintsMaxBearingChange,
+                "Maximum PhotoTour Bearing Change",
+                0,
+                Constants.PhotMaxBearingChangeDegrees,
+                "",
+                value => _formData.PhotoTourMaxBearingChange = value);
+
+            // PhotoTourHotspotRadius
+            allValid &= ValidateAndSetDouble(
+                TextBoxPhotoTourConstraintsHotspotRadius,
+                "PhotoTour Hotspot Radius",
+                0,
+                Constants.PhotoMaxHotspotRadius,
+                "",
+                value => _formData.PhotoTourHotspotRadius = value);
+
+            // PhotoTourMaxSearchAttempts
+            allValid &= ValidateAndSetInteger(
+                TextBoxPhotoTourConstraintsMaxAttempts,
+                "Maximum PhotoTour Search Attempts",
+                1,
+                Constants.PhotoMaxSearchAttempts,
+                "",
+                value => _formData.PhotoTourMaxSearchAttempts = value);
+
+            // Validate and populate Map Window settings as a group
+            allValid &= ValidatePhotoWindowSettingsGroup(null);
+
+            return allValid;
+        }
+
+        /// <summary>
+        /// Validates the group of photo window settings (monitor number, offset, alignment, width, height).
+        /// Performs individual validation for each control and then checks interdependencies.
+        /// Reports errors via ErrorProvider for specific controls and _progressReporter for general messages.
+        /// </summary>
+        /// <param name="triggeringControl">The control that initiated this validation, or null if called from a general validation.</param>
+        /// <returns>True if all photo window settings are valid individually and as a group; otherwise, false.</returns>
+        private bool ValidatePhotoWindowSettingsGroup(Control triggeringControl)
+        {
+            bool allValid = true;
+            string groupErrorMessage = ""; // To accumulate group-level errors
+
+            // Clear any existing errors on these controls before re-validating the group
+            errorProvider1.SetError(TextBoxPhotoTourPhotoMonitorNumber, "");
+            errorProvider1.SetError(TextBoxPhotoTourPhotoOffset, "");
+            errorProvider1.SetError(ComboBoxPhotoTourPhotoAlignment, "");
+            errorProvider1.SetError(TextBoxPhotoTourPhotoMonitorWidth, "");
+            errorProvider1.SetError(TextBoxPhotoTourPhotoMonitorHeight, "");
+            _progressReporter?.Report(""); // Clear previous group messages
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxPhotoTourPhotoMonitorNumber,
+                "Photo Monitor Number",
+                0,
+                Constants.MaxMonitorNumber,
+                "",
+                value => _formData.PhotoTourPhotoMonitorNumber = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxPhotoTourPhotoOffset,
+                "Photo Offset",
+                0,
+                Constants.MaxWindowOffsetPixels,
+                "pixels",
+                value => _formData.PhotoTourPhotoOffset = value);
+
+            allValid &= ValidateAndSetEnum<WindowAlignment>(
+                ComboBoxPhotoTourPhotoAlignment,
+                "Photo Alignment",
+                value => _formData.PhotoTourPhotoAlignment = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxPhotoTourPhotoMonitorWidth,
+                "Photo Monitor Width",
+                Constants.MinMonitorWidthPixels,
+                Constants.MaxMonitorWidthPixels,
+                "pixels",
+                value => _formData.PhotoTourPhotoMonitorWidth = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxPhotoTourPhotoMonitorHeight,
+                "Photo Monitor Height",
+                Constants.MinMonitorHeightPixels,
+                Constants.MaxMonitorHeightPixels,
+                "pixels",
+                value => _formData.PhotoTourPhotoMonitorHeight = value);
+
+            // If any individual validation failed, return false immediately.
+            // The specific error providers are already set.
+            if (!allValid)
+            {
+                groupErrorMessage = "Please correct individual errors in Photo Window settings.";
+                _progressReporter?.Report(groupErrorMessage);
+                return false;
+            }
+
+            // Interdependent Validation (only if all individual fields are valid)
+            WindowAlignment currentAlignment = _formData.PhotoTourPhotoAlignment;
+
+            bool groupValidationPassed = true;
+
+            // Calculate maximum possible offset for both dimensions relative to the "safe" monitor size, offset doesn't apply for centred alignment
+            int maxOffsetWidth;
+            int maxOffsetHeight;
+            if (currentAlignment != WindowAlignment.Centered)
+            {
+                maxOffsetWidth = _formData.PhotoTourPhotoMonitorWidth - Constants.PhotoSizeEdgeMarginPixels;
+                maxOffsetHeight = _formData.PhotoTourPhotoMonitorHeight - Constants.PhotoSizeEdgeMarginPixels;
+
+                if (_formData.PhotoTourPhotoOffset >= maxOffsetWidth || _formData.PhotoTourPhotoOffset >= maxOffsetHeight)
+                {
+                    int maxWidth = _formData.PhotoTourPhotoMonitorWidth - Constants.PhotoSizeEdgeMarginPixels;
+                    int maxHeight = _formData.PhotoTourPhotoMonitorHeight - Constants.PhotoSizeEdgeMarginPixels;
+                    groupErrorMessage = $"Photo Window offset ({_formData.PhotoTourPhotoOffset}px) exceeds maximum safe photo dimension " +
+                        $"{maxWidth}px * {maxHeight}px.";
+                    groupValidationPassed = false;
+                }
+                else
+                {
+                    int maxWidth = _formData.PhotoTourPhotoMonitorWidth - Constants.PhotoSizeEdgeMarginPixels - _formData.PhotoTourPhotoOffset;
+                    int maxHeight = _formData.PhotoTourPhotoMonitorHeight - Constants.PhotoSizeEdgeMarginPixels - _formData.PhotoTourPhotoOffset;
+                    groupErrorMessage = $"This offset value ({_formData.PhotoTourPhotoOffset}px) allows a maximum safe photo dimension of " +
+                        $"{maxWidth}px * {maxHeight}px.";
+                }
+            }
+            else
+            {
+                groupErrorMessage = "Photo Window settings are valid.";
+            }
+
+            _progressReporter?.Report(groupErrorMessage);
+            // Set the error on the triggering control if available, otherwise fall back to TextBoxSettingsMapOffset
+            if (!groupValidationPassed)
+            {
+                if (triggeringControl != null)
+                {
+                    errorProvider1.SetError(triggeringControl, groupErrorMessage);
+                }
+                else
+                {
+                    errorProvider1.SetError(TextBoxPhotoTourPhotoOffset, groupErrorMessage);
+                }
+            }
+
+            return allValid && groupValidationPassed;
+        }
+
+        /// <summary>
         /// Generic validation method for integer text boxes.
         /// Parses the text, validates its range, sets error messages, reports progress,
         /// and assigns the parsed value to the specified formData property via an Action delegate.
@@ -2449,60 +2970,6 @@ namespace P3D_Scenario_Generator
                 setFormDataProperty(parsedValue); // Assign the parsed value using the delegate
                 return true;
             }
-        }
-
-        /// <summary>
-        /// Handles the Leave event for TextBoxSettingsMapMonitorNumber.
-        /// Triggers group validation for map window settings.
-        /// </summary>
-        private void TextBoxSettingsMapMonitorNumber_Leave(object sender, EventArgs e)
-        {
-            ValidateMapWindowSettingsGroup((Control)sender);
-        }
-
-        /// <summary>
-        /// Handles the Leave event for TextBoxSettingsMapOffset.
-        /// Triggers group validation for map window settings.
-        /// </summary>
-        private void TextBoxSettingsMapOffset_Leave(object sender, EventArgs e)
-        {
-            ValidateMapWindowSettingsGroup((Control)sender);
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event for ComboBoxSettingsMapAlignment.
-        /// Triggers group validation for map window settings.
-        /// </summary>
-        private void ComboBoxSettingsMapAlignment_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ValidateMapWindowSettingsGroup((Control)sender);
-        }
-
-        /// <summary>
-        /// Handles the Leave event for TextBoxSettingsMapMonitorWidth.
-        /// Triggers group validation for map window settings.
-        /// </summary>
-        private void TextBoxSettingsMapMonitorWidth_Leave(object sender, EventArgs e)
-        {
-            ValidateMapWindowSettingsGroup((Control)sender);
-        }
-
-        /// <summary>
-        /// Handles the Leave event for TextBoxSettingsMapMonitorHeight.
-        /// Triggers group validation for map window settings.
-        /// </summary>
-        private void TextBoxSettingsMapMonitorHeight_Leave(object sender, EventArgs e)
-        {
-            ValidateMapWindowSettingsGroup((Control)sender);
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event for ComboBoxSettingsMapWindowSize.
-        /// Triggers group validation for map window settings.
-        /// </summary>
-        private void ComboBoxSettingsMapWindowSize_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ValidateMapWindowSettingsGroup((Control)sender);
         }
 
         /// <summary>

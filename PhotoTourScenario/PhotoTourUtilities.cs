@@ -1,4 +1,5 @@
 ﻿using CoordinateSharp;
+using P3D_Scenario_Generator.ConstantsEnums;
 
 namespace P3D_Scenario_Generator.PhotoTourScenario
 {
@@ -108,9 +109,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
         /// <summary>
         /// Downloads all photos specified in the provided list of photo locations to the scenario images directory.
-        /// It checks if each downloaded photo's width or height exceeds 95% of the monitor dimensions
+        /// It checks if each downloaded photo's width or height exceeds the monitor dimensions
         /// on which it will initially be displayed. If a dimension exceeds this threshold, the photo is
-        /// proportionally resized to be at least 40 pixels less than the corresponding monitor dimension.
+        /// proportionally resized.
         /// </summary>
         /// <param name="photoLocations">A list of <see cref="PhotoLocParams"/> objects,
         /// each containing the URL of a photo to be downloaded and processed.</param>
@@ -162,15 +163,25 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 int newHeight = originalHeight;
                 bool needsResize = false;
 
-                // Check if either dimension exceeds 95% of the monitor dimensions
-                if (originalWidth > formData.PhotoTourPhotoMonitorWidth * 0.95 ||
-                    originalHeight > formData.PhotoTourPhotoMonitorHeight * 0.95)
+                // Calculate scaling factors for both dimensions relative to the "safe" monitor size 
+                double targetWidth;
+                double targetHeight;
+                if (formData.PhotoTourPhotoAlignment == WindowAlignment.Centered)
+                {
+                    targetWidth = formData.PhotoTourPhotoMonitorWidth - Constants.PhotoSizeEdgeMarginPixels * 2;
+                    targetHeight = formData.PhotoTourPhotoMonitorHeight - Constants.PhotoSizeEdgeMarginPixels * 2;
+                }
+                else
+                {
+                    targetWidth = formData.PhotoTourPhotoMonitorWidth - formData.PhotoTourPhotoOffset - Constants.PhotoSizeEdgeMarginPixels;
+                    targetHeight = formData.PhotoTourPhotoMonitorHeight - formData.PhotoTourPhotoOffset - Constants.PhotoSizeEdgeMarginPixels;
+                }
+
+                // Check if either dimension exceeds safe monitor dimensions
+                if (originalWidth > targetWidth ||
+                    originalHeight > targetHeight)
                 {
                     needsResize = true;
-
-                    // Calculate scaling factors for both dimensions relative to the "safe" monitor size (MonitorDim - 40)
-                    double targetWidth = formData.PhotoTourPhotoMonitorWidth - 40;
-                    double targetHeight = formData.PhotoTourPhotoMonitorHeight - 40;
 
                     // Calculate ratios of target dimensions to original dimensions
                     double ratioX = targetWidth / originalWidth;
