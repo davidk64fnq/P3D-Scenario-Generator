@@ -11,55 +11,18 @@ namespace P3D_Scenario_Generator
     /// </summary>
     internal class ImageUtils
     {
-        // MAKE SQUARE IS TEMPORARY - WILL BE REMOVED AFTER OTHER REFACTORS
-        static internal BoundingBox MakeSquare(BoundingBox boundingBox, int zoom, int size)
-        {
-            // Get next tile East and West - allow for possibile wrap around meridian
-        //    int newTileEast = MapTileCalculator.IncXtileNo(boundingBox.XAxis[^1], zoom);
-        //    int newTileWest = MapTileCalculator.DecXtileNo(boundingBox.XAxis[0], zoom);
-            // Get next tile South and North - don't go below bottom or top edge of map, -1 means no tile added that direction
-            int newTileSouth = MapTileCalculator.IncYtileNo(boundingBox.YAxis[^1], zoom);
-            int newTileNorth = MapTileCalculator.DecYtileNo(boundingBox.YAxis[0]);
-
-            if (boundingBox.XAxis.Count < boundingBox.YAxis.Count) // Padding on the x axis
-            {
-                //    return MapTilePadder.PadWestEast(boundingBox, newTileWest, newTileEast, filename, zoom);
-            }
-            else if (boundingBox.YAxis.Count < boundingBox.XAxis.Count) // Padding on the y axis
-            {
-                if (newTileSouth < 0)
-                {
-                    //    return MapTilePadder.PadNorth(boundingBox, newTileNorth, filename, zoom);
-                }
-                else if (newTileNorth < 0)
-                {
-                    //    return MapTilePadder.PadSouth(boundingBox, newTileSouth, filename, zoom);
-                }
-                else
-                {
-                    //    return MapTilePadder.PadNorthSouth(boundingBox, newTileNorth, newTileSouth, filename, zoom);
-                }
-            }
-            else if (boundingBox.YAxis.Count < size) // Padding on both axis
-            {
-                //    return MapTilePadder.PadNorthSouthWestEast(boundingBox, newTileNorth, newTileSouth, newTileWest, newTileEast, filename, zoom);
-            }
-            MapTilePadder.ZoomIn(boundingBox, out BoundingBox zoomInBB);
-            return zoomInBB;
-        }
-
         /// <summary>
         /// Draws a route defined by a list of tiles onto an existing map image.
-        /// The route is drawn as a series of connected lines between tile center points or specified offsets within tiles.
+        /// The route is drawn as a series of connected lines between the specified offsets within tiles.
         /// </summary>
         /// <param name="tiles">A list of <see cref="Tile"/> objects representing the route points.</param>
         /// <param name="boundingBox">The <see cref="BoundingBox"/> representing the overall area of the map image,
         /// used to translate tile indices and offsets into pixel coordinates.</param>
-        /// <param name="filename">The base path and filename of the existing map image to draw on, and where the modified image will be saved.</param>
+        /// <param name="fullPathNoExt">The base path and filename of the existing map image to draw on, and where the modified image will be saved.</param>
         /// <returns><see langword="true"/> if the route was successfully drawn and saved; otherwise, <see langword="false"/>.</returns>
-        static internal bool DrawRoute(List<Tile> tiles, BoundingBox boundingBox, string filename)
+        static internal bool DrawRoute(List<Tile> tiles, BoundingBox boundingBox, string fullPathNoExt)
         {
-            string imagePath = $"{filename}.png";
+            string imagePath = $"{fullPathNoExt}.png";
 
             try
             {
@@ -71,6 +34,7 @@ namespace P3D_Scenario_Generator
 
                 using MagickImage image = new(imagePath);
 
+                // Define drawing attributes for the route line
                 DrawableStrokeColor strokeColor = new(new MagickColor("blue"));
                 DrawableStrokeWidth strokeWidth = new(1);
                 DrawableFillColor fillColor = new(MagickColors.Transparent);
@@ -79,15 +43,18 @@ namespace P3D_Scenario_Generator
 
                 for (int tileNo = 0; tileNo < tiles.Count; tileNo++)
                 {
+                    // Calculate the pixel coordinates for the current tile's offset point
                     int centreX = (boundingBox.XAxis.IndexOf(tiles[tileNo].XIndex) * Constants.TileSizePixels) + tiles[tileNo].XOffset;
                     int centreY = (boundingBox.YAxis.IndexOf(tiles[tileNo].YIndex) * Constants.TileSizePixels) + tiles[tileNo].YOffset;
 
                     if (tileNo > 0)
                     {
+                        // Draw a line connecting the previous point to the current point
                         DrawableLine line = new(centrePrevX, centrePrevY, centreX, centreY);
                         image.Draw(strokeColor, strokeWidth, fillColor, line);
                     }
 
+                    // Store current point as previous for the next iteration
                     centrePrevX = centreX;
                     centrePrevY = centreY;
                 }
@@ -104,7 +71,7 @@ namespace P3D_Scenario_Generator
             }
             catch (MagickErrorException mex)
             {
-                Log.Error($"Magick.NET error while drawing route on '{filename}': {mex.Message}", mex);
+                Log.Error($"Magick.NET error while drawing route on '{fullPathNoExt}': {mex.Message}", mex);
                 return false;
             }
             catch (FileNotFoundException fex)
@@ -114,19 +81,21 @@ namespace P3D_Scenario_Generator
             }
             catch (IOException ioex)
             {
-                Log.Error($"I/O error while drawing route on '{filename}': {ioex.Message}", ioex);
+                Log.Error($"I/O error while drawing route on '{fullPathNoExt}': {ioex.Message}", ioex);
                 return false;
             }
             catch (Exception ex)
             {
-                Log.Error($"An unexpected error occurred while drawing route on '{filename}': {ex.Message}", ex);
+                Log.Error($"An unexpected error occurred while drawing route on '{fullPathNoExt}': {ex.Message}", ex);
                 return false;
             }
         }
 
         /// <summary>
-        /// Draws the complete and incomplete images that display in the load scenario dialog.
+        /// Orchestrates the drawing of complete and incomplete scenario images displayed in the load scenario dialog.
+        /// This includes calling <see cref="DrawScenarioLoadImage"/> for both success and failure icons.
         /// </summary>
+        /// <param name="formData">The <see cref="ScenarioFormData"/> containing necessary data like paths and scenario type.</param>
         /// <returns><see langword="true"/> if all scenario images were drawn successfully; otherwise, <see langword="false"/>.</returns>
         static internal bool DrawScenarioImages(ScenarioFormData formData)
         {
@@ -154,19 +123,22 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Draws an image that displays in the load scenario dialog,
-        /// overlaying an icon and scenario text, and converting the format to BMP.
+        /// Draws a scenario load image for display in the load scenario dialog.
+        /// This involves loading a base image, overlaying a specified icon and scenario type text,
+        /// and finally converting the image format to BMP for compatibility.
         /// </summary>
-        /// <param name="iconName">The name of the icon resource file to be overlaid (no extension).</param>
-        /// <param name="outputName">The name for the base output image file (no extension).</param>
+        /// <param name="iconName">The name of the icon resource file to be overlaid (e.g., "success-icon", "failure-icon").</param>
+        /// <param name="outputFileNameNoExt">The name for the base output image file (without extension, e.g., "imgM_c", "imgM_i").</param>
+        /// <param name="formData">The <see cref="ScenarioFormData"/> containing user-specific settings, including the scenario image folder and scenario type text.</param>
         /// <returns><see langword="true"/> if the scenario load image was drawn and converted successfully; otherwise, <see langword="false"/>.</returns>
-        static internal bool DrawScenarioLoadImage(string iconName, string outputName, ScenarioFormData formData)
+        static internal bool DrawScenarioLoadImage(string iconName, string outputFileNameNoExt, ScenarioFormData formData)
         {
-            string outputPngPath = $"{formData.ScenarioImageFolder}\\{outputName}.png";
+            string outputPngPath = $"{formData.ScenarioImageFolder}\\{outputFileNameNoExt}.png";
             string iconPngResourcePath = $"Images.{iconName}.png";
 
             try
             {
+                // Load the base image from resources and copy it to the output path
                 using (Stream sourceStream = Form.GetResourceStream("Images.imgM.png"))
                 {
                     if (sourceStream == null)
@@ -183,15 +155,18 @@ namespace P3D_Scenario_Generator
 
                 using var image = new MagickImage(outputPngPath);
                 {
+                    // Define geometry for text annotation
                     uint boundingBoxHeight = Convert.ToUInt32(image.Height / 2);
                     uint boundingBoxWidth = image.Width;
                     int boundingBoxYoffset = Convert.ToInt32(image.Height * 0.4);
                     MagickGeometry geometry = new(0, boundingBoxYoffset, boundingBoxWidth, boundingBoxHeight);
 
+                    // Set font properties and annotate text
                     image.Settings.Font = "SegoeUI";
                     image.Settings.FontPointsize = 36;
                     image.Annotate(formData.ScenarioType.ToString(), geometry, Gravity.Center);
 
+                    // Load the icon from resources and composite it onto the base image
                     using (Stream iconStream = Form.GetResourceStream(iconPngResourcePath))
                     {
                         if (iconStream == null)
@@ -202,6 +177,7 @@ namespace P3D_Scenario_Generator
 
                         using var imageIcon = new MagickImage(iconStream);
                         {
+                            // Calculate icon position for overlay
                             int iconXoffset = Convert.ToInt32(image.Width - imageIcon.Width * 2);
                             int iconYoffset = Convert.ToInt32(image.Height / 2 - imageIcon.Height / 2);
                             image.Composite(imageIcon, iconXoffset, iconYoffset, CompositeOperator.Over);
@@ -211,9 +187,10 @@ namespace P3D_Scenario_Generator
                     image.Write(outputPngPath);
                 }
 
-                if (!ConvertImageformat(outputName, "png", "bmp", formData))
+                // Convert the final PNG image to BMP format
+                if (!ConvertImageformat(Path.Combine(formData.ScenarioImageFolder, outputFileNameNoExt), "png", "bmp"))
                 {
-                    Log.Error($"ImageUtils.DrawScenarioLoadImage: Failed to convert image '{outputName}.png' to BMP.");
+                    Log.Error($"ImageUtils.DrawScenarioLoadImage: Failed to convert image '{outputFileNameNoExt}.png' to BMP.");
                     return false;
                 }
 
@@ -221,22 +198,22 @@ namespace P3D_Scenario_Generator
             }
             catch (MagickErrorException mex)
             {
-                Log.Error($"ImageUtils.DrawScenarioLoadImage: Magick.NET error for '{outputName}': {mex.Message}", mex);
+                Log.Error($"ImageUtils.DrawScenarioLoadImage: Magick.NET error for '{outputFileNameNoExt}': {mex.Message}", mex);
                 return false;
             }
             catch (IOException ioex)
             {
-                Log.Error($"ImageUtils.DrawScenarioLoadImage: I/O error for '{outputName}': {ioex.Message}", ioex);
+                Log.Error($"ImageUtils.DrawScenarioLoadImage: I/O error for '{outputFileNameNoExt}': {ioex.Message}", ioex);
                 return false;
             }
             catch (UnauthorizedAccessException uex)
             {
-                Log.Error($"ImageUtils.DrawScenarioLoadImage: Permission denied for '{outputName}': {uex.Message}", uex);
+                Log.Error($"ImageUtils.DrawScenarioLoadImage: Permission denied for '{outputFileNameNoExt}': {uex.Message}", uex);
                 return false;
             }
             catch (Exception ex)
             {
-                Log.Error($"ImageUtils.DrawScenarioLoadImage: An unexpected error occurred for '{outputName}': {ex.Message}", ex);
+                Log.Error($"ImageUtils.DrawScenarioLoadImage: An unexpected error occurred for '{outputFileNameNoExt}': {ex.Message}", ex);
                 return false;
             }
         }
@@ -245,14 +222,14 @@ namespace P3D_Scenario_Generator
         /// Converts an image from one format to another using Magick.NET.
         /// The original file is deleted upon successful conversion.
         /// </summary>
-        /// <param name="filename">The base filename (without extension).</param>
+        /// <param name="fullPathNoExt">The base path and filename (without extension) of the image to convert.</param>
         /// <param name="oldExt">The original file extension (e.g., "png", "bmp").</param>
         /// <param name="newExt">The new file extension (e.g., "jpg", "webp").</param>
         /// <returns><see langword="true"/> if the image was converted successfully; otherwise, <see langword="false"/>.</returns>
-        static internal bool ConvertImageformat(string filename, string oldExt, string newExt, ScenarioFormData formData)
+        static internal bool ConvertImageformat(string fullPathNoExt, string oldExt, string newExt)
         {
-            string oldFullPath = $"{formData.ScenarioImageFolder}\\{filename}.{oldExt}";
-            string newFullPath = $"{formData.ScenarioImageFolder}\\{filename}.{newExt}";
+            string oldFullPath = $"{fullPathNoExt}.{oldExt}";
+            string newFullPath = $"{fullPathNoExt}.{newExt}";
 
             if (!File.Exists(oldFullPath))
             {
@@ -264,19 +241,21 @@ namespace P3D_Scenario_Generator
             {
                 using var image = new MagickImage(oldFullPath);
 
+                // Apply quality settings if converting to JPEG
                 switch (newExt.ToLowerInvariant())
                 {
                     case "jpg":
                     case "jpeg":
-                        image.Quality = 100;
+                        image.Quality = 100; // Set JPEG quality to maximum
                         break;
                 }
 
                 image.Write(newFullPath);
 
+                // Attempt to delete the original file after successful conversion
                 if (!FileOps.TryDeleteFile(oldFullPath))
                 {
-                    Log.Warning($"ImageUtils.ConvertImageformat: Converted image '{filename}.{oldExt}' to '{filename}.{newExt}', but failed to delete original file at '{oldFullPath}'.");
+                    Log.Warning($"ImageUtils.ConvertImageformat: Converted image '{fullPathNoExt}.{oldExt}' to '{fullPathNoExt}.{newExt}', but failed to delete original file at '{oldFullPath}'.");
                     return false;
                 }
 
@@ -305,24 +284,24 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Uses Magick.NET to resize an image. If one of width and height is zero,
-        /// then resizing is proportional based on the non-zero parameter.
+        /// Resizes an image to the specified width and height using Magick.NET.
+        /// If either width or height is zero, the image will be resized proportionally based on the non-zero dimension.
         /// </summary>
-        /// <param name="filename">Filename including full path and file extension</param>
-        /// <param name="width">New size, if zero proportional based on height parameter</param>
-        /// <param name="height">New size, if zero proportional based on width parameter</param>
+        /// <param name="fullPath">The full path and filename including extension of the image to resize.</param>
+        /// <param name="width">The desired new width in pixels. If 0, width is determined proportionally.</param>
+        /// <param name="height">The desired new height in pixels. If 0, height is determined proportionally.</param>
         /// <returns><see langword="true"/> if the image was resized successfully; otherwise, <see langword="false"/>.</returns>
-        static internal bool Resize(string filename, int width, int height)
+        static internal bool Resize(string fullPath, int width, int height)
         {
-            if (!File.Exists(filename))
+            if (!File.Exists(fullPath))
             {
-                Log.Error($"ImageUtils.Resize: Source image not found at '{filename}'. Cannot resize.");
+                Log.Error($"ImageUtils.Resize: Source image not found at '{fullPath}'. Cannot resize.");
                 return false;
             }
 
             if (width < 0 || height < 0)
             {
-                Log.Error($"ImageUtils.Resize: Negative dimensions provided for resizing image '{filename}'. Width: {width}, Height: {height}.");
+                Log.Error($"ImageUtils.Resize: Negative dimensions provided for resizing image '{fullPath}'. Width: {width}, Height: {height}.");
                 return false;
             }
 
@@ -331,29 +310,29 @@ namespace P3D_Scenario_Generator
 
             try
             {
-                using MagickImage image = new(filename);
-                image.Resize(widthUint, heightUint);
-                image.Write(filename);
+                using MagickImage image = new(fullPath);
+                image.Resize(widthUint, heightUint); // Perform the resize operation
+                image.Write(fullPath); // Overwrite the original file with the resized image
                 return true;
             }
             catch (MagickErrorException mex)
             {
-                Log.Error($"ImageUtils.Resize: Magick.NET error while resizing '{filename}': {mex.Message}", mex);
+                Log.Error($"ImageUtils.Resize: Magick.NET error while resizing '{fullPath}': {mex.Message}", mex);
                 return false;
             }
             catch (IOException ioex)
             {
-                Log.Error($"ImageUtils.Resize: I/O error while resizing '{filename}': {ioex.Message}", ioex);
+                Log.Error($"ImageUtils.Resize: I/O error while resizing '{fullPath}': {ioex.Message}", ioex);
                 return false;
             }
             catch (UnauthorizedAccessException uex)
             {
-                Log.Error($"ImageUtils.Resize: Permission denied while resizing '{filename}': {uex.Message}", uex);
+                Log.Error($"ImageUtils.Resize: Permission denied while resizing '{fullPath}': {uex.Message}", uex);
                 return false;
             }
             catch (Exception ex)
             {
-                Log.Error($"ImageUtils.Resize: An unexpected error occurred while resizing '{filename}': {ex.Message}", ex);
+                Log.Error($"ImageUtils.Resize: An unexpected error occurred while resizing '{fullPath}': {ex.Message}", ex);
                 return false;
             }
         }

@@ -15,7 +15,6 @@ namespace P3D_Scenario_Generator
     public partial class Form : System.Windows.Forms.Form
     {
         private readonly IProgress<string> _progressReporter;
-        private ScenarioTypes _selectedScenarioType = ScenarioTypes.Circuit;
         private readonly ScenarioFormData _formData;
 
         public Form()
@@ -221,15 +220,15 @@ namespace P3D_Scenario_Generator
         /// <param name="e">The event data associated with the selection change.</param>
         private void ComboBoxGeneralScenarioType_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (Enum.TryParse(ComboBoxGeneralScenarioType.Text, out ScenarioTypes result))
+            if (ValidateAndSetEnum<ScenarioTypes>(
+                ComboBoxGeneralScenarioType,
+                "Scenario Type",
+                value => _formData.ScenarioType = value))
             {
-                _selectedScenarioType = result;
-                _progressReporter?.Report($"Scenario type set to: {_selectedScenarioType}");
-
                 // Adjust visibility and enabled state of controls based on selected scenario type
-                if (_selectedScenarioType == ScenarioTypes.PhotoTour
-                    || _selectedScenarioType == ScenarioTypes.Celestial
-                    || _selectedScenarioType == ScenarioTypes.WikiList)
+                if (_formData.ScenarioType == ScenarioTypes.PhotoTour
+                    || _formData.ScenarioType == ScenarioTypes.Celestial
+                    || _formData.ScenarioType == ScenarioTypes.WikiList)
                 {
                     ComboBoxGeneralRunwaySelected.Enabled = false;
                     TextBoxGeneralSearchRunway.Enabled = false;
@@ -271,27 +270,27 @@ namespace P3D_Scenario_Generator
 
         private void DoScenarioSpecificTasks()
         {
-            if (_selectedScenarioType == ScenarioTypes.Circuit)
+            if (_formData.ScenarioType == ScenarioTypes.Circuit)
             {
                 MakeCircuit.SetCircuit(_formData);
                 SaveUserSettings(TabPageCircuit.Controls);
             }
-            else if (_selectedScenarioType == ScenarioTypes.PhotoTour)
+            else if (_formData.ScenarioType == ScenarioTypes.PhotoTour)
             {
                 PhotoTour.SetPhotoTour(_formData);
                 SaveUserSettings(TabPagePhotoTour.Controls);
             }
-            else if (_selectedScenarioType == ScenarioTypes.SignWriting)
+            else if (_formData.ScenarioType == ScenarioTypes.SignWriting)
             {
                 SignWriting.SetSignWriting(_formData);
                 SaveUserSettings(TabPageSign.Controls);
             }
-            else if (_selectedScenarioType == ScenarioTypes.Celestial)
+            else if (_formData.ScenarioType == ScenarioTypes.Celestial)
             {
                 if (CelestialNav.SetCelestial(_formData))
                     SaveUserSettings(TabPageWikiList.Controls);
             }
-            else if (_selectedScenarioType == ScenarioTypes.WikiList)
+            else if (_formData.ScenarioType == ScenarioTypes.WikiList)
             {
                 Wikipedia.SetWikiTour(ComboBoxWikiTableNames.SelectedIndex, ComboBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem,
                     ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text, _formData);
@@ -2450,11 +2449,10 @@ namespace P3D_Scenario_Generator
 
             _formData.RunwayIndex = ComboBoxGeneralRunwaySelected.SelectedIndex;
 
-            if (Enum.TryParse(ComboBoxGeneralScenarioType.SelectedItem.ToString(), out ScenarioTypes selectedType))
-            {
-                _formData.ScenarioType = selectedType;
-            }
-            else
+            if (!ValidateAndSetEnum<ScenarioTypes>(
+                ComboBoxGeneralScenarioType,
+                "Scenario Type",
+                value => _formData.ScenarioType = value))
             {
                 Log.Error("Invalid scenario type selected unexpectedly.");
                 isValid = false;

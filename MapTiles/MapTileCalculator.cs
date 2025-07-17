@@ -10,7 +10,6 @@ namespace P3D_Scenario_Generator.MapTiles
     /// </summary>
     public static class MapTileCalculator
     {
-
         /// <summary>
         /// Works out the most zoomed-in level that includes all specified coordinates,
         /// where the montage of OSM tiles doesn't exceed the given width and height.

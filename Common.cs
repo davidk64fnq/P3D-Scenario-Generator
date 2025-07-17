@@ -174,7 +174,7 @@ namespace P3D_Scenario_Generator
             MapTileMontager.MontageTiles(boundingBox, zoom, $"LegRoute_{legNo:00}_zoom1", formData);
             ImageUtils.DrawRoute(tiles, boundingBox, $"LegRoute_{legNo:00}_zoom1");
         //    zoomInBoundingBox = ImageUtils.MakeSquare(boundingBox, $"LegRoute_{legNo:00}_zoom1", zoom, Constants.tileFactor);
-            ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg", formData);
+            ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom1", "png", "jpg");
 
             // zoom 2, 3 (and 4) images, zoom 1 is base level for map window size of 512 pixels, zoom 2 is base level for map window of 1024 pixels
             // then there are two additional map images for the higher zoom levels.
@@ -187,7 +187,7 @@ namespace P3D_Scenario_Generator
         //        MapTileMontager.MontageTiles(zoomInBoundingBox, zoom + inc, $"LegRoute_{legNo:00}_zoom{inc + 1}");
         //        ImageUtils.DrawRoute(tiles, zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}");
          //       zoomInBoundingBox = ImageUtils.MakeSquare(zoomInBoundingBox, $"LegRoute_{legNo:00}_zoom{inc + 1}", zoom + inc, (int)Math.Pow(2, inc + 1));
-                ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom{inc + 1}", "png", "jpg", formData);
+                ImageUtils.ConvertImageformat($"LegRoute_{legNo:00}_zoom{inc + 1}", "png", "jpg");
             }
 
         //    SetLegImageBoundaries(zoomInBoundingBox, zoom + numberZoomLevels + 1);
