@@ -246,6 +246,7 @@ namespace P3D_Scenario_Generator
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             errorProvider1 = new ErrorProvider(components);
+            helpProvider1 = new HelpProvider();
             GroupBoxSettingsMapTileCacheInfo.SuspendLayout();
             TableLayoutPanelSettingsMapTileCacheInfo.SuspendLayout();
             GroupBoxSignWritingParameters.SuspendLayout();
@@ -1016,8 +1017,12 @@ namespace P3D_Scenario_Generator
             // 
             TextBoxCircuitUpwind.AccessibleName = "Circuit Parameters: Upwind";
             TextBoxCircuitUpwind.Anchor = AnchorStyles.None;
+            helpProvider1.SetHelpKeyword(TextBoxCircuitUpwind, "circuit.htm");
+            helpProvider1.SetHelpNavigator(TextBoxCircuitUpwind, HelpNavigator.Topic);
+            helpProvider1.SetHelpString(TextBoxCircuitUpwind, "");
             TextBoxCircuitUpwind.Location = new Point(151, 3);
             TextBoxCircuitUpwind.Name = "TextBoxCircuitUpwind";
+            helpProvider1.SetShowHelp(TextBoxCircuitUpwind, true);
             TextBoxCircuitUpwind.Size = new Size(80, 23);
             TextBoxCircuitUpwind.TabIndex = 1;
             TextBoxCircuitUpwind.Tag = "";
@@ -3232,6 +3237,10 @@ namespace P3D_Scenario_Generator
             // 
             errorProvider1.ContainerControl = this;
             // 
+            // helpProvider1
+            // 
+            helpProvider1.HelpNamespace = "resources/help/Help.chm";
+            // 
             // Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -3553,6 +3562,7 @@ namespace P3D_Scenario_Generator
         private TableLayoutPanel tableLayoutPanel20;
         private TableLayoutPanel tableLayoutPanel21;
         private TableLayoutPanel tableLayoutPanel22;
+        private HelpProvider helpProvider1;
     }
 }
 

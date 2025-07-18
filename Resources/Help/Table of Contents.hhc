@@ -16,15 +16,15 @@
 			<param name="Name" value="Introduction">
 			<param name="Local" value="introduction.htm">
 			</OBJECT>
-		<LI> <OBJECT type="text/sitemap">
-			<param name="Name" value="Location Filter">
-			<param name="Local" value="locationFilter.htm">
-			</OBJECT>
 	</UL>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="General Tab">
 		</OBJECT>
 	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Location Filter">
+			<param name="Local" value="locationFilter.htm">
+			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Runway Selection">
 			<param name="Local" value="runway.htm">
@@ -41,28 +41,28 @@
 			<param name="Name" value="Scenario Selection">
 			<param name="Local" value="scenario.htm">
 			</OBJECT>
-		<LI> <OBJECT type="text/sitemap">
-			<param name="Name" value="Circuit">
-			<param name="Local" value="circuit.htm">
-			</OBJECT>
 	</UL>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Scenario Tabs">
 		</OBJECT>
 	<UL>
 		<LI> <OBJECT type="text/sitemap">
-			<param name="Name" value="Photo Tour">
-			<param name="Local" value="photoTour.htm">
+			<param name="Name" value="Circuit">
+			<param name="Local" value="circuit.htm">
 			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
-			<param name="Name" value="Map Tile Cache Info">
-			<param name="Local" value="mapTileCacheInfo.htm">
+			<param name="Name" value="Photo Tour">
+			<param name="Local" value="photoTour.htm">
 			</OBJECT>
 	</UL>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Settings Tab">
 		</OBJECT>
 	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Map Tile Cache Info">
+			<param name="Local" value="mapTileCacheInfo.htm">
+			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Folder Info">
 			<param name="Local" value="folderInfo.htm">

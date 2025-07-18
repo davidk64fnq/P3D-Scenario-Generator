@@ -127,6 +127,9 @@
   <data name="label30.ToolTip" xml:space="preserve">
     <value>The default position of photo window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the photo window is positioned. Ignored if default position of photo window is centered.</value>
   </data>
+  <metadata name="helpProvider1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>359, 17</value>
+  </metadata>
   <data name="label27.ToolTip" xml:space="preserve">
     <value>The default position of sign window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the sign window is positioned. Ignored if default position of sign window is centered.</value>
   </data>

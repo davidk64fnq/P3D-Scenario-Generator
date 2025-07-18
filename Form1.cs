@@ -243,7 +243,7 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private void ButtonGenerateScenario_Click(object sender, EventArgs e)
+        private async void ButtonGenerateScenario_Click(object sender, EventArgs e)
         {
             if (GetValidatedScenarioFormData())
             {
@@ -251,7 +251,17 @@ namespace P3D_Scenario_Generator
                 CheckRunwaysXMLupToDate();
                 Runway.SetRunwaysSubset();
                 ImageUtils.DrawScenarioImages(_formData);
-                DoScenarioSpecificTasks();
+
+                // Await the task and capture the boolean result indicating success or failure
+                bool success = await DoScenarioSpecificTasks();
+
+                if (!success)
+                {
+                    return;
+                }
+
+                // Only proceed with these steps if DoScenarioSpecificTasks succeeded
+                SaveSettingsAfterDoSpecific();
                 SaveUserSettings(TabPageSettings.Controls);
                 ScenarioFXML.GenerateFXMLfile(_formData);
                 ScenarioHTML.GenerateHTMLfiles(_formData);
@@ -268,39 +278,98 @@ namespace P3D_Scenario_Generator
             _progressReporter?.Report(message);
         }
 
-        private void DoScenarioSpecificTasks()
+        private async Task<bool> DoScenarioSpecificTasks()
         {
-            if (_formData.ScenarioType == ScenarioTypes.Circuit)
+            Enabled = false;
+            bool backgroundOperationSuccess = true;
+            try
             {
-                MakeCircuit.SetCircuit(_formData);
-                SaveUserSettings(TabPageCircuit.Controls);
+                await Task.Run(() =>
+                {
+                    ScenarioTypes currentScenarioType = _formData.ScenarioType;
+                    switch (currentScenarioType)
+                    {
+                        case ScenarioTypes.Circuit:
+                            if(!MakeCircuit.SetCircuit(_formData))
+                            {
+                                backgroundOperationSuccess = false;
+                                return; 
+                            }
+                            break;
+                        case ScenarioTypes.PhotoTour:
+                            if(!PhotoTour.SetPhotoTour(_formData, _progressReporter))
+                            {
+                                backgroundOperationSuccess = false;
+                                return;
+                            }
+                            break;
+                        case ScenarioTypes.SignWriting:
+                            if(!SignWriting.SetSignWriting(_formData))
+                            {
+                                backgroundOperationSuccess = false;
+                                return;
+                            }
+                            break;
+                        case ScenarioTypes.Celestial:
+                            if(!CelestialNav.SetCelestial(_formData))
+                            {
+                                backgroundOperationSuccess = false;
+                                return;
+                            }
+                            break;
+                        case ScenarioTypes.WikiList:
+                        //    Wikipedia.SetWikiTour(wikiSelectedIndex, wikiRouteItems, wikiStartingItem,
+                        //                          wikiFinishingItem, wikiDistanceText, _formData);
+                            break;
+                        default:
+                            break;
+                    }
+                });
+
+                // --- Check Background Task Success Here ---
+                // After Task.Run completes, check if any background operation failed.
+                if (!backgroundOperationSuccess)
+                {
+                    // Report a more specific error if needed for background task failure
+                    _progressReporter.Report("A specific scenario task failed to complete successfully.");
+                    return false; // Return false from DoScenarioSpecificTasks
+                }
+                return true; // Indicate overall success
             }
-            else if (_formData.ScenarioType == ScenarioTypes.PhotoTour)
+            catch (Exception ex)
             {
-                PhotoTour.SetPhotoTour(_formData);
-                SaveUserSettings(TabPagePhotoTour.Controls);
+                Log.Error($"An unhandled error occurred during scenario specific task execution: {ex.Message}");
+                _progressReporter.Report("An unexpected error occurred. See logs.");
+                return false;
             }
-            else if (_formData.ScenarioType == ScenarioTypes.SignWriting)
+            finally
             {
-                SignWriting.SetSignWriting(_formData);
-                SaveUserSettings(TabPageSign.Controls);
+                Enabled = true;
             }
-            else if (_formData.ScenarioType == ScenarioTypes.Celestial)
+        }
+
+        private void SaveSettingsAfterDoSpecific()
+        {
+            ScenarioTypes currentScenarioType = _formData.ScenarioType;
+
+            switch (currentScenarioType)
             {
-                if (CelestialNav.SetCelestial(_formData))
+                case ScenarioTypes.Circuit:
+                    SaveUserSettings(TabPageCircuit.Controls);
+                    break;
+                case ScenarioTypes.PhotoTour:
+                    SaveUserSettings(TabPagePhotoTour.Controls);
+                    break;
+                case ScenarioTypes.SignWriting:
+                    SaveUserSettings(TabPageSign.Controls);
+                    break;
+                case ScenarioTypes.Celestial:
+                    SaveUserSettings(TabPageWikiList.Controls); 
+                    break;
+                case ScenarioTypes.WikiList:
                     SaveUserSettings(TabPageWikiList.Controls);
-            }
-            else if (_formData.ScenarioType == ScenarioTypes.WikiList)
-            {
-                Wikipedia.SetWikiTour(ComboBoxWikiTableNames.SelectedIndex, ComboBoxWikiRoute.Items, ComboBoxWikiStartingItem.SelectedItem,
-                    ComboBoxWikiFinishingItem.SelectedItem, TextBoxWikiDistance.Text, _formData);
-                SaveUserSettings(TabPageWikiList.Controls);
-                ClearWikiListSettingsFields();
-            }
-            else
-            {
-                Runway.startRwy = Runway.Runways[_formData.RunwayIndex];
-                Runway.destRwy = Runway.Runways[_formData.RunwayIndex];
+                    ClearWikiListSettingsFields();
+                    break;
             }
         }
 
@@ -1653,6 +1722,9 @@ namespace P3D_Scenario_Generator
         /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
         private static void SaveUserSettings(Control.ControlCollection controlCollection)
         {
+            // Flag to track if any settings were modified in this specific call of the method
+            bool settingsModifiedInThisCall = false;
+
             foreach (Control control in controlCollection)
             {
                 // Process child controls recursively first
@@ -1670,6 +1742,7 @@ namespace P3D_Scenario_Generator
                     try
                     {
                         Properties.Settings.Default[settingName] = textBox.Text;
+                        settingsModifiedInThisCall = true; 
                     }
                     catch (Exception ex)
                     {
@@ -1691,6 +1764,7 @@ namespace P3D_Scenario_Generator
                             newList.Add(item?.ToString() ?? string.Empty);
                         }
                         Properties.Settings.Default[itemsSettingName] = newList;
+                        settingsModifiedInThisCall = true;
                     }
                     catch (Exception ex)
                     {
@@ -1709,28 +1783,29 @@ namespace P3D_Scenario_Generator
                 }
             }
 
-            // Save all changes to disk once after processing all controls
-
-            string collectionIdentifier = "Unknown Collection";
-
-            if (controlCollection.Count > 0)
+            // Only save to disk and log if settings were actually modified in THIS call of the method
+            if (settingsModifiedInThisCall)
             {
-                Control parentControl = controlCollection[0].Parent;
-                if (parentControl != null)
+                string collectionIdentifier = "Unknown Collection";
+
+                if (controlCollection.Count > 0)
                 {
-                    collectionIdentifier = parentControl.Name;
+                    Control parentControl = controlCollection[0].Parent;
+                    if (parentControl != null)
+                    {
+                        collectionIdentifier = parentControl.Name;
+                    }
                 }
-            }
 
-            try
-            {
-                Properties.Settings.Default.Save();
-
-                Log.Info($"SaveUserSettings: {collectionIdentifier} settings saved successfully.");
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"SaveUserSettings: Failed to save {collectionIdentifier} settings. Exception: {ex.Message}", ex);
+                try
+                {
+                    Properties.Settings.Default.Save();
+                    Log.Info($"SaveUserSettings: {collectionIdentifier} settings saved successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"SaveUserSettings: Failed to save {collectionIdentifier} settings. Exception: {ex.Message}", ex);
+                }
             }
         }
 

@@ -118,10 +118,10 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <summary>
         /// Populate PhotoLocations plus set airport(s) and create OSM images
         /// </summary>
-        static internal bool SetPhotoTour(ScenarioFormData formData)
+        static internal bool SetPhotoTour(ScenarioFormData formData, IProgress<string> progressReporter = null)
         {
             // First, try to generate the random photo tour
-            if (!SetRandomPhotoTour(formData)) 
+            if (!SetRandomPhotoTour(formData, progressReporter)) 
             {
                 Log.Error("Failed to generate a random photo tour.");
                 return false; 
@@ -161,7 +161,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// a finish airport is the required distance range from the last photo location.
         /// </summary>
         /// <returns>True if a complete photo tour was successfully created; otherwise, false.</returns>
-        static internal bool SetRandomPhotoTour(ScenarioFormData formData)
+        static internal bool SetRandomPhotoTour(ScenarioFormData formData, IProgress<string> progressReporter = null)
         {
             // Define max attempts to prevent infinite loops if tour generation is consistently difficult
             int maxOverallAttempts = formData.PhotoTourMaxSearchAttempts;
@@ -174,7 +174,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             while (!tourSuccessfullyFormed && currentOverallAttempt < maxOverallAttempts)
             {
                 currentOverallAttempt++;
-                Log.Info($"SetRandomPhotoTour: Attempting to generate photo tour (Attempt {currentOverallAttempt}/{maxOverallAttempts}).");
+                string message = $"SetRandomPhotoTour: Attempting to generate photo tour (Attempt {currentOverallAttempt}/{maxOverallAttempts}).";
+                progressReporter?.Report(message);
+                Log.Info(message);
                 PhotoLocations.Clear(); // Clear for each new attempt to find a tour
 
                 // 1. Try to find the first leg (starting airport and first photo)
@@ -239,7 +241,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         static internal SetLegResult SetFirstLeg(ScenarioFormData formData)
         {
             PhotoLocParams airportLocation;
-            string pic2mapHtmlSaveLocation = $"{formData.ScenarioImageFolder}\\random_pic2map.html";
+            string pic2mapHtmlSaveLocation = $"{formData.TempScenarioDirectory}\\random_pic2map.html";
 
             // Clear last attempt
             PhotoLocations = [];
@@ -327,7 +329,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         {
             double distance = 9999;
             double bearing = 0;
-            string pic2mapHtmlSaveLocation = $"{formData.ScenarioImageFolder}\\random_pic2map.html"; // Re-using for the next photo page
+            string pic2mapHtmlSaveLocation = $"{formData.TempScenarioDirectory}\\random_pic2map.html"; // Re-using for the next photo page
             string photoURL = "";
 
             // Ensure there's a previous photo location to work from

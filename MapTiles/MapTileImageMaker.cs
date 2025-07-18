@@ -417,7 +417,7 @@ namespace P3D_Scenario_Generator.MapTiles
 
             // Move image from temp folder to scenario images folder
             string sourceFullPath = $"{fullPathNoExt}.jpg";
-            string destinationFullPath = Path.Combine(formData.ScenarioImageFolder, Path.GetFileNameWithoutExtension(fullPathNoExt) + "jpg");
+            string destinationFullPath = Path.Combine(formData.ScenarioImageFolder, Path.GetFileNameWithoutExtension(fullPathNoExt) + ".jpg");
             if (!FileOps.TryMoveFile(sourceFullPath, destinationFullPath))
             {
                 Log.Error($"MapTileImageMaker.CreateLocationImage: Failed to copy image '{sourceFullPath}' to scenario images directory '{destinationFullPath}'.");
