@@ -202,7 +202,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Which of four corners of monitor to position sign writing window relative to or else in the center of monitor.
         /// </summary>
-        public string SignAlignment { get; set; }
+        public WindowAlignment SignAlignment { get; set; }
 
         /// <summary>
         /// In pixels, used to aid in calculating where sign writing window is positioned relative to monitor

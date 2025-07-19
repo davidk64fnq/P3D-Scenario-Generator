@@ -290,36 +290,36 @@ namespace P3D_Scenario_Generator
                     switch (currentScenarioType)
                     {
                         case ScenarioTypes.Circuit:
-                            if(!MakeCircuit.SetCircuit(_formData))
+                            if (!MakeCircuit.SetCircuit(_formData))
                             {
                                 backgroundOperationSuccess = false;
-                                return; 
+                                return;
                             }
                             break;
                         case ScenarioTypes.PhotoTour:
-                            if(!PhotoTour.SetPhotoTour(_formData, _progressReporter))
+                            if (!PhotoTour.SetPhotoTour(_formData, _progressReporter))
                             {
                                 backgroundOperationSuccess = false;
                                 return;
                             }
                             break;
                         case ScenarioTypes.SignWriting:
-                            if(!SignWriting.SetSignWriting(_formData))
+                            if (!SignWriting.SetSignWriting(_formData))
                             {
                                 backgroundOperationSuccess = false;
                                 return;
                             }
                             break;
                         case ScenarioTypes.Celestial:
-                            if(!CelestialNav.SetCelestial(_formData))
+                            if (!CelestialNav.SetCelestial(_formData))
                             {
                                 backgroundOperationSuccess = false;
                                 return;
                             }
                             break;
                         case ScenarioTypes.WikiList:
-                        //    Wikipedia.SetWikiTour(wikiSelectedIndex, wikiRouteItems, wikiStartingItem,
-                        //                          wikiFinishingItem, wikiDistanceText, _formData);
+                            //    Wikipedia.SetWikiTour(wikiSelectedIndex, wikiRouteItems, wikiStartingItem,
+                            //                          wikiFinishingItem, wikiDistanceText, _formData);
                             break;
                         default:
                             break;
@@ -364,7 +364,7 @@ namespace P3D_Scenario_Generator
                     SaveUserSettings(TabPageSign.Controls);
                     break;
                 case ScenarioTypes.Celestial:
-                    SaveUserSettings(TabPageWikiList.Controls); 
+                    SaveUserSettings(TabPageWikiList.Controls);
                     break;
                 case ScenarioTypes.WikiList:
                     SaveUserSettings(TabPageWikiList.Controls);
@@ -1022,6 +1022,92 @@ namespace P3D_Scenario_Generator
         #endregion
 
         #region Sign Writing Tab
+
+        private void ComboBoxSignMessage_Leave(object sender, EventArgs e)
+        {
+            // Due to the interdependency of Sign Message length on monitor dimensions and offset,
+            // it's best to re-run the full tab validation to ensure the calculated max length is applied.
+            PopulateAndValidateSignWritingTabData();
+        }
+
+        private void TextBoxSignTilt_Leave(object sender, EventArgs e)
+        {
+            ValidateAndSetDouble(
+                TextBoxSignTilt,
+                "Sign Tilt Angle",
+                0, // Assuming a minimum tilt angle of 0 degrees
+                Constants.SignMaxTiltAngleDegrees, // Assuming this constant exists for max tilt
+                "degrees",
+                value => _formData.SignTiltAngle = value);
+        }
+
+        private void TextBoxSignGateHeight_Leave(object sender, EventArgs e)
+        {
+            ValidateAndSetDouble(
+                TextBoxSignGateHeight,
+                "Sign Gate Height",
+                0, // Minimum height cannot be negative
+                Constants.FeetInRadiusOfEarth, // Using a very large upper bound, adjust if a specific max exists
+                "feet AMSL",
+                value => _formData.SignGateHeight = value);
+        }
+
+        private void TextBoxSignSegmentLength_Leave(object sender, EventArgs e)
+        {
+            ValidateAndSetDouble(
+                TextBoxSignSegmentLength,
+                "Sign Segment Length",
+                0, // Minimum length cannot be negative
+                Constants.FeetInEarthCircumference / 2, // Max length could be half the earth's circumference for practical purposes
+                "feet", // Unit for input, conversion happens in action
+                value => _formData.SignSegmentLength = value / Constants.FeetInDegreeOfLatitude); // Convert feet to degrees of latitude
+        }
+
+        private void TextBoxSignSegmentRadius_Leave(object sender, EventArgs e)
+        {
+            ValidateAndSetDouble(
+                TextBoxSignSegmentRadius,
+                "Sign Segment Radius",
+                0, // Minimum radius cannot be negative
+                Constants.FeetInEarthCircumference / 2, // Max radius could be half the earth's circumference for practical purposes
+                "feet", // Unit for input, conversion happens in action
+                value => _formData.SignSegmentRadius = value / Constants.FeetInDegreeOfLatitude); // Convert feet to degrees of latitude
+        }
+
+        private void TextBoxSignMonitorNumber_Leave(object sender, EventArgs e)
+        {
+            ValidateSignWindowSettingsGroup((Control)sender);
+            // After monitor settings change, message length might need re-evaluation
+            PopulateAndValidateSignWritingTabData();
+        }
+
+        private void TextBoxSignOffset_Leave(object sender, EventArgs e)
+        {
+            ValidateSignWindowSettingsGroup((Control)sender);
+            // After offset changes, message length might need re-evaluation
+            PopulateAndValidateSignWritingTabData();
+        }
+
+        private void ComboBoxSignAlignment_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ValidateSignWindowSettingsGroup((Control)sender);
+            // After alignment changes, message length might need re-evaluation
+            PopulateAndValidateSignWritingTabData();
+        }
+
+        private void TextBoxSignMonitorWidth_Leave(object sender, EventArgs e)
+        {
+            ValidateSignWindowSettingsGroup((Control)sender);
+            // After monitor width changes, message length definitely needs re-evaluation
+            PopulateAndValidateSignWritingTabData();
+        }
+
+        private void TextBoxSignMonitorHeight_Leave(object sender, EventArgs e)
+        {
+            ValidateSignWindowSettingsGroup((Control)sender);
+            // After monitor height changes, message length might need re-evaluation
+            PopulateAndValidateSignWritingTabData();
+        }
 
         #endregion
 
@@ -1742,7 +1828,7 @@ namespace P3D_Scenario_Generator
                     try
                     {
                         Properties.Settings.Default[settingName] = textBox.Text;
-                        settingsModifiedInThisCall = true; 
+                        settingsModifiedInThisCall = true;
                     }
                     catch (Exception ex)
                     {
@@ -2119,6 +2205,12 @@ namespace P3D_Scenario_Generator
 
             // 4. PhotoTour Tab Data 
             if (!PopulateAndValidatePhotoTourTabData())
+            {
+                allValid = false;
+            }
+
+            // 5. SignWriting Tab Data 
+            if (!PopulateAndValidateSignWritingTabData())
             {
                 allValid = false;
             }
@@ -2962,6 +3054,220 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
+        /// Populates and validates data from the Sign Writing tab.
+        /// </summary>
+        /// <returns>True if all Sign Writing tab data is valid; otherwise, false.</returns>
+        private bool PopulateAndValidateSignWritingTabData()
+        {
+            bool allValid = true;
+
+            // --- Step 1: Validate and populate monitor and window settings first ---
+            // This will populate _formData.SignMonitorWidth, _formData.SignMonitorHeight, and _formData.SignOffset.
+            allValid &= ValidateSignWindowSettingsGroup(null);
+
+            // If initial window settings validation fails, there's no point in continuing
+            // with message length validation as monitor dimensions might be invalid.
+            if (!allValid)
+            {
+                return false;
+            }
+
+            // --- Step 2: Calculate Maximum Message Length based on validated monitor width and offset ---
+            // Assuming message is single line, and each character has a fixed width.
+            // Also, consider the total available width for the message, which is monitor width
+            // minus twice the offset (if not centered) and any fixed edge margins.
+
+            int effectiveMonitorWidth = _formData.SignMonitorWidth;
+
+            // Account for offset if alignment is not centered, and any edge margins for the content area
+            // This is similar to how you calculate maxOffsetWidth in ValidateSignWindowSettingsGroup.
+            // Use the parsed enum value for logic.
+            WindowAlignment currentAlignment = _formData.SignAlignment;
+
+            int availableWidthForMessage;
+            if (currentAlignment != WindowAlignment.Centered)
+            {
+                availableWidthForMessage = effectiveMonitorWidth - _formData.SignOffset - (2 * Constants.SignSizeEdgeMarginPixels);
+            }
+            else
+            {
+                // For centered, offset isn't used for positioning relative to corners,
+                // but you still need to consider margins and the actual window size.
+                // A simpler approach for centered might be just monitor width minus margins.
+                availableWidthForMessage = effectiveMonitorWidth - (2 * Constants.SignSizeEdgeMarginPixels);
+            }
+
+            // Ensure available width is not negative
+            availableWidthForMessage = Math.Max(0, availableWidthForMessage);
+
+            // Calculate maximum characters that can fit
+            int maxAllowedMessageLength = (Constants.SignCharWidthPixels > 0)
+                ? availableWidthForMessage / Constants.SignCharWidthPixels
+                : 0; // Avoid division by zero
+
+            // --- Step 3: Validate SignMessage with the calculated maximum length ---
+            allValid &= ValidateAndSetString(
+                ComboBoxSignMessage,
+                "Sign Message",
+                value => _formData.SignMessage = value,
+                minLength: 1, // Message must not be empty
+                maxLength: maxAllowedMessageLength); // Max length derived from available monitor width
+
+            // SignTiltAngle
+            allValid &= ValidateAndSetDouble(
+                TextBoxSignTilt,
+                "Sign Tilt Angle",
+                0, // Assuming a reasonable range for tilt angle
+                Constants.SignMaxTiltAngleDegrees,
+                "",
+                value => _formData.SignTiltAngle = value);
+
+            // SignGateHeight
+            allValid &= ValidateAndSetDouble(
+                TextBoxSignGateHeight,
+                "Sign Gate Height",
+                0, // Assuming minimum height cannot be negative
+                Constants.FeetInRadiusOfEarth, // Using a very large upper bound, adjust if a specific max exists
+                "",
+                value => _formData.SignGateHeight = value);
+
+            // SignSegmentLength (input in feet, convert to degrees of latitude)
+            allValid &= ValidateAndSetDouble(
+                TextBoxSignSegmentLength,
+                "Sign Segment Length",
+                0, // Minimum length cannot be negative
+                Constants.FeetInEarthCircumference / 2, // Max length could be half the earth's circumference for practical purposes
+                "",
+                value => _formData.SignSegmentLength = value / Constants.FeetInDegreeOfLatitude); // Convert feet to degrees of latitude
+
+            // SignSegmentRadius (input in feet, convert to degrees of latitude)
+            allValid &= ValidateAndSetDouble(
+                TextBoxSignSegmentRadius,
+                "Sign Segment Radius",
+                0, // Minimum radius cannot be negative
+                Constants.FeetInEarthCircumference / 2, // Max radius could be half the earth's circumference for practical purposes
+                "",
+                value => _formData.SignSegmentRadius = value / Constants.FeetInDegreeOfLatitude); // Convert feet to degrees of latitude
+
+            return allValid;
+        }
+
+        /// <summary>
+        /// Validates the group of sign writing window settings (monitor number, offset, alignment, width, height).
+        /// Performs individual validation for each control and then checks interdependencies.
+        /// Reports errors via ErrorProvider for specific controls and _progressReporter for general messages.
+        /// </summary>
+        /// <param name="triggeringControl">The control that initiated this validation, or null if called from a general validation.</param>
+        /// <returns>True if all sign writing window settings are valid individually and as a group; otherwise, false.</returns>
+        private bool ValidateSignWindowSettingsGroup(Control triggeringControl)
+        {
+            bool allValid = true;
+            string groupErrorMessage = ""; // To accumulate group-level errors
+
+            // Clear any existing errors on these controls before re-validating the group
+            errorProvider1.SetError(TextBoxSignMonitorNumber, "");
+            errorProvider1.SetError(TextBoxSignOffset, "");
+            errorProvider1.SetError(ComboBoxSignAlignment, "");
+            errorProvider1.SetError(TextBoxSignMonitorWidth, "");
+            errorProvider1.SetError(TextBoxSignMonitorHeight, "");
+            _progressReporter?.Report(""); // Clear previous group messages
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxSignMonitorNumber,
+                "Sign Monitor Number",
+                0,
+                Constants.MaxMonitorNumber,
+                "",
+                value => _formData.SignMonitorNumber = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxSignOffset,
+                "Sign Offset",
+                0,
+                Constants.MaxWindowOffsetPixels,
+                "pixels",
+                value => _formData.SignOffset = value);
+
+            allValid &= ValidateAndSetEnum<WindowAlignment>(
+                ComboBoxSignAlignment,
+                "Sign Writing Alignment",
+                value => _formData.SignAlignment = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxSignMonitorWidth,
+                "Sign Monitor Width",
+                Constants.MinMonitorWidthPixels,
+                Constants.MaxMonitorWidthPixels,
+                "pixels",
+                value => _formData.SignMonitorWidth = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxSignMonitorHeight,
+                "Sign Monitor Height",
+                Constants.MinMonitorHeightPixels,
+                Constants.MaxMonitorHeightPixels,
+                "pixels",
+                value => _formData.SignMonitorHeight = value);
+
+            // If any individual validation failed, return false immediately.
+            if (!allValid)
+            {
+                groupErrorMessage = "Please correct individual errors in Sign Window settings.";
+                _progressReporter?.Report(groupErrorMessage);
+                return false;
+            }
+
+            // Interdependent Validation (only if all individual fields are valid)
+            WindowAlignment currentAlignment = _formData.SignAlignment;
+
+            bool groupValidationPassed = true;
+
+            // Calculate maximum possible offset for both dimensions relative to the "safe" monitor size, offset doesn't apply for centred alignment
+            if (currentAlignment != WindowAlignment.Centered)
+            {
+                // Ensure Constants.SignSizeEdgeMarginPixels is defined for Sign Writing tab
+                int maxOffsetWidth = _formData.SignMonitorWidth - Constants.SignSizeEdgeMarginPixels;
+                int maxOffsetHeight = _formData.SignMonitorHeight - Constants.SignSizeEdgeMarginPixels;
+
+                if (_formData.SignOffset >= maxOffsetWidth || _formData.SignOffset >= maxOffsetHeight)
+                {
+                    int maxWidth = _formData.SignMonitorWidth - Constants.SignSizeEdgeMarginPixels;
+                    int maxHeight = _formData.SignMonitorHeight - Constants.SignSizeEdgeMarginPixels;
+                    groupErrorMessage = $"Sign Window offset ({_formData.SignOffset}px) exceeds maximum safe sign dimension " +
+                                        $"{maxWidth}px * {maxHeight}px.";
+                    groupValidationPassed = false;
+                }
+                else
+                {
+                    int maxWidth = _formData.SignMonitorWidth - Constants.SignSizeEdgeMarginPixels - _formData.SignOffset;
+                    int maxHeight = _formData.SignMonitorHeight - Constants.SignSizeEdgeMarginPixels - _formData.SignOffset;
+                    groupErrorMessage = $"This offset value ({_formData.SignOffset}px) allows a maximum safe sign dimension of " +
+                                        $"{maxWidth}px * {maxHeight}px.";
+                }
+            }
+            else
+            {
+                groupErrorMessage = "Sign Window settings are valid.";
+            }
+
+            _progressReporter?.Report(groupErrorMessage);
+            // Set the error on the triggering control if available, otherwise fall back to TextBoxSignOffset
+            if (!groupValidationPassed)
+            {
+                if (triggeringControl != null)
+                {
+                    errorProvider1.SetError(triggeringControl, groupErrorMessage);
+                }
+                else
+                {
+                    errorProvider1.SetError(TextBoxSignOffset, groupErrorMessage);
+                }
+            }
+
+            return allValid && groupValidationPassed;
+        }
+
+        /// <summary>
         /// Generic validation method for integer text boxes.
         /// Parses the text, validates its range, sets error messages, reports progress,
         /// and assigns the parsed value to the specified formData property via an Action delegate.
@@ -3088,6 +3394,38 @@ namespace P3D_Scenario_Generator
             return false;
         }
 
+        /// <summary>
+        /// Validates a string input from a ComboBox, ensuring it falls within specified length constraints
+        /// after trimming leading/trailing whitespace. If valid, the value is set via a provided action.
+        /// Reports errors using an ErrorProvider and a progress reporter.
+        /// </summary>
+        /// <param name="comboBox">The ComboBox control containing the string input to validate.</param>
+        /// <param name="fieldName">A user-friendly name for the field being validated, used in error messages.</param>
+        /// <param name="setValueAction">An action to perform if validation is successful, typically used to set a property in the data model.</param>
+        /// <param name="minLength">The minimum allowed length for the trimmed string.</param>
+        /// <param name="maxLength">The maximum allowed length for the trimmed string.</param>
+        /// <returns>True if the string is valid and set; otherwise, false.</returns>
+        private bool ValidateAndSetString(ComboBox comboBox, string fieldName, Action<string> setValueAction, int minLength, int maxLength)
+        {
+            errorProvider1.SetError(comboBox, ""); // Clear previous error
+
+            // Trim the text from the ComboBox
+            string value = comboBox.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(value) || value.Length < minLength || value.Length > maxLength)
+            {
+                string message = $"{fieldName} cannot be empty and must be between {minLength} and {maxLength} characters.";
+                errorProvider1.SetError(comboBox, message);
+                _progressReporter?.Report(message);
+                return false;
+            }
+            setValueAction(value);
+            return true;
+        }
+
         #endregion
+
+
+
     }
 }

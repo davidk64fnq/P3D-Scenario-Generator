@@ -780,22 +780,22 @@ namespace P3D_Scenario_Generator
             int horizontalOffset;
             int verticalOffset;
             // Offsets
-            if (formData.SignAlignment == "Top Left")
+            if (formData.SignAlignment == WindowAlignment.TopLeft)
             {
                 horizontalOffset = formData.SignOffset;
                 verticalOffset = formData.SignOffset;
             }
-            else if (formData.SignAlignment == "Top Right")
+            else if (formData.SignAlignment == WindowAlignment.TopRight)
             {
                 horizontalOffset = formData.SignMonitorWidth - formData.SignOffset - windowWidth;
                 verticalOffset = formData.SignOffset;
             }
-            else if (formData.SignAlignment == "Bottom Right")
+            else if (formData.SignAlignment == WindowAlignment.BottomRight)
             {
                 horizontalOffset = formData.SignMonitorWidth - formData.SignOffset - windowWidth;
                 verticalOffset = formData.SignMonitorHeight - formData.SignOffset - windowHeight;
             }
-            else if (formData.SignAlignment == "Bottom Left")
+            else if (formData.SignAlignment == WindowAlignment.BottomLeft)
             {
                 horizontalOffset = formData.SignOffset;
                 verticalOffset = formData.SignMonitorHeight - formData.SignOffset - windowHeight;

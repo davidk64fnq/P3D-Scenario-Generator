@@ -92,16 +92,12 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitUpwind = new TextBox();
             label6 = new Label();
             label7 = new Label();
-            GroupBoxSignWritingParameters = new GroupBox();
-            TableLayoutPanelSignWritingParameters = new TableLayoutPanel();
             ComboBoxSignMessage = new ComboBox();
             TextBoxSignTilt = new TextBox();
             label16 = new Label();
             label24 = new Label();
             label23 = new Label();
             label22 = new Label();
-            GroupBoxSignWritingSignWindowLocation = new GroupBox();
-            TableLayoutPanelSignWritingSignWindowLocation = new TableLayoutPanel();
             TextBoxSignMonitorHeight = new TextBox();
             TextBoxSignMonitorWidth = new TextBox();
             label20 = new Label();
@@ -193,6 +189,10 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsP3DprogramInstall = new TextBox();
             button1 = new Button();
             button2 = new Button();
+            GroupBoxSignWritingParameters = new GroupBox();
+            TableLayoutPanelSignWritingParameters = new TableLayoutPanel();
+            GroupBoxSignWritingSignWindowLocation = new GroupBox();
+            TableLayoutPanelSignWritingSignWindowLocation = new TableLayoutPanel();
             GroupBoxPhotoTourPhotoWindowLocation = new GroupBox();
             TableLayoutPanelPhotoTourPhotoWindowLocation = new TableLayoutPanel();
             GroupBoxPhotoTourConstraints = new GroupBox();
@@ -249,10 +249,6 @@ namespace P3D_Scenario_Generator
             helpProvider1 = new HelpProvider();
             GroupBoxSettingsMapTileCacheInfo.SuspendLayout();
             TableLayoutPanelSettingsMapTileCacheInfo.SuspendLayout();
-            GroupBoxSignWritingParameters.SuspendLayout();
-            TableLayoutPanelSignWritingParameters.SuspendLayout();
-            GroupBoxSignWritingSignWindowLocation.SuspendLayout();
-            TableLayoutPanelSignWritingSignWindowLocation.SuspendLayout();
             GroupBoxWikipediaListParameters.SuspendLayout();
             TableLayoutPanelWikipediaListParameters.SuspendLayout();
             GroupBoxWikipediaListWikiURLWindowLocation.SuspendLayout();
@@ -267,6 +263,10 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelSettingsMapWindow.SuspendLayout();
             GroupBoxCelestialNavigationConstraints.SuspendLayout();
             TableLayoutPanelCelestialNavigationConstraints.SuspendLayout();
+            GroupBoxSignWritingParameters.SuspendLayout();
+            TableLayoutPanelSignWritingParameters.SuspendLayout();
+            GroupBoxSignWritingSignWindowLocation.SuspendLayout();
+            TableLayoutPanelSignWritingSignWindowLocation.SuspendLayout();
             GroupBoxPhotoTourPhotoWindowLocation.SuspendLayout();
             TableLayoutPanelPhotoTourPhotoWindowLocation.SuspendLayout();
             GroupBoxPhotoTourConstraints.SuspendLayout();
@@ -372,7 +372,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignGateHeight.Text = "1000";
             TextBoxSignGateHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSignGateHeight, "Above ground (feet)");
-            TextBoxSignGateHeight.Validating += TextBox_Validating;
+            TextBoxSignGateHeight.Leave += TextBoxSignGateHeight_Leave;
             // 
             // TextBoxSignSegmentLength
             // 
@@ -386,7 +386,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignSegmentLength.Text = "5000";
             TextBoxSignSegmentLength.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSignSegmentLength, "Length of segment in feet");
-            TextBoxSignSegmentLength.Validating += TextBox_Validating;
+            TextBoxSignSegmentLength.Leave += TextBoxSignSegmentLength_Leave;
             // 
             // TextBoxSignSegmentRadius
             // 
@@ -400,7 +400,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignSegmentRadius.Text = "500";
             TextBoxSignSegmentRadius.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSignSegmentRadius, "Radius of space between segment ends in feet");
-            TextBoxSignSegmentRadius.Validating += TextBox_Validating;
+            TextBoxSignSegmentRadius.Leave += TextBoxSignSegmentRadius_Leave;
             // 
             // TextBoxPhotoTourConstraintsMaxLegDist
             // 
@@ -1055,52 +1055,6 @@ namespace P3D_Scenario_Generator
             label7.TextAlign = ContentAlignment.MiddleCenter;
             toolTip1.SetToolTip(label7, "Distance between runway and gate 1 in miles");
             // 
-            // GroupBoxSignWritingParameters
-            // 
-            GroupBoxSignWritingParameters.Anchor = AnchorStyles.None;
-            GroupBoxSignWritingParameters.BackColor = Color.FromArgb(255, 192, 128);
-            GroupBoxSignWritingParameters.Controls.Add(TableLayoutPanelSignWritingParameters);
-            GroupBoxSignWritingParameters.Location = new Point(83, 100);
-            GroupBoxSignWritingParameters.Margin = new Padding(0);
-            GroupBoxSignWritingParameters.Name = "GroupBoxSignWritingParameters";
-            GroupBoxSignWritingParameters.Padding = new Padding(0);
-            GroupBoxSignWritingParameters.Size = new Size(240, 200);
-            GroupBoxSignWritingParameters.TabIndex = 38;
-            GroupBoxSignWritingParameters.TabStop = false;
-            GroupBoxSignWritingParameters.Text = "Parameters";
-            toolTip1.SetToolTip(GroupBoxSignWritingParameters, "Parameters for generating a sign writing scenario.");
-            // 
-            // TableLayoutPanelSignWritingParameters
-            // 
-            TableLayoutPanelSignWritingParameters.AccessibleName = "";
-            TableLayoutPanelSignWritingParameters.Anchor = AnchorStyles.None;
-            TableLayoutPanelSignWritingParameters.ColumnCount = 2;
-            TableLayoutPanelSignWritingParameters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSignWritingParameters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSignWritingParameters.Controls.Add(ComboBoxSignMessage, 1, 0);
-            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignSegmentRadius, 1, 4);
-            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignSegmentLength, 1, 3);
-            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignGateHeight, 1, 2);
-            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignTilt, 1, 1);
-            TableLayoutPanelSignWritingParameters.Controls.Add(label16, 0, 0);
-            TableLayoutPanelSignWritingParameters.Controls.Add(label24, 0, 4);
-            TableLayoutPanelSignWritingParameters.Controls.Add(label23, 0, 3);
-            TableLayoutPanelSignWritingParameters.Controls.Add(label22, 0, 2);
-            TableLayoutPanelSignWritingParameters.Controls.Add(label19, 0, 1);
-            TableLayoutPanelSignWritingParameters.ImeMode = ImeMode.On;
-            TableLayoutPanelSignWritingParameters.Location = new Point(10, 25);
-            TableLayoutPanelSignWritingParameters.Margin = new Padding(0);
-            TableLayoutPanelSignWritingParameters.Name = "TableLayoutPanelSignWritingParameters";
-            TableLayoutPanelSignWritingParameters.RowCount = 5;
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TableLayoutPanelSignWritingParameters.Size = new Size(220, 165);
-            TableLayoutPanelSignWritingParameters.TabIndex = 35;
-            // 
             // ComboBoxSignMessage
             // 
             ComboBoxSignMessage.AccessibleName = "Sign Parameters: Sign Message";
@@ -1112,9 +1066,10 @@ namespace P3D_Scenario_Generator
             ComboBoxSignMessage.Size = new Size(100, 23);
             ComboBoxSignMessage.TabIndex = 43;
             ComboBoxSignMessage.Tag = "";
-            toolTip1.SetToolTip(ComboBoxSignMessage, "The message you wish to write in the sky! Uppercase and lowercase alphabet characters accepted.");
+            toolTip1.SetToolTip(ComboBoxSignMessage, "The message you wish to write in the sky! Uppercase and lowercase alphabet characters accepted. Message length is restricted by sign window location settings.");
             ComboBoxSignMessage.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
             ComboBoxSignMessage.KeyDown += ComboBox_KeyDown;
+            ComboBoxSignMessage.Leave += ComboBoxSignMessage_Leave;
             // 
             // TextBoxSignTilt
             // 
@@ -1127,7 +1082,8 @@ namespace P3D_Scenario_Generator
             TextBoxSignTilt.Tag = "";
             TextBoxSignTilt.Text = "10";
             TextBoxSignTilt.TextAlign = HorizontalAlignment.Center;
-            TextBoxSignTilt.Validating += TextBox_Validating;
+            toolTip1.SetToolTip(TextBoxSignTilt, "Tilt Angle in degrees from horizontal");
+            TextBoxSignTilt.Leave += TextBoxSignTilt_Leave;
             // 
             // label16
             // 
@@ -1138,6 +1094,7 @@ namespace P3D_Scenario_Generator
             label16.TabIndex = 0;
             label16.Text = "Message";
             label16.TextAlign = ContentAlignment.MiddleCenter;
+            toolTip1.SetToolTip(label16, "The message you wish to write in the sky! Uppercase and lowercase alphabet characters accepted. Message length is restricted by sign window location settings.");
             // 
             // label24
             // 
@@ -1148,6 +1105,7 @@ namespace P3D_Scenario_Generator
             label24.TabIndex = 12;
             label24.Text = "Segment Radius";
             label24.TextAlign = ContentAlignment.MiddleCenter;
+            toolTip1.SetToolTip(label24, "Radius of space between segment ends in feet");
             // 
             // label23
             // 
@@ -1158,6 +1116,7 @@ namespace P3D_Scenario_Generator
             label23.TabIndex = 11;
             label23.Text = "Segment Length";
             label23.TextAlign = ContentAlignment.MiddleCenter;
+            toolTip1.SetToolTip(label23, "Length of segment in feet");
             // 
             // label22
             // 
@@ -1168,49 +1127,7 @@ namespace P3D_Scenario_Generator
             label22.TabIndex = 9;
             label22.Text = "Gate Height";
             label22.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // GroupBoxSignWritingSignWindowLocation
-            // 
-            GroupBoxSignWritingSignWindowLocation.Anchor = AnchorStyles.None;
-            GroupBoxSignWritingSignWindowLocation.BackColor = Color.FromArgb(255, 192, 128);
-            GroupBoxSignWritingSignWindowLocation.Controls.Add(TableLayoutPanelSignWritingSignWindowLocation);
-            GroupBoxSignWritingSignWindowLocation.Location = new Point(60, 112);
-            GroupBoxSignWritingSignWindowLocation.Name = "GroupBoxSignWritingSignWindowLocation";
-            GroupBoxSignWritingSignWindowLocation.Size = new Size(286, 175);
-            GroupBoxSignWritingSignWindowLocation.TabIndex = 39;
-            GroupBoxSignWritingSignWindowLocation.TabStop = false;
-            GroupBoxSignWritingSignWindowLocation.Text = "Sign Window Location";
-            toolTip1.SetToolTip(GroupBoxSignWritingSignWindowLocation, "Default location of sign writing message window. (Window starts undocked and can be moved)");
-            // 
-            // TableLayoutPanelSignWritingSignWindowLocation
-            // 
-            TableLayoutPanelSignWritingSignWindowLocation.AccessibleName = "";
-            TableLayoutPanelSignWritingSignWindowLocation.Anchor = AnchorStyles.None;
-            TableLayoutPanelSignWritingSignWindowLocation.ColumnCount = 2;
-            TableLayoutPanelSignWritingSignWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSignWritingSignWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorHeight, 1, 4);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorWidth, 1, 3);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label20, 0, 4);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label21, 0, 3);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label27, 0, 1);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignOffset, 1, 1);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label40, 0, 2);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorNumber, 1, 0);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label44, 0, 0);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(ComboBoxSignAlignment, 1, 2);
-            TableLayoutPanelSignWritingSignWindowLocation.ImeMode = ImeMode.On;
-            TableLayoutPanelSignWritingSignWindowLocation.Location = new Point(10, 25);
-            TableLayoutPanelSignWritingSignWindowLocation.Name = "TableLayoutPanelSignWritingSignWindowLocation";
-            TableLayoutPanelSignWritingSignWindowLocation.RowCount = 5;
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.Size = new Size(253, 143);
-            TableLayoutPanelSignWritingSignWindowLocation.TabIndex = 35;
+            toolTip1.SetToolTip(label22, "Above ground (feet)");
             // 
             // TextBoxSignMonitorHeight
             // 
@@ -1224,6 +1141,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignMonitorHeight.Text = "1080";
             TextBoxSignMonitorHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSignMonitorHeight, "Resolution height in pixels of the monitor that sign window will display on.\r\n");
+            TextBoxSignMonitorHeight.Leave += TextBoxSignMonitorHeight_Leave;
             // 
             // TextBoxSignMonitorWidth
             // 
@@ -1237,6 +1155,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignMonitorWidth.Text = "1920";
             TextBoxSignMonitorWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSignMonitorWidth, "Resolution width in pixels of the monitor that sign window will display on. \r\n");
+            TextBoxSignMonitorWidth.Leave += TextBoxSignMonitorWidth_Leave;
             // 
             // label20
             // 
@@ -1283,6 +1202,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignOffset.Text = "20";
             TextBoxSignOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSignOffset, resources.GetString("TextBoxSignOffset.ToolTip"));
+            TextBoxSignOffset.Leave += TextBoxSignOffset_Leave;
             // 
             // label40
             // 
@@ -1307,6 +1227,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignMonitorNumber.Text = "0";
             TextBoxSignMonitorNumber.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSignMonitorNumber, "The default monitor that the sign window will display in. Experiment with values between 0 and the number of monitors minus 1.\r\n");
+            TextBoxSignMonitorNumber.Leave += TextBoxSignMonitorNumber_Leave;
             // 
             // label44
             // 
@@ -1333,6 +1254,7 @@ namespace P3D_Scenario_Generator
             ComboBoxSignAlignment.Tag = "Top Right";
             ComboBoxSignAlignment.Text = "Top Right";
             toolTip1.SetToolTip(ComboBoxSignAlignment, "Default location of sign window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.\r\n");
+            ComboBoxSignAlignment.SelectedIndexChanged += ComboBoxSignAlignment_SelectedIndexChanged;
             // 
             // ButtonSignWritingSaved
             // 
@@ -2475,6 +2397,93 @@ namespace P3D_Scenario_Generator
             button2.UseVisualStyleBackColor = true;
             button2.Click += ButtonBrowseP3DDataFolder_Click;
             // 
+            // GroupBoxSignWritingParameters
+            // 
+            GroupBoxSignWritingParameters.Anchor = AnchorStyles.None;
+            GroupBoxSignWritingParameters.BackColor = Color.FromArgb(255, 192, 128);
+            GroupBoxSignWritingParameters.Controls.Add(TableLayoutPanelSignWritingParameters);
+            GroupBoxSignWritingParameters.Location = new Point(83, 100);
+            GroupBoxSignWritingParameters.Margin = new Padding(0);
+            GroupBoxSignWritingParameters.Name = "GroupBoxSignWritingParameters";
+            GroupBoxSignWritingParameters.Padding = new Padding(0);
+            GroupBoxSignWritingParameters.Size = new Size(240, 200);
+            GroupBoxSignWritingParameters.TabIndex = 38;
+            GroupBoxSignWritingParameters.TabStop = false;
+            GroupBoxSignWritingParameters.Text = "Parameters";
+            // 
+            // TableLayoutPanelSignWritingParameters
+            // 
+            TableLayoutPanelSignWritingParameters.AccessibleName = "";
+            TableLayoutPanelSignWritingParameters.Anchor = AnchorStyles.None;
+            TableLayoutPanelSignWritingParameters.ColumnCount = 2;
+            TableLayoutPanelSignWritingParameters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSignWritingParameters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSignWritingParameters.Controls.Add(ComboBoxSignMessage, 1, 0);
+            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignSegmentRadius, 1, 4);
+            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignSegmentLength, 1, 3);
+            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignGateHeight, 1, 2);
+            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignTilt, 1, 1);
+            TableLayoutPanelSignWritingParameters.Controls.Add(label16, 0, 0);
+            TableLayoutPanelSignWritingParameters.Controls.Add(label24, 0, 4);
+            TableLayoutPanelSignWritingParameters.Controls.Add(label23, 0, 3);
+            TableLayoutPanelSignWritingParameters.Controls.Add(label22, 0, 2);
+            TableLayoutPanelSignWritingParameters.Controls.Add(label19, 0, 1);
+            TableLayoutPanelSignWritingParameters.ImeMode = ImeMode.On;
+            TableLayoutPanelSignWritingParameters.Location = new Point(10, 25);
+            TableLayoutPanelSignWritingParameters.Margin = new Padding(0);
+            TableLayoutPanelSignWritingParameters.Name = "TableLayoutPanelSignWritingParameters";
+            TableLayoutPanelSignWritingParameters.RowCount = 5;
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TableLayoutPanelSignWritingParameters.Size = new Size(220, 165);
+            TableLayoutPanelSignWritingParameters.TabIndex = 35;
+            // 
+            // GroupBoxSignWritingSignWindowLocation
+            // 
+            GroupBoxSignWritingSignWindowLocation.Anchor = AnchorStyles.None;
+            GroupBoxSignWritingSignWindowLocation.BackColor = Color.FromArgb(255, 192, 128);
+            GroupBoxSignWritingSignWindowLocation.Controls.Add(TableLayoutPanelSignWritingSignWindowLocation);
+            GroupBoxSignWritingSignWindowLocation.Location = new Point(60, 112);
+            GroupBoxSignWritingSignWindowLocation.Name = "GroupBoxSignWritingSignWindowLocation";
+            GroupBoxSignWritingSignWindowLocation.Size = new Size(286, 175);
+            GroupBoxSignWritingSignWindowLocation.TabIndex = 39;
+            GroupBoxSignWritingSignWindowLocation.TabStop = false;
+            GroupBoxSignWritingSignWindowLocation.Text = "Sign Window Location";
+            // 
+            // TableLayoutPanelSignWritingSignWindowLocation
+            // 
+            TableLayoutPanelSignWritingSignWindowLocation.AccessibleName = "";
+            TableLayoutPanelSignWritingSignWindowLocation.Anchor = AnchorStyles.None;
+            TableLayoutPanelSignWritingSignWindowLocation.ColumnCount = 2;
+            TableLayoutPanelSignWritingSignWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSignWritingSignWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorHeight, 1, 4);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorWidth, 1, 3);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label20, 0, 4);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label21, 0, 3);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label27, 0, 1);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignOffset, 1, 1);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label40, 0, 2);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorNumber, 1, 0);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label44, 0, 0);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(ComboBoxSignAlignment, 1, 2);
+            TableLayoutPanelSignWritingSignWindowLocation.ImeMode = ImeMode.On;
+            TableLayoutPanelSignWritingSignWindowLocation.Location = new Point(10, 25);
+            TableLayoutPanelSignWritingSignWindowLocation.Name = "TableLayoutPanelSignWritingSignWindowLocation";
+            TableLayoutPanelSignWritingSignWindowLocation.RowCount = 5;
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.Size = new Size(253, 143);
+            TableLayoutPanelSignWritingSignWindowLocation.TabIndex = 35;
+            // 
             // GroupBoxPhotoTourPhotoWindowLocation
             // 
             GroupBoxPhotoTourPhotoWindowLocation.Anchor = AnchorStyles.None;
@@ -3265,12 +3274,6 @@ namespace P3D_Scenario_Generator
             GroupBoxSettingsMapTileCacheInfo.ResumeLayout(false);
             TableLayoutPanelSettingsMapTileCacheInfo.ResumeLayout(false);
             TableLayoutPanelSettingsMapTileCacheInfo.PerformLayout();
-            GroupBoxSignWritingParameters.ResumeLayout(false);
-            TableLayoutPanelSignWritingParameters.ResumeLayout(false);
-            TableLayoutPanelSignWritingParameters.PerformLayout();
-            GroupBoxSignWritingSignWindowLocation.ResumeLayout(false);
-            TableLayoutPanelSignWritingSignWindowLocation.ResumeLayout(false);
-            TableLayoutPanelSignWritingSignWindowLocation.PerformLayout();
             GroupBoxWikipediaListParameters.ResumeLayout(false);
             TableLayoutPanelWikipediaListParameters.ResumeLayout(false);
             TableLayoutPanelWikipediaListParameters.PerformLayout();
@@ -3292,6 +3295,12 @@ namespace P3D_Scenario_Generator
             GroupBoxCelestialNavigationConstraints.ResumeLayout(false);
             TableLayoutPanelCelestialNavigationConstraints.ResumeLayout(false);
             TableLayoutPanelCelestialNavigationConstraints.PerformLayout();
+            GroupBoxSignWritingParameters.ResumeLayout(false);
+            TableLayoutPanelSignWritingParameters.ResumeLayout(false);
+            TableLayoutPanelSignWritingParameters.PerformLayout();
+            GroupBoxSignWritingSignWindowLocation.ResumeLayout(false);
+            TableLayoutPanelSignWritingSignWindowLocation.ResumeLayout(false);
+            TableLayoutPanelSignWritingSignWindowLocation.PerformLayout();
             GroupBoxPhotoTourPhotoWindowLocation.ResumeLayout(false);
             TableLayoutPanelPhotoTourPhotoWindowLocation.ResumeLayout(false);
             TableLayoutPanelPhotoTourPhotoWindowLocation.PerformLayout();

@@ -338,6 +338,12 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         /// </summary>
         internal const double MilesInEarthCircumference = 24901.0;
 
+        /// <summary>
+        /// The approximate equatorial circumference of Earth in feet, used as a practical
+        /// upper limit for scenario leg distances.
+        /// </summary>
+        internal const double FeetInEarthCircumference = 151296657.12;
+
         #endregion
 
         #region OSM tile use constants
@@ -467,6 +473,26 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         /// window fit on the monitor
         /// </summary>
         public const int PhotoSizeEdgeMarginPixels = 50;
+
+        #endregion
+
+        #region Sign Writing constants
+
+        /// <summary>
+        /// The width of a character in sign writing html panel window in pixels
+        /// </summary>
+        public const int SignCharWidthPixels = 105;
+
+        /// <summary>
+        /// Sign writing message is flown in horizontal plane with tilt angle of 0 ranging to a maximum value when flown vertical
+        /// </summary>
+        public const double SignMaxTiltAngleDegrees = 90;
+
+        /// <summary>
+        /// How much gap to leave as a minimum around the sign writing window to ensure there is room for the window borders and still have  
+        /// it fit on the monitor
+        /// </summary>
+        public const int SignSizeEdgeMarginPixels = 50;
 
         #endregion
 
