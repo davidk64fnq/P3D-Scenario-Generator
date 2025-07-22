@@ -1025,9 +1025,20 @@ namespace P3D_Scenario_Generator
 
         private void ComboBoxSignMessage_Leave(object sender, EventArgs e)
         {
-            // Due to the interdependency of Sign Message length on monitor dimensions and offset,
-            // it's best to re-run the full tab validation to ensure the calculated max length is applied.
-            PopulateAndValidateSignWritingTabData();
+            bool allValid = true;
+
+            // Message is alphabetic characters only, no special characters or numbers allowed
+            allValid &= ValidateAlphabeticOnly(
+                ComboBoxSignMessage,
+                "Sign Message",
+                value => _formData.SignMessage = value);
+
+            if (allValid)
+            {
+                // Due to the interdependency of Sign Message length on monitor dimensions and offset,
+                // it's best to re-run the full tab validation to ensure the calculated max length is applied.
+                PopulateAndValidateSignWritingTabData();
+            }
         }
 
         private void TextBoxSignTilt_Leave(object sender, EventArgs e)
@@ -3061,57 +3072,28 @@ namespace P3D_Scenario_Generator
         {
             bool allValid = true;
 
-            // --- Step 1: Validate and populate monitor and window settings first ---
-            // This will populate _formData.SignMonitorWidth, _formData.SignMonitorHeight, and _formData.SignOffset.
-            allValid &= ValidateSignWindowSettingsGroup(null);
+            // Message is alphabetic characters only, no special characters or numbers allowed
+            allValid &= ValidateAlphabeticOnly(
+                ComboBoxSignMessage,
+                "Sign Message",
+                value => _formData.SignMessage = value); 
 
-            // If initial window settings validation fails, there's no point in continuing
-            // with message length validation as monitor dimensions might be invalid.
+            // Validate and populate Sign Window settings as a group
+            allValid &= ValidateSignWindowSettingsGroup(null);
             if (!allValid)
             {
                 return false;
             }
 
-            // --- Step 2: Calculate Maximum Message Length based on validated monitor width and offset ---
+            // Calculate Maximum Message Length based on validated monitor width and offset ---
             // Assuming message is single line, and each character has a fixed width.
-            // Also, consider the total available width for the message, which is monitor width
-            // minus twice the offset (if not centered) and any fixed edge margins.
-
-            int effectiveMonitorWidth = _formData.SignMonitorWidth;
-
-            // Account for offset if alignment is not centered, and any edge margins for the content area
-            // This is similar to how you calculate maxOffsetWidth in ValidateSignWindowSettingsGroup.
-            // Use the parsed enum value for logic.
-            WindowAlignment currentAlignment = _formData.SignAlignment;
-
-            int availableWidthForMessage;
-            if (currentAlignment != WindowAlignment.Centered)
+            if (!ValidateSignWindowMessageLength())
             {
-                availableWidthForMessage = effectiveMonitorWidth - _formData.SignOffset - (2 * Constants.SignSizeEdgeMarginPixels);
-            }
-            else
-            {
-                // For centered, offset isn't used for positioning relative to corners,
-                // but you still need to consider margins and the actual window size.
-                // A simpler approach for centered might be just monitor width minus margins.
-                availableWidthForMessage = effectiveMonitorWidth - (2 * Constants.SignSizeEdgeMarginPixels);
+                allValid = false;
             }
 
-            // Ensure available width is not negative
-            availableWidthForMessage = Math.Max(0, availableWidthForMessage);
-
-            // Calculate maximum characters that can fit
-            int maxAllowedMessageLength = (Constants.SignCharWidthPixels > 0)
-                ? availableWidthForMessage / Constants.SignCharWidthPixels
-                : 0; // Avoid division by zero
-
-            // --- Step 3: Validate SignMessage with the calculated maximum length ---
-            allValid &= ValidateAndSetString(
-                ComboBoxSignMessage,
-                "Sign Message",
-                value => _formData.SignMessage = value,
-                minLength: 1, // Message must not be empty
-                maxLength: maxAllowedMessageLength); // Max length derived from available monitor width
+            // Calculate derived width and height for; message, javascript console and overall window
+            CalculateSignWindowDimensions();
 
             // SignTiltAngle
             allValid &= ValidateAndSetDouble(
@@ -3225,7 +3207,6 @@ namespace P3D_Scenario_Generator
             // Calculate maximum possible offset for both dimensions relative to the "safe" monitor size, offset doesn't apply for centred alignment
             if (currentAlignment != WindowAlignment.Centered)
             {
-                // Ensure Constants.SignSizeEdgeMarginPixels is defined for Sign Writing tab
                 int maxOffsetWidth = _formData.SignMonitorWidth - Constants.SignSizeEdgeMarginPixels;
                 int maxOffsetHeight = _formData.SignMonitorHeight - Constants.SignSizeEdgeMarginPixels;
 
@@ -3266,6 +3247,93 @@ namespace P3D_Scenario_Generator
 
             return allValid && groupValidationPassed;
         }
+
+        /// <summary>
+        /// Validates the length of the sign window message based on the available screen real estate.
+        /// </summary>
+        /// <remarks>
+        /// This method calculates the maximum allowed characters for the sign message by considering
+        /// the monitor width, sign alignment, offsets, and predefined padding and character widths.
+        /// It clears any prior error on <see cref="ComboBoxSignMessage"/> and then uses
+        /// <see cref="ValidateAndSetStringLength"/> to apply the validation.
+        /// </remarks>
+        /// <returns>
+        /// <see langword="true"/> if the sign message length is valid; otherwise, <see langword="false"/>.
+        /// </returns>
+        private bool ValidateSignWindowMessageLength()
+        {
+            bool allValid = true;
+
+            // Clear any previous error on ComboBoxSignMessage
+            errorProvider1.SetError(ComboBoxSignMessage, "");
+
+            // Console width is user constant for output area plus padding on right side as message provides padding on left side
+            int consoleRequiredWidth = Constants.SignConsoleWidthPixels + Constants.SignWindowHorizontalPaddingPixels;
+
+            // Work out available message width taking into account the monitor width, alignment, offset, and console width
+            WindowAlignment currentAlignment = _formData.SignAlignment;
+            int availableWidthForMessage;
+            if (currentAlignment != WindowAlignment.Centered)
+            {
+                availableWidthForMessage = _formData.SignMonitorWidth - consoleRequiredWidth - _formData.SignOffset - Constants.SignSizeEdgeMarginPixels;
+            }
+            else
+            {
+                availableWidthForMessage = _formData.SignMonitorWidth - consoleRequiredWidth - (2 * Constants.SignSizeEdgeMarginPixels);
+            }
+
+            // Ensure available width is not negative
+            availableWidthForMessage = Math.Max(0, availableWidthForMessage);
+
+            // Calculate maximum characters that can fit
+            availableWidthForMessage -= Constants.SignCharPaddingPixels; // Reduce for padding at start of message
+            int maxAllowedMessageLength = (Constants.SignCharWidthPixels > 0)
+                ? availableWidthForMessage / (Constants.SignCharWidthPixels + Constants.SignCharPaddingPixels) 
+                : 0; // Avoid division by zero
+
+            // Validate SignMessage with the calculated maximum length
+            allValid &= ValidateAndSetStringLength(
+                ComboBoxSignMessage,
+                "Sign Message",
+                value => _formData.SignMessage = value,
+                minLength: 1, // Message must not be empty
+                maxLength: maxAllowedMessageLength); // Max length derived from available monitor width
+
+            return allValid;
+        }
+
+        /// <summary>
+        /// Calculates the dimensions (width and height) for the sign window, message area, and console area.
+        /// </summary>
+        /// <remarks>
+        /// This method determines the optimal layout for the sign message and an accompanying console
+        /// based on the available monitor width, sign alignment, and predefined size constants.
+        /// It prioritizes placing the console beside the message if there is sufficient space;
+        /// otherwise, the console is positioned below the message. The calculated dimensions are
+        /// stored in the <see cref="_formData"/> object.
+        /// </remarks>
+        private void CalculateSignWindowDimensions()
+        {
+            // Calculate width of sign window if it only contained the message
+            if (_formData.SignMessage == null)
+            {
+                return;
+            }
+
+            // Set windowWidth, canvasWidth and consoleWidth 
+            int canvasWidth = Constants.SignCharPaddingPixels + _formData.SignMessage.Length * (Constants.SignCharWidthPixels + Constants.SignCharPaddingPixels);
+            _formData.SignCanvasWidth = canvasWidth;
+            _formData.SignConsoleWidth = Constants.SignConsoleWidthPixels;
+            _formData.SignWindowWidth = Constants.SignWindowHorizontalPaddingPixels + canvasWidth + Constants.SignWindowHorizontalPaddingPixels +
+                Constants.SignConsoleWidthPixels + Constants.SignWindowHorizontalPaddingPixels + Constants.SignWindowViewportBufferPixels;
+
+            // Set windowHeight, messageHeight and consoleHeight 
+            int canvasHeight = Constants.SignCharPaddingPixels + Constants.SignCharHeightPixels + Constants.SignCharPaddingPixels;
+            _formData.SignCanvasHeight = canvasHeight;
+            _formData.SignConsoleHeight = canvasHeight;
+            _formData.SignWindowHeight = Constants.SignWindowTitlePixels + Constants.SignWindowVerticalPaddingPixels + 
+                canvasHeight + Constants.SignWindowVerticalPaddingPixels;
+        }   
 
         /// <summary>
         /// Generic validation method for integer text boxes.
@@ -3405,7 +3473,7 @@ namespace P3D_Scenario_Generator
         /// <param name="minLength">The minimum allowed length for the trimmed string.</param>
         /// <param name="maxLength">The maximum allowed length for the trimmed string.</param>
         /// <returns>True if the string is valid and set; otherwise, false.</returns>
-        private bool ValidateAndSetString(ComboBox comboBox, string fieldName, Action<string> setValueAction, int minLength, int maxLength)
+        private bool ValidateAndSetStringLength(ComboBox comboBox, string fieldName, Action<string> setValueAction, int minLength, int maxLength)
         {
             errorProvider1.SetError(comboBox, ""); // Clear previous error
 
@@ -3418,6 +3486,32 @@ namespace P3D_Scenario_Generator
                 errorProvider1.SetError(comboBox, message);
                 _progressReporter?.Report(message);
                 return false;
+            }
+            setValueAction(value);
+            return true;
+        }
+
+        /// <summary>
+        /// Validates that the text in a <see cref="ComboBox"/> contains only alphabetic characters and is not empty.
+        /// Sets an error with <see cref="ErrorProvider"/> if validation fails.
+        /// </summary>
+        /// <param name="comboBox">The <see cref="ComboBox"/> control to validate.</param>
+        /// <param name="fieldName">The name of the field being validated, used in error messages.</param>
+        /// <param name="setValueAction">An action to perform if validation is successful, typically setting the validated value to a property.</param>
+        /// <returns><see langword="true"/> if the <see cref="ComboBox"/> text is not empty and contains only alphabetic characters; otherwise, <see langword="false"/>.</returns>
+        private bool ValidateAlphabeticOnly(ComboBox comboBox, string fieldName, Action<string> setValueAction)
+        {
+            errorProvider1.SetError(comboBox, ""); // Clear previous error
+
+            // Trim the text from the ComboBox
+            string value = comboBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(value) || !value.All(char.IsLetter))
+            {
+                string message = $"{fieldName} cannot be empty and must be only alphabetic [a..z], [A..Z] characters.";
+                errorProvider1.SetError(comboBox, message);
+                _progressReporter?.Report(message);
+                return false; // Or true, depending on your definition of an empty/null string being "alphabetic"
             }
             setValueAction(value);
             return true;

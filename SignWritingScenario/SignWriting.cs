@@ -98,5 +98,137 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         {
             return gates.Count / 2 * formData.SignSegmentLength * Constants.FeetInDegreeOfLatitude / Constants.FeetInNauticalMile * 1.5;
         }
+
+        /// <summary>
+        /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
+        /// for the sign writing window based on the specified alignment and monitor properties.
+        /// </summary>
+        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
+        /// sign window's desired alignment, offsets, monitor dimensions, and calculated window size.</param>
+        /// <returns>
+        /// A <see cref="T:System.String[]"/> array containing four elements in the order:
+        /// <list type="bullet">
+        /// <item><description>Window Width (string)</description></item>
+        /// <item><description>Window Height (string)</description></item>
+        /// <item><description>Horizontal Offset (string)</description></item>
+        /// <item><description>Vertical Offset (string)</description></item>
+        /// </list>
+        /// These parameters are suitable for configuring the sign writing window's display.
+        /// </returns>
+        static internal string[] GetSignWritingWindowParameters(ScenarioFormData formData)
+        {
+
+            int horizontalOffset;
+            int verticalOffset;
+
+            // Offsets
+            if (formData.SignAlignment == WindowAlignment.TopLeft)
+            {
+                horizontalOffset = formData.SignOffset;
+                verticalOffset = formData.SignOffset;
+            }
+            else if (formData.SignAlignment == WindowAlignment.TopRight)
+            {
+                horizontalOffset = formData.SignMonitorWidth - formData.SignOffset - formData.SignWindowWidth;
+                verticalOffset = formData.SignOffset;
+            }
+            else if (formData.SignAlignment == WindowAlignment.BottomRight)
+            {
+                horizontalOffset = formData.SignMonitorWidth - formData.SignOffset - formData.SignWindowWidth;
+                verticalOffset = formData.SignMonitorHeight - formData.SignOffset - formData.SignWindowHeight;
+            }
+            else if (formData.SignAlignment == WindowAlignment.BottomLeft)
+            {
+                horizontalOffset = formData.SignOffset;
+                verticalOffset = formData.SignMonitorHeight - formData.SignOffset - formData.SignWindowHeight;
+            }
+            else // Parameters.SignAlignment == "Centered"
+            {
+                horizontalOffset = (formData.SignMonitorWidth / 2) - (formData.SignWindowWidth / 2);
+                verticalOffset = (formData.SignMonitorHeight / 2) - (formData.SignWindowHeight / 2);
+            }
+
+            return [formData.SignWindowWidth.ToString(), formData.SignWindowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
+        }
+
+        /// <summary>
+        /// Reads an HTML template for sign writing, replaces placeholders with dynamic dimensions,
+        /// and saves the modified HTML to a specified file path.
+        /// </summary>
+        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
+        /// necessary sign message width, monitor height, console height and the target folder for saving the HTML file.</param>
+        /// <remarks>
+        /// This method retrieves the "HTML.SignWriting.html" resource, substitutes "canvasWidthX"
+        /// and "canvasHeightX" with the actual sign message width and monitor height from
+        /// <paramref name="formData"/>, respectively. The resulting HTML content is then
+        /// saved as "htmlSignWriting.html" in the scenario's image folder.
+        /// </remarks>
+        static internal void SetSignWritingHTML(ScenarioFormData formData)
+        {
+            string signWritingHTML;
+
+            Stream stream = Form.GetResourceStream("HTML.SignWriting.html");
+            StreamReader reader = new(stream);
+            signWritingHTML = reader.ReadToEnd();
+            string saveLocation = $"{formData.ScenarioImageFolder}\\htmlSignWriting.html";
+            File.WriteAllText(saveLocation, signWritingHTML);
+            stream.Dispose();
+        }
+
+        static internal void SetSignWritingJS(ScenarioFormData formData)
+        {
+            string signWritingJS;
+
+            Stream stream = Form.GetResourceStream("Javascript.scriptsSignWriting.js");
+            StreamReader reader = new(stream);
+            signWritingJS = reader.ReadToEnd();
+            signWritingJS = signWritingJS.Replace("canvasWidthX", formData.SignCanvasWidth.ToString());
+            signWritingJS = signWritingJS.Replace("canvasHeightX", formData.SignCanvasHeight.ToString());
+            signWritingJS = signWritingJS.Replace("consoleWidthX", formData.SignConsoleWidth.ToString());
+            signWritingJS = signWritingJS.Replace("consoleHeightX", formData.SignConsoleHeight.ToString());
+            signWritingJS = signWritingJS.Replace("windowHorizontalPaddingX", Constants.SignWindowHorizontalPaddingPixels.ToString());
+            signWritingJS = signWritingJS.Replace("windowVerticalPaddingX", Constants.SignWindowVerticalPaddingPixels.ToString());
+            signWritingJS = signWritingJS.Replace("mapNorthX", (Runway.startRwy.AirportLat + formData.SignSegmentLength * 4).ToString());
+            signWritingJS = signWritingJS.Replace("mapEastX", (Runway.startRwy.AirportLon + formData.SignSegmentLength * (3 * formData.SignMessage.Length - 1)).ToString());
+            signWritingJS = signWritingJS.Replace("mapSouthX", Runway.startRwy.AirportLat.ToString());
+            signWritingJS = signWritingJS.Replace("mapWestX", Runway.startRwy.AirportLon.ToString());
+            signWritingJS = signWritingJS.Replace("messageLengthX", formData.SignMessage.Length.ToString());
+            signWritingJS = signWritingJS.Replace("magVarX", Runway.startRwy.MagVar.ToString());
+            string topPixels = "0,";
+            string leftPixels = "0,";
+            string bearings = "0,";
+            Gate gate;
+            for (int index = 1; index <= SignWriting.gates.Count; index++)
+            {
+                gate = SignWriting.gates[index - 1];
+                topPixels += gate.topPixels.ToString();
+                leftPixels += gate.leftPixels.ToString();
+                bearings += gate.orientation.ToString();
+                if (index <= SignWriting.gates.Count - 1)
+                {
+                    topPixels += ",";
+                    leftPixels += ",";
+                    bearings += ",";
+                }
+            }
+            signWritingJS = signWritingJS.Replace("gateTopPixelsX", topPixels);
+            signWritingJS = signWritingJS.Replace("gateLeftPixelsX", leftPixels);
+            signWritingJS = signWritingJS.Replace("gateBearingsX", bearings);
+            string saveLocation = $"{formData.ScenarioImageFolder}\\scriptsSignWriting.js";
+            File.WriteAllText(saveLocation, signWritingJS);
+            stream.Dispose();
+        }
+
+        static internal void SetSignWritingCSS(ScenarioFormData formData)
+        {
+            string signWritingCSS;
+            Stream stream = Form.GetResourceStream("CSS.styleSignWriting.css");
+            StreamReader reader = new(stream);
+            signWritingCSS = reader.ReadToEnd();
+
+            string saveLocation = $"{formData.ScenarioImageFolder}\\styleSignWriting.css";
+            File.WriteAllText(saveLocation, signWritingCSS);
+            stream.Dispose();
+        }
     }
 }

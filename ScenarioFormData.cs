@@ -214,6 +214,36 @@ namespace P3D_Scenario_Generator
         /// </summary>
         public int SignMonitorHeight { get; set; }
 
+        /// <summary>
+        /// Width of java script console in pixels, the console is a textarea that is positioned to the right of the message canvas area.
+        /// </summary>
+        public int SignConsoleWidth { get; set; }
+
+        /// <summary>
+        /// Height of java script console in pixels, the console is a textarea that is positioned to the right of the message canvas area.
+        /// </summary>
+        public int SignConsoleHeight { get; set; }
+
+        /// <summary>
+        /// Based on <see cref="Constants.SignCharWidthPixels"/> and <see cref="Constants.SignCharPaddingPixels"/>
+        /// </summary>
+        public int SignCanvasWidth { get; set; }
+
+        /// <summary>
+        /// Based on <see cref="Constants.SignCharHeightPixels"/> and <see cref="Constants.SignCharPaddingPixels"/>
+        /// </summary>
+        public int SignCanvasHeight { get; set; }
+
+        /// <summary>
+        /// Based on <see cref="ScenarioFormData.SignCanvasWidth"/>, <see cref="ScenarioFormData.SignConsoleWidth"/> and <see cref="Constants.SignSizeEdgeMarginPixels"/>.
+        /// </summary>
+        public int SignWindowWidth { get; set; }
+
+        /// <summary>
+        /// Based on <see cref="ScenarioFormData.SignCanvasHeight"/> and <see cref="Constants.SignSizeEdgeMarginPixels"/>.
+        /// </summary>
+        public int SignWindowHeight { get; set; }
+
         #endregion
 
         #region Celestial Navigation Tab Data

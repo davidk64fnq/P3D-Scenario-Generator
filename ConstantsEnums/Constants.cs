@@ -479,9 +479,24 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         #region Sign Writing constants
 
         /// <summary>
-        /// The width of a character in sign writing html panel window in pixels
+        /// The height of a character in sign writing html panel window in pixels
         /// </summary>
-        public const int SignCharWidthPixels = 105;
+        public const int SignCharHeightPixels = 150;
+
+        /// <summary>
+        /// The width of padding before, between, and after characters in canvas area of sign writing html window in pixels
+        /// </summary>
+        public const int SignCharPaddingPixels = 10;
+
+        /// <summary>
+        /// The width of a character in canvas area of sign writing html window in pixels
+        /// </summary>
+        public const int SignCharWidthPixels = 80;
+
+        /// <summary>
+        /// Console width in pixels, console is a textarea that is located beside the message canvas in sign writing window
+        /// </summary>
+        public const int SignConsoleWidthPixels = 400;
 
         /// <summary>
         /// Sign writing message is flown in horizontal plane with tilt angle of 0 ranging to a maximum value when flown vertical
@@ -489,10 +504,30 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         public const double SignMaxTiltAngleDegrees = 90;
 
         /// <summary>
-        /// How much gap to leave as a minimum around the sign writing window to ensure there is room for the window borders and still have  
-        /// it fit on the monitor
+        /// Margin for sign writing window for those edges not covered by <see cref="ScenarioFormData.SignOffset"/>
         /// </summary>
-        public const int SignSizeEdgeMarginPixels = 50;
+        public const int SignSizeEdgeMarginPixels = 20;
+
+        /// <summary>
+        /// How many pixels on left and right and between canvas and console in sign writing window
+        /// </summary>
+        public const int SignWindowHorizontalPaddingPixels = 10;
+
+        /// <summary>
+        /// How many pixels above and below canvas and console in sign writing window
+        /// </summary>
+        public const int SignWindowVerticalPaddingPixels = 10;
+
+        /// <summary>
+        /// How many pixels to allow for sign writing window title bar
+        /// </summary>
+        public const int SignWindowTitlePixels = 38;
+
+        /// <summary>
+        /// The pixel buffer applied to the sign writing window's dimensions to account for
+        /// browser rendering tolerances and prevent the appearance of scrollbars.
+        /// </summary>
+        public const int SignWindowViewportBufferPixels = 16;
 
         #endregion
 

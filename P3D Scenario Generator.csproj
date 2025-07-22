@@ -25,7 +25,6 @@
     <None Remove="PhotoTour_LegRoute.html" />
     <None Remove="Resources\CSS\styleCelestialSextant.css" />
     <None Remove="Resources\CSS\styleMovingMap.css" />
-    <None Remove="Resources\CSS\styleSignWriting.css" />
     <None Remove="Resources\CSS\style_kneeboard.css" />
     <None Remove="Resources\CSS\style_load_flight.css" />
     <None Remove="Resources\Excel\Celestial Nav Stars.xlsx" />
@@ -192,12 +191,12 @@
     <EmbeddedResource Include="Resources\Images\plotImage.jpg" />
     <EmbeddedResource Include="Resources\Images\signTabSegment22Font.jpg" />
     <EmbeddedResource Include="Resources\Images\success-icon.png" />
-    <EmbeddedResource Include="Resources\Javascript\scriptsPhotoTour.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsCelestialAstroCalcs.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsCelestialSextant.js" />
+    <EmbeddedResource Include="Resources\Javascript\scriptsMovingMap.js" />
+    <EmbeddedResource Include="Resources\Javascript\scriptsPhotoTour.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsSignWriting.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsWikipediaItem.js" />
-    <EmbeddedResource Include="Resources\Javascript\scriptsMovingMap.js" />
     <EmbeddedResource Include="Resources\Text\LocationFavouritesJSON.txt" />
     <EmbeddedResource Include="Resources\Sounds\ThruHoop.wav" />
     <EmbeddedResource Include="Resources\XML\runways.xml" />
@@ -256,5 +255,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

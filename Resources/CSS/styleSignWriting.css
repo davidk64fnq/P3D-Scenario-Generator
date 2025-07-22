@@ -1,5 +1,37 @@
+:root {
+	--console-width: 0px;
+	--console-height: 0px;
+	--window-horizontal-padding: 0px;
+	--window-vertical-padding: 0px;
+}
+
 body {
-    background-color: rgb(240, 248, 255);
-	margin: 0; 
-	padding: 0;
+	background-color: #F0F8FF;
+	margin: 0;
+	box-sizing: border-box;
+}
+
+#canvas {
+	background-color: #f0f0f0;
+	border: 1px solid #ccc;
+	float: left;
+	height: var(--canvas-height);
+	margin-left: var(--window-horizontal-padding);
+	margin-right: var(--window-horizontal-padding);
+	margin-top: var(--window-vertical-padding);
+	width: var(--canvas-width);
+	box-sizing: border-box;
+}
+
+#jsConsole {
+	background-color: #f0f0f0;
+	border: 1px solid #ccc;
+	float: left;
+	font-family: monospace;
+	font-size: 0.8em;
+	height: var(--console-height);
+	margin-right: var(--window-horizontal-padding);
+	margin-top: var(--window-vertical-padding);
+	width: var(--console-width);
+	box-sizing: border-box;
 }

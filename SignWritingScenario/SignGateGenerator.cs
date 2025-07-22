@@ -209,7 +209,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             }
 
             // Shift leftPixels based on which letter it is in message
-            leftPixels += letterIndex * 105;
+            leftPixels += letterIndex * (Constants.SignCharWidthPixels + Constants.SignCharPaddingPixels);
 
             gates.Add(new Gate(lat, lon, amsl, pitch, orientation, topPixels, leftPixels));
         }

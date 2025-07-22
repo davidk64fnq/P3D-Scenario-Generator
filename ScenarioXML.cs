@@ -363,12 +363,12 @@ namespace P3D_Scenario_Generator
             SetUIPanelWindow(1, "UIpanelWindow", "False", "True", "images\\htmlSignWriting.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for window object
-            SetSignWritingHTML(formData);
-            SetSignWritingJS(formData);
-            SetSignWritingCSS(formData);
+            SignWriting.SetSignWritingHTML(formData);
+            SignWriting.SetSignWritingJS(formData);
+            SignWriting.SetSignWritingCSS(formData);
 
             // Create  window open/close actions
-            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", GetSignWritingWindowParameters(formData), formData.SignMonitorNumber.ToString());
+            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", SignWriting.GetSignWritingWindowParameters(formData), formData.SignMonitorNumber.ToString());
             SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
 
             // Create timer trigger to play audio introductions, activate first gate and POI, activate first proximity trigger when scenario starts
@@ -767,48 +767,6 @@ namespace P3D_Scenario_Generator
 				$"{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W", true)},+0.0";
         }
 
-        static private string[] GetSignWritingWindowParameters(ScenarioFormData formData)
-		{
-            // Each character approx 80 pixels wide + 20 pixels padding before it, then extra 40 pixels at end of message
-            int windowWidth = (formData.SignMessage.Length * 100) + 40;
-            if (windowWidth > formData.SignMonitorWidth - 40)
-                windowWidth = formData.SignMonitorWidth - 40;
-
-            // Each character approx 160 pixels high + 20 pixels above it and 60 pixels below it 
-            int windowHeight = 240;
-
-            int horizontalOffset;
-            int verticalOffset;
-            // Offsets
-            if (formData.SignAlignment == WindowAlignment.TopLeft)
-            {
-                horizontalOffset = formData.SignOffset;
-                verticalOffset = formData.SignOffset;
-            }
-            else if (formData.SignAlignment == WindowAlignment.TopRight)
-            {
-                horizontalOffset = formData.SignMonitorWidth - formData.SignOffset - windowWidth;
-                verticalOffset = formData.SignOffset;
-            }
-            else if (formData.SignAlignment == WindowAlignment.BottomRight)
-            {
-                horizontalOffset = formData.SignMonitorWidth - formData.SignOffset - windowWidth;
-                verticalOffset = formData.SignMonitorHeight - formData.SignOffset - windowHeight;
-            }
-            else if (formData.SignAlignment == WindowAlignment.BottomLeft)
-            {
-                horizontalOffset = formData.SignOffset;
-                verticalOffset = formData.SignMonitorHeight - formData.SignOffset - windowHeight;
-            }
-            else // Parameters.SignAlignment == "Centered"
-            {
-                horizontalOffset = (formData.SignMonitorWidth / 2) - (windowWidth / 2);
-                verticalOffset = (formData.SignMonitorHeight / 2) - (windowHeight / 2);
-            }
-
-            return [windowWidth.ToString(), windowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
-        }
-
         static private string GetWikiItemWorldPosition(int legNo)
         {
             return $"{Wikipedia.WikiTour[legNo].latitude}, {Wikipedia.WikiTour[legNo].longitude},+0.0";
@@ -1185,77 +1143,6 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable[idIndex].TriggerCondition = null;
             else
                 simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable[idIndex].TriggerCondition[tcIndex].TriggerValue = tv;
-        }
-
-        static private void SetSignWritingCSS(ScenarioFormData formData)
-        {
-            string signWritingCSS;
-
-            Stream stream = Form.GetResourceStream("CSS.styleSignWriting.css");
-            StreamReader reader = new(stream);
-            signWritingCSS = reader.ReadToEnd();
-            string saveLocation = $"{formData.ScenarioImageFolder}\\styleSignWriting.css";
-            File.WriteAllText(saveLocation, signWritingCSS);
-            stream.Dispose();
-        }
-
-        static private void SetSignWritingHTML(ScenarioFormData formData)
-        {
-            string signWritingHTML;
-            double canvasWidth;
-            double canvasHeight;
-
-            Stream stream = Form.GetResourceStream("HTML.SignWriting.html");
-            StreamReader reader = new(stream);
-            signWritingHTML = reader.ReadToEnd();
-
-            // Each character approx 80 pixels wide + 20 pixels padding before it, then extra 20 pixels at end of message
-            canvasWidth = (formData.SignMessage.Length * 100) + 20;
-            signWritingHTML = signWritingHTML.Replace("canvasWidthX", canvasWidth.ToString());
-            // Each character approx 160 pixels high + 20 pixels above it and 20 pixels below it
-            canvasHeight = 200;
-            signWritingHTML = signWritingHTML.Replace("canvasHeightX", canvasHeight.ToString());
-            signWritingHTML = signWritingHTML.Replace("mapNorthX", (Runway.startRwy.AirportLat + formData.SignSegmentLength * 4).ToString());
-            signWritingHTML = signWritingHTML.Replace("mapEastX", (Runway.startRwy.AirportLon + formData.SignSegmentLength * (3 * formData.SignMessage.Length - 1)).ToString());
-            signWritingHTML = signWritingHTML.Replace("mapSouthX", Runway.startRwy.AirportLat.ToString());
-            signWritingHTML = signWritingHTML.Replace("mapWestX", Runway.startRwy.AirportLon.ToString());
-            signWritingHTML = signWritingHTML.Replace("messageLengthX", formData.SignMessage.Length.ToString());
-            signWritingHTML = signWritingHTML.Replace("magVarX", Runway.startRwy.MagVar.ToString());
-            string topPixels = "0,";
-            string leftPixels = "0,";
-            string bearings = "0,";
-            Gate gate;
-            for (int index = 1; index <= SignWriting.gates.Count; index++)
-            {
-                gate = SignWriting.gates[index - 1];
-                topPixels += gate.topPixels.ToString();
-                leftPixels += gate.leftPixels.ToString();
-                bearings += gate.orientation.ToString();
-                if (index <= SignWriting.gates.Count - 1)
-                {
-                    topPixels += ",";
-                    leftPixels += ",";
-                    bearings += ",";
-                }
-            }
-            signWritingHTML = signWritingHTML.Replace("gateTopPixelsX", topPixels);
-            signWritingHTML = signWritingHTML.Replace("gateLeftPixelsX", leftPixels);
-            signWritingHTML = signWritingHTML.Replace("gateBearingsX", bearings);
-            string saveLocation = $"{formData.ScenarioImageFolder}\\htmlSignWriting.html";
-            File.WriteAllText(saveLocation, signWritingHTML);
-            stream.Dispose();
-        }
-
-        static private void SetSignWritingJS(ScenarioFormData formData)
-        {
-            string signWritingJS;
-
-            Stream stream = Form.GetResourceStream("Javascript.scriptsSignWriting.js");
-            StreamReader reader = new(stream);
-            signWritingJS = reader.ReadToEnd();
-            string saveLocation = $"{formData.ScenarioImageFolder}\\scriptsSignWriting.js";
-            File.WriteAllText(saveLocation, signWritingJS);
-            stream.Dispose();
         }
 
         static private void SetSignWritingScriptActions()
