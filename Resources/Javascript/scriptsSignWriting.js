@@ -1,3 +1,4 @@
+// --- Title comment block ---
 /**
  * @file scriptsSignWriting.js
  * @description Handles the drawing logic for the plane's smoke trail and gate caps on the canvas.
@@ -5,27 +6,140 @@
  * @author [David Kilpatrick]
  * @version 1.0.0
  * @date 2025-07-19
+*/
+
+
+// --- JSDoc Global Variable Declarations (Injected by C#) ---
+// These variables are declared globally. Their string values are expected to be
+// injected/replaced by the C# application before script execution.
+// The JSDoc provides type information for the TypeScript checker.
+
+/**
+ * @global
+ * @type {string}
+ * @description Placeholder string for comma-separated gate top pixel coordinates.
+ * Origin is 0,0 top left corner of canvas. References middle pixel in base of segment cap.
+ * */
+var gateTopPixelsX_PLACEHOLDER; // Will be injected e.g., "10,20,30"
+
+/**
+ * @global
+ * @type {string}
+ * @description Placeholder string for comma-separated list of gate left pixel coordinates.
+ * Origin is 0,0 top left corner of canvas. References middle pixel in base of segment cap.
  */
+var gateLeftPixelsX_PLACEHOLDER;
 
+/**
+ * @global
+ * @type {string}
+ * @description Placeholder string for comma-separated list of gate bearing values.
+ * Each value is an integer representing the bearing in degrees (0, 90, 180, 270),
+ * the direction plane heading when it flys through the gate.
+ */
+var gateBearingsX_PLACEHOLDER;
 
-const initialCanvasWidth = "canvasWidthX";
-const initialCanvasHeight = "canvasHeightX";
-const initialConsoleWidth = "consoleWidthX";
-const initialConsoleHeight = "consoleHeightX";
-const initialWindowHorizontalPadding = "windowHorizontalPaddingX";
-const initialWindowVerticalPadding = "windowVerticalPaddingX";
+/**
+ * @global
+ * @type {string}
+ * @description Placeholder strings for various injected configuration values:
+ * - mapNorthX: Northernmost latitude of the canvas.
+ * - mapEastX: Easternmost longitude of the canvas.
+ * - mapSouthX: Southernmost latitude of the canvas.
+ * - mapWestX: Westernmost longitude of the canvas.
+ * - magVarX: Magnetic variation in degrees.
+ * - canvasWidthX: Message canvas width in pixels.
+ * - canvasHeightX: Message canvas height in pixels.
+ * - consoleWidthX: Message console width in pixels.
+ * - consoleHeightX: Message console height in pixels.
+ * - windowHorizontalPaddingX: Horizontal window padding around and between canvas and console in pixels.
+ * - windowVerticalPaddingX: Vertical window padding around and between canvas and console in pixels.
+ */
+var mapNorthX_PLACEHOLDER, mapEastX_PLACEHOLDER, mapSouthX_PLACEHOLDER, mapWestX_PLACEHOLDER, magVarX_PLACEHOLDER,
+	canvasWidthX_PLACEHOLDER, canvasHeightX_PLACEHOLDER, consoleWidthX_PLACEHOLDER, consoleHeightX_PLACEHOLDER,
+	windowHorizontalPaddingX_PLACEHOLDER, windowVerticalPaddingX_PLACEHOLDER;
+
+// --- Script-Managed Global Variables ---
+// These variables are declared here and will be populated/assigned
+// by the JavaScript code itself, typically after DOM content is loaded.
+
+/** @type {HTMLCanvasElement | null} */
+let canvas = null;
+/** @type {CanvasRenderingContext2D | null} */
+let context = null;
+/** @type {number[]} Origin is 0,0 top left corner of canvas. References middle pixel in base of segment cap.*/
+let gateTopPixels; 
+/** @type {number[]} Origin is 0,0 top left corner of canvas. References middle pixel in base of segment cap.*/
+let gateLeftPixels;
+/** @type {number[]} Each value is an integer representing the bearing in degrees (0, 90, 180, 270), the direction plane heading when it flys through the gate.*/
+let gateBearings;
+/** @type {number} Northernmost latitude of the message canvas.*/
+let parsedMapNorth; 
+/** @type {number} Easternmost longitude of the canvas.*/
+let parsedMapEast; 
+/** @type {number} Southernmost latitude of the canvas.*/
+let parsedMapSouth; 
+/** @type {number} Westernmost longitude of the canvas.*/
+let parsedMapWest; 
+/** @type {number} Magnetic variation in degrees.*/
+let parsedMagVar; 
+/** @type {number} Message canvas width in pixels.*/
+let initialCanvasWidthParsed;
+/** @type {number} Message canvas height in pixels.*/
+let initialCanvasHeightParsed;
+/** @type {number} Message console width in pixels.*/
+let initialConsoleWidthParsed;
+/** @type {number} Message console height in pixels.*/
+let initialConsoleHeightParsed;
+/** @type {number} Horizontal window padding around and between canvas and console in pixels.*/
+let initialWindowHorizontalPaddingParsed;
+/** @type {number} Vertical window padding around and between canvas and console in pixels.*/
+let initialWindowVerticalPaddingParsed;
+
 
 document.addEventListener('DOMContentLoaded', () => {
-	const canvas = document.getElementById('canvas');
-	if (canvas) {
-		canvas.width = parseInt(initialCanvasWidth);
-		canvas.height = parseInt(initialCanvasHeight);
+	// Assign canvas and context ONLY after the DOM is fully loaded
+	const foundCanvas = document.getElementById('canvas');
+
+	// Parse the injected X variables here, where they are guaranteed to exist
+	gateTopPixels = String(gateTopPixelsX).split(',').map(Number);
+	gateLeftPixels = String(gateLeftPixelsX).split(',').map(Number);
+	gateBearings = String(gateBearingsX).split(',').map(Number);
+
+	parsedMapNorth = parseFloat(String(mapNorthX));
+	parsedMapEast = parseFloat(String(mapEastX));
+	parsedMapSouth = parseFloat(String(mapSouthX));
+	parsedMapWest = parseFloat(String(mapWestX));
+	parsedMagVar = parseFloat(String(magVarX));
+
+	initialCanvasWidthParsed = parseInt(String(canvasWidthX));
+	initialCanvasHeightParsed = parseInt(String(canvasHeightX));
+	initialConsoleWidthParsed = parseInt(String(consoleWidthX));
+	initialConsoleHeightParsed = parseInt(String(consoleHeightX));
+	initialWindowHorizontalPaddingParsed = parseInt(String(windowHorizontalPaddingX));
+	initialWindowVerticalPaddingParsed = parseInt(String(windowVerticalPaddingX));
+
+	if (foundCanvas instanceof HTMLCanvasElement) {
+		// Now TypeScript knows foundCanvas is an HTMLCanvasElement
+		canvas = foundCanvas;
+		canvas.width = initialCanvasWidthParsed;
+		canvas.height = initialCanvasHeightParsed;
+		context = canvas.getContext('2d');
+
+		if (!context) {
+			console.error('Failed to get 2D rendering context for canvas!');
+		}
+	} else {
+		console.error('Canvas element with id "canvas" not found or is not an HTMLCanvasElement!');
 	}
-	// Set the CSS Custom Properties for both width and height
-	document.documentElement.style.setProperty('--console-width', parseInt(initialConsoleWidth) + 'px');
-	document.documentElement.style.setProperty('--console-height', parseInt(initialConsoleHeight) + 'px');
-	document.documentElement.style.setProperty('--window-horizontal-padding', parseInt(initialWindowHorizontalPadding) + 'px');
-	document.documentElement.style.setProperty('--window-vertical-padding', parseInt(initialWindowVerticalPadding) + 'px');
+
+	document.documentElement.style.setProperty('--canvas-width', initialCanvasWidthParsed + 'px');
+	document.documentElement.style.setProperty('--canvas-height', initialCanvasHeightParsed + 'px');
+	document.documentElement.style.setProperty('--console-width', initialConsoleWidthParsed + 'px');
+	document.documentElement.style.setProperty('--console-height', initialConsoleHeightParsed + 'px');
+	document.documentElement.style.setProperty('--window-horizontal-padding', initialWindowHorizontalPaddingParsed + 'px');
+	document.documentElement.style.setProperty('--window-vertical-padding', initialWindowVerticalPaddingParsed + 'px');
+	window.requestAnimationFrame(update);
 });
 
 
@@ -45,12 +159,6 @@ var smokeOld = 0;
  * @type {boolean} smokeHasToggled - Acts as a flag to indicate if smokeOn has just toggled, controlling when certain drawing logic should execute.
  */
 var smokeHasToggled = false;
-
-/**
- * 
- */
-var canvas = document.getElementById('canvas');
-var context = canvas.getContext('2d');
 
 var planeTopPixels;
 var planeLeftPixels;
@@ -104,10 +212,6 @@ curCap[7] = [];
 curCap[8] = [];
 curCap[9] = [];
 curCap[10] = [];
-	
-const gateTopPixels = [gateTopPixelsX];
-const gateLeftPixels = [gateLeftPixelsX];
-const gateBearings = [gateBearingsX];
 
 /**
 * Test comment
@@ -166,6 +270,7 @@ function drawLine(finishGateNo)
 		if (planeTopPixels <= gateTopPixels[finishGateNo] + 5)
 			planeTopPixels = gateTopPixels[finishGateNo] + 6;
 		var lineHeight = (gateTopPixels[finishGateNo - 1] - 6) - planeTopPixels;
+		/** @type {number} */
 		var lineStartTop = planeTopPixels + paddingTop;
 		var lineStartLeftMiddle = gateLeftPixels[finishGateNo] + paddingLeft;
 		context.fillStyle = colours[2];
@@ -208,6 +313,7 @@ function drawLine(finishGateNo)
 		if (planeLeftPixels <= gateLeftPixels[finishGateNo] + 5)
 			planeLeftPixels = gateLeftPixels[finishGateNo] + 6;
 		var lineLength = (gateLeftPixels[finishGateNo - 1] - 6) - planeLeftPixels;
+		/** @type {number} */
 		var lineStartLeft = planeLeftPixels + paddingLeft;
 		var lineStartTopMiddle = gateTopPixels[finishGateNo] + paddingTop;
 		context.fillStyle = colours[2];
@@ -234,43 +340,60 @@ function setPlaneEndOfLine(currentGateNo){
 }
 
 /**
- * Appends a given string as a new line to the jsConsole textarea.
- * @param {string} message The string message to log.
+ * Appends a given message (or multiple arguments) as a new line to the jsConsole textarea.
+ * Converts all arguments to strings to ensure they display correctly.
+ * @param {...any} args - The arguments to log to the console.
  */
-function logToConsole(message) {
+function logToConsole(...args) {
 	const consoleElement = document.getElementById('jsConsole');
-	if (consoleElement) {
+	if (consoleElement instanceof HTMLTextAreaElement) {
 		const timestamp = new Date().toLocaleTimeString();
+		// Convert all arguments to strings and join them with a space
+		const message = args.map(arg => {
+			if (typeof arg === 'object' && arg !== null) {
+				// For objects/arrays, use JSON.stringify for better readability
+				return JSON.stringify(arg);
+			}
+			return String(arg); // Convert primitives, null, undefined
+		}).join(' ');
+
 		consoleElement.value += (consoleElement.value ? '\n' : '') + `[${timestamp}] ${message}`;
 		// Scroll to the bottom to show the latest message
 		consoleElement.scrollTop = consoleElement.scrollHeight;
 	} else {
-		console.error('jsConsole textarea not found!');
+		// Fallback if jsConsole element isn't found or isn't a textarea
+		// In P3D, this might not show anywhere, but it's good practice.
+		// If you see no output in your jsConsole, this error might be why.
+		console.error('jsConsole textarea not found or is not an HTMLTextAreaElement!');
 	}
 }
+
 
 	
 function update(timestamp)
 {
-	const mapNorth = mapNorthX; 
-	const mapEast = mapEastX;
-	const mapSouth = mapSouthX;
-	const mapWest = mapWestX;
-	const messageLength = messageLengthX;
-	const magVar = magVarX;
 	
 	var currentGateNo = VarGet("S:currentGateNo" ,"NUMBER");
-	var planeHeadingT = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI + magVar;
+	var planeHeadingT = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI + parsedMagVar;
 	if (planeHeadingT > 360)
 		planeHeadingT = planeHeadingT - 360;
 	if (planeHeadingT < 0)
 		planeHeadingT = planeHeadingT + 360;
 	var planeLonDeg = VarGet("A:PLANE LONGITUDE" ,"Radians") * 180 / Math.PI; // x
-	var planeLatDeg = VarGet("A:PLANE LATITUDE" ,"Radians") * 180 / Math.PI;  // y
-	var messageHeight = document.getElementsByTagName("canvas")[0].getAttribute("height") - capExtra * 2 - paddingTop * 2;
-	var messageWidth = document.getElementsByTagName("canvas")[0].getAttribute("width") - capExtra * 2 - paddingLeft * 2;
-	planeTopPixels = Math.round((planeLatDeg - mapNorth) / (mapSouth - mapNorth) * messageHeight);
-	planeLeftPixels = Math.round((planeLonDeg - mapWest) / (mapEast - mapWest) * messageWidth);
+	var planeLatDeg = VarGet("A:PLANE LATITUDE", "Radians") * 180 / Math.PI;  // y
+
+	/**
+	 * @type {number} messageHeight - The calculated height of the message area on the canvas.
+	 */
+	var messageHeight = parseInt(document.getElementsByTagName("canvas")[0].getAttribute("height")) - capExtra * 2 - paddingTop * 2;
+
+	/**
+	 * @type {number} messageWidth - The calculated width of the message area on the canvas.
+	 */
+	var messageWidth = parseInt(document.getElementsByTagName("canvas")[0].getAttribute("width")) - capExtra * 2 - paddingLeft * 2;
+
+	planeTopPixels = Math.round((planeLatDeg - parsedMapNorth) / (parsedMapSouth - parsedMapNorth) * messageHeight);
+	planeLeftPixels = Math.round((planeLonDeg - parsedMapWest) / (parsedMapEast - parsedMapWest) * messageWidth);
 	var smokeOn = VarGet("S:smokeOn", "NUMBER");
 
 	if (smokeOn != smokeOld) {
@@ -319,4 +442,3 @@ function update(timestamp)
 	}
 	window.requestAnimationFrame(update);
 }
-window.requestAnimationFrame(update);

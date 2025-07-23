@@ -179,24 +179,40 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         {
             string signWritingJS;
 
-            Stream stream = Form.GetResourceStream("Javascript.scriptsSignWriting.js");
-            StreamReader reader = new(stream);
-            signWritingJS = reader.ReadToEnd();
-            signWritingJS = signWritingJS.Replace("canvasWidthX", formData.SignCanvasWidth.ToString());
-            signWritingJS = signWritingJS.Replace("canvasHeightX", formData.SignCanvasHeight.ToString());
-            signWritingJS = signWritingJS.Replace("consoleWidthX", formData.SignConsoleWidth.ToString());
-            signWritingJS = signWritingJS.Replace("consoleHeightX", formData.SignConsoleHeight.ToString());
-            signWritingJS = signWritingJS.Replace("windowHorizontalPaddingX", Constants.SignWindowHorizontalPaddingPixels.ToString());
-            signWritingJS = signWritingJS.Replace("windowVerticalPaddingX", Constants.SignWindowVerticalPaddingPixels.ToString());
-            signWritingJS = signWritingJS.Replace("mapNorthX", (Runway.startRwy.AirportLat + formData.SignSegmentLength * 4).ToString());
-            signWritingJS = signWritingJS.Replace("mapEastX", (Runway.startRwy.AirportLon + formData.SignSegmentLength * (3 * formData.SignMessage.Length - 1)).ToString());
-            signWritingJS = signWritingJS.Replace("mapSouthX", Runway.startRwy.AirportLat.ToString());
-            signWritingJS = signWritingJS.Replace("mapWestX", Runway.startRwy.AirportLon.ToString());
-            signWritingJS = signWritingJS.Replace("messageLengthX", formData.SignMessage.Length.ToString());
-            signWritingJS = signWritingJS.Replace("magVarX", Runway.startRwy.MagVar.ToString());
+            // Use 'using' statements to ensure proper disposal of streams
+            using (Stream stream = Form.GetResourceStream("Javascript.scriptsSignWriting.js"))
+            using (StreamReader reader = new(stream))
+            {
+                signWritingJS = reader.ReadToEnd();
+            }
+
+            // --- Targeted Replacements for individual var declarations ---
+            // These replace 'variableNameX_PLACEHOLDER' with 'variableNameX = "value"'
+
+            // Canvas and Console Dimensions
+            signWritingJS = signWritingJS.Replace("canvasWidthX_PLACEHOLDER", $"canvasWidthX = \"{formData.SignCanvasWidth.ToString()}\"");
+            signWritingJS = signWritingJS.Replace("canvasHeightX_PLACEHOLDER", $"canvasHeightX = \"{formData.SignCanvasHeight.ToString()}\"");
+            signWritingJS = signWritingJS.Replace("consoleWidthX_PLACEHOLDER", $"consoleWidthX = \"{formData.SignConsoleWidth.ToString()}\"");
+            signWritingJS = signWritingJS.Replace("consoleHeightX_PLACEHOLDER", $"consoleHeightX = \"{formData.SignConsoleHeight.ToString()}\"");
+
+            // Window Padding
+            signWritingJS = signWritingJS.Replace("windowHorizontalPaddingX_PLACEHOLDER", $"windowHorizontalPaddingX = \"{Constants.SignWindowHorizontalPaddingPixels.ToString()}\"");
+            signWritingJS = signWritingJS.Replace("windowVerticalPaddingX_PLACEHOLDER", $"windowVerticalPaddingX = \"{Constants.SignWindowVerticalPaddingPixels.ToString()}\"");
+
+            // Map Coordinates and Magnetic Variation
+            // Ensure Runway.startRwy, formData.SignSegmentLength, formData.SignMessage.Length, and Constants are accessible
+            signWritingJS = signWritingJS.Replace("mapNorthX_PLACEHOLDER", $"mapNorthX = \"{(Runway.startRwy.AirportLat + formData.SignSegmentLength * 4).ToString()}\"");
+            signWritingJS = signWritingJS.Replace("mapEastX_PLACEHOLDER", $"mapEastX = \"{(Runway.startRwy.AirportLon + formData.SignSegmentLength * (3 * formData.SignMessage.Length - 1)).ToString()}\"");
+            signWritingJS = signWritingJS.Replace("mapSouthX_PLACEHOLDER", $"mapSouthX = \"{Runway.startRwy.AirportLat.ToString()}\"");
+            signWritingJS = signWritingJS.Replace("mapWestX_PLACEHOLDER", $"mapWestX = \"{Runway.startRwy.AirportLon.ToString()}\"");
+            signWritingJS = signWritingJS.Replace("magVarX_PLACEHOLDER", $"magVarX = \"{Runway.startRwy.MagVar.ToString()}\"");
+
+            // --- Prepare comma-separated gate data strings ---
             string topPixels = "0,";
             string leftPixels = "0,";
             string bearings = "0,";
+
+            // Assuming SignWriting.gates is a List<Gate> and Gate has public topPixels, leftPixels, and orientation properties
             Gate gate;
             for (int index = 1; index <= SignWriting.gates.Count; index++)
             {
@@ -204,6 +220,8 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 topPixels += gate.topPixels.ToString();
                 leftPixels += gate.leftPixels.ToString();
                 bearings += gate.orientation.ToString();
+
+                // Add comma if not the last element
                 if (index <= SignWriting.gates.Count - 1)
                 {
                     topPixels += ",";
@@ -211,12 +229,15 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                     bearings += ",";
                 }
             }
-            signWritingJS = signWritingJS.Replace("gateTopPixelsX", topPixels);
-            signWritingJS = signWritingJS.Replace("gateLeftPixelsX", leftPixels);
-            signWritingJS = signWritingJS.Replace("gateBearingsX", bearings);
+
+            // --- Targeted Replacements for gate arrays ---
+            signWritingJS = signWritingJS.Replace("gateTopPixelsX_PLACEHOLDER", $"gateTopPixelsX = \"{topPixels}\"");
+            signWritingJS = signWritingJS.Replace("gateLeftPixelsX_PLACEHOLDER", $"gateLeftPixelsX = \"{leftPixels}\"");
+            signWritingJS = signWritingJS.Replace("gateBearingsX_PLACEHOLDER", $"gateBearingsX = \"{bearings}\"");
+
+            // --- Save the modified JavaScript file ---
             string saveLocation = $"{formData.ScenarioImageFolder}\\scriptsSignWriting.js";
             File.WriteAllText(saveLocation, signWritingJS);
-            stream.Dispose();
         }
 
         static internal void SetSignWritingCSS(ScenarioFormData formData)

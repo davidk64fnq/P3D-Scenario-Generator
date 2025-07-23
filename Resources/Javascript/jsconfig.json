@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "lib": [ "dom", "es2020" ],
+    "checkJs": true,
+    "allowJs": true,
+    "target": "es2016",
+    "noImplicitAny": true
+  },
+  "include": [
+    "**/*.js",
+    "prepar3d-globals.d.ts"
+  ]
+}

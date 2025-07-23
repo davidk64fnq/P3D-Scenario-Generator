@@ -3518,8 +3518,5 @@ namespace P3D_Scenario_Generator
         }
 
         #endregion
-
-
-
     }
 }
