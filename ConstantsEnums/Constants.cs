@@ -333,6 +333,16 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         public const double FeetInRadiusOfEarth = 20902230.971129;
 
         /// <summary>
+        /// The number of metres in one foot
+        /// </summary>
+        public const double MetresInFoot = 0.3048000097536;
+
+        /// <summary>
+        /// The number of metres in one nautical mile
+        /// </summary>
+        public const double MetresInNauticalMile = 1852;
+
+        /// <summary>
         /// The approximate equatorial circumference of Earth in miles, used as a practical
         /// upper limit for scenario leg distances.
         /// </summary>
@@ -479,19 +489,41 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         #region Sign Writing constants
 
         /// <summary>
-        /// The height of a character in sign writing html panel window in pixels
+        /// The height of a character in sign writing html panel window in pixels, measured from middle of top horizontal segments
+        /// to middle of bottom horizontal segments
         /// </summary>
-        public const int SignCharHeightPixels = 150;
+        public const int SignCharHeightPixels = 140;
 
         /// <summary>
-        /// The width of padding before, between, and after characters in canvas area of sign writing html window in pixels
+        /// The width of padding before first character, and after last character in canvas area of sign writing html window in pixels, padding is between
+        /// edge of canvas and middle of segment running parallel to that canvas edge. The height of padding above top of character line 
+        /// and below bottom of character line. Actual gap betwen canvas edge and outside segment edge is 5 pixels less than this value.
         /// </summary>
-        public const int SignCharPaddingPixels = 10;
+        public const int SignCharPaddingPixels = 15;
 
         /// <summary>
-        /// The width of a character in canvas area of sign writing html window in pixels
+        /// The width of padding between the middle of righthand segment of a character and the middle of lefthand segment of next character,
+        /// this needs to be 5 pixels larger than <see cref="SignCharPaddingPixels"/> to attain equal spacing between characters as between characters 
+        /// and canvas edges.
         /// </summary>
-        public const int SignCharWidthPixels = 80;
+        public const int SignCharPaddingInternalPixels = 20;
+
+        /// <summary>
+        /// Characters are depicted using segments, a character is 2 x 4 grid units where the size of a grid unit is one segment width plus two radii turn distances.
+        /// This is size of padding between characters in message in grid units.
+        /// </summary>
+        public const int SignCharPaddingGridUnits = 1;
+
+        /// <summary>
+        /// Characters are depicted using segments, a character is 2 x 4 grid units where the size of a grid unit is one segment width plus two radii turn distances
+        /// </summary>
+        public const int SignCharWidthGridUnits = 2;
+
+        /// <summary>
+        /// The width of a character in canvas area of sign writing html window in pixels, measured from middle of left vertical segments
+        /// to middle of right vertical segments
+        /// </summary>
+        public const int SignCharWidthPixels = 70;
 
         /// <summary>
         /// Console width in pixels, console is a textarea that is located beside the message canvas in sign writing window
@@ -504,12 +536,12 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         public const double SignMaxTiltAngleDegrees = 90;
 
         /// <summary>
-        /// Margin for sign writing window for those edges not covered by <see cref="ScenarioFormData.SignOffset"/>
+        /// Margin for sign writing window for those edges not covered by <see cref="ScenarioFormData.SignOffsetPixels"/>
         /// </summary>
         public const int SignSizeEdgeMarginPixels = 20;
 
         /// <summary>
-        /// How many pixels on left and right and between canvas and console in sign writing window
+        /// How many pixels on left of canvas and right of console and between canvas and console in sign writing window
         /// </summary>
         public const int SignWindowHorizontalPaddingPixels = 10;
 

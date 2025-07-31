@@ -2,10 +2,20 @@
 <html>
 <head>
 	<link rel="stylesheet" href="styleSignWriting.css">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>P3D Scenario</title>
 </head>
 <body>
 	<canvas id="canvas"></canvas>
 	<textarea id="jsConsole" readonly></textarea>
-	<script src="scriptsSignWriting.js"></script>
+
+	<!-- Load Geodesy library files as modules, in their dependency order -->
+	<script type="module" src="dms.js"></script>
+	<script type="module" src="vector3d.js"></script>
+	<script type="module" src="latlon-ellipsoidal.js"></script>
+
+	<!-- Load your main application script as a module -->
+	<script type="module" src="scriptsSignWriting.js"></script>
 </body>
 </html>

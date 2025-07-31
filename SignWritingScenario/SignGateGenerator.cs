@@ -1,23 +1,24 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
+using System.Collections.Generic;
 
 namespace P3D_Scenario_Generator.SignWritingScenario
 {
     /// <summary>
     /// Defines a record to hold the parameters for a segment, used in generating signwriting messages.
     /// </summary>
-    /// <param name="LatCoef">How many straight segment portions this segment is right of letter lefthand edge</param>
-    /// <param name="LatOffsetCoef">How many pointy cap segment portions this segment is right of letter lefthand edge</param>
-    /// <param name="LonCoef">How many straight segment portions this segment is above letter bottom edge</param>
-    /// <param name="LonOffsetCoef">How many pointy cap segment portions this segment is above letter bottom edge</param>
+    /// <param name="HeightFactor">How many grid lengths this segment is above letter bottom edge</param>
+    /// <param name="HeightRadiusFactor">How many radius turns this segment is above letter bottom edge</param>
+    /// <param name="WidthFactor">How many grid lengths this segment is right of letter lefthand edge</param>
+    /// <param name="WidthRadiusFactor">How many radius turns this segment is right of letter lefthand edge</param>
     /// <param name="Orientation">The direction of front side of gate, e.g. 90 means the gate will be triggered when 
     /// flying through it from the west heading east</param>
     /// <param name="TopPixels">Top pixel reference for segment in letter</param>
     /// <param name="LeftPixels">Left pixel reference for segment in letter</param>
     public record SegmentSpecification(
-        double LatCoef,
-        double LatOffsetCoef,
-        double LonCoef,
-        double LonOffsetCoef,
+        double HeightFactor,
+        double HeightRadiusFactor,
+        double WidthFactor,
+        double WidthRadiusFactor,
         double Orientation,
         double TopPixels,
         double LeftPixels
@@ -117,14 +118,42 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                     // Move gates just added from 0 lat 0 lon 0 asml reference point to the end of letters in message processed so far
                     // only longitude is changed
                     int startGateIndex = gates.Count - currentLetterNoOfGates;
-                    TranslateGates(gates, startGateIndex, currentLetterNoOfGates, 0, formData.SignSegmentLength * 3 * index, 0);
+                    double distanceTranslated = (formData.SignGridUnitSizeFeet * Constants.SignCharWidthGridUnits + Constants.SignCharPaddingGridUnits) * index;
+                    TranslateGates(gates, startGateIndex, currentLetterNoOfGates, distanceTranslated, 0);
                 }
             }
             TiltGates(gates, 0, gates.Count, formData);
 
             // Move gates to airport and correct height
-            TranslateGates(gates, 0, gates.Count, Runway.startRwy.AirportLat, Runway.startRwy.AirportLon, Runway.startRwy.Altitude + formData.SignGateHeight);
+            MoveGatesToAirport(gates, formData);
             return gates;
+        }
+
+        /// <summary>
+        /// Moves a collection of <see cref="Gate"/> objects to positions relative to a specified airport location.
+        /// Each gate's latitude and longitude are adjusted based on its original distance and bearing from the
+        /// geographical origin (0,0) and then relocated to the corresponding position relative to the airport's
+        /// starting runway coordinates. Additionally, the altitude of each gate is set by adding the airport's
+        /// altitude to the gate's existing above mean sea level (AMSL) value.
+        /// </summary>
+        /// <param name="gates">A <see cref="List{T}"/> of <see cref="Gate"/> objects to be repositioned.</param>
+        internal static void MoveGatesToAirport(List<Gate> gates, ScenarioFormData formData)
+        {
+            for (int index = 0; index < gates.Count; index++)
+            {
+                // Find out distance gate is from origin (0 lat, 0 long)
+                double distanceMeters = MathRoutines.CalcDistance(0, 0, gates[index].lat, gates[index].lon) * Constants.MetresInNauticalMile;
+
+                // Findout bearing of gate from origin (0 lat, 0 long)
+                double bearing = MathRoutines.CalcBearing(0, 0, gates[index].lat, gates[index].lon);
+
+                // Move gate to position relative to airport location
+                MathRoutines.AdjCoords(Runway.startRwy.AirportLat, Runway.startRwy.AirportLon, bearing, distanceMeters,
+                    ref gates[index].lat, ref gates[index].lon);
+
+                // Set the altitude of the gate to the airport altitude plus the sign gate height
+                gates[index].amsl += Runway.startRwy.Altitude + formData.SignGateHeightFeet;
+            }
         }
 
         /// <summary>
@@ -144,10 +173,10 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             foreach (var spec in AllSegmentDefinitions)
             {
                 SetSegmentGate(gates,
-                               spec.LatCoef,
-                               spec.LatOffsetCoef,
-                               spec.LonCoef,
-                               spec.LonOffsetCoef,
+                               spec.HeightFactor,
+                               spec.HeightRadiusFactor,
+                               spec.WidthFactor,
+                               spec.WidthRadiusFactor,
                                spec.Orientation,
                                spec.TopPixels,
                                spec.LeftPixels,
@@ -160,93 +189,163 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         }
 
         /// <summary>
-        /// Adds a gate to list of gates for the current segment if it is part of the message letter being processed.
+        /// Calculates the geographic position and attributes for a specific gate segment within a sign writing message
+        /// and adds it to the provided list of gates, but only if the segment is part of the currently processed letter.
         /// </summary>
-        /// <param name="gates">Where the gates are stored</param>
-        /// <param name="latCoef">How many straight segment portions this segment is right of letter lefthand edge</param>
-        /// <param name="latOffsetCoef">How many pointy cap segment portions this segment is right of letter lefthand edge</param>
-        /// <param name="lonCoef">How many straight segment portions this segment is above letter bottom edge</param>
-        /// <param name="lonOffsetCoef">How many pointy cap segment portions this segment is above letter bottom edge</param>
-        /// <param name="orientation">The direction of front side of gate, e.g. 90 means the gate will be triggered when 
-        /// flying through it from the west heading east</param>
-        /// <param name="topPixels">Top pixel reference for segment in letter</param>
-        /// <param name="leftPixels">Left pixel reference for segment in letter</param>
-        /// <param name="segmentIndex">Which of the 22 possible segments is being processed</param>
-        /// <param name="letterIndex">Indicates which letter in the sign writing message is being processed</param>
-        internal static void SetSegmentGate(List<Gate> gates, double latCoef, double latOffsetCoef, double lonCoef, double lonOffsetCoef,
+        /// <param name="gates">The list where the generated Gate object will be added.</param>
+        /// <param name="HeightFactor">How many grid lengths this segment is above letter bottom edge.</param>
+        /// <param name="HeightRadiusFactor">How many radius turns this segment is above letter bottom edge.</param>
+        /// <param name="WidthFactor">How many grid lengths this segment is right of letter lefthand edge.</param>
+        /// <param name="WidthRadiusFactor">How many radius turns this segment is right of letter lefthand edge</param>
+        /// <param name="orientation">The true bearing (in degrees, 0-360) defining the direction an aircraft must fly through the gate to trigger it.
+        /// For example, 90 degrees means flying from west to east.</param>
+        /// <param name="topPixels">The pixel Y-coordinate of the segment's origin relative to the top edge of the letter's bounding box.</param>
+        /// <param name="leftPixels">The pixel X-coordinate of the segment's origin relative to the left edge of the letter's bounding box.</param>
+        /// <param name="segmentIndex">The zero-based index (0-21) identifying which of the 22 possible segments of a letter is being processed.</param>
+        /// <param name="letterIndex">The zero-based index indicating the position of the current letter within the overall sign message.</param>
+        /// <param name="formData">A <see cref="ScenarioFormData"/> object containing global scenario parameters, such as sign message text,
+        /// grid unit size, segment radius, and tilt angle.</param>
+        internal static void SetSegmentGate(List<Gate> gates, double HeightFactor, double HeightRadiusFactor, double WidthFactor, double WidthRadiusFactor,
             double orientation, double topPixels, double leftPixels, int segmentIndex, int letterIndex, ScenarioFormData formData)
         {
-            // Skip segments that don't form part of current letter in sign writing message
+            // Check if the current segment is active for the specific letter in the sign message.
+            // If not, this segment does not form part of the letter, and no gate is added.
             if (!SignCharacterMap.SegmentIsSet(formData.SignMessage[letterIndex], segmentIndex))
             {
                 return;
             }
 
-            // At this point the letter bottom lefthand edge is at 0 latitude and 0 longitude. Work out
-            // from this reference point the lat/lon of segment being processed in current message letter
-            double lat = formData.SignSegmentLength * latCoef + formData.SignSegmentRadius * latOffsetCoef;
-            double lon = formData.SignSegmentLength * lonCoef + formData.SignSegmentRadius * lonOffsetCoef;
+            // Calculate the segment's latitude and longitude relative to the letter's origin (bottom-left at 0,0).
+            // The latitude calculation assumes a northerly bearing (0 degrees) for the distance.
+            double finishLat = 0;
+            double finishLon = 0;
+            // Using a named discard variable as recommended for ref parameters, instead of directly using `_`.
+            double ignoredLatLon = 0;
 
-            // Letter starts at 0 amsl and later gets translated to correct height.
+            double latitudeDistance = (formData.SignGridUnitSizeFeet * HeightFactor + formData.SignSegmentRadiusFeet * HeightRadiusFactor) * Constants.MetresInFoot;
+            MathRoutines.AdjCoords(0, 0, 0, latitudeDistance, ref finishLat, ref ignoredLatLon);
+
+            // The longitude calculation assumes an easterly bearing (90 degrees) for the distance.
+            double longitudeDistance = (formData.SignGridUnitSizeFeet * WidthFactor + formData.SignSegmentRadiusFeet * WidthRadiusFactor) * Constants.MetresInFoot;
+            MathRoutines.AdjCoords(0, 0, 90, longitudeDistance, ref ignoredLatLon, ref finishLon);
+
+            // Initial altitude (AMSL) is set to zero; the entire sign will be translated to its final height later.
             double amsl = 0;
 
-            // The tilt angle of message refers to the segments in the vertical plane e.g. the sides of letter 'A'
-            // while the horizontal segments are unaffected by tilt angle e.g. the middle and top horizontal lines of letter 'A'
-            // So for the gates marking start and finish of vertical segments in a letter the gates are pitched up or down
-            // by tilt angle amount depending if the vertical sequence of gates is climbing or descending in altitude.
+            // Determine the pitch angle for the gate based on its orientation and the sign's tilt angle.
+            // Vertical segments (north/south orientation) may be pitched up or down according to the sign's tilt.
+            // Horizontal segments (east/west orientation) remain level (0 pitch).
             double pitch;
-            if (orientation == 90 || orientation == 270)
+            if (orientation == 90 || orientation == 270) // East or West orientation (horizontal segments)
             {
                 pitch = 0;
             }
-            else if (orientation == 180)
+            else if (orientation == 180) // South orientation (descending vertical segments)
             {
-                pitch = formData.SignTiltAngle;
+                pitch = formData.SignTiltAngleDegrees;
             }
-            else
+            else // North orientation (climbing vertical segments)
             {
-                pitch = -formData.SignTiltAngle;
+                pitch = -formData.SignTiltAngleDegrees;
             }
 
-            // Shift leftPixels based on which letter it is in message
-            leftPixels += letterIndex * (Constants.SignCharWidthPixels + Constants.SignCharPaddingPixels);
+            // Adjust the 'leftPixels' reference based on the letter's position within the overall sign message.
+            // This accounts for character width and inter-character padding.
+            leftPixels += letterIndex * (Constants.SignCharWidthPixels + Constants.SignCharPaddingInternalPixels);
 
-            gates.Add(new Gate(lat, lon, amsl, pitch, orientation, topPixels, leftPixels));
+            // Add the newly created gate with its calculated properties to the list.
+            gates.Add(new Gate(finishLat, finishLon, amsl, pitch, orientation, topPixels, leftPixels));
         }
 
         /// <summary>
-        /// Translate a subset of gates in list of gates by specified latitude, longitude, and altitude amounts
+        /// Translates a specified subset of gates within a list by a given easterly distance and altitude amount.
         /// </summary>
-        /// <param name="gates">Where the gates are stored</param>
-        /// <param name="startGateIndex">Index of first gate in list of gates to be translated</param>
-        /// <param name="noGates">The number of gates in list of gates to be translated </param>
-        /// <param name="latAmt">Latitude translation amount</param>
-        /// <param name="longAmt">Longitude translation amount</param>
-        /// <param name="altAmt">Altitude translation amount</param>
-        internal static void TranslateGates(List<Gate> gates, int startGateIndex, int noGates, double latAmt, double longAmt, double altAmt)
+        /// <param name="gates">The list containing the Gate objects to be translated.</param>
+        /// <param name="startGateIndex">The zero-based index of the first gate in the list to begin translation from.</param>
+        /// <param name="noGates">The total number of gates to translate, starting from <paramref name="startGateIndex"/>.</param>
+        /// <param name="distance">The distance in meters by which to shift each selected gate eastward.</param>
+        /// <param name="altAmt">The amount in meters to adjust the altitude (AMSL) of each selected gate.</param>
+        internal static void TranslateGates(List<Gate> gates, int startGateIndex, int noGates, double distance, double altAmt)
         {
+            const double headingToMoveEast = 90;
             for (int index = startGateIndex; index < startGateIndex + noGates; index++)
             {
-                gates[index].lat += latAmt;
-                gates[index].lon += longAmt;
+                MathRoutines.AdjCoords(gates[index].lat, gates[index].lon, headingToMoveEast, distance, ref gates[index].lat, ref gates[index].lon); 
                 gates[index].amsl += altAmt;
             }
         }
 
         /// <summary>
-        /// Tilt gates in vertical segment plane
+        /// Tilts a specified range of gates in a vertical segment plane relative to the equator.
+        /// <para>
+        /// This operation adjusts both the latitude and altitude of the gates based on a tilt angle.
+        /// The tilt is conceptualized as rotating a segment that originates at the equator (latitude 0)
+        /// on the gate's longitude and extends vertically (along the meridian) to the gate's original latitude.
+        /// </para>
+        /// <para>
+        /// The <paramref name="formData.SignTiltAngle"/> represents the angle of tilt from the vertical.
+        /// A 0-degree tilt means the gate remains at its original latitude and altitude (no change).
+        /// A 90-degree tilt means the gate's latitude moves to the equator (latitude 0) and its altitude
+        /// increases by its original meridian distance from the equator.
+        /// </para>
+        /// <para>
+        /// This method assumes all gates are located in the Northern Hemisphere, meaning their latitudes are non-negative.
+        /// </para>
         /// </summary>
-        /// <param name="gates">Where the gates are stored</param>
-        /// <param name="startGateIndex">Index of first gate in list of gates to be translated</param>
-        /// <param name="noGates">The number of gates in list of gates to be translated </param>
+        /// <param name="gates">The list of Gate objects to be modified.</param>
+        /// <param name="startGateIndex">The zero-based index of the first gate in the list to be processed.</param>
+        /// <param name="noGates">The number of gates, starting from <paramref name="startGateIndex"/>, to apply the tilt to.</param>
+        /// <param name="formData">The scenario form data, containing the <see cref="ScenarioFormData.SignTiltAngleDegrees"/> in degrees.</param>
         internal static void TiltGates(List<Gate> gates, int startGateIndex, int noGates, ScenarioFormData formData)
         {
             for (int index = startGateIndex; index < startGateIndex + noGates; index++)
             {
-                // do altitude change first before adjusting latitude, tilt is on longitude axis, latitudes reduced as segment
-                // length is constant but when tilted is shorter over ground
-                gates[index].amsl += Math.Abs(gates[index].lat) * Math.Sin(formData.SignTiltAngle * Math.PI / 180) * Constants.FeetInDegreeOfLatitude;
-                gates[index].lat = gates[index].lat * Math.Cos(formData.SignTiltAngle * Math.PI / 180);
+                // Store original gate latitude and longitude for calculations.
+                double originalLat = gates[index].lat;
+                double originalLon = gates[index].lon;
+
+                // Convert tilt angle from degrees to radians for trigonometric functions.
+                double tiltAngleRadians = formData.SignTiltAngleDegrees * Math.PI / 180;
+
+                // 1. Calculate the initial vertical offset (distance along the meridian)
+                //    from the equator (latitude 0) at the gate's longitude to the gate's original latitude.
+                //    This represents the "length" of the segment being tilted.
+                //    MathRoutines.CalcDistance returns distance in nautical miles, so convert to meters.
+                //    Since gates are always in the Northern Hemisphere, originalLat will be >= 0.
+                double initialMeridianDistanceMeters = MathRoutines.CalcDistance(0, originalLon, originalLat, originalLon) * Constants.MetresInNauticalMile;
+
+                // 2. Calculate the new horizontal projection of this segment after tilting.
+                //    This will be the new distance from the equator along the meridian.
+                //    This value determines the new latitude.
+                double tiltedMeridianDistanceMeters = initialMeridianDistanceMeters * Math.Cos(tiltAngleRadians);
+
+                // 3. Calculate the altitude adjustment (vertical projection) based on the tilt.
+                //    This is the change in AMSL altitude.
+                //    The altitude adjustment is always positive as it represents an upward shift due to tilt.
+                double altitudeAdjustment = initialMeridianDistanceMeters * Math.Sin(tiltAngleRadians);
+
+                // 4. Adjust the gate's latitude based on the tilted distance from the equator.
+                //    The longitude remains constant as the tilt is strictly within the meridian plane.
+                double newLat = 0; // Will hold the calculated new latitude
+                double tempLon = originalLon; // Used by AdjCoords, should ideally remain originalLon
+
+                // Since gates are always in the Northern Hemisphere, the heading to move from the
+                // equator to the new latitude will always be 0 (North).
+                const double headingToMoveNorth = 0;
+
+                // Use AdjCoords to find the new latitude by starting from the equator at the
+                // gate's longitude and moving the 'tiltedMeridianDistanceMeters' along the meridian.
+                MathRoutines.AdjCoords(0, originalLon, headingToMoveNorth, tiltedMeridianDistanceMeters, ref newLat, ref tempLon);
+
+                // Update the gate's latitude with the newly calculated value.
+                gates[index].lat = newLat;
+                // Explicitly preserve the original longitude, as the tilt is meridional and
+                // AdjCoords might introduce minor longitude changes due to ellipsoid calculations
+                // for very large distances or near poles, which is not desired here.
+                gates[index].lon = originalLon;
+
+                // 5. Adjust the gate's altitude (AMSL) by adding the calculated altitude adjustment.
+                gates[index].amsl += altitudeAdjustment;
             }
         }
     }

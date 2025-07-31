@@ -14,19 +14,24 @@ namespace P3D_Scenario_Generator
 
         static internal void GenerateFXMLfile(ScenarioFormData formData)
 		{
-			SimBaseDocument simBaseDocument = ReadSourceFXML();
-			EditSourceFXML(simBaseDocument, formData);
+			TryReadSourceFXML(out SimBaseDocument simBaseDocument, null);
+            EditSourceFXML(simBaseDocument, formData);
 			WriteSourceFXML(simBaseDocument, formData);
         }
 
-		static private SimBaseDocument ReadSourceFXML()
+        /// <summary>
+        /// Attempts to read and deserialize a <see cref="SimBaseDocument"/> from its embedded resource XML file.
+        /// </summary>
+        /// <param name="simBaseDocument">When this method returns, contains the deserialized object if successful; otherwise, null.</param>
+        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <returns>True if the document was successfully deserialized; otherwise, false.</returns>
+        static internal bool TryReadSourceFXML(out SimBaseDocument simBaseDocument, IProgress<string> progressReporter = null)
         {
-			XmlSerializer serializer = new(typeof(SimBaseDocument));
-			Stream stream = Form.GetResourceStream($"XML.{fxmlFilename}");
-			SimBaseDocument simBaseDocument = (SimBaseDocument)serializer.Deserialize(stream);
-			stream.Dispose();
-			return simBaseDocument;
-		}
+            string resourceName = $"XML.{fxmlFilename}";
+
+            // Call the new generic method in FileOps to handle all the complex logic
+            return FileOps.TryDeserializeXmlFromResource<SimBaseDocument>(resourceName, progressReporter, out simBaseDocument);
+        }
 
 		static private void EditSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)
 		{

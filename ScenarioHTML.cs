@@ -40,7 +40,7 @@ namespace P3D_Scenario_Generator
         static internal void GenerateHTMLfiles(ScenarioFormData formData)
         {
             overview = SetOverviewStruct(formData);
-            string overviewHTML = SetOverviewHTML(overview);
+            TrySetOverviewHTML(overview, out string overviewHTML, null);
             File.WriteAllText($"{formData.ScenarioFolder}\\Overview.htm", overviewHTML);
 
             MissionBrief missionBrief = SetMissionBriefStruct(overview, formData);
@@ -180,26 +180,50 @@ namespace P3D_Scenario_Generator
 
             return missionBrief;
         }
-
-        static private string SetOverviewHTML(Overview overview)
+        
+        /// <summary>
+        /// Attempts to load an HTML template from an embedded resource, populate it with
+        /// data from an <see cref="Overview"/> object, and return the final HTML string.
+        /// </summary>
+        /// <param name="overview">The object containing the data to populate the HTML template.</param>
+        /// <param name="overviewHTML">When this method returns, contains the fully populated HTML string if successful; otherwise, null.</param>
+        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <returns>True if the HTML was successfully generated; otherwise, false.</returns>
+        static internal bool TrySetOverviewHTML(Overview overview, out string overviewHTML, IProgress<string> progressReporter = null)
         {
-            string overviewHTML;
+            string resourceName = "HTML.OverviewSource.htm";
 
-            Stream stream = Form.GetResourceStream($"HTML.OverviewSource.htm");
-            StreamReader reader = new(stream);
-            overviewHTML = reader.ReadToEnd();
-            stream.Dispose();
-            overviewHTML = overviewHTML.Replace("overviewParams.title", $"{overview.Title}");
-            overviewHTML = overviewHTML.Replace("overviewParams.h1", $"{overview.Heading1}");
-            overviewHTML = overviewHTML.Replace("overviewParams.h2Location", $"{overview.Location}");
-            overviewHTML = overviewHTML.Replace("overviewParams.pDifficulty", $"{overview.Difficulty}");
-            overviewHTML = overviewHTML.Replace("overviewParams.pDuration", $"{overview.Duration}");
-            overviewHTML = overviewHTML.Replace("overviewParams.h2Aircraft", $"{overview.Aircraft}");
-            overviewHTML = overviewHTML.Replace("overviewParams.pBriefing", $"{overview.Briefing}");
-            overviewHTML = overviewHTML.Replace("overviewParams.liObjective", $"{overview.Objective}");
-            overviewHTML = overviewHTML.Replace("overviewParams.liTips", $"{overview.Tips}");
+            Log.Info("Starting HTML template processing for overview.");
 
-            return overviewHTML;
+            // Use the new FileOps method to safely get the template content
+            if (!FileOps.TryReadAllTextFromResource(resourceName, progressReporter, out overviewHTML))
+            {
+                Log.Error($"Failed to get HTML template from resource '{resourceName}'. HTML generation failed.");
+                return false;
+            }
+
+            try
+            {
+                // Perform all string replacements
+                overviewHTML = overviewHTML.Replace("overviewParams.title", overview.Title ?? "");
+                overviewHTML = overviewHTML.Replace("overviewParams.h1", overview.Heading1 ?? "");
+                overviewHTML = overviewHTML.Replace("overviewParams.h2Location", overview.Location ?? "");
+                overviewHTML = overviewHTML.Replace("overviewParams.pDifficulty", overview.Difficulty ?? "");
+                overviewHTML = overviewHTML.Replace("overviewParams.pDuration", overview.Duration ?? "");
+                overviewHTML = overviewHTML.Replace("overviewParams.h2Aircraft", overview.Aircraft ?? "");
+                overviewHTML = overviewHTML.Replace("overviewParams.pBriefing", overview.Briefing ?? "");
+                overviewHTML = overviewHTML.Replace("overviewParams.liObjective", overview.Objective ?? "");
+                overviewHTML = overviewHTML.Replace("overviewParams.liTips", overview.Tips ?? "");
+
+                Log.Info("Successfully populated overview HTML template.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"An unexpected error occurred during HTML string replacement. Details: {ex.Message}", ex);
+                progressReporter?.Report("ERROR: Failed to populate overview HTML.");
+                return false;
+            }
         }
 
         static private string SetMissionBriefHTML(MissionBrief missionBrief)

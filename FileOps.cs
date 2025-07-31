@@ -1,7 +1,256 @@
-﻿namespace P3D_Scenario_Generator
+﻿using System;
+using System.Reflection;
+using System.Text;
+using System.Xml.Serialization;
+
+namespace P3D_Scenario_Generator
 {
     internal static class FileOps
     {
+        /// <summary>
+        /// Attempts to read the entire contents of an embedded resource as a string.
+        /// </summary>
+        /// <param name="resourceName">The full name of the embedded resource, including its namespace path.</param>
+        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <param name="text">When this method returns, contains the contents of the resource as a string if successful; otherwise, null.</param>
+        /// <returns>True if the resource was successfully read; otherwise, false.</returns>
+        public static bool TryReadAllTextFromResource(string resourceName, IProgress<string> progressReporter, out string text)
+        {
+            text = null;
+
+            if (!TryGetResourceStream(resourceName, progressReporter, out Stream stream))
+            {
+                // Error already logged by TryGetResourceStream
+                return false;
+            }
+
+            try
+            {
+                using (stream) // Ensure stream is disposed
+                using (StreamReader reader = new(stream, Encoding.UTF8)) // Ensure reader is disposed
+                {
+                    text = reader.ReadToEnd();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                string message = $"FileOps.TryReadAllTextFromResource: An error occurred reading resource '{resourceName}'. Details: {ex.Message}";
+                Log.Error(message, ex);
+                progressReporter?.Report($"ERROR: {message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to read and deserialize an object of a specified type from an embedded resource using XmlSerializer.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize from the XML.</typeparam>
+        /// <param name="resourceName">The full name of the embedded resource, including its namespace path.</param>
+        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <param name="result">When this method returns, contains the deserialized object if successful; otherwise, null.</param>
+        /// <returns>True if the object was successfully deserialized; otherwise, false.</returns>
+        public static bool TryDeserializeXmlFromResource<T>(string resourceName, IProgress<string> progressReporter, out T result) where T : class
+        {
+            result = null; // Initialize the out parameter
+
+            // Use the existing FileOps method to get the resource stream
+            if (!TryGetResourceStream(resourceName, progressReporter, out Stream stream))
+            {
+                // Error already logged by TryGetResourceStream
+                return false;
+            }
+
+            try
+            {
+                // Ensure the stream is disposed even if an exception occurs
+                using (stream)
+                {
+                    XmlSerializer serializer = new(typeof(T));
+                    result = (T)serializer.Deserialize(stream);
+                    Log.Info($"FileOps.TryDeserializeXmlFromResource: Successfully deserialized '{resourceName}'.");
+                    return true;
+                }
+            }
+            catch (InvalidOperationException ioEx)
+            {
+                // This exception is typically thrown by XmlSerializer for malformed XML or other data errors
+                string message = $"FileOps.TryDeserializeXmlFromResource: Invalid operation during deserialization of '{resourceName}'. XML may be malformed. Details: {ioEx.Message}";
+                Log.Error(message, ioEx);
+                progressReporter?.Report($"ERROR: Invalid XML format in resource '{resourceName}'.");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Catch any other unexpected exceptions
+                string message = $"FileOps.TryDeserializeXmlFromResource: An unexpected error occurred during deserialization of '{resourceName}'. Details: {ex.Message}";
+                Log.Error(message, ex);
+                progressReporter?.Report($"ERROR: Unexpected error deserializing '{resourceName}'.");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to read all bytes from a specified file path.
+        /// Handles common file I/O exceptions and logs them.
+        /// </summary>
+        /// <param name="filePath">The full path to the file to read.</param>
+        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <param name="bytes">When this method returns, contains the contents of the file as a byte array if successful; otherwise, null.</param>
+        /// <returns>True if the file was successfully read; otherwise, false.</returns>
+        public static bool TryReadAllBytes(string filePath, IProgress<string> progressReporter, out byte[] bytes)
+        {
+            bytes = null; // Initialize out parameter
+
+            if (!File.Exists(filePath))
+            {
+                string message = $"FileOps.TryReadAllBytes: File not found at '{filePath}'.";
+                Log.Error(message);
+                progressReporter?.Report($"ERROR: {message}");
+                return false;
+            }
+
+            try
+            {
+                bytes = File.ReadAllBytes(filePath);
+                Log.Info($"FileOps.TryReadAllBytes: Successfully read all bytes from '{filePath}'.");
+                return true;
+            }
+            catch (IOException ioEx)
+            {
+                string message = $"FileOps.TryReadAllBytes: I/O error reading file '{filePath}'. Details: {ioEx.Message}";
+                Log.Error(message, ioEx);
+                progressReporter?.Report($"ERROR: {message}");
+                return false;
+            }
+            catch (UnauthorizedAccessException uaEx)
+            {
+                string message = $"FileOps.TryReadAllBytes: Permission denied accessing file '{filePath}'. Details: {uaEx.Message}";
+                Log.Error(message, uaEx);
+                progressReporter?.Report($"ERROR: {message}");
+                return false;
+            }
+            catch (OutOfMemoryException oomEx)
+            {
+                string message = $"FileOps.TryReadAllBytes: Insufficient memory to read file '{filePath}'. Details: {oomEx.Message}";
+                Log.Error(message, oomEx);
+                progressReporter?.Report($"ERROR: {message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                string message = $"FileOps.TryReadAllBytes: An unexpected error occurred reading file '{filePath}'. Details: {ex.Message}";
+                Log.Error(message, ex);
+                progressReporter?.Report($"ERROR: {message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to read all text from a specified file.
+        /// Reports errors to the progress reporter and logs if the operation fails.
+        /// </summary>
+        /// <param name="filePath">The full path to the file to read.</param>
+        /// <param name="content">When this method returns, contains the content of the file if successful; otherwise, null.</param>
+        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <returns>True if the file was read successfully, false otherwise.</returns>
+        public static bool TryReadAllText(string filePath, out string content, IProgress<string> progressReporter = null)
+        {
+            content = null; // Initialize to null in case of failure
+
+            try
+            {
+                if (!File.Exists(filePath))
+                {
+                    string errorMessage = $"File not found: '{filePath}'.";
+                    Log.Error(errorMessage);
+                    progressReporter?.Report($"ERROR: {errorMessage}");
+                    return false;
+                }
+
+                content = File.ReadAllText(filePath);
+                return true;
+            }
+            catch (FileNotFoundException ex)
+            {
+                // Although checked above, this catch is a safeguard for race conditions.
+                string errorMessage = $"File not found: '{filePath}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report($"ERROR: {errorMessage}");
+                return false;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                string errorMessage = $"Permission denied to read file: '{filePath}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report($"ERROR: {errorMessage}");
+                return false;
+            }
+            catch (IOException ex)
+            {
+                string errorMessage = $"An I/O error occurred while reading file: '{filePath}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report($"ERROR: {errorMessage}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"An unexpected error occurred while reading file: '{filePath}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report($"ERROR: {errorMessage}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the last write time of a specified file.
+        /// </summary>
+        /// <param name="filePath">The full path to the file.</param>
+        /// <returns>The <see cref="DateTime"/> of the last write time, or <see langword="null"/> if the file does not exist.</returns>
+        public static DateTime? GetFileLastWriteTime(string filePath)
+        {
+            FileInfo fileInfo = new(filePath);
+            return fileInfo.Exists ? fileInfo.LastWriteTime : null;
+        }
+
+        /// <summary>
+        /// Attempts to get an embedded resource stream.
+        /// Reports errors to the progress reporter and logs if the resource is not found.
+        /// </summary>
+        /// <param name="resourcePath">The path to the embedded resource (e.g., "Javascript.scriptsSignWriting.js").</param>
+        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <param name="stream">When this method returns, contains the embedded resource stream if found; otherwise, null.</param>
+        /// <returns>True if the resource stream was successfully retrieved; false otherwise.</returns>
+        public static bool TryGetResourceStream(string resourcePath, IProgress<string> progressReporter, out Stream stream)
+        {
+            stream = null;
+            try
+            {
+                // Construct the full resource name based on the assembly name and the provided path.
+                // Replace spaces in the assembly name with underscores, as is common for embedded resources.
+                string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+                string fullResourceName = $"{assemblyName.Replace(" ", "_")}.Resources.{resourcePath}";
+
+                stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullResourceName);
+
+                if (stream == null)
+                {
+                    string errorMessage = $"Error: Embedded resource '{fullResourceName}' not found.";
+                    Log.Error(errorMessage);
+                    progressReporter?.Report(errorMessage);
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"An unexpected error occurred while trying to get resource stream for '{resourcePath}'. Details: {ex.Message}";
+                Log.Error(errorMessage);
+                progressReporter?.Report(errorMessage);
+                return false;
+            }
+        }
+
         /// <summary>
         /// Attempts to delete a file, with a retry mechanism for transient file locks.
         /// Displays an error message and logs if it ultimately fails.

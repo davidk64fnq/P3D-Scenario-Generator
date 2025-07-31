@@ -4,10 +4,17 @@
     "checkJs": true,
     "allowJs": true,
     "target": "es2016",
-    "noImplicitAny": true
+    "module": "esnext", // <--- ADD THIS LINE: Specifies ES Module syntax for imports/exports
+    "moduleResolution": "node", // Keep "node" or change to "bundler" if you start using a bundler. "node" often works for relative paths.
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true, // Good practice
+    "esModuleInterop": true // Recommended for better interoperability with CommonJS modules
   },
   "include": [
-    "**/*.js",
+    "**/*.js", // This will include scriptsSignWriting.js and the Geodesy files if they are in the root or subfolders
     "prepar3d-globals.d.ts"
+  ],
+  "exclude": [
+    "node_modules" // Exclude node_modules if you have any, to speed up compilation
   ]
 }

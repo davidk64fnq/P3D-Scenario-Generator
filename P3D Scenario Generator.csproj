@@ -73,6 +73,9 @@
     <None Remove="Resources\Javascript\scriptsPhotoTour.js" />
     <None Remove="Resources\Javascript\scriptsSignWriting.js" />
     <None Remove="Resources\Javascript\scriptsWikipediaItem.js" />
+    <None Remove="Resources\Javascript\third-party\geodesy\dms.js" />
+    <None Remove="Resources\Javascript\third-party\geodesy\latlon-ellipsoidal.js" />
+    <None Remove="Resources\Javascript\third-party\geodesy\vector3d.js" />
     <None Remove="Resources\LocationFavouritesJSON.txt" />
     <None Remove="Resources\Sounds\ThruHoop.wav" />
     <None Remove="Resources\XML\runways.xml" />
@@ -197,6 +200,9 @@
     <EmbeddedResource Include="Resources\Javascript\scriptsPhotoTour.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsSignWriting.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsWikipediaItem.js" />
+    <EmbeddedResource Include="Resources\Javascript\third-party\geodesy\dms.js" />
+    <EmbeddedResource Include="Resources\Javascript\third-party\geodesy\latlon-ellipsoidal.js" />
+    <EmbeddedResource Include="Resources\Javascript\third-party\geodesy\vector3d.js" />
     <EmbeddedResource Include="Resources\Text\LocationFavouritesJSON.txt" />
     <EmbeddedResource Include="Resources\Sounds\ThruHoop.wav" />
     <EmbeddedResource Include="Resources\XML\runways.xml" />

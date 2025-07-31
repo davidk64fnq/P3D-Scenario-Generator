@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using Newtonsoft.Json;
 using P3D_Scenario_Generator.ConstantsEnums;
+using System;
 
 namespace P3D_Scenario_Generator
 {
@@ -533,23 +534,94 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Load <see cref="AircraftVariants"/> from file stored in JSON format
+        /// Loads <see cref="AircraftVariants"/> from file stored in JSON format.
+        /// It first attempts to load a local user-created version, falling back to an embedded resource.
         /// </summary>
-        internal static void LoadAircraftVariants()
+        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <returns>True if aircraft variants were successfully loaded, false otherwise.</returns>
+        internal static bool LoadAircraftVariants(IProgress<string> progressReporter = null)
         {
-            string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            directory = Path.Combine(directory, AppDomain.CurrentDomain.FriendlyName);
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-            directory = Path.Combine(directory, "AircraftVariantsJSON.txt");
+            // Initialize AircraftVariants to an empty list to prevent NullReferenceException on failure
+            AircraftVariants = [];
 
-            string input;
-            if (File.Exists(directory))
+            string appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                                                    AppDomain.CurrentDomain.FriendlyName);
+            string filePath = Path.Combine(appDataDirectory, "AircraftVariantsJSON.txt");
+            string inputJson;
+
+            try
             {
-                input = File.ReadAllText(directory);
-                AircraftVariants = JsonConvert.DeserializeObject<List<AircraftVariant>>(input);
+                // Ensure the application data directory exists
+                if (!Directory.Exists(appDataDirectory))
+                {
+                    Directory.CreateDirectory(appDataDirectory);
+                    Log.Info($"Created application data directory: {appDataDirectory}");
+                }
+
+                if (File.Exists(filePath))
+                {
+                    Log.Info($"Attempting to load aircraft variants from local file: {filePath}");
+                    // Use the FileOps.TryReadAllText method
+                    if (!FileOps.TryReadAllText(filePath, out inputJson, progressReporter))
+                    {
+                        // FileOps.TryReadAllText already logged and reported the error.
+                        Log.Error($"Failed to read local aircraft variants file: {filePath}");
+                        AircraftVariants = []; // Ensure list is cleared on read error
+                        return false; // Indicate failure
+                    }
+                }
+                else
+                {
+                    Log.Info("Local aircraft variants file not found. Attempting to load from embedded resource.");
+                    // Use FileOps.TryGetResourceStream for embedded resource
+                    if (!FileOps.TryGetResourceStream("Text.AircraftVariantsJSON.txt", progressReporter, out Stream resourceStream))
+                    {
+                        Log.Error("Failed to retrieve embedded 'AircraftVariantsJSON.txt' resource.");
+                        return false; // Indicate failure
+                    }
+
+                    using (resourceStream) // Ensure the stream is disposed
+                    {
+                        using StreamReader reader = new(resourceStream);
+                        inputJson = reader.ReadToEnd();
+                    }
+                    Log.Info("Successfully read embedded 'AircraftVariantsJSON.txt' resource.");
+                }
+
+                // Deserialize the JSON content
+                AircraftVariants = JsonConvert.DeserializeObject<List<AircraftVariant>>(inputJson);
+
+                if (AircraftVariants == null)
+                {
+                    // If deserialization results in null (e.g., empty or malformed JSON that results in null rather than an error)
+                    AircraftVariants = []; // Ensure it's not null, even if empty
+                    string warningMessage = "Aircraft variants file was empty or contained no valid data. Initializing with an empty list.";
+                    Log.Warning(warningMessage);
+                    progressReporter?.Report(warningMessage);
+                }
+                else
+                {
+                    Log.Info($"Successfully loaded {AircraftVariants.Count} aircraft variants.");
+                    progressReporter?.Report($"Aircraft variants loaded ({AircraftVariants.Count} entries).");
+                }
+
+                return true; // Indicate success
+            }
+            catch (JsonException ex)
+            {
+                string errorMessage = $"Error parsing AircraftVariantsJSON.txt: JSON format is invalid. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report($"ERROR: {errorMessage}");
+                AircraftVariants = []; // Clear any potentially partial or invalid data
+                return false; // Indicate failure
+            }
+            catch (Exception ex) // General catch for any other unexpected errors during JSON deserialization
+            {
+                string errorMessage = $"An unexpected error occurred while processing aircraft variants JSON: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report($"ERROR: {errorMessage}");
+                AircraftVariants = [];
+                return false; // Indicate failure
             }
         }
 

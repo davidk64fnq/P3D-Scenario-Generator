@@ -329,7 +329,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMinDist.Name = "TextBoxCelestialMinDist";
             TextBoxCelestialMinDist.Size = new Size(100, 23);
             TextBoxCelestialMinDist.TabIndex = 2;
-            TextBoxCelestialMinDist.Tag = "20,double,<,TextBoxCelestialMaxDist";
+            TextBoxCelestialMinDist.Tag = "";
             TextBoxCelestialMinDist.Text = "20";
             TextBoxCelestialMinDist.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCelestialMinDist, "Min run home from starting position (miles)");
@@ -343,7 +343,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMaxDist.Name = "TextBoxCelestialMaxDist";
             TextBoxCelestialMaxDist.Size = new Size(100, 23);
             TextBoxCelestialMaxDist.TabIndex = 3;
-            TextBoxCelestialMaxDist.Tag = "30,double,>,TextBoxCelestialMinDist";
+            TextBoxCelestialMaxDist.Tag = "";
             TextBoxCelestialMaxDist.Text = "30";
             TextBoxCelestialMaxDist.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCelestialMaxDist, "Max run home from starting position (miles)");
@@ -385,7 +385,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignSegmentLength.Tag = "";
             TextBoxSignSegmentLength.Text = "5000";
             TextBoxSignSegmentLength.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSignSegmentLength, "Length of segment in feet");
+            toolTip1.SetToolTip(TextBoxSignSegmentLength, "The linear length, in feet, of a single straight segment that forms part of a character. Characters are defined by a grid that is four segments tall and two segments wide.");
             TextBoxSignSegmentLength.Leave += TextBoxSignSegmentLength_Leave;
             // 
             // TextBoxSignSegmentRadius
@@ -399,7 +399,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignSegmentRadius.Tag = "";
             TextBoxSignSegmentRadius.Text = "500";
             TextBoxSignSegmentRadius.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSignSegmentRadius, "Radius of space between segment ends in feet");
+            toolTip1.SetToolTip(TextBoxSignSegmentRadius, "The radius, in feet, of the turn path executed when transitioning from the end of one character segment to the start of the next.");
             TextBoxSignSegmentRadius.Leave += TextBoxSignSegmentRadius_Leave;
             // 
             // TextBoxPhotoTourConstraintsMaxLegDist
@@ -644,7 +644,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsCacheUsage.Name = "TextBoxSettingsCacheUsage";
             TextBoxSettingsCacheUsage.Size = new Size(100, 23);
             TextBoxSettingsCacheUsage.TabIndex = 39;
-            TextBoxSettingsCacheUsage.Tag = "0, natural";
+            TextBoxSettingsCacheUsage.Tag = "";
             TextBoxSettingsCacheUsage.Text = "0";
             TextBoxSettingsCacheUsage.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSettingsCacheUsage, "Amount of memory used by cache.");
@@ -1105,7 +1105,7 @@ namespace P3D_Scenario_Generator
             label24.TabIndex = 12;
             label24.Text = "Segment Radius";
             label24.TextAlign = ContentAlignment.MiddleCenter;
-            toolTip1.SetToolTip(label24, "Radius of space between segment ends in feet");
+            toolTip1.SetToolTip(label24, "The radius, in feet, of the turn path executed when transitioning from the end of one character segment to the start of the next.");
             // 
             // label23
             // 
@@ -1116,7 +1116,7 @@ namespace P3D_Scenario_Generator
             label23.TabIndex = 11;
             label23.Text = "Segment Length";
             label23.TextAlign = ContentAlignment.MiddleCenter;
-            toolTip1.SetToolTip(label23, "Length of segment in feet");
+            toolTip1.SetToolTip(label23, "The linear length, in feet, of a single straight segment that forms part of a character. Characters are defined by a grid that is four segments tall and two segments wide.\r\n");
             // 
             // label22
             // 
@@ -1137,7 +1137,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignMonitorHeight.Name = "TextBoxSignMonitorHeight";
             TextBoxSignMonitorHeight.Size = new Size(100, 23);
             TextBoxSignMonitorHeight.TabIndex = 39;
-            TextBoxSignMonitorHeight.Tag = "1080,natural";
+            TextBoxSignMonitorHeight.Tag = "";
             TextBoxSignMonitorHeight.Text = "1080";
             TextBoxSignMonitorHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSignMonitorHeight, "Resolution height in pixels of the monitor that sign window will display on.\r\n");
@@ -1151,7 +1151,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignMonitorWidth.Name = "TextBoxSignMonitorWidth";
             TextBoxSignMonitorWidth.Size = new Size(100, 23);
             TextBoxSignMonitorWidth.TabIndex = 39;
-            TextBoxSignMonitorWidth.Tag = "1920,natural";
+            TextBoxSignMonitorWidth.Tag = "";
             TextBoxSignMonitorWidth.Text = "1920";
             TextBoxSignMonitorWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSignMonitorWidth, "Resolution width in pixels of the monitor that sign window will display on. \r\n");
@@ -1198,7 +1198,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignOffset.Name = "TextBoxSignOffset";
             TextBoxSignOffset.Size = new Size(100, 23);
             TextBoxSignOffset.TabIndex = 33;
-            TextBoxSignOffset.Tag = "20,whole,<=,20";
+            TextBoxSignOffset.Tag = "";
             TextBoxSignOffset.Text = "20";
             TextBoxSignOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSignOffset, resources.GetString("TextBoxSignOffset.ToolTip"));
@@ -1223,7 +1223,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignMonitorNumber.Name = "TextBoxSignMonitorNumber";
             TextBoxSignMonitorNumber.Size = new Size(100, 23);
             TextBoxSignMonitorNumber.TabIndex = 32;
-            TextBoxSignMonitorNumber.Tag = "0,whole";
+            TextBoxSignMonitorNumber.Tag = "";
             TextBoxSignMonitorNumber.Text = "0";
             TextBoxSignMonitorNumber.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSignMonitorNumber, "The default monitor that the sign window will display in. Experiment with values between 0 and the number of monitors minus 1.\r\n");
@@ -1251,7 +1251,7 @@ namespace P3D_Scenario_Generator
             ComboBoxSignAlignment.Name = "ComboBoxSignAlignment";
             ComboBoxSignAlignment.Size = new Size(100, 23);
             ComboBoxSignAlignment.TabIndex = 43;
-            ComboBoxSignAlignment.Tag = "Top Right";
+            ComboBoxSignAlignment.Tag = "";
             ComboBoxSignAlignment.Text = "Top Right";
             toolTip1.SetToolTip(ComboBoxSignAlignment, "Default location of sign window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.\r\n");
             ComboBoxSignAlignment.SelectedIndexChanged += ComboBoxSignAlignment_SelectedIndexChanged;
@@ -1553,7 +1553,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLWindowHeight.Name = "TextBoxWikiURLWindowHeight";
             TextBoxWikiURLWindowHeight.Size = new Size(100, 23);
             TextBoxWikiURLWindowHeight.TabIndex = 47;
-            TextBoxWikiURLWindowHeight.Tag = "1024,natural";
+            TextBoxWikiURLWindowHeight.Tag = "";
             TextBoxWikiURLWindowHeight.Text = "1024";
             TextBoxWikiURLWindowHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLWindowHeight, "Resolution height in pixels of the Wiki URL window.");
@@ -1567,7 +1567,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLWindowWidth.Name = "TextBoxWikiURLWindowWidth";
             TextBoxWikiURLWindowWidth.Size = new Size(100, 23);
             TextBoxWikiURLWindowWidth.TabIndex = 46;
-            TextBoxWikiURLWindowWidth.Tag = "800,natural";
+            TextBoxWikiURLWindowWidth.Tag = "";
             TextBoxWikiURLWindowWidth.Text = "800";
             TextBoxWikiURLWindowWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLWindowWidth, "Resolution width in pixels of the Wiki URL window. ");
@@ -1592,7 +1592,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorHeight.Name = "TextBoxWikiURLMonitorHeight";
             TextBoxWikiURLMonitorHeight.Size = new Size(100, 23);
             TextBoxWikiURLMonitorHeight.TabIndex = 39;
-            TextBoxWikiURLMonitorHeight.Tag = "1080,natural";
+            TextBoxWikiURLMonitorHeight.Tag = "";
             TextBoxWikiURLMonitorHeight.Text = "1080";
             TextBoxWikiURLMonitorHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLMonitorHeight, "Resolution height in pixels of the monitor that Wiki URL window will display on.");
@@ -1606,7 +1606,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorWidth.Name = "TextBoxWikiURLMonitorWidth";
             TextBoxWikiURLMonitorWidth.Size = new Size(100, 23);
             TextBoxWikiURLMonitorWidth.TabIndex = 39;
-            TextBoxWikiURLMonitorWidth.Tag = "1920,natural";
+            TextBoxWikiURLMonitorWidth.Tag = "";
             TextBoxWikiURLMonitorWidth.Text = "1920";
             TextBoxWikiURLMonitorWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLMonitorWidth, "Resolution width in pixels of the monitor that Wiki URL window will display on. ");
@@ -1653,7 +1653,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLOffset.Name = "TextBoxWikiURLOffset";
             TextBoxWikiURLOffset.Size = new Size(100, 23);
             TextBoxWikiURLOffset.TabIndex = 33;
-            TextBoxWikiURLOffset.Tag = "20,whole,<=,20";
+            TextBoxWikiURLOffset.Tag = "";
             TextBoxWikiURLOffset.Text = "20";
             TextBoxWikiURLOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLOffset, resources.GetString("TextBoxWikiURLOffset.ToolTip"));
@@ -1678,7 +1678,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorNumber.Name = "TextBoxWikiURLMonitorNumber";
             TextBoxWikiURLMonitorNumber.Size = new Size(100, 23);
             TextBoxWikiURLMonitorNumber.TabIndex = 32;
-            TextBoxWikiURLMonitorNumber.Tag = "0,whole";
+            TextBoxWikiURLMonitorNumber.Tag = "";
             TextBoxWikiURLMonitorNumber.Text = "0";
             TextBoxWikiURLMonitorNumber.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLMonitorNumber, "The default monitor that the Wiki URL window will display in. Experiment with values between 0 and the number of monitors minus 1.");
@@ -1706,7 +1706,7 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiURLAlignment.Name = "ComboBoxWikiURLAlignment";
             ComboBoxWikiURLAlignment.Size = new Size(100, 23);
             ComboBoxWikiURLAlignment.TabIndex = 43;
-            ComboBoxWikiURLAlignment.Tag = "Top Right";
+            ComboBoxWikiURLAlignment.Tag = "";
             ComboBoxWikiURLAlignment.Text = "Top Right";
             toolTip1.SetToolTip(ComboBoxWikiURLAlignment, "Default location of Wiki URL window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
             // 
@@ -2179,7 +2179,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapOffset.Name = "TextBoxSettingsMapOffset";
             TextBoxSettingsMapOffset.Size = new Size(100, 23);
             TextBoxSettingsMapOffset.TabIndex = 33;
-            TextBoxSettingsMapOffset.Tag = "20,whole,<=,20";
+            TextBoxSettingsMapOffset.Tag = "";
             TextBoxSettingsMapOffset.Text = "20";
             TextBoxSettingsMapOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSettingsMapOffset, resources.GetString("TextBoxSettingsMapOffset.ToolTip"));
@@ -2204,7 +2204,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapMonitorNumber.Name = "TextBoxSettingsMapMonitorNumber";
             TextBoxSettingsMapMonitorNumber.Size = new Size(100, 23);
             TextBoxSettingsMapMonitorNumber.TabIndex = 32;
-            TextBoxSettingsMapMonitorNumber.Tag = "0,whole";
+            TextBoxSettingsMapMonitorNumber.Tag = "";
             TextBoxSettingsMapMonitorNumber.Text = "0";
             TextBoxSettingsMapMonitorNumber.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSettingsMapMonitorNumber, "The default monitor that the map window will display in. Experiment with values between 0 and the number of monitors minus 1.");
@@ -2262,7 +2262,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapMonitorWidth.Name = "TextBoxSettingsMapMonitorWidth";
             TextBoxSettingsMapMonitorWidth.Size = new Size(100, 23);
             TextBoxSettingsMapMonitorWidth.TabIndex = 37;
-            TextBoxSettingsMapMonitorWidth.Tag = "1920,natural";
+            TextBoxSettingsMapMonitorWidth.Tag = "";
             TextBoxSettingsMapMonitorWidth.Text = "1920";
             TextBoxSettingsMapMonitorWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSettingsMapMonitorWidth, "Resolution width in pixels of the monitor that map window will display on. ");
@@ -2276,7 +2276,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapMonitorHeight.Name = "TextBoxSettingsMapMonitorHeight";
             TextBoxSettingsMapMonitorHeight.Size = new Size(100, 23);
             TextBoxSettingsMapMonitorHeight.TabIndex = 38;
-            TextBoxSettingsMapMonitorHeight.Tag = "1080,natural";
+            TextBoxSettingsMapMonitorHeight.Tag = "";
             TextBoxSettingsMapMonitorHeight.Text = "1080";
             TextBoxSettingsMapMonitorHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxSettingsMapMonitorHeight, "Resolution height in pixels of the monitor that map window will display on. ");

@@ -1,4 +1,5 @@
-﻿using P3D_Scenario_Generator.CelestialScenario;
+﻿using CoordinateSharp;
+using P3D_Scenario_Generator.CelestialScenario;
 using P3D_Scenario_Generator.CircuitScenario;
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.PhotoTourScenario;
@@ -14,32 +15,38 @@ namespace P3D_Scenario_Generator
 {
     public partial class Form : System.Windows.Forms.Form
     {
-        private readonly IProgress<string> _progressReporter;
+        private readonly FormProgressReporter _progressReporter;
         private readonly ScenarioFormData _formData;
+        private bool _isFormLoaded = false;
 
         public Form()
         {
             InitializeComponent();
 
+            // Perform custom initialization tasks after the designer-generated components are set up.
             if (!PostInitializeComponent())
             {
                 return;
             }
 
+            // If the associated control has an error, cancel the display of the standard ToolTip.
             toolTip1.Popup += ToolTip1_Popup;
 
-            _progressReporter = new Progress<string>(message =>
-            {
-                if (toolStripStatusLabel1 != null)
-                {
-                    toolStripStatusLabel1.Text = message;
-                }
-            });
+            // Initializes the progress reporter to update the status bar label on the UI thread.
+            _progressReporter = new FormProgressReporter(this.toolStripStatusLabel1, this);
 
             _formData = new ScenarioFormData();
 
-            PrepareFormFields();
+            // Initialize and populate the various input fields and controls on the form with default values, cached data, or user settings.
+            if (!PrepareFormFields(_progressReporter))
+            {
+                return;
+            }
+
+            _isFormLoaded = true; // Set to true once the form is fully loaded
         }
+
+        #region Form Initialization
 
         /// <summary>
         /// Performs custom initialization tasks after the designer-generated components are set up.
@@ -165,6 +172,14 @@ namespace P3D_Scenario_Generator
             return true;
         }
 
+        /// <summary>
+        /// Handles the <see cref="ToolTip.Popup"/> event for <c>ToolTip1</c>.
+        /// This method prevents the standard ToolTip from displaying if the associated control
+        /// has an active error message from <see cref="ErrorProvider"/>.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the ToolTip control.</param>
+        /// <param name="e">A <see cref="PopupEventArgs"/> that contains the event data.</param>
+
         private void ToolTip1_Popup(object sender, PopupEventArgs e)
         {
             // If the associated control has an error, cancel the display of the standard ToolTip.
@@ -174,9 +189,150 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// Initializes and populates the various input fields and controls on the form
+        /// with default values, cached data, or user settings.
+        /// This method organizes the initialization by tab page and specific sections.
+        /// </summary>
+        private bool PrepareFormFields(IProgress<string> progressReporter)
+        {
+            // General tab
+
+            //  Runways
+            if (!Runway.GetRunways(progressReporter))
+            {
+                return false;
+            }
+            ComboBoxGeneralRunwaySelected.DataSource = Runway.GetICAOids();
+
+            //  Locations
+            ComboBoxGeneralLocationCountry.DataSource = Runway.GetRunwayCountries();
+            ComboBoxGeneralLocationState.DataSource = Runway.GetRunwayStates();
+            ComboBoxGeneralLocationCity.DataSource = Runway.GetRunwayCities();
+            if (!Runway.LoadLocationFavourites())
+            {
+                return false;
+            }
+            Runway.CurrentLocationFavouriteIndex = 0;
+            TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
+            ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
+
+            //  Scenario type
+            SetScenarioTypesComboBox();
+
+            //  Aircraft variants
+            if (Aircraft.LoadAircraftVariants() && Aircraft.AircraftVariants.Count > 0)
+            {
+                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+                ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
+            }
+            else
+            {
+                return false;
+            }
+
+            // Circuit tab
+            RestoreUserSettings(TabPageCircuit.Controls);
+
+            // PhotoTour tab
+            RestoreUserSettings(TabPagePhotoTour.Controls);
+
+            // Signwriting tab
+            RestoreUserSettings(TabPageSign.Controls);
+
+            // Wikipedia Lists tab
+            RestoreUserSettings(TabPageWikiList.Controls);
+
+            // Settings tab
+            SetMapAlignmentComboBox();
+            SetMapWindowSizeComboBox();
+            Cache.CheckCache();
+            RestoreUserSettings(TabPageSettings.Controls);
+
+            return true;
+        }
+
+        #endregion
+
         #region General Tab
 
         #region Runway selection
+
+        /// <summary>
+        /// Compares last modified date of scenery.cfg with that of runways.xml. If scenery.cfg has been modified more recently, warns user that runways.xml
+        /// may be out of date and needs to be recreated.
+        /// </summary>
+        /// <remarks>
+        /// If a warning is displayed, the last modified date of runways.xml is updated to the current time. This action prevents the warning from being shown repeatedly
+        /// on subsequent program runs until the user has addressed the underlying issue by recreating the runways.xml file.
+        /// Errors and warnings are logged and displayed via the progress reporter, avoiding disruptive message boxes.
+        /// </remarks>
+        internal void CheckRunwaysXMLupToDate()
+        {
+            string xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "runways.xml");
+            string sceneryCFGdirectory = _formData.P3DProgramData;
+            string sceneryCFGfilePath = Path.Combine(sceneryCFGdirectory, "scenery.cfg");
+
+            try
+            {
+                // Check whether user created runways.xml exists. Exit if it doesn't as program is using the default version of file. Otherwise get the last modified date.
+                DateTime? xmlLastModified = FileOps.GetFileLastWriteTime(xmlFilePath);
+                if (!xmlLastModified.HasValue)
+                {
+                    Log.Info($"runways.xml not found at '{xmlFilePath}'. Program is likely using the default version. No date comparison needed.");
+                    _progressReporter?.Report("Using default runways.xml; no update check.");
+                    return;
+                }
+
+                // Check that scenery.cfg exists. Advise user if it doesn't. Otherwise get last modified date.
+                DateTime? sceneryLastModified = FileOps.GetFileLastWriteTime(sceneryCFGfilePath);
+                if (!sceneryLastModified.HasValue)
+                {
+                    string sceneryCfgMissingMessage = $"The scenery.cfg file is not in folder \"{sceneryCFGdirectory}\"." +
+                                                      " The program uses scenery.cfg last modified date to check whether user created runways.xml is up-to-date." +
+                                                      " You may need to update the simulator version number in settings.";
+                    Log.Warning(sceneryCfgMissingMessage);
+                    _progressReporter?.Report($"WARNING: {sceneryCfgMissingMessage.Replace(Environment.NewLine, " ")}"); 
+                    return;
+                }
+
+                // Do comparison of runway.xml and scenery.cfg dates and warn user if necessary
+                if (sceneryLastModified > xmlLastModified)
+                {
+                    string runwaysXmlOutOfDateMessage = $"The scenery.cfg file has been modified more recently than the user created runways.xml file." +
+                                                        " Consider rebuilding the runways.xml file to include recently added airports." +
+                                                        " The program will now refresh the last modified date on runways.xml to prevent repeated warnings.";
+                    Log.Warning(runwaysXmlOutOfDateMessage);
+                    _progressReporter?.Report($"WARNING: {runwaysXmlOutOfDateMessage.Replace(Environment.NewLine, " ")}"); // Flatten message for status bar
+                    DateTime currentTime = DateTime.Now;
+                    File.SetLastWriteTime(xmlFilePath, currentTime);
+                    Log.Info($"Refreshed last modified date of '{xmlFilePath}' to {currentTime}.");
+                }
+                else
+                {
+                    Log.Info("runways.xml is up-to-date with scenery.cfg.");
+                    _progressReporter?.Report("Runways data is up-to-date.");
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                string errorMessage = $"Error: Access to a file is denied while checking runway XML. Please check permissions. Details: {ex.Message}";
+                Log.Error(errorMessage, ex); // Log the error with exception details
+                _progressReporter?.Report($"ERROR: {errorMessage}"); 
+            }
+            catch (IOException ex)
+            {
+                string errorMessage = $"An I/O error occurred while checking file dates for runway XML. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                _progressReporter?.Report($"ERROR: {errorMessage}");
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"An unexpected error occurred in CheckRunwaysXMLupToDate: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                _progressReporter?.Report($"ERROR: {errorMessage}");
+            }
+        }
 
         private void TextBoxSearchRunway_TextChanged(object sender, EventArgs e)
         {
@@ -201,10 +357,45 @@ namespace P3D_Scenario_Generator
 
         #region Scenario selection
 
+        /// <summary>
+        /// Handles the <see cref="Control.Click"/> event for the "Random Scenario" button.
+        /// When clicked, this method randomly selects a scenario type from the available options
+        /// in the <see cref="ComboBoxGeneralScenarioType"/> combo box.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the Button control.</param>
+        /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
         private void ButtonRandomScenario_Click(object sender, EventArgs e)
         {
             Random random = new();
             ComboBoxGeneralScenarioType.SelectedIndex = random.Next(0, ComboBoxGeneralScenarioType.Items.Count);
+        }
+
+        private async void ButtonGenerateScenario_Click(object sender, EventArgs e)
+        {
+            if (GetValidatedScenarioFormData())
+            {
+                DisplayStartMessage();
+                CheckRunwaysXMLupToDate();
+                Runway.SetRunwaysSubset();
+                ImageUtils.DrawScenarioImages(_formData);
+
+                // Await the task and capture the boolean result indicating success or failure
+                bool success = await DoScenarioSpecificTasks();
+
+                if (!success)
+                {
+                    return;
+                }
+
+                // Only proceed with these steps if DoScenarioSpecificTasks succeeded
+                SaveSettingsAfterDoSpecific();
+                SaveUserSettings(TabPageSettings.Controls);
+                ScenarioFXML.GenerateFXMLfile(_formData);
+                ScenarioHTML.GenerateHTMLfiles(_formData);
+                ScenarioXML.GenerateXMLfile(_formData);
+                DeleteTempScenarioDirectory();
+                DisplayFinishMessage();
+            }
         }
 
         /// <summary>
@@ -243,34 +434,10 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private async void ButtonGenerateScenario_Click(object sender, EventArgs e)
-        {
-            if (GetValidatedScenarioFormData())
-            {
-                DisplayStartMessage();
-                CheckRunwaysXMLupToDate();
-                Runway.SetRunwaysSubset();
-                ImageUtils.DrawScenarioImages(_formData);
-
-                // Await the task and capture the boolean result indicating success or failure
-                bool success = await DoScenarioSpecificTasks();
-
-                if (!success)
-                {
-                    return;
-                }
-
-                // Only proceed with these steps if DoScenarioSpecificTasks succeeded
-                SaveSettingsAfterDoSpecific();
-                SaveUserSettings(TabPageSettings.Controls);
-                ScenarioFXML.GenerateFXMLfile(_formData);
-                ScenarioHTML.GenerateHTMLfiles(_formData);
-                ScenarioXML.GenerateXMLfile(_formData);
-                DeleteTempScenarioDirectory();
-                DisplayFinishMessage();
-            }
-        }
-
+        /// <summary>
+        /// Displays a "creating scenario files" message to the user and sets the cursor to a wait state.
+        /// This method also reports the message via the progress reporter.
+        /// </summary>
         private void DisplayStartMessage()
         {
             Cursor.Current = Cursors.WaitCursor;
@@ -278,6 +445,27 @@ namespace P3D_Scenario_Generator
             _progressReporter?.Report(message);
         }
 
+        /// <summary>
+        /// Displays a completion message to the user and restores the cursor to its default state.
+        /// This method reports the success message via the progress reporter.
+        /// </summary>
+        private void DisplayFinishMessage()
+        {
+            Cursor.Current = Cursors.Default;
+            string message = $"Scenario files created in \"{_formData.ScenarioFolderBase}\" - enjoy your flight!";
+            _progressReporter?.Report(message);
+        }
+
+        /// <summary>
+        /// Performs scenario-specific tasks based on the currently selected <see cref="ScenarioTypes"/>.
+        /// This method disables the form during execution, runs the scenario logic on a background thread
+        /// to keep the UI responsive, and re-enables the form upon completion or error.
+        /// It reports progress and handles exceptions.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if the scenario-specific tasks completed successfully;
+        /// <see langword="false"/> if any task failed or an unexpected error occurred.
+        /// </returns>
         private async Task<bool> DoScenarioSpecificTasks()
         {
             Enabled = false;
@@ -348,6 +536,11 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// Saves user settings specific to the currently selected scenario type.
+        /// This method uses a switch statement to determine which tab page's controls
+        /// should have their settings persisted after a scenario operation.
+        /// </summary>
         private void SaveSettingsAfterDoSpecific()
         {
             ScenarioTypes currentScenarioType = _formData.ScenarioType;
@@ -373,18 +566,22 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private void DisplayFinishMessage()
-        {
-            Cursor.Current = Cursors.Default;
-            string message = $"Scenario files created in \"{_formData.ScenarioFolderBase}\" - enjoy your flight!";
-            _progressReporter?.Report(message);
-        }
-
+        /// <summary>
+        /// Populates the <see cref="ComboBoxGeneralScenarioType"/> with the values from the
+        /// <see cref="ScenarioTypes"/> enumeration, allowing the user to select a scenario type.
+        /// </summary>
         internal void SetScenarioTypesComboBox()
         {
             PopulateComboBoxWithEnum<ScenarioTypes>(ComboBoxGeneralScenarioType);
         }
 
+        /// <summary>
+        /// Handles the <see cref="Control.Leave"/> event for the <see cref="TextBoxGeneralScenarioTitle"/> control.
+        /// When the control loses focus, this method triggers the validation and population
+        /// of the scenario title data.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the TextBox control.</param>
+        /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
         private void TextBoxGeneralScenarioTitle_Leave(object sender, EventArgs e)
         {
             ValidateAndPopulateScenarioTitle();
@@ -996,26 +1193,51 @@ namespace P3D_Scenario_Generator
 
         private void TextBoxPhotoTourPhotoMonitorNumber_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidatePhotoWindowSettingsGroup((Control)sender);
         }
 
         private void TextBoxPhotoTourPhotoOffset_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidatePhotoWindowSettingsGroup((Control)sender);
         }
 
         private void ComboBoxPhotoTourPhotoAlignment_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidatePhotoWindowSettingsGroup((Control)sender);
         }
 
         private void TextBoxPhotoTourPhotoMonitorWidth_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidatePhotoWindowSettingsGroup((Control)sender);
         }
 
         private void TextBoxPhotoTourPhotoMonitorHeight_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidatePhotoWindowSettingsGroup((Control)sender);
         }
 
@@ -1049,7 +1271,7 @@ namespace P3D_Scenario_Generator
                 0, // Assuming a minimum tilt angle of 0 degrees
                 Constants.SignMaxTiltAngleDegrees, // Assuming this constant exists for max tilt
                 "degrees",
-                value => _formData.SignTiltAngle = value);
+                value => _formData.SignTiltAngleDegrees = value);
         }
 
         private void TextBoxSignGateHeight_Leave(object sender, EventArgs e)
@@ -1060,7 +1282,7 @@ namespace P3D_Scenario_Generator
                 0, // Minimum height cannot be negative
                 Constants.FeetInRadiusOfEarth, // Using a very large upper bound, adjust if a specific max exists
                 "feet AMSL",
-                value => _formData.SignGateHeight = value);
+                value => _formData.SignGateHeightFeet = value);
         }
 
         private void TextBoxSignSegmentLength_Leave(object sender, EventArgs e)
@@ -1069,9 +1291,9 @@ namespace P3D_Scenario_Generator
                 TextBoxSignSegmentLength,
                 "Sign Segment Length",
                 0, // Minimum length cannot be negative
-                Constants.FeetInEarthCircumference / 2, // Max length could be half the earth's circumference for practical purposes
-                "feet", // Unit for input, conversion happens in action
-                value => _formData.SignSegmentLength = value / Constants.FeetInDegreeOfLatitude); // Convert feet to degrees of latitude
+                Constants.FeetInEarthCircumference / 12, // A single character is 2 wide x 4 high in segments, and gate calculations start at latitude 0, longitude 0
+                "feet", 
+                value => _formData.SignSegmentLengthFeet = value); 
         }
 
         private void TextBoxSignSegmentRadius_Leave(object sender, EventArgs e)
@@ -1080,13 +1302,18 @@ namespace P3D_Scenario_Generator
                 TextBoxSignSegmentRadius,
                 "Sign Segment Radius",
                 0, // Minimum radius cannot be negative
-                Constants.FeetInEarthCircumference / 2, // Max radius could be half the earth's circumference for practical purposes
-                "feet", // Unit for input, conversion happens in action
-                value => _formData.SignSegmentRadius = value / Constants.FeetInDegreeOfLatitude); // Convert feet to degrees of latitude
+                Constants.FeetInEarthCircumference / 24, // With turn being half maximum segment length
+                "feet", 
+                value => _formData.SignSegmentRadiusFeet = value); 
         }
 
         private void TextBoxSignMonitorNumber_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidateSignWindowSettingsGroup((Control)sender);
             // After monitor settings change, message length might need re-evaluation
             PopulateAndValidateSignWritingTabData();
@@ -1094,6 +1321,11 @@ namespace P3D_Scenario_Generator
 
         private void TextBoxSignOffset_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidateSignWindowSettingsGroup((Control)sender);
             // After offset changes, message length might need re-evaluation
             PopulateAndValidateSignWritingTabData();
@@ -1101,6 +1333,11 @@ namespace P3D_Scenario_Generator
 
         private void ComboBoxSignAlignment_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidateSignWindowSettingsGroup((Control)sender);
             // After alignment changes, message length might need re-evaluation
             PopulateAndValidateSignWritingTabData();
@@ -1108,6 +1345,11 @@ namespace P3D_Scenario_Generator
 
         private void TextBoxSignMonitorWidth_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidateSignWindowSettingsGroup((Control)sender);
             // After monitor width changes, message length definitely needs re-evaluation
             PopulateAndValidateSignWritingTabData();
@@ -1115,6 +1357,11 @@ namespace P3D_Scenario_Generator
 
         private void TextBoxSignMonitorHeight_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidateSignWindowSettingsGroup((Control)sender);
             // After monitor height changes, message length might need re-evaluation
             PopulateAndValidateSignWritingTabData();
@@ -1151,6 +1398,11 @@ namespace P3D_Scenario_Generator
 
         private async void ComboBoxWikiURL_TextChanged(object sender, EventArgs e) // Make it async
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             // 1. Capture UI control values while still on the UI thread
             string selectedWikiUrl = ComboBoxWikiURL.SelectedItem?.ToString();
             string wikiUrlText = ComboBoxWikiURL.Text;
@@ -1220,6 +1472,11 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An EventArgs that contains no event data.</param>
         private void TextBoxWikiItemLinkColumn_TextChanged(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             if (!int.TryParse(TextBoxWikiItemLinkColumn.Text, out int columnNo) || columnNo <= 0)
             {
                 _progressReporter.Report("Invalid column number. Please enter a positive integer.");
@@ -1230,6 +1487,11 @@ namespace P3D_Scenario_Generator
 
         private void ComboBoxWikiTableNames_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             if (ComboBoxWikiURL.Items.Count == 0)
                 return;
             TextBoxWikiDistance.Text = "";
@@ -1256,6 +1518,11 @@ namespace P3D_Scenario_Generator
 
         private void ComboBoxWikiStartingItem_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             if (ComboBoxWikiStartingItem.SelectedIndex > ComboBoxWikiFinishingItem.SelectedIndex && ComboBoxWikiFinishingItem.SelectedIndex >= 0)
             {
                 (ComboBoxWikiFinishingItem.SelectedIndex, ComboBoxWikiStartingItem.SelectedIndex) =
@@ -1321,6 +1588,11 @@ namespace P3D_Scenario_Generator
         /// </summary>
         private void TextBoxSettingsMapMonitorNumber_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidateMapWindowSettingsGroup((Control)sender);
         }
 
@@ -1330,6 +1602,11 @@ namespace P3D_Scenario_Generator
         /// </summary>
         private void TextBoxSettingsMapOffset_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidateMapWindowSettingsGroup((Control)sender);
         }
 
@@ -1339,6 +1616,11 @@ namespace P3D_Scenario_Generator
         /// </summary>
         private void ComboBoxSettingsMapAlignment_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidateMapWindowSettingsGroup((Control)sender);
         }
 
@@ -1348,6 +1630,11 @@ namespace P3D_Scenario_Generator
         /// </summary>
         private void TextBoxSettingsMapMonitorWidth_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidateMapWindowSettingsGroup((Control)sender);
         }
 
@@ -1357,6 +1644,11 @@ namespace P3D_Scenario_Generator
         /// </summary>
         private void TextBoxSettingsMapMonitorHeight_Leave(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidateMapWindowSettingsGroup((Control)sender);
         }
 
@@ -1366,6 +1658,11 @@ namespace P3D_Scenario_Generator
         /// </summary>
         private void ComboBoxSettingsMapWindowSize_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
             ValidateMapWindowSettingsGroup((Control)sender);
         }
 
@@ -1493,7 +1790,6 @@ namespace P3D_Scenario_Generator
 
         private void ButtonDefault_Click(object sender, EventArgs e)
         {
-            SetDefaultParams(((Button)sender).Parent.Controls);
         }
 
         private void ButtonSaved_Click(object sender, EventArgs e)
@@ -1536,160 +1832,6 @@ namespace P3D_Scenario_Generator
         {
             Properties.Settings.Default[comboBoxName + "SelectedIndex"] = selectedIndex;
             Properties.Settings.Default.Save();
-        }
-
-        /// <summary>
-        /// Load information such as runway list, circuit image, sign writing alphabet image, set default field values.
-        /// </summary>
-        private void PrepareFormFields()
-        {
-            // General tab
-
-            //  Runways
-            Runway.GetRunways();
-            ComboBoxGeneralRunwaySelected.DataSource = Runway.GetICAOids();
-
-            //  Locations
-            ComboBoxGeneralLocationCountry.DataSource = Runway.GetRunwayCountries();
-            ComboBoxGeneralLocationState.DataSource = Runway.GetRunwayStates();
-            ComboBoxGeneralLocationCity.DataSource = Runway.GetRunwayCities();
-            Runway.LoadLocationFavourites();
-            Runway.CurrentLocationFavouriteIndex = 0;
-            TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
-            ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
-
-            //  Scenario type
-            SetScenarioTypesComboBox();
-
-            //  Aircraft variants
-            Aircraft.LoadAircraftVariants();
-            if (Aircraft.AircraftVariants != null && Aircraft.AircraftVariants.Count > 0)
-            {
-                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
-                ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
-            }
-
-            // Circuit tab
-            SetDefaultParams(TabPageCircuit.Controls);
-            RestoreUserSettings(TabPageCircuit.Controls);
-
-            // PhotoTour tab
-            SetDefaultParams(TabPagePhotoTour.Controls);
-            RestoreUserSettings(TabPagePhotoTour.Controls);
-
-            // Signwriting tab
-            SetDefaultParams(TabPageSign.Controls);
-            RestoreUserSettings(TabPageSign.Controls);
-
-            // Wikipedia Lists tab
-            SetDefaultParams(TabPageWikiList.Controls);
-            RestoreUserSettings(TabPageWikiList.Controls);
-
-            // Settings tab
-            SetMapAlignmentComboBox();
-            SetMapWindowSizeComboBox();
-            Cache.CheckCache();
-            RestoreUserSettings(TabPageSettings.Controls);
-        }
-
-        /// <summary>
-        /// Compares last modified date of scenery.cfg with that of runways.xml.
-        /// If scenery.cfg has been modified more recently, warns user that runways.xml
-        /// may be out of date and needs to be recreated.
-        /// </summary>
-        /// <remarks>
-        /// If a warning is displayed, the last modified date of runways.xml is updated
-        /// to the current time. This action prevents the warning from being shown repeatedly
-        /// on subsequent program runs until the user has addressed the underlying issue
-        /// by recreating the runways.xml file.
-        /// </remarks>
-        internal void CheckRunwaysXMLupToDate()
-        {
-            string xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "runways.xml");
-            string sceneryCFGdirectory = _formData.P3DProgramData;
-            string sceneryCFGfilePath = Path.Combine(sceneryCFGdirectory, "scenery.cfg");
-
-            try
-            {
-                // Check whether user created runways.xml exists. Exit if it doesn't as program is using the
-                // default version of file. Otherwise get the last modified date.
-                DateTime? xmlLastModified = GetFileLastWriteTime(xmlFilePath);
-                if (!xmlLastModified.HasValue)
-                {
-                    return;
-                }
-
-                // Check that scenery.cfg exists. Advise user if it doesn't. Otherwise get last modified date.
-                DateTime? sceneryLastModified = GetFileLastWriteTime(sceneryCFGfilePath);
-                if (!sceneryLastModified.HasValue)
-                {
-                    string sceneryCfgMissingMessage = $"The scenery.cfg file is not in folder \"{sceneryCFGdirectory}\"." +
-                        " The program uses scenery.cfg last modified date to check whether user created runways.xml is up-to-date." +
-                        " You may need to update the simulator version number in settings.";
-                    MessageBox.Show(sceneryCfgMissingMessage, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                // Do comparison of runway.xml and scenery.cfg dates and warn user if necessary
-                if (sceneryLastModified > xmlLastModified)
-                {
-                    string runwaysXmlOutOfDateMessage = $"The scenery.cfg file has been modified more recently than the user created runways.xml file." +
-                        " Consider rebuilding the runways.xml file to include recently added airports." +
-                        " The program will now refresh the last modified date on runways.xml to prevent repeated warnings";
-                    MessageBox.Show(runwaysXmlOutOfDateMessage, Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    DateTime currentTime = DateTime.Now;
-                    File.SetLastWriteTime(xmlFilePath, currentTime);
-                }
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                MessageBox.Show($"Error: Access to a file is denied. Please check permissions. Details: {ex.Message}",
-                                Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (IOException ex)
-            {
-                MessageBox.Show($"An I/O error occurred while checking file dates. Details: {ex.Message}",
-                                Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"An unexpected error occurred: {ex.Message}",
-                                Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        /// <summary>
-        /// Gets the last write time of a file. Returns null if the file does not exist.
-        /// </summary>
-        /// <param name="filePath">The full path to the file.</param>
-        /// <returns>The DateTime of the last write time, or null if the file does not exist.</returns>
-        private static DateTime? GetFileLastWriteTime(string filePath)
-        {
-            FileInfo fileInfo = new(filePath);
-            return fileInfo.Exists ? fileInfo.LastWriteTime : null;
-        }
-
-        /// <summary>
-        /// Recursively processes all controls to copy the default value stored in the tag field if it exists into the text field.
-        /// </summary>
-        /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
-        private static void SetDefaultParams(Control.ControlCollection controlCollection)
-        {
-            foreach (Control control in controlCollection)
-            {
-                if (control.Controls.Count == 0)
-                {
-                    if (control.Tag != null)
-                        control.Text = control.Tag.ToString().Split(',')[0].Trim();
-                }
-                else
-                {
-                    foreach (Control childControl in control.Controls)
-                    {
-                        SetDefaultParams(childControl.Controls);
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -3102,7 +3244,7 @@ namespace P3D_Scenario_Generator
                 0, // Assuming a reasonable range for tilt angle
                 Constants.SignMaxTiltAngleDegrees,
                 "",
-                value => _formData.SignTiltAngle = value);
+                value => _formData.SignTiltAngleDegrees = value);
 
             // SignGateHeight
             allValid &= ValidateAndSetDouble(
@@ -3111,25 +3253,28 @@ namespace P3D_Scenario_Generator
                 0, // Assuming minimum height cannot be negative
                 Constants.FeetInRadiusOfEarth, // Using a very large upper bound, adjust if a specific max exists
                 "",
-                value => _formData.SignGateHeight = value);
+                value => _formData.SignGateHeightFeet = value);
 
-            // SignSegmentLength (input in feet, convert to degrees of latitude)
+            // SignSegmentLength 
             allValid &= ValidateAndSetDouble(
                 TextBoxSignSegmentLength,
                 "Sign Segment Length",
                 0, // Minimum length cannot be negative
-                Constants.FeetInEarthCircumference / 2, // Max length could be half the earth's circumference for practical purposes
+                Constants.FeetInEarthCircumference / 12, // A single character is 2 wide x 4 high in segments, and gate calculations start at latitude 0, longitude 0
                 "",
-                value => _formData.SignSegmentLength = value / Constants.FeetInDegreeOfLatitude); // Convert feet to degrees of latitude
+                value => _formData.SignSegmentLengthFeet = value);
 
-            // SignSegmentRadius (input in feet, convert to degrees of latitude)
+            // SignSegmentRadius 
             allValid &= ValidateAndSetDouble(
                 TextBoxSignSegmentRadius,
                 "Sign Segment Radius",
                 0, // Minimum radius cannot be negative
-                Constants.FeetInEarthCircumference / 2, // Max radius could be half the earth's circumference for practical purposes
+                Constants.FeetInEarthCircumference / 24, // With turn being half maximum segment length
                 "",
-                value => _formData.SignSegmentRadius = value / Constants.FeetInDegreeOfLatitude); // Convert feet to degrees of latitude
+                value => _formData.SignSegmentRadiusFeet = value);
+
+            // Derived Grid Unit Size
+            _formData.SignGridUnitSizeFeet = _formData.SignSegmentRadiusFeet + _formData.SignSegmentLengthFeet + _formData.SignSegmentRadiusFeet;
 
             return allValid;
         }
@@ -3168,7 +3313,7 @@ namespace P3D_Scenario_Generator
                 0,
                 Constants.MaxWindowOffsetPixels,
                 "pixels",
-                value => _formData.SignOffset = value);
+                value => _formData.SignOffsetPixels = value);
 
             allValid &= ValidateAndSetEnum<WindowAlignment>(
                 ComboBoxSignAlignment,
@@ -3210,19 +3355,19 @@ namespace P3D_Scenario_Generator
                 int maxOffsetWidth = _formData.SignMonitorWidth - Constants.SignSizeEdgeMarginPixels;
                 int maxOffsetHeight = _formData.SignMonitorHeight - Constants.SignSizeEdgeMarginPixels;
 
-                if (_formData.SignOffset >= maxOffsetWidth || _formData.SignOffset >= maxOffsetHeight)
+                if (_formData.SignOffsetPixels >= maxOffsetWidth || _formData.SignOffsetPixels >= maxOffsetHeight)
                 {
                     int maxWidth = _formData.SignMonitorWidth - Constants.SignSizeEdgeMarginPixels;
                     int maxHeight = _formData.SignMonitorHeight - Constants.SignSizeEdgeMarginPixels;
-                    groupErrorMessage = $"Sign Window offset ({_formData.SignOffset}px) exceeds maximum safe sign dimension " +
+                    groupErrorMessage = $"Sign Window offset ({_formData.SignOffsetPixels}px) exceeds maximum safe sign dimension " +
                                         $"{maxWidth}px * {maxHeight}px.";
                     groupValidationPassed = false;
                 }
                 else
                 {
-                    int maxWidth = _formData.SignMonitorWidth - Constants.SignSizeEdgeMarginPixels - _formData.SignOffset;
-                    int maxHeight = _formData.SignMonitorHeight - Constants.SignSizeEdgeMarginPixels - _formData.SignOffset;
-                    groupErrorMessage = $"This offset value ({_formData.SignOffset}px) allows a maximum safe sign dimension of " +
+                    int maxWidth = _formData.SignMonitorWidth - Constants.SignSizeEdgeMarginPixels - _formData.SignOffsetPixels;
+                    int maxHeight = _formData.SignMonitorHeight - Constants.SignSizeEdgeMarginPixels - _formData.SignOffsetPixels;
+                    groupErrorMessage = $"This offset value ({_formData.SignOffsetPixels}px) allows a maximum safe sign dimension of " +
                                         $"{maxWidth}px * {maxHeight}px.";
                 }
             }
@@ -3267,29 +3412,52 @@ namespace P3D_Scenario_Generator
             // Clear any previous error on ComboBoxSignMessage
             errorProvider1.SetError(ComboBoxSignMessage, "");
 
-            // Console width is user constant for output area plus padding on right side as message provides padding on left side
-            int consoleRequiredWidth = Constants.SignConsoleWidthPixels + Constants.SignWindowHorizontalPaddingPixels;
-
-            // Work out available message width taking into account the monitor width, alignment, offset, and console width
+            // Work out available canvas width taking into account the monitor width, alignment, offset, and console width
             WindowAlignment currentAlignment = _formData.SignAlignment;
-            int availableWidthForMessage;
+            int availableWidthForCanvas;
             if (currentAlignment != WindowAlignment.Centered)
             {
-                availableWidthForMessage = _formData.SignMonitorWidth - consoleRequiredWidth - _formData.SignOffset - Constants.SignSizeEdgeMarginPixels;
+                availableWidthForCanvas = _formData.SignMonitorWidth
+                    - _formData.SignOffsetPixels                          // Distance between monitor left edge and sign window left edge
+                    - Constants.SignWindowHorizontalPaddingPixels   // Distance between sign window left edge and canvas left edge
+                    - Constants.SignWindowHorizontalPaddingPixels   // Distance between canvas right edge and console left edge
+                    - Constants.SignConsoleWidthPixels              // Console width
+                    - Constants.SignWindowHorizontalPaddingPixels   // Distamce between console right edge and right edge of monitor
+                    - Constants.SignSizeEdgeMarginPixels;           // Distance between sign window right edge and monitor right edge
             }
             else
             {
-                availableWidthForMessage = _formData.SignMonitorWidth - consoleRequiredWidth - (2 * Constants.SignSizeEdgeMarginPixels);
+                availableWidthForCanvas = _formData.SignMonitorWidth
+                    - Constants.SignSizeEdgeMarginPixels            // Distance between sign window left edge and monitor left edge
+                    - Constants.SignWindowHorizontalPaddingPixels   // Distance between sign window left edge and canvas left edge
+                    - Constants.SignWindowHorizontalPaddingPixels   // Distance between canvas right edge and console left edge
+                    - Constants.SignConsoleWidthPixels              // Console width
+                    - Constants.SignWindowHorizontalPaddingPixels   // Distamce between console right edge and right edge of monitor
+                    - Constants.SignSizeEdgeMarginPixels;           // Distance between sign window right edge and monitor right edge
             }
 
             // Ensure available width is not negative
-            availableWidthForMessage = Math.Max(0, availableWidthForMessage);
+            availableWidthForCanvas = Math.Max(0, availableWidthForCanvas);
 
-            // Calculate maximum characters that can fit
-            availableWidthForMessage -= Constants.SignCharPaddingPixels; // Reduce for padding at start of message
-            int maxAllowedMessageLength = (Constants.SignCharWidthPixels > 0)
-                ? availableWidthForMessage / (Constants.SignCharWidthPixels + Constants.SignCharPaddingPixels) 
-                : 0; // Avoid division by zero
+            // See if a single character message would fit first
+            int maxAllowedMessageLength;
+            availableWidthForCanvas -= 2 * Constants.SignCharPaddingPixels; // Reduce for padding at start and end of message
+            if (availableWidthForCanvas >= Constants.SignCharWidthPixels)
+            {
+                // If a single character fits, calculate the maximum allowed message length
+                // based on the available width and character width + internal padding
+                availableWidthForCanvas -= Constants.SignCharWidthPixels;   // Subtracting one character width that we know fits
+                maxAllowedMessageLength = (Constants.SignCharWidthPixels > 0)
+                    ? (availableWidthForCanvas / (Constants.SignCharPaddingInternalPixels + Constants.SignCharWidthPixels)) + 1 // Add 1 for the first character that fits
+                    : 0; // Avoid division by zero
+            }
+            else
+            {
+                // If a single character does not fit, set maxAllowedMessageLength to 0
+                errorProvider1.SetError(ComboBoxSignMessage, "Sign message cannot fit in the available space.");
+                _progressReporter?.Report("Sign message cannot fit in the available space.");
+                return false;
+            }
 
             // Validate SignMessage with the calculated maximum length
             allValid &= ValidateAndSetStringLength(
@@ -3320,20 +3488,34 @@ namespace P3D_Scenario_Generator
                 return;
             }
 
+            // Canvas width if message is single character
+            int canvasWidth = Constants.SignCharPaddingPixels + Constants.SignCharWidthPixels + Constants.SignCharPaddingPixels; 
+
+            // Allow for multi character messages
+            canvasWidth += (_formData.SignMessage.Length - 1) * (Constants.SignCharPaddingInternalPixels + Constants.SignCharWidthPixels);
+
+
             // Set windowWidth, canvasWidth and consoleWidth 
-            int canvasWidth = Constants.SignCharPaddingPixels + _formData.SignMessage.Length * (Constants.SignCharWidthPixels + Constants.SignCharPaddingPixels);
             _formData.SignCanvasWidth = canvasWidth;
             _formData.SignConsoleWidth = Constants.SignConsoleWidthPixels;
-            _formData.SignWindowWidth = Constants.SignWindowHorizontalPaddingPixels + canvasWidth + Constants.SignWindowHorizontalPaddingPixels +
-                Constants.SignConsoleWidthPixels + Constants.SignWindowHorizontalPaddingPixels + Constants.SignWindowViewportBufferPixels;
+            _formData.SignWindowWidth = 
+                Constants.SignWindowHorizontalPaddingPixels     // Distance between sign window left edge and canvas left edge
+                + canvasWidth                                   // Canvas width
+                + Constants.SignWindowHorizontalPaddingPixels   // Distance between canvas right edge and console left edge
+                + Constants.SignConsoleWidthPixels              // Console width
+                + Constants.SignWindowHorizontalPaddingPixels   // Distamce between console right edge and right edge of monitor
+                + Constants.SignWindowViewportBufferPixels;     // Browser rendering tolerances and prevent the appearance of scrollbars
 
             // Set windowHeight, messageHeight and consoleHeight 
             int canvasHeight = Constants.SignCharPaddingPixels + Constants.SignCharHeightPixels + Constants.SignCharPaddingPixels;
             _formData.SignCanvasHeight = canvasHeight;
             _formData.SignConsoleHeight = canvasHeight;
-            _formData.SignWindowHeight = Constants.SignWindowTitlePixels + Constants.SignWindowVerticalPaddingPixels + 
-                canvasHeight + Constants.SignWindowVerticalPaddingPixels;
-        }   
+            _formData.SignWindowHeight = 
+                Constants.SignWindowTitlePixels                 // Title bar height
+                + Constants.SignWindowVerticalPaddingPixels     // Distance between sign window title bottom edge and canvas/console top edge
+                + canvasHeight                                  // Canvas/Console height
+                + Constants.SignWindowVerticalPaddingPixels;    // Distance between canvas/console bottom edge and bottom edge of window
+        }
 
         /// <summary>
         /// Generic validation method for integer text boxes.

@@ -91,7 +91,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 return false;
             }
 
-            if (!SextantViewGenerator.SetCelestialSextantCSS(formData))
+            if (!SextantViewGenerator.TrySetCelestialSextantCSS(formData))
             {
                 Log.Error("Failed to set celestial sextant CSS during celestial setup.");
                 return false;

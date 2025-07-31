@@ -170,24 +170,32 @@ namespace P3D_Scenario_Generator
         public string SignMessage { get; set; }
 
         /// <summary>
-        /// The message can be tilted in the plane of the vertical segments.
+        /// The message can be tilted in the plane of the vertical segments from 0degree flat to 90 degrees vertical.
         /// </summary>
-        public double SignTiltAngle { get; set; }
+        public double SignTiltAngleDegrees { get; set; }
 
         /// <summary>
-        /// Height ASML for the lowest altitude gates.
+        /// Height ASML for the lowest altitude gates, i.e. horizontal segments on bottom edge or start gates of vertical segments originating from bottom edge.
         /// </summary>
-        public double SignGateHeight { get; set; }
+        public double SignGateHeightFeet { get; set; }
 
         /// <summary>
-        /// The length of a segment measured in degrees of latitude. 
+        /// The linear length, in feet, of a single straight segment that forms part of a character. Characters are defined by a grid 
+        /// that is four units tall and two units wide. The size of the grid unit is the length of a segment plus the radius turn distance added to each end.
+        /// A segment is rendered as a rectangle capped at each end with a triangle, the segment is shorter than the grid unit length to leave a gap between segments
         /// </summary>
-        public double SignSegmentLength { get; set; }
+        public double SignSegmentLengthFeet { get; set; }
 
         /// <summary>
-        /// The radius of pointy caps of segment measured in degrees of latitude. 
+        /// The radius, in feet, of the turn path executed when transitioning from the end of one character segment (pointy end of triangle) to the start of the next.
         /// </summary>
-        public double SignSegmentRadius { get; set; }
+        public double SignSegmentRadiusFeet { get; set; }
+
+        /// <summary>
+        /// The size of one grid unit, in the 2 x 4 grid character. Calculated as length of a segment <see cref="SignSegmentLengthFeet"/> plus 
+        /// the radius turn distance <see cref="SignSegmentRadiusFeet"/> added to each end
+        /// </summary>
+        public double SignGridUnitSizeFeet { get; set; }
 
         /// <summary>
         /// Reference integer for the monitor that sign writing window is to be displayed in initially.
@@ -197,7 +205,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Specifies how close the corner of sign writing window is relative to the monitor corner in pixels (vertically and horizontally).
         /// </summary>
-        public int SignOffset { get; set; }
+        public int SignOffsetPixels { get; set; }
 
         /// <summary>
         /// Which of four corners of monitor to position sign writing window relative to or else in the center of monitor.

@@ -130,31 +130,31 @@ namespace P3D_Scenario_Generator
         /// <param name="iconName">The name of the icon resource file to be overlaid (e.g., "success-icon", "failure-icon").</param>
         /// <param name="outputFileNameNoExt">The name for the base output image file (without extension, e.g., "imgM_c", "imgM_i").</param>
         /// <param name="formData">The <see cref="ScenarioFormData"/> containing user-specific settings, including the scenario image folder and scenario type text.</param>
+        /// <param name="progressReporter">Optional <see cref="IProgress{string}"/> for reporting progress or errors to the UI.</param>
         /// <returns><see langword="true"/> if the scenario load image was drawn and converted successfully; otherwise, <see langword="false"/>.</returns>
-        static internal bool DrawScenarioLoadImage(string iconName, string outputFileNameNoExt, ScenarioFormData formData)
+        static internal bool DrawScenarioLoadImage(string iconName, string outputFileNameNoExt, ScenarioFormData formData, IProgress<string> progressReporter = null)
         {
-            string outputPngPath = $"{formData.ScenarioImageFolder}\\{outputFileNameNoExt}.png";
-            string iconPngResourcePath = $"Images.{iconName}.png";
+            string outputPngPath = Path.Combine(formData.ScenarioImageFolder, $"{outputFileNameNoExt}.png");
+            string baseImageResourcePath = "Images.imgM.png"; // Full resource name for the base image
+            string iconPngResourcePath = $"Images.{iconName}.png"; // Full resource name for the icon
 
+            Log.Info($"Starting image generation for scenario load image: '{outputFileNameNoExt}'.");
+            progressReporter?.Report($"Generating scenario image: {outputFileNameNoExt}...");
             try
             {
-                // Load the base image from resources and copy it to the output path
-                using (Stream sourceStream = Form.GetResourceStream("Images.imgM.png"))
+                // 1. Get the base image stream from embedded resources
+                if (!FileOps.TryGetResourceStream(baseImageResourcePath, progressReporter, out Stream baseImageStream))
                 {
-                    if (sourceStream == null)
-                    {
-                        Log.Error($"ImageUtils.DrawScenarioLoadImage: Could not get resource stream for 'Images.imgM.png'.");
-                        return false;
-                    }
-                    if (!FileOps.TryCopyStreamToFile(sourceStream, outputPngPath))
-                    {
-                        Log.Error($"ImageUtils.DrawScenarioLoadImage: Failed to copy base image resource to '{outputPngPath}'.");
-                        return false;
-                    }
+                    Log.Error($"ImageUtils.DrawScenarioLoadImage: Failed to get resource stream for base image '{baseImageResourcePath}'.");
+                    progressReporter?.Report($"ERROR: Missing base image resource.");
+                    return false;
                 }
 
-                using var image = new MagickImage(outputPngPath);
+                using (baseImageStream) // Ensure baseImageStream is disposed
+                using (var image = new MagickImage(baseImageStream)) // Load MagickImage directly from stream
                 {
+                    Log.Info($"Successfully loaded base image '{baseImageResourcePath}'.");
+
                     // Define geometry for text annotation
                     uint boundingBoxHeight = Convert.ToUInt32(image.Height / 2);
                     uint boundingBoxWidth = image.Width;
@@ -165,55 +165,67 @@ namespace P3D_Scenario_Generator
                     image.Settings.Font = "SegoeUI";
                     image.Settings.FontPointsize = 36;
                     image.Annotate(formData.ScenarioType.ToString(), geometry, Gravity.Center);
+                    Log.Info($"Annotated scenario type '{formData.ScenarioType}' on image.");
 
-                    // Load the icon from resources and composite it onto the base image
-                    using (Stream iconStream = Form.GetResourceStream(iconPngResourcePath))
+                    // 2. Get the icon stream from embedded resources
+                    if (!FileOps.TryGetResourceStream(iconPngResourcePath, progressReporter, out Stream iconStream))
                     {
-                        if (iconStream == null)
-                        {
-                            Log.Error($"ImageUtils.DrawScenarioLoadImage: Could not get resource stream for '{iconPngResourcePath}'.");
-                            return false;
-                        }
-
-                        using var imageIcon = new MagickImage(iconStream);
+                        Log.Warning($"ImageUtils.DrawScenarioLoadImage: Could not get resource stream for icon '{iconPngResourcePath}'. Proceeding without icon.");
+                        // Do not return false here, as the base image with text might still be useful.
+                    }
+                    else
+                    {
+                        using (iconStream) // Ensure iconStream is disposed
+                        using (var imageIcon = new MagickImage(iconStream)) // Load icon directly from stream
                         {
                             // Calculate icon position for overlay
                             int iconXoffset = Convert.ToInt32(image.Width - imageIcon.Width * 2);
                             int iconYoffset = Convert.ToInt32(image.Height / 2 - imageIcon.Height / 2);
                             image.Composite(imageIcon, iconXoffset, iconYoffset, CompositeOperator.Over);
+                            Log.Info($"Composited icon '{iconName}' onto base image.");
                         }
                     }
 
-                    image.Write(outputPngPath);
+                    // 3. Write the modified image to the output PNG path using FileOps.TryCopyStreamToFile
+                    using (MemoryStream outputImageMemoryStream = new())
+                    {
+                        image.Write(outputImageMemoryStream, MagickFormat.Png); // Write image to memory stream as PNG
+                        outputImageMemoryStream.Position = 0; // Reset stream position for reading
+
+                        if (!FileOps.TryCopyStreamToFile(outputImageMemoryStream, outputPngPath, progressReporter))
+                        {
+                            Log.Error($"ImageUtils.DrawScenarioLoadImage: Failed to write final PNG image to '{outputPngPath}'.");
+                            progressReporter?.Report($"ERROR: Failed to save image '{outputFileNameNoExt}.png'.");
+                            return false;
+                        }
+                    }
+                    Log.Info($"Successfully wrote composite PNG image to '{outputPngPath}'.");
                 }
 
-                // Convert the final PNG image to BMP format
+                // 4. Convert the final PNG image to BMP format
+                // Assuming ConvertImageformat handles its own logging or is part of FileOps.
+                // If ConvertImageformat is not part of FileOps, and doesn't log, consider adding Log.Error calls inside it.
                 if (!ConvertImageformat(Path.Combine(formData.ScenarioImageFolder, outputFileNameNoExt), "png", "bmp"))
                 {
                     Log.Error($"ImageUtils.DrawScenarioLoadImage: Failed to convert image '{outputFileNameNoExt}.png' to BMP.");
+                    progressReporter?.Report($"ERROR: Failed to convert image to BMP.");
                     return false;
                 }
+                Log.Info($"Successfully converted image '{outputFileNameNoExt}.png' to BMP.");
 
                 return true;
             }
             catch (MagickErrorException mex)
             {
                 Log.Error($"ImageUtils.DrawScenarioLoadImage: Magick.NET error for '{outputFileNameNoExt}': {mex.Message}", mex);
-                return false;
-            }
-            catch (IOException ioex)
-            {
-                Log.Error($"ImageUtils.DrawScenarioLoadImage: I/O error for '{outputFileNameNoExt}': {ioex.Message}", ioex);
-                return false;
-            }
-            catch (UnauthorizedAccessException uex)
-            {
-                Log.Error($"ImageUtils.DrawScenarioLoadImage: Permission denied for '{outputFileNameNoExt}': {uex.Message}", uex);
+                progressReporter?.Report($"ERROR: Image processing failed. See log.");
                 return false;
             }
             catch (Exception ex)
             {
+                // Catch any other unexpected errors not handled by FileOps or Magick.NET specific catches
                 Log.Error($"ImageUtils.DrawScenarioLoadImage: An unexpected error occurred for '{outputFileNameNoExt}': {ex.Message}", ex);
+                progressReporter?.Report($"ERROR: Unexpected image generation error. See log.");
                 return false;
             }
         }

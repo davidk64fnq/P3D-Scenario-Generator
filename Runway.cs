@@ -72,8 +72,8 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Runway magnetic heading (add magVar for true)
         /// </summary>
-        internal double Hdg { get; set; } 
-        
+        internal double Hdg { get; set; }
+
         /// <summary>
         /// Runway surface material
         /// </summary>
@@ -87,7 +87,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Runway threshold longitude
         /// </summary>
-        internal double ThresholdStartLon { get; set; }   
+        internal double ThresholdStartLon { get; set; }
 
         /// <summary>
         /// Index of runway in <see cref="Runway.Runways"></see>
@@ -224,7 +224,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Read in all the runways from runways.xml when the application loads
         /// </summary>
-        internal static void GetRunways()
+        internal static bool GetRunways(IProgress<string> progressReporter = null)
         {
             Runways = [];
             RunwayParams curAirport = new();
@@ -304,28 +304,63 @@ namespace P3D_Scenario_Generator
                     }
                 }
             }
+            return true;
         }
 
         /// <summary>
-        /// The list of runways is in "runway.xml" which is an embedded resource but the user can create a local version
-        /// to reflect airports installed additional to default P3D v5
+        /// Retrieves the XML stream for runway data. It first attempts to load "runways.xml"
+        /// from the local application directory. If not found, it falls back to loading
+        /// "XML.runways.xml" from the embedded resources.
         /// </summary>
-        /// <returns>
-        /// A stream containing runways.xml</returns>
-        static private Stream GetRunwayXMLstream()
+        /// <param name="stream">When this method returns, contains the loaded Stream if successful; otherwise, null.</param>
+        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <returns>True if the runway XML stream is successfully obtained; otherwise, false.</returns>
+        static internal bool TryGetRunwayXMLStream(out Stream stream, IProgress<string> progressReporter = null)
         {
-            Stream stream;
-            string xmlFilename = "runways.xml";
+            string xmlFilename = "runways.xml"; // Local file name
+            string embeddedResourceName = $"XML.{xmlFilename}"; // Embedded resource name
 
-            if (File.Exists(xmlFilename))
+            Log.Info($"Attempting to retrieve runway XML stream for '{xmlFilename}'.");
+            progressReporter?.Report($"Loading runway data...");
+
+            // First, try to load from a local file
+            string localFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, xmlFilename); // Get path in application directory
+
+            if (File.Exists(localFilePath))
             {
-                stream = new MemoryStream(File.ReadAllBytes(xmlFilename));
+                Log.Info($"Local runway XML file found: '{localFilePath}'. Attempting to load.");
+                if (FileOps.TryReadAllBytes(localFilePath, progressReporter, out byte[] fileBytes))
+                {
+                    stream = new MemoryStream(fileBytes);
+                    Log.Info($"Successfully loaded runway XML from local file: '{localFilePath}'.");
+                    return true;
+                }
+                else
+                {
+                    // Error already logged by TryReadAllBytes
+                    Log.Error($"Failed to read local runway XML file: '{localFilePath}'. Falling back to embedded resource.");
+                    // No progressReporter.Report here as TryReadAllBytes already did.
+                    // Proceed to try embedded resource.
+                }
             }
             else
             {
-                stream = Form.GetResourceStream($"XML.{xmlFilename}");
+                Log.Info($"Local runway XML file not found at '{localFilePath}'. Attempting to load from embedded resource.");
             }
-            return stream;
+
+            // If local file doesn't exist or failed to load, fall back to embedded resource
+            if (FileOps.TryGetResourceStream(embeddedResourceName, progressReporter, out stream))
+            {
+                Log.Info($"Successfully loaded runway XML from embedded resource: '{embeddedResourceName}'.");
+                return true;
+            }
+            else
+            {
+                // Error already logged by FileOps.TryGetResourceStream
+                Log.Error($"Failed to load runway XML from embedded resource: '{embeddedResourceName}'. Runway data is unavailable.");
+                progressReporter?.Report($"ERROR: Failed to load runway data.");
+                return false;
+            }
         }
 
         /// <summary>
@@ -521,19 +556,19 @@ namespace P3D_Scenario_Generator
             if (locationType == "Country")
             {
                 LocationFavourites[CurrentLocationFavouriteIndex].Countries.Add(locationValue);
-                LocationFavourites[CurrentLocationFavouriteIndex].Countries = LocationFavourites[CurrentLocationFavouriteIndex].Countries.Distinct().ToList();
+                LocationFavourites[CurrentLocationFavouriteIndex].Countries = [.. LocationFavourites[CurrentLocationFavouriteIndex].Countries.Distinct()];
                 LocationFavourites[CurrentLocationFavouriteIndex].Countries.Sort();
             }
             else if (locationType == "State")
             {
                 LocationFavourites[CurrentLocationFavouriteIndex].States.Add(locationValue);
-                LocationFavourites[CurrentLocationFavouriteIndex].States = LocationFavourites[CurrentLocationFavouriteIndex].States.Distinct().ToList();
+                LocationFavourites[CurrentLocationFavouriteIndex].States = [.. LocationFavourites[CurrentLocationFavouriteIndex].States.Distinct()];
                 LocationFavourites[CurrentLocationFavouriteIndex].States.Sort();
             }
             else
             {
                 LocationFavourites[CurrentLocationFavouriteIndex].Cities.Add(locationValue);
-                LocationFavourites[CurrentLocationFavouriteIndex].Cities = LocationFavourites[CurrentLocationFavouriteIndex].Cities.Distinct().ToList();
+                LocationFavourites[CurrentLocationFavouriteIndex].Cities = [.. LocationFavourites[CurrentLocationFavouriteIndex].Cities.Distinct()];
                 LocationFavourites[CurrentLocationFavouriteIndex].Cities.Sort();
             }
         }
@@ -662,7 +697,7 @@ namespace P3D_Scenario_Generator
             string oldLocationFavouriteName = LocationFavourites[CurrentLocationFavouriteIndex].Name;
 
             // Make sure new name is not already in use and then change in current location favourite
-            if (LocationFavourites.FindAll(favourite => favourite.Name ==  newLocationFavouriteName).Count == 0)
+            if (LocationFavourites.FindAll(favourite => favourite.Name == newLocationFavouriteName).Count == 0)
                 LocationFavourites[CurrentLocationFavouriteIndex].Name = newLocationFavouriteName;
 
             // Return old favourite name so a new location favourite of that name can be created
@@ -771,7 +806,7 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Load <see cref="LocationFavourites"/> from file stored in JSON format
         /// </summary>
-        internal static void LoadLocationFavourites()
+        internal static bool LoadLocationFavourites()
         {
             string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             directory = Path.Combine(directory, AppDomain.CurrentDomain.FriendlyName);
@@ -794,6 +829,8 @@ namespace P3D_Scenario_Generator
             }
 
             LocationFavourites = JsonConvert.DeserializeObject<List<LocationFavourite>>(input);
+
+            return true;
         }
 
         /// <summary>
@@ -804,7 +841,7 @@ namespace P3D_Scenario_Generator
         internal static bool CheckLocationFilters(string location)
         {
             // If Country/State/City filters all set to "None" return true as no filtering on location is required
-            if (LocationFavourites[CurrentLocationFavouriteIndex].Countries[0] == "None" && 
+            if (LocationFavourites[CurrentLocationFavouriteIndex].Countries[0] == "None" &&
                 LocationFavourites[CurrentLocationFavouriteIndex].States[0] == "None" &&
                 LocationFavourites[CurrentLocationFavouriteIndex].Cities[0] == "None")
             {
@@ -937,9 +974,9 @@ namespace P3D_Scenario_Generator
             {
                 RunwaysSubset = runwaysSubset;
             }
-            else 
+            else
             {
-                MessageBox.Show("No runways match the location filters combination, using all runways instead", "Random Runway: Location filters", 
+                MessageBox.Show("No runways match the location filters combination, using all runways instead", "Random Runway: Location filters",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 RunwaysSubset = CloneRunwayParamsList(Runways);
             }

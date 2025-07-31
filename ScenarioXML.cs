@@ -794,19 +794,6 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].Actions = new Actions([or]);
         }
 
-		static private void SetAirportLandingTriggerRunwayFilter(string rwyNumber, string rwyDesignator, string tSearch)
-		{
-            if (!int.TryParse(rwyNumber, out int rwyNumberInt))
-            {
-                int rcIdIndex = Runway.RunwayCompassIds.FindIndex(runwayCompassId => runwayCompassId.AbbrName == rwyNumber);
-                rwyNumber = Runway.RunwayCompassIds[rcIdIndex].Number;
-            }
-			RunwayFilter rf = new(rwyNumber, rwyDesignator);
-			int idIndex;
-			idIndex = simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.FindIndex(o => o.Descr == tSearch);
-			simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].RunwayFilter = rf;
-        }
-
         static private void SetAttachedWorldPosition(string objName, string search, AttachedWorldPosition wp)
         {
             int idIndex;
