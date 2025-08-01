@@ -17,7 +17,7 @@ namespace P3D_Scenario_Generator
     {
         private readonly FormProgressReporter _progressReporter;
         private readonly ScenarioFormData _formData;
-        private readonly bool _isFormLoaded = false;
+        private bool _isFormLoaded = false;
 
         public Form()
         {
@@ -36,17 +36,100 @@ namespace P3D_Scenario_Generator
             _progressReporter = new FormProgressReporter(this.toolStripStatusLabel1, this);
 
             _formData = new ScenarioFormData();
-
-            // Initialize and populate the various input fields and controls on the form with default values, cached data, or user settings.
-            if (!PrepareFormFields(_progressReporter))
-            {
-                return;
-            }
-
-            _isFormLoaded = true; // Set to true once the form is fully loaded
         }
 
         #region Form Initialization
+
+        /// <summary>
+        /// Handles the form's Load event, performing asynchronous initialization and data binding.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An <see cref="T:System.EventArgs"/> that contains the event data.</param>
+        /// <remarks>
+        /// This method is asynchronous to prevent the UI from freezing. It disables the form to prevent user interaction while a long-running data loading task is performed on a background thread. Once the data is loaded, it populates the form's controls on the UI thread and then re-enables the form. A try-finally block ensures the form is always re-enabled, even if an error occurs.
+        /// </remarks>
+        private async void Form_Load(object sender, EventArgs e)
+        {
+            // 1. Disable the form to prevent user interaction.
+            this.Enabled = false;
+
+            try
+            {
+                // Display a loading message on the form's status bar or a label.
+                _progressReporter.Report("Initializing form...");
+
+                if (!await GetRunwaysAsync(_progressReporter))
+                {
+                    // Handle initialization failure.
+                    return;
+                }
+
+                // Now that the data is loaded, populate the controls on the UI thread.
+                ComboBoxGeneralRunwaySelected.DataSource = Runway.GetICAOids();
+                ComboBoxGeneralLocationCountry.DataSource = Runway.GetRunwayCountries();
+                ComboBoxGeneralLocationState.DataSource = Runway.GetRunwayStates();
+                ComboBoxGeneralLocationCity.DataSource = Runway.GetRunwayCities();
+
+                SetOtherFormFields();
+
+                _isFormLoaded = true;
+                _progressReporter.Report("Initialization complete.");
+            }
+            finally
+            {
+                // 2. Re-enable the form once initialization is complete (or if an error occurred).
+                this.Enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Initializes and populates the form's input fields and controls with data and user settings.
+        /// </summary>
+        /// <remarks>
+        /// This method is intended to be called after asynchronous data loading is complete. It populates
+        /// various controls, such as ComboBoxes, with data related to locations and aircraft, and restores
+        /// user settings for different tabs.
+        /// </remarks>
+        private void SetOtherFormFields()
+        {
+            // General tab
+
+            //  Locations
+            if (Runway.LoadLocationFavourites() && Runway.LocationFavourites != null && Runway.LocationFavourites.Count > 0)
+            {
+                Runway.CurrentLocationFavouriteIndex = 0;
+                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
+                ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
+            }
+
+            //  Scenario type
+            SetScenarioTypesComboBox();
+
+            //  Aircraft variants
+            if (Aircraft.LoadAircraftVariants() && Aircraft.AircraftVariants.Count > 0)
+            {
+                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+                ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
+            }
+
+            // Circuit tab
+            RestoreUserSettings(TabPageCircuit.Controls);
+
+            // PhotoTour tab
+            RestoreUserSettings(TabPagePhotoTour.Controls);
+
+            // Signwriting tab
+            RestoreUserSettings(TabPageSign.Controls);
+
+            // Wikipedia Lists tab
+            RestoreUserSettings(TabPageWikiList.Controls);
+
+            // Settings tab
+            SetMapAlignmentComboBox();
+            SetMapWindowSizeComboBox();
+            Cache.CheckCache();
+            RestoreUserSettings(TabPageSettings.Controls);
+        }
 
         /// <summary>
         /// Performs custom initialization tasks after the designer-generated components are set up.
@@ -190,66 +273,21 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Initializes and populates the various input fields and controls on the form
-        /// with default values, cached data, or user settings.
-        /// This method organizes the initialization by tab page and specific sections.
+        /// Asynchronously loads runway data using a background task.
         /// </summary>
-        private bool PrepareFormFields(IProgress<string> progressReporter)
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns>
+        /// A <see cref="T:System.Threading.Tasks.Task`1"/> representing the asynchronous operation, with a result of <c>true</c> if the runway data was loaded successfully; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// This method serves as a wrapper to offload the long-running runway file parsing to a background thread, ensuring the UI remains responsive during the process.
+        /// </remarks>
+        private static async Task<bool> GetRunwaysAsync(FormProgressReporter progressReporter)
         {
-            // General tab
+            // This is the new asynchronous call.
+            bool success = await Runway.GetRunwaysAsync(progressReporter);
 
-            //  Runways
-            if (!Runway.GetRunways(progressReporter))
-            {
-                return false;
-            }
-            ComboBoxGeneralRunwaySelected.DataSource = Runway.GetICAOids();
-
-            //  Locations
-            ComboBoxGeneralLocationCountry.DataSource = Runway.GetRunwayCountries();
-            ComboBoxGeneralLocationState.DataSource = Runway.GetRunwayStates();
-            ComboBoxGeneralLocationCity.DataSource = Runway.GetRunwayCities();
-            if (!Runway.LoadLocationFavourites())
-            {
-                return false;
-            }
-            Runway.CurrentLocationFavouriteIndex = 0;
-            TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
-            ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
-
-            //  Scenario type
-            SetScenarioTypesComboBox();
-
-            //  Aircraft variants
-            if (Aircraft.LoadAircraftVariants() && Aircraft.AircraftVariants.Count > 0)
-            {
-                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
-                ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
-            }
-            else
-            {
-                return false;
-            }
-
-            // Circuit tab
-            RestoreUserSettings(TabPageCircuit.Controls);
-
-            // PhotoTour tab
-            RestoreUserSettings(TabPagePhotoTour.Controls);
-
-            // Signwriting tab
-            RestoreUserSettings(TabPageSign.Controls);
-
-            // Wikipedia Lists tab
-            RestoreUserSettings(TabPageWikiList.Controls);
-
-            // Settings tab
-            SetMapAlignmentComboBox();
-            SetMapWindowSizeComboBox();
-            Cache.CheckCache();
-            RestoreUserSettings(TabPageSettings.Controls);
-
-            return true;
+            return success;
         }
 
         #endregion
@@ -292,7 +330,7 @@ namespace P3D_Scenario_Generator
                                                       " The program uses scenery.cfg last modified date to check whether user created runways.xml is up-to-date." +
                                                       " You may need to update the simulator version number in settings.";
                     Log.Warning(sceneryCfgMissingMessage);
-                    _progressReporter?.Report($"WARNING: {sceneryCfgMissingMessage.Replace(Environment.NewLine, " ")}"); 
+                    _progressReporter?.Report($"WARNING: {sceneryCfgMissingMessage.Replace(Environment.NewLine, " ")}");
                     return;
                 }
 
@@ -318,7 +356,7 @@ namespace P3D_Scenario_Generator
             {
                 string errorMessage = $"Error: Access to a file is denied while checking runway XML. Please check permissions. Details: {ex.Message}";
                 Log.Error(errorMessage, ex); // Log the error with exception details
-                _progressReporter?.Report($"ERROR: {errorMessage}"); 
+                _progressReporter?.Report($"ERROR: {errorMessage}");
             }
             catch (IOException ex)
             {
@@ -1292,8 +1330,8 @@ namespace P3D_Scenario_Generator
                 "Sign Segment Length",
                 0, // Minimum length cannot be negative
                 Constants.FeetInEarthCircumference / 12, // A single character is 2 wide x 4 high in segments, and gate calculations start at latitude 0, longitude 0
-                "feet", 
-                value => _formData.SignSegmentLengthFeet = value); 
+                "feet",
+                value => _formData.SignSegmentLengthFeet = value);
         }
 
         private void TextBoxSignSegmentRadius_Leave(object sender, EventArgs e)
@@ -1303,8 +1341,8 @@ namespace P3D_Scenario_Generator
                 "Sign Segment Radius",
                 0, // Minimum radius cannot be negative
                 Constants.FeetInEarthCircumference / 24, // With turn being half maximum segment length
-                "feet", 
-                value => _formData.SignSegmentRadiusFeet = value); 
+                "feet",
+                value => _formData.SignSegmentRadiusFeet = value);
         }
 
         private void TextBoxSignMonitorNumber_Leave(object sender, EventArgs e)
@@ -3211,7 +3249,7 @@ namespace P3D_Scenario_Generator
             allValid &= ValidateAlphabeticOnly(
                 ComboBoxSignMessage,
                 "Sign Message",
-                value => _formData.SignMessage = value); 
+                value => _formData.SignMessage = value);
 
             // Validate and populate Sign Window settings as a group
             allValid &= ValidateSignWindowSettingsGroup(null);
@@ -3482,7 +3520,7 @@ namespace P3D_Scenario_Generator
             }
 
             // Canvas width if message is single character
-            int canvasWidth = Constants.SignCharPaddingPixels + Constants.SignCharWidthPixels + Constants.SignCharPaddingPixels; 
+            int canvasWidth = Constants.SignCharPaddingPixels + Constants.SignCharWidthPixels + Constants.SignCharPaddingPixels;
 
             // Allow for multi character messages
             canvasWidth += (_formData.SignMessage.Length - 1) * (Constants.SignCharPaddingInternalPixels + Constants.SignCharWidthPixels);
@@ -3491,7 +3529,7 @@ namespace P3D_Scenario_Generator
             // Set windowWidth, canvasWidth and consoleWidth 
             _formData.SignCanvasWidth = canvasWidth;
             _formData.SignConsoleWidth = Constants.SignConsoleWidthPixels;
-            _formData.SignWindowWidth = 
+            _formData.SignWindowWidth =
                 Constants.SignWindowHorizontalPaddingPixels     // Distance between sign window left edge and canvas left edge
                 + canvasWidth                                   // Canvas width
                 + Constants.SignWindowHorizontalPaddingPixels   // Distance between canvas right edge and console left edge
@@ -3503,7 +3541,7 @@ namespace P3D_Scenario_Generator
             int canvasHeight = Constants.SignCharPaddingPixels + Constants.SignCharHeightPixels + Constants.SignCharPaddingPixels;
             _formData.SignCanvasHeight = canvasHeight;
             _formData.SignConsoleHeight = canvasHeight;
-            _formData.SignWindowHeight = 
+            _formData.SignWindowHeight =
                 Constants.SignWindowTitlePixels                 // Title bar height
                 + Constants.SignWindowVerticalPaddingPixels     // Distance between sign window title bottom edge and canvas/console top edge
                 + canvasHeight                                  // Canvas/Console height

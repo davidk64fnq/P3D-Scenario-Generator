@@ -3271,6 +3271,7 @@ namespace P3D_Scenario_Generator
             Name = "Form";
             Text = "P3D Scenario Generator";
             FormClosing += Form_FormClosing;
+            Load += Form_Load;
             GroupBoxSettingsMapTileCacheInfo.ResumeLayout(false);
             TableLayoutPanelSettingsMapTileCacheInfo.ResumeLayout(false);
             TableLayoutPanelSettingsMapTileCacheInfo.PerformLayout();

@@ -1,8 +1,17 @@
 ﻿using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 
 namespace P3D_Scenario_Generator
 {
+    /// <summary>
+    /// Represents a compass heading used as a special runway ID.
+    /// </summary>
+    /// <param name="Code">The unique code, a string from "37" to "52".</param>
+    /// <param name="FullName">The full name, e.g., "Northwest-Southeast".</param>
+    /// <param name="AbbrName">The abbreviated name, e.g., "NW-SE".</param>
+    public record RunwayCompassId(string Code, string FullName, string AbbrName);
+
     /// <summary>
     /// Parameters for a runway sourced from the runways.xml file
     /// </summary>
@@ -118,32 +127,40 @@ namespace P3D_Scenario_Generator
     }
 
     /// <summary>
-    /// Stores runway ids in range 37 to 52 which represent compass headings rather than usual degrees to nearest ten
+    /// A static utility class that provides a lookup map for the predefined runway compass IDs.
     /// </summary>
-    /// <param name="v1">The code - a number from 37 to 52 inclusive</param>
-    /// <param name="v2">The fullname e.g. "NorthWest"</param>
-    /// <param name="v3">The abbreviated name e.g. "NW"</param>
-    public class RunwayCompassIds(string v1, string v2, string v3, string v4)
+    internal static class RunwayCompassMap
     {
-        /// <summary>
-        /// The code - a number from 37 to 52 inclusive
-        /// </summary>
-        internal string Code { get; set; } = v1;
+        private static readonly Dictionary<string, RunwayCompassId> _runwayCompassIds = new()
+        {
+            { "37", new("37", "North-South", "N-S") },
+            { "38", new("38", "East-West", "E-W") },
+            { "39", new("39", "Northwest-Southeast", "NW-SE") },
+            { "40", new("40", "Southwest-Northeast", "SW-NE") },
+            { "41", new("41", "South-North", "S-N") },
+            { "42", new("42", "West-East", "W-E") },
+            { "43", new("43", "Southeast-Northwest", "SE-NW") },
+            { "44", new("44", "Northeast-Southwest", "NE-SW") },
+            { "45", new("45", "North", "N") },
+            { "46", new("46", "West", "W") },
+            { "47", new("47", "Northwest", "NW") },
+            { "48", new("48", "Southwest", "SW") },
+            { "49", new("49", "South", "S") },
+            { "50", new("50", "East", "E") },
+            { "51", new("51", "Southeast", "SE") },
+            { "52", new("52", "Northeast", "NE") },
+        };
 
         /// <summary>
-        /// The fullname e.g. "NorthWest"
+        /// Attempts to retrieve a RunwayCompassId from the map based on its code.
         /// </summary>
-        internal string FullName { get; set; } = v2;
-
-        /// <summary>
-        /// The abbreviated name e.g. "NW"
-        /// </summary>
-        internal string AbbrName { get; set; } = v3;
-
-        /// <summary>
-        /// The number equivalent used in setting AirportLandingTrigger in ScenarioXML.cs e.g. for "NW" it would be 315
-        /// </summary>
-        internal string Number { get; set; } = v4;
+        /// <param name="code">The runway code to look up (e.g., "37").</param>
+        /// <param name="compassId">When this method returns, contains the RunwayCompassId if the lookup was successful; otherwise, null.</param>
+        /// <returns><c>true</c> if the compass ID was found; otherwise, <c>false</c>.</returns>
+        public static bool TryGetCompassId(string code, out RunwayCompassId compassId)
+        {
+            return _runwayCompassIds.TryGetValue(code, out compassId);
+        }
     }
 
     /// <summary>
@@ -195,11 +212,6 @@ namespace P3D_Scenario_Generator
         internal static List<RunwayParams> RunwaysSubset { get; set; }
 
         /// <summary>
-        /// Used to store runway headings that are compass direction strings rather than 01 to 36, e.g. "NorthWest"
-        /// </summary>
-        internal static readonly List<RunwayCompassIds> RunwayCompassIds = [];
-
-        /// <summary>
         /// The scenario start runway
         /// </summary>
         internal static RunwayParams startRwy = new();
@@ -222,89 +234,186 @@ namespace P3D_Scenario_Generator
         #region Load runways from "runways.xml" and build list for General tab region
 
         /// <summary>
-        /// Read in all the runways from runways.xml when the application loads
+        /// Asynchronously loads all runway data by offloading the synchronous parsing to a background thread.
         /// </summary>
+        /// <param name="progressReporter">An object that can be used to report progress updates during the loading process.</param>
+        /// <returns>
+        /// A <see cref="T:System.Threading.Tasks.Task`1"/> representing the asynchronous operation, with a result of <c>true</c> if the runway data was loaded successfully; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// This method uses <see cref="T:System.Threading.Tasks.Task.Run"/> to execute the CPU-intensive <c>GetRunways</c> method on a thread pool thread, ensuring the calling thread (e.g., the UI thread) remains responsive.
+        /// </remarks>
+        internal static async Task<bool> GetRunwaysAsync(IProgress<string> progressReporter)
+        {
+            // Task.Run offloads the synchronous work to a background thread.
+            return await Task.Run(() => GetRunways(progressReporter));
+        }
+
+        /// <summary>
+        /// Synchronously loads all runway data from an XML stream.
+        /// </summary>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns>
+        /// <c>true</c> if the runway data was loaded successfully; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// This method is a long-running, CPU-intensive operation that should not be called directly on the UI thread. It is designed to be executed in a background thread via <see cref="T:System.Threading.Tasks.Task.Run"/>. It reads runway data from an XML stream, populates a static collection, and reports progress.
+        /// </remarks>
         internal static bool GetRunways(IProgress<string> progressReporter)
         {
             Runways = [];
-            RunwayParams curAirport = new();
-            TryGetRunwayXMLStream(out Stream stream, progressReporter);
-            using XmlReader reader = XmlReader.Create(stream);
-            SetRunwayCompassIds();
-            int curIndex = 0;
 
-            // Read "runways.xml" from start to finish
-            while (reader.Read())
+            if (!TryGetRunwayXMLStream(out Stream stream, progressReporter))
             {
-                // Read to the start of an aiport section
-                if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.Element)
+                return false;
+            }
+
+            try
+            {
+                using XmlReader reader = XmlReader.Create(stream);
+
+                int curIndex = 0;
+                while (reader.ReadToFollowing("ICAO"))
                 {
-                    // Store airport specific information
-                    curAirport.IcaoId = reader.GetAttribute("id");
-                    reader.ReadToFollowing("ICAOName");
-                    curAirport.IcaoName = reader.ReadElementContentAsString();
-                    reader.ReadToFollowing("Country");
-                    curAirport.Country = reader.ReadElementContentAsString();
-                    // State not always present betweeen Country and City elements
-                    reader.Read();
-                    if (reader.Name == "State")
-                    {
-                        curAirport.State = reader.ReadElementContentAsString();
-                        reader.ReadToFollowing("City");
-                        curAirport.City = reader.ReadElementContentAsString();
-                    }
-                    else
-                    {
-                        curAirport.City = reader.ReadElementContentAsString();
-                    }
-                    reader.ReadToFollowing("Longitude");
-                    curAirport.AirportLon = reader.ReadElementContentAsDouble();
-                    reader.ReadToFollowing("Latitude");
-                    curAirport.AirportLat = reader.ReadElementContentAsDouble();
-                    reader.ReadToFollowing("Altitude");
-                    curAirport.Altitude = reader.ReadElementContentAsDouble();
-                    reader.ReadToFollowing("MagVar");
-                    curAirport.MagVar = reader.ReadElementContentAsDouble();
+                    RunwayParams curAirport = ReadAirport(reader);
 
-                    // Read current airport runway subsections
-                    while (reader.Read())
+                    progressReporter?.Report($"Loading runway data for airport: {curAirport.IcaoId}");
+
+                    if (reader.Name == "Runway" && reader.NodeType == XmlNodeType.Element)
                     {
-                        // Store runway subsection specific information
-                        if (reader.Name == "Runway" && reader.NodeType == XmlNodeType.Element)
+                        // The reader is positioned on the first runway.
+                        do
                         {
-                            // Each runway has a copy of the airport information
-                            RunwayParams newRunway = (RunwayParams)curAirport.Clone();
-                            SetRunwayId(newRunway, reader.GetAttribute("id"));
-
-                            // Read to end of current runway subsection and store a new runway record
-                            if (newRunway.Id != null)
-                            {
-                                reader.ReadToFollowing("Len");
-                                newRunway.Len = reader.ReadElementContentAsInt();
-                                reader.ReadToFollowing("Hdg");
-                                newRunway.Hdg = reader.ReadElementContentAsDouble();
-                                reader.ReadToFollowing("Def");
-                                newRunway.Def = reader.ReadElementContentAsString();
-                                reader.ReadToFollowing("Lat");
-                                newRunway.ThresholdStartLat = reader.ReadElementContentAsDouble();
-                                reader.ReadToFollowing("Lon");
-                                newRunway.ThresholdStartLon = reader.ReadElementContentAsDouble();
-                                newRunway.RunwaysIndex = curIndex;
-                                curIndex++;
-                                Runways.Add(newRunway);
-                            }
-                        }
-
-                        // We've reached end of current airport section so break out of reading runway subsections loop
-                        if (reader.Name == "ICAO" && reader.NodeType == XmlNodeType.EndElement)
-                        {
-                            curAirport = new();
-                            break;
-                        }
+                            RunwayParams newRunway = ReadRunway(reader, curAirport);
+                            newRunway.RunwaysIndex = curIndex++;
+                            Runways.Add(newRunway);
+                            // Now, move to the next sibling named "Runway".
+                        } while (reader.ReadToNextSibling("Runway"));
                     }
                 }
+
+                Log.Info($"Runways.GetRunways: Successfully loaded {Runways.Count} runways.");
+                progressReporter?.Report($"Successfully loaded {Runways.Count} runways.");
+                return true;
             }
-            return true;
+            catch (XmlException ex)
+            {
+                Log.Error($"Runways.GetRunways: XML parsing error. {ex.Message}");
+                progressReporter?.Report($"Error loading runway data: XML format is invalid.");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Helper method to read a single airport's general information from an XML reader.
+        /// </summary>
+        /// <param name="reader">The <see cref="T:System.Xml.XmlReader"/> positioned at the "ICAO" element.</param>
+        /// <returns>A <see cref="T:RunwayParams"/> object containing the airport's general data.</returns>
+        /// <remarks>
+        /// This method reads elements such as ICAOName, Country, State, City, and geographical coordinates. It returns when it encounters the first "Runway" element or the end of the "ICAO" element.
+        /// </remarks>
+        private static RunwayParams ReadAirport(XmlReader reader)
+        {
+            RunwayParams curAirport = new()
+            {
+                IcaoId = reader.GetAttribute("id")
+            };
+
+            if (reader.ReadToDescendant("ICAOName"))
+            {
+                while (reader.NodeType != XmlNodeType.EndElement)
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        switch (reader.Name)
+                        {
+                            case "ICAOName":
+                                curAirport.IcaoName = reader.ReadElementContentAsString();
+                                break;
+                            case "Country":
+                                curAirport.Country = reader.ReadElementContentAsString();
+                                break;
+                            case "State":
+                                curAirport.State = reader.ReadElementContentAsString();
+                                break;
+                            case "City":
+                                curAirport.City = reader.ReadElementContentAsString();
+                                break;
+                            case "Longitude":
+                                curAirport.AirportLon = reader.ReadElementContentAsDouble();
+                                break;
+                            case "Latitude":
+                                curAirport.AirportLat = reader.ReadElementContentAsDouble();
+                                break;
+                            case "Altitude":
+                                curAirport.Altitude = reader.ReadElementContentAsDouble();
+                                break;
+                            case "MagVar":
+                                curAirport.MagVar = reader.ReadElementContentAsDouble();
+                                break;
+                            case "Runway":
+                                return curAirport;
+                            default:
+                                reader.Skip();
+                                break;
+                        }
+                    }
+                    // Advance the reader to the next node.
+                    reader.Read();
+                }
+            }
+
+            return curAirport;
+        }
+
+        /// <summary>
+        /// Helper method to read a single runway's specific information from an XML reader.
+        /// </summary>
+        /// <param name="reader">The <see cref="T:System.Xml.XmlReader"/> positioned at a "Runway" element.</param>
+        /// <param name="airportData">The pre-existing <see cref="T:RunwayParams"/> object containing the parent airport's data.</param>
+        /// <returns>A new <see cref="T:RunwayParams"/> object containing the combined airport and runway data.</returns>
+        /// <remarks>
+        /// This method clones the parent airport's data and then reads specific runway elements like length, heading, and threshold coordinates to create a new, distinct runway entry.
+        /// </remarks>
+        private static RunwayParams ReadRunway(XmlReader reader, RunwayParams airportData)
+        {
+            RunwayParams newRunway = (RunwayParams)airportData.Clone();
+            SetRunwayId(newRunway, reader.GetAttribute("id"));
+
+            if (reader.ReadToDescendant("Len"))
+            {
+                while (reader.NodeType != XmlNodeType.EndElement)
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        switch (reader.Name)
+                        {
+                            case "Len":
+                                newRunway.Len = reader.ReadElementContentAsInt();
+                                break;
+                            case "Hdg":
+                                newRunway.Hdg = reader.ReadElementContentAsDouble();
+                                break;
+                            case "Def":
+                                newRunway.Def = reader.ReadElementContentAsString();
+                                break;
+                            case "Lat":
+                                newRunway.ThresholdStartLat = reader.ReadElementContentAsDouble();
+                                break;
+                            case "Lon":
+                                newRunway.ThresholdStartLon = reader.ReadElementContentAsDouble();
+                                break;
+                            default:
+                                reader.Skip();
+                                break;
+                        }
+                    }
+                    // Advance the reader to the next node.
+                    reader.Read();
+                }
+            }
+
+            return newRunway;
         }
 
         /// <summary>
@@ -365,29 +474,6 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Store runway ids in range 37 to 52 which represent compass headings rather than usual degrees to nearest ten
-        /// </summary>
-        static private void SetRunwayCompassIds()
-        {
-            RunwayCompassIds.Add(new("37", "North-South", "N-S", "36"));
-            RunwayCompassIds.Add(new("38", "East-West", "E-W", "9"));
-            RunwayCompassIds.Add(new("39", "Northwest-Southeast", "NW-SE", "32"));
-            RunwayCompassIds.Add(new("40", "Southwest-Northeast", "SW-NE", "23"));
-            RunwayCompassIds.Add(new("41", "South-North", "S-N", "18"));
-            RunwayCompassIds.Add(new("42", "West-East", "W-E", "27"));
-            RunwayCompassIds.Add(new("43", "Southeast-Northwest", "SE-NW", "14"));
-            RunwayCompassIds.Add(new("44", "Northeast-Southwest", "NE-SW", "5"));
-            RunwayCompassIds.Add(new("45", "North", "N", "36"));
-            RunwayCompassIds.Add(new("46", "West", "W", "27"));
-            RunwayCompassIds.Add(new("47", "Northwest", "NW", "32"));
-            RunwayCompassIds.Add(new("48", "Southwest", "SW", "23"));
-            RunwayCompassIds.Add(new("49", "South", "S", "18"));
-            RunwayCompassIds.Add(new("50", "East", "E", "9"));
-            RunwayCompassIds.Add(new("51", "Southeast", "SE", "14"));
-            RunwayCompassIds.Add(new("52", "Northeast", "NE", "5"));
-        }
-
-        /// <summary>
         /// Takes a runway Id and extracts the alphabetic code letter if present and the runway number which is sometimes
         /// a string. E.g. "23L" is "Left" plus "23", "45" is "North", "32W" is "Water" plus "32"
         /// </summary>
@@ -425,8 +511,10 @@ namespace P3D_Scenario_Generator
                 }
                 else if (runwayNumber <= 52)
                 {
-                    RunwayCompassIds runwayCompassId = RunwayCompassIds.Find(rcID => rcID.Code == runwayId);
-                    rwyParams.Number = runwayCompassId.AbbrName;
+                    if (RunwayCompassMap.TryGetCompassId(runwayId, out RunwayCompassId compassId))
+                    {
+                        rwyParams.Number = compassId.AbbrName;
+                    }
                 }
         }
 
