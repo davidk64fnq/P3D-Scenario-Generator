@@ -382,7 +382,7 @@ namespace P3D_Scenario_Generator.MapTiles
             // Step 3: Delete all temporary individual tile and column strip files.
             // Although cleanup is typically a post-process, if it fails, it's still considered
             // a failure of the overall operation to ensure a clean state (or at least report an issue).
-            if (!FileOps.DeleteTempOSMfiles(fullPathNoExt)) 
+            if (!FileOps.TryDeleteTempOSMfiles(fullPathNoExt, null)) 
             {
                 Log.Error($"MontageTiles: Failed to delete temporary OSM files.");
                 return false; // Propagate failure from temporary file deletion.

@@ -577,7 +577,7 @@ namespace P3D_Scenario_Generator
             sr.Close();
             sw.Close();
             File.Copy(filePath + ".tmp", filePath, true);
-            FileOps.TryDeleteFile(filePath + ".tmp");
+            FileOps.TryDeleteFile(filePath + ".tmp", null);
         }
 
         #region Object creation/editing utilities
@@ -894,7 +894,7 @@ namespace P3D_Scenario_Generator
         static private void SetMovingMapJS(List<MapEdges> mapEdges, int count, ScenarioFormData formData)
         {
             string saveLocation = $"{formData.ScenarioImageFolder}\\scriptsMovingMap.js";
-            Stream stream = Form.GetResourceStream("Javascript.scriptsMovingMap.js");
+            FileOps.TryGetResourceStream("Javascript.scriptsMovingMap.js", null, out Stream stream);
             StreamReader reader = new(stream);
             string movingMapJS = reader.ReadToEnd();
 
@@ -1065,7 +1065,7 @@ namespace P3D_Scenario_Generator
         static private void SetResourcesFile(string resourceFolder, string resourceFileName, ScenarioFormData formData)
         {
             string saveLocation = $"{formData.ScenarioImageFolder}\\{resourceFileName}";
-            Stream stream = Form.GetResourceStream($"{resourceFolder}.{resourceFileName}");
+            FileOps.TryGetResourceStream($"{resourceFolder}.{resourceFileName}", null, out Stream stream);
             StreamReader reader = new(stream);
             string streamContents = reader.ReadToEnd();
             File.WriteAllText(saveLocation, streamContents);
@@ -1185,7 +1185,7 @@ namespace P3D_Scenario_Generator
         static private void SetWikiTourJS(ScenarioFormData formData)
         {
             string saveLocation = $"{formData.ScenarioImageFolder}\\scriptsWikipediaItem.js";
-            Stream stream = Form.GetResourceStream("Javascript.scriptsWikipediaItem.js");
+            FileOps.TryGetResourceStream("Javascript.scriptsWikipediaItem.js", null, out Stream stream);
             StreamReader reader = new(stream);
             string wikipediaJS = reader.ReadToEnd();
             string itemURLs = "\"https://en.wikipedia.org" + Wikipedia.WikiTour[1].itemURL + "\"";

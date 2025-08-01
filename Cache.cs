@@ -25,7 +25,7 @@
             if (DoesKeyExist(key, ref cachePath))
             {
                 // Tile exists in cache, attempt to copy it to the saveFile location.
-                if (!FileOps.TryCopyFile(cachePath, saveFile, true))
+                if (!FileOps.TryCopyFile(cachePath, saveFile, null, true))
                 {
                     return false; // Copy failed
                 }
@@ -39,7 +39,7 @@
                     int curTotal = Convert.ToInt32(Properties.Settings.Default.TextBoxSettingsCacheDailyTotal);
                     Properties.Settings.Default.TextBoxSettingsCacheDailyTotal = (curTotal + 1).ToString();
                     Properties.Settings.Default.Save();
-                    if (!FileOps.TryCopyFile(saveFile, cachePath, true))
+                    if (!FileOps.TryCopyFile(saveFile, cachePath, null, true))
                     {
                         return false; // Copy to cache failed
                     }

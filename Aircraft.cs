@@ -562,7 +562,7 @@ namespace P3D_Scenario_Generator
                 {
                     Log.Info($"Attempting to load aircraft variants from local file: {filePath}");
                     // Use the FileOps.TryReadAllText method
-                    if (!FileOps.TryReadAllText(filePath, out inputJson, progressReporter))
+                    if (!FileOps.TryReadAllText(filePath, progressReporter, out inputJson))
                     {
                         // FileOps.TryReadAllText already logged and reported the error.
                         Log.Error($"Failed to read local aircraft variants file: {filePath}");

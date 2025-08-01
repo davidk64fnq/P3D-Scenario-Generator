@@ -265,7 +265,7 @@ namespace P3D_Scenario_Generator
                 image.Write(newFullPath);
 
                 // Attempt to delete the original file after successful conversion
-                if (!FileOps.TryDeleteFile(oldFullPath))
+                if (!FileOps.TryDeleteFile(oldFullPath, null))
                 {
                     Log.Warning($"ImageUtils.ConvertImageformat: Converted image '{fullPathNoExt}.{oldExt}' to '{fullPathNoExt}.{newExt}', but failed to delete original file at '{oldFullPath}'.");
                     return false;

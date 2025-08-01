@@ -113,7 +113,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 int originalColId = 1;
                 string originalImagePath = $"{fullPathNoExt}.png"; 
                 string movedImagePath = $"{fullPathNoExt}_{originalColId}_{originalRowId}.png";
-                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath)) return false;                                                  
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath, null)) return false;                                                  
 
                 // Download new East middle row tile (2,1).
                 int easternColId = 2;
@@ -125,7 +125,7 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Montage the entire expanded 3x3 grid into a single image.
                 if (!MapTileMontager.MontageTiles(boundingBox, zoom, fullPathNoExt, formData)) return false;
-                if (!FileOps.DeleteTempOSMfiles(fullPathNoExt)) return false; 
+                if (!FileOps.TryDeleteTempOSMfiles(fullPathNoExt, null)) return false; 
 
                 // Crop the central 2x2 tile area from the newly montaged 3x3 image.
                 string finalImagePath = $"{fullPathNoExt}.png";
@@ -252,7 +252,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 int originalColumnId = 1;
                 string originalImagePath = $"{fullPathNoExt}.png";
                 string movedImagePath = $"{fullPathNoExt}_{originalColumnId}.png";
-                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath, null))
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to move original image to center column position for '{fullPathNoExt}'.");
                     return false;
@@ -271,7 +271,7 @@ namespace P3D_Scenario_Generator.MapTiles
                     Log.Error($"MapTilePadder.PadWestEast: Failed to montage all three columns for '{fullPathNoExt}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles(fullPathNoExt)) 
+                if (!FileOps.TryDeleteTempOSMfiles(fullPathNoExt, null)) 
                 {
                     Log.Error($"MapTilePadder.PadWestEast: Failed to delete general temporary files after full column montage for '{fullPathNoExt}'.");
                 }
@@ -398,7 +398,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 int originalRowId = 1;
                 string originalImagePath = $"{fullPathNoExt}.png";
                 string movedImagePath = $"{fullPathNoExt}_{originalRowId}.png";
-                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath, null))
                 {
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to move original image to center row position for '{fullPathNoExt}'.");
                     return false;
@@ -417,7 +417,7 @@ namespace P3D_Scenario_Generator.MapTiles
                     Log.Error($"MapTilePadder.PadNorthSouth: Failed to montage all three rows for '{fullPathNoExt}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles(fullPathNoExt)) 
+                if (!FileOps.TryDeleteTempOSMfiles(fullPathNoExt, null)) 
                 {
                     Log.Warning($"MapTilePadder.PadNorthSouth: Failed to delete general temporary files after full row montage for '{fullPathNoExt}'.");
                 }
@@ -541,7 +541,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 int originalRowId = 1;
                 string originalImagePath = $"{fullPathNoExt}.png";
                 string movedImagePath = $"{fullPathNoExt}_{originalRowId}.png";
-                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath, null))
                 {
                     Log.Error($"MapTilePadder.PadNorth: Failed to move original image to bottom row position for '{fullPathNoExt}'.");
                     return false;
@@ -553,7 +553,7 @@ namespace P3D_Scenario_Generator.MapTiles
                     Log.Error($"MapTilePadder.PadNorth: Failed to montage both rows for '{fullPathNoExt}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles(fullPathNoExt))
+                if (!FileOps.TryDeleteTempOSMfiles(fullPathNoExt, null))
                 {
                     Log.Warning($"MapTilePadder.PadNorth: Failed to delete general temporary files after full row montage for '{fullPathNoExt}'.");
                 }
@@ -652,7 +652,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 int originalRowId = 0;
                 string originalImagePath = $"{fullPathNoExt}.png";
                 string movedImagePath = $"{fullPathNoExt}_{originalRowId}.png";
-                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath))
+                if (!FileOps.TryMoveFile(originalImagePath, movedImagePath, null))
                 {
                     Log.Error($"MapTilePadder.PadSouth: Failed to move original image to top row position for '{fullPathNoExt}'.");
                     return false;
@@ -671,7 +671,7 @@ namespace P3D_Scenario_Generator.MapTiles
                     Log.Error($"MapTilePadder.PadSouth: Failed to montage both rows for '{fullPathNoExt}'.");
                     return false;
                 }
-                if (!FileOps.DeleteTempOSMfiles(fullPathNoExt))
+                if (!FileOps.TryDeleteTempOSMfiles(fullPathNoExt, null))
                 {
                     Log.Warning($"MapTilePadder.PadSouth: Failed to delete general temporary files after full row montage for '{fullPathNoExt}'.");
                     // Continue
@@ -817,7 +817,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 Log.Error($"{methodName}: Failed to montage {rowName} row tiles for '{fullPathNoExt}'.");
                 return false;
             }
-            if (!FileOps.DeleteTempOSMfiles($"{fullPathNoExt}_?"))
+            if (!FileOps.TryDeleteTempOSMfiles($"{fullPathNoExt}_?", null))
             {
                 Log.Error($"{methodName}: Failed to delete temporary OSM files after {rowName} row montage for '{fullPathNoExt}'.");
                 return false;
@@ -852,7 +852,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 Log.Error($"{methodName}: Failed to montage {columnName} column tiles for '{fullPathNoExt}'.");
                 return false;
             }
-            if (!FileOps.DeleteTempOSMfiles($"{fullPathNoExt}_?"))
+            if (!FileOps.TryDeleteTempOSMfiles($"{fullPathNoExt}_?", null))
             {
                 Log.Error($"{methodName}: Failed to delete temporary OSM files after {columnName} column montage for '{fullPathNoExt}'.");
                 return false;

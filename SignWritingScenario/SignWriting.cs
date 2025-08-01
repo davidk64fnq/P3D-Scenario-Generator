@@ -170,7 +170,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         {
             string signWritingHTML;
 
-            Stream stream = Form.GetResourceStream("HTML.SignWriting.html");
+            FileOps.TryGetResourceStream("HTML.SignWriting.html", null, out Stream stream);
             StreamReader reader = new(stream);
             signWritingHTML = reader.ReadToEnd();
             string saveLocation = $"{formData.ScenarioImageFolder}\\htmlSignWriting.html";
@@ -345,7 +345,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         static internal void SetSignWritingCSS(ScenarioFormData formData)
         {
             string signWritingCSS;
-            Stream stream = Form.GetResourceStream("CSS.styleSignWriting.css");
+            FileOps.TryGetResourceStream("CSS.styleSignWriting.css", null, out Stream stream);
             StreamReader reader = new(stream);
             signWritingCSS = reader.ReadToEnd();
 

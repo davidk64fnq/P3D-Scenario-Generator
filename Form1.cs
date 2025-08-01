@@ -17,7 +17,7 @@ namespace P3D_Scenario_Generator
     {
         private readonly FormProgressReporter _progressReporter;
         private readonly ScenarioFormData _formData;
-        private bool _isFormLoaded = false;
+        private readonly bool _isFormLoaded = false;
 
         public Form()
         {
@@ -2205,13 +2205,6 @@ namespace P3D_Scenario_Generator
                 fieldValue = control.Text;
                 accessibleName = control.AccessibleName;
             }
-        }
-
-        internal static Stream GetResourceStream(string resource)
-        {
-            string resourceName = $"{Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_")}.Resources.{resource}";
-            Stream stream = Assembly.Load(Assembly.GetExecutingAssembly().GetName().Name).GetManifestResourceStream(resourceName);
-            return stream;
         }
 
         private void Form_FormClosing(object sender, FormClosingEventArgs e)

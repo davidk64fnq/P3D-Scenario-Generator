@@ -224,11 +224,11 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Read in all the runways from runways.xml when the application loads
         /// </summary>
-        internal static bool GetRunways(IProgress<string> progressReporter = null)
+        internal static bool GetRunways(IProgress<string> progressReporter)
         {
             Runways = [];
             RunwayParams curAirport = new();
-            using Stream stream = GetRunwayXMLstream();
+            TryGetRunwayXMLStream(out Stream stream, progressReporter);
             using XmlReader reader = XmlReader.Create(stream);
             SetRunwayCompassIds();
             int curIndex = 0;
@@ -308,57 +308,58 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Retrieves the XML stream for runway data. It first attempts to load "runways.xml"
-        /// from the local application directory. If not found, it falls back to loading
-        /// "XML.runways.xml" from the embedded resources.
+        /// Retrieves the XML stream for runway data. It first attempts to load "runways.xml" from the local application directory. 
+        /// If not found, it falls back to loading "XML.runways.xml" from the embedded resources.
         /// </summary>
-        /// <param name="stream">When this method returns, contains the loaded Stream if successful; otherwise, null.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <returns>True if the runway XML stream is successfully obtained; otherwise, false.</returns>
-        static internal bool TryGetRunwayXMLStream(out Stream stream, IProgress<string> progressReporter = null)
+        /// <param name="stream">When this method returns, contains the loaded Stream if successful; otherwise, <see langword="null"/>.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns><see langword="true"/> if the runway XML stream is successfully obtained; otherwise, <see langword="false"/>.</returns>
+        static internal bool TryGetRunwayXMLStream(out Stream stream, IProgress<string> progressReporter)
         {
             string xmlFilename = "runways.xml"; // Local file name
             string embeddedResourceName = $"XML.{xmlFilename}"; // Embedded resource name
 
-            Log.Info($"Attempting to retrieve runway XML stream for '{xmlFilename}'.");
-            progressReporter?.Report($"Loading runway data...");
+            string message = $"Runway.TryGetRunwayXMLStream: Attempting to retrieve runway XML stream for '{xmlFilename}' from local file.";
+            Log.Info(message);
+            progressReporter?.Report(message);
 
             // First, try to load from a local file
             string localFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, xmlFilename); // Get path in application directory
 
             if (File.Exists(localFilePath))
             {
-                Log.Info($"Local runway XML file found: '{localFilePath}'. Attempting to load.");
+                Log.Info($"Runway.TryGetRunwayXMLStream: Local runway XML file found: '{localFilePath}'. Attempting to load.");
                 if (FileOps.TryReadAllBytes(localFilePath, progressReporter, out byte[] fileBytes))
                 {
                     stream = new MemoryStream(fileBytes);
-                    Log.Info($"Successfully loaded runway XML from local file: '{localFilePath}'.");
+                    Log.Info($"Runway.TryGetRunwayXMLStream: Successfully loaded runway XML from local file: '{localFilePath}'.");
                     return true;
                 }
                 else
                 {
                     // Error already logged by TryReadAllBytes
-                    Log.Error($"Failed to read local runway XML file: '{localFilePath}'. Falling back to embedded resource.");
+                    Log.Error($"Runway.TryGetRunwayXMLStream: Failed to read local runway XML file: '{localFilePath}'. Falling back to embedded resource.");
                     // No progressReporter.Report here as TryReadAllBytes already did.
                     // Proceed to try embedded resource.
                 }
             }
             else
             {
-                Log.Info($"Local runway XML file not found at '{localFilePath}'. Attempting to load from embedded resource.");
+                Log.Info($"Runway.TryGetRunwayXMLStream: Local runway XML file not found at '{localFilePath}'. Attempting to load from embedded resource.");
             }
 
             // If local file doesn't exist or failed to load, fall back to embedded resource
             if (FileOps.TryGetResourceStream(embeddedResourceName, progressReporter, out stream))
             {
-                Log.Info($"Successfully loaded runway XML from embedded resource: '{embeddedResourceName}'.");
+                Log.Info($"Runway.TryGetRunwayXMLStream: Successfully loaded runway XML from embedded resource: '{embeddedResourceName}'.");
                 return true;
             }
             else
             {
                 // Error already logged by FileOps.TryGetResourceStream
-                Log.Error($"Failed to load runway XML from embedded resource: '{embeddedResourceName}'. Runway data is unavailable.");
-                progressReporter?.Report($"ERROR: Failed to load runway data.");
+                message = $"Runway.TryGetRunwayXMLStream: Failed to load runway XML from embedded resource: '{embeddedResourceName}'. Runway data is unavailable.";
+                Log.Error(message);
+                progressReporter?.Report(message);
                 return false;
             }
         }
@@ -819,7 +820,7 @@ namespace P3D_Scenario_Generator
             string input;
             if (!File.Exists(directory))
             {
-                Stream stream = Form.GetResourceStream("Text.LocationFavouritesJSON.txt");
+                FileOps.TryGetResourceStream("Text.LocationFavouritesJSON.txt", null, out Stream stream);
                 StreamReader reader = new(stream);
                 input = reader.ReadToEnd();
             }

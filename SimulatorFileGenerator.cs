@@ -40,13 +40,13 @@ namespace P3D_Scenario_Generator
                     if (File.Exists(starsDatPath))
                     {
                         // Try to delete the old backup. If it fails, report and stop.
-                        if (!FileOps.TryDeleteFile(starsDatBackupPath))
+                        if (!FileOps.TryDeleteFile(starsDatBackupPath, null))
                         {
                             return false;
                         }
 
                         // Try to move the current stars.dat. If it fails, report and stop.
-                        if (!FileOps.TryMoveFile(starsDatPath, starsDatBackupPath))
+                        if (!FileOps.TryMoveFile(starsDatPath, starsDatBackupPath, null))
                         {
                             return false;
                         }
@@ -66,7 +66,7 @@ namespace P3D_Scenario_Generator
                     }
 
                     // Try to write the new stars.dat file. If it fails, report and stop.
-                    if (!FileOps.TryWriteAllText(starsDatPath, starsDatContent))
+                    if (!FileOps.TryWriteAllText(starsDatPath, starsDatContent, null))
                     {
                         return false;
                     }
@@ -76,7 +76,7 @@ namespace P3D_Scenario_Generator
                 }
                 else // Copy "stars.dat" to "stars.dat.P3DscenarioGenerator.backup" to prevent future prompting of user
                 {
-                    if (!FileOps.TryCopyFile(starsDatPath, starsDatBackupPath, false))
+                    if (!FileOps.TryCopyFile(starsDatPath, starsDatBackupPath, null, false))
                     {
                         return false;
                     }

@@ -73,7 +73,7 @@ namespace P3D_Scenario_Generator
 
                 // Now use the FileOps method to save the stream content to the file.
                 // FileOps.TryCopyStreamToFile handles its own logging and message box display.
-                if (!FileOps.TryCopyStreamToFile(ms, saveFile))
+                if (!FileOps.TryCopyStreamToFile(ms, saveFile, null))
                 {
                     // FileOps has already logged and potentially shown a message.
                     // We just need to return false to signal failure to the caller.
@@ -222,7 +222,7 @@ namespace P3D_Scenario_Generator
                 using Stream contentStream = response.Content.ReadAsStreamAsync().Result;
 
                 // Use the new FileOps.TryCopyStreamToFile method
-                if (!FileOps.TryCopyStreamToFile(contentStream, saveFile))
+                if (!FileOps.TryCopyStreamToFile(contentStream, saveFile, null))
                 {
                     // TryCopyStreamToFile already handled logging and message box
                     return false;

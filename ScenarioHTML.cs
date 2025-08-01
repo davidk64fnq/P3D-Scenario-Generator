@@ -230,7 +230,7 @@ namespace P3D_Scenario_Generator
         {
             string missionBriefHTML;
 
-            Stream stream = Form.GetResourceStream($"HTML.MissionBriefSource.htm");
+            FileOps.TryGetResourceStream($"HTML.MissionBriefSource.htm", null, out Stream stream);
             StreamReader reader = new(stream);
             missionBriefHTML = reader.ReadToEnd();
             stream.Dispose();
@@ -258,7 +258,7 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                Stream thumbnailStream = Form.GetResourceStream($"Images.thumbnail.jpg");
+                FileOps.TryGetResourceStream($"Images.thumbnail.jpg", null, out Stream thumbnailStream);
                 using (FileStream outputFileStream = new(aircraftImageDest, FileMode.Create))
                 {
                     thumbnailStream.CopyTo(outputFileStream);
@@ -267,14 +267,14 @@ namespace P3D_Scenario_Generator
             }
 
             // Copy style files
-            Stream stream = Form.GetResourceStream($"CSS.style_kneeboard.css"); 
+            FileOps.TryGetResourceStream($"CSS.style_kneeboard.css", null, out Stream stream); 
             using (FileStream outputFileStream = new($"{formData.ScenarioFolder}\\style_kneeboard.css", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
             }
             stream.Dispose();
 
-            stream = Form.GetResourceStream($"CSS.style_load_flight.css");
+            FileOps.TryGetResourceStream($"CSS.style_load_flight.css", null, out stream);
             using (FileStream outputFileStream = new($"{formData.ScenarioFolder}\\style_load_flight.css", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
@@ -286,7 +286,7 @@ namespace P3D_Scenario_Generator
             {
                 Directory.CreateDirectory($"{formData.ScenarioFolder}\\sound");
             }
-            stream = Form.GetResourceStream($"Sounds.ThruHoop.wav");
+            FileOps.TryGetResourceStream($"Sounds.ThruHoop.wav", null, out stream);
             using (FileStream outputFileStream = new($"{formData.ScenarioFolder}\\sound\\ThruHoop.wav", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
@@ -294,7 +294,7 @@ namespace P3D_Scenario_Generator
             stream.Dispose();
 
             // Copy aircraft imageURL used in moving maps
-            stream = Form.GetResourceStream($"Images.aircraft.png");
+            FileOps.TryGetResourceStream($"Images.aircraft.png", null, out stream);
             using (FileStream outputFileStream = new($"{formData.ScenarioImageFolder}\\aircraft.png", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);
@@ -302,7 +302,7 @@ namespace P3D_Scenario_Generator
             stream.Dispose();
 
             // Copy header banner imageURL
-            stream = Form.GetResourceStream($"Images.header.png");
+            FileOps.TryGetResourceStream($"Images.header.png", null, out stream);
             using (FileStream outputFileStream = new($"{formData.ScenarioImageFolder}\\header.png", FileMode.Create))
             {
                 stream.CopyTo(outputFileStream);

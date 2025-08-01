@@ -1,453 +1,179 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator
 {
+    /// <summary>
+    /// Provides a set of static utility methods for performing common file system operations
+    /// and embedded resource access. All methods are designed to follow a "try" pattern,
+    /// returning a boolean to indicate success or failure and logging detailed information
+    /// for developer debugging. 
+    /// </summary>
     internal static class FileOps
     {
-        /// <summary>
-        /// Attempts to read the entire contents of an embedded resource as a string.
-        /// </summary>
-        /// <param name="resourceName">The full name of the embedded resource, including its namespace path.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <param name="text">When this method returns, contains the contents of the resource as a string if successful; otherwise, null.</param>
-        /// <returns>True if the resource was successfully read; otherwise, false.</returns>
-        public static bool TryReadAllTextFromResource(string resourceName, IProgress<string> progressReporter, out string text)
-        {
-            text = null;
-
-            if (!TryGetResourceStream(resourceName, progressReporter, out Stream stream))
-            {
-                // Error already logged by TryGetResourceStream
-                return false;
-            }
-
-            try
-            {
-                using (stream) // Ensure stream is disposed
-                using (StreamReader reader = new(stream, Encoding.UTF8)) // Ensure reader is disposed
-                {
-                    text = reader.ReadToEnd();
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                string message = $"FileOps.TryReadAllTextFromResource: An error occurred reading resource '{resourceName}'. Details: {ex.Message}";
-                Log.Error(message, ex);
-                progressReporter?.Report($"ERROR: {message}");
-                return false;
-            }
-        }
+        #region Read Operations
 
         /// <summary>
         /// Attempts to read and deserialize an object of a specified type from an embedded resource using XmlSerializer.
         /// </summary>
         /// <typeparam name="T">The type of the object to deserialize from the XML.</typeparam>
-        /// <param name="resourceName">The full name of the embedded resource, including its namespace path.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <param name="resourcePath">The partial path to the embedded resource, relative to the project's 'Resources' folder e.g. "XML.source.fxml".</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
         /// <param name="result">When this method returns, contains the deserialized object if successful; otherwise, null.</param>
-        /// <returns>True if the object was successfully deserialized; otherwise, false.</returns>
-        public static bool TryDeserializeXmlFromResource<T>(string resourceName, IProgress<string> progressReporter, out T result) where T : class
+        /// <returns><see langword="true"/> if the object was successfully deserialized; otherwise, <see langword="false"/>.</returns>
+        public static bool TryDeserializeXmlFromResource<T>(string resourcePath, IProgress<string> progressReporter, out T result) where T : class
         {
-            result = null; // Initialize the out parameter
+            result = null;
 
-            // Use the existing FileOps method to get the resource stream
-            if (!TryGetResourceStream(resourceName, progressReporter, out Stream stream))
+            if (!TryGetResourceStream(resourcePath, progressReporter, out Stream stream))
             {
-                // Error already logged by TryGetResourceStream
                 return false;
             }
 
             try
             {
-                // Ensure the stream is disposed even if an exception occurs
                 using (stream)
                 {
                     XmlSerializer serializer = new(typeof(T));
                     result = (T)serializer.Deserialize(stream);
-                    Log.Info($"FileOps.TryDeserializeXmlFromResource: Successfully deserialized '{resourceName}'.");
+                    Log.Info($"FileOps.TryDeserializeXmlFromResource: Successfully deserialized '{resourcePath}'.");
                     return true;
                 }
             }
-            catch (InvalidOperationException ioEx)
-            {
-                // This exception is typically thrown by XmlSerializer for malformed XML or other data errors
-                string message = $"FileOps.TryDeserializeXmlFromResource: Invalid operation during deserialization of '{resourceName}'. XML may be malformed. Details: {ioEx.Message}";
-                Log.Error(message, ioEx);
-                progressReporter?.Report($"ERROR: Invalid XML format in resource '{resourceName}'.");
-                return false;
-            }
             catch (Exception ex)
             {
-                // Catch any other unexpected exceptions
-                string message = $"FileOps.TryDeserializeXmlFromResource: An unexpected error occurred during deserialization of '{resourceName}'. Details: {ex.Message}";
-                Log.Error(message, ex);
-                progressReporter?.Report($"ERROR: Unexpected error deserializing '{resourceName}'.");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Attempts to read all bytes from a specified file path.
-        /// Handles common file I/O exceptions and logs them.
-        /// </summary>
-        /// <param name="filePath">The full path to the file to read.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <param name="bytes">When this method returns, contains the contents of the file as a byte array if successful; otherwise, null.</param>
-        /// <returns>True if the file was successfully read; otherwise, false.</returns>
-        public static bool TryReadAllBytes(string filePath, IProgress<string> progressReporter, out byte[] bytes)
-        {
-            bytes = null; // Initialize out parameter
-
-            if (!File.Exists(filePath))
-            {
-                string message = $"FileOps.TryReadAllBytes: File not found at '{filePath}'.";
-                Log.Error(message);
-                progressReporter?.Report($"ERROR: {message}");
-                return false;
-            }
-
-            try
-            {
-                bytes = File.ReadAllBytes(filePath);
-                Log.Info($"FileOps.TryReadAllBytes: Successfully read all bytes from '{filePath}'.");
-                return true;
-            }
-            catch (IOException ioEx)
-            {
-                string message = $"FileOps.TryReadAllBytes: I/O error reading file '{filePath}'. Details: {ioEx.Message}";
-                Log.Error(message, ioEx);
-                progressReporter?.Report($"ERROR: {message}");
-                return false;
-            }
-            catch (UnauthorizedAccessException uaEx)
-            {
-                string message = $"FileOps.TryReadAllBytes: Permission denied accessing file '{filePath}'. Details: {uaEx.Message}";
-                Log.Error(message, uaEx);
-                progressReporter?.Report($"ERROR: {message}");
-                return false;
-            }
-            catch (OutOfMemoryException oomEx)
-            {
-                string message = $"FileOps.TryReadAllBytes: Insufficient memory to read file '{filePath}'. Details: {oomEx.Message}";
-                Log.Error(message, oomEx);
-                progressReporter?.Report($"ERROR: {message}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                string message = $"FileOps.TryReadAllBytes: An unexpected error occurred reading file '{filePath}'. Details: {ex.Message}";
-                Log.Error(message, ex);
-                progressReporter?.Report($"ERROR: {message}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Attempts to read all text from a specified file.
-        /// Reports errors to the progress reporter and logs if the operation fails.
-        /// </summary>
-        /// <param name="filePath">The full path to the file to read.</param>
-        /// <param name="content">When this method returns, contains the content of the file if successful; otherwise, null.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <returns>True if the file was read successfully, false otherwise.</returns>
-        public static bool TryReadAllText(string filePath, out string content, IProgress<string> progressReporter = null)
-        {
-            content = null; // Initialize to null in case of failure
-
-            try
-            {
-                if (!File.Exists(filePath))
-                {
-                    string errorMessage = $"File not found: '{filePath}'.";
-                    Log.Error(errorMessage);
-                    progressReporter?.Report($"ERROR: {errorMessage}");
-                    return false;
-                }
-
-                content = File.ReadAllText(filePath);
-                return true;
-            }
-            catch (FileNotFoundException ex)
-            {
-                // Although checked above, this catch is a safeguard for race conditions.
-                string errorMessage = $"File not found: '{filePath}'. Details: {ex.Message}";
+                string errorMessage = $"FileOps.TryDeserializeXmlFromResource: An unexpected error occurred during deserialization of '{resourcePath}'. Details: {ex.Message}";
                 Log.Error(errorMessage, ex);
-                progressReporter?.Report($"ERROR: {errorMessage}");
-                return false;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                string errorMessage = $"Permission denied to read file: '{filePath}'. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
-                progressReporter?.Report($"ERROR: {errorMessage}");
-                return false;
-            }
-            catch (IOException ex)
-            {
-                string errorMessage = $"An I/O error occurred while reading file: '{filePath}'. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
-                progressReporter?.Report($"ERROR: {errorMessage}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = $"An unexpected error occurred while reading file: '{filePath}'. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
-                progressReporter?.Report($"ERROR: {errorMessage}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Retrieves the last write time of a specified file.
-        /// </summary>
-        /// <param name="filePath">The full path to the file.</param>
-        /// <returns>The <see cref="DateTime"/> of the last write time, or <see langword="null"/> if the file does not exist.</returns>
-        public static DateTime? GetFileLastWriteTime(string filePath)
-        {
-            FileInfo fileInfo = new(filePath);
-            return fileInfo.Exists ? fileInfo.LastWriteTime : null;
-        }
-
-        /// <summary>
-        /// Attempts to get an embedded resource stream.
-        /// Reports errors to the progress reporter and logs if the resource is not found.
-        /// </summary>
-        /// <param name="resourcePath">The path to the embedded resource (e.g., "Javascript.scriptsSignWriting.js").</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <param name="stream">When this method returns, contains the embedded resource stream if found; otherwise, null.</param>
-        /// <returns>True if the resource stream was successfully retrieved; false otherwise.</returns>
-        public static bool TryGetResourceStream(string resourcePath, IProgress<string> progressReporter, out Stream stream)
-        {
-            stream = null;
-            try
-            {
-                // Construct the full resource name based on the assembly name and the provided path.
-                // Replace spaces in the assembly name with underscores, as is common for embedded resources.
-                string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-                string fullResourceName = $"{assemblyName.Replace(" ", "_")}.Resources.{resourcePath}";
-
-                stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullResourceName);
-
-                if (stream == null)
-                {
-                    string errorMessage = $"Error: Embedded resource '{fullResourceName}' not found.";
-                    Log.Error(errorMessage);
-                    progressReporter?.Report(errorMessage);
-                    return false;
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = $"An unexpected error occurred while trying to get resource stream for '{resourcePath}'. Details: {ex.Message}";
-                Log.Error(errorMessage);
                 progressReporter?.Report(errorMessage);
                 return false;
             }
         }
 
         /// <summary>
-        /// Attempts to delete a file, with a retry mechanism for transient file locks.
-        /// Displays an error message and logs if it ultimately fails.
+        /// Attempts to read all bytes from a specified file path. Reports errors to the progress reporter and logs if the operation fails.
         /// </summary>
-        /// <param name="fullPath">Filename with path and extension.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <param name="retries">Number of retry attempts.</param>
-        /// <param name="delayMs">Delay in milliseconds between retries.</param>
-        /// <returns>True if the file was deleted or did not exist, false if an error occurred after retries.</returns>
-        public static bool TryDeleteFile(string fullPath, IProgress<string> progressReporter = null, int retries = 5, int delayMs = 100)
+        /// <param name="fullPath">The full path to the file to read.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <param name="bytes">When this method returns, contains the contents of the file as a byte array if successful; otherwise, null.</param>
+        /// <returns><see langword="true"/> if the file was successfully read; otherwise, <see langword="false"/>.</returns>
+        public static bool TryReadAllBytes(string fullPath, IProgress<string> progressReporter, out byte[] bytes)
         {
-            if (!File.Exists(fullPath))
-            {
-                return true; // File did not exist, so operation "succeeded"
-            }
+            bytes = null;
 
-            int attempts = 0;
-
-            // Loop until the number of attempts (including the initial attempt) reaches the specified retries count + 1.
-            while (attempts <= retries)
-            {
-                try
-                {
-                    File.Delete(fullPath);
-                    return true; // File deleted successfully
-                }
-                catch (IOException ex)
-                {
-                    // This is for transient file locks.
-                    attempts++;
-                    string warningMessage = $"FileOps.TryDeleteFile: Failed to delete '{fullPath}' due to I/O error (attempt {attempts}). Retrying... Details: {ex.Message}";
-                    Log.Warning(warningMessage);
-                    progressReporter?.Report(warningMessage); // Report to the UI
-
-                    if (attempts <= retries)
-                    {
-                        Thread.Sleep(delayMs); // Wait before retrying, unless this was the last attempt
-                    }
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    string errorMessage = $"Permission denied to delete file: '{fullPath}'. Details: {ex.Message}";
-                    Log.Error(errorMessage);
-                    progressReporter?.Report(errorMessage); // Report to the UI
-                    return false; // Permanent error, no retry
-                }
-                catch (Exception ex)
-                {
-                    string errorMessage = $"An unexpected error occurred while deleting file: '{fullPath}'. Details: {ex.Message}";
-                    Log.Error(errorMessage);
-                    progressReporter?.Report(errorMessage); // Report to the UI
-                    return false; // Permanent error, no retry
-                }
-            }
-
-            // If loop finishes, it means deletion failed after all retries.
-            string finalErrorMessage = $"FileOps.TryDeleteFile: Failed to delete file '{fullPath}' after multiple attempts.";
-            Log.Error(finalErrorMessage);
-            progressReporter?.Report(finalErrorMessage); // Report to the UI
-            return false;
-        }
-
-        /// <summary>
-        /// Attempts to move a file, displaying an error message if it fails.
-        /// </summary>
-        /// <param name="sourceFullPath">The source fullPathNoExt with path and extension.</param>
-        /// <param name="destinationFullPath">The destination fullPathNoExt with path and extension.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <returns>True if the file was moved successfully, false if an error occurred.</returns>
-        public static bool TryMoveFile(string sourceFullPath, string destinationFullPath, IProgress<string> progressReporter = null)
-        {
             try
             {
-                File.Move(sourceFullPath, destinationFullPath);
+                bytes = File.ReadAllBytes(fullPath);
+                Log.Info($"FileOps.TryReadAllBytes: Successfully read all bytes from '{fullPath}'.");
                 return true;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                string errorMessage = $"Permission denied to move file from '{sourceFullPath}' to '{destinationFullPath}'.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
-            }
-            catch (IOException ex)
-            {
-                string errorMessage = $"An I/O error occurred while moving file from '{sourceFullPath}' to '{destinationFullPath}'.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
             }
             catch (Exception ex)
             {
-                string errorMessage = $"An unexpected error occurred while moving file from '{sourceFullPath}' to '{destinationFullPath}'.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
+                string errorMessage = $"FileOps.TryReadAllBytes: An unexpected error occurred reading file '{fullPath}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
                 return false;
             }
         }
 
         /// <summary>
-        /// Attempts to write all text to a file, displaying an error message if it fails.
+        /// Attempts to read all text from a specified file. Reports errors to the progress reporter and logs if the operation fails.
         /// </summary>
-        /// <param name="fullPath">Filename with path and extension.</param>
-        /// <param name="content">The string content to write.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <returns>True if the content was written successfully, false if an error occurred.</returns>
-        public static bool TryWriteAllText(string fullPath, string content, IProgress<string> progressReporter = null)
+        /// <param name="fullPath">The full path to the file to read.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <param name="content">When this method returns, contains the content of the file if successful; otherwise, null.</param>
+        /// <returns><see langword="true"/> if the file was read successfully, <see langword="false"/> otherwise.</returns>
+        public static bool TryReadAllText(string fullPath, IProgress<string> progressReporter, out string content)
         {
+            content = null;
+
             try
             {
-                File.WriteAllText(fullPath, content);
+                content = File.ReadAllText(fullPath);
+                Log.Info($"FileOps.TryReadAllText: Successfully read all text from '{fullPath}'.");
                 return true;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                string errorMessage = $"Permission denied to write to file: '{fullPath}'.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
-            }
-            catch (IOException ex)
-            {
-                string errorMessage = $"An I/O error occurred while writing to file: '{fullPath}'.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
             }
             catch (Exception ex)
             {
-                string errorMessage = $"An unexpected error occurred while writing to file: '{fullPath}'.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
+                string errorMessage = $"FileOps.TryReadAllText: An unexpected error occurred while reading file: '{fullPath}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
                 return false;
             }
         }
+
+        /// <summary>
+        /// Attempts to read the entire contents of an embedded resource as a string.
+        /// </summary>
+        /// <param name="resourcePath">The partial path to the embedded resource, relative to the project's 'Resources' folder e.g. "CSS.styleCelestialSextant.css".</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <param name="content">When this method returns, contains the contents of the resource as a string if successful; otherwise, null.</param>
+        /// <returns><see langword="true"/> if the resource was successfully read; otherwise, <see langword="false"/>.</returns>
+        public static bool TryReadAllTextFromResource(string resourcePath, IProgress<string> progressReporter, out string content)
+        {
+            content = null;
+
+            if (!TryGetResourceStream(resourcePath, progressReporter, out Stream stream))
+            {
+                return false;
+            }
+
+            try
+            {
+                using (stream)
+                using (StreamReader reader = new(stream, Encoding.UTF8))
+                {
+                    content = reader.ReadToEnd();
+                    Log.Info($"FileOps.TryReadAllTextFromResource: Successfully read resource '{resourcePath}'.");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"FileOps.TryReadAllTextFromResource: An error occurred reading resource '{resourcePath}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Write Operations
 
         /// <summary>
         /// Attempts to copy a file, displaying an error message if it fails.
         /// </summary>
-        /// <param name="sourceFullPath">The source fullPathNoExt with path and extension.</param>
-        /// <param name="destinationFullPath">The destination fullPathNoExt with path and extension.</param>
+        /// <param name="sourceFullPath">The source full path to the file to copy.</param>
+        /// <param name="destinationFullPath">The destination full path for the file to copy.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
         /// <param name="overwrite">True to overwrite the destination file if it already exists; otherwise, false.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <returns>True if the file was copied successfully, false if an error occurred.</returns>
-        public static bool TryCopyFile(string sourceFullPath, string destinationFullPath, bool overwrite, IProgress<string> progressReporter = null)
+        /// <returns><see langword="true"/> if the file was copied successfully, <see langword="false"/> if an error occurred.</returns>
+        public static bool TryCopyFile(string sourceFullPath, string destinationFullPath, IProgress<string> progressReporter, bool overwrite)
         {
             try
             {
                 File.Copy(sourceFullPath, destinationFullPath, overwrite);
+                Log.Info($"FileOps.TryCopyFile: Successfully wrote to '{destinationFullPath}' from '{sourceFullPath}'.");
                 return true;
-            }
-            catch (FileNotFoundException ex)
-            {
-                string errorMessage = $"Source file not found: '{sourceFullPath}'.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                string errorMessage = $"Permission denied to copy file from '{sourceFullPath}' to '{destinationFullPath}'. Please check permissions.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
-            }
-            catch (DirectoryNotFoundException ex)
-            {
-                string errorMessage = $"Destination directory not found for: '{destinationFullPath}'. Please ensure the directory exists.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
-            }
-            catch (IOException ex)
-            {
-                string errorMessage = $"An I/O error occurred while copying file from '{sourceFullPath}' to '{destinationFullPath}' (e.g., file in use, destination exists and overwrite is false, disk full).\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
             }
             catch (Exception ex)
             {
-                string errorMessage = $"An unexpected error occurred while copying file from '{sourceFullPath}' to '{destinationFullPath}'.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
+                string errorMessage = $"FileOps.TryCopyFile: An unexpected error occurred while copying file from '{sourceFullPath}' to '{destinationFullPath}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
                 return false;
             }
         }
 
         /// <summary>
-        /// Attempts to copy the contents of a source stream to a destination file,
-        /// displaying an error message if the operation fails.
+        /// Attempts to copy the contents of a source stream to a destination file, displaying an error message if the operation fails.
         /// </summary>
         /// <param name="sourceStream">The stream whose content is to be copied.</param>
-        /// <param name="destinationFullPath">The destination fullPathNoExt with path and extension.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <returns>True if the stream content was copied to the file successfully; false if an error occurred.</returns>
-        public static bool TryCopyStreamToFile(Stream sourceStream, string destinationFullPath, IProgress<string> progressReporter = null)
+        /// <param name="destinationFullPath">The destination full path for the file to copy.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns><see langword="true"/> if the stream content was copied to the file successfully; <see langword="false"/> if an error occurred.</returns>
+        public static bool TryCopyStreamToFile(Stream sourceStream, string destinationFullPath, IProgress<string> progressReporter)
         {
             try
             {
@@ -464,43 +190,94 @@ namespace P3D_Scenario_Generator
                 // from accessing the file while it's open.
                 using FileStream fileStream = new(destinationFullPath, FileMode.Create, FileAccess.Write, FileShare.None);
                 sourceStream.CopyTo(fileStream);
+                Log.Info($"FileOps.TryCopyStreamToFile: Successfully wrote stream to '{destinationFullPath}'.");
                 return true;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                string errorMessage = $"Permission denied while writing to file: '{destinationFullPath}'.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
-            }
-            catch (DirectoryNotFoundException ex)
-            {
-                string errorMessage = $"Directory not found for: '{destinationFullPath}'. Please ensure the directory exists.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
-            }
-            catch (IOException ex)
-            {
-                string errorMessage = $"An I/O error occurred while copying stream to file: '{destinationFullPath}' (e.g., disk full, file in use).\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
-            }
-            catch (NotSupportedException ex)
-            {
-                string errorMessage = $"The stream does not support the CopyTo operation or the path format is invalid for '{destinationFullPath}'.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
-                return false;
             }
             catch (Exception ex)
             {
-                string errorMessage = $"An unexpected error occurred while copying stream to file: '{destinationFullPath}'.\n\nDetails: {ex.Message}";
-                Log.Error(errorMessage);
-                progressReporter?.Report(errorMessage); // Report to the UI
+                string errorMessage = $"FileOps.TryCopyStreamToFile: An unexpected error occurred while copying stream to file: '{destinationFullPath}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Attempts to write all text to a file, displaying an error message if it fails.
+        /// </summary>
+        /// <param name="fullPath">The full path to the file to write to.</param>
+        /// <param name="content">The string content to write.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns><see langword="true"/> if the content was written successfully, <see langword="false"/> if an error occurred.</returns>
+        public static bool TryWriteAllText(string fullPath, string content, IProgress<string> progressReporter)
+        {
+            try
+            {
+                File.WriteAllText(fullPath, content);
+                Log.Info($"FileOps.TryWriteAllText: Successfully wrote to '{fullPath}'.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"FileOps.TryWriteAllText: An unexpected error occurred while writing to file: '{fullPath}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Manipulation Operations
+
+        /// <summary>
+        /// Attempts to delete a file, with a retry mechanism for transient file locks. Displays an error message and logs if it ultimately fails.
+        /// </summary>
+        /// <param name="fullPath">The full path to the file to delete.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <param name="retries">Number of retry attempts.</param>
+        /// <param name="delayMs">Delay in milliseconds between retries.</param>
+        /// <returns><see langword="true"/> if the file was deleted or did not exist, <see langword="false"/> if an error occurred after retries.</returns>
+        public static bool TryDeleteFile(string fullPath, IProgress<string> progressReporter, int retries = 5, int delayMs = 100)
+        {
+            if (!File.Exists(fullPath))
+            {
+                return true; // File did not exist, so operation "succeeded"
+            }
+
+            for (int attempts = 0; attempts <= retries; attempts++)
+            {
+                try
+                {
+                    File.Delete(fullPath);
+                    Log.Info($"FileOps.TryDeleteFile: Successfully deleted '{fullPath}'.");
+                    return true;
+                }
+                catch (IOException ex)
+                {
+                    if (attempts < retries)
+                    {
+                        string warningMessage = $"FileOps.TryDeleteFile: Failed to delete '{fullPath}' due to I/O error (attempt {attempts + 1}). Retrying... Details: {ex.Message}";
+                        Log.Warning(warningMessage);
+                        progressReporter?.Report(warningMessage);
+                        Thread.Sleep(delayMs);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string errorMessage = $"FileOps.TryDeleteFile: An unexpected error occurred while deleting file: '{fullPath}'. Details: {ex.Message}";
+                    Log.Error(errorMessage, ex);
+                    progressReporter?.Report(errorMessage);
+                    return false;
+                }
+            }
+
+            // This point is only reached if the for loop completes without success
+            string finalErrorMessage = $"FileOps.TryDeleteFile: Failed to delete file '{fullPath}' after {retries + 1} attempts.";
+            Log.Error(finalErrorMessage);
+            progressReporter?.Report(finalErrorMessage);
+            return false;
+
         }
 
         /// <summary>
@@ -508,11 +285,10 @@ namespace P3D_Scenario_Generator
         /// These temporary files are typically generated during the montage process.
         /// Files will be deleted if their names start with the fullPathNoExt string followed by "_*.png"
         /// </summary>
-        /// <param name="fullPathNoExt">The full path of the file used to derive the directory and base for matching. 
-        /// Files will be deleted if their names in the derived directory start with the extracted base followed by "_*.png".</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <param name="fullPathNoExt">The full path of the file used to derive the directory and base for matching.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
         /// <returns><see langword="true"/> if all matched temporary files were successfully deleted; otherwise, <see langword="false"/> if any deletion failed.</returns>
-        public static bool DeleteTempOSMfiles(string fullPathNoExt, IProgress<string> progressReporter = null)
+        public static bool TryDeleteTempOSMfiles(string fullPathNoExt, IProgress<string> progressReporter)
         {
             bool allDeletedSuccessfully = true; // Assume success initially
 
@@ -546,5 +322,104 @@ namespace P3D_Scenario_Generator
 
             return allDeletedSuccessfully; // Return the overall success status
         }
+
+        /// <summary>
+        /// Attempts to move a file, with a retry mechanism for transient file locks. Displays an error message and logs if it ultimately fails.
+        /// </summary>
+        /// <param name="sourceFullPath">The source full path to the file to move.</param>
+        /// <param name="destinationFullPath">The destination full path for the file to move.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <param name="retries">Number of retry attempts.</param>
+        /// <param name="delayMs">Delay in milliseconds between retries.</param>
+        /// <returns><see langword="true"/> if the file was moved successfully, <see langword="false"/> if an error occurred.</returns>
+        public static bool TryMoveFile(string sourceFullPath, string destinationFullPath, IProgress<string> progressReporter, int retries = 5, int delayMs = 100)
+        {
+            for (int attempts = 0; attempts <= retries; attempts++)
+            {
+                try
+                {
+                    File.Move(sourceFullPath, destinationFullPath);
+                    Log.Info($"FileOps.TryMoveFile: Successfully moved '{sourceFullPath}' to '{destinationFullPath}'.");
+                    return true;
+                }
+                catch (IOException ex)
+                {
+                    if (attempts < retries)
+                    {
+                        string warningMessage = $"FileOps.TryMoveFile: Failed to move file due to an I/O error (attempt {attempts + 1}). Retrying... Details: {ex.Message}";
+                        Log.Warning(warningMessage);
+                        progressReporter?.Report(warningMessage);
+                        Thread.Sleep(delayMs);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string errorMessage = $"FileOps.TryMoveFile: An unexpected error occurred while moving file from '{sourceFullPath}' to '{destinationFullPath}'. Details: {ex.Message}";
+                    Log.Error(errorMessage, ex);
+                    progressReporter?.Report(errorMessage);
+                    return false;
+                }
+            }
+
+            // This point is only reached if the for loop completes without success
+            string finalErrorMessage = $"FileOps.TryMoveFile: Failed to move file from '{sourceFullPath}' to '{destinationFullPath}' after {retries + 1} attempts.";
+            Log.Error(finalErrorMessage);
+            progressReporter?.Report(finalErrorMessage);
+            return false;
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Retrieves the last write time of a specified file.
+        /// </summary>
+        /// <param name="filePath">The full path to the file.</param>
+        /// <returns>The <see cref="DateTime"/> of the last write time, or <see langword="null"/> if the file does not exist.</returns>
+        public static DateTime? GetFileLastWriteTime(string filePath)
+        {
+            FileInfo fileInfo = new(filePath);
+            return fileInfo.Exists ? fileInfo.LastWriteTime : null;
+        }
+
+        /// <summary>
+        /// Attempts to get an embedded resource stream. Reports errors to the progress reporter and logs if the resource is not found.
+        /// </summary>
+        /// <param name="resourcePath">The partial path to the embedded resource, relative to the project's 'Resources' folder e.g. "Text.AircraftVariantsJSON.txt".</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <param name="stream">When this method returns, contains the embedded resource stream if found; otherwise, null.</param>
+        /// <returns><see langword="true"/> if the resource stream was successfully retrieved; <see langword="false"/> otherwise.</returns>
+        public static bool TryGetResourceStream(string resourcePath, IProgress<string> progressReporter, out Stream stream)
+        {
+            stream = null;
+            string fullResourceName = string.Empty;
+            try
+            {
+                // Construct the full resource name based on the assembly name and the provided path.
+                string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+                fullResourceName = $"{assemblyName.Replace(" ", "_")}.Resources.{resourcePath}";
+
+                stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullResourceName);
+
+                if (stream == null)
+                {
+                    string errorMessage = $"FileOps.TryGetResourceStream: Embedded resource '{fullResourceName}' not found.";
+                    Log.Error(errorMessage);
+                    progressReporter?.Report(errorMessage);
+                    return false;
+                }
+                Log.Info($"FileOps.TryGetResourceStream: Successfully retrieved stream for '{fullResourceName}'.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"FileOps.TryGetResourceStream: An unexpected error occurred while trying to get resource stream for '{fullResourceName}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
+                return false;
+            }
+        }
+        #endregion
     }
 }
