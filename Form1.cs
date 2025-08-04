@@ -8,6 +8,7 @@ using P3D_Scenario_Generator.WikipediaScenario;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Configuration;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 
@@ -18,6 +19,7 @@ namespace P3D_Scenario_Generator
         private readonly FormProgressReporter _progressReporter;
         private readonly ScenarioFormData _formData;
         private bool _isFormLoaded = false;
+        private readonly List<string> allRunwayStrings = [];
 
         public Form()
         {
@@ -41,44 +43,53 @@ namespace P3D_Scenario_Generator
         #region Form Initialization
 
         /// <summary>
-        /// Handles the form's Load event, performing asynchronous initialization and data binding.
+        /// Asynchronously initializes the form upon loading.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">An <see cref="T:System.EventArgs"/> that contains the event data.</param>
         /// <remarks>
-        /// This method is asynchronous to prevent the UI from freezing. It disables the form to prevent user interaction while a long-running data loading task is performed on a background thread. Once the data is loaded, it populates the form's controls on the UI thread and then re-enables the form. A try-finally block ensures the form is always re-enabled, even if an error occurs.
+        /// This event handler performs the following actions:
+        /// <list type="number">
+        /// <item>Disables the form to prevent user interaction during the asynchronous initialization process.</item>
+        /// <item>Restores user settings and attempts to load runway data from a binary cache or a source XML file.</item>
+        /// <item>If the runway data is loaded successfully, it populates the UI controls and enables the panels that depend on this data.</item>
+        /// <item>If the load fails (e.g., due to an invalid P3D data path), it reports the error and ensures the dependent UI panels remain disabled.</item>
+        /// <item>Finally, it re-enables the form once all initialization tasks are complete, regardless of success or failure.</item>
+        /// </list>
         /// </remarks>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">An <see cref="EventArgs"/> object that contains the event data.</param>
         private async void Form_Load(object sender, EventArgs e)
         {
             // 1. Disable the form to prevent user interaction.
-            this.Enabled = false;
-
+            Enabled = false;
             try
             {
-                // Display a loading message on the form's status bar or a label.
                 _progressReporter.Report("Initializing form...");
+                _progressReporter.IsThrottlingEnabled = true;
 
-                if (!await GetRunwaysAsync(_progressReporter))
+                RestoreUserSettings(TabPageSettings.Controls);
+
+                bool runwayLoadSuccess = ValidateP3DDataFolder() && await GetRunwaysAsync(_progressReporter);
+
+                if (runwayLoadSuccess)
                 {
-                    // Handle initialization failure.
-                    return;
+                    await PopulateRunwayControls();
+                    SetRunwayRelatedPanelsEnabled(true);
+                    _progressReporter.Report("Initialization complete. Runways loaded.");
                 }
-
-                // Now that the data is loaded, populate the controls on the UI thread.
-                ComboBoxGeneralRunwaySelected.DataSource = Runway.GetICAOids();
-                ComboBoxGeneralLocationCountry.DataSource = Runway.GetRunwayCountries();
-                ComboBoxGeneralLocationState.DataSource = Runway.GetRunwayStates();
-                ComboBoxGeneralLocationCity.DataSource = Runway.GetRunwayCities();
+                else
+                {
+                    SetRunwayRelatedPanelsEnabled(false);
+                    _progressReporter.Report("Failed to load runway data. Please ensure you have a valid P3D Data Folder in the Settings tab.");
+                }
 
                 SetOtherFormFields();
 
                 _isFormLoaded = true;
-                _progressReporter.Report("Initialization complete.");
             }
             finally
             {
                 // 2. Re-enable the form once initialization is complete (or if an error occurred).
-                this.Enabled = true;
+                Enabled = true;
             }
         }
 
@@ -106,7 +117,7 @@ namespace P3D_Scenario_Generator
             SetScenarioTypesComboBox();
 
             //  Aircraft variants
-            if (Aircraft.LoadAircraftVariants() && Aircraft.AircraftVariants.Count > 0)
+            if (Aircraft.LoadAircraftVariants() && Aircraft.AircraftVariants  != null && Aircraft.AircraftVariants.Count > 0)
             {
                 ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
                 ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
@@ -127,8 +138,44 @@ namespace P3D_Scenario_Generator
             // Settings tab
             SetMapAlignmentComboBox();
             SetMapWindowSizeComboBox();
-            Cache.CheckCache();
+            OSMTileCache.CheckCache();
             RestoreUserSettings(TabPageSettings.Controls);
+        }
+
+        /// <summary>
+        /// Controls the enabled state of the UI panels that are dependent on loaded runway data.
+        /// </summary>
+        /// <param name="enabled">True to enable the panels, false to disable them.</param>
+        private void SetRunwayRelatedPanelsEnabled(bool enabled)
+        {
+            tableLayoutPanelRunwaySelection.Enabled = enabled;
+            tableLayoutPanelLocationFilter.Enabled = enabled;
+        }
+
+        /// <summary>
+        /// Populates the runway and location filter UI controls with data.
+        /// This method is asynchronous to allow for UI updates during the process.
+        /// </summary>
+        private async Task PopulateRunwayControls()
+        {
+            _progressReporter.Report("Populating Cities list ...");
+            await Task.Delay(10);
+            ComboBoxGeneralLocationCity.DataSource = Runway.RunwayUILists.Cities;
+
+            ComboBoxGeneralLocationCountry.DataSource = Runway.RunwayUILists.Countries;
+
+            ComboBoxGeneralLocationState.DataSource = Runway.RunwayUILists.States;
+
+            _progressReporter.Report("Populating ICAO ID list...");
+            await Task.Delay(10); if (Runway.RunwayUILists.ICAOids != null)
+            {
+                allRunwayStrings.AddRange(Runway.RunwayUILists.ICAOids);
+            }
+
+            _progressReporter.Report($"ICAO ID data loaded for search ({allRunwayStrings.Count} items).");
+
+            // Initialize the new ListBox to an empty state, ready for searching.
+            ListBoxGeneralRunwayResults.Items.Clear();
         }
 
         /// <summary>
@@ -284,7 +331,6 @@ namespace P3D_Scenario_Generator
         /// </remarks>
         private static async Task<bool> GetRunwaysAsync(FormProgressReporter progressReporter)
         {
-            // This is the new asynchronous call.
             bool success = await Runway.GetRunwaysAsync(progressReporter);
 
             return success;
@@ -297,76 +343,74 @@ namespace P3D_Scenario_Generator
         #region Runway selection
 
         /// <summary>
-        /// Compares last modified date of scenery.cfg with that of runways.xml. If scenery.cfg has been modified more recently, warns user that runways.xml
+        /// Compares the last modified date of scenery.cfg with that of the runways.cache file.
+        /// If scenery.cfg has been modified more recently, it warns the user that the runways data
         /// may be out of date and needs to be recreated.
         /// </summary>
         /// <remarks>
-        /// If a warning is displayed, the last modified date of runways.xml is updated to the current time. This action prevents the warning from being shown repeatedly
-        /// on subsequent program runs until the user has addressed the underlying issue by recreating the runways.xml file.
-        /// Errors and warnings are logged and displayed via the progress reporter, avoiding disruptive message boxes.
+        /// If a warning is displayed, the last modified date of runways.cache is updated to the current time. This action prevents the warning from
+        /// being shown repeatedly on subsequent program runs until the user has recreated the runways data.
         /// </remarks>
-        internal void CheckRunwaysXMLupToDate()
+        internal void CheckRunwaysUpToDate()
         {
-            string xmlFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "runways.xml");
+            string cacheFilePath = Path.Combine(_formData.P3DProgramData, "runways.cache");
             string sceneryCFGdirectory = _formData.P3DProgramData;
             string sceneryCFGfilePath = Path.Combine(sceneryCFGdirectory, "scenery.cfg");
 
             try
             {
-                // Check whether user created runways.xml exists. Exit if it doesn't as program is using the default version of file. Otherwise get the last modified date.
-                DateTime? xmlLastModified = FileOps.GetFileLastWriteTime(xmlFilePath);
-                if (!xmlLastModified.HasValue)
-                {
-                    Log.Info($"runways.xml not found at '{xmlFilePath}'. Program is likely using the default version. No date comparison needed.");
-                    _progressReporter?.Report("Using default runways.xml; no update check.");
-                    return;
-                }
+                // Get the last write time of the cache file. Returns null if the file doesn't exist.
+                DateTime? cacheLastModified = FileOps.GetFileLastWriteTime(cacheFilePath);
 
                 // Check that scenery.cfg exists. Advise user if it doesn't. Otherwise get last modified date.
                 DateTime? sceneryLastModified = FileOps.GetFileLastWriteTime(sceneryCFGfilePath);
+
                 if (!sceneryLastModified.HasValue)
                 {
                     string sceneryCfgMissingMessage = $"The scenery.cfg file is not in folder \"{sceneryCFGdirectory}\"." +
-                                                      " The program uses scenery.cfg last modified date to check whether user created runways.xml is up-to-date." +
-                                                      " You may need to update the simulator version number in settings.";
+                                                      " The program uses scenery.cfg's last modified date to check whether the runways data is up-to-date.";
                     Log.Warning(sceneryCfgMissingMessage);
                     _progressReporter?.Report($"WARNING: {sceneryCfgMissingMessage.Replace(Environment.NewLine, " ")}");
                     return;
                 }
 
-                // Do comparison of runway.xml and scenery.cfg dates and warn user if necessary
-                if (sceneryLastModified > xmlLastModified)
+                // Compare dates if the cache exists. If it doesn't, we assume it's out-of-date.
+                if (!cacheLastModified.HasValue || sceneryLastModified > cacheLastModified)
                 {
-                    string runwaysXmlOutOfDateMessage = $"The scenery.cfg file has been modified more recently than the user created runways.xml file." +
-                                                        " Consider rebuilding the runways.xml file to include recently added airports." +
-                                                        " The program will now refresh the last modified date on runways.xml to prevent repeated warnings.";
-                    Log.Warning(runwaysXmlOutOfDateMessage);
-                    _progressReporter?.Report($"WARNING: {runwaysXmlOutOfDateMessage.Replace(Environment.NewLine, " ")}"); // Flatten message for status bar
+                    string runwaysDataOutOfDateMessage = $"The scenery.cfg file has been modified more recently than the cached runways data." +
+                                                         " Consider recreating the runways data to include recently added airports." +
+                                                         " The program will now refresh the last modified date on the cache to prevent repeated warnings.";
+                    Log.Warning(runwaysDataOutOfDateMessage);
+                    _progressReporter?.Report($"WARNING: {runwaysDataOutOfDateMessage.Replace(Environment.NewLine, " ")}");
+
                     DateTime currentTime = DateTime.Now;
-                    File.SetLastWriteTime(xmlFilePath, currentTime);
-                    Log.Info($"Refreshed last modified date of '{xmlFilePath}' to {currentTime}.");
+                    if (File.Exists(cacheFilePath))
+                    {
+                        File.SetLastWriteTime(cacheFilePath, currentTime);
+                    }
+                    Log.Info($"Refreshed last modified date of '{cacheFilePath}' to {currentTime}.");
                 }
                 else
                 {
-                    Log.Info("runways.xml is up-to-date with scenery.cfg.");
-                    _progressReporter?.Report("Runways data is up-to-date.");
+                    Log.Info("runways.cache is up-to-date with scenery.cfg.");
+                    _progressReporter?.Report("INFO: Runways data is up-to-date.");
                 }
             }
             catch (UnauthorizedAccessException ex)
             {
-                string errorMessage = $"Error: Access to a file is denied while checking runway XML. Please check permissions. Details: {ex.Message}";
-                Log.Error(errorMessage, ex); // Log the error with exception details
+                string errorMessage = $"Access to a file is denied while checking runway cache. Please check permissions. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
                 _progressReporter?.Report($"ERROR: {errorMessage}");
             }
             catch (IOException ex)
             {
-                string errorMessage = $"An I/O error occurred while checking file dates for runway XML. Details: {ex.Message}";
+                string errorMessage = $"An I/O error occurred while checking file dates for runway cache. Details: {ex.Message}";
                 Log.Error(errorMessage, ex);
                 _progressReporter?.Report($"ERROR: {errorMessage}");
             }
             catch (Exception ex)
             {
-                string errorMessage = $"An unexpected error occurred in CheckRunwaysXMLupToDate: {ex.Message}";
+                string errorMessage = $"An unexpected error occurred in CheckRunwaysUpToDate: {ex.Message}";
                 Log.Error(errorMessage, ex);
                 _progressReporter?.Report($"ERROR: {errorMessage}");
             }
@@ -374,21 +418,39 @@ namespace P3D_Scenario_Generator
 
         private void TextBoxSearchRunway_TextChanged(object sender, EventArgs e)
         {
-            int searchIndex = ComboBoxGeneralRunwaySelected.FindString(TextBoxGeneralSearchRunway.Text);
-            if (searchIndex != ListBox.NoMatches)
+            string searchText = TextBoxGeneralSearchRunway.Text;
+
+            if (string.IsNullOrWhiteSpace(searchText))
             {
-                ComboBoxGeneralRunwaySelected.SelectedIndex = searchIndex;
+                // If the search box is empty, clear the list box.
+                ListBoxGeneralRunwayResults.Items.Clear();
+                return;
+            }
+
+            // Filter the in-memory list based on the search text.
+            var filteredResults = allRunwayStrings.Where(s => s.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            // Update the list box with the filtered results.
+            ListBoxGeneralRunwayResults.Items.Clear();
+            foreach (var item in filteredResults)
+            {
+                ListBoxGeneralRunwayResults.Items.Add(item);
+            }
+
+            // Optional: Replicate the "first matching item" feature
+            // Select the first item in the list box if there are results.
+            if (ListBoxGeneralRunwayResults.Items.Count > 0)
+            {
+                ListBoxGeneralRunwayResults.SelectedIndex = 0;
             }
         }
 
         private void ButtonRandRunway_Click(object sender, EventArgs e)
         {
             Runway.SetRunwaysSubset();
-            Random random = new();
-            int randomSubsetIndex = random.Next(0, Runway.RunwaysSubset.Count);
-            int randomRunwayIndex = Runway.RunwaysSubset[randomSubsetIndex].RunwaysIndex;
-            ComboBoxGeneralRunwaySelected.SelectedIndex = randomRunwayIndex;
-            TextBoxGeneralSearchRunway.Text = "";
+            ListBoxGeneralRunwayResults.Items.Clear();
+            ListBoxGeneralRunwayResults.Items.Add(Runway.GetRandomICAOid(Runway.RunwaysSubset));
+            ListBoxGeneralRunwayResults.SelectedIndex = 0;
         }
 
         #endregion
@@ -413,7 +475,7 @@ namespace P3D_Scenario_Generator
             if (GetValidatedScenarioFormData())
             {
                 DisplayStartMessage();
-                CheckRunwaysXMLupToDate();
+                CheckRunwaysUpToDate();
                 Runway.SetRunwaysSubset();
                 ImageUtils.DrawScenarioImages(_formData);
 
@@ -459,13 +521,11 @@ namespace P3D_Scenario_Generator
                     || _formData.ScenarioType == ScenarioTypes.Celestial
                     || _formData.ScenarioType == ScenarioTypes.WikiList)
                 {
-                    ComboBoxGeneralRunwaySelected.Enabled = false;
                     TextBoxGeneralSearchRunway.Enabled = false;
                     ButtonRandRunway.Enabled = false;
                 }
                 else
                 {
-                    ComboBoxGeneralRunwaySelected.Enabled = true;
                     TextBoxGeneralSearchRunway.Enabled = true;
                     ButtonRandRunway.Enabled = true;
                 }
@@ -1771,16 +1831,24 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Handles the Click event for the ButtonBrowseP3DDataFolder.
-        /// Opens a FolderBrowserDialog to allow the user to select the P3D data folder,
-        /// populates the TextBoxSettingsP3DprogramData, and performs immediate validation.
+        /// Handles the Click event for the P3D Data Folder browse button.
+        /// Opens a <see cref="FolderBrowserDialog"/> to allow the user to select the P3D data folder.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">An EventArgs that contains the event data.</param>
-        private void ButtonBrowseP3DDataFolder_Click(object sender, EventArgs e)
+        /// <remarks>
+        /// This method performs the following actions:
+        /// <list type="number">
+        /// <item>Updates the associated text box and form data with the selected path.</item>
+        /// <item>Validates the selected path using <see cref="ValidateP3DDataFolder"/>.</item>
+        /// <item>If the path is valid, it disables the browse button and asynchronously triggers the runway data loading process.</item>
+        /// <item>Upon completion of the data load, it updates the UI controls and enables or disables dependent panels based on the load's success.</item>
+        /// </list>
+        /// </remarks>
+        /// <param name="sender">The source of the event, the button itself.</param>
+        /// <param name="e">An <see cref="EventArgs"/> object that contains the event data.</param>
+        private async void ButtonBrowseP3DDataFolder_Click(object sender, EventArgs e)
         {
             using FolderBrowserDialog folderBrowserDialog = new();
-            // Set the initial selected path to the current value in the textbox if it's a valid directory
+
             if (Directory.Exists(TextBoxSettingsP3DprogramData.Text))
             {
                 folderBrowserDialog.SelectedPath = TextBoxSettingsP3DprogramData.Text;
@@ -1788,8 +1856,46 @@ namespace P3D_Scenario_Generator
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
+                // 1. Update the TextBox with the selected path.
                 TextBoxSettingsP3DprogramData.Text = folderBrowserDialog.SelectedPath;
-                ValidateP3DDataFolder();
+
+                // 2. Validate the path and update the formData.
+                // The method will return true if the path is valid and false otherwise.
+                // It will also clear or set the errorProvider.
+                bool pathIsValid = ValidateP3DDataFolder();
+
+                if (pathIsValid)
+                {
+                    // Disable the button to prevent re-entry during the async operation.
+                    ButtonP3DDataFolderSelect.Enabled = false;
+
+                    // 3. Trigger the runway loading process with the new path.
+                    _progressReporter.Report("P3D path updated. Attempting to load runways...");
+
+                    bool loadSuccess = await GetRunwaysAsync(_progressReporter);
+
+                    if (loadSuccess)
+                    {
+                        // 4. On success, populate the UI controls and enable the dependent panels.
+                        await PopulateRunwayControls();
+                        SetRunwayRelatedPanelsEnabled(true);
+                        _progressReporter.Report("Runways loaded successfully.");
+                    }
+                    else
+                    {
+                        // 5. On failure, ensure the dependent panels remain disabled.
+                        SetRunwayRelatedPanelsEnabled(false);
+                        _progressReporter.Report("Failed to load runways. Please check the path.");
+                    }
+
+                    ButtonP3DDataFolderSelect.Enabled = true;
+                }
+                else
+                {
+                    // If the path is not valid, stop here. The ValidateP3DDataFolder
+                    // method has already displayed the error message.
+                    SetRunwayRelatedPanelsEnabled(false);
+                }
             }
         }
 
@@ -2579,7 +2685,7 @@ namespace P3D_Scenario_Generator
         /// Sets an error message via <see cref="ErrorProvider"/> and reports progress if validation fails.
         /// </summary>
         /// <returns><see langword="true"/> if the P3D Program Data path is valid and the directory exists; otherwise, <see langword="false"/>.</returns>
-        private bool ValidateP3DDataFolder()
+        internal bool ValidateP3DDataFolder()
         {
             bool isValid = true;
             string folderPath = TextBoxSettingsP3DprogramData.Text.Trim(); // Get path from control
@@ -2798,7 +2904,7 @@ namespace P3D_Scenario_Generator
         {
             bool isValid = true;
 
-            _formData.RunwayIndex = ComboBoxGeneralRunwaySelected.SelectedIndex;
+            _formData.RunwayIndex = Runway.FindRunwayIndexByString(ListBoxGeneralRunwayResults.SelectedItem.ToString());
 
             if (!ValidateAndSetEnum<ScenarioTypes>(
                 ComboBoxGeneralScenarioType,
@@ -3731,5 +3837,18 @@ namespace P3D_Scenario_Generator
         }
 
         #endregion
+
+        private void ButtonClearP3DPath_Click(object sender, EventArgs e)
+        {
+            // Clear the value in the textbox and the formData object
+            TextBoxSettingsP3DprogramData.Text = string.Empty;
+            _formData.P3DProgramData = string.Empty;
+
+            // Call your method to save the settings
+            // SaveUserSettings(); // Assuming you have a method for this
+
+            // You could also re-trigger a load attempt to simulate the user experience
+            //GetRunwaysAsync(_progressReporter, _formData);
+        }
     }
 }

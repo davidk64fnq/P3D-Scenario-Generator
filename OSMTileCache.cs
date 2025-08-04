@@ -5,7 +5,7 @@
     /// OpenStreetMap (OSM) tiles. This includes operations like retrieving tiles from cache
     /// or downloading them, checking for cached file existence, and managing cache usage statistics.
     /// </summary>
-    internal class Cache
+    internal class OSMTileCache
     {
         /// <summary>
         /// Retrieves an OpenStreetMap (OSM) tile, either from a local cache or by downloading it,

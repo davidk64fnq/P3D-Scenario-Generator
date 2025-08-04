@@ -512,117 +512,114 @@ namespace P3D_Scenario_Generator
         #region Save and Load aircraft variants section
 
         /// <summary>
-        /// Save <see cref="AircraftVariants"/> to file in JSON format
-        /// </summary>
-        internal static void SaveAircraftVariants()
-        {
-            string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            directory = Path.Combine(directory, AppDomain.CurrentDomain.FriendlyName);
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-            directory = Path.Combine(directory, "AircraftVariantsJSON.txt");
-
-            JsonSerializer serializer = new()
-            {
-                Formatting = Formatting.Indented
-            };
-            using StreamWriter sw = new(directory);
-            using JsonWriter writer = new JsonTextWriter(sw);
-            serializer.Serialize(writer, AircraftVariants);
-        }
-
-        /// <summary>
-        /// Loads <see cref="AircraftVariants"/> from file stored in JSON format.
-        /// It first attempts to load a local user-created version, falling back to an embedded resource.
+        /// Saves the current list of aircraft variants to a file in JSON format using CacheManager.
+        /// The save operation is skipped if the list of variants is empty to prevent overwriting
+        /// a valid file with an empty list.
         /// </summary>
         /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <returns>True if aircraft variants were successfully loaded, false otherwise.</returns>
-        internal static bool LoadAircraftVariants(IProgress<string> progressReporter = null)
+        internal static void SaveAircraftVariants(IProgress<string> progressReporter = null)
         {
-            // Initialize AircraftVariants to an empty list to prevent NullReferenceException on failure
-            AircraftVariants = [];
+            // Do not save if the list is empty to prevent overwriting a valid file with an empty one.
+            if (AircraftVariants == null || AircraftVariants.Count == 0)
+            {
+                string warningMessage = "Aircraft variants list is empty. Save operation aborted to prevent data loss.";
+                Log.Warning(warningMessage);
+                progressReporter?.Report(warningMessage);
+                return;
+            }
 
             string appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                                                    AppDomain.CurrentDomain.FriendlyName);
+                                                   AppDomain.CurrentDomain.FriendlyName);
             string filePath = Path.Combine(appDataDirectory, "AircraftVariantsJSON.txt");
-            string inputJson;
 
             try
             {
-                // Ensure the application data directory exists
-                if (!Directory.Exists(appDataDirectory))
-                {
-                    Directory.CreateDirectory(appDataDirectory);
-                    Log.Info($"Created application data directory: {appDataDirectory}");
-                }
-
-                if (File.Exists(filePath))
-                {
-                    Log.Info($"Attempting to load aircraft variants from local file: {filePath}");
-                    // Use the FileOps.TryReadAllText method
-                    if (!FileOps.TryReadAllText(filePath, progressReporter, out inputJson))
-                    {
-                        // FileOps.TryReadAllText already logged and reported the error.
-                        Log.Error($"Failed to read local aircraft variants file: {filePath}");
-                        AircraftVariants = []; // Ensure list is cleared on read error
-                        return false; // Indicate failure
-                    }
-                }
-                else
-                {
-                    Log.Info("Local aircraft variants file not found. Attempting to load from embedded resource.");
-                    // Use FileOps.TryGetResourceStream for embedded resource
-                    if (!FileOps.TryGetResourceStream("Text.AircraftVariantsJSON.txt", progressReporter, out Stream resourceStream))
-                    {
-                        Log.Error("Failed to retrieve embedded 'AircraftVariantsJSON.txt' resource.");
-                        return false; // Indicate failure
-                    }
-
-                    using (resourceStream) // Ensure the stream is disposed
-                    {
-                        using StreamReader reader = new(resourceStream);
-                        inputJson = reader.ReadToEnd();
-                    }
-                    Log.Info("Successfully read embedded 'AircraftVariantsJSON.txt' resource.");
-                }
-
-                // Deserialize the JSON content
-                AircraftVariants = JsonConvert.DeserializeObject<List<AircraftVariant>>(inputJson);
-
-                if (AircraftVariants == null)
-                {
-                    // If deserialization results in null (e.g., empty or malformed JSON that results in null rather than an error)
-                    AircraftVariants = []; // Ensure it's not null, even if empty
-                    string warningMessage = "Aircraft variants file was empty or contained no valid data. Initializing with an empty list.";
-                    Log.Warning(warningMessage);
-                    progressReporter?.Report(warningMessage);
-                }
-                else
-                {
-                    Log.Info($"Successfully loaded {AircraftVariants.Count} aircraft variants.");
-                    progressReporter?.Report($"Aircraft variants loaded ({AircraftVariants.Count} entries).");
-                }
-
-                return true; // Indicate success
+                CacheManager.SerializeToFile(AircraftVariants, filePath);
+                Log.Info($"Successfully saved {AircraftVariants.Count} aircraft variants to '{filePath}'.");
+                progressReporter?.Report($"Aircraft variants saved ({AircraftVariants.Count} entries).");
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
-                string errorMessage = $"Error parsing AircraftVariantsJSON.txt: JSON format is invalid. Details: {ex.Message}";
+                Log.Error($"Failed to save aircraft variants. Details: {ex.Message}", ex);
+                progressReporter?.Report($"ERROR: Failed to save aircraft variants: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads the list of aircraft variants from a file stored in JSON format.
+        /// It first attempts to load a local user-created version. If the local file does not exist,
+        /// it falls back to an embedded resource.
+        /// </summary>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns><see langword="true"/> if aircraft variants were successfully loaded, <see langword="false"/> otherwise.</returns>
+        internal static bool LoadAircraftVariants(IProgress<string> progressReporter = null)
+        {
+            // Initialize AircraftVariants to an empty list to prevent NullReferenceException on failure.
+            AircraftVariants = [];
+            string appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                                                   AppDomain.CurrentDomain.FriendlyName);
+            string filePath = Path.Combine(appDataDirectory, "AircraftVariantsJSON.txt");
+
+            try
+            {
+                // First, try to load from the local file using CacheManager.
+                Log.Info($"Attempting to load aircraft variants from local file: {filePath}");
+                AircraftVariants = CacheManager.DeserializeFromFile<List<AircraftVariant>>(filePath);
+            }
+            catch (FileNotFoundException)
+            {
+                // If the local file is not found, fall back to the embedded resource.
+                Log.Warning("Local aircraft variants file not found. Falling back to embedded resource.");
+                try
+                {
+                    if (FileOps.TryGetResourceStream("Text.AircraftVariantsJSON.txt", progressReporter, out Stream resourceStream))
+                    {
+                        using (resourceStream)
+                        {
+                            // Using System.Text.Json.JsonSerializer to be consistent with CacheManager.
+                            AircraftVariants = System.Text.Json.JsonSerializer.Deserialize<List<AircraftVariant>>(resourceStream);
+                            Log.Info("Successfully loaded aircraft variants from embedded resource.");
+                        }
+                    }
+                    else
+                    {
+                        // FileOps.TryGetResourceStream already reported the error.
+                        return false; // Indicate failure to get resource.
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Catch any errors during embedded resource deserialization.
+                    string errorMessage = $"An unexpected error occurred during fallback to embedded resource: {ex.Message}";
+                    Log.Error(errorMessage, ex);
+                    progressReporter?.Report($"ERROR: {errorMessage}");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Catch any other exceptions (e.g., JsonException) from the primary deserialize attempt.
+                string errorMessage = $"An error occurred while processing aircraft variants file: {ex.Message}";
                 Log.Error(errorMessage, ex);
                 progressReporter?.Report($"ERROR: {errorMessage}");
-                AircraftVariants = []; // Clear any potentially partial or invalid data
-                return false; // Indicate failure
+                return false;
             }
-            catch (Exception ex) // General catch for any other unexpected errors during JSON deserialization
+
+            // Post-deserialization check
+            if (AircraftVariants == null || AircraftVariants.Count == 0)
             {
-                string errorMessage = $"An unexpected error occurred while processing aircraft variants JSON: {ex.Message}";
-                Log.Error(errorMessage, ex);
-                progressReporter?.Report($"ERROR: {errorMessage}");
                 AircraftVariants = [];
-                return false; // Indicate failure
+                string warningMessage = "Aircraft variants file was empty or contained no valid data. Initializing with an empty list.";
+                Log.Warning(warningMessage);
+                progressReporter?.Report(warningMessage);
             }
+            else
+            {
+                Log.Info($"Successfully loaded {AircraftVariants.Count} aircraft variants.");
+                progressReporter?.Report($"Aircraft variants loaded ({AircraftVariants.Count} entries).");
+            }
+
+            return true; // Indicate success.
         }
 
         #endregion

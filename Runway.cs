@@ -1,9 +1,18 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 
 namespace P3D_Scenario_Generator
 {
+    public class RunwayUILists
+    {
+        public List<string> ICAOids { get; set; }
+        public List<string> Countries { get; set; }
+        public List<string> States { get; set; }
+        public List<string> Cities { get; set; }
+    }
+
     /// <summary>
     /// Represents a compass heading used as a special runway ID.
     /// </summary>
@@ -20,38 +29,38 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Four letter code known as ICAO airport code or location indicator
         /// </summary>
-        internal string IcaoId { get; set; }
+        public string IcaoId { get; set; }
 
         /// <summary>
         /// The name of the airport
         /// </summary>
-        internal string IcaoName { get; set; }
+        public string IcaoName { get; set; }
 
-        internal string Country { get; set; }
+        public string Country { get; set; }
 
-        internal string State { get; set; }
+        public string State { get; set; }
 
-        internal string City { get; set; }
+        public string City { get; set; }
 
         /// <summary>
         /// The longitude of the approximate center of the airport's useable runways
         /// </summary>
-        internal double AirportLon { get; set; }
+        public double AirportLon { get; set; }
 
         /// <summary>
         /// The latitude of the approximate center of the airport's useable runways
         /// </summary>
-        internal double AirportLat { get; set; }
+        public double AirportLat { get; set; }
 
         /// <summary>
         /// Airport altitude (AMSL)
         /// </summary>
-        internal double Altitude { get; set; }
+        public double Altitude { get; set; }
 
         /// <summary>
         /// Airport magnetic variation
         /// </summary>
-        internal double MagVar { get; set; }
+        public double MagVar { get; set; }
 
         /// <summary>
         /// The runway Id e.g. "05L", the two digit number is 10's of degrees so 05 is 50 degrees approximate
@@ -59,49 +68,49 @@ namespace P3D_Scenario_Generator
         /// of compass headings e.g. 37 = "N-S", 45 = "N". The number is extracted and stored as "Number" field.
         /// The letter which distinguishes parallel runways is extracted and stored as "Designator" field.
         /// </summary>
-        internal string Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// See <see cref="Id"/>, two digit number is 10's of degrees so 05 is 50 degrees approximate
         /// magnetic runway heading. If the number is greater than 36 it is code for a compass heading or pair 
         /// of compass headings e.g. 37 = "N-S", 45 = "N".
         /// </summary>
-        internal string Number { get; set; }
+        public string Number { get; set; }
 
         /// <summary>
         /// See <see cref="Id"/>, one of "None", "Left", "Right", "Center", or "Water". Used in setting the airport landing trigger for a scenario
         /// </summary>
-        internal string Designator { get; set; }
+        public string Designator { get; set; }
 
         /// <summary>
         /// Runway length in feet
         /// </summary>
-        internal int Len { get; set; }
+        public int Len { get; set; }
 
         /// <summary>
         /// Runway magnetic heading (add magVar for true)
         /// </summary>
-        internal double Hdg { get; set; }
+        public double Hdg { get; set; }
 
         /// <summary>
         /// Runway surface material
         /// </summary>
-        internal string Def { get; set; }
+        public string Def { get; set; }
 
         /// <summary>
         /// Runway threshold latitude
         /// </summary>
-        internal double ThresholdStartLat { get; set; }
+        public double ThresholdStartLat { get; set; }
 
         /// <summary>
         /// Runway threshold longitude
         /// </summary>
-        internal double ThresholdStartLon { get; set; }
+        public double ThresholdStartLon { get; set; }
 
         /// <summary>
         /// Index of runway in <see cref="Runway.Runways"></see>
         /// </summary>
-        internal int RunwaysIndex { get; set; }
+        public int RunwaysIndex { get; set; }
 
         /// <summary>
         /// Clones the airport level runway information prior to reading in each runway for the current airport
@@ -123,6 +132,36 @@ namespace P3D_Scenario_Generator
                 RunwaysIndex = RunwaysIndex
             };
             return clonedRunwayParams;
+        }
+
+        /// <summary>
+        /// Creates a full, shallow copy of the current <see cref="RunwayParams"/> object,
+        /// including all properties.
+        /// </summary>
+        /// <returns>A new <see cref="RunwayParams"/> object that is a complete copy of the current instance.</returns>
+        public RunwayParams FullClone()
+        {
+            return new RunwayParams
+            {
+                IcaoId = this.IcaoId,
+                IcaoName = this.IcaoName,
+                Country = this.Country,
+                State = this.State,
+                City = this.City,
+                AirportLon = this.AirportLon,
+                AirportLat = this.AirportLat,
+                Altitude = this.Altitude,
+                MagVar = this.MagVar,
+                Id = this.Id,
+                Number = this.Number,
+                Designator = this.Designator,
+                Len = this.Len,
+                Hdg = this.Hdg,
+                Def = this.Def,
+                ThresholdStartLat = this.ThresholdStartLat,
+                ThresholdStartLon = this.ThresholdStartLon,
+                RunwaysIndex = this.RunwaysIndex
+            };
         }
     }
 
@@ -231,22 +270,96 @@ namespace P3D_Scenario_Generator
         /// </summary>
         internal static int CurrentLocationFavouriteIndex;
 
+        internal static RunwayUILists RunwayUILists = new();
+
+        private static readonly Random _random = new();
+
         #region Load runways from "runways.xml" and build list for General tab region
 
         /// <summary>
-        /// Asynchronously loads all runway data by offloading the synchronous parsing to a background thread.
+        /// Asynchronously loads runway data, prioritizing an up-to-date cached binary file for performance.
         /// </summary>
-        /// <param name="progressReporter">An object that can be used to report progress updates during the loading process.</param>
-        /// <returns>
-        /// A <see cref="T:System.Threading.Tasks.Task`1"/> representing the asynchronous operation, with a result of <c>true</c> if the runway data was loaded successfully; otherwise, <c>false</c>.
-        /// </returns>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns>A Task that returns true if the runway data was successfully loaded, otherwise false.</returns>
         /// <remarks>
-        /// This method uses <see cref="T:System.Threading.Tasks.Task.Run"/> to execute the CPU-intensive <c>GetRunways</c> method on a thread pool thread, ensuring the calling thread (e.g., the UI thread) remains responsive.
+        /// This method follows a specific priority order to load the runway data:
+        /// <para>1. It first checks for a serialized binary cache file (`runways.cache`) in the application's data directory. If the cache is not found, 
+        /// or if its modification date is older than the `runways.xml` file, it is considered invalid.</para>
+        /// <para>2. If the cache is valid and up-to-date, the data is deserialized from the cache for a fast load.</para>
+        /// <para>3. If the cache is invalid, outdated, empty, or corrupted, the method falls back to parsing the data from `runways.xml` located in the same data directory.</para>
+        /// <para>4. After a successful XML load, it serializes and saves the data to the cache file for faster loading in subsequent runs.</para>
+        /// All I/O and processing are performed on a background thread using <see cref="Task.Run"/> to prevent UI blocking.
         /// </remarks>
-        internal static async Task<bool> GetRunwaysAsync(IProgress<string> progressReporter)
+        internal static async Task<bool> GetRunwaysAsync(FormProgressReporter progressReporter)
         {
-            // Task.Run offloads the synchronous work to a background thread.
-            return await Task.Run(() => GetRunways(progressReporter));
+            string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
+            string dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
+
+            if (!Directory.Exists(dataDirectory))
+            {
+                Directory.CreateDirectory(dataDirectory);
+            }
+
+            string cacheFilePath = Path.Combine(dataDirectory, "runways.cache");
+            string xmlFilePath = Path.Combine(dataDirectory, "runways.xml");
+            List<RunwayParams> runways = null;
+
+            return await Task.Run(() =>
+            {
+                bool isCacheOutOfDate = false;
+                if (File.Exists(cacheFilePath) && File.Exists(xmlFilePath))
+                {
+                    DateTime cacheLastModified = File.GetLastWriteTime(cacheFilePath);
+                    DateTime xmlLastModified = File.GetLastWriteTime(xmlFilePath);
+                    if (xmlLastModified > cacheLastModified)
+                    {
+                        isCacheOutOfDate = true;
+                        progressReporter.Report("NOTICE: Runways XML file is newer than the cache. Parsing XML...");
+                    }
+                }
+
+                if (File.Exists(cacheFilePath) && !isCacheOutOfDate)
+                {
+                    progressReporter.Report("INFO: Loading runways from binary cache...");
+
+                    try
+                    {
+                        runways = CacheManager.DeserializeFromFile<List<RunwayParams>>(cacheFilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        progressReporter.Report($"ERROR: Failed to load from cache: {ex.Message}. Falling back to XML.");
+                    }
+                }
+
+                if (runways == null || runways.Count == 0)
+                {
+                    progressReporter.Report("INFO: Runways cache not found. Parsing XML...");
+
+                    if (!GetRunways(progressReporter))
+                    {
+                        progressReporter.Report("ERROR: Failed to load runway data from XML.");
+                        return false;
+                    }
+
+                    CacheManager.SerializeToFile(Runways, cacheFilePath);
+                    progressReporter.Report("INFO: Runway data cached to binary file.");
+                }
+                else
+                {
+                    Runways = runways;
+                    progressReporter.Report($"INFO: Successfully loaded {Runways.Count} runways from cache.");
+                }
+
+                progressReporter.IsThrottlingEnabled = false;
+
+                RunwayUILists.States = GetRunwayStates();
+                RunwayUILists.Cities = GetRunwayCities();
+                RunwayUILists.ICAOids = GetICAOids();
+                RunwayUILists.Countries = GetRunwayCountries();
+
+                return true;
+            });
         }
 
         /// <summary>
@@ -254,10 +367,12 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
         /// <returns>
-        /// <c>true</c> if the runway data was loaded successfully; otherwise, <c>false</c>.
+        /// <see langword="true"/> if the runway data was loaded successfully; otherwise, <see langword="false"/>.
         /// </returns>
         /// <remarks>
-        /// This method is a long-running, CPU-intensive operation that should not be called directly on the UI thread. It is designed to be executed in a background thread via <see cref="T:System.Threading.Tasks.Task.Run"/>. It reads runway data from an XML stream, populates a static collection, and reports progress.
+        /// This method is a long-running, CPU-intensive operation that should not be called directly on the UI thread. 
+        /// It is designed to be executed in a background thread via <see cref="System.Threading.Tasks.Task.Run"/>. 
+        /// It reads runway data from an XML stream, populates a static collection, and reports progress.
         /// </remarks>
         internal static bool GetRunways(IProgress<string> progressReporter)
         {
@@ -294,6 +409,7 @@ namespace P3D_Scenario_Generator
 
                 Log.Info($"Runways.GetRunways: Successfully loaded {Runways.Count} runways.");
                 progressReporter?.Report($"Successfully loaded {Runways.Count} runways.");
+
                 return true;
             }
             catch (XmlException ex)
@@ -307,10 +423,11 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Helper method to read a single airport's general information from an XML reader.
         /// </summary>
-        /// <param name="reader">The <see cref="T:System.Xml.XmlReader"/> positioned at the "ICAO" element.</param>
-        /// <returns>A <see cref="T:RunwayParams"/> object containing the airport's general data.</returns>
+        /// <param name="reader">The <see cref="System.Xml.XmlReader"/> positioned at the "ICAO" element.</param>
+        /// <returns>A <see cref="RunwayParams"/> object containing the airport's general data.</returns>
         /// <remarks>
-        /// This method reads elements such as ICAOName, Country, State, City, and geographical coordinates. It returns when it encounters the first "Runway" element or the end of the "ICAO" element.
+        /// This method reads elements such as ICAOName, Country, State, City, and geographical coordinates. It returns 
+        /// when it encounters the first "Runway" element or the end of the "ICAO" element.
         /// </remarks>
         private static RunwayParams ReadAirport(XmlReader reader)
         {
@@ -369,11 +486,12 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Helper method to read a single runway's specific information from an XML reader.
         /// </summary>
-        /// <param name="reader">The <see cref="T:System.Xml.XmlReader"/> positioned at a "Runway" element.</param>
-        /// <param name="airportData">The pre-existing <see cref="T:RunwayParams"/> object containing the parent airport's data.</param>
-        /// <returns>A new <see cref="T:RunwayParams"/> object containing the combined airport and runway data.</returns>
+        /// <param name="reader">The <see cref="System.Xml.XmlReader"/> positioned at a "Runway" element.</param>
+        /// <param name="airportData">The pre-existing <see cref="RunwayParams"/> object containing the parent airport's data.</param>
+        /// <returns>A new <see cref="RunwayParams"/> object containing the combined airport and runway data.</returns>
         /// <remarks>
-        /// This method clones the parent airport's data and then reads specific runway elements like length, heading, and threshold coordinates to create a new, distinct runway entry.
+        /// This method clones the parent airport's data and then reads specific runway elements like length, heading, 
+        /// and threshold coordinates to create a new, distinct runway entry.
         /// </remarks>
         private static RunwayParams ReadRunway(XmlReader reader, RunwayParams airportData)
         {
@@ -417,58 +535,60 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Retrieves the XML stream for runway data. It first attempts to load "runways.xml" from the local application directory. 
+        /// Retrieves the XML stream for runway data. It first attempts to load "runways.xml" from the application's data directory.
         /// If not found, it falls back to loading "XML.runways.xml" from the embedded resources.
         /// </summary>
         /// <param name="stream">When this method returns, contains the loaded Stream if successful; otherwise, <see langword="null"/>.</param>
         /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
         /// <returns><see langword="true"/> if the runway XML stream is successfully obtained; otherwise, <see langword="false"/>.</returns>
+        /// <remarks>
+        /// This method now prioritizes loading from the application's dedicated data directory in AppData, which is the preferred location for user-generated data.
+        /// If the file is not present in that location, it will fall back to using the XML file embedded within the application itself.
+        /// </remarks>
         static internal bool TryGetRunwayXMLStream(out Stream stream, IProgress<string> progressReporter)
         {
+            string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
+            string dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
             string xmlFilename = "runways.xml"; // Local file name
             string embeddedResourceName = $"XML.{xmlFilename}"; // Embedded resource name
+            string localFilePath = Path.Combine(dataDirectory, xmlFilename);
 
-            string message = $"Runway.TryGetRunwayXMLStream: Attempting to retrieve runway XML stream for '{xmlFilename}' from local file.";
+            string message = $"Attempting to retrieve runway XML stream for '{xmlFilename}' from local file.";
             Log.Info(message);
-            progressReporter?.Report(message);
-
-            // First, try to load from a local file
-            string localFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, xmlFilename); // Get path in application directory
+            progressReporter?.Report($"INFO: {message}");
 
             if (File.Exists(localFilePath))
             {
-                Log.Info($"Runway.TryGetRunwayXMLStream: Local runway XML file found: '{localFilePath}'. Attempting to load.");
+                Log.Info($"Local runway XML file found: '{localFilePath}'. Attempting to load.");
                 if (FileOps.TryReadAllBytes(localFilePath, progressReporter, out byte[] fileBytes))
                 {
                     stream = new MemoryStream(fileBytes);
-                    Log.Info($"Runway.TryGetRunwayXMLStream: Successfully loaded runway XML from local file: '{localFilePath}'.");
+                    Log.Info($"Successfully loaded runway XML from local file: '{localFilePath}'.");
+                    progressReporter?.Report($"INFO: Successfully loaded runway XML.");
                     return true;
                 }
                 else
                 {
-                    // Error already logged by TryReadAllBytes
-                    Log.Error($"Runway.TryGetRunwayXMLStream: Failed to read local runway XML file: '{localFilePath}'. Falling back to embedded resource.");
-                    // No progressReporter.Report here as TryReadAllBytes already did.
-                    // Proceed to try embedded resource.
+                    Log.Error($"Failed to read local runway XML file: '{localFilePath}'. Falling back to embedded resource.");
                 }
             }
             else
             {
-                Log.Info($"Runway.TryGetRunwayXMLStream: Local runway XML file not found at '{localFilePath}'. Attempting to load from embedded resource.");
+                Log.Info($"Local runway XML file not found at '{localFilePath}'. Attempting to load from embedded resource.");
+                progressReporter?.Report("INFO: Local runways XML not found. Attempting to load from embedded resource.");
             }
 
-            // If local file doesn't exist or failed to load, fall back to embedded resource
             if (FileOps.TryGetResourceStream(embeddedResourceName, progressReporter, out stream))
             {
-                Log.Info($"Runway.TryGetRunwayXMLStream: Successfully loaded runway XML from embedded resource: '{embeddedResourceName}'.");
+                Log.Info($"Successfully loaded runway XML from embedded resource: '{embeddedResourceName}'.");
+                progressReporter?.Report("INFO: Successfully loaded runway XML from embedded resource.");
                 return true;
             }
             else
             {
-                // Error already logged by FileOps.TryGetResourceStream
-                message = $"Runway.TryGetRunwayXMLStream: Failed to load runway XML from embedded resource: '{embeddedResourceName}'. Runway data is unavailable.";
+                message = $"Failed to load runway XML from embedded resource: '{embeddedResourceName}'. Runway data is unavailable.";
                 Log.Error(message);
-                progressReporter?.Report(message);
+                progressReporter?.Report($"ERROR: {message}");
                 return false;
             }
         }
@@ -525,26 +645,103 @@ namespace P3D_Scenario_Generator
         /// <returns>The list of runway strings</returns>
         static internal List<string> GetICAOids()
         {
-            List<string> icaoIDs = [];
-
-            for (int i = 0; i < Runways.Count; i++)
+            List<string> icaoIDs = [.. Runways.Select(runway =>
             {
-                if (int.TryParse(Runways[i].Number, out int runwayNumber) && runwayNumber <= 36)
+                if (int.TryParse(runway.Number, out int runwayNumber) && runwayNumber <= 36)
                 {
-                    icaoIDs.Add($"{Runways[i].IcaoId} ({Runways[i].Id})");
+                    return $"{runway.IcaoId} ({runway.Id})";
                 }
                 else
                 {
-                    string runwayId = $"{Runways[i].IcaoId} ({Runways[i].Number})";
-                    if (Runways[i].Designator != null && Runways[i].Designator != "None")
+                    string runwayId = $"{runway.IcaoId} ({runway.Number})";
+                    if (!string.IsNullOrEmpty(runway.Designator) && runway.Designator != "None")
                     {
                         // Append designator if not "None"
-                        runwayId = $"{runwayId}[{Runways[i].Designator[0..1]}]";
+                        runwayId = $"{runwayId}[{runway.Designator[..1]}]";
                     }
-                    icaoIDs.Add(runwayId);
+                    return runwayId;
+                }
+            })];
+
+            return icaoIDs;
+        }
+
+        /// <summary>
+        /// Finds the index of a runway in the master <see cref="Runways"/> list based on its formatted
+        /// string representation (e.g., "LFGO (14L)").
+        /// </summary>
+        /// <param name="runwayString">The formatted string of the runway to search for, as created by <see cref="GetICAOids"/>.</param>
+        /// <returns>The zero-based index of the matching runway in the <see cref="Runways"/> list, or -1 if no match is found.</returns>
+        static internal int FindRunwayIndexByString(string runwayString)
+        {
+            // Defensive check to ensure both the input string and the Runways list are valid.
+            if (string.IsNullOrEmpty(runwayString) || Runways == null || Runways.Count == 0)
+            {
+                return -1;
+            }
+
+            for (int i = 0; i < Runways.Count; i++)
+            {
+                var runway = Runways[i];
+                string constructedRunwayString;
+
+                // Replicate the exact logic from GetICAOids() to ensure a correct match.
+                if (int.TryParse(runway.Number, out int runwayNumber) && runwayNumber <= 36)
+                {
+                    constructedRunwayString = $"{runway.IcaoId} ({runway.Id})";
+                }
+                else
+                {
+                    constructedRunwayString = $"{runway.IcaoId} ({runway.Number})";
+                    if (!string.IsNullOrEmpty(runway.Designator) && runway.Designator != "None")
+                    {
+                        // Append designator if not "None"
+                        constructedRunwayString = $"{constructedRunwayString}[{runway.Designator[..1]}]";
+                    }
+                }
+
+                if (constructedRunwayString.Equals(runwayString, StringComparison.Ordinal))
+                {
+                    return i; // Return the index of the first matching runway.
                 }
             }
-            return icaoIDs;
+
+            return -1; // Return -1 if no matching runway is found.
+        }
+
+        /// <summary>
+        /// Generates and returns a single, randomly selected runway string from a provided list,
+        /// formatted as "ICAO (Runway Id)" (e.g., "LFGO (14L)").
+        /// </summary>
+        /// <param name="runways">The list of <see cref="RunwayParams"/> objects to select from.</param>
+        /// <returns>A randomly selected runway string, or an empty string if the provided list is null or empty.</returns>
+        static internal string GetRandomICAOid(List<RunwayParams> runways)
+        {
+            // Ensure the provided list is populated before attempting to select a random item.
+            if (runways == null || runways.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            // Generate a random index within the bounds of the provided list.
+            int randomIndex = _random.Next(0, runways.Count);
+            var runway = runways[randomIndex];
+
+            // Apply the same formatting logic as the GetICAOids method.
+            if (int.TryParse(runway.Number, out int runwayNumber) && runwayNumber <= 36)
+            {
+                return $"{runway.IcaoId} ({runway.Id})";
+            }
+            else
+            {
+                string runwayId = $"{runway.IcaoId} ({runway.Number})";
+                if (!string.IsNullOrEmpty(runway.Designator) && runway.Designator != "None")
+                {
+                    // Append designator if not "None"
+                    runwayId = $"{runwayId}[{runway.Designator[..1]}]";
+                }
+                return runwayId;
+            }
         }
 
         /// <summary>
@@ -553,16 +750,11 @@ namespace P3D_Scenario_Generator
         /// <returns>Sorted list of the country strings in "runways.xml"</returns>
         static internal List<string> GetRunwayCountries()
         {
-            List<string> countries = [];
+            List<string> countries = [.. Runways.Where(r => !string.IsNullOrEmpty(r.Country))
+                                            .Select(r => r.Country)
+                                            .Distinct()
+                                            .OrderBy(c => c)];
 
-            for (int i = 0; i < Runways.Count; i++)
-            {
-                if (Runways[i].Country != "" && countries.IndexOf(Runways[i].Country) == -1)
-                {
-                    countries.Add(Runways[i].Country);
-                }
-            }
-            countries.Sort();
             countries.Insert(0, "None");
             return countries;
         }
@@ -573,16 +765,11 @@ namespace P3D_Scenario_Generator
         /// <returns>Sorted list of the state strings in "runways.xml"</returns>
         static internal List<string> GetRunwayStates()
         {
-            List<string> states = [];
+            List<string> states = [.. Runways.Where(r => !string.IsNullOrEmpty(r.State))
+                                         .Select(r => r.State)
+                                         .Distinct()
+                                         .OrderBy(s => s)];
 
-            for (int i = 0; i < Runways.Count; i++)
-            {
-                if (Runways[i].State != null && Runways[i].State != "" && states.IndexOf(Runways[i].State) == -1)
-                {
-                    states.Add(Runways[i].State);
-                }
-            }
-            states.Sort();
             states.Insert(0, "None");
             return states;
         }
@@ -593,16 +780,12 @@ namespace P3D_Scenario_Generator
         /// <returns>Sorted list of the city strings in "runways.xml"</returns>
         static internal List<string> GetRunwayCities()
         {
-            List<string> cities = [];
+            // Use LINQ to get distinct, non-empty cities, sort them, and convert to a list.
+            List<string> cities = [.. Runways.Where(r => !string.IsNullOrEmpty(r.City))
+                                         .Select(r => r.City)
+                                         .Distinct()
+                                         .OrderBy(c => c)];
 
-            for (int i = 0; i < Runways.Count; i++)
-            {
-                if (Runways[i].City != "" && cities.IndexOf(Runways[i].City) == -1)
-                {
-                    cities.Add(Runways[i].City);
-                }
-            }
-            cities.Sort();
             cities.Insert(0, "None");
             return cities;
         }
@@ -871,101 +1054,131 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Save <see cref="LocationFavourites"/> to file in JSON format
+        /// Saves the current list of location favourites to a file in JSON format using CacheManager.
+        /// The save operation is skipped if the list is empty to prevent overwriting a valid file.
         /// </summary>
-        internal static void SaveLocationFavourites()
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        internal static void SaveLocationFavourites(IProgress<string> progressReporter = null)
         {
-            string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            directory = Path.Combine(directory, AppDomain.CurrentDomain.FriendlyName);
-            if (!Directory.Exists(directory))
+            // Do not save if the list is empty to prevent overwriting a valid file with an empty one.
+            if (LocationFavourites == null || LocationFavourites.Count == 0)
             {
-                Directory.CreateDirectory(directory);
+                string warningMessage = "Location favourites list is empty. Save operation aborted to prevent data loss.";
+                Log.Warning(warningMessage);
+                progressReporter?.Report(warningMessage);
+                return;
             }
-            directory = Path.Combine(directory, "LocationFavouritesJSON.txt");
 
-            JsonSerializer serializer = new()
+            string appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                                                   AppDomain.CurrentDomain.FriendlyName);
+            string filePath = Path.Combine(appDataDirectory, "LocationFavouritesJSON.txt");
+
+            try
             {
-                Formatting = Newtonsoft.Json.Formatting.Indented
-            };
-            using StreamWriter sw = new(directory);
-            using JsonWriter writer = new JsonTextWriter(sw);
-            serializer.Serialize(writer, LocationFavourites);
+                CacheManager.SerializeToFile(LocationFavourites, filePath);
+                Log.Info($"Successfully saved {LocationFavourites.Count} location favourites to '{filePath}'.");
+                progressReporter?.Report($"Location favourites saved ({LocationFavourites.Count} entries).");
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Failed to save location favourites. Details: {ex.Message}", ex);
+                progressReporter?.Report($"ERROR: Failed to save location favourites: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// Load <see cref="LocationFavourites"/> from file stored in JSON format
+        /// Loads the list of location favourites from a file stored in JSON format.
+        /// It first attempts to load a local user-created version. If the local file does not exist,
+        /// or if it contains an empty list, it falls back to a non-empty embedded resource.
         /// </summary>
-        internal static bool LoadLocationFavourites()
+        /// </summary>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns><see langword="true"/> if location favourites were successfully loaded, <see langword="false"/> otherwise.</returns>
+        internal static bool LoadLocationFavourites(IProgress<string> progressReporter = null)
         {
-            string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            directory = Path.Combine(directory, AppDomain.CurrentDomain.FriendlyName);
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-            directory = Path.Combine(directory, "LocationFavouritesJSON.txt");
+            // Initialize LocationFavourites to an empty list to prevent NullReferenceException on failure.
+            LocationFavourites = [];
+            string appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                                                   AppDomain.CurrentDomain.FriendlyName);
+            string filePath = Path.Combine(appDataDirectory, "LocationFavouritesJSON.txt");
 
-            string input;
-            if (!File.Exists(directory))
+            // Flag to determine if we need to fall back to the embedded resource.
+            bool needsFallback = false;
+
+            try
             {
-                FileOps.TryGetResourceStream("Text.LocationFavouritesJSON.txt", null, out Stream stream);
-                StreamReader reader = new(stream);
-                input = reader.ReadToEnd();
+                // First, try to load from the local file using CacheManager.
+                Log.Info($"Attempting to load location favourites from local file: {filePath}");
+                LocationFavourites = CacheManager.DeserializeFromFile<List<LocationFavourite>>(filePath);
+
+                // If the local file was loaded successfully but is empty, trigger a fallback.
+                if (LocationFavourites == null || LocationFavourites.Count == 0)
+                {
+                    string warningMessage = "Local favourites file was empty or contained no valid data. Falling back to embedded resource.";
+                    Log.Warning(warningMessage);
+                    progressReporter?.Report(warningMessage);
+                    needsFallback = true;
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                // If the local file is not found, automatically fall back to the embedded resource.
+                Log.Warning("Local favourites file not found. Falling back to embedded resource.");
+                needsFallback = true;
+            }
+            catch (Exception ex)
+            {
+                // Catch any other exceptions (e.g., JsonException) from the primary deserialize attempt.
+                string errorMessage = $"An error occurred while processing local favourites file: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report($"ERROR: {errorMessage}");
+                needsFallback = true;
+            }
+
+            if (needsFallback)
+            {
+                try
+                {
+                    if (FileOps.TryGetResourceStream("Text.LocationFavouritesJSON.txt", progressReporter, out Stream resourceStream))
+                    {
+                        using (resourceStream)
+                        {
+                            LocationFavourites = System.Text.Json.JsonSerializer.Deserialize<List<LocationFavourite>>(resourceStream);
+                            Log.Info("Successfully loaded location favourites from embedded resource.");
+                        }
+                    }
+                    else
+                    {
+                        // FileOps.TryGetResourceStream already reported the error.
+                        LocationFavourites = []; // Ensure an empty list on final failure.
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Catch any errors during embedded resource deserialization.
+                    string errorMessage = $"An unexpected error occurred during fallback to embedded resource: {ex.Message}";
+                    Log.Error(errorMessage, ex);
+                    progressReporter?.Report($"ERROR: {errorMessage}");
+                    LocationFavourites = [];
+                    return false;
+                }
+            }
+
+            // Final check to report the outcome.
+            if (LocationFavourites.Count > 0)
+            {
+                Log.Info($"Successfully loaded {LocationFavourites.Count} location favourites.");
+                progressReporter?.Report($"Location favourites loaded ({LocationFavourites.Count} entries).");
+                return true;
             }
             else
             {
-                input = File.ReadAllText(directory);
-            }
-
-            LocationFavourites = JsonConvert.DeserializeObject<List<LocationFavourite>>(input);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Checks a location string (Country/State/City) against the current location favourite in <see cref="LocationFavourites"/>
-        /// </summary>
-        /// <param name="location">The location string to be checked</param>
-        /// <returns>True if the location string to be checked matches one of the Country/State/City filter values</returns>
-        internal static bool CheckLocationFilters(string location)
-        {
-            // If Country/State/City filters all set to "None" return true as no filtering on location is required
-            if (LocationFavourites[CurrentLocationFavouriteIndex].Countries[0] == "None" &&
-                LocationFavourites[CurrentLocationFavouriteIndex].States[0] == "None" &&
-                LocationFavourites[CurrentLocationFavouriteIndex].Cities[0] == "None")
-            {
-                return true;
-            }
-
-            // Check each of Country/State/City filter strings against location
-            bool checkCountry = CheckLocationFilter(location, LocationFavourites[CurrentLocationFavouriteIndex].Countries);
-            bool checkState = CheckLocationFilter(location, LocationFavourites[CurrentLocationFavouriteIndex].States);
-            bool checkCity = CheckLocationFilter(location, LocationFavourites[CurrentLocationFavouriteIndex].Cities);
-            if (checkCountry || checkState || checkCity)
-            {
-                return true;
-            }
-            else
-            {
+                // The list is still empty after all attempts.
+                string warningMessage = "All attempts to load a valid list of location favourites failed. The list will be empty.";
+                Log.Warning(warningMessage);
+                progressReporter?.Report(warningMessage);
                 return false;
-            }
-        }
-
-        /// <summary>
-        /// Checks a location string against one of Country/State/City in the current location favourite in <see cref="LocationFavourites"/>
-        /// </summary>
-        /// <param name="location">The location string to be checked</param>
-        /// <param name="locationStrings">The strings to be checked against in <see cref="LocationFavourites"/></param>
-        /// <returns>True if the location string to be checked matches one of the filter values in locationStrings</returns>
-        internal static bool CheckLocationFilter(string location, List<string> locationStrings)
-        {
-            if (locationStrings[0] != "None")
-            {
-                return locationStrings.Contains(location);
-            }
-            else
-            {
-                return true;
             }
         }
 
@@ -1081,7 +1294,7 @@ namespace P3D_Scenario_Generator
             List<RunwayParams> runwaysSubset = [];
             sourceList.ForEach((item) =>
             {
-                runwaysSubset.Add((RunwayParams)item.Clone());
+                runwaysSubset.Add((RunwayParams)item.FullClone());
             });
             return runwaysSubset;
         }

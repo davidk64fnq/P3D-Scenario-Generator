@@ -315,12 +315,12 @@ namespace P3D_Scenario_Generator
         public string CacheServerAPIkey { get; set; }
 
         /// <summary>
-        /// P3D Program Data folder path excluding version number suffix
+        /// P3D Program Data folder path 
         /// </summary>
         public string P3DProgramInstall { get; set; }
 
         /// <summary>
-        /// P3D Program Install folder path excluding version number suffix
+        /// P3D Program Install folder path 
         /// </summary>
         public string P3DProgramData { get; set; }
 

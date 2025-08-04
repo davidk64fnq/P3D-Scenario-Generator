@@ -147,9 +147,8 @@ namespace P3D_Scenario_Generator
             label1 = new Label();
             TextBoxGeneralSearchRunway = new TextBox();
             groupBox12 = new GroupBox();
-            tableLayoutPanel8 = new TableLayoutPanel();
+            tableLayoutPanelRunwaySelection = new TableLayoutPanel();
             ButtonRandRunway = new Button();
-            ComboBoxGeneralRunwaySelected = new ComboBox();
             groupBox13 = new GroupBox();
             tableLayoutPanel9 = new TableLayoutPanel();
             ButtonRandomScenario = new Button();
@@ -188,7 +187,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsScenarioFolderBase = new TextBox();
             TextBoxSettingsP3DprogramInstall = new TextBox();
             button1 = new Button();
-            button2 = new Button();
+            ButtonP3DDataFolderSelect = new Button();
             GroupBoxSignWritingParameters = new GroupBox();
             TableLayoutPanelSignWritingParameters = new TableLayoutPanel();
             GroupBoxSignWritingSignWindowLocation = new GroupBox();
@@ -198,7 +197,7 @@ namespace P3D_Scenario_Generator
             GroupBoxPhotoTourConstraints = new GroupBox();
             TableLayoutPanelPhotoTourConstraints = new TableLayoutPanel();
             groupBox16 = new GroupBox();
-            tableLayoutPanel12 = new TableLayoutPanel();
+            tableLayoutPanelLocationFilter = new TableLayoutPanel();
             ButtonRandomLocation = new Button();
             TextBoxGeneralLocationFilters = new TextBox();
             TabPagePhotoTour = new TabPage();
@@ -247,6 +246,8 @@ namespace P3D_Scenario_Generator
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             errorProvider1 = new ErrorProvider(components);
             helpProvider1 = new HelpProvider();
+            buttonClearP3DPath = new Button();
+            ListBoxGeneralRunwayResults = new ListBox();
             GroupBoxSettingsMapTileCacheInfo.SuspendLayout();
             TableLayoutPanelSettingsMapTileCacheInfo.SuspendLayout();
             GroupBoxWikipediaListParameters.SuspendLayout();
@@ -256,7 +257,7 @@ namespace P3D_Scenario_Generator
             GroupBoxCircuitParameters.SuspendLayout();
             TableLayoutPanelCircuitParameters.SuspendLayout();
             groupBox12.SuspendLayout();
-            tableLayoutPanel8.SuspendLayout();
+            tableLayoutPanelRunwaySelection.SuspendLayout();
             groupBox13.SuspendLayout();
             tableLayoutPanel9.SuspendLayout();
             GroupBoxSettingsMapWindow.SuspendLayout();
@@ -272,7 +273,7 @@ namespace P3D_Scenario_Generator
             GroupBoxPhotoTourConstraints.SuspendLayout();
             TableLayoutPanelPhotoTourConstraints.SuspendLayout();
             groupBox16.SuspendLayout();
-            tableLayoutPanel12.SuspendLayout();
+            tableLayoutPanelLocationFilter.SuspendLayout();
             TabPagePhotoTour.SuspendLayout();
             tableLayoutPanel6.SuspendLayout();
             tableLayoutPanel14.SuspendLayout();
@@ -1801,7 +1802,7 @@ namespace P3D_Scenario_Generator
             groupBox12.Anchor = AnchorStyles.Bottom;
             groupBox12.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             groupBox12.BackColor = Color.FromArgb(255, 192, 128);
-            groupBox12.Controls.Add(tableLayoutPanel8);
+            groupBox12.Controls.Add(tableLayoutPanelRunwaySelection);
             groupBox12.Location = new Point(83, 299);
             groupBox12.Margin = new Padding(0);
             groupBox12.Name = "groupBox12";
@@ -1812,27 +1813,27 @@ namespace P3D_Scenario_Generator
             groupBox12.Text = "Runway Selection";
             toolTip1.SetToolTip(groupBox12, "Press \"Random\" button for random selection of runway, or select from dropdown list, or start typing an ICAO code in search box.");
             // 
-            // tableLayoutPanel8
+            // tableLayoutPanelRunwaySelection
             // 
-            tableLayoutPanel8.AccessibleName = "";
-            tableLayoutPanel8.Anchor = AnchorStyles.None;
-            tableLayoutPanel8.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            tableLayoutPanel8.ColumnCount = 2;
-            tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel8.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel8.Controls.Add(ButtonRandRunway, 0, 0);
-            tableLayoutPanel8.Controls.Add(ComboBoxGeneralRunwaySelected, 1, 0);
-            tableLayoutPanel8.Controls.Add(label1, 0, 1);
-            tableLayoutPanel8.Controls.Add(TextBoxGeneralSearchRunway, 1, 1);
-            tableLayoutPanel8.ImeMode = ImeMode.On;
-            tableLayoutPanel8.Location = new Point(10, 25);
-            tableLayoutPanel8.Margin = new Padding(0);
-            tableLayoutPanel8.Name = "tableLayoutPanel8";
-            tableLayoutPanel8.RowCount = 2;
-            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel8.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel8.Size = new Size(220, 66);
-            tableLayoutPanel8.TabIndex = 36;
+            tableLayoutPanelRunwaySelection.AccessibleName = "";
+            tableLayoutPanelRunwaySelection.Anchor = AnchorStyles.None;
+            tableLayoutPanelRunwaySelection.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            tableLayoutPanelRunwaySelection.ColumnCount = 2;
+            tableLayoutPanelRunwaySelection.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelRunwaySelection.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelRunwaySelection.Controls.Add(ButtonRandRunway, 0, 0);
+            tableLayoutPanelRunwaySelection.Controls.Add(label1, 0, 1);
+            tableLayoutPanelRunwaySelection.Controls.Add(TextBoxGeneralSearchRunway, 1, 1);
+            tableLayoutPanelRunwaySelection.Controls.Add(ListBoxGeneralRunwayResults, 1, 0);
+            tableLayoutPanelRunwaySelection.ImeMode = ImeMode.On;
+            tableLayoutPanelRunwaySelection.Location = new Point(10, 25);
+            tableLayoutPanelRunwaySelection.Margin = new Padding(0);
+            tableLayoutPanelRunwaySelection.Name = "tableLayoutPanelRunwaySelection";
+            tableLayoutPanelRunwaySelection.RowCount = 2;
+            tableLayoutPanelRunwaySelection.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelRunwaySelection.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelRunwaySelection.Size = new Size(220, 66);
+            tableLayoutPanelRunwaySelection.TabIndex = 36;
             // 
             // ButtonRandRunway
             // 
@@ -1845,22 +1846,6 @@ namespace P3D_Scenario_Generator
             ButtonRandRunway.Text = "Random";
             ButtonRandRunway.UseVisualStyleBackColor = true;
             ButtonRandRunway.Click += ButtonRandRunway_Click;
-            // 
-            // ComboBoxGeneralRunwaySelected
-            // 
-            ComboBoxGeneralRunwaySelected.AccessibleName = "Runway Selection: Selected";
-            ComboBoxGeneralRunwaySelected.Anchor = AnchorStyles.None;
-            ComboBoxGeneralRunwaySelected.DropDownStyle = ComboBoxStyle.DropDownList;
-            ComboBoxGeneralRunwaySelected.DropDownWidth = 150;
-            ComboBoxGeneralRunwaySelected.FormattingEnabled = true;
-            ComboBoxGeneralRunwaySelected.Location = new Point(115, 5);
-            ComboBoxGeneralRunwaySelected.Margin = new Padding(5);
-            ComboBoxGeneralRunwaySelected.MaxDropDownItems = 20;
-            ComboBoxGeneralRunwaySelected.Name = "ComboBoxGeneralRunwaySelected";
-            ComboBoxGeneralRunwaySelected.Size = new Size(100, 23);
-            ComboBoxGeneralRunwaySelected.TabIndex = 1;
-            ComboBoxGeneralRunwaySelected.Tag = "";
-            toolTip1.SetToolTip(ComboBoxGeneralRunwaySelected, "To customise airport list see help");
             // 
             // groupBox13
             // 
@@ -2385,17 +2370,17 @@ namespace P3D_Scenario_Generator
             button1.UseVisualStyleBackColor = true;
             button1.Click += ButtonBrowseP3DInstallFolder_Click;
             // 
-            // button2
+            // ButtonP3DDataFolderSelect
             // 
-            button2.Anchor = AnchorStyles.None;
-            button2.Location = new Point(3, 33);
-            button2.Name = "button2";
-            button2.Size = new Size(100, 23);
-            button2.TabIndex = 52;
-            button2.Text = "P3D Data";
-            toolTip1.SetToolTip(button2, "Click to choose P3D Program Data folder path, typically e.g. \"C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\"");
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += ButtonBrowseP3DDataFolder_Click;
+            ButtonP3DDataFolderSelect.Anchor = AnchorStyles.None;
+            ButtonP3DDataFolderSelect.Location = new Point(3, 33);
+            ButtonP3DDataFolderSelect.Name = "ButtonP3DDataFolderSelect";
+            ButtonP3DDataFolderSelect.Size = new Size(100, 23);
+            ButtonP3DDataFolderSelect.TabIndex = 52;
+            ButtonP3DDataFolderSelect.Text = "P3D Data";
+            toolTip1.SetToolTip(ButtonP3DDataFolderSelect, "Click to choose P3D Program Data folder path, typically e.g. \"C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\"");
+            ButtonP3DDataFolderSelect.UseVisualStyleBackColor = true;
+            ButtonP3DDataFolderSelect.Click += ButtonBrowseP3DDataFolder_Click;
             // 
             // GroupBoxSignWritingParameters
             // 
@@ -2576,7 +2561,7 @@ namespace P3D_Scenario_Generator
             // 
             groupBox16.Anchor = AnchorStyles.Top;
             groupBox16.BackColor = Color.FromArgb(255, 192, 128);
-            groupBox16.Controls.Add(tableLayoutPanel12);
+            groupBox16.Controls.Add(tableLayoutPanelLocationFilter);
             groupBox16.Location = new Point(83, 0);
             groupBox16.Margin = new Padding(0);
             groupBox16.Name = "groupBox16";
@@ -2586,36 +2571,36 @@ namespace P3D_Scenario_Generator
             groupBox16.TabStop = false;
             groupBox16.Text = "Location Filter";
             // 
-            // tableLayoutPanel12
+            // tableLayoutPanelLocationFilter
             // 
-            tableLayoutPanel12.AccessibleName = "";
-            tableLayoutPanel12.Anchor = AnchorStyles.None;
-            tableLayoutPanel12.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            tableLayoutPanel12.ColumnCount = 2;
-            tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel12.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel12.Controls.Add(ButtonRandomLocation, 0, 4);
-            tableLayoutPanel12.Controls.Add(TextBoxGeneralLocationFilters, 1, 4);
-            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationFavourites, 1, 3);
-            tableLayoutPanel12.Controls.Add(label61, 0, 3);
-            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationCity, 1, 2);
-            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationState, 1, 1);
-            tableLayoutPanel12.Controls.Add(ComboBoxGeneralLocationCountry, 1, 0);
-            tableLayoutPanel12.Controls.Add(label58, 0, 1);
-            tableLayoutPanel12.Controls.Add(label59, 0, 2);
-            tableLayoutPanel12.Controls.Add(label60, 0, 0);
-            tableLayoutPanel12.ImeMode = ImeMode.On;
-            tableLayoutPanel12.Location = new Point(10, 25);
-            tableLayoutPanel12.Margin = new Padding(0);
-            tableLayoutPanel12.Name = "tableLayoutPanel12";
-            tableLayoutPanel12.RowCount = 5;
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            tableLayoutPanel12.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            tableLayoutPanel12.Size = new Size(220, 165);
-            tableLayoutPanel12.TabIndex = 36;
+            tableLayoutPanelLocationFilter.AccessibleName = "";
+            tableLayoutPanelLocationFilter.Anchor = AnchorStyles.None;
+            tableLayoutPanelLocationFilter.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            tableLayoutPanelLocationFilter.ColumnCount = 2;
+            tableLayoutPanelLocationFilter.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelLocationFilter.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelLocationFilter.Controls.Add(ButtonRandomLocation, 0, 4);
+            tableLayoutPanelLocationFilter.Controls.Add(TextBoxGeneralLocationFilters, 1, 4);
+            tableLayoutPanelLocationFilter.Controls.Add(ComboBoxGeneralLocationFavourites, 1, 3);
+            tableLayoutPanelLocationFilter.Controls.Add(label61, 0, 3);
+            tableLayoutPanelLocationFilter.Controls.Add(ComboBoxGeneralLocationCity, 1, 2);
+            tableLayoutPanelLocationFilter.Controls.Add(ComboBoxGeneralLocationState, 1, 1);
+            tableLayoutPanelLocationFilter.Controls.Add(ComboBoxGeneralLocationCountry, 1, 0);
+            tableLayoutPanelLocationFilter.Controls.Add(label58, 0, 1);
+            tableLayoutPanelLocationFilter.Controls.Add(label59, 0, 2);
+            tableLayoutPanelLocationFilter.Controls.Add(label60, 0, 0);
+            tableLayoutPanelLocationFilter.ImeMode = ImeMode.On;
+            tableLayoutPanelLocationFilter.Location = new Point(10, 25);
+            tableLayoutPanelLocationFilter.Margin = new Padding(0);
+            tableLayoutPanelLocationFilter.Name = "tableLayoutPanelLocationFilter";
+            tableLayoutPanelLocationFilter.RowCount = 5;
+            tableLayoutPanelLocationFilter.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanelLocationFilter.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanelLocationFilter.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanelLocationFilter.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanelLocationFilter.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tableLayoutPanelLocationFilter.Size = new Size(220, 165);
+            tableLayoutPanelLocationFilter.TabIndex = 36;
             // 
             // ButtonRandomLocation
             // 
@@ -2774,7 +2759,7 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelSettingsFolderInfo.Controls.Add(TextBoxSettingsP3DprogramInstall, 1, 0);
             TableLayoutPanelSettingsFolderInfo.Controls.Add(TextBoxSettingsP3DprogramData, 1, 1);
             TableLayoutPanelSettingsFolderInfo.Controls.Add(TextBoxSettingsScenarioFolderBase, 1, 2);
-            TableLayoutPanelSettingsFolderInfo.Controls.Add(button2, 0, 1);
+            TableLayoutPanelSettingsFolderInfo.Controls.Add(ButtonP3DDataFolderSelect, 0, 1);
             TableLayoutPanelSettingsFolderInfo.ImeMode = ImeMode.On;
             TableLayoutPanelSettingsFolderInfo.Location = new Point(14, 24);
             TableLayoutPanelSettingsFolderInfo.Name = "TableLayoutPanelSettingsFolderInfo";
@@ -3250,12 +3235,33 @@ namespace P3D_Scenario_Generator
             // 
             helpProvider1.HelpNamespace = "resources/help/Help.chm";
             // 
+            // buttonClearP3DPath
+            // 
+            buttonClearP3DPath.Location = new Point(684, 497);
+            buttonClearP3DPath.Name = "buttonClearP3DPath";
+            buttonClearP3DPath.Size = new Size(75, 23);
+            buttonClearP3DPath.TabIndex = 42;
+            buttonClearP3DPath.Text = "test";
+            buttonClearP3DPath.UseVisualStyleBackColor = true;
+            buttonClearP3DPath.Click += ButtonClearP3DPath_Click;
+            // 
+            // ListBoxGeneralRunwayResults
+            // 
+            ListBoxGeneralRunwayResults.Anchor = AnchorStyles.None;
+            ListBoxGeneralRunwayResults.FormattingEnabled = true;
+            ListBoxGeneralRunwayResults.ItemHeight = 15;
+            ListBoxGeneralRunwayResults.Location = new Point(115, 5);
+            ListBoxGeneralRunwayResults.Name = "ListBoxGeneralRunwayResults";
+            ListBoxGeneralRunwayResults.Size = new Size(100, 19);
+            ListBoxGeneralRunwayResults.TabIndex = 4;
+            // 
             // Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(844, 553);
+            Controls.Add(buttonClearP3DPath);
             Controls.Add(ButtonSignWritingSaved);
             Controls.Add(ButtonSignWritingDefault);
             Controls.Add(ButtonPhotoTourSaved);
@@ -3285,8 +3291,8 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelCircuitParameters.ResumeLayout(false);
             TableLayoutPanelCircuitParameters.PerformLayout();
             groupBox12.ResumeLayout(false);
-            tableLayoutPanel8.ResumeLayout(false);
-            tableLayoutPanel8.PerformLayout();
+            tableLayoutPanelRunwaySelection.ResumeLayout(false);
+            tableLayoutPanelRunwaySelection.PerformLayout();
             groupBox13.ResumeLayout(false);
             tableLayoutPanel9.ResumeLayout(false);
             tableLayoutPanel9.PerformLayout();
@@ -3309,8 +3315,8 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelPhotoTourConstraints.ResumeLayout(false);
             TableLayoutPanelPhotoTourConstraints.PerformLayout();
             groupBox16.ResumeLayout(false);
-            tableLayoutPanel12.ResumeLayout(false);
-            tableLayoutPanel12.PerformLayout();
+            tableLayoutPanelLocationFilter.ResumeLayout(false);
+            tableLayoutPanelLocationFilter.PerformLayout();
             TabPagePhotoTour.ResumeLayout(false);
             tableLayoutPanel6.ResumeLayout(false);
             tableLayoutPanel14.ResumeLayout(false);
@@ -3493,8 +3499,7 @@ namespace P3D_Scenario_Generator
         internal TextBox TextBoxWikiURLWindowHeight;
         private GroupBox GroupBoxCircuitParameters;
         private GroupBox groupBox12;
-        private TableLayoutPanel tableLayoutPanel8;
-        internal ComboBox ComboBoxGeneralRunwaySelected;
+        private TableLayoutPanel tableLayoutPanelRunwaySelection;
         private GroupBox groupBox13;
         private TableLayoutPanel tableLayoutPanel9;
         internal ComboBox ComboBoxGeneralScenarioType;
@@ -3511,7 +3516,7 @@ namespace P3D_Scenario_Generator
         internal ComboBox ComboBoxGeneralAircraftSelection;
         internal TextBox TextBoxGeneralSearchRunway;
         private GroupBox groupBox16;
-        private TableLayoutPanel tableLayoutPanel12;
+        private TableLayoutPanel tableLayoutPanelLocationFilter;
         internal ComboBox ComboBoxGeneralLocationCountry;
         private Label label58;
         private Label label59;
@@ -3550,7 +3555,7 @@ namespace P3D_Scenario_Generator
         private Button ButtonBrowseScenarioFolder;
         private TextBox TextBoxSettingsScenarioFolderBase;
         internal TextBox TextBoxSettingsP3DprogramInstall;
-        private Button button2;
+        private Button ButtonP3DDataFolderSelect;
         private Button button1;
         private TableLayoutPanel tableLayoutPanel1;
         private TableLayoutPanel tableLayoutPanel2;
@@ -3573,6 +3578,8 @@ namespace P3D_Scenario_Generator
         private TableLayoutPanel tableLayoutPanel21;
         private TableLayoutPanel tableLayoutPanel22;
         private HelpProvider helpProvider1;
+        private Button buttonClearP3DPath;
+        private ListBox ListBoxGeneralRunwayResults;
     }
 }
 
