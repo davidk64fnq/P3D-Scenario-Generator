@@ -373,6 +373,24 @@ namespace P3D_Scenario_Generator
         #region Helper Methods
 
         /// <summary>
+        /// Gets the full path to the application's local data directory.
+        /// The directory is created if it does not already exist.
+        /// </summary>
+        /// <returns>The full path to the application data directory.</returns>
+        public static string GetApplicationDataDirectory()
+        {
+            string appName = Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().GetName().Name);
+            string dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
+
+            if (!Directory.Exists(dataDirectory))
+            {
+                Directory.CreateDirectory(dataDirectory);
+            }
+
+            return dataDirectory;
+        }
+
+        /// <summary>
         /// Retrieves the last write time of a specified file.
         /// </summary>
         /// <param name="filePath">The full path to the file.</param>

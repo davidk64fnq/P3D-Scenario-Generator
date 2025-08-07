@@ -343,8 +343,8 @@ namespace P3D_Scenario_Generator
         #region Runway selection
 
         /// <summary>
-        /// Compares the last modified date of scenery.cfg with that of the runways.cache file.
-        /// If scenery.cfg has been modified more recently, it warns the user that the runways data
+        /// Compares the last modified date of scenery.cfg with that of the runways.cache file and the runways.xml file.
+        /// If scenery.cfg has been modified more recently than either, it warns the user that the runways data
         /// may be out of date and needs to be recreated.
         /// </summary>
         /// <remarks>
@@ -353,16 +353,19 @@ namespace P3D_Scenario_Generator
         /// </remarks>
         internal void CheckRunwaysUpToDate()
         {
-            string cacheFilePath = Path.Combine(_formData.P3DProgramData, "runways.cache");
+            string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
+            string dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
+            string cacheFilePath = Path.Combine(dataDirectory, "runways.cache");
+            string xmlFilePath = Path.Combine(dataDirectory, "runways.xml");
+
             string sceneryCFGdirectory = _formData.P3DProgramData;
             string sceneryCFGfilePath = Path.Combine(sceneryCFGdirectory, "scenery.cfg");
 
             try
             {
-                // Get the last write time of the cache file. Returns null if the file doesn't exist.
+                // Get the last modified dates for all relevant files, handling non-existence with null.
                 DateTime? cacheLastModified = FileOps.GetFileLastWriteTime(cacheFilePath);
-
-                // Check that scenery.cfg exists. Advise user if it doesn't. Otherwise get last modified date.
+                DateTime? xmlLastModified = FileOps.GetFileLastWriteTime(xmlFilePath);
                 DateTime? sceneryLastModified = FileOps.GetFileLastWriteTime(sceneryCFGfilePath);
 
                 if (!sceneryLastModified.HasValue)
@@ -374,10 +377,14 @@ namespace P3D_Scenario_Generator
                     return;
                 }
 
-                // Compare dates if the cache exists. If it doesn't, we assume it's out-of-date.
-                if (!cacheLastModified.HasValue || sceneryLastModified > cacheLastModified)
+                // The data is considered out of date if scenery.cfg is newer than either the cache or the XML source.
+                bool isOutOfDate = !cacheLastModified.HasValue ||
+                                   sceneryLastModified > cacheLastModified ||
+                                   (xmlLastModified.HasValue && sceneryLastModified > xmlLastModified);
+
+                if (isOutOfDate)
                 {
-                    string runwaysDataOutOfDateMessage = $"The scenery.cfg file has been modified more recently than the cached runways data." +
+                    string runwaysDataOutOfDateMessage = $"The scenery.cfg file has been modified more recently than the cached runways data and/or the source runways.xml file." +
                                                          " Consider recreating the runways data to include recently added airports." +
                                                          " The program will now refresh the last modified date on the cache to prevent repeated warnings.";
                     Log.Warning(runwaysDataOutOfDateMessage);
@@ -392,19 +399,19 @@ namespace P3D_Scenario_Generator
                 }
                 else
                 {
-                    Log.Info("runways.cache is up-to-date with scenery.cfg.");
+                    Log.Info("Runways data is up-to-date with scenery.cfg.");
                     _progressReporter?.Report("INFO: Runways data is up-to-date.");
                 }
             }
             catch (UnauthorizedAccessException ex)
             {
-                string errorMessage = $"Access to a file is denied while checking runway cache. Please check permissions. Details: {ex.Message}";
+                string errorMessage = $"Error: Access to a file is denied while checking runway files. Please check permissions. Details: {ex.Message}";
                 Log.Error(errorMessage, ex);
                 _progressReporter?.Report($"ERROR: {errorMessage}");
             }
             catch (IOException ex)
             {
-                string errorMessage = $"An I/O error occurred while checking file dates for runway cache. Details: {ex.Message}";
+                string errorMessage = $"An I/O error occurred while checking file dates for runway data. Details: {ex.Message}";
                 Log.Error(errorMessage, ex);
                 _progressReporter?.Report($"ERROR: {errorMessage}");
             }
