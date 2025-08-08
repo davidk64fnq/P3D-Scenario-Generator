@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace P3D_Scenario_Generator
 {
-    public class LogWrapper : ILog
+    public class LogAsync : ILog
     {
         private static readonly string LogDirectory;
         private static readonly string LogFilePath;
@@ -32,7 +32,7 @@ namespace P3D_Scenario_Generator
         /// It ensures the necessary log directory exists, creates it if it does not, and clears previous log files on startup.
         /// If the primary log directory cannot be created, it attempts to fall back to a local application data directory.
         /// </summary>
-        static LogWrapper()
+        static LogAsync()
         {
             // Primary log directory path: C:\Users\<user>\AppData\Roaming\<AppName>
             string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);

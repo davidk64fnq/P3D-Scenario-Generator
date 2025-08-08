@@ -1,7 +1,6 @@
 ﻿using CoordinateSharp;
-using HtmlAgilityPack;
 using P3D_Scenario_Generator.MapTiles;
-using System.Web;
+using P3D_Scenario_Generator.Runways;
 
 namespace P3D_Scenario_Generator.WikipediaScenario
 {
@@ -233,10 +232,11 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <param name="tourStartItem">User specified first item of tour</param>
         /// <param name="tourFinishItem">User specified last item of tour</param>
         /// <param name="tourDistance">The distance from first to last item in miles</param>
-        static internal void SetWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance, ScenarioFormData formData)
+        static internal void SetWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance, 
+            ScenarioFormData formData, RunwayManager runwayManager)
         {
             PopulateWikiTour(tableNo, route, tourStartItem, tourFinishItem, tourDistance);
-            SetWikiAirports();
+            SetWikiAirports(formData, runwayManager);
             Common.SetOverviewImage(formData);
             Common.SetLocationImage(formData);
             WikiLegMapEdges = [];
@@ -247,16 +247,16 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// Finds and inserts/appends wiki tour start and finish airports. Adjusts <see cref="WikiDistance"/> 
         /// to include airport legs
         /// </summary>
-        static internal void SetWikiAirports()
+        static internal void SetWikiAirports(ScenarioFormData formData, RunwayManager runwayManager)
         {
             Coordinate coordFirstItem = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
-            WikiTour.Insert(0, GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble()));
+            WikiTour.Insert(0, GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble(), formData, runwayManager));
             Coordinate coordStartAirport = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
             WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
             Runway.startRwy = Runway.Runways[WikiTour[0].airportIndex];
 
             Coordinate coordLastItem = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
-            WikiTour.Add(GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble()));
+            WikiTour.Add(GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble(), formData, runwayManager));
             Coordinate coordFinishAirport = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
             WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
             Runway.destRwy = Runway.Runways[WikiTour[^1].airportIndex];
@@ -269,10 +269,10 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <param name="queryLat">The wiki item latitude</param>
         /// <param name="queryLon">The wiki item longitude</param>
         /// <returns></returns>
-        static internal WikiItemParams GetNearestAirport(double queryLat, double queryLon)
+        static internal WikiItemParams GetNearestAirport(double queryLat, double queryLon, ScenarioFormData formData, RunwayManager runwayManager)
         {
             WikiItemParams wikiItemParams = new();
-            RunwayParams nearestAirport = Runway.GetNearestRunway(queryLat, queryLon);
+            RunwayParams nearestAirport = runwayManager.Searcher.FindNearestRunway(queryLat, queryLon, formData);
             if (nearestAirport == null)
                 return null;
             wikiItemParams.airportICAO = nearestAirport.IcaoId;

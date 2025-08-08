@@ -1,16 +1,15 @@
-﻿using CoordinateSharp;
-using P3D_Scenario_Generator.CelestialScenario;
+﻿using P3D_Scenario_Generator.CelestialScenario;
 using P3D_Scenario_Generator.CircuitScenario;
 using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.PhotoTourScenario;
+using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.SignWritingScenario;
 using P3D_Scenario_Generator.WikipediaScenario;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Configuration;
-using System.Diagnostics;
 using System.Globalization;
-using System.Reflection;
 
 namespace P3D_Scenario_Generator
 {
@@ -20,10 +19,20 @@ namespace P3D_Scenario_Generator
         private readonly ScenarioFormData _formData;
         private bool _isFormLoaded = false;
         private readonly List<string> allRunwayStrings = [];
+        private RunwayManager _runwayManager;
+        private readonly IFileOps _fileOps;
+        private readonly ICacheManager _cacheManager;
+        private readonly LogAsync _log;
 
         public Form()
         {
             InitializeComponent();
+
+            // Instantiate the dependencies once, at the form level.
+            // Replace these with your actual implementations.
+            _fileOps = new FileOpsAsync();
+            _log = new LogAsync();
+            _cacheManager = new CacheManagerAsync(_log);
 
             // Perform custom initialization tasks after the designer-generated components are set up.
             if (!PostInitializeComponent())
@@ -48,48 +57,64 @@ namespace P3D_Scenario_Generator
         /// <remarks>
         /// This event handler performs the following actions:
         /// <list type="number">
-        /// <item>Disables the form to prevent user interaction during the asynchronous initialization process.</item>
-        /// <item>Restores user settings and attempts to load runway data from a binary cache or a source XML file.</item>
-        /// <item>If the runway data is loaded successfully, it populates the UI controls and enables the panels that depend on this data.</item>
-        /// <item>If the load fails (e.g., due to an invalid P3D data path), it reports the error and ensures the dependent UI panels remain disabled.</item>
-        /// <item>Finally, it re-enables the form once all initialization tasks are complete, regardless of success or failure.</item>
+        /// <item>Enables the form immediately to allow the UI to render.</item>
+        /// <item>Restores user settings and starts the asynchronous loading of runway data in the background.</item>
+        /// <item>The rest of the logic is moved to a separate method that will execute after the data is loaded.</item>
         /// </list>
         /// </remarks>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <see cref="EventArgs"/> object that contains the event data.</param>
-        private async void Form_Load(object sender, EventArgs e)
+        private void Form_Load(object sender, EventArgs e)
         {
-            // 1. Disable the form to prevent user interaction.
-            Enabled = false;
+            Enabled = true;
+
+            // Start the asynchronous loading process without blocking the UI thread.
+            // The continuation logic is moved to a new method.
+            // We use Task.Run to ensure the heavy lifting happens on a background thread.
+            Task.Run(InitializeRunwayDataAsync);
+        }
+
+        /// <summary>
+        /// Handles the core logic of loading runway data and updating the form.
+        /// </summary>
+        private async Task InitializeRunwayDataAsync()
+        {
             try
             {
                 _progressReporter.Report("Initializing form...");
-                _progressReporter.IsThrottlingEnabled = true;
 
-                RestoreUserSettings(TabPageSettings.Controls);
+                // Call the updated GetRunwaysAsync method which now returns the UI manager.
+                RunwayUiManager uiManager = await GetRunwaysAsync(_progressReporter);
+                bool runwayLoadSuccess = uiManager != null;
 
-                bool runwayLoadSuccess = ValidateP3DDataFolder() && await GetRunwaysAsync(_progressReporter);
-
-                if (runwayLoadSuccess)
+                // Use Invoke to update the UI from the background thread.
+                Invoke(() =>
                 {
-                    await PopulateRunwayControls();
-                    SetRunwayRelatedPanelsEnabled(true);
-                    _progressReporter.Report("Initialization complete. Runways loaded.");
-                }
-                else
+                    if (runwayLoadSuccess)
+                    {
+                        Task.Run(() => PopulateRunwayControls(uiManager));
+                        _progressReporter.Report("Initialization complete. Runways loaded.");
+                    }
+                    else
+                    {
+                        _progressReporter.Report("Failed to load runway data.");
+                    }
+
+                    SetOtherFormFields();
+
+                    _isFormLoaded = true;
+                });
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"An error occurred during form initialization: {ex.Message}");
+                Invoke(() =>
                 {
-                    SetRunwayRelatedPanelsEnabled(false);
-                    _progressReporter.Report("Failed to load runway data. Please ensure you have a valid P3D Data Folder in the Settings tab.");
-                }
-
-                SetOtherFormFields();
-
-                _isFormLoaded = true;
+                    _progressReporter.Report($"ERROR: Form initialization failed: {ex.Message}");
+                });
             }
             finally
             {
-                // 2. Re-enable the form once initialization is complete (or if an error occurred).
-                Enabled = true;
             }
         }
 
@@ -142,37 +167,18 @@ namespace P3D_Scenario_Generator
             RestoreUserSettings(TabPageSettings.Controls);
         }
 
-        /// <summary>
-        /// Controls the enabled state of the UI panels that are dependent on loaded runway data.
-        /// </summary>
-        /// <param name="enabled">True to enable the panels, false to disable them.</param>
-        private void SetRunwayRelatedPanelsEnabled(bool enabled)
+        private async Task PopulateRunwayControls(RunwayUiManager uiManager)
         {
-            tableLayoutPanelRunwaySelection.Enabled = enabled;
-            tableLayoutPanelLocationFilter.Enabled = enabled;
-        }
+            ComboBoxGeneralLocationCity.DataSource = uiManager.UILists.Cities;
 
-        /// <summary>
-        /// Populates the runway and location filter UI controls with data.
-        /// This method is asynchronous to allow for UI updates during the process.
-        /// </summary>
-        private async Task PopulateRunwayControls()
-        {
-            _progressReporter.Report("Populating Cities list ...");
-            await Task.Delay(10);
-            ComboBoxGeneralLocationCity.DataSource = Runway.RunwayUILists.Cities;
+            ComboBoxGeneralLocationCountry.DataSource = uiManager.UILists.Countries;
 
-            ComboBoxGeneralLocationCountry.DataSource = Runway.RunwayUILists.Countries;
+            ComboBoxGeneralLocationState.DataSource = uiManager.UILists.States;
 
-            ComboBoxGeneralLocationState.DataSource = Runway.RunwayUILists.States;
-
-            _progressReporter.Report("Populating ICAO ID list...");
-            await Task.Delay(10); if (Runway.RunwayUILists.ICAOids != null)
+            await Task.Delay(10); if (uiManager.UILists.IcaoRunwayNumbers != null)
             {
-                allRunwayStrings.AddRange(Runway.RunwayUILists.ICAOids);
+                allRunwayStrings.AddRange(uiManager.UILists.IcaoRunwayNumbers);
             }
-
-            _progressReporter.Report($"ICAO ID data loaded for search ({allRunwayStrings.Count} items).");
 
             // Initialize the new ListBox to an empty state, ready for searching.
             ListBoxGeneralRunwayResults.Items.Clear();
@@ -309,7 +315,6 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="sender">The source of the event, typically the ToolTip control.</param>
         /// <param name="e">A <see cref="PopupEventArgs"/> that contains the event data.</param>
-
         private void ToolTip1_Popup(object sender, PopupEventArgs e)
         {
             // If the associated control has an error, cancel the display of the standard ToolTip.
@@ -324,16 +329,19 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
         /// <returns>
-        /// A <see cref="T:System.Threading.Tasks.Task`1"/> representing the asynchronous operation, with a result of <c>true</c> if the runway data was loaded successfully; otherwise, <c>false</c>.
+        /// The populated RunwayUiManager instance if the data was loaded successfully; otherwise, <see langword="null"/>.
         /// </returns>
-        /// <remarks>
-        /// This method serves as a wrapper to offload the long-running runway file parsing to a background thread, ensuring the UI remains responsive during the process.
-        /// </remarks>
-        private static async Task<bool> GetRunwaysAsync(FormProgressReporter progressReporter)
+        private async Task<RunwayUiManager> GetRunwaysAsync(FormProgressReporter progressReporter)
         {
-            bool success = await Runway.GetRunwaysAsync(progressReporter);
+            // Pass the form's dependencies to the RunwayLoader constructor.
+            RunwayLoader loader = new(_fileOps, _cacheManager, _log);
 
-            return success;
+            // Pass the loader to the RunwayManager constructor.
+            _runwayManager = new(loader); // Assign to the form-level field.
+            bool success = await _runwayManager.InitializeAsync(progressReporter, _log);
+
+            // Return the UiManager if successful, otherwise null.
+            return success ? _runwayManager.UiManager : null;
         }
 
         #endregion
@@ -454,10 +462,29 @@ namespace P3D_Scenario_Generator
 
         private void ButtonRandRunway_Click(object sender, EventArgs e)
         {
-            Runway.SetRunwaysSubset();
+            ValidateAndPopulateLocationFilters();
+
+            // Call the new method on the RunwaySearcher instance to get a random, filtered runway.
+            RunwayParams randomRunway = _runwayManager.Searcher.GetFilteredRandomRunway(_formData);
+
+            // Clear the existing items in the ListBox before adding a new one.
             ListBoxGeneralRunwayResults.Items.Clear();
-            ListBoxGeneralRunwayResults.Items.Add(Runway.GetRandomICAOid(Runway.RunwaysSubset));
-            ListBoxGeneralRunwayResults.SelectedIndex = 0;
+
+            // Check if a runway was found. The method returns null if no match exists.
+            if (randomRunway != null)
+            {
+                // Add the ICAO ID of the found runway to the list box.
+                // You can add more details from the randomRunway object here if needed.
+                ListBoxGeneralRunwayResults.Items.Add(RunwayUtils.FormatRunwayIcaoString(randomRunway));
+
+                // Select the newly added item to make it visible.
+                ListBoxGeneralRunwayResults.SelectedIndex = 0;
+            }
+            else
+            {
+                // Display a message to the user if no runways were found.
+                ListBoxGeneralRunwayResults.Items.Add("No runway found matching the filters.");
+            }
         }
 
         #endregion
@@ -483,7 +510,6 @@ namespace P3D_Scenario_Generator
             {
                 DisplayStartMessage();
                 CheckRunwaysUpToDate();
-                Runway.SetRunwaysSubset();
                 ImageUtils.DrawScenarioImages(_formData);
 
                 // Await the task and capture the boolean result indicating success or failure
@@ -590,7 +616,7 @@ namespace P3D_Scenario_Generator
                             }
                             break;
                         case ScenarioTypes.PhotoTour:
-                            if (!PhotoTour.SetPhotoTour(_formData, _progressReporter))
+                            if (!PhotoTour.SetPhotoTour(_formData, _runwayManager, _progressReporter))
                             {
                                 backgroundOperationSuccess = false;
                                 return;
@@ -604,7 +630,7 @@ namespace P3D_Scenario_Generator
                             }
                             break;
                         case ScenarioTypes.Celestial:
-                            if (!CelestialNav.SetCelestial(_formData))
+                            if (!CelestialNav.SetCelestial(_formData, _runwayManager))
                             {
                                 backgroundOperationSuccess = false;
                                 return;
@@ -612,7 +638,7 @@ namespace P3D_Scenario_Generator
                             break;
                         case ScenarioTypes.WikiList:
                             //    Wikipedia.SetWikiTour(wikiSelectedIndex, wikiRouteItems, wikiStartingItem,
-                            //                          wikiFinishingItem, wikiDistanceText, _formData);
+                            //                          wikiFinishingItem, wikiDistanceText, _formData, _runwayManager);
                             break;
                         default:
                             break;
@@ -1816,15 +1842,15 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Handles the Click event for the ButtonBrowseP3DInstallFolder.
-        /// Opens a FolderBrowserDialog to allow the user to select the P3D install folder,
+        /// Opens a <see cref="FolderBrowserDialog"/> to allow the user to select the P3D install folder,
         /// populates the TextBoxSettingsP3DprogramInstall, and performs immediate validation.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">An EventArgs that contains the event data.</param>
+        /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
         private void ButtonBrowseP3DInstallFolder_Click(object sender, EventArgs e)
         {
             using FolderBrowserDialog folderBrowserDialog = new();
-            // Set the initial selected path to the current value in the textbox if it's a valid directory
+
             if (Directory.Exists(TextBoxSettingsP3DprogramInstall.Text))
             {
                 folderBrowserDialog.SelectedPath = TextBoxSettingsP3DprogramInstall.Text;
@@ -1841,18 +1867,9 @@ namespace P3D_Scenario_Generator
         /// Handles the Click event for the P3D Data Folder browse button.
         /// Opens a <see cref="FolderBrowserDialog"/> to allow the user to select the P3D data folder.
         /// </summary>
-        /// <remarks>
-        /// This method performs the following actions:
-        /// <list type="number">
-        /// <item>Updates the associated text box and form data with the selected path.</item>
-        /// <item>Validates the selected path using <see cref="ValidateP3DDataFolder"/>.</item>
-        /// <item>If the path is valid, it disables the browse button and asynchronously triggers the runway data loading process.</item>
-        /// <item>Upon completion of the data load, it updates the UI controls and enables or disables dependent panels based on the load's success.</item>
-        /// </list>
-        /// </remarks>
         /// <param name="sender">The source of the event, the button itself.</param>
         /// <param name="e">An <see cref="EventArgs"/> object that contains the event data.</param>
-        private async void ButtonBrowseP3DDataFolder_Click(object sender, EventArgs e)
+        private void ButtonBrowseP3DDataFolder_Click(object sender, EventArgs e)
         {
             using FolderBrowserDialog folderBrowserDialog = new();
 
@@ -1863,46 +1880,8 @@ namespace P3D_Scenario_Generator
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
-                // 1. Update the TextBox with the selected path.
                 TextBoxSettingsP3DprogramData.Text = folderBrowserDialog.SelectedPath;
-
-                // 2. Validate the path and update the formData.
-                // The method will return true if the path is valid and false otherwise.
-                // It will also clear or set the errorProvider.
-                bool pathIsValid = ValidateP3DDataFolder();
-
-                if (pathIsValid)
-                {
-                    // Disable the button to prevent re-entry during the async operation.
-                    ButtonP3DDataFolderSelect.Enabled = false;
-
-                    // 3. Trigger the runway loading process with the new path.
-                    _progressReporter.Report("P3D path updated. Attempting to load runways...");
-
-                    bool loadSuccess = await GetRunwaysAsync(_progressReporter);
-
-                    if (loadSuccess)
-                    {
-                        // 4. On success, populate the UI controls and enable the dependent panels.
-                        await PopulateRunwayControls();
-                        SetRunwayRelatedPanelsEnabled(true);
-                        _progressReporter.Report("Runways loaded successfully.");
-                    }
-                    else
-                    {
-                        // 5. On failure, ensure the dependent panels remain disabled.
-                        SetRunwayRelatedPanelsEnabled(false);
-                        _progressReporter.Report("Failed to load runways. Please check the path.");
-                    }
-
-                    ButtonP3DDataFolderSelect.Enabled = true;
-                }
-                else
-                {
-                    // If the path is not valid, stop here. The ValidateP3DDataFolder
-                    // method has already displayed the error message.
-                    SetRunwayRelatedPanelsEnabled(false);
-                }
+                ValidateP3DDataFolder();
             }
         }
 
@@ -2911,7 +2890,9 @@ namespace P3D_Scenario_Generator
         {
             bool isValid = true;
 
-            _formData.RunwayIndex = Runway.FindRunwayIndexByString(ListBoxGeneralRunwayResults.SelectedItem.ToString());
+            RunwayUtils.ParseIcaoRunwayString(ListBoxGeneralRunwayResults.SelectedItem.ToString(), out string icaoId, out string runwayId);
+            RunwayParams selectedRunway = _runwayManager.Searcher.GetRunwayByIcaoAndId(icaoId, runwayId);
+            _formData.RunwayIndex = selectedRunway.RunwaysIndex;
 
             if (!ValidateAndSetEnum<ScenarioTypes>(
                 ComboBoxGeneralScenarioType,
@@ -2927,7 +2908,18 @@ namespace P3D_Scenario_Generator
             _formData.DatePickerValue = GeneralDatePicker.Value;
             _formData.TimePickerValue = GeneralTimePicker.Value;
 
+            ValidateAndPopulateLocationFilters();
+
             return isValid;
+        }
+
+        private void ValidateAndPopulateLocationFilters()
+        {
+            LocationFavourite selectedLocationFavourite = Runway.GetCurrentLocationFavourite();
+
+            _formData.LocationCountries = selectedLocationFavourite?.Countries ?? [];
+            _formData.LocationStates = selectedLocationFavourite?.States ?? [];
+            _formData.LocationCities = selectedLocationFavourite?.Cities ?? [];
         }
 
         /// <summary>

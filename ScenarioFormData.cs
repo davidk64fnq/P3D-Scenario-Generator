@@ -6,7 +6,7 @@ namespace P3D_Scenario_Generator
     /// Data Transfer Object (DTO) to encapsulate all user input from the main form
     /// for scenario generation. This decouples the business logic from the UI controls.
     /// </summary>
-    internal class ScenarioFormData
+    public class ScenarioFormData
     {
         #region General Tab Data
 
@@ -49,6 +49,21 @@ namespace P3D_Scenario_Generator
         /// Gets or sets the aircraft thumbnail image location (located in aircraft Texture Folder).
         /// </summary>
         public string AircraftImagePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user selected list of candidate countries that the scenario is to occur in.
+        /// </summary>
+        public List<string> LocationCountries { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user selected list of candidate states that the scenario is to occur in.
+        /// </summary>
+        public List<string> LocationStates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the user selected list of candidate cities that the scenario is to occur in.
+        /// </summary>
+        public List<string> LocationCities { get; set; }
 
         #endregion
 

@@ -2,9 +2,9 @@
 {
     public class RunwayUILists
     {
-        public List<string> ICAOids { get; set; }
         public List<string> Countries { get; set; }
         public List<string> States { get; set; }
         public List<string> Cities { get; set; }
+        public List<string> IcaoRunwayNumbers { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace P3D_Scenario_Generator
+﻿using P3D_Scenario_Generator.Runways;
+
+namespace P3D_Scenario_Generator
 {
     /// <summary>
     /// Provides functionality for generating random geographical starting locations and headings

@@ -1,5 +1,6 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.MapTiles;
+using P3D_Scenario_Generator.Runways;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
@@ -54,9 +55,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// If all these steps are successful, it also updates the overview and location images.
         /// </summary>
         /// <returns>True if all celestial setup operations complete successfully; otherwise, false.</returns>
-        internal static bool SetCelestial(ScenarioFormData formData)
+        internal static bool SetCelestial(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            Runway.destRwy = Runway.GetRandomRunway();
+            Runway.destRwy = runwayManager.Searcher.GetFilteredRandomRunway(formData);
             ScenarioLocationGenerator.SetMidairStartLocation(formData.CelestialMinDistance, formData.CelestialMaxDistance, Runway.destRwy, 
                 out midairStartHdg, out midairStartLat, out midairStartLon, out double randomRadiusNM);
             SextantViewGenerator.SetCelestialMapEdges(midairStartLat, midairStartLon, randomRadiusNM);
