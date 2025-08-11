@@ -25,7 +25,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="progressReporter">An object to report initialization progress.</param>
         /// <param name="log">The ILog implementation for logging.</param>
         /// <returns>True if initialization was successful, otherwise false.</returns>
-        public async Task<bool> InitializeAsync(FormProgressReporter progressReporter, ILog log)
+        public async Task<bool> InitializeAsync(FormProgressReporter progressReporter, ILog log, ICacheManager cacheManager)
         {
             RunwayData data = await _loader.LoadRunwaysAsync(progressReporter);
 
@@ -39,7 +39,7 @@ namespace P3D_Scenario_Generator.Runways
 
             // Pass the searcher to the UI manager.
             progressReporter.IsThrottlingEnabled = false;
-            _uiManager = new RunwayUiManager(_searcher);
+            _uiManager = new RunwayUiManager(_searcher, log, cacheManager);
             _uiManager.PopulateUiLists();
 
             return true;

@@ -1,4 +1,5 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Runways;
 
 namespace P3D_Scenario_Generator
 {
@@ -64,6 +65,18 @@ namespace P3D_Scenario_Generator
         /// Gets or sets the user selected list of candidate cities that the scenario is to occur in.
         /// </summary>
         public List<string> LocationCities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scenario start runway. This is variously set at the time user clicks "Generate Scenario", or by subsequent
+        /// scenario specific code, or may remain null e.g. Celestial scenario involves a mid air start.
+        /// </summary>
+        public RunwayParams StartRunway { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scenario destination runway. This is variously set at the time user clicks "Generate Scenario", or by subsequent
+        /// scenario specific code.
+        /// </summary>
+        public RunwayParams DestinationRunway { get; set; }
 
         #endregion
 

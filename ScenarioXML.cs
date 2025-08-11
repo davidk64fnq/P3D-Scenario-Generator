@@ -54,7 +54,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetCircuitWorldBaseFlightXML(ScenarioFormData formData)
         {
-            SetDisabledTrafficAirports($"{Runway.startRwy.IcaoId}");
+            SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
             SetScenarioMetadata(formData);
             SetDialogAction("Intro01", ScenarioHTML.overview.Briefing, "2", "Text-To-Speech");
@@ -136,7 +136,7 @@ namespace P3D_Scenario_Generator
             SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
             // Create airport landing trigger and activation action 
-            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoId);
+            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", formData.DestinationRunway.IcaoId);
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
@@ -146,7 +146,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetPhotoTourWorldBaseFlightXML(ScenarioFormData formData)
         {
-            SetDisabledTrafficAirports($"{Runway.startRwy.IcaoId}");
+            SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
             SetScenarioMetadata(formData);
             SetDialogAction("Intro01", ScenarioHTML.overview.Briefing, "2", "Text-To-Speech");
@@ -239,7 +239,7 @@ namespace P3D_Scenario_Generator
             SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
             // Create airport landing trigger which does goal resolution and closes windows
-            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoId);
+            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", formData.DestinationRunway.IcaoId);
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoTour.PhotoCount - 1:00}", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoTour.PhotoCount - 2:00}", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
@@ -251,7 +251,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetSignWritingWorldBaseFlightXML(ScenarioFormData formData)
         {
-            SetDisabledTrafficAirports($"{Runway.startRwy.IcaoId}");
+            SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
             SetScenarioMetadata(formData);
             SetDialogAction("Intro01", ScenarioHTML.overview.Briefing, "2", "Text-To-Speech");
@@ -383,7 +383,7 @@ namespace P3D_Scenario_Generator
             SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
 
             // Create airport landing trigger and activation action 
-            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", Runway.destRwy.IcaoId);
+            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", formData.DestinationRunway.IcaoId);
             SetAirportLandingTriggerAction("CloseWindowAction", "CloseUIpanelWindow01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
@@ -394,7 +394,7 @@ namespace P3D_Scenario_Generator
 
         static private void SetCelestialWorldBaseFlightXML(ScenarioFormData formData)
         {
-            SetDisabledTrafficAirports($"{Runway.destRwy.IcaoId}");
+            SetDisabledTrafficAirports($"{formData.DestinationRunway.IcaoId}");
             SetRealismOverrides();
             SetScenarioMetadata(formData);
             SetDialogAction("Intro01", ScenarioHTML.overview.Briefing, "2", "Text-To-Speech");
@@ -430,14 +430,14 @@ namespace P3D_Scenario_Generator
             SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger02");
 
             // Create airport landing trigger which does goal resolution - starts activated
-            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "True", Runway.destRwy.IcaoId);
+            SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "True", formData.DestinationRunway.IcaoId);
             SetAirportLandingTriggerAction("CloseWindowAction", "CloseCelestialSextant01", "AirportLandingTrigger01");
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
         }
 
         static private void SetWikiListWorldBaseFlightXML(ScenarioFormData formData)
         {
-            SetDisabledTrafficAirports($"{Runway.startRwy.IcaoId}");
+            SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
             SetScenarioMetadata(formData);
             SetDialogAction("Intro01", ScenarioHTML.overview.Briefing, "2", "Text-To-Speech");
@@ -1078,7 +1078,7 @@ namespace P3D_Scenario_Generator
             {
                 InstanceId = GetGUID(),
                 SkillLevel = ScenarioHTML.overview.Difficulty,
-                LocationDescr = $"{Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) {Runway.destRwy.City}, {Runway.destRwy.Country}",
+                LocationDescr = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}",
                 DifficultyLevel = 1,
                 EstimatedTime = ScenarioHTML.GetDuration(),
                 UncompletedImage = "images\\imgM_i.bmp",

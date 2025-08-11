@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace P3D_Scenario_Generator.Runways
+﻿namespace P3D_Scenario_Generator.Runways
 {
 
     /// <summary>
     /// Stores the Country/State/City location filter values for a location favourite
     /// </summary>
-    public class LocationFavourite()
+    public class LocationFavourite() 
     {
         /// <summary>
         /// The name of the favourite

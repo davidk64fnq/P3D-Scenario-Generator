@@ -3,7 +3,6 @@ using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.SignWritingScenario;
 using P3D_Scenario_Generator.WikipediaScenario;
-using System.Reflection;
 
 namespace P3D_Scenario_Generator
 {
@@ -59,10 +58,10 @@ namespace P3D_Scenario_Generator
                 case ScenarioTypes.Circuit:
                     overview.Title = "Circuit Practise";
                     overview.Heading1 = "Circuit Practise";
-                    overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
+                    overview.Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}";
                     overview.Difficulty = "Beginner";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    double duration = ((formData.CircuitFinalLeg + (Runway.startRwy.Len / Constants.FeetInNauticalMile) + formData.CircuitUpwindLeg) 
+                    double duration = ((formData.CircuitFinalLeg + (formData.StartRunway.Len / Constants.FeetInNauticalMile) + formData.CircuitUpwindLeg) 
                         * 2 + (formData.CircuitBaseLeg * 2)) / formData.CircuitSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{formData.AircraftTitle}";
@@ -70,15 +69,15 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += " by doing that most fundamental of tasks, flying a circuit! ";
                     overview.Briefing += "You'll take off, fly through eight gates as you complete a circuit, ";
                     overview.Briefing += "and land back on the runway. The scenario begins on runway ";
-                    overview.Briefing += $"{Runway.startRwy.Number} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
-                    overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
+                    overview.Briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
+                    overview.Briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
                     overview.Objective = "Take off and fly through the eight gates before landing on the same runway.";
                     overview.Tips = "Each pair of gates marks the start and finish of a 90 degree turn. ";
                     break;
                 case ScenarioTypes.PhotoTour:
                     overview.Title = "Photo Tour";
                     overview.Heading1 = "Photo Tour";
-                    overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
+                    overview.Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}";
                     overview.Difficulty = "Intermediate";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
                     duration = PhotoTourUtilities.GetPhotoTourDistance(PhotoTour.PhotoLocations) / formData.AircraftCruiseSpeed * 60;
@@ -88,15 +87,15 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += " as you navigate from one photo location to the next using IFR (I follow roads) ";
                     overview.Briefing += "You'll take off, fly to a series of photo locations, ";
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
-                    overview.Briefing += $"{Runway.startRwy.Number} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
-                    overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
-                    overview.Objective = $"Take off and visit a series of photo locations before landing at {Runway.destRwy.IcaoName} (any runway)";
+                    overview.Briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
+                    overview.Briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
+                    overview.Objective = $"Take off and visit a series of photo locations before landing at {formData.DestinationRunway.IcaoName} (any runway)";
                     overview.Tips = "Never do today what you can put off till tomorrow";
                     break;
                 case ScenarioTypes.SignWriting:
                     overview.Title = "Sign Writing";
                     overview.Heading1 = "Sign Writing";
-                    overview.Location = $"{Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) {Runway.startRwy.City}, {Runway.startRwy.Country}";
+                    overview.Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}";
                     overview.Difficulty = "Advanced";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
                     duration = SignWriting.GetSignWritingDistance(formData) / formData.AircraftCruiseSpeed * 60;
@@ -106,31 +105,31 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += " as you take on the role of sign writer in the sky! ";
                     overview.Briefing += "You'll take off, fly through a series of gates to spell out a message ";
                     overview.Briefing += "and land again when you've finished. The scenario begins on runway ";
-                    overview.Briefing += $"{Runway.startRwy.Number} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
-                    overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
+                    overview.Briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
+                    overview.Briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
                     overview.Objective = "Take off and fly through a series of gates before landing on the same runway.";
                     overview.Tips = "When life gives you lemons, squirt someone in the eye.";
                     break;
                 case ScenarioTypes.Celestial:
                     overview.Title = "Celestial Navigation";
                     overview.Heading1 = "Celestial Navigation";
-                    overview.Location = $"{Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) {Runway.destRwy.City}, {Runway.destRwy.Country}";
+                    overview.Location = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}";
                     overview.Difficulty = "Advanced";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = CelestialNav.GetCelestialDistance() / formData.AircraftCruiseSpeed * 60;
+                    duration = CelestialNav.GetCelestialDistance(formData) / formData.AircraftCruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{formData.AircraftTitle}";
                     overview.Briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
                     overview.Briefing += $"as you test your navigation skills flying a {formData.AircraftTitle}.";
-                    overview.Briefing += $" The scenario finishes at {Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) in ";
-                    overview.Briefing += $"{Runway.destRwy.City}, {Runway.destRwy.Country}.";
+                    overview.Briefing += $" The scenario finishes at {formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) in ";
+                    overview.Briefing += $"{formData.DestinationRunway.City}, {formData.DestinationRunway.Country}.";
                     overview.Objective = "Navigate using celestial navigation before landing at the destination airport (any runway)";
                     overview.Tips = "Never go to bed mad. Stay up and fight.";
                     break;
                 case ScenarioTypes.WikiList:
                     overview.Title = "Wikipedia List Tour";
                     overview.Heading1 = "Wikipedia List Tour";
-                    overview.Location = $"{Runway.destRwy.IcaoName} ({Runway.destRwy.IcaoId}) {Runway.destRwy.City}, {Runway.destRwy.Country}";
+                    overview.Location = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}";
                     overview.Difficulty = "Intermediate";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
                     duration = Wikipedia.WikiDistance / formData.AircraftCruiseSpeed * 60;
@@ -140,10 +139,10 @@ namespace P3D_Scenario_Generator
                     overview.Briefing += " as you navigate from one Wikipedia list location to the next using IFR (I follow roads) ";
                     overview.Briefing += "You'll take off, fly to a series of list locations, ";
                     overview.Briefing += "and land at another airport. The scenario begins on runway ";
-                    overview.Briefing += $"{Runway.startRwy.Number} at {Runway.startRwy.IcaoName} ({Runway.startRwy.IcaoId}) in ";
-                    overview.Briefing += $"{Runway.startRwy.City}, {Runway.startRwy.Country}.";
+                    overview.Briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
+                    overview.Briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
                     overview.Objective = "Take off and visit a series of Wikipedia list locations before landing ";
-                    overview.Objective += $"at {Runway.destRwy.IcaoName} (any runway)";
+                    overview.Objective += $"at {formData.DestinationRunway.IcaoName} (any runway)";
                     overview.Tips = "The early bird gets the worm, but the second mouse gets the cheese.";
                     break;
                 default:

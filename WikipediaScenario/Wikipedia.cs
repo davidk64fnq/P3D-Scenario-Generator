@@ -253,13 +253,13 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             WikiTour.Insert(0, GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble(), formData, runwayManager));
             Coordinate coordStartAirport = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
             WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
-            Runway.startRwy = Runway.Runways[WikiTour[0].airportIndex];
+            formData.StartRunway = runwayManager.Searcher.GetRunwayByIndex(WikiTour[0].airportIndex);
 
             Coordinate coordLastItem = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
             WikiTour.Add(GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble(), formData, runwayManager));
             Coordinate coordFinishAirport = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
             WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
-            Runway.destRwy = Runway.Runways[WikiTour[^1].airportIndex];
+            formData.DestinationRunway = runwayManager.Searcher.GetRunwayByIndex(WikiTour[^1].airportIndex);
         }
 
         /// <summary>

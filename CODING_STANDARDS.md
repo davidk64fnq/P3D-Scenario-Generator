@@ -134,3 +134,12 @@ progressReporter.Report($"INFO: {message}");
  * **I/O-Bound Operations**: When performing I/O-bound operations (e.g., file access, network requests), use the `async` and `await` keywords with truly asynchronous APIs (e.g., `FileStream.ReadAsync`, `HttpClient.GetStringAsync`). Avoid wrapping synchronous I/O operations in `Task.Run()` as this can lead to unnecessary thread pool contention.
  * **CPU-Bound Operations**: For CPU-bound operations that might block the UI thread, use `Task.Run()` to offload the work to a thread pool thread.
  * **Async All the Way**: Once a method becomes `async`, its callers should also be `async` to avoid blocking the calling thread. Avoid `Task.Result` or `Task.Wait()` in UI threads.
+
+ ___
+
+## Dependency Injection and Asynchronous Operations
+Dependency Injection (DI) is being implemented with the runway-related classes to improve modularity, testability, and maintainability. This approach decouples classes by providing their dependencies from an external source, rather than having the classes create their own dependencies.
+
+To support this, async versions of the Log and FileOps classes have been created specifically for use with the new runway classes. This ensures that I/O-bound operations related to runways do not block the UI thread and adhere to the "Async All the Way" standard.
+
+The long-term plan is to gradually migrate other areas of the application to this dependency injection and asynchronous model, applying these principles to other large classes as they are refactored.

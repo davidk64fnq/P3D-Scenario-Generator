@@ -23,6 +23,7 @@ namespace P3D_Scenario_Generator
         private readonly IFileOps _fileOps;
         private readonly ICacheManager _cacheManager;
         private readonly LogAsync _log;
+        private readonly Aircraft _aircraft;
 
         public Form()
         {
@@ -33,6 +34,7 @@ namespace P3D_Scenario_Generator
             _fileOps = new FileOpsAsync();
             _log = new LogAsync();
             _cacheManager = new CacheManagerAsync(_log);
+            _aircraft = new Aircraft(_log, _cacheManager, _fileOps);
 
             // Perform custom initialization tasks after the designer-generated components are set up.
             if (!PostInitializeComponent())
@@ -79,72 +81,73 @@ namespace P3D_Scenario_Generator
         /// </summary>
         private async Task InitializeRunwayDataAsync()
         {
+            //_log.Info("Form initialization started.");
+            _progressReporter.Report("INFO: Initializing form...");
+
             try
             {
-                _progressReporter.Report("Initializing form...");
-
-                // Call the updated GetRunwaysAsync method which now returns the UI manager.
+                // Await the asynchronous data loading. This happens on a background thread
+                // and releases the UI thread so the form can load.
                 RunwayUiManager uiManager = await GetRunwaysAsync(_progressReporter);
-                bool runwayLoadSuccess = uiManager != null;
 
-                // Use Invoke to update the UI from the background thread.
-                Invoke(() =>
+                // Use an async lambda to allow awaiting within the UI thread invocation.
+                await this.Invoke(async () =>
                 {
-                    if (runwayLoadSuccess)
+                    if (uiManager != null)
                     {
-                        Task.Run(() => PopulateRunwayControls(uiManager));
-                        _progressReporter.Report("Initialization complete. Runways loaded.");
+                        PopulateRunwayControls(uiManager);
+                        // Await the now-asynchronous method to ensure it completes before proceeding.
+                        await SetOtherFormFields();
+                        _isFormLoaded = true;
+
+                        _progressReporter.Report("INFO: Initialization complete. Runways loaded.");
+                        //_log.Info("Initialization complete. Runways loaded.");
                     }
                     else
                     {
-                        _progressReporter.Report("Failed to load runway data.");
+                        _progressReporter.Report("ERROR: Failed to load runway data.");
+                        //_log.Error("Failed to load runway data.");
                     }
-
-                    SetOtherFormFields();
-
-                    _isFormLoaded = true;
                 });
             }
             catch (Exception ex)
             {
-                _log.Error($"An error occurred during form initialization: {ex.Message}");
-                Invoke(() =>
+                //_log.Error($"An error occurred during form initialization: {ex.Message}");
+                // Ensure the error message is also reported on the UI thread.
+                this.Invoke(() =>
                 {
                     _progressReporter.Report($"ERROR: Form initialization failed: {ex.Message}");
                 });
             }
-            finally
-            {
-            }
         }
 
         /// <summary>
-        /// Initializes and populates the form's input fields and controls with data and user settings.
+        /// Sets various form fields and controls on initialization.
         /// </summary>
-        /// <remarks>
-        /// This method is intended to be called after asynchronous data loading is complete. It populates
-        /// various controls, such as ComboBoxes, with data related to locations and aircraft, and restores
-        /// user settings for different tabs.
-        /// </remarks>
-        private void SetOtherFormFields()
+        private async Task SetOtherFormFields()
         {
             // General tab
 
-            //  Locations
-            if (Runway.LoadLocationFavourites() && Runway.LocationFavourites != null && Runway.LocationFavourites.Count > 0)
+            // Locations
+            // We await the async method and store the result to check for success.
+            bool favouritesLoaded = await _runwayManager.UiManager.LoadLocationFavouritesAsync(_progressReporter);
+
+            if (favouritesLoaded)
             {
-                Runway.CurrentLocationFavouriteIndex = 0;
-                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
-                ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
+                // The check for null is no longer necessary as LocationFavourites is always initialized as an empty list.
+                _runwayManager.UiManager.CurrentLocationFavouriteIndex = 0;
+                TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
+                ComboBoxGeneralLocationFavourites.DataSource = _runwayManager.UiManager.GetLocationFavouriteNames();
             }
 
-            //  Scenario type
+            // Scenario type
             SetScenarioTypesComboBox();
 
-            //  Aircraft variants
-            if (Aircraft.LoadAircraftVariants() && Aircraft.AircraftVariants  != null && Aircraft.AircraftVariants.Count > 0)
+            // Aircraft variants
+            bool variantsLoaded = await _aircraft.LoadAircraftVariantsAsync(_progressReporter);
+            if (variantsLoaded && _aircraft.AircraftVariants != null && _aircraft.AircraftVariants.Count > 0)
             {
-                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+                ComboBoxGeneralAircraftSelection.DataSource = _aircraft.GetAircraftVariantDisplayNames();
                 ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
             }
 
@@ -167,22 +170,21 @@ namespace P3D_Scenario_Generator
             RestoreUserSettings(TabPageSettings.Controls);
         }
 
-        private async Task PopulateRunwayControls(RunwayUiManager uiManager)
+        /// <summary>
+        /// Populates the runway-related ComboBox and ListBox controls with data.
+        /// </summary>
+        /// <param name="uiManager">The object containing the lists of data for the UI controls.</param>
+        private void PopulateRunwayControls(RunwayUiManager uiManager)
         {
             ComboBoxGeneralLocationCity.DataSource = uiManager.UILists.Cities;
-
             ComboBoxGeneralLocationCountry.DataSource = uiManager.UILists.Countries;
-
             ComboBoxGeneralLocationState.DataSource = uiManager.UILists.States;
-
-            await Task.Delay(10); if (uiManager.UILists.IcaoRunwayNumbers != null)
+            if (uiManager.UILists.IcaoRunwayNumbers != null)
             {
                 allRunwayStrings.AddRange(uiManager.UILists.IcaoRunwayNumbers);
             }
-
-            // Initialize the new ListBox to an empty state, ready for searching.
-            ListBoxGeneralRunwayResults.Items.Clear();
         }
+
 
         /// <summary>
         /// Performs custom initialization tasks after the designer-generated components are set up.
@@ -338,7 +340,7 @@ namespace P3D_Scenario_Generator
 
             // Pass the loader to the RunwayManager constructor.
             _runwayManager = new(loader); // Assign to the form-level field.
-            bool success = await _runwayManager.InitializeAsync(progressReporter, _log);
+            bool success = await _runwayManager.InitializeAsync(progressReporter, _log, _cacheManager);
 
             // Return the UiManager if successful, otherwise null.
             return success ? _runwayManager.UiManager : null;
@@ -609,7 +611,7 @@ namespace P3D_Scenario_Generator
                     switch (currentScenarioType)
                     {
                         case ScenarioTypes.Circuit:
-                            if (!MakeCircuit.SetCircuit(_formData))
+                            if (!MakeCircuit.SetCircuit(_formData, _runwayManager))
                             {
                                 backgroundOperationSuccess = false;
                                 return;
@@ -623,7 +625,7 @@ namespace P3D_Scenario_Generator
                             }
                             break;
                         case ScenarioTypes.SignWriting:
-                            if (!SignWriting.SetSignWriting(_formData))
+                            if (!SignWriting.SetSignWriting(_formData, _runwayManager))
                             {
                                 backgroundOperationSuccess = false;
                                 return;
@@ -748,17 +750,20 @@ namespace P3D_Scenario_Generator
         {
             if (ValidateP3DInstallFolder())
             {
-                string displayName = Aircraft.ChooseAircraftVariant(_formData);
+                // The call is now on the instance variable `_aircraft`
+                string displayName = _aircraft.ChooseAircraftVariant(_formData);
                 if (displayName != "")
                 {
-                    ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+                    // The call is now on the instance variable `_aircraft`
+                    ComboBoxGeneralAircraftSelection.DataSource = _aircraft.GetAircraftVariantDisplayNames();
 
                     // Refreshing ComboBoxGeneralAircraftSelection.DataSource triggers ComboBoxGeneralAircraftSelection_SelectedIndexChanged
                     // so restore correct Aircraft.CurrentAircraftVariantIndex
-                    Aircraft.ChangeCurrentAircraftVariantIndex(displayName);
+                    // The call is now on the instance variable `_aircraft`
+                    _aircraft.ChangeCurrentAircraftVariantIndex(displayName);
 
                     // Set selected index for ComboBoxGeneralAircraftSelection 
-                    ComboBoxGeneralAircraftSelection.SelectedIndex = Aircraft.CurrentAircraftVariantIndex;
+                    ComboBoxGeneralAircraftSelection.SelectedIndex = _aircraft.CurrentAircraftVariantIndex;
                 }
             }
             else
@@ -773,20 +778,24 @@ namespace P3D_Scenario_Generator
             {
                 // Alter aircraftVariant instance in Aircraft.cs to reflect new display name
                 string newDisplayName = ((ComboBox)sender).Text;
-                Aircraft.UpdateAircraftVariantDisplayName(newDisplayName);
+                // The call is now on the instance variable `_aircraft`
+                _aircraft.UpdateAircraftVariantDisplayName(newDisplayName);
 
                 // Refresh the ComboBoxGeneralAircraftSelection field list on form
-                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+                // The call is now on the instance variable `_aircraft`
+                ComboBoxGeneralAircraftSelection.DataSource = _aircraft.GetAircraftVariantDisplayNames();
 
                 // Refreshing ComboBoxGeneralAircraftSelection.DataSource triggers ComboBoxGeneralAircraftSelection_SelectedIndexChanged
                 // so restore correct Aircraft.CurrentAircraftVariantIndex
-                Aircraft.ChangeCurrentAircraftVariantIndex(newDisplayName);
+                // The call is now on the instance variable `_aircraft`
+                _aircraft.ChangeCurrentAircraftVariantIndex(newDisplayName);
 
                 // Set selected index for ComboBoxGeneralAircraftSelection 
-                ComboBoxGeneralAircraftSelection.SelectedIndex = Aircraft.CurrentAircraftVariantIndex;
+                ComboBoxGeneralAircraftSelection.SelectedIndex = _aircraft.CurrentAircraftVariantIndex;
 
                 // Refresh TextBoxGeneralLocationFilters field on form
-                TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
+                // The call is now on the instance variable `_aircraft`
+                TextBoxGeneralAircraftValues.Text = _aircraft.SetTextBoxGeneralAircraftValues();
             }
             else if (e.KeyCode == Keys.Delete)
             {
@@ -800,15 +809,17 @@ namespace P3D_Scenario_Generator
                 }
 
                 // Delete aircraftVariant instance in Aircraft.cs
-                int oldIndex = Aircraft.CurrentAircraftVariantIndex;
+                int oldIndex = _aircraft.CurrentAircraftVariantIndex;
                 string deleteDisplayName = ((ComboBox)sender).Text;
-                Aircraft.DeleteAircraftVariant(deleteDisplayName);
+                // The call is now on the instance variable `_aircraft`
+                _aircraft.DeleteAircraftVariant(deleteDisplayName);
 
                 // Refresh the ComboBoxGeneralAircraftSelection field list on form
-                ComboBoxGeneralAircraftSelection.DataSource = Aircraft.GetAircraftVariantDisplayNames();
+                // The call is now on the instance variable `_aircraft`
+                ComboBoxGeneralAircraftSelection.DataSource = _aircraft.GetAircraftVariantDisplayNames();
 
                 // Set selected index for ComboBoxGeneralAircraftSelection 
-                if (oldIndex != Aircraft.CurrentAircraftVariantIndex)
+                if (oldIndex != _aircraft.CurrentAircraftVariantIndex)
                 {
                     if (oldIndex == 0 && ComboBoxGeneralAircraftSelection.Items.Count > 0)
                         // There were 2 or more items and first in list was deleted 
@@ -825,20 +836,24 @@ namespace P3D_Scenario_Generator
                 }
 
                 // Refresh TextBoxGeneralLocationFilters field on form
-                TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
+                // The call is now on the instance variable `_aircraft`
+                TextBoxGeneralAircraftValues.Text = _aircraft.SetTextBoxGeneralAircraftValues();
             }
         }
 
         private void ComboBoxGeneralAircraftSelection_SelectedIndexChanged(object sender, EventArgs e)
         {
-            AircraftVariant aircraftVariant = Aircraft.AircraftVariants.Find(aircraft => aircraft.DisplayName == ((ComboBox)sender).Text);
+            // The call is now on the instance variable `_aircraft`
+            AircraftVariant aircraftVariant = _aircraft.AircraftVariants.Find(aircraft => aircraft.DisplayName == ((ComboBox)sender).Text);
 
             if (ValidateAndPopulateAircraftDetails(aircraftVariant))
             {
-                Aircraft.ChangeCurrentAircraftVariantIndex(aircraftVariant.DisplayName);
+                // The call is now on the instance variable `_aircraft`
+                _aircraft.ChangeCurrentAircraftVariantIndex(aircraftVariant.DisplayName);
 
                 // Refresh TextBoxGeneralLocationFilters field on form
-                TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
+                // The call is now on the instance variable `_aircraft`
+                TextBoxGeneralAircraftValues.Text = _aircraft.SetTextBoxGeneralAircraftValues();
 
                 SetDefaultCircuitParams();
             }
@@ -846,18 +861,21 @@ namespace P3D_Scenario_Generator
 
         private void ButtonRandomAircraft_Click(object sender, EventArgs e)
         {
-            if (Aircraft.AircraftVariants == null || Aircraft.AircraftVariants.Count == 0)
+            // The call is now on the instance variable `_aircraft`
+            if (_aircraft.AircraftVariants == null || _aircraft.AircraftVariants.Count == 0)
                 return;
             Random random = new();
-            int randomAircraftIndex = random.Next(0, Aircraft.AircraftVariants.Count);
+            int randomAircraftIndex = random.Next(0, _aircraft.AircraftVariants.Count);
             ComboBoxGeneralAircraftSelection.SelectedIndex = randomAircraftIndex;
 
             // Update CurrentAircraftVariantIndex in Aircraft.cs
             string newDisplayName = ComboBoxGeneralAircraftSelection.Text;
-            Aircraft.ChangeCurrentAircraftVariantIndex(newDisplayName);
+            // The call is now on the instance variable `_aircraft`
+            _aircraft.ChangeCurrentAircraftVariantIndex(newDisplayName);
 
             // Refresh TextBoxGeneralAircraftValues field on form
-            TextBoxGeneralAircraftValues.Text = Aircraft.SetTextBoxGeneralAircraftValues();
+            // The call is now on the instance variable `_aircraft`
+            TextBoxGeneralAircraftValues.Text = _aircraft.SetTextBoxGeneralAircraftValues();
         }
 
         private void TextBoxGeneralAircraftValues_MouseEnter(object sender, EventArgs e)
@@ -872,7 +890,7 @@ namespace P3D_Scenario_Generator
         private void ButtonRandomLocation_Click(object sender, EventArgs e)
         {
             Random random = new();
-            int randomLocationFavouriteIndex = random.Next(0, Runway.LocationFavourites.Count);
+            int randomLocationFavouriteIndex = random.Next(0, _runwayManager.UiManager.LocationFavourites.Count);
             ComboBoxGeneralLocationFavourites.SelectedIndex = randomLocationFavouriteIndex;
         }
 
@@ -881,57 +899,60 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ComboBoxGeneralLocationFavourites_KeyDown(object sender, KeyEventArgs e)
+        private async void ComboBoxGeneralLocationFavourites_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                // Alter locationFavourite instance in Runway.cs to reflect new name
+                // Alter locationFavourite instance in RunwayUIManager to reflect new name
                 string newFavouriteName = ((ComboBox)sender).Text;
-                string oldFavouriteName = Runway.UpdateLocationFavouriteName(newFavouriteName);
+                string oldFavouriteName = _runwayManager.UiManager.UpdateLocationFavouriteName(newFavouriteName);
 
-                // Create a new locationFavourite instance in Runway.cs using old name and all filters copied from current selected favourite
-                Runway.AddLocationFavourite(oldFavouriteName);
+                // Create a new locationFavourite instance in RunwayUIManager using old name and all filters copied from current selected favourite
+                _runwayManager.UiManager.AddLocationFavourite(oldFavouriteName);
 
                 // Refresh the ComboBoxGeneralLocationFavourites field list on form
-                ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
+                ComboBoxGeneralLocationFavourites.DataSource = _runwayManager.UiManager.GetLocationFavouriteNames();
 
                 // Set selected index for ComboBoxGeneralLocationFavourites
                 int newFavouriteIndex = ComboBoxGeneralLocationFavourites.Items.IndexOf(newFavouriteName);
                 ComboBoxGeneralLocationFavourites.SelectedIndex = newFavouriteIndex;
 
                 // Refresh Country/State/City fields on form
-                LocationFavourite currentLocationFavourite = Runway.GetCurrentLocationFavourite();
+                LocationFavourite currentLocationFavourite = _runwayManager.UiManager.GetCurrentLocationFavourite();
                 ComboBoxGeneralLocationCountry.Text = currentLocationFavourite.Countries[0];
                 ComboBoxGeneralLocationState.Text = currentLocationFavourite.States[0];
                 ComboBoxGeneralLocationCity.Text = currentLocationFavourite.Cities[0];
 
                 // Refresh TextBoxGeneralLocationFilters field on form
-                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
+                TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
+
+                // Also save the favourites after the change
+                await _runwayManager.UiManager.SaveLocationFavourites(null);
             }
             else if (e.KeyCode == Keys.Delete)
             {
                 // Don't delete a character
                 e.SuppressKeyPress = true;
 
-                // Delete locationFavourite instance in Runway.cs
+                // Delete locationFavourite instance in RunwayUIManager
                 string deleteFavouriteName = ((ComboBox)sender).Text;
-                string currentFavouriteName = Runway.DeleteLocationFavourite(deleteFavouriteName);
+                string currentFavouriteName = _runwayManager.UiManager.DeleteLocationFavourite(deleteFavouriteName);
 
                 // Refresh the ComboBoxGeneralLocationFavourites field list on form
-                ComboBoxGeneralLocationFavourites.DataSource = Runway.GetLocationFavouriteNames();
+                ComboBoxGeneralLocationFavourites.DataSource = _runwayManager.UiManager.GetLocationFavouriteNames();
 
-                // Set selected index for ComboBoxGeneralLocationFavourites 
+                // Set selected index for ComboBoxGeneralLocationFavourites
                 int currentFavouriteIndex = ComboBoxGeneralLocationFavourites.Items.IndexOf(currentFavouriteName);
                 ComboBoxGeneralLocationFavourites.SelectedIndex = currentFavouriteIndex;
 
                 // Refresh Country/State/City fields on form
-                LocationFavourite currentLocationFavourite = Runway.GetCurrentLocationFavourite();
+                LocationFavourite currentLocationFavourite = _runwayManager.UiManager.GetCurrentLocationFavourite();
                 ComboBoxGeneralLocationCountry.Text = currentLocationFavourite.Countries[0];
                 ComboBoxGeneralLocationState.Text = currentLocationFavourite.States[0];
                 ComboBoxGeneralLocationCity.Text = currentLocationFavourite.Cities[0];
 
                 // Refresh TextBoxGeneralLocationFilters field on form
-                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
+                TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
             }
         }
 
@@ -948,18 +969,18 @@ namespace P3D_Scenario_Generator
         /// <param name="e"></param>
         private void ComboBoxGeneralLocationFavourites_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Update CurrentLocationFavouriteIndex in Runway.cs
+            // Update CurrentLocationFavouriteIndex in RunwayUIManager
             string newFavouriteName = ((ComboBox)sender).Text;
-            Runway.ChangeCurrentLocationFavouriteIndex(newFavouriteName);
+            _runwayManager.UiManager.ChangeCurrentLocationFavouriteIndex(newFavouriteName);
 
             // Refresh Country/State/City fields on form
-            LocationFavourite currentLocationFavourite = Runway.GetCurrentLocationFavourite();
+            LocationFavourite currentLocationFavourite = _runwayManager.UiManager.GetCurrentLocationFavourite();
             ComboBoxGeneralLocationCountry.Text = currentLocationFavourite.Countries[0];
             ComboBoxGeneralLocationState.Text = currentLocationFavourite.States[0];
             ComboBoxGeneralLocationCity.Text = currentLocationFavourite.Cities[0];
 
             // Refresh TextBoxGeneralLocationFilters field on form
-            TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
+            TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
         }
 
         /// <summary>
@@ -970,7 +991,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ComboBoxGeneralLocation_KeyDown(object sender, KeyEventArgs e)
+        private async void ComboBoxGeneralLocation_KeyDown(object sender, KeyEventArgs e)
         {
             string selectedItem = ((ComboBox)sender).SelectedItem.ToString();
             string locationType;
@@ -984,19 +1005,22 @@ namespace P3D_Scenario_Generator
 
             if (e.KeyCode == Keys.Enter)
             {
-                Runway.AddFilterValueToLocationFavourite(locationType, selectedItem);
-                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
-                ((ComboBox)sender).Text = Runway.GetLocationFavouriteDisplayFilterValue(locationType);
+                _runwayManager.UiManager.AddFilterValueToLocationFavourite(locationType, selectedItem);
+                TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
+                ((ComboBox)sender).Text = _runwayManager.UiManager.GetLocationFavouriteDisplayFilterValue(locationType);
+                await _runwayManager.UiManager.SaveLocationFavourites(null);
             }
             else if (e.KeyCode == Keys.Delete)
             {
-                Runway.DeleteFilterValueFromLocationFavourite(locationType, selectedItem);
-                TextBoxGeneralLocationFilters.Text = Runway.SetTextBoxGeneralLocationFilters();
-                ((ComboBox)sender).Text = Runway.GetLocationFavouriteDisplayFilterValue(locationType);
+                _runwayManager.UiManager.DeleteFilterValueFromLocationFavourite(locationType, selectedItem);
+                TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
+                ((ComboBox)sender).Text = _runwayManager.UiManager.GetLocationFavouriteDisplayFilterValue(locationType);
+                await _runwayManager.UiManager.SaveLocationFavourites(null);
             }
         }
 
         #endregion
+
 
         #endregion
 
@@ -1012,7 +1036,8 @@ namespace P3D_Scenario_Generator
         /// </summary>
         private void SetDefaultCircuitParams()
         {
-            AircraftVariant aircraftVariant = Aircraft.GetCurrentVariant();
+            // Call GetCurrentVariant() on the _aircraft instance
+            AircraftVariant aircraftVariant = _aircraft.GetCurrentVariant();
             if (aircraftVariant == null)
             {
                 _progressReporter?.Report("Select an aircraft to calculate default values");
@@ -2337,12 +2362,14 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private void Form_FormClosing(object sender, FormClosingEventArgs e)
+        private async void Form_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Runway.SaveLocationFavourites();
-            Aircraft.SaveAircraftVariants();
+            await _runwayManager.UiManager.SaveLocationFavourites(_progressReporter);
+
+            await _aircraft.SaveAircraftVariantsAsync(_progressReporter);
             SaveUserSettings(TabPageSettings.Controls);
         }
+
 
         /// <summary>
         /// Handles the MouseEnter event for a TextBox. Checks if the text content of the TextBox is truncated
@@ -2468,7 +2495,7 @@ namespace P3D_Scenario_Generator
             }
 
             // 2. General Tab Data 
-            if (!PopulateAndValidateGeneralTabData(Aircraft.GetCurrentVariant()))
+            if (!PopulateAndValidateGeneralTabData(_aircraft.GetCurrentVariant()))
             {
                 allValid = false;
             }
@@ -2915,7 +2942,9 @@ namespace P3D_Scenario_Generator
 
         private void ValidateAndPopulateLocationFilters()
         {
-            LocationFavourite selectedLocationFavourite = Runway.GetCurrentLocationFavourite();
+            // The call to the obsolete static 'Runway' class has been replaced
+            // with the correct instance of RunwayUIManager.
+            LocationFavourite selectedLocationFavourite = _runwayManager.UiManager.GetCurrentLocationFavourite();
 
             _formData.LocationCountries = selectedLocationFavourite?.Countries ?? [];
             _formData.LocationStates = selectedLocationFavourite?.States ?? [];

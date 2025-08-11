@@ -1,8 +1,7 @@
 ﻿
-using System.Xml.Serialization;
-using System.Reflection;
 using P3D_Scenario_Generator.CelestialScenario;
 using P3D_Scenario_Generator.ConstantsEnums;
+using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator
 {
@@ -67,13 +66,13 @@ namespace P3D_Scenario_Generator
             sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
 			// Convert format of runway heading from magnetic North nearest degree to plus/minus 180 degrees true North
-			double absTrueHdg = absTrueHdg = Runway.startRwy.Hdg + Runway.startRwy.MagVar;
+			double absTrueHdg = absTrueHdg = formData.StartRunway.Hdg + formData.StartRunway.MagVar;
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{MathRoutines.ConvertHeadingAbsoluteToRelative(absTrueHdg)}";
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
-            formattedLatitude = FormatCoordXML(Runway.startRwy.ThresholdStartLat, "N", "S", false);
+            formattedLatitude = FormatCoordXML(formData.StartRunway.ThresholdStartLat, "N", "S", false);
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
-            formattedLongitude = FormatCoordXML(Runway.startRwy.ThresholdStartLon, "E", "W", false);
+            formattedLongitude = FormatCoordXML(formData.StartRunway.ThresholdStartLon, "E", "W", false);
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "+0";
@@ -87,12 +86,12 @@ namespace P3D_Scenario_Generator
 
 			if (formData.ScenarioType == ScenarioTypes.Celestial)
             {
-				EditCelestialSourceFXML(simBaseDocument);
+				EditCelestialSourceFXML(simBaseDocument, formData);
 			}
 		}
 
 		// CelestialScenario scenario starts in air
-		static private void EditCelestialSourceFXML(SimBaseDocument simBaseDocument)
+		static private void EditCelestialSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)
 		{
 			FlightSections fs;
 			fs = simBaseDocument.FlightSections;
@@ -101,7 +100,7 @@ namespace P3D_Scenario_Generator
 			int sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
             int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
             // Convert format of runway heading from magnetic North nearest degree to plus/minus 180 degrees true North
-            double absTrueHdg = absTrueHdg = CelestialNav.midairStartHdg + Runway.startRwy.MagVar;
+            double absTrueHdg = absTrueHdg = CelestialNav.midairStartHdg + formData.StartRunway.MagVar;
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{MathRoutines.ConvertHeadingAbsoluteToRelative(absTrueHdg)}";
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
             formattedLatitude = FormatCoordXML(CelestialNav.midairStartLat, "N", "S", false);

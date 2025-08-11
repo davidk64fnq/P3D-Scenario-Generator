@@ -1,5 +1,6 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.MapTiles;
+using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.SignWritingScenario;
 
 namespace P3D_Scenario_Generator.CircuitScenario
@@ -20,10 +21,10 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// <summary>
         /// Sets start/destination airports, calculates gate positions, creates overview and location images
         /// </summary>
-        static internal bool SetCircuit(ScenarioFormData formData)
+        static internal bool SetCircuit(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            Runway.startRwy = Runway.Runways[formData.RunwayIndex];
-            Runway.destRwy = Runway.Runways[formData.RunwayIndex];
+            formData.StartRunway = runwayManager.Searcher.GetRunwayByIndex(formData.RunwayIndex); 
+            formData.DestinationRunway = runwayManager.Searcher.GetRunwayByIndex(formData.RunwayIndex);
 
             if (!CircuitGates.SetCircuitGates(gates, formData))
             {
@@ -31,7 +32,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
                 return false;
             }
             
-            SetCircuitAirport(gates);
+            SetCircuitAirport(gates, formData);
 
             bool drawRoute = true;
             if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute, formData))
@@ -40,7 +41,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
                 return false;
             }
 
-            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(), formData))
+            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(formData), formData))
             {
                 Log.Error("Failed to create location image during circuit setup.");
                 return false;
@@ -53,9 +54,9 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// Insert circuit airport at start and end of gates list
         /// </summary>
         /// <param name="gates">The list inserted into</param>
-        static internal void SetCircuitAirport(List<Gate> gates)
+        static internal void SetCircuitAirport(List<Gate> gates, ScenarioFormData formData)
         {
-            Gate circuitAirport = new(Runway.startRwy.ThresholdStartLat, Runway.startRwy.ThresholdStartLon, 0, 0, 0, 0, 0);
+            Gate circuitAirport = new(formData.StartRunway.ThresholdStartLat, formData.StartRunway.ThresholdStartLon, 0, 0, 0, 0, 0);
             gates.Insert(0, circuitAirport);
             gates.Add(circuitAirport);
         }
@@ -79,11 +80,11 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
         /// only the start/destination runway's latitude and longitude.</returns>
-        static internal IEnumerable<Coordinate> SetLocationCoords()
+        static internal IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
         {
             IEnumerable<Coordinate> coordinates =
             [
-                new Coordinate(Runway.destRwy.AirportLat, Runway.destRwy.AirportLon)
+                new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon)
             ];
             return coordinates;
         }

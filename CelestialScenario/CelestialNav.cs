@@ -57,8 +57,8 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// <returns>True if all celestial setup operations complete successfully; otherwise, false.</returns>
         internal static bool SetCelestial(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            Runway.destRwy = runwayManager.Searcher.GetFilteredRandomRunway(formData);
-            ScenarioLocationGenerator.SetMidairStartLocation(formData.CelestialMinDistance, formData.CelestialMaxDistance, Runway.destRwy, 
+            formData.DestinationRunway = runwayManager.Searcher.GetFilteredRandomRunway(formData);
+            ScenarioLocationGenerator.SetMidairStartLocation(formData.CelestialMinDistance, formData.CelestialMaxDistance, formData.DestinationRunway, 
                 out midairStartHdg, out midairStartLat, out midairStartLon, out double randomRadiusNM);
             SextantViewGenerator.SetCelestialMapEdges(midairStartLat, midairStartLon, randomRadiusNM);
 
@@ -99,13 +99,13 @@ namespace P3D_Scenario_Generator.CelestialScenario
             }
 
             bool drawRoute = false;
-            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute, formData))
+            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(formData), drawRoute, formData))
             {
                 Log.Error("Failed to create overview image during celestial setup.");
                 return false;
             }
 
-            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(), formData))
+            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(formData), formData))
             {
                 Log.Error("Failed to create location image during celestial setup.");
                 return false;
@@ -121,12 +121,12 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
         /// the starting latitude/longitude and the runway's latitude/longitude.</returns>
-        static internal IEnumerable<Coordinate> SetOverviewCoords()
+        static internal IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
         {
             IEnumerable<Coordinate> coordinates =
             [
                 new Coordinate(midairStartLat, midairStartLon),    
-                new Coordinate(Runway.destRwy.AirportLat, Runway.destRwy.AirportLon)     
+                new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon)     
             ];
             return coordinates;
         }
@@ -138,11 +138,11 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
         /// only the destination runway's latitude and longitude.</returns>
-        static internal IEnumerable<Coordinate> SetLocationCoords()
+        static internal IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
         {
             IEnumerable<Coordinate> coordinates =
             [
-                new Coordinate(Runway.destRwy.AirportLat, Runway.destRwy.AirportLon)
+                new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon)
             ];
             return coordinates;
         }
@@ -153,9 +153,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// using the CalcDistance method from MathRoutines.
         /// </summary>
         /// <returns>The calculated celestial distance in nautical miles.</returns>
-        static internal double GetCelestialDistance()
+        static internal double GetCelestialDistance(ScenarioFormData formData)
         {
-            return MathRoutines.CalcDistance(midairStartLat, midairStartLon, Runway.destRwy.AirportLat, Runway.destRwy.AirportLon);
+            return MathRoutines.CalcDistance(midairStartLat, midairStartLon, formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon);
         }
     }
 }

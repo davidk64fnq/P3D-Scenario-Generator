@@ -131,6 +131,19 @@
         /// <returns>A tuple containing a boolean indicating success and the embedded resource stream if found; otherwise, null.</returns>
         Task<(bool success, Stream stream)> TryGetResourceStreamAsync(string resourcePath, IProgress<string> progressReporter);
 
+        /// <summary>
+        /// Reads all text from a file.
+        /// </summary>
+        /// <param name="filePath">The full path to the file.</param>
+        /// <returns>The content of the file as a string.</returns>
+        string ReadAllText(string filePath);
+
+        /// <summary>
+        /// Checks if a file exists at the specified path.
+        /// </summary>
+        /// <param name="filePath">The full path to the file.</param>
+        /// <returns>True if the file exists, otherwise false.</returns>
+        bool FileExists(string filePath);
         #endregion
     }
 }

@@ -36,11 +36,11 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
         /// only the start runway's latitude and longitude.
         /// </returns>
-        static internal IEnumerable<Coordinate> SetLocationCoords()
+        static internal IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
         {
             IEnumerable<Coordinate> coordinates =
             [
-                new Coordinate(Runway.startRwy.AirportLat, Runway.startRwy.AirportLon)
+                new Coordinate(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon)
             ];
             return coordinates;
         }

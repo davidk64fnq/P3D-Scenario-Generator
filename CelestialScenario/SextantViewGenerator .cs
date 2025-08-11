@@ -125,9 +125,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 },
 
                 // Geographic Coordinates
-                // Ensure Runway.destRwy is not null before accessing its properties.
-                { "destLatX", Runway.destRwy?.AirportLat.ToString() ?? "0.0" }, // Use null-conditional and null-coalescing
-                { "destLonX", Runway.destRwy?.AirportLon.ToString() ?? "0.0" },
+                // Ensure formData.DestinationRunway is not null before accessing its properties.
+                { "destLatX", formData.DestinationRunway?.AirportLat.ToString() ?? "0.0" }, // Use null-conditional and null-coalescing
+                { "destLonX", formData.DestinationRunway?.AirportLon.ToString() ?? "0.0" },
 
                 // Aries GHA data (using LINQ for arrays/2D arrays)
                 // Ensure AlmanacDataSource arrays are not null before passing to BuildNestedArrayString.

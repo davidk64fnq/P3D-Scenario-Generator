@@ -97,33 +97,33 @@ namespace P3D_Scenario_Generator.CircuitScenario
         internal static List<LegParams> SetLegParams(double turnRadius, double gate1to2heightDif, double gate7to8heightDif, ScenarioFormData formData)
         {
             List<LegParams> legParams = [];
-            double baseHeading = Runway.startRwy.Hdg + Runway.startRwy.MagVar + 360;
+            double baseHeading = formData.StartRunway.Hdg + formData.StartRunway.MagVar + 360;
             double turnDistance = turnRadius * Math.Sqrt(2.0);
             // Start theshold to gate 1
             legParams.Add(new LegParams(baseHeading % 360,
-                Runway.startRwy.Len + formData.CircuitUpwindLeg * Constants.FeetInNauticalMile, Runway.startRwy.Altitude + formData.CircuitHeightUpwind));
+                formData.StartRunway.Len + formData.CircuitUpwindLeg * Constants.FeetInNauticalMile, formData.StartRunway.Altitude + formData.CircuitHeightUpwind));
             // Gate 1 to gate 2
             legParams.Add(new LegParams((baseHeading - 45) % 360,
-                turnDistance, Runway.startRwy.Altitude + formData.CircuitHeightUpwind + gate1to2heightDif));
+                turnDistance, formData.StartRunway.Altitude + formData.CircuitHeightUpwind + gate1to2heightDif));
             // Gate 2 to gate 3
             legParams.Add(new LegParams((baseHeading - 90) % 360,
-                formData.CircuitBaseLeg * Constants.FeetInNauticalMile, Runway.startRwy.Altitude + formData.CircuitHeightDown));
+                formData.CircuitBaseLeg * Constants.FeetInNauticalMile, formData.StartRunway.Altitude + formData.CircuitHeightDown));
             // Gate 3 to gate 4
             legParams.Add(new LegParams((baseHeading - 135) % 360,
-                turnDistance, Runway.startRwy.Altitude + formData.CircuitHeightDown));
+                turnDistance, formData.StartRunway.Altitude + formData.CircuitHeightDown));
             // Gate 4 to gate 5
             legParams.Add(new LegParams((baseHeading - 180) % 360,
-                formData.CircuitFinalLeg * Constants.FeetInNauticalMile + Runway.startRwy.Len + formData.CircuitUpwindLeg * Constants.FeetInNauticalMile,
-                Runway.startRwy.Altitude + formData.CircuitHeightDown));
+                formData.CircuitFinalLeg * Constants.FeetInNauticalMile + formData.StartRunway.Len + formData.CircuitUpwindLeg * Constants.FeetInNauticalMile,
+                formData.StartRunway.Altitude + formData.CircuitHeightDown));
             // Gate 5 to gate 6
             legParams.Add(new LegParams((baseHeading - 225) % 360,
-                turnDistance, Runway.startRwy.Altitude + formData.CircuitHeightDown));
+                turnDistance, formData.StartRunway.Altitude + formData.CircuitHeightDown));
             // Gate 6 to gate 7
             legParams.Add(new LegParams((baseHeading - 270) % 360,
-                formData.CircuitBaseLeg * Constants.FeetInNauticalMile, Runway.startRwy.Altitude + formData.CircuitHeightBase + gate7to8heightDif));
+                formData.CircuitBaseLeg * Constants.FeetInNauticalMile, formData.StartRunway.Altitude + formData.CircuitHeightBase + gate7to8heightDif));
             // Gate 7 to gate 8
             legParams.Add(new LegParams((baseHeading - 315) % 360,
-                turnDistance, Runway.startRwy.Altitude + formData.CircuitHeightBase));
+                turnDistance, formData.StartRunway.Altitude + formData.CircuitHeightBase));
             return legParams;
         }
 
@@ -146,11 +146,11 @@ namespace P3D_Scenario_Generator.CircuitScenario
             double gate7to8heightDif = CalcGate7to8HeightDif(turnRadius, formData);
             List<LegParams> legParams = SetLegParams(turnRadius, gate1to2heightDif, gate7to8heightDif, formData);
 
-            Coordinate start = new(Runway.startRwy.ThresholdStartLat, Runway.startRwy.ThresholdStartLon);
+            Coordinate start = new(formData.StartRunway.ThresholdStartLat, formData.StartRunway.ThresholdStartLon);
             for (int index = 0; index < legParams.Count; index++)
             {
                 start.Move(legParams[index].distance, legParams[index].heading, Shape.Ellipsoid);
-                gateOrientation = (Runway.startRwy.Hdg + Runway.startRwy.MagVar + circuitHeadingAdj[index]) % 360;
+                gateOrientation = (formData.StartRunway.Hdg + formData.StartRunway.MagVar + circuitHeadingAdj[index]) % 360;
                 gates.Add(new Gate(start.Latitude.DecimalDegree, start.Longitude.DecimalDegree, legParams[index].amsl, 0, gateOrientation, 0, 0));
             }
             return true;

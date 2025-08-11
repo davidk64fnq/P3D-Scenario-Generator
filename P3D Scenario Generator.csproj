@@ -8,6 +8,7 @@
 	<UseRidGraph>true</UseRidGraph>
 	<ImplicitUsings>enable</ImplicitUsings>
 	<ApplicationIcon>application.ico</ApplicationIcon>
+	<LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

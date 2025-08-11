@@ -135,7 +135,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 return false;
             }
 
-            if (!MapTileImageMaker.CreateLocationImage(PhotoTourUtilities.SetLocationCoords(), formData))
+            if (!MapTileImageMaker.CreateLocationImage(PhotoTourUtilities.SetLocationCoords(formData), formData))
             {
                 Log.Error("Failed to create location image during photo tour setup.");
                 return false;
@@ -276,7 +276,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 return SetLegResult.NoAirportFound;
             }
             formData.RunwayIndex = airportLocation.airportIndex;
-            Runway.startRwy = Runway.Runways[formData.RunwayIndex];
+            formData.StartRunway = runwayManager.Searcher.GetRunwayByIndex(formData.RunwayIndex);
             airportLocation.forwardBearing = MathRoutines.GetReciprocalHeading(airportLocation.forwardBearing);
             PhotoLocations.Add(airportLocation);
             PhotoLocations.Add(photoLocation);
@@ -474,7 +474,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
             if (airportLocation != null)
             {
-                Runway.destRwy = Runway.Runways[airportLocation.airportIndex];
+                formData.DestinationRunway = runwayManager.Searcher.GetRunwayByIndex(airportLocation.airportIndex); 
                 PhotoLocations.Add(airportLocation);
                 PhotoCount = PhotoLocations.Count;
                 PhotoTourUtilities.GetPhotos(PhotoLocations, formData); // Call GetPhotos only when the tour is fully established

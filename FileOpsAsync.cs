@@ -433,6 +433,26 @@ namespace P3D_Scenario_Generator
             });
         }
 
+        /// <summary>
+        /// Reads all text from a file.
+        /// </summary>
+        /// <param name="filePath">The full path to the file.</param>
+        /// <returns>The content of the file as a string.</returns>
+        public string ReadAllText(string filePath)
+        {
+            return File.ReadAllText(filePath);
+        }
+
+        /// <summary>
+        /// Checks if a file exists at the specified path.
+        /// </summary>
+        /// <param name="filePath">The full path to the file.</param>
+        /// <returns>True if the file exists, otherwise false.</returns>
+        public bool FileExists(string filePath)
+        {
+            return File.Exists(filePath);
+        }
+
         #endregion
     }
 }

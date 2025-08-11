@@ -1,5 +1,4 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
-using System.Collections.Generic;
 
 namespace P3D_Scenario_Generator.SignWritingScenario
 {
@@ -148,11 +147,11 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 double bearing = MathRoutines.CalcBearing(0, 0, gates[index].lat, gates[index].lon);
 
                 // Move gate to position relative to airport location
-                MathRoutines.AdjCoords(Runway.startRwy.AirportLat, Runway.startRwy.AirportLon, bearing, distanceMeters,
+                MathRoutines.AdjCoords(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon, bearing, distanceMeters,
                     ref gates[index].lat, ref gates[index].lon);
 
                 // Set the altitude of the gate to the airport altitude plus the sign gate height
-                gates[index].amsl += Runway.startRwy.Altitude + formData.SignGateHeightFeet;
+                gates[index].amsl += formData.StartRunway.Altitude + formData.SignGateHeightFeet;
             }
         }
 

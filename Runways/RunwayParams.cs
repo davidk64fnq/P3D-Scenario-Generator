@@ -87,7 +87,7 @@
         public double ThresholdStartLon { get; set; }
 
         /// <summary>
-        /// Index of runway in <see cref="Runway.Runways"></see>
+        /// Index of runway in <see cref="RunwaySearcher._allRunways"></see>
         /// </summary>
         public int RunwaysIndex { get; set; }
 

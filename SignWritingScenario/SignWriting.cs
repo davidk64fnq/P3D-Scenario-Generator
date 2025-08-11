@@ -1,7 +1,7 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
-using System;
+using P3D_Scenario_Generator.Runways;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -23,11 +23,11 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// <summary>
         /// Called from Form1.cs to do the scenario specific work in creating a signwriting scenario
         /// </summary>
-        static internal bool SetSignWriting(ScenarioFormData formData)
+        static internal bool SetSignWriting(ScenarioFormData formData, RunwayManager runwayManager)
         {
             // Scenario starts and finishes at user selected airport
-            Runway.startRwy = Runway.Runways[formData.RunwayIndex];
-            Runway.destRwy = Runway.Runways[formData.RunwayIndex];
+            formData.StartRunway = runwayManager.Searcher.GetRunwayByIndex(formData.RunwayIndex);
+            formData.DestinationRunway = runwayManager.Searcher.GetRunwayByIndex(formData.RunwayIndex);
 
             // Set the letter segment paths for the sign writing letters
             SignCharacterMap.InitLetterPaths();
@@ -41,13 +41,13 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             }
 
             bool drawRoute = false;
-            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute, formData))
+            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(formData), drawRoute, formData))
             {
                 Log.Error("Failed to create overview image during sign writing setup.");
                 return false;
             }
 
-            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(), formData))
+            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(formData), formData))
             {
                 Log.Error("Failed to create location image during sign writing setup.");
                 return false;
@@ -62,15 +62,15 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
         /// the the sign writing gate's latitude/longitude and start/destination runway's latitude/longitude.</returns>
-        public static IEnumerable<Coordinate> SetOverviewCoords()
+        public static IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
         {
             IEnumerable<Coordinate> coordinates = gates.Select(gate => new Coordinate(gate.lat, gate.lon));
 
             // Add the start runway to the beginning
-            coordinates = coordinates.Prepend(new Coordinate(Runway.startRwy.AirportLat, Runway.startRwy.AirportLon));
+            coordinates = coordinates.Prepend(new Coordinate(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon));
 
             // Add the destination runway to the end
-            coordinates = coordinates.Append(new Coordinate(Runway.destRwy.AirportLat, Runway.destRwy.AirportLon));
+            coordinates = coordinates.Append(new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon));
 
             return coordinates;
         }
@@ -81,11 +81,11 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
         /// only the start/destination runway's latitude and longitude.</returns>
-        static internal IEnumerable<Coordinate> SetLocationCoords()
+        static internal IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
         {
             IEnumerable<Coordinate> coordinates =
             [
-                new Coordinate(Runway.startRwy.AirportLat, Runway.startRwy.AirportLon)
+                new Coordinate(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon)
             ];
             return coordinates;
         }

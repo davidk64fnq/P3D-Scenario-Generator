@@ -158,6 +158,24 @@ namespace P3D_Scenario_Generator.Runways
         }
 
         /// <summary>
+        /// Gets a single runway object by its index in the internal list.
+        /// Performs a bounds check to prevent an IndexOutOfRangeException.
+        /// </summary>
+        /// <param name="index">The zero-based index of the runway to retrieve.</param>
+        /// <returns>The RunwayParams object at the specified index, or null if the index is out of bounds.</returns>
+        public RunwayParams GetRunwayByIndex(int index)
+        {
+            if (index >= 0 && index < _allRunways.Count)
+            {
+                return _allRunways[index];
+            }
+
+            _log.Warning($"Attempted to access runway at index {index}, which is out of bounds (list size: {_allRunways.Count}).");
+            return null;
+        }
+
+
+        /// <summary>
         /// Gets a sorted list of the country strings from the full list of runways.
         /// </summary>
         /// <returns>Sorted list of the country strings in "runways.xml"</returns>
@@ -232,7 +250,6 @@ namespace P3D_Scenario_Generator.Runways
 
             return countriesMatch && statesMatch && citiesMatch;
         }
-
 
         /// <summary>
         /// Finds the nearest runway to a given point using a k-d tree.
