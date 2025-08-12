@@ -1,25 +1,23 @@
 ﻿using P3D_Scenario_Generator.CelestialScenario;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Legacy;
-using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.SignWritingScenario;
 using P3D_Scenario_Generator.WikipediaScenario;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Services
 {
-    internal class ScenarioHTML
+    public class ScenarioHTML
     {
-        internal struct Overview
+        public struct Overview
         {
-            internal string Title { get; set; }
-            internal string Heading1 { get; set; }
-            internal string Location { get; set; }
-            internal string Difficulty { get; set; }
-            internal string Duration { get; set; }
-            internal string Aircraft { get; set; }
-            internal string Briefing { get; set; }
-            internal string Objective { get; set; }
-            internal string Tips { get; set; }
+            public string Title { get; set; }
+            public string Heading1 { get; set; }
+            public string Location { get; set; }
+            public string Difficulty { get; set; }
+            public string Duration { get; set; }
+            public string Aircraft { get; set; }
+            public string Briefing { get; set; }
+            public string Objective { get; set; }
+            public string Tips { get; set; }
         }
        
         internal struct MissionBrief
@@ -37,9 +35,8 @@ namespace P3D_Scenario_Generator
 
         internal static Overview overview;
 
-        static internal void GenerateHTMLfiles(ScenarioFormData formData)
+        static internal void GenerateHTMLfiles(ScenarioFormData formData, Overview overview)
         {
-            overview = SetOverviewStruct(formData);
             TrySetOverviewHTML(overview, out string overviewHTML, null);
             File.WriteAllText($"{formData.ScenarioFolder}\\Overview.htm", overviewHTML);
 
@@ -56,50 +53,13 @@ namespace P3D_Scenario_Generator
 
             switch (formData.ScenarioType)
             {
-                case ScenarioTypes.Circuit:
-                    overview.Title = "Circuit Practise";
-                    overview.Heading1 = "Circuit Practise";
-                    overview.Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}";
-                    overview.Difficulty = "Beginner";
-                    // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    double duration = ((formData.CircuitFinalLeg + (formData.StartRunway.Len / Constants.FeetInNauticalMile) + formData.CircuitUpwindLeg) 
-                        * 2 + (formData.CircuitBaseLeg * 2)) / formData.CircuitSpeed * 60;
-                    overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{formData.AircraftTitle}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
-                    overview.Briefing += " by doing that most fundamental of tasks, flying a circuit! ";
-                    overview.Briefing += "You'll take off, fly through eight gates as you complete a circuit, ";
-                    overview.Briefing += "and land back on the runway. The scenario begins on runway ";
-                    overview.Briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
-                    overview.Briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
-                    overview.Objective = "Take off and fly through the eight gates before landing on the same runway.";
-                    overview.Tips = "Each pair of gates marks the start and finish of a 90 degree turn. ";
-                    break;
-                case ScenarioTypes.PhotoTour:
-                    overview.Title = "Photo Tour";
-                    overview.Heading1 = "Photo Tour";
-                    overview.Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}";
-                    overview.Difficulty = "Intermediate";
-                    // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = PhotoTourUtilities.GetPhotoTourDistance(PhotoTour.PhotoLocations) / formData.AircraftCruiseSpeed * 60;
-                    overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{formData.AircraftTitle}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
-                    overview.Briefing += " as you navigate from one photo location to the next using IFR (I follow roads) ";
-                    overview.Briefing += "You'll take off, fly to a series of photo locations, ";
-                    overview.Briefing += "and land at another airport. The scenario begins on runway ";
-                    overview.Briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
-                    overview.Briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
-                    overview.Objective = $"Take off and visit a series of photo locations before landing at {formData.DestinationRunway.IcaoName} (any runway)";
-                    overview.Tips = "Never do today what you can put off till tomorrow";
-                    break;
                 case ScenarioTypes.SignWriting:
                     overview.Title = "Sign Writing";
                     overview.Heading1 = "Sign Writing";
                     overview.Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}";
                     overview.Difficulty = "Advanced";
                     // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = SignWriting.GetSignWritingDistance(formData) / formData.AircraftCruiseSpeed * 60;
+                    double duration = SignWriting.GetSignWritingDistance(formData) / formData.AircraftCruiseSpeed * 60;
                     overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
                     overview.Aircraft = $"{formData.AircraftTitle}";
                     overview.Briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";

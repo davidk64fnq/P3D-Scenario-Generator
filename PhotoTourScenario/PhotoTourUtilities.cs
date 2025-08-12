@@ -1,6 +1,6 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Legacy;
+using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.PhotoTourScenario
@@ -10,8 +10,11 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// including geographical coordinate extraction for mapping, tour distance calculations,
     /// photo location retrieval, and photo download/resizing operations.
     /// </summary>
-    internal class PhotoTourUtilities
+    public class PhotoTourUtilities(ILogger logger, IHttpRoutines httpRoutines)
     {
+        private readonly ILogger _log = logger;
+        private readonly IHttpRoutines _httpRoutines = httpRoutines;
+
         /// <summary>
         /// Creates and returns an enumerable collection of <see cref="Coordinate"/> objects
         /// representing the geographical locations (latitude and longitude) for all entries
@@ -38,7 +41,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
         /// only the start runway's latitude and longitude.
         /// </returns>
-        static internal IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
+        public static IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
         {
             IEnumerable<Coordinate> coordinates =
             [
@@ -60,7 +63,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
         /// the latitude and longitude of the photo at <paramref name="index"/> and the photo at <paramref name="index"/> + 1.
         /// </returns>
-        static internal IEnumerable<Coordinate> SetRouteCoords(List<PhotoLocParams> photoLocations, int index)
+        public static IEnumerable<Coordinate> SetRouteCoords(List<PhotoLocParams> photoLocations, int index)
         {
             IEnumerable<Coordinate> coordinates =
             [
@@ -79,7 +82,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <returns>
         /// A <see cref="double"/> representing the cumulative total distance of the entire photo tour.
         /// </returns>
-        static internal double GetPhotoTourDistance(List<PhotoLocParams> photoLocations)
+        public static double GetPhotoTourDistance(List<PhotoLocParams> photoLocations)
         {
             double distance = 0;
             foreach (PhotoLocParams location in photoLocations)
@@ -90,21 +93,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             return distance;
         }
 
-        /// <summary>
-        /// Downloads all photos specified in the provided list of photo locations to the scenario images directory.
-        /// It checks if each downloaded photo's width or height exceeds 95% of the monitor dimensions
-        /// on which it will initially be displayed. If a dimension exceeds this threshold, the photo is
-        /// proportionally resized to be at least 40 pixels less than the corresponding monitor dimension.
-        /// Photos are loaded into a memory stream for dimension checking to avoid file locking issues
-        /// before potential resizing by Magick.NET.
-        /// </summary>
-        /// <param name="photoLocations">A list of <see cref="PhotoLocParams"/> objects,
-        /// each containing the URL of a photo to be downloaded and processed.</param>
-        /// <returns>
-        /// <see langword="true"/> if all photos are successfully downloaded and resized as needed;
-        /// <see langword="false"/> if any photo download, load, or resize operation fails.
-        /// </returns>
-        static internal PhotoLocParams GetPhotoLocation(List<PhotoLocParams> photoLocations, int index)
+        public static PhotoLocParams GetPhotoLocation(List<PhotoLocParams> photoLocations, int index)
         {
             return photoLocations[index];
         }
@@ -121,7 +110,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <see langword="true"/> if all photos are successfully downloaded and resized as needed;
         /// <see langword="false"/> if any photo download or resize operation fails.
         /// </returns>
-        static internal bool GetPhotos(List<PhotoLocParams> photoLocations, ScenarioFormData formData)
+        public async Task<bool> GetPhotos(List<PhotoLocParams> photoLocations, ScenarioFormData formData)
         {
             for (int index = 1; index < photoLocations.Count - 1; index++)
             {
@@ -129,7 +118,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 string filePath = Path.Combine(formData.ScenarioImageFolder, filename);
 
                 // 1. Download the photo
-                if (!HttpRoutines.DownloadBinaryFile(photoLocations[index].photoURL, filePath))
+                if (!await _httpRoutines.DownloadBinaryFileAsync(photoLocations[index].photoURL, filePath))
                 {
                     Log.Error($"PhotoTour.GetPhotos: Failed to download photo from '{photoLocations[index].photoURL}'.");
                     return false;
@@ -215,6 +204,34 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
 
             return true;
+        }
+
+        public static ScenarioHTML.Overview SetOverviewStruct(ScenarioFormData formData, List<PhotoLocParams> photoLocations)
+        {
+            // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
+            double duration = PhotoTourUtilities.GetPhotoTourDistance(photoLocations) / formData.AircraftCruiseSpeed * 60;
+
+            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
+            briefing += " as you navigate from one photo location to the next using IFR (I follow roads) ";
+            briefing += "You'll take off, fly to a series of photo locations, ";
+            briefing += "and land at another airport. The scenario begins on runway ";
+            briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
+            briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
+
+            ScenarioHTML.Overview overview = new()
+            {
+                Title = "Photo Tour",
+                Heading1 = "Photo Tour",
+                Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}",
+                Difficulty = "Intermediate",
+                Duration = $"{string.Format("{0:0}", duration)} minutes",
+                Aircraft = $"{formData.AircraftTitle}",
+                Briefing = briefing,
+                Objective = $"Take off and visit a series of photo locations before landing at {formData.DestinationRunway.IcaoName} (any runway)",
+                Tips = "Never do today what you can put off till tomorrow"
+            };
+
+            return overview;
         }
     }
 }

@@ -2,6 +2,7 @@
 using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Runways;
+using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.PhotoTourScenario
 {
@@ -44,57 +45,6 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     }
 
     /// <summary>
-    /// Stores information pertaining to a photo location in the photo tour, also used for start and destination airports
-    /// </summary>
-    public class PhotoLocParams
-    {
-        /// <summary>
-        /// URL of photo this leg travels to
-        /// </summary>
-        public string photoURL;
-
-        /// <summary>
-        /// Unique id string used by pic2map for each photo
-        /// </summary>
-        public string legId;
-
-        /// <summary>
-        /// Only used for start and destination airport instances
-        /// </summary>
-        public string airportICAO;
-
-        /// <summary>
-        /// Only used for start and destination airport instances
-        /// </summary>
-        public int airportIndex;
-
-        /// <summary>
-        /// Used to filter on location string for starting photo in tour
-        /// </summary>
-        public string location;
-
-        /// <summary>
-        /// Distance from this instance location to next location in photo tour
-        /// </summary>
-        public double forwardDist;
-
-        /// <summary>
-        /// Latitude for this instance location
-        /// </summary>
-        public double latitude;
-
-        /// <summary>
-        /// Longitude for this instance location
-        /// </summary>
-        public double longitude;
-
-        /// <summary>
-        /// Bearing to get from this instance location to next location in photo tour
-        /// </summary>
-        public double forwardBearing;
-    }
-
-    /// <summary>
     /// Orchestrates the generation and management of a dynamic photo tour.
     /// This includes finding a sequence of geolocated photos and associated airports,
     /// managing their data, creating visual map representations of the tour legs,
@@ -106,13 +56,13 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// <remarks>
     /// Initializes a new instance of the PhotoTour class with its dependencies.
     /// </remarks>
-    /// <param name="pic2MapHtmlParser">The HTML parser for Pic2Map.</param>
     /// <param name="logger">The logging service.</param>
     /// <param name="fileOps">The file operations service.</param>
     /// <param name="httpRoutines">The HTTP routines service.</param>
-    public class PhotoTour(IPic2MapHtmlParser pic2MapHtmlParser, ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines)
+    public class PhotoTour(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines)
     {
-        private readonly IPic2MapHtmlParser _pic2MapHtmlParser = pic2MapHtmlParser;
+        private readonly Pic2MapHtmlParser _pic2MapHtmlParser = new(logger, httpRoutines);
+        private readonly PhotoTourUtilities _photoTourUtilities = new(logger, httpRoutines);
         private readonly ILogger _logger = logger;
         private readonly IFileOps _fileOps = fileOps;
         private readonly IHttpRoutines _httpRoutines = httpRoutines;
@@ -158,6 +108,10 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                     return false;
                 }
             }
+
+            ScenarioHTML.Overview overview = PhotoTourUtilities.SetOverviewStruct(formData, PhotoLocations);
+            ScenarioHTML.GenerateHTMLfiles(formData, overview);
+
             return true;
         }
 
@@ -453,8 +407,15 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 formData.DestinationRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(airportLocation.airportIndex);
                 PhotoLocations.Add(airportLocation);
                 PhotoCount = PhotoLocations.Count;
-                PhotoTourUtilities.GetPhotos(PhotoLocations, formData);
-                return SetLegResult.Success;
+                if (await _photoTourUtilities.GetPhotos(PhotoLocations, formData))
+                {
+                    return SetLegResult.Success;
+                }
+                else
+                {
+                    await _logger.ErrorAsync("SetLastLeg: Failed to retrieve photos for the last leg of the tour.");
+                    return SetLegResult.WebDownloadFailed;
+                }
             }
             else
             {

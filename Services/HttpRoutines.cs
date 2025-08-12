@@ -19,7 +19,7 @@ namespace P3D_Scenario_Generator.Services
     /// </remarks>
     /// <param name="fileOps">The file operations service.</param>
     /// <param name="logger">The logging service.</param>
-    internal class HttpRoutines(IFileOps fileOps, ILogger logger) : IHttpRoutines
+    public class HttpRoutines(IFileOps fileOps, ILogger logger) : IHttpRoutines
     {
         private readonly IFileOps _fileOps = fileOps;
         private readonly ILogger _logger = logger;

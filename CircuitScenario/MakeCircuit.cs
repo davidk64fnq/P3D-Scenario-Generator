@@ -1,7 +1,8 @@
 ﻿using CoordinateSharp;
-using P3D_Scenario_Generator.Legacy;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Runways;
+using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.SignWritingScenario;
 
 namespace P3D_Scenario_Generator.CircuitScenario
@@ -49,6 +50,9 @@ namespace P3D_Scenario_Generator.CircuitScenario
                 Log.Error("Failed to create location image during circuit setup.");
                 return false;
             }
+
+            ScenarioHTML.Overview overview = SetOverviewStruct(formData);
+            ScenarioHTML.GenerateHTMLfiles(formData, overview);
 
             return true;
         }
@@ -101,6 +105,35 @@ namespace P3D_Scenario_Generator.CircuitScenario
         static internal Gate GetGate(int index)
         {
             return gates[index];
+        }
+
+        public static ScenarioHTML.Overview SetOverviewStruct(ScenarioFormData formData)
+        {
+            // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
+            double duration = ((formData.CircuitFinalLeg + formData.StartRunway.Len / Constants.FeetInNauticalMile + formData.CircuitUpwindLeg)
+                * 2 + formData.CircuitBaseLeg * 2) / formData.CircuitSpeed * 60;
+
+            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
+            briefing += " by doing that most fundamental of tasks, flying a circuit! ";
+            briefing += "You'll take off, fly through eight gates as you complete a circuit, ";
+            briefing += "and land back on the runway. The scenario begins on runway ";
+            briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
+            briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
+
+            ScenarioHTML.Overview overview = new()
+            {
+                Title = "Circuit Practise",
+                Heading1 = "Circuit Practise",
+                Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}",
+                Difficulty = "Beginner",
+                Duration = $"{string.Format("{0:0}", duration)} minutes",
+                Aircraft = $"{formData.AircraftTitle}",
+                Briefing = briefing,
+                Objective = "Take off and fly through the eight gates before landing on the same runway.",
+                Tips = "Each pair of gates marks the start and finish of a 90 degree turn. "
+            };
+
+            return overview;
         }
     }
 }

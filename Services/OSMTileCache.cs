@@ -1,17 +1,17 @@
 ﻿using P3D_Scenario_Generator.Interfaces;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
     /// Provides static utility methods for managing a local file cache, primarily used for
     /// OpenStreetMap (OSM) tiles. This includes operations like retrieving tiles from cache
     /// or downloading them, checking for cached file existence, and managing cache usage statistics.
     /// </summary>
-    internal class OSMTileCache(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines)
+    public class OSMTileCache(IFileOps fileOps, IHttpRoutines httpRoutines, FormProgressReporter progressReporter) : IOsmTileCache
     {
-        private readonly ILogger _logger = logger;
         private readonly IFileOps _fileOps = fileOps;
         private readonly IHttpRoutines _httpRoutines = httpRoutines;
+        private readonly FormProgressReporter _progressReporter = progressReporter;
 
         /// <summary>
         /// Retrieves an OpenStreetMap (OSM) tile, either from a local cache or by downloading it,
@@ -25,30 +25,27 @@ namespace P3D_Scenario_Generator
         /// OSM tile should be saved. Example: `formData.ScenarioImageFolder\\filename`.</param>
         /// <returns>Returns <see langword="true"/> if the tile was successfully retrieved (copied from cache or downloaded) and saved;
         /// otherwise, <see langword="false"/> if an error occurred during file operations or download.</returns>
-        static internal async Task<bool> GetOrCopyOSMtile(string key, string url, string saveFile)
+        public async Task<bool> GetOrCopyOSMtile(string key, string url, string saveFile)
         {
             string cachePath = "";
             if (DoesKeyExist(key, ref cachePath))
             {
                 // Tile exists in cache, attempt to copy it to the saveFile location.
-                if (!_fileOps.TryCopyFile(cachePath, saveFile, null, true))
+                if (!await _fileOps.TryCopyFileAsync(cachePath, saveFile, _progressReporter, true))
                 {
-                    // Corrected to use the injected instance _fileOps
                     return false; // Copy failed
                 }
             }
             else
             {
                 // Tile does not exist in cache, attempt to download it.
-                // Corrected to use the injected instance _httpRoutines and await the async method
                 if (await _httpRoutines.DownloadBinaryFileAsync(url, saveFile))
                 {
                     // Download successful, update daily cache total and copy to cache.
                     int curTotal = Convert.ToInt32(Properties.Settings.Default.TextBoxSettingsCacheDailyTotal);
                     Properties.Settings.Default.TextBoxSettingsCacheDailyTotal = (curTotal + 1).ToString();
                     Properties.Settings.Default.Save();
-                    // Corrected to use the injected instance _fileOps
-                    if (!_fileOps.TryCopyFile(saveFile, cachePath, null, true))
+                    if (!await _fileOps.TryCopyFileAsync(saveFile, cachePath, _progressReporter, true))
                     {
                         return false; // Copy to cache failed
                     }
@@ -72,7 +69,7 @@ namespace P3D_Scenario_Generator
         /// calculated file path where the tile *would be* or *is* cached, regardless of whether it exists.</param>
         /// <returns>Returns <see langword="true"/> if the tile file identified by the <paramref name="key"/> exists in the cache;
         /// otherwise, <see langword="false"/>.</returns>
-        static internal bool DoesKeyExist(string key, ref string cachePath)
+        public bool DoesKeyExist(string key, ref string cachePath)
         {
             string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             directory = Path.Combine(directory, AppDomain.CurrentDomain.FriendlyName);
@@ -86,7 +83,7 @@ namespace P3D_Scenario_Generator
             {
                 Directory.CreateDirectory(directory);
             }
-            else if (File.Exists(cachePath))
+            else if (_fileOps.FileExists(cachePath))
             {
                 return true;
             }
@@ -97,7 +94,7 @@ namespace P3D_Scenario_Generator
         /// User setting SettingsCacheDailyTotal is reset to zero each day. Allows user to track number of OSM tiles downloaded
         /// for the day for the current server / API key pair. Some servers have a daily limit. Also updates user setting SettingsCacheUsage.
         /// </summary>
-        static internal void CheckCache()
+        public static void CheckCache()
         {
             string curCacheDate = DateTime.Now.Date.ToString();
             if (Properties.Settings.Default.TextBoxSettingsCacheDate != curCacheDate)
@@ -119,7 +116,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="bytes">The number of bytes to format.</param>
         /// <returns>A string representing the formatted byte size, e.g., "1.23 MB" or "500 B".</returns>
-        private static string FormatBytes(long bytes)
+        public static string FormatBytes(long bytes)
         {
             // Define the suffixes for byte units.
             string[] Suffix = ["B", "KB", "MB", "GB", "TB"];

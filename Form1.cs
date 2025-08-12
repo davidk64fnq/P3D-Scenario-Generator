@@ -32,10 +32,10 @@ namespace P3D_Scenario_Generator
         private readonly Logger _log;
         private readonly Aircraft _aircraft;
         private readonly PhotoTour _photoTour;
-        private readonly IPic2MapHtmlParser _pic2MapHtmlParser;
         private readonly IHtmlParser _htmlParser;
         private readonly IHttpRoutines _httpRoutines;
         private readonly CelestialNav _celestialNav;
+        private readonly IOsmTileCache _osmTileCache;
 
         public Form()
         {
@@ -43,15 +43,15 @@ namespace P3D_Scenario_Generator
 
             // Instantiate the dependencies once, at the form level.
             // Replace these with your actual implementations.
-            _fileOps = new FileOpsAsync();
+            _fileOps = new Services.FileOps();
             _log = new Logger();
             _cacheManager = new CacheManager(_log);
             _aircraft = new Aircraft(_log, _cacheManager, _fileOps);
             _htmlParser = new HtmlParser(_log);
             _httpRoutines = new HttpRoutines(_fileOps, _log);
-            _pic2MapHtmlParser = new Pic2MapHtmlParser(_log, _htmlParser, _httpRoutines);
-            _photoTour = new PhotoTour(_pic2MapHtmlParser, _log, _fileOps, _httpRoutines);
+            _photoTour = new PhotoTour(_log, _fileOps, _httpRoutines);
             _celestialNav = new CelestialNav(_log, _fileOps, _httpRoutines);
+            _osmTileCache = new OSMTileCache(_fileOps, _httpRoutines, _progressReporter);
 
             // Perform custom initialization tasks after the designer-generated components are set up.
             if (!PostInitializeComponent())
@@ -397,9 +397,9 @@ namespace P3D_Scenario_Generator
             try
             {
                 // Get the last modified dates for all relevant files, handling non-existence with null.
-                DateTime? cacheLastModified = FileOps.GetFileLastWriteTime(cacheFilePath);
-                DateTime? xmlLastModified = FileOps.GetFileLastWriteTime(xmlFilePath);
-                DateTime? sceneryLastModified = FileOps.GetFileLastWriteTime(sceneryCFGfilePath);
+                DateTime? cacheLastModified = Legacy.FileOps.GetFileLastWriteTime(cacheFilePath);
+                DateTime? xmlLastModified = Legacy.FileOps.GetFileLastWriteTime(xmlFilePath);
+                DateTime? sceneryLastModified = Legacy.FileOps.GetFileLastWriteTime(sceneryCFGfilePath);
 
                 if (!sceneryLastModified.HasValue)
                 {
@@ -552,7 +552,7 @@ namespace P3D_Scenario_Generator
                 SaveSettingsAfterDoSpecific();
                 SaveUserSettings(TabPageSettings.Controls);
                 ScenarioFXML.GenerateFXMLfile(_formData);
-                ScenarioHTML.GenerateHTMLfiles(_formData);
+             //   ScenarioHTML.GenerateHTMLfiles(_formData);
                 ScenarioXML.GenerateXMLfile(_formData);
                 DeleteTempScenarioDirectory();
                 DisplayFinishMessage();

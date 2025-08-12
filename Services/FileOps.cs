@@ -12,7 +12,7 @@ namespace P3D_Scenario_Generator.Services
     /// returning a boolean to indicate success or failure and logging detailed information
     /// for developer debugging.
     /// </summary>
-    public class FileOpsAsync : IFileOps
+    public class FileOps : IFileOps
     {
         #region Read Operations
 

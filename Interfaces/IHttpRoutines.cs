@@ -1,7 +1,4 @@
-﻿// Interfaces/IHttpRoutines.cs
-// This file contains the updated interface for HttpRoutines.
-
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace P3D_Scenario_Generator.Interfaces
