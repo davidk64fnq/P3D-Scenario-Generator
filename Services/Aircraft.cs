@@ -1,47 +1,10 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Models;
 using System.Text.Json;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Services
 {
-    /// <summary>
-    /// Stores information for a user selected aircraft variant; title, display name, cruisespeed, 
-    /// thumbnail image full path, whether it has floats, and whether it has wheels equivalent
-    /// </summary>
-    public class AircraftVariant
-    {
-        /// <summary>
-        /// The title of the aircraft variant as recorded in the relevant variant [fltsim.?] section of an aircraft.cfg file
-        /// </summary>
-        public string Title { get; set; }
-
-        /// <summary>
-        /// The user editable name of the aircraft variant for display purposes on General tab of form
-        /// </summary>
-        public string DisplayName { get; set; }
-
-        /// <summary>
-        /// The cruise speed in knots of the aircraft variant as recorded in the aircraft.cfg file
-        /// </summary>
-        public double CruiseSpeed { get; set; }
-
-        /// <summary>
-        /// Full path including filename of selected thumbnail.jpg file or empty string
-        /// </summary>
-        public string ThumbnailImagePath { get; set; }
-
-        /// <summary>
-        /// Whether the aircraft has floats, used to exclude takeoff/landing for water runways if selected aircraft doesn't have floats
-        /// </summary>
-        public bool HasFloats { get; set; }
-
-        /// <summary>
-        /// Whether the aircraft has wheels/scrapes/skids/skis, used to exclude takeoff from land based (non water) runways if selected 
-        /// aircraft doesn't have them. Note landing possible with straight floats.
-        /// </summary>
-        public bool HasWheelsOrEquiv { get; set; }
-    }
-
     /// <summary>
     /// Methods for user selection of an aircraft variant for a scenario. The selected variants are stored <br />
     /// in <see cref="AircraftVariants"/> in alphabetical order by display name. Currently selected variant <br />
@@ -57,9 +20,9 @@ namespace P3D_Scenario_Generator
     /// <param name="log">The logging service instance.</param>
     /// <param name="cacheManager">The cache management service instance.</param>
     /// <param name="fileOps">The file operations service instance.</param>
-    internal class Aircraft(ILog log, ICacheManager cacheManager, IFileOps fileOps)
+    internal class Aircraft(ILogger log, ICacheManager cacheManager, IFileOps fileOps)
     {
-        private readonly ILog _log = log;
+        private readonly ILogger _log = log;
         private readonly ICacheManager _cacheManager = cacheManager;
         private readonly IFileOps _fileOps = fileOps;
 
@@ -219,7 +182,7 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                _log.Error($"Unable to locate aircraft.cfg or sim.cfg for selected aircraft variant at '{aircraftFolderPath}'.");
+                _log.ErrorAsync($"Unable to locate aircraft.cfg or sim.cfg for selected aircraft variant at '{aircraftFolderPath}'.");
                 MessageBox.Show($"Unable to locate aircraft.cfg or sim.cfg for selected aircraft variant, " +
                     "rename equivalent file and advise developer", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return "";
@@ -345,7 +308,7 @@ namespace P3D_Scenario_Generator
                     string[] splitOnCommaSign = rhsEqualsSign.Split(',');
                     if (int.TryParse(splitOnCommaSign[0], out int contactPointClass))
                     {
-                        if ((contactPointClass >= 1 && contactPointClass <= 3) || contactPointClass == 16)
+                        if (contactPointClass >= 1 && contactPointClass <= 3 || contactPointClass == 16)
                         {
                             return true;
                         }
@@ -504,7 +467,7 @@ namespace P3D_Scenario_Generator
         {
             if (AircraftVariants == null || CurrentAircraftVariantIndex < 0 || CurrentAircraftVariantIndex >= AircraftVariants.Count)
             {
-                _log.Warning("Attempted to retrieve current aircraft variant with no variants loaded or an invalid index.");
+                _log.WarningAsync("Attempted to retrieve current aircraft variant with no variants loaded or an invalid index.");
                 return null; // No valid aircraft selected or available
             }
             return AircraftVariants[CurrentAircraftVariantIndex];
@@ -526,13 +489,13 @@ namespace P3D_Scenario_Generator
             if (AircraftVariants == null || AircraftVariants.Count == 0)
             {
                 string warningMessage = "Aircraft variants list is empty. Save operation aborted to prevent data loss.";
-                _log.Warning(warningMessage);
+                await _log.WarningAsync(warningMessage);
                 progressReporter?.Report(warningMessage);
                 return;
             }
 
             string appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                                                     AppDomain.CurrentDomain.FriendlyName);
+                                                   AppDomain.CurrentDomain.FriendlyName);
             string filePath = Path.Combine(appDataDirectory, "AircraftVariantsJSON.txt");
 
             // Use a try/catch block to handle exceptions from the asynchronous operation.
@@ -543,20 +506,20 @@ namespace P3D_Scenario_Generator
 
                 if (success)
                 {
-                    _log.Info($"Successfully saved {AircraftVariants.Count} aircraft variants to '{filePath}'.");
+                    await _log.InfoAsync($"Successfully saved {AircraftVariants.Count} aircraft variants to '{filePath}'.");
                     progressReporter?.Report($"Aircraft variants saved ({AircraftVariants.Count} entries).");
                 }
                 else
                 {
                     // The CacheManagerAsync logs the specific error, so we can provide a general message here.
-                    _log.Error("Failed to save aircraft variants.");
+                    await _log.ErrorAsync("Failed to save aircraft variants.");
                     progressReporter?.Report("ERROR: Failed to save aircraft variants. See log for details.");
                 }
             }
             catch (Exception ex)
             {
                 // This catch block will handle any exceptions not caught within the CacheManagerAsync class.
-                _log.Error($"An unexpected error occurred while saving aircraft variants. Details: {ex.Message}", ex);
+                await _log.ErrorAsync($"An unexpected error occurred while saving aircraft variants. Details: {ex.Message}", ex);
                 progressReporter?.Report($"ERROR: An unexpected error occurred while saving aircraft variants: {ex.Message}");
             }
         }
@@ -575,11 +538,11 @@ namespace P3D_Scenario_Generator
             AircraftVariants = [];
 
             string appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                                                     AppDomain.CurrentDomain.FriendlyName);
+                                                   AppDomain.CurrentDomain.FriendlyName);
             string filePath = Path.Combine(appDataDirectory, "AircraftVariantsJSON.txt");
 
             // First, try to load from the local file using the asynchronous CacheManager.
-            _log.Info($"Attempting to load aircraft variants from local file: {filePath}");
+            await _log.InfoAsync($"Attempting to load aircraft variants from local file: {filePath}");
 
             // We await the deserialization, which returns a tuple with a success boolean and the data.
             var (success, loadedVariants) = await _cacheManager.TryDeserializeFromFileAsync<List<AircraftVariant>>(filePath);
@@ -587,7 +550,7 @@ namespace P3D_Scenario_Generator
             if (success)
             {
                 AircraftVariants = loadedVariants;
-                _log.Info($"Successfully loaded {AircraftVariants.Count} aircraft variants from local file.");
+                await _log.InfoAsync($"Successfully loaded {AircraftVariants.Count} aircraft variants from local file.");
                 progressReporter?.Report($"Aircraft variants loaded ({AircraftVariants.Count} entries).");
                 return true;
             }
@@ -595,7 +558,7 @@ namespace P3D_Scenario_Generator
             {
                 // If the local file load failed (either not found or deserialization error),
                 // we fall back to the embedded resource.
-                _log.Warning("Local aircraft variants file not found or could not be deserialized. Falling back to embedded resource.");
+                await _log.WarningAsync("Local aircraft variants file not found or could not be deserialized. Falling back to embedded resource.");
                 try
                 {
                     var (streamSuccess, resourceStream) = await _fileOps.TryGetResourceStreamAsync("Text.AircraftVariantsJSON.txt", progressReporter);
@@ -606,7 +569,7 @@ namespace P3D_Scenario_Generator
                         {
                             // Use the asynchronous version of deserialization.
                             AircraftVariants = await JsonSerializer.DeserializeAsync<List<AircraftVariant>>(resourceStream);
-                            _log.Info("Successfully loaded aircraft variants from embedded resource.");
+                            await _log.InfoAsync("Successfully loaded aircraft variants from embedded resource.");
                             progressReporter?.Report($"Aircraft variants loaded from embedded resource ({AircraftVariants.Count} entries).");
                         }
                     }
@@ -620,7 +583,7 @@ namespace P3D_Scenario_Generator
                 {
                     // Catch any errors during embedded resource deserialization.
                     string errorMessage = $"An unexpected error occurred during fallback to embedded resource: {ex.Message}";
-                    _log.Error(errorMessage, ex);
+                    await _log.ErrorAsync(errorMessage, ex);
                     progressReporter?.Report($"ERROR: {errorMessage}");
                     return false;
                 }
@@ -631,12 +594,12 @@ namespace P3D_Scenario_Generator
             {
                 AircraftVariants = [];
                 string warningMessage = "Aircraft variants file was empty or contained no valid data. Initializing with an empty list.";
-                _log.Warning(warningMessage);
+                await _log.WarningAsync(warningMessage);
                 progressReporter?.Report(warningMessage);
             }
             else
             {
-                _log.Info($"Successfully loaded {AircraftVariants.Count} aircraft variants.");
+                await _log.InfoAsync($"Successfully loaded {AircraftVariants.Count} aircraft variants.");
             }
 
             return true; // Indicate success.

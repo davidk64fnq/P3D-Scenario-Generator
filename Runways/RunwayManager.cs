@@ -24,10 +24,13 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         /// <param name="progressReporter">An object to report initialization progress.</param>
         /// <param name="log">The ILog implementation for logging.</param>
+        /// <param name="cacheManager">The ICacheManager implementation for handling caching.</param>
+        /// <param name="cancellationToken">A token to observe for cancellation requests during initialization.</param>
         /// <returns>True if initialization was successful, otherwise false.</returns>
-        public async Task<bool> InitializeAsync(FormProgressReporter progressReporter, ILog log, ICacheManager cacheManager)
+        public async Task<bool> InitializeAsync(FormProgressReporter progressReporter, ILogger log, ICacheManager cacheManager, CancellationToken cancellationToken)
         {
-            RunwayData data = await _loader.LoadRunwaysAsync(progressReporter);
+            // Pass the cancellationToken to the LoadRunwaysAsync method.
+            RunwayData data = await _loader.LoadRunwaysAsync(progressReporter, cancellationToken);
 
             if (data == null)
             {
@@ -44,5 +47,6 @@ namespace P3D_Scenario_Generator.Runways
 
             return true;
         }
+
     }
 }

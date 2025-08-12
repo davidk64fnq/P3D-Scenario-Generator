@@ -1,5 +1,7 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Legacy;
+using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.PhotoTourScenario
 {

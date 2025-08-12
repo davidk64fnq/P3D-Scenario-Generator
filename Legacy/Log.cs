@@ -1,9 +1,13 @@
-﻿using P3D_Scenario_Generator.Interfaces;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.IO;
+using System;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Legacy
 {
-    public class LogAsync : ILog
+    /// <summary>
+    /// Provides a static, application-wide logging mechanism to write informational, warning, and error messages to separate files.
+    /// </summary>
+    public static class Log
     {
         private static readonly string LogDirectory;
         private static readonly string LogFilePath;
@@ -32,7 +36,7 @@ namespace P3D_Scenario_Generator
         /// It ensures the necessary log directory exists, creates it if it does not, and clears previous log files on startup.
         /// If the primary log directory cannot be created, it attempts to fall back to a local application data directory.
         /// </summary>
-        static LogAsync()
+        static Log()
         {
             // Primary log directory path: C:\Users\<user>\AppData\Roaming\<AppName>
             string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
@@ -81,7 +85,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="message">The error message.</param>
         /// <param name="ex">The exception that occurred (optional).</param>
-        public void Error(string message, Exception ex = null)
+        public static void Error(string message, Exception ex = null)
         {
             string prefix = GetLogPrefix();
             string logEntry = $"{DateTime.Now}: ERROR - {prefix}{message}";
@@ -100,7 +104,7 @@ namespace P3D_Scenario_Generator
         /// Logs a warning message to the warning log file.
         /// </summary>
         /// <param name="message">The warning message.</param>
-        public void Warning(string message)
+        public static void Warning(string message)
         {
             string prefix = GetLogPrefix();
             string logEntry = $"{DateTime.Now}: WARNING - {prefix}{message}";
@@ -111,7 +115,7 @@ namespace P3D_Scenario_Generator
         /// Logs an informational message to the info log file.
         /// </summary>
         /// <param name="message">The informational message.</param>
-        public void Info(string message)
+        public static void Info(string message)
         {
             string prefix = GetLogPrefix();
             string logEntry = $"{DateTime.Now}: INFO - {prefix}{message}";

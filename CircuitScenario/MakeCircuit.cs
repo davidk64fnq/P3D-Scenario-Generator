@@ -1,4 +1,5 @@
 ﻿using CoordinateSharp;
+using P3D_Scenario_Generator.Legacy;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.SignWritingScenario;
@@ -21,17 +22,19 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// <summary>
         /// Sets start/destination airports, calculates gate positions, creates overview and location images
         /// </summary>
-        static internal bool SetCircuit(ScenarioFormData formData, RunwayManager runwayManager)
+        static internal async Task<bool> SetCircuit(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            formData.StartRunway = runwayManager.Searcher.GetRunwayByIndex(formData.RunwayIndex); 
-            formData.DestinationRunway = runwayManager.Searcher.GetRunwayByIndex(formData.RunwayIndex);
+            // The GetRunwayByIndex method is now asynchronous.
+            // It must be awaited, and the calling method's signature must be updated accordingly.
+            formData.StartRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
+            formData.DestinationRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
 
             if (!CircuitGates.SetCircuitGates(gates, formData))
             {
                 Log.Error("Failed to set gates during circuit setup.");
                 return false;
             }
-            
+
             SetCircuitAirport(gates, formData);
 
             bool drawRoute = true;
@@ -49,6 +52,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
 
             return true;
         }
+
 
         /// <summary>
         /// Insert circuit airport at start and end of gates list

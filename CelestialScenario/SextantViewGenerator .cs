@@ -1,4 +1,5 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Legacy;
 using System.Text;
 
 namespace P3D_Scenario_Generator.CelestialScenario

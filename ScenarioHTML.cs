@@ -1,5 +1,6 @@
 ﻿using P3D_Scenario_Generator.CelestialScenario;
 using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Legacy;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.SignWritingScenario;
 using P3D_Scenario_Generator.WikipediaScenario;

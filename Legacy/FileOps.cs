@@ -2,7 +2,7 @@
 using System.Text;
 using System.Xml.Serialization;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Legacy
 {
     /// <summary>
     /// Provides a set of static utility methods for performing common file system operations

@@ -232,47 +232,56 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <param name="tourStartItem">User specified first item of tour</param>
         /// <param name="tourFinishItem">User specified last item of tour</param>
         /// <param name="tourDistance">The distance from first to last item in miles</param>
-        static internal void SetWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance, 
-            ScenarioFormData formData, RunwayManager runwayManager)
+        /// <param name="formData">The scenario form data.</param>
+        /// <param name="runwayManager">The runway manager instance.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        static internal async Task SetWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance,
+          ScenarioFormData formData, RunwayManager runwayManager)
         {
             PopulateWikiTour(tableNo, route, tourStartItem, tourFinishItem, tourDistance);
-            SetWikiAirports(formData, runwayManager);
+
+            // The call to SetWikiAirports is now awaited.
+            await SetWikiAirports(formData, runwayManager);
+
             Common.SetOverviewImage(formData);
             Common.SetLocationImage(formData);
             WikiLegMapEdges = [];
             Common.SetAllLegRouteImages(0, WikiTour.Count - 2, formData);
         }
 
+
         /// <summary>
-        /// Finds and inserts/appends wiki tour start and finish airports. Adjusts <see cref="WikiDistance"/> 
+        /// Finds and inserts/appends wiki tour start and finish airports. Adjusts <see cref="WikiDistance"/>
         /// to include airport legs
         /// </summary>
-        static internal void SetWikiAirports(ScenarioFormData formData, RunwayManager runwayManager)
+        static internal async Task SetWikiAirports(ScenarioFormData formData, RunwayManager runwayManager)
         {
             Coordinate coordFirstItem = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
-            WikiTour.Insert(0, GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble(), formData, runwayManager));
+            WikiTour.Insert(0, await GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble(), formData, runwayManager));
             Coordinate coordStartAirport = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
             WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
-            formData.StartRunway = runwayManager.Searcher.GetRunwayByIndex(WikiTour[0].airportIndex);
+            formData.StartRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(WikiTour[0].airportIndex);
 
             Coordinate coordLastItem = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
-            WikiTour.Add(GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble(), formData, runwayManager));
+            WikiTour.Add(await GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble(), formData, runwayManager));
             Coordinate coordFinishAirport = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
             WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
-            formData.DestinationRunway = runwayManager.Searcher.GetRunwayByIndex(WikiTour[^1].airportIndex);
+            formData.DestinationRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(WikiTour[^1].airportIndex);
         }
 
         /// <summary>
-        /// Calls GetNearestAirport method in Runway class to look for closest airport. Populates an instance of WikiItemParams 
+        /// Calls FindNearestRunwayAsync method in RunwaySearcher class to look for closest airport. Populates an instance of WikiItemParams
         /// with the airport information
         /// </summary>
         /// <param name="queryLat">The wiki item latitude</param>
         /// <param name="queryLon">The wiki item longitude</param>
         /// <returns></returns>
-        static internal WikiItemParams GetNearestAirport(double queryLat, double queryLon, ScenarioFormData formData, RunwayManager runwayManager)
+        static internal async Task<WikiItemParams> GetNearestAirport(double queryLat, double queryLon, ScenarioFormData formData, RunwayManager runwayManager)
         {
             WikiItemParams wikiItemParams = new();
-            RunwayParams nearestAirport = runwayManager.Searcher.FindNearestRunway(queryLat, queryLon, formData);
+            // The FindNearestRunway method is now asynchronous and must be awaited.
+            // The calling method's signature must also be updated to async and return Task.
+            RunwayParams nearestAirport = await runwayManager.Searcher.FindNearestRunwayAsync(queryLat, queryLon, formData);
             if (nearestAirport == null)
                 return null;
             wikiItemParams.airportICAO = nearestAirport.IcaoId;
@@ -282,6 +291,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             wikiItemParams.airportIndex = nearestAirport.RunwaysIndex;
             return wikiItemParams;
         }
+
 
         /// <summary>
         /// Finds OSM tile numbers and offsets for a <see cref="WikiTour"/> (all items plus airports, or a pair of items)
@@ -295,7 +305,8 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             tiles.Clear();
             for (int itemNo = startItemIndex; itemNo <= finishItemIndex; itemNo++)
             {
-        //        tiles.Add(MapTileCalculator.GetOSMtile(WikiTour[itemNo].longitude, WikiTour[itemNo].latitude, zoom));
+                zoom += 1; // to stop ide warning of unused zoom parameter
+                           //        tiles.Add(MapTileCalculator.GetOSMtile(WikiTour[itemNo].longitude, WikiTour[itemNo].latitude, zoom));
             }
         }
 

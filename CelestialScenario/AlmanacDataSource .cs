@@ -1,4 +1,6 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Legacy;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
@@ -46,17 +48,30 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
         /// <summary>
         /// Using scenario date provided by user, obtain almanac data for three days, and extract Aries GHA degrees and minutes,
-        /// and for the list of navigational stars SHA and Declination in degrees and minutes
+        /// and for the list of navigational stars SHA and Declination in degrees and minutes.
         /// </summary>
+        /// <param name="formData">The scenario form data.</param>
+        /// <param name="_httpRoutines">The HTTP routines service.</param>
         /// <returns>True if able to retrieve the almanac data from the web and everything on the page is still where expected!</returns>
-        internal static bool GetAlmanacData(ScenarioFormData formData)
+        internal static async Task<bool> GetAlmanacData(ScenarioFormData formData, IHttpRoutines _httpRoutines)
         {
-            string almanacData = DownloadAlmanac(formData);
-            if (almanacData == null) return false;
+            // The call to DownloadAlmanac is now awaited.
+            string almanacData = await DownloadAlmanac(formData, _httpRoutines);
 
-            if (!ExtractAriesGHA(almanacData)) return false;
+            if (almanacData == null)
+            {
+                return false;
+            }
 
-            if (!ExtractStarData(almanacData)) return false;
+            if (!ExtractAriesGHA(almanacData))
+            {
+                return false;
+            }
+
+            if (!ExtractStarData(almanacData))
+            {
+                return false;
+            }
 
             return true;
         }
@@ -64,21 +79,27 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// <summary>
         /// Download the almanac data for the three days centered on the selected scenario date
         /// </summary>
-        /// <returns>The webpage outerHTML containing the alamanac data</returns>
-        internal static string DownloadAlmanac(ScenarioFormData formData)
+        /// <returns>The webpage outerHTML containing the almanac data</returns>
+        internal static async Task<string> DownloadAlmanac(ScenarioFormData formData, IHttpRoutines httpRoutines)
         {
             DateTime startDate = new(formData.DatePickerValue.Year, formData.DatePickerValue.Month, formData.DatePickerValue.Day,
                 formData.TimePickerValue.Hour, formData.TimePickerValue.Minute, formData.TimePickerValue.Second, DateTimeKind.Local);
             startDate = startDate.AddDays(-1);
             string url = $"http://www.tecepe.com.br/scripts/AlmanacPagesISAPI.dll/pages?date={startDate.Month}%2F{startDate.Day}%2F{startDate.Year}";
 
-            string result = HttpRoutines.GetWebDoc(url).DocumentNode.OuterHtml;
-            if (result == null)
+            // Await the asynchronous method and handle the HtmlDocument result.
+            var htmlDoc = await httpRoutines.GetWebDocAsync(url);
+
+            if (htmlDoc == null)
             {
                 Log.Error($"Failed to download almanac data from URL: {url}");
+                return null;
             }
-            return result;
+
+            // Access OuterHtml only if the document is not null.
+            return htmlDoc.DocumentNode.OuterHtml;
         }
+
 
         /// <summary>
         /// Extract the Aries GHA degrees and minutes data values for each hour of the three days

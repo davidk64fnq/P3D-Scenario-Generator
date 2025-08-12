@@ -1,4 +1,5 @@
 ﻿using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Legacy;
 
 namespace P3D_Scenario_Generator.Runways
 {
@@ -11,9 +12,13 @@ namespace P3D_Scenario_Generator.Runways
     /// Initializes a new instance of the RunwayUiManager.
     /// </remarks>
     /// <param name="searcher">An instance of RunwaySearcher to get raw runway data from.</param>
-    public class RunwayUiManager(RunwaySearcher searcher, ILog log, ICacheManager cacheManager)
+    /// <param name="logger">An instance of an asynchronous logging service.</param>
+    /// <param name="cacheManager">An instance of a cache manager for serialization/deserialization.</param>
+    public class RunwayUiManager(RunwaySearcher searcher, ILogger logger, ICacheManager cacheManager)
     {
         private readonly RunwaySearcher _searcher = searcher ?? throw new ArgumentNullException(nameof(searcher));
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly ICacheManager _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
 
         public RunwayUILists UILists { get; } = new RunwayUILists();
 
@@ -34,9 +39,6 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         internal int CurrentLocationFavouriteIndex { get; set; }
 
-        private readonly ILog _log = log;
-        private readonly ICacheManager _cacheManager = cacheManager;
-
         #region Manage Location favourites region
 
         /// <summary>
@@ -55,7 +57,7 @@ namespace P3D_Scenario_Generator.Runways
             try
             {
                 // First, try to load from the local file using the asynchronous method.
-                _log.Info($"Attempting to load location favourites from local file: {_favouritesFilePath}");
+                await _logger.InfoAsync($"Attempting to load location favourites from local file: {_favouritesFilePath}");
                 var (success, data) = await _cacheManager.TryDeserializeFromFileAsync<List<LocationFavourite>>(_favouritesFilePath);
 
                 if (success)
@@ -72,7 +74,7 @@ namespace P3D_Scenario_Generator.Runways
                 if (LocationFavourites == null || LocationFavourites.Count == 0)
                 {
                     string warningMessage = "Local favourites file was empty or contained no valid data. Falling back to embedded resource.";
-                    _log.Warning(warningMessage);
+                    await _logger.WarningAsync(warningMessage);
                     progressReporter?.Report(warningMessage);
                     needsFallback = true;
                 }
@@ -81,7 +83,7 @@ namespace P3D_Scenario_Generator.Runways
             {
                 // Catch any other exceptions from the primary deserialize attempt.
                 string errorMessage = $"An error occurred while processing local favourites file: {ex.Message}";
-                _log.Error(errorMessage, ex);
+                await _logger.ErrorAsync(errorMessage, ex);
                 progressReporter?.Report($"ERROR: {errorMessage}");
                 needsFallback = true;
             }
@@ -96,7 +98,7 @@ namespace P3D_Scenario_Generator.Runways
                         using (resourceStream)
                         {
                             LocationFavourites = System.Text.Json.JsonSerializer.Deserialize<List<LocationFavourite>>(resourceStream);
-                            _log.Info("Successfully loaded location favourites from embedded resource.");
+                            await _logger.InfoAsync("Successfully loaded location favourites from embedded resource.");
                         }
                     }
                     else
@@ -108,7 +110,7 @@ namespace P3D_Scenario_Generator.Runways
                 catch (Exception ex)
                 {
                     string errorMessage = $"An unexpected error occurred during fallback to embedded resource: {ex.Message}";
-                    _log.Error(errorMessage, ex);
+                    await _logger.ErrorAsync(errorMessage, ex);
                     progressReporter?.Report($"ERROR: {errorMessage}");
                     LocationFavourites = [];
                     return false;
@@ -117,14 +119,14 @@ namespace P3D_Scenario_Generator.Runways
 
             if (LocationFavourites.Count > 0)
             {
-                _log.Info($"Successfully loaded {LocationFavourites.Count} location favourites.");
+                await _logger.InfoAsync($"Successfully loaded {LocationFavourites.Count} location favourites.");
                 progressReporter?.Report($"Location favourites loaded ({LocationFavourites.Count} entries).");
                 return true;
             }
             else
             {
                 string warningMessage = "All attempts to load a valid list of location favourites failed. The list will be empty.";
-                _log.Warning(warningMessage);
+                await _logger.WarningAsync(warningMessage);
                 progressReporter?.Report(warningMessage);
                 LocationFavourites = [new LocationFavourite() { Name = "Default" }];
                 CurrentLocationFavouriteIndex = 0;
@@ -137,12 +139,12 @@ namespace P3D_Scenario_Generator.Runways
         /// The save operation is skipped if the list is empty to prevent overwriting a valid file.
         /// </summary>
         /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
-        internal async Task SaveLocationFavourites(IProgress<string> progressReporter)
+        internal async Task SaveLocationFavouritesAsync(IProgress<string> progressReporter)
         {
             if (LocationFavourites == null || LocationFavourites.Count == 0)
             {
                 string warningMessage = "Location favourites list is empty. Save operation aborted to prevent data loss.";
-                _log.Warning(warningMessage);
+                await _logger.WarningAsync(warningMessage);
                 progressReporter?.Report(warningMessage);
                 return;
             }
@@ -152,18 +154,18 @@ namespace P3D_Scenario_Generator.Runways
 
                 if (success)
                 {
-                    _log.Info($"Successfully saved {LocationFavourites.Count} location favourites to '{_favouritesFilePath}'.");
+                    await _logger.InfoAsync($"Successfully saved {LocationFavourites.Count} location favourites to '{_favouritesFilePath}'.");
                     progressReporter?.Report($"Location favourites saved ({LocationFavourites.Count} entries).");
                 }
                 else
                 {
-                    _log.Error("Failed to save location favourites.");
+                    await _logger.ErrorAsync("Failed to save location favourites.");
                     progressReporter?.Report("ERROR: Failed to save location favourites. See log for details.");
                 }
             }
             catch (Exception ex)
             {
-                _log.Error($"Failed to save location favourites. Details: {ex.Message}", ex);
+                await _logger.ErrorAsync($"Failed to save location favourites. Details: {ex.Message}", ex);
                 progressReporter?.Report($"ERROR: Failed to save location favourites: {ex.Message}");
             }
         }
@@ -399,7 +401,7 @@ namespace P3D_Scenario_Generator.Runways
             return filters;
         }
 
-        #endregion  
+        #endregion
 
         /// <summary>
         /// Populates the UILists with data from the RunwaySearcher.

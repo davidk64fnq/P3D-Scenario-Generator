@@ -13,7 +13,7 @@ namespace P3D_Scenario_Generator.Runways
     /// formatting logic moved to a presentation layer.
     /// </remarks>
     /// <param name="data">The complete runway data object containing all runways and the KD-tree root.</param>
-    public class RunwaySearcher(RunwayData data, ILog log)
+    public class RunwaySearcher(RunwayData data, ILogger log)
     {
         // Holds the complete list of all runways loaded from the data source.
         // We ensure _allRunways is never null.
@@ -23,7 +23,7 @@ namespace P3D_Scenario_Generator.Runways
         private readonly KDNode _kdTreeRoot = data?.RunwayTreeRoot ?? new KDNode();
 
         // The ILog interface for logging errors and other messages.
-        private readonly ILog _log = log;
+        private readonly ILogger _log = log;
 
         // Using a thread-safe random number generator for robustness in a multi-threaded context.
         private static readonly Random _random = Random.Shared;
@@ -36,7 +36,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="targetLon">The longitude of the target point.</param>
         /// <param name="scenarioFormData">The DTO containing location filters.</param>
         /// <returns>The nearest runway that meets the filter criteria, or null if no match is found.</returns>
-        public RunwayParams FindNearestRunway(double targetLat, double targetLon, ScenarioFormData scenarioFormData)
+        public async Task<RunwayParams> FindNearestRunwayAsync(double targetLat, double targetLon, ScenarioFormData scenarioFormData)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace P3D_Scenario_Generator.Runways
             }
             catch (Exception ex)
             {
-                _log.Error($"An error occurred while finding the nearest runway to lat: {targetLat}, lon: {targetLon}", ex);
+                await _log.ErrorAsync($"An error occurred while finding the nearest runway to lat: {targetLat}, lon: {targetLon}", ex);
                 return null;
             }
         }
@@ -63,7 +63,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="maxDist">The maximum distance the runway can be from the target point.</param>
         /// <param name="scenarioFormData">The DTO containing location filters.</param>
         /// <returns>A runway that meets the distance and filter criteria, or null if no match is found.</returns>
-        public RunwayParams FindNearbyRunway(double targetLat, double targetLon, double minDist, double maxDist, ScenarioFormData scenarioFormData)
+        public async Task<RunwayParams> FindNearbyRunwayAsync(double targetLat, double targetLon, double minDist, double maxDist, ScenarioFormData scenarioFormData)
         {
             try
             {
@@ -82,7 +82,7 @@ namespace P3D_Scenario_Generator.Runways
             }
             catch (Exception ex)
             {
-                _log.Error($"An error occurred while finding a nearby runway to lat: {targetLat}, lon: {targetLon}", ex);
+                await _log.ErrorAsync($"An error occurred while finding a nearby runway to lat: {targetLat}, lon: {targetLon}", ex);
                 return null;
             }
         }
@@ -92,7 +92,7 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         /// <param name="scenarioFormData">The DTO containing location filters to apply.</param>
         /// <returns>A randomly selected RunwayParams object that meets the filter criteria, or null if no matching runways are found.</returns>
-        public RunwayParams GetFilteredRandomRunway(ScenarioFormData scenarioFormData)
+        public async Task<RunwayParams> GetFilteredRandomRunwayAsync(ScenarioFormData scenarioFormData)
         {
             try
             {
@@ -100,7 +100,7 @@ namespace P3D_Scenario_Generator.Runways
 
                 if (filteredRunways.Count == 0)
                 {
-                    _log.Info("No runways found that match the specified filters.");
+                    await _log.InfoAsync("No runways found that match the specified filters.");
                     return null;
                 }
 
@@ -109,7 +109,7 @@ namespace P3D_Scenario_Generator.Runways
             }
             catch (Exception ex)
             {
-                _log.Error($"An error occurred while getting a random filtered runway.", ex);
+                await _log.ErrorAsync($"An error occurred while getting a random filtered runway.", ex);
                 return null;
             }
         }
@@ -163,14 +163,14 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         /// <param name="index">The zero-based index of the runway to retrieve.</param>
         /// <returns>The RunwayParams object at the specified index, or null if the index is out of bounds.</returns>
-        public RunwayParams GetRunwayByIndex(int index)
+        public async Task<RunwayParams> GetRunwayByIndexAsync(int index)
         {
             if (index >= 0 && index < _allRunways.Count)
             {
                 return _allRunways[index];
             }
 
-            _log.Warning($"Attempted to access runway at index {index}, which is out of bounds (list size: {_allRunways.Count}).");
+            await _log.WarningAsync($"Attempted to access runway at index {index}, which is out of bounds (list size: {_allRunways.Count}).");
             return null;
         }
 
@@ -239,14 +239,14 @@ namespace P3D_Scenario_Generator.Runways
                                    scenarioFormData.LocationCountries.Contains(runway.Country));
 
             bool statesMatch = (scenarioFormData.LocationStates == null ||
-                                scenarioFormData.LocationStates.Count == 0 ||
-                                scenarioFormData.LocationStates.Contains("None") ||
-                                scenarioFormData.LocationStates.Contains(runway.State));
+                                 scenarioFormData.LocationStates.Count == 0 ||
+                                 scenarioFormData.LocationStates.Contains("None") ||
+                                 scenarioFormData.LocationStates.Contains(runway.State));
 
             bool citiesMatch = (scenarioFormData.LocationCities == null ||
-                                scenarioFormData.LocationCities.Count == 0 ||
-                                scenarioFormData.LocationCities.Contains("None") ||
-                                scenarioFormData.LocationCities.Contains(runway.City));
+                                 scenarioFormData.LocationCities.Count == 0 ||
+                                 scenarioFormData.LocationCities.Contains("None") ||
+                                 scenarioFormData.LocationCities.Contains(runway.City));
 
             return countriesMatch && statesMatch && citiesMatch;
         }

@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml; 
+﻿using OfficeOpenXml;
+using P3D_Scenario_Generator.Legacy;
 
 
 namespace P3D_Scenario_Generator.CelestialScenario

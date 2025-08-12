@@ -1,12 +1,18 @@
-﻿namespace P3D_Scenario_Generator
+﻿using P3D_Scenario_Generator.Interfaces;
+
+namespace P3D_Scenario_Generator
 {
     /// <summary>
     /// Provides static utility methods for managing a local file cache, primarily used for
     /// OpenStreetMap (OSM) tiles. This includes operations like retrieving tiles from cache
     /// or downloading them, checking for cached file existence, and managing cache usage statistics.
     /// </summary>
-    internal class OSMTileCache
+    internal class OSMTileCache(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines)
     {
+        private readonly ILogger _logger = logger;
+        private readonly IFileOps _fileOps = fileOps;
+        private readonly IHttpRoutines _httpRoutines = httpRoutines;
+
         /// <summary>
         /// Retrieves an OpenStreetMap (OSM) tile, either from a local cache or by downloading it,
         /// and saves it to a specified file path. It also manages a daily download count.
@@ -19,27 +25,30 @@
         /// OSM tile should be saved. Example: `formData.ScenarioImageFolder\\filename`.</param>
         /// <returns>Returns <see langword="true"/> if the tile was successfully retrieved (copied from cache or downloaded) and saved;
         /// otherwise, <see langword="false"/> if an error occurred during file operations or download.</returns>
-        static internal bool GetOrCopyOSMtile(string key, string url, string saveFile)
+        static internal async Task<bool> GetOrCopyOSMtile(string key, string url, string saveFile)
         {
             string cachePath = "";
             if (DoesKeyExist(key, ref cachePath))
             {
                 // Tile exists in cache, attempt to copy it to the saveFile location.
-                if (!FileOps.TryCopyFile(cachePath, saveFile, null, true))
+                if (!_fileOps.TryCopyFile(cachePath, saveFile, null, true))
                 {
+                    // Corrected to use the injected instance _fileOps
                     return false; // Copy failed
                 }
             }
             else
             {
                 // Tile does not exist in cache, attempt to download it.
-                if (HttpRoutines.DownloadBinaryFile(url, saveFile))
+                // Corrected to use the injected instance _httpRoutines and await the async method
+                if (await _httpRoutines.DownloadBinaryFileAsync(url, saveFile))
                 {
                     // Download successful, update daily cache total and copy to cache.
                     int curTotal = Convert.ToInt32(Properties.Settings.Default.TextBoxSettingsCacheDailyTotal);
                     Properties.Settings.Default.TextBoxSettingsCacheDailyTotal = (curTotal + 1).ToString();
                     Properties.Settings.Default.Save();
-                    if (!FileOps.TryCopyFile(saveFile, cachePath, null, true))
+                    // Corrected to use the injected instance _fileOps
+                    if (!_fileOps.TryCopyFile(saveFile, cachePath, null, true))
                     {
                         return false; // Copy to cache failed
                     }
@@ -51,18 +60,18 @@
             }
             return true; // Operation completed successfully
         }
-        
+
         /// <summary>
-         /// Determines if a specific cached OpenStreetMap (OSM) tile file, identified by a key, exists
-         /// within the application's dedicated cache directory structure. This method also ensures
-         /// that the necessary cache directories (application root and zoom-level subdirectory) are created if they do not exist.
-         /// </summary>
-         /// <param name="key">The unique identifier for the OSM tile. This key typically follows the format "zoom-xTileNo-yTileNo.png",
-         /// where the 'zoom' component is used to create a dedicated subdirectory within the cache.</param>
-         /// <param name="cachePath">A reference parameter. Upon return, this will contain the full,
-         /// calculated file path where the tile *would be* or *is* cached, regardless of whether it exists.</param>
-         /// <returns>Returns <see langword="true"/> if the tile file identified by the <paramref name="key"/> exists in the cache;
-         /// otherwise, <see langword="false"/>.</returns>
+        /// Determines if a specific cached OpenStreetMap (OSM) tile file, identified by a key, exists
+        /// within the application's dedicated cache directory structure. This method also ensures
+        /// that the necessary cache directories (application root and zoom-level subdirectory) are created if they do not exist.
+        /// </summary>
+        /// <param name="key">The unique identifier for the OSM tile. This key typically follows the format "zoom-xTileNo-yTileNo.png",
+        /// where the 'zoom' component is used to create a dedicated subdirectory within the cache.</param>
+        /// <param name="cachePath">A reference parameter. Upon return, this will contain the full,
+        /// calculated file path where the tile *would be* or *is* cached, regardless of whether it exists.</param>
+        /// <returns>Returns <see langword="true"/> if the tile file identified by the <paramref name="key"/> exists in the cache;
+        /// otherwise, <see langword="false"/>.</returns>
         static internal bool DoesKeyExist(string key, ref string cachePath)
         {
             string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

@@ -1,4 +1,6 @@
 ﻿using HtmlAgilityPack;
+using P3D_Scenario_Generator.Legacy;
+using P3D_Scenario_Generator.Services;
 using System.Web;
 using System.Windows.Forms;
 

@@ -1,4 +1,6 @@
 ﻿using CoordinateSharp;
+using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Legacy;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Runways;
 
@@ -10,8 +12,12 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// dynamic web content (HTML, JavaScript, CSS) for a celestial sextant display.
     /// It also handles the creation and backup of the simulator's stars.dat file,
     /// and determines the geographical parameters for scenario setup.
-    class CelestialNav 
+    class CelestialNav(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines)
     {
+        private readonly ILogger _logger = logger;
+        private readonly IFileOps _fileOps = fileOps;
+        private readonly IHttpRoutines _httpRoutines = httpRoutines;
+
         /// <summary>
         /// CelestialScenario scenario starts in mid air - this is the initial heading in degrees
         /// </summary>
@@ -55,14 +61,18 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// If all these steps are successful, it also updates the overview and location images.
         /// </summary>
         /// <returns>True if all celestial setup operations complete successfully; otherwise, false.</returns>
-        internal static bool SetCelestial(ScenarioFormData formData, RunwayManager runwayManager)
+        internal async Task<bool> SetCelestial(ScenarioFormData formData, RunwayManager runwayManager, IHttpRoutines _httpRoutines)
         {
-            formData.DestinationRunway = runwayManager.Searcher.GetFilteredRandomRunway(formData);
-            ScenarioLocationGenerator.SetMidairStartLocation(formData.CelestialMinDistance, formData.CelestialMaxDistance, formData.DestinationRunway, 
-                out midairStartHdg, out midairStartLat, out midairStartLon, out double randomRadiusNM);
+            // The GetFilteredRandomRunway method is now asynchronous.
+            // It must be awaited, and the calling method's signature must be updated accordingly.
+            formData.DestinationRunway = await runwayManager.Searcher.GetFilteredRandomRunwayAsync(formData);
+
+            ScenarioLocationGenerator.SetMidairStartLocation(formData.CelestialMinDistance, formData.CelestialMaxDistance, formData.DestinationRunway,
+                out double midairStartHdg, out double midairStartLat, out double midairStartLon, out double randomRadiusNM);
             SextantViewGenerator.SetCelestialMapEdges(midairStartLat, midairStartLon, randomRadiusNM);
 
-            if (!AlmanacDataSource.GetAlmanacData(formData))
+            // The call to GetAlmanacData must be awaited.
+            if (!await AlmanacDataSource.GetAlmanacData(formData, _httpRoutines))
             {
                 Log.Error("Failed to get almanac data during celestial setup.");
                 return false;
@@ -113,6 +123,8 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
             return true;
         }
+
+
 
         /// <summary>
         /// Creates and returns an enumerable collection of <see cref="Coordinate"/> objects

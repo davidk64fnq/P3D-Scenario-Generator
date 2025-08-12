@@ -2,17 +2,24 @@
 using P3D_Scenario_Generator.CircuitScenario;
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Legacy;
+using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.Runways;
+using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.SignWritingScenario;
+using P3D_Scenario_Generator.Utilities;
 using P3D_Scenario_Generator.WikipediaScenario;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Configuration;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace P3D_Scenario_Generator
 {
+    [SuppressMessage("Performance", "CA1859:Use concrete types when possible for better performance", Justification = "Interfaces are used for loose coupling and testability across the entire class.")]
+
     public partial class Form : System.Windows.Forms.Form
     {
         private readonly FormProgressReporter _progressReporter;
@@ -22,8 +29,13 @@ namespace P3D_Scenario_Generator
         private RunwayManager _runwayManager;
         private readonly IFileOps _fileOps;
         private readonly ICacheManager _cacheManager;
-        private readonly LogAsync _log;
+        private readonly Logger _log;
         private readonly Aircraft _aircraft;
+        private readonly PhotoTour _photoTour;
+        private readonly IPic2MapHtmlParser _pic2MapHtmlParser;
+        private readonly IHtmlParser _htmlParser;
+        private readonly IHttpRoutines _httpRoutines;
+        private readonly CelestialNav _celestialNav;
 
         public Form()
         {
@@ -32,9 +44,14 @@ namespace P3D_Scenario_Generator
             // Instantiate the dependencies once, at the form level.
             // Replace these with your actual implementations.
             _fileOps = new FileOpsAsync();
-            _log = new LogAsync();
-            _cacheManager = new CacheManagerAsync(_log);
+            _log = new Logger();
+            _cacheManager = new CacheManager(_log);
             _aircraft = new Aircraft(_log, _cacheManager, _fileOps);
+            _htmlParser = new HtmlParser(_log);
+            _httpRoutines = new HttpRoutines(_fileOps, _log);
+            _pic2MapHtmlParser = new Pic2MapHtmlParser(_log, _htmlParser, _httpRoutines);
+            _photoTour = new PhotoTour(_pic2MapHtmlParser, _log, _fileOps, _httpRoutines);
+            _celestialNav = new CelestialNav(_log, _fileOps, _httpRoutines);
 
             // Perform custom initialization tasks after the designer-generated components are set up.
             if (!PostInitializeComponent())
@@ -81,6 +98,11 @@ namespace P3D_Scenario_Generator
         /// </summary>
         private async Task InitializeRunwayDataAsync()
         {
+            // Create a CancellationTokenSource to manage the cancellation of the asynchronous operation.
+            // The 'using' statement ensures the source is properly disposed of when the method exits.
+            using CancellationTokenSource cts = new();
+            CancellationToken cancellationToken = cts.Token;
+
             //_log.Info("Form initialization started.");
             _progressReporter.Report("INFO: Initializing form...");
 
@@ -88,7 +110,7 @@ namespace P3D_Scenario_Generator
             {
                 // Await the asynchronous data loading. This happens on a background thread
                 // and releases the UI thread so the form can load.
-                RunwayUiManager uiManager = await GetRunwaysAsync(_progressReporter);
+                RunwayUiManager uiManager = await GetRunwaysAsync(_progressReporter, cancellationToken);
 
                 // Use an async lambda to allow awaiting within the UI thread invocation.
                 await this.Invoke(async () =>
@@ -330,17 +352,18 @@ namespace P3D_Scenario_Generator
         /// Asynchronously loads runway data using a background task.
         /// </summary>
         /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <param name="cancellationToken">A token to observe for cancellation requests during the operation.</param>
         /// <returns>
         /// The populated RunwayUiManager instance if the data was loaded successfully; otherwise, <see langword="null"/>.
         /// </returns>
-        private async Task<RunwayUiManager> GetRunwaysAsync(FormProgressReporter progressReporter)
+        private async Task<RunwayUiManager> GetRunwaysAsync(FormProgressReporter progressReporter, CancellationToken cancellationToken)
         {
             // Pass the form's dependencies to the RunwayLoader constructor.
             RunwayLoader loader = new(_fileOps, _cacheManager, _log);
 
             // Pass the loader to the RunwayManager constructor.
             _runwayManager = new(loader); // Assign to the form-level field.
-            bool success = await _runwayManager.InitializeAsync(progressReporter, _log, _cacheManager);
+            bool success = await _runwayManager.InitializeAsync(progressReporter, _log, _cacheManager, cancellationToken);
 
             // Return the UiManager if successful, otherwise null.
             return success ? _runwayManager.UiManager : null;
@@ -462,12 +485,13 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private void ButtonRandRunway_Click(object sender, EventArgs e)
+        private async void ButtonRandRunway_Click(object sender, EventArgs e)
         {
+            // The method is now async to allow for the use of the await keyword.
             ValidateAndPopulateLocationFilters();
 
-            // Call the new method on the RunwaySearcher instance to get a random, filtered runway.
-            RunwayParams randomRunway = _runwayManager.Searcher.GetFilteredRandomRunway(_formData);
+            // Await the asynchronous method to get the RunwayParams object.
+            RunwayParams randomRunway = await _runwayManager.Searcher.GetFilteredRandomRunwayAsync(_formData);
 
             // Clear the existing items in the ListBox before adding a new one.
             ListBoxGeneralRunwayResults.Items.Clear();
@@ -489,6 +513,7 @@ namespace P3D_Scenario_Generator
             }
         }
 
+
         #endregion
 
         #region Scenario selection
@@ -508,7 +533,8 @@ namespace P3D_Scenario_Generator
 
         private async void ButtonGenerateScenario_Click(object sender, EventArgs e)
         {
-            if (GetValidatedScenarioFormData())
+            // The GetValidatedScenarioFormData() method is now async and must be awaited.
+            if (await GetValidatedScenarioFormData())
             {
                 DisplayStartMessage();
                 CheckRunwaysUpToDate();
@@ -532,6 +558,7 @@ namespace P3D_Scenario_Generator
                 DisplayFinishMessage();
             }
         }
+
 
         /// <summary>
         /// Handles the <see cref="ComboBoxGeneralScenarioType"/> selection change event. Updates the selected scenario
@@ -591,7 +618,7 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Performs scenario-specific tasks based on the currently selected <see cref="ScenarioTypes"/>.
-        /// This method disables the form during execution, runs the scenario logic on a background thread
+        /// This method disables the form during execution, runs the scenario logic asynchronously
         /// to keep the UI responsive, and re-enables the form upon completion or error.
         /// It reports progress and handles exceptions.
         /// </summary>
@@ -602,64 +629,53 @@ namespace P3D_Scenario_Generator
         private async Task<bool> DoScenarioSpecificTasks()
         {
             Enabled = false;
-            bool backgroundOperationSuccess = true;
             try
             {
-                await Task.Run(() =>
+                ScenarioTypes currentScenarioType = _formData.ScenarioType;
+                switch (currentScenarioType)
                 {
-                    ScenarioTypes currentScenarioType = _formData.ScenarioType;
-                    switch (currentScenarioType)
-                    {
-                        case ScenarioTypes.Circuit:
-                            if (!MakeCircuit.SetCircuit(_formData, _runwayManager))
-                            {
-                                backgroundOperationSuccess = false;
-                                return;
-                            }
-                            break;
-                        case ScenarioTypes.PhotoTour:
-                            if (!PhotoTour.SetPhotoTour(_formData, _runwayManager, _progressReporter))
-                            {
-                                backgroundOperationSuccess = false;
-                                return;
-                            }
-                            break;
-                        case ScenarioTypes.SignWriting:
-                            if (!SignWriting.SetSignWriting(_formData, _runwayManager))
-                            {
-                                backgroundOperationSuccess = false;
-                                return;
-                            }
-                            break;
-                        case ScenarioTypes.Celestial:
-                            if (!CelestialNav.SetCelestial(_formData, _runwayManager))
-                            {
-                                backgroundOperationSuccess = false;
-                                return;
-                            }
-                            break;
-                        case ScenarioTypes.WikiList:
-                            //    Wikipedia.SetWikiTour(wikiSelectedIndex, wikiRouteItems, wikiStartingItem,
-                            //                          wikiFinishingItem, wikiDistanceText, _formData, _runwayManager);
-                            break;
-                        default:
-                            break;
-                    }
-                });
-
-                // --- Check Background Task Success Here ---
-                // After Task.Run completes, check if any background operation failed.
-                if (!backgroundOperationSuccess)
-                {
-                    // Report a more specific error if needed for background task failure
-                    _progressReporter.Report("A specific scenario task failed to complete successfully.");
-                    return false; // Return false from DoScenarioSpecificTasks
+                    case ScenarioTypes.Circuit:
+                        // This method is now async, so we must await its result.
+                        if (!await MakeCircuit.SetCircuit(_formData, _runwayManager))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ScenarioTypes.PhotoTour:
+                        // This method is now async, so we must await its result.
+                        if (!await _photoTour.SetPhotoTour(_formData, _runwayManager, _progressReporter))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ScenarioTypes.SignWriting:
+                        // This method is now async, so we must await its result.
+                        if (!await SignWriting.SetSignWriting(_formData, _runwayManager))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ScenarioTypes.Celestial:
+                        // This method is now async, so we must await its result.
+                        if (!await _celestialNav.SetCelestial(_formData, _runwayManager, _httpRoutines))
+                        {
+                            return false;
+                        }
+                        break;
+                    case ScenarioTypes.WikiList:
+                        // SetWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance,
+                        //      ScenarioFormData formData, RunwayManager runwayManager)
+                        await Wikipedia.SetWikiTour(0, null, null, null, null, _formData, _runwayManager);
+                        break;
+                    default:
+                        break;
                 }
+
                 return true; // Indicate overall success
             }
             catch (Exception ex)
             {
-                Log.Error($"An unhandled error occurred during scenario specific task execution: {ex.Message}");
+                await _log.ErrorAsync($"An unhandled error occurred during scenario specific task execution: {ex.Message}", ex);
                 _progressReporter.Report("An unexpected error occurred. See logs.");
                 return false;
             }
@@ -926,8 +942,8 @@ namespace P3D_Scenario_Generator
                 // Refresh TextBoxGeneralLocationFilters field on form
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
 
-                // Also save the favourites after the change
-                await _runwayManager.UiManager.SaveLocationFavourites(null);
+                // The SaveLocationFavourites method was refactored. It is now called SaveLocationFavouritesAsync and must be awaited.
+                await _runwayManager.UiManager.SaveLocationFavouritesAsync(null);
             }
             else if (e.KeyCode == Keys.Delete)
             {
@@ -955,6 +971,7 @@ namespace P3D_Scenario_Generator
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
             }
         }
+
 
         private void TextBoxGeneralLocationFilters_MouseEnter(object sender, EventArgs e)
         {
@@ -1008,16 +1025,21 @@ namespace P3D_Scenario_Generator
                 _runwayManager.UiManager.AddFilterValueToLocationFavourite(locationType, selectedItem);
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
                 ((ComboBox)sender).Text = _runwayManager.UiManager.GetLocationFavouriteDisplayFilterValue(locationType);
-                await _runwayManager.UiManager.SaveLocationFavourites(null);
+                // The SaveLocationFavourites method was refactored and is now async.
+                // It's called SaveLocationFavouritesAsync and must be awaited.
+                await _runwayManager.UiManager.SaveLocationFavouritesAsync(null);
             }
             else if (e.KeyCode == Keys.Delete)
             {
                 _runwayManager.UiManager.DeleteFilterValueFromLocationFavourite(locationType, selectedItem);
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
                 ((ComboBox)sender).Text = _runwayManager.UiManager.GetLocationFavouriteDisplayFilterValue(locationType);
-                await _runwayManager.UiManager.SaveLocationFavourites(null);
+                // The SaveLocationFavourites method was refactored and is now async.
+                // It's called SaveLocationFavouritesAsync and must be awaited.
+                await _runwayManager.UiManager.SaveLocationFavouritesAsync(null);
             }
         }
+
 
         #endregion
 
@@ -1822,9 +1844,9 @@ namespace P3D_Scenario_Generator
             ValidateMapWindowSettingsGroup((Control)sender);
         }
 
-        private void TextBoxSettingsOSMServerAPIkey_Leave(object sender, EventArgs e)
+        private async void TextBoxSettingsOSMServerAPIkey_Leave(object sender, EventArgs e)
         {
-            ValidateOSMServerAPIkeyField();
+            await ValidateOSMServerAPIkeyField();
         }
 
         private void TextBoxSettingsP3DprogramInstall_MouseEnter(object sender, EventArgs e)
@@ -2362,13 +2384,21 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        /// <summary>
+        /// Handles the form closing event, saving all relevant data asynchronously.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event data.</param>
         private async void Form_FormClosing(object sender, FormClosingEventArgs e)
         {
-            await _runwayManager.UiManager.SaveLocationFavourites(_progressReporter);
+            // The method name was changed during refactoring.
+            // The correct call is to SaveLocationFavouritesAsync.
+            await _runwayManager.UiManager.SaveLocationFavouritesAsync(_progressReporter);
 
             await _aircraft.SaveAircraftVariantsAsync(_progressReporter);
             SaveUserSettings(TabPageSettings.Controls);
         }
+
 
 
         /// <summary>
@@ -2478,7 +2508,7 @@ namespace P3D_Scenario_Generator
         /// scenario title validation depends on the Settings tab's scenario folder base path).
         /// </summary>
         /// <returns>True if all user input across all relevant tabs is valid; otherwise, false.</returns>
-        private bool GetValidatedScenarioFormData()
+        private async Task<bool> GetValidatedScenarioFormData()
         {
             errorProvider1.Clear();
             bool allValid = true;
@@ -2489,36 +2519,37 @@ namespace P3D_Scenario_Generator
             }
 
             // 1. Settings Tab Data - Validate first as other tabs might depend on these settings.
-            if (!PopulateAndValidateSettingsTabData())
+            // The method is now asynchronous and must be awaited.
+            if (!await PopulateAndValidateSettingsTabData())
             {
                 allValid = false;
             }
 
-            // 2. General Tab Data 
+            // 2. General Tab Data
             if (!PopulateAndValidateGeneralTabData(_aircraft.GetCurrentVariant()))
             {
                 allValid = false;
             }
 
-            // 3. Circuit Tab Data 
+            // 3. Circuit Tab Data
             if (!PopulateAndValidateCircuitTabData())
             {
                 allValid = false;
             }
 
-            // 4. PhotoTour Tab Data 
+            // 4. PhotoTour Tab Data
             if (!PopulateAndValidatePhotoTourTabData())
             {
                 allValid = false;
             }
 
-            // 5. SignWriting Tab Data 
+            // 5. SignWriting Tab Data
             if (!PopulateAndValidateSignWritingTabData())
             {
                 allValid = false;
             }
 
-            // Derived fields 
+            // Derived fields
             if (allValid)
             {
                 // Scenario folder path based on the scenario folder base path (settings tab) and scenario title (general tab)
@@ -2591,13 +2622,15 @@ namespace P3D_Scenario_Generator
         /// Populates and validates data from the Settings tab.
         /// </summary>
         /// <returns>True if all Settings tab data is valid; otherwise, false.</returns>
-        private bool PopulateAndValidateSettingsTabData()
+        private async Task<bool> PopulateAndValidateSettingsTabData()
         {
             bool allValid = true;
 
             // Validate and populate CacheServerAPIkey
-            allValid &= ValidateOSMServerAPIkeyField();
+            // Await the asynchronous method call
+            allValid &= await ValidateOSMServerAPIkeyField();
 
+            // The following methods are synchronous and do not need to be awaited.
             // Validate and populate P3DInstallFolder
             allValid &= ValidateP3DInstallFolder();
 
@@ -2618,7 +2651,7 @@ namespace P3D_Scenario_Generator
         /// Sets an error message via <see cref="ErrorProvider"/> and reports progress if validation fails.
         /// </summary>
         /// <returns><see langword="true"/> if the API key is valid; otherwise, <see langword="false"/>.</returns>
-        private bool ValidateOSMServerAPIkeyField()
+        private async Task<bool> ValidateOSMServerAPIkeyField()
         {
             bool isValid = true;
             string apiKey = TextBoxSettingsOSMServerAPIkey.Text.Trim();
@@ -2631,8 +2664,8 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                // Call the HttpRoutines.ValidateMapTileServerKey method for actual server validation
-                if (!HttpRoutines.ValidateMapTileServerKey(apiKey))
+                // Call the async method using the injected instance and await the result
+                if (!await _httpRoutines.ValidateMapTileServerKeyAsync(apiKey))
                 {
                     // Validation failed. Construct a user-friendly message based on the failure.
                     // The HttpRoutines.ValidateMapTileServerKey method now logs the specific error.
@@ -2657,6 +2690,7 @@ namespace P3D_Scenario_Generator
 
             return isValid;
         }
+
 
         /// <summary>
         /// Validates the P3D Program Install path and populates the <see cref="ScenarioFormData.P3DProgramInstall"/> property.

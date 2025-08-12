@@ -1,5 +1,6 @@
 ﻿using ImageMagick;
 using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Legacy;
 
 namespace P3D_Scenario_Generator.MapTiles
 {

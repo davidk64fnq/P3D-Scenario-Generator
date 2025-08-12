@@ -1,5 +1,6 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Legacy;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Runways;
 using System.Reflection;
@@ -23,11 +24,13 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// <summary>
         /// Called from Form1.cs to do the scenario specific work in creating a signwriting scenario
         /// </summary>
-        static internal bool SetSignWriting(ScenarioFormData formData, RunwayManager runwayManager)
+        static internal async Task<bool> SetSignWriting(ScenarioFormData formData, RunwayManager runwayManager)
         {
             // Scenario starts and finishes at user selected airport
-            formData.StartRunway = runwayManager.Searcher.GetRunwayByIndex(formData.RunwayIndex);
-            formData.DestinationRunway = runwayManager.Searcher.GetRunwayByIndex(formData.RunwayIndex);
+            // The GetRunwayByIndex method is now asynchronous and must be awaited.
+            // The calling method's signature must be updated to async and return Task.
+            formData.StartRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
+            formData.DestinationRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
 
             // Set the letter segment paths for the sign writing letters
             SignCharacterMap.InitLetterPaths();
@@ -36,25 +39,26 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             gates = SignGateGenerator.SetSignGatesMessage(formData);
             if (gates.Count == 0)
             {
-                Log.Error("Failed to generate the sign writing scenario.");
+                await Log.ErrorAsync("Failed to generate the sign writing scenario.");
                 return false;
             }
 
             bool drawRoute = false;
             if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(formData), drawRoute, formData))
             {
-                Log.Error("Failed to create overview image during sign writing setup.");
+                await Log.ErrorAsync("Failed to create overview image during sign writing setup.");
                 return false;
             }
 
             if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(formData), formData))
             {
-                Log.Error("Failed to create location image during sign writing setup.");
+                await Log.ErrorAsync("Failed to create location image during sign writing setup.");
                 return false;
             }
 
             return true;
         }
+
 
         /// <summary>
         /// Creates and returns an enumerable collection of <see cref="Coordinate"/> objects
