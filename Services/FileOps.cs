@@ -1,5 +1,5 @@
-﻿using P3D_Scenario_Generator.Interfaces;
-using P3D_Scenario_Generator.Legacy;
+﻿using Microsoft.VisualBasic.Logging;
+using P3D_Scenario_Generator.Interfaces;
 using System.Reflection;
 using System.Text;
 using System.Xml.Serialization;
@@ -189,6 +189,31 @@ namespace P3D_Scenario_Generator.Services
             catch (Exception ex)
             {
                 string errorMessage = $"FileOpsAsync.TryCopyStreamToFileAsync: An unexpected error occurred while copying stream to file: '{destinationFullPath}'. Details: {ex.Message}";
+                Log.Error(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to copy the contents of a source stream to a destination stream asynchronously.
+        /// Displays an error message and logs if the operation fails.
+        /// </summary>
+        /// <param name="sourceStream">The stream to copy from.</param>
+        /// <param name="destinationStream">The stream to copy to.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns>A task that represents the asynchronous copy operation. The result is <see langword="true"/> if the stream content was copied successfully, <see langword="false"/> if an error occurred.</returns>
+        public async Task<bool> TryCopyStreamToStreamAsync(Stream sourceStream, Stream destinationStream, IProgress<string> progressReporter)
+        {
+            try
+            {
+                await sourceStream.CopyToAsync(destinationStream);
+                Log.Info($"FileOpsAsync.TryCopyStreamToStreamAsync: Successfully copied stream contents.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"FileOpsAsync.TryCopyStreamToStreamAsync: An unexpected error occurred while copying stream content. Details: {ex.Message}";
                 Log.Error(errorMessage, ex);
                 progressReporter?.Report(errorMessage);
                 return false;

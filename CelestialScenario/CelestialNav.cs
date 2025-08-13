@@ -1,8 +1,9 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.Interfaces;
-using P3D_Scenario_Generator.Legacy;
 using P3D_Scenario_Generator.MapTiles;
+using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
+using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
@@ -12,11 +13,13 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// dynamic web content (HTML, JavaScript, CSS) for a celestial sextant display.
     /// It also handles the creation and backup of the simulator's stars.dat file,
     /// and determines the geographical parameters for scenario setup.
-    class CelestialNav(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines)
+    class CelestialNav(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines, IProgress<string> progressReporter, AlmanacData almanacData)
     {
-        private readonly ILogger _logger = logger;
-        private readonly IFileOps _fileOps = fileOps;
-        private readonly IHttpRoutines _httpRoutines = httpRoutines;
+        // Guard clauses to validate the constructor parameters.
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly AlmanacDataSource _almanacDataSource = new(logger, progressReporter, httpRoutines, almanacData);
 
         /// <summary>
         /// CelestialScenario scenario starts in mid air - this is the initial heading in degrees
@@ -61,7 +64,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// If all these steps are successful, it also updates the overview and location images.
         /// </summary>
         /// <returns>True if all celestial setup operations complete successfully; otherwise, false.</returns>
-        internal async Task<bool> SetCelestial(ScenarioFormData formData, RunwayManager runwayManager, IHttpRoutines _httpRoutines)
+        internal async Task<bool> SetCelestial(ScenarioFormData formData, RunwayManager runwayManager)
         {
             // The GetFilteredRandomRunway method is now asynchronous.
             // It must be awaited, and the calling method's signature must be updated accordingly.
@@ -72,59 +75,67 @@ namespace P3D_Scenario_Generator.CelestialScenario
             SextantViewGenerator.SetCelestialMapEdges(midairStartLat, midairStartLon, randomRadiusNM);
 
             // The call to GetAlmanacData must be awaited.
-            if (!await AlmanacDataSource.GetAlmanacData(formData, _httpRoutines))
+            if (!await _almanacDataSource.GetAlmanacDataAsync(formData))
             {
-                Log.Error("Failed to get almanac data during celestial setup.");
+                await _logger.ErrorAsync("Failed to get almanac data during celestial setup.");
                 return false;
             }
 
             if (!StarDataManager.InitStars())
             {
-                Log.Error("Failed to initialize stars data during celestial setup.");
+                await _logger.ErrorAsync("Failed to initialize stars data during celestial setup.");
                 return false;
             }
 
             if (!SimulatorFileGenerator.CreateStarsDat(formData))
             {
-                Log.Error("Failed to create stars.dat file during celestial setup.");
+                await _logger.ErrorAsync("Failed to create stars.dat file during celestial setup.");
                 return false;
             }
 
             if (!SextantViewGenerator.SetCelestialSextantHTML(formData))
             {
-                Log.Error("Failed to set celestial sextant HTML during celestial setup.");
+                await _logger.ErrorAsync("Failed to set celestial sextant HTML during celestial setup.");
                 return false;
             }
 
             if (!SextantViewGenerator.SetCelestialSextantJS(formData))
             {
-                Log.Error("Failed to set celestial sextant JavaScript during celestial setup.");
+                await _logger.ErrorAsync("Failed to set celestial sextant JavaScript during celestial setup.");
                 return false;
             }
 
             if (!SextantViewGenerator.TrySetCelestialSextantCSS(formData))
             {
-                Log.Error("Failed to set celestial sextant CSS during celestial setup.");
+                await _logger.ErrorAsync("Failed to set celestial sextant CSS during celestial setup.");
                 return false;
             }
 
             bool drawRoute = false;
             if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(formData), drawRoute, formData))
             {
-                Log.Error("Failed to create overview image during celestial setup.");
+                await _logger.ErrorAsync("Failed to create overview image during celestial setup.");
                 return false;
             }
 
             if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(formData), formData))
             {
-                Log.Error("Failed to create location image during celestial setup.");
+                await _logger.ErrorAsync("Failed to create location image during celestial setup.");
+                return false;
+            }
+
+            Overview overview = SetOverviewStruct(formData);
+            ScenarioHTML scenarioHTML = new(_logger, _fileOps, _progressReporter);
+            if (!await scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
+            {
+                string message = "Failed to generate HTML files during Celestial Navigation scenario setup.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
                 return false;
             }
 
             return true;
         }
-
-
 
         /// <summary>
         /// Creates and returns an enumerable collection of <see cref="Coordinate"/> objects
@@ -168,6 +179,32 @@ namespace P3D_Scenario_Generator.CelestialScenario
         static internal double GetCelestialDistance(ScenarioFormData formData)
         {
             return MathRoutines.CalcDistance(midairStartLat, midairStartLon, formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon);
+        }
+
+        public static Overview SetOverviewStruct(ScenarioFormData formData)
+        {
+            string briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
+            briefing += $"as you test your navigation skills flying a {formData.AircraftTitle}.";
+            briefing += $" The scenario finishes at {formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) in ";
+            briefing += $"{formData.DestinationRunway.City}, {formData.DestinationRunway.Country}.";
+
+            // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
+            double duration = GetCelestialDistance(formData) / formData.AircraftCruiseSpeed * 60;
+
+            Overview overview = new()
+            {
+                Title = "Celestial Navigation",
+                Heading1 = "Celestial Navigation",
+                Location = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}",
+                Difficulty = "Advanced",
+                Duration = $"{string.Format("{0:0}", duration)} minutes",
+                Aircraft = $"{formData.AircraftTitle}",
+                Briefing = briefing,
+                Objective = "Navigate using celestial navigation before landing at the destination airport (any runway)",
+                Tips = "Never go to bed mad. Stay up and fight."
+            };
+
+            return overview;
         }
     }
 }

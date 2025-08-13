@@ -1,8 +1,9 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Legacy;
 using P3D_Scenario_Generator.MapTiles;
+using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
+using P3D_Scenario_Generator.Services;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -55,6 +56,9 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 await Log.ErrorAsync("Failed to create location image during sign writing setup.");
                 return false;
             }
+
+            ScenarioHTML.Overview overview = SetOverviewStruct(formData);
+            ScenarioHTML.GenerateHTMLfiles(formData, overview);
 
             return true;
         }
@@ -356,6 +360,34 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             string saveLocation = $"{formData.ScenarioImageFolder}\\styleSignWriting.css";
             File.WriteAllText(saveLocation, signWritingCSS);
             stream.Dispose();
+        }
+
+        public static ScenarioHTML.Overview SetOverviewStruct(ScenarioFormData formData)
+        {
+            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
+            briefing += " as you take on the role of sign writer in the sky! ";
+            briefing += "You'll take off, fly through a series of gates to spell out a message ";
+            briefing += "and land again when you've finished. The scenario begins on runway ";
+            briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
+            briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
+
+            // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
+            double duration = GetSignWritingDistance(formData) / formData.AircraftCruiseSpeed * 60;
+
+            ScenarioHTML.Overview overview = new()
+            {
+                Title = "Sign Writing",
+                Heading1 = "Sign Writing",
+                Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}",
+                Difficulty = "Advanced",
+                Duration = $"{string.Format("{0:0}", duration)} minutes",
+                Aircraft = $"{formData.AircraftTitle}",
+                Briefing = briefing,
+                Objective = "Take off and fly through a series of gates before landing on the same runway.",
+                Tips = "When life gives you lemons, squirt someone in the eye."
+            };
+
+            return overview;
         }
     }
 }

@@ -1,72 +1,113 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
+using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
-using P3D_Scenario_Generator.SignWritingScenario;
 
 namespace P3D_Scenario_Generator.CircuitScenario
 {
     /// <summary>
     /// Manages the definition, calculation, and representation of a flight circuit scenario.
+    /// </summary>
+    /// <remarks>
     /// This includes setting up the start and destination runways, calculating the precise
     /// positions and properties of all circuit gates, and coordinating the generation
     /// of visual aids like overview and location maps for the circuit.
-    /// </summary>
-    internal class MakeCircuit
+    /// </remarks>
+    /// <param name="logger">The logger for writing log messages.</param>
+    /// <param name="fileOps">The file operations service for reading and writing files.</param>
+    /// <param name="progressReporter">The progress reporter for UI updates.</param>
+    internal class MakeCircuit(ILogger logger, IFileOps fileOps, IProgress<string> progressReporter)
     {
+        // Guard clauses to validate the constructor parameters.
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+
         /// <summary>
         /// Start and finish airport (the same) plus the 8 gates making up the circuit.
         /// </summary>
-        static internal List<Gate> gates = [];
+        /// <remarks>
+        /// This field is kept private to enforce encapsulation. Access is provided via the GetGate method.
+        /// </remarks>
+        private readonly List<Gate> _gates = [];
 
         /// <summary>
-        /// Sets start/destination airports, calculates gate positions, creates overview and location images
+        /// Sets start/destination airports, calculates gate positions, and creates overview and location images.
         /// </summary>
-        static internal async Task<bool> SetCircuit(ScenarioFormData formData, RunwayManager runwayManager)
+        /// <param name="formData">The scenario form data containing user selections and paths.</param>
+        /// <param name="runwayManager">The runway manager used to retrieve runway data.</param>
+        /// <returns><see langword="true"/> if the circuit was successfully set up; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> SetCircuitAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            // The GetRunwayByIndex method is now asynchronous.
-            // It must be awaited, and the calling method's signature must be updated accordingly.
+            // Guard clauses to validate method parameters.
+            ArgumentNullException.ThrowIfNull(formData);
+            ArgumentNullException.ThrowIfNull(runwayManager);
+
             formData.StartRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
             formData.DestinationRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
 
-            if (!CircuitGates.SetCircuitGates(gates, formData))
+            string message = "Setting circuit gates.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
+
+            if (!CircuitGates.SetCircuitGates(_gates, formData))
             {
-                Log.Error("Failed to set gates during circuit setup.");
+                message = "Failed to set gates during circuit setup.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
                 return false;
             }
 
-            SetCircuitAirport(gates, formData);
+            SetCircuitAirport(formData);
 
+            message = "Creating overview image.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
             bool drawRoute = true;
             if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute, formData))
             {
-                Log.Error("Failed to create overview image during circuit setup.");
+                message = "Failed to create overview image during circuit setup.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
                 return false;
             }
 
+            message = "Creating location image.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
             if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(formData), formData))
             {
-                Log.Error("Failed to create location image during circuit setup.");
+                message = "Failed to create location image during circuit setup.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
                 return false;
             }
 
-            ScenarioHTML.Overview overview = SetOverviewStruct(formData);
-            ScenarioHTML.GenerateHTMLfiles(formData, overview);
+            Overview overview = SetOverviewStruct(formData);
+            ScenarioHTML scenarioHTML = new(_logger, _fileOps, _progressReporter);
+            if (!await scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
+            {
+                message = "Failed to generate HTML files during circuit setup.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
+                return false;
+            }
 
             return true;
         }
 
-
         /// <summary>
-        /// Insert circuit airport at start and end of gates list
+        /// Inserts the circuit airport at the start and end of the private gates list.
         /// </summary>
-        /// <param name="gates">The list inserted into</param>
-        static internal void SetCircuitAirport(List<Gate> gates, ScenarioFormData formData)
+        /// <param name="formData">The scenario form data containing runway details.</param>
+        private void SetCircuitAirport(ScenarioFormData formData)
         {
             Gate circuitAirport = new(formData.StartRunway.ThresholdStartLat, formData.StartRunway.ThresholdStartLon, 0, 0, 0, 0, 0);
-            gates.Insert(0, circuitAirport);
-            gates.Add(circuitAirport);
+            _gates.Insert(0, circuitAirport);
+            _gates.Add(circuitAirport);
         }
 
         /// <summary>
@@ -75,11 +116,11 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
         /// the the circuit gate's latitude/longitude and start/destination runway's latitude/longitude.</returns>
-        public static IEnumerable<Coordinate> SetOverviewCoords()
+        public IEnumerable<Coordinate> SetOverviewCoords()
         {
-            // The Select method iterates over each 'gate' in the 'sourceList'
+            // The Select method iterates over each 'gate' in the '_gates' list
             // and projects it into a new 'Coordinate' object using the gate's lat and lon.
-            return gates.Select(gate => new Coordinate(gate.lat, gate.lon));
+            return _gates.Select(gate => new Coordinate(gate.lat, gate.lon));
         }
 
         /// <summary>
@@ -88,7 +129,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
         /// only the start/destination runway's latitude and longitude.</returns>
-        static internal IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
+        private static IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
         {
             IEnumerable<Coordinate> coordinates =
             [
@@ -98,16 +139,21 @@ namespace P3D_Scenario_Generator.CircuitScenario
         }
 
         /// <summary>
-        /// Provides access to gates list in Circuit class
+        /// Provides access to the gate at a specific index in the circuit.
         /// </summary>
-        /// <param name="index">The index of gate instance to be retrieved indexed from zero</param>
-        /// <returns>The gate instance</returns>
-        static internal Gate GetGate(int index)
+        /// <param name="index">The zero-based index of the gate instance to be retrieved.</param>
+        /// <returns>The gate instance at the specified index.</returns>
+        public Gate GetGate(int index)
         {
-            return gates[index];
+            return _gates[index];
         }
 
-        public static ScenarioHTML.Overview SetOverviewStruct(ScenarioFormData formData)
+        /// <summary>
+        /// Creates and populates an <see cref="Overview"/> struct with scenario-specific data.
+        /// </summary>
+        /// <param name="formData">The scenario form data used to populate the overview.</param>
+        /// <returns>A populated <see cref="Overview"/> struct.</returns>
+        private static Overview SetOverviewStruct(ScenarioFormData formData)
         {
             // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
             double duration = ((formData.CircuitFinalLeg + formData.StartRunway.Len / Constants.FeetInNauticalMile + formData.CircuitUpwindLeg)
@@ -120,7 +166,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
             briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
             briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
 
-            ScenarioHTML.Overview overview = new()
+            Overview overview = new()
             {
                 Title = "Circuit Practise",
                 Heading1 = "Circuit Practise",

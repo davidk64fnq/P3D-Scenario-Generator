@@ -1,6 +1,7 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
+using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
 
@@ -109,7 +110,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 }
             }
 
-            ScenarioHTML.Overview overview = PhotoTourUtilities.SetOverviewStruct(formData, PhotoLocations);
+            Overview overview = PhotoTourUtilities.SetOverviewStruct(formData, PhotoLocations);
             ScenarioHTML.GenerateHTMLfiles(formData, overview);
 
             return true;

@@ -2,6 +2,7 @@
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Legacy;
 using P3D_Scenario_Generator.MapTiles;
+using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.SignWritingScenario;

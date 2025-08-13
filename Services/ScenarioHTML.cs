@@ -1,25 +1,23 @@
-﻿using P3D_Scenario_Generator.CelestialScenario;
-using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.SignWritingScenario;
-using P3D_Scenario_Generator.WikipediaScenario;
+﻿using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Models;
 
 namespace P3D_Scenario_Generator.Services
 {
-    public class ScenarioHTML
+    /// <summary>
+    /// Handles the generation and copying of HTML and associated resource files for a scenario.
+    /// </summary>
+    /// <param name="logger">The logger for writing log messages.</param>
+    /// <param name="fileOps">The file operations service for reading and writing files.</param>
+    /// <param name="progressReporter">The progress reporter for UI updates.</param>
+    public class ScenarioHTML(ILogger logger, IFileOps fileOps, IProgress<string> progressReporter)
     {
-        public struct Overview
-        {
-            public string Title { get; set; }
-            public string Heading1 { get; set; }
-            public string Location { get; set; }
-            public string Difficulty { get; set; }
-            public string Duration { get; set; }
-            public string Aircraft { get; set; }
-            public string Briefing { get; set; }
-            public string Objective { get; set; }
-            public string Tips { get; set; }
-        }
-       
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+
+        /// <summary>
+        /// A struct to hold data for the mission brief HTML template.
+        /// </summary>
         internal struct MissionBrief
         {
             internal string title;
@@ -33,255 +31,274 @@ namespace P3D_Scenario_Generator.Services
             internal string h2Tips;
         }
 
-        internal static Overview overview;
-
-        static internal void GenerateHTMLfiles(ScenarioFormData formData, Overview overview)
-        {
-            TrySetOverviewHTML(overview, out string overviewHTML, null);
-            File.WriteAllText($"{formData.ScenarioFolder}\\Overview.htm", overviewHTML);
-
-            MissionBrief missionBrief = SetMissionBriefStruct(overview, formData);
-            string missionBriefHTML = SetMissionBriefHTML(missionBrief);
-            File.WriteAllText($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.htm", missionBriefHTML);
-
-            CopyFiles(formData);
-        }
-
-        static private Overview SetOverviewStruct(ScenarioFormData formData)
-        {
-            Overview overview = new();
-
-            switch (formData.ScenarioType)
-            {
-                case ScenarioTypes.SignWriting:
-                    overview.Title = "Sign Writing";
-                    overview.Heading1 = "Sign Writing";
-                    overview.Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}";
-                    overview.Difficulty = "Advanced";
-                    // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    double duration = SignWriting.GetSignWritingDistance(formData) / formData.AircraftCruiseSpeed * 60;
-                    overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{formData.AircraftTitle}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
-                    overview.Briefing += " as you take on the role of sign writer in the sky! ";
-                    overview.Briefing += "You'll take off, fly through a series of gates to spell out a message ";
-                    overview.Briefing += "and land again when you've finished. The scenario begins on runway ";
-                    overview.Briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
-                    overview.Briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
-                    overview.Objective = "Take off and fly through a series of gates before landing on the same runway.";
-                    overview.Tips = "When life gives you lemons, squirt someone in the eye.";
-                    break;
-                case ScenarioTypes.Celestial:
-                    overview.Title = "Celestial Navigation";
-                    overview.Heading1 = "Celestial Navigation";
-                    overview.Location = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}";
-                    overview.Difficulty = "Advanced";
-                    // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = CelestialNav.GetCelestialDistance(formData) / formData.AircraftCruiseSpeed * 60;
-                    overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{formData.AircraftTitle}";
-                    overview.Briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
-                    overview.Briefing += $"as you test your navigation skills flying a {formData.AircraftTitle}.";
-                    overview.Briefing += $" The scenario finishes at {formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) in ";
-                    overview.Briefing += $"{formData.DestinationRunway.City}, {formData.DestinationRunway.Country}.";
-                    overview.Objective = "Navigate using celestial navigation before landing at the destination airport (any runway)";
-                    overview.Tips = "Never go to bed mad. Stay up and fight.";
-                    break;
-                case ScenarioTypes.WikiList:
-                    overview.Title = "Wikipedia List Tour";
-                    overview.Heading1 = "Wikipedia List Tour";
-                    overview.Location = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}";
-                    overview.Difficulty = "Intermediate";
-                    // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-                    duration = Wikipedia.WikiDistance / formData.AircraftCruiseSpeed * 60;
-                    overview.Duration = $"{string.Format("{0:0}", duration)} minutes";
-                    overview.Aircraft = $"{formData.AircraftTitle}";
-                    overview.Briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
-                    overview.Briefing += " as you navigate from one Wikipedia list location to the next using IFR (I follow roads) ";
-                    overview.Briefing += "You'll take off, fly to a series of list locations, ";
-                    overview.Briefing += "and land at another airport. The scenario begins on runway ";
-                    overview.Briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
-                    overview.Briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
-                    overview.Objective = "Take off and visit a series of Wikipedia list locations before landing ";
-                    overview.Objective += $"at {formData.DestinationRunway.IcaoName} (any runway)";
-                    overview.Tips = "The early bird gets the worm, but the second mouse gets the cheese.";
-                    break;
-                default:
-                    break;
-            }
-
-            return overview;
-        }
-
-        static private MissionBrief SetMissionBriefStruct(Overview overview, ScenarioFormData formData)
-        {
-            MissionBrief missionBrief = new();
-
-            switch (formData.ScenarioType)
-            {
-                case ScenarioTypes.Circuit:
-                case ScenarioTypes.PhotoTour:
-                case ScenarioTypes.SignWriting:
-                case ScenarioTypes.Celestial:
-                case ScenarioTypes.WikiList:
-                    missionBrief.title = overview.Title;
-                    missionBrief.h1 = overview.Title;
-                    missionBrief.h2Location = overview.Location;
-                    missionBrief.h2Difficulty = overview.Difficulty;
-                    missionBrief.h2Duration = overview.Duration;
-                    missionBrief.h2Aircraft = overview.Aircraft;
-                    missionBrief.pBriefing = overview.Briefing;
-                    missionBrief.liObjective = overview.Objective;
-                    missionBrief.h2Tips = overview.Tips;
-                    break;
-                default:
-                    break;
-            }
-
-            return missionBrief;
-        }
-        
         /// <summary>
-        /// Attempts to load an HTML template from an embedded resource, populate it with
-        /// data from an <see cref="Overview"/> object, and return the final HTML string.
+        /// Generates all necessary HTML files and copies supporting assets for a scenario.
         /// </summary>
-        /// <param name="overview">The object containing the data to populate the HTML template.</param>
-        /// <param name="overviewHTML">When this method returns, contains the fully populated HTML string if successful; otherwise, null.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <returns>True if the HTML was successfully generated; otherwise, false.</returns>
-        static internal bool TrySetOverviewHTML(Overview overview, out string overviewHTML, IProgress<string> progressReporter = null)
+        /// <param name="formData">The scenario form data, which includes paths and titles.</param>
+        /// <param name="overview">The scenario overview data used to populate the HTML templates.</param>
+        /// <returns><see langword="true"/> if all files were generated and copied successfully; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> GenerateHTMLfilesAsync(ScenarioFormData formData, Overview overview)
+        {
+            ArgumentNullException.ThrowIfNull(formData);
+            ArgumentNullException.ThrowIfNull(overview);
+
+            // Generate Overview HTML
+            string overviewHtml = await GenerateOverviewHtmlAsync(overview);
+            if (!await _fileOps.TryWriteAllTextAsync($"{formData.ScenarioFolder}\\Overview.htm", overviewHtml, _progressReporter))
+            {
+                string message = $"Failed to create Overview HTML file at {formData.ScenarioFolder}\\Overview.htm";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
+                return false;
+            }
+            await _logger.InfoAsync($"Overview HTML file created successfully at {formData.ScenarioFolder}\\Overview.htm");
+            _progressReporter.Report("INFO: Overview HTML file created.");
+
+            // Generate Mission Brief HTML
+            string missionBriefHtml = await GenerateMissionBriefHtmlAsync(overview);
+            if (!await _fileOps.TryWriteAllTextAsync($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.htm", missionBriefHtml, _progressReporter))
+            {
+                string message = $"Failed to create Mission Brief HTML file at {formData.ScenarioFolder}\\{formData.ScenarioTitle}.htm";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
+                return false;
+            }
+            await _logger.InfoAsync($"Mission Brief HTML file created successfully at {formData.ScenarioFolder}\\{formData.ScenarioTitle}.htm");
+            _progressReporter.Report("INFO: Mission Brief HTML file created.");
+
+            // Copy supporting files
+            if (!await CopyFilesAsync(formData))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Generates the HTML string for the scenario overview page.
+        /// </summary>
+        /// <param name="overview">The overview data to use for populating the template.</param>
+        /// <returns>A task that returns the populated HTML string, or an empty string on failure.</returns>
+        private async Task<string> GenerateOverviewHtmlAsync(Overview overview)
         {
             string resourceName = "HTML.OverviewSource.htm";
+            string message = "Loading and populating overview HTML template.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
 
-            Log.Info("Starting HTML template processing for overview.");
-
-            // Use the new FileOps method to safely get the template content
-            if (!FileOps.TryReadAllTextFromResource(resourceName, progressReporter, out overviewHTML))
+            var (success, overviewHtml) = await _fileOps.TryReadAllTextFromResourceAsync(resourceName, _progressReporter);
+            if (!success)
             {
-                Log.Error($"Failed to get HTML template from resource '{resourceName}'. HTML generation failed.");
-                return false;
+                message = $"Failed to get HTML template from resource '{resourceName}'. HTML generation failed.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
+                return string.Empty;
             }
 
-            try
-            {
-                // Perform all string replacements
-                overviewHTML = overviewHTML.Replace("overviewParams.title", overview.Title ?? "");
-                overviewHTML = overviewHTML.Replace("overviewParams.h1", overview.Heading1 ?? "");
-                overviewHTML = overviewHTML.Replace("overviewParams.h2Location", overview.Location ?? "");
-                overviewHTML = overviewHTML.Replace("overviewParams.pDifficulty", overview.Difficulty ?? "");
-                overviewHTML = overviewHTML.Replace("overviewParams.pDuration", overview.Duration ?? "");
-                overviewHTML = overviewHTML.Replace("overviewParams.h2Aircraft", overview.Aircraft ?? "");
-                overviewHTML = overviewHTML.Replace("overviewParams.pBriefing", overview.Briefing ?? "");
-                overviewHTML = overviewHTML.Replace("overviewParams.liObjective", overview.Objective ?? "");
-                overviewHTML = overviewHTML.Replace("overviewParams.liTips", overview.Tips ?? "");
+            overviewHtml = overviewHtml.Replace("overviewParams.title", overview.Title ?? "");
+            overviewHtml = overviewHtml.Replace("overviewParams.h1", overview.Heading1 ?? "");
+            overviewHtml = overviewHtml.Replace("overviewParams.h2Location", overview.Location ?? "");
+            overviewHtml = overviewHtml.Replace("overviewParams.pDifficulty", overview.Difficulty ?? "");
+            overviewHtml = overviewHtml.Replace("overviewParams.pDuration", overview.Duration ?? "");
+            overviewHtml = overviewHtml.Replace("overviewParams.h2Aircraft", overview.Aircraft ?? "");
+            overviewHtml = overviewHtml.Replace("overviewParams.pBriefing", overview.Briefing ?? "");
+            overviewHtml = overviewHtml.Replace("overviewParams.liObjective", overview.Objective ?? "");
+            overviewHtml = overviewHtml.Replace("overviewParams.liTips", overview.Tips ?? "");
 
-                Log.Info("Successfully populated overview HTML template.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"An unexpected error occurred during HTML string replacement. Details: {ex.Message}", ex);
-                progressReporter?.Report("ERROR: Failed to populate overview HTML.");
-                return false;
-            }
+            await _logger.InfoAsync("Successfully populated overview HTML template.");
+            _progressReporter.Report("INFO: Overview HTML populated.");
+            return overviewHtml;
         }
 
-        static private string SetMissionBriefHTML(MissionBrief missionBrief)
+        /// <summary>
+        /// Generates the HTML string for the mission brief page.
+        /// </summary>
+        /// <param name="overview">The overview data used to generate the mission brief.</param>
+        /// <returns>A task that returns the populated HTML string, or an empty string on failure.</returns>
+        private async Task<string> GenerateMissionBriefHtmlAsync(Overview overview)
         {
-            string missionBriefHTML;
+            string resourceName = "HTML.MissionBriefSource.htm";
+            string message = "Loading and populating mission brief HTML template.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
 
-            FileOps.TryGetResourceStream($"HTML.MissionBriefSource.htm", null, out Stream stream);
-            StreamReader reader = new(stream);
-            missionBriefHTML = reader.ReadToEnd();
-            stream.Dispose();
-            missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.title", $"{missionBrief.title}");
-            missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.h1", $"{missionBrief.h1}");
-            missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.h2Location", $"{missionBrief.h2Location}");
-            missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.h2Difficulty", $"{missionBrief.h2Difficulty}");
-            missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.h2Duration", $"{missionBrief.h2Duration}");
-            missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.h2Aircraft", $"{missionBrief.h2Aircraft}");
-            missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.pBriefing", $"{missionBrief.pBriefing}");
-            missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.liObjective", $"{missionBrief.liObjective}");
-            missionBriefHTML = missionBriefHTML.Replace("missionBriefParams.h2Tips", $"{missionBrief.h2Tips}");
+            var (success, missionBriefHtml) = await _fileOps.TryReadAllTextFromResourceAsync(resourceName, _progressReporter);
+            if (!success)
+            {
+                message = $"Failed to get HTML template from resource '{resourceName}'. HTML generation failed.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
+                return string.Empty;
+            }
 
-            return missionBriefHTML;
+            MissionBrief missionBrief = SetMissionBriefStruct(overview);
+
+            missionBriefHtml = missionBriefHtml.Replace("missionBriefParams.title", missionBrief.title);
+            missionBriefHtml = missionBriefHtml.Replace("missionBriefParams.h1", missionBrief.h1);
+            missionBriefHtml = missionBriefHtml.Replace("missionBriefParams.h2Location", missionBrief.h2Location);
+            missionBriefHtml = missionBriefHtml.Replace("missionBriefParams.h2Difficulty", missionBrief.h2Difficulty);
+            missionBriefHtml = missionBriefHtml.Replace("missionBriefParams.h2Duration", missionBrief.h2Duration);
+            missionBriefHtml = missionBriefHtml.Replace("missionBriefParams.h2Aircraft", missionBrief.h2Aircraft);
+            missionBriefHtml = missionBriefHtml.Replace("missionBriefParams.pBriefing", missionBrief.pBriefing);
+            missionBriefHtml = missionBriefHtml.Replace("missionBriefParams.liObjective", missionBrief.liObjective);
+            missionBriefHtml = missionBriefHtml.Replace("missionBriefParams.h2Tips", missionBrief.h2Tips);
+
+            await _logger.InfoAsync("Successfully populated mission brief HTML template.");
+            _progressReporter.Report("INFO: Mission brief HTML populated.");
+            return missionBriefHtml;
         }
 
-        static private void CopyFiles(ScenarioFormData formData)
+        /// <summary>
+        /// Creates a <see cref="MissionBrief"/> struct from an <see cref="Overview"/> object.
+        /// </summary>
+        /// <param name="overview">The overview data to convert.</param>
+        /// <returns>A new <see cref="MissionBrief"/> struct.</returns>
+        private static MissionBrief SetMissionBriefStruct(Overview overview)
         {
-            // Copy selected aircraft thumbnail imageURL from P3D instal
+            return new MissionBrief()
+            {
+                title = overview.Title,
+                h1 = overview.Title,
+                h2Location = overview.Location,
+                h2Difficulty = overview.Difficulty,
+                h2Duration = overview.Duration,
+                h2Aircraft = overview.Aircraft,
+                pBriefing = overview.Briefing,
+                liObjective = overview.Objective,
+                h2Tips = overview.Tips
+            };
+        }
+
+        /// <summary>
+        /// Copies all necessary supporting files (images, styles, sounds) for the scenario.
+        /// </summary>
+        /// <param name="formData">The scenario form data containing file paths.</param>
+        /// <returns><see langword="true"/> if all files were copied successfully; otherwise, <see langword="false"/>.</returns>
+        private async Task<bool> CopyFilesAsync(ScenarioFormData formData)
+        {
+            string message = "Starting to copy supporting scenario files.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
+
+            // Copy selected aircraft thumbnail image, or default if not provided
             string aircraftImageSource = formData.AircraftImagePath;
             string aircraftImageDest = $"{formData.ScenarioImageFolder}\\Overview_01.jpg";
-            if (File.Exists(aircraftImageSource))
+            bool success;
+            Stream resourceStream;
+
+            if (_fileOps.FileExists(aircraftImageSource))
             {
-                File.Copy(aircraftImageSource, aircraftImageDest, true);
-            }
-            else
-            {
-                FileOps.TryGetResourceStream($"Images.thumbnail.jpg", null, out Stream thumbnailStream);
-                using (FileStream outputFileStream = new(aircraftImageDest, FileMode.Create))
+                if (!await _fileOps.TryCopyFileAsync(aircraftImageSource, aircraftImageDest, _progressReporter, true))
                 {
-                    thumbnailStream.CopyTo(outputFileStream);
+                    message = $"Failed to copy aircraft image from {aircraftImageSource} to {aircraftImageDest}.";
+                    await _logger.ErrorAsync(message);
+                    _progressReporter.Report($"ERROR: {message}");
+                    return false;
                 }
-                thumbnailStream.Dispose();
-            }
-
-            // Copy style files
-            FileOps.TryGetResourceStream($"CSS.style_kneeboard.css", null, out Stream stream); 
-            using (FileStream outputFileStream = new($"{formData.ScenarioFolder}\\style_kneeboard.css", FileMode.Create))
-            {
-                stream.CopyTo(outputFileStream);
-            }
-            stream.Dispose();
-
-            FileOps.TryGetResourceStream($"CSS.style_load_flight.css", null, out stream);
-            using (FileStream outputFileStream = new($"{formData.ScenarioFolder}\\style_load_flight.css", FileMode.Create))
-            {
-                stream.CopyTo(outputFileStream);
-            }
-            stream.Dispose();
-
-            // Copy sound files
-            if (!Directory.Exists($"{formData.ScenarioFolder}\\sound"))
-            {
-                Directory.CreateDirectory($"{formData.ScenarioFolder}\\sound");
-            }
-            FileOps.TryGetResourceStream($"Sounds.ThruHoop.wav", null, out stream);
-            using (FileStream outputFileStream = new($"{formData.ScenarioFolder}\\sound\\ThruHoop.wav", FileMode.Create))
-            {
-                stream.CopyTo(outputFileStream);
-            }
-            stream.Dispose();
-
-            // Copy aircraft imageURL used in moving maps
-            FileOps.TryGetResourceStream($"Images.aircraft.png", null, out stream);
-            using (FileStream outputFileStream = new($"{formData.ScenarioImageFolder}\\aircraft.png", FileMode.Create))
-            {
-                stream.CopyTo(outputFileStream);
-            }
-            stream.Dispose();
-
-            // Copy header banner imageURL
-            FileOps.TryGetResourceStream($"Images.header.png", null, out stream);
-            using (FileStream outputFileStream = new($"{formData.ScenarioImageFolder}\\header.png", FileMode.Create))
-            {
-                stream.CopyTo(outputFileStream);
-            }
-            stream.Dispose();
-        }
-
-        static internal int GetDuration()
-        {
-            if (overview.Duration != null)
-            {
-                string[] words = overview.Duration.Split(" ");
-                return Convert.ToInt32(words[0]);
+                await _logger.InfoAsync($"Successfully copied aircraft image from {aircraftImageSource} to {aircraftImageDest}.");
+                _progressReporter.Report("INFO: Aircraft image copied.");
             }
             else
             {
-                return 0;
+                (success, resourceStream) = await _fileOps.TryGetResourceStreamAsync("Images.thumbnail.jpg", _progressReporter);
+                if (success)
+                {
+                    using (resourceStream)
+                    using (FileStream outputFileStream = new(aircraftImageDest, FileMode.Create))
+                    {
+                        if (!await _fileOps.TryCopyStreamToStreamAsync(resourceStream, outputFileStream, _progressReporter))
+                        {
+                            message = $"Failed to copy default aircraft image from resource stream to {aircraftImageDest}.";
+                            await _logger.ErrorAsync(message);
+                            _progressReporter.Report($"ERROR: {message}");
+                            return false;
+                        }
+                        await _logger.InfoAsync($"Successfully copied default aircraft image from resource stream to {aircraftImageDest}.");
+                        _progressReporter.Report("INFO: Default aircraft image copied.");
+                    }
+                }
+                else
+                {
+                    message = "Failed to get default aircraft image from resources.";
+                    await _logger.ErrorAsync(message);
+                    _progressReporter.Report($"ERROR: {message}");
+                    return false;
+                }
             }
+
+            // Create sound directory if it doesn't exist
+            string soundDirectoryPath = $"{formData.ScenarioFolder}\\sound";
+            if (!Directory.Exists(soundDirectoryPath))
+            {
+                Directory.CreateDirectory(soundDirectoryPath);
+            }
+
+            // Copy style files and other images
+            if (!await CopyResourceFileAsync("CSS.style_kneeboard.css", $"{formData.ScenarioFolder}\\style_kneeboard.css") ||
+                !await CopyResourceFileAsync("CSS.style_load_flight.css", $"{formData.ScenarioFolder}\\style_load_flight.css") ||
+                !await CopyResourceFileAsync("Sounds.ThruHoop.wav", $"{soundDirectoryPath}\\ThruHoop.wav") ||
+                !await CopyResourceFileAsync("Images.aircraft.png", $"{formData.ScenarioImageFolder}\\aircraft.png") ||
+                !await CopyResourceFileAsync("Images.header.png", $"{formData.ScenarioImageFolder}\\header.png"))
+            {
+                return false;
+            }
+
+            message = "All files copied successfully.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
+            return true;
         }
 
+        /// <summary>
+        /// A helper method to copy a single file from an embedded resource to a destination path.
+        /// </summary>
+        /// <param name="resourceName">The name of the embedded resource.</param>
+        /// <param name="destinationPath">The full path to the destination file.</param>
+        /// <returns><see langword="true"/> if the file was copied successfully; otherwise, <see langword="false"/>.</returns>
+        private async Task<bool> CopyResourceFileAsync(string resourceName, string destinationPath)
+        {
+            var (success, resourceStream) = await _fileOps.TryGetResourceStreamAsync(resourceName, _progressReporter);
+            if (!success)
+            {
+                string errorMessage = $"Failed to get resource stream for '{resourceName}'.";
+                await _logger.ErrorAsync(errorMessage);
+                _progressReporter.Report($"ERROR: {errorMessage}");
+                return false;
+            }
+
+            using (resourceStream)
+            using (FileStream outputFileStream = new(destinationPath, FileMode.Create))
+            {
+                if (!await _fileOps.TryCopyStreamToStreamAsync(resourceStream, outputFileStream, _progressReporter))
+                {
+                    string errorMessage = $"Failed to copy resource '{resourceName}' to '{destinationPath}'.";
+                    await _logger.ErrorAsync(errorMessage);
+                    _progressReporter.Report($"ERROR: {errorMessage}");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Extracts the numeric duration from the overview duration string.
+        /// </summary>
+        /// <param name="overview">The overview data containing the duration string.</param>
+        /// <returns>The duration as an integer, or 0 if parsing fails.</returns>
+        internal static int GetDuration(Overview overview)
+        {
+            if (overview?.Duration != null)
+            {
+                string[] words = overview.Duration.Split(' ');
+                if (words.Length > 0 && int.TryParse(words[0], out int duration))
+                {
+                    return duration;
+                }
+            }
+
+            return 0;
+        }
     }
 }

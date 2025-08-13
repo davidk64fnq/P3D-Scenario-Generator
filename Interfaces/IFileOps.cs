@@ -65,6 +65,16 @@
         Task<bool> TryCopyStreamToFileAsync(Stream sourceStream, string destinationFullPath, IProgress<string> progressReporter);
 
         /// <summary>
+        /// Attempts to copy the contents of a source stream to a destination stream asynchronously.
+        /// Displays an error message and logs if the operation fails.
+        /// </summary>
+        /// <param name="sourceStream">The stream to copy from.</param>
+        /// <param name="destinationStream">The stream to copy to.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns>A task that represents the asynchronous copy operation. The result is <see langword="true"/> if the stream content was copied successfully, <see langword="false"/> if an error occurred.</returns>
+        Task<bool> TryCopyStreamToStreamAsync(Stream sourceStream, Stream destinationStream, IProgress<string> progressReporter);
+
+        /// <summary>
         /// Attempts to write all text to a file asynchronously.
         /// </summary>
         /// <param name="fullPath">The full path to the file to write to.</param>

@@ -1,4 +1,4 @@
-﻿namespace P3D_Scenario_Generator.SignWritingScenario
+﻿namespace P3D_Scenario_Generator.Models
 {
     /// <summary>
     /// Used to store information needed for displaying a gate in a scenario

@@ -1,6 +1,7 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Runways;
+using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.WikipediaScenario
 {
@@ -247,6 +248,9 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             Common.SetLocationImage(formData);
             WikiLegMapEdges = [];
             Common.SetAllLegRouteImages(0, WikiTour.Count - 2, formData);
+
+            ScenarioHTML.Overview overview = SetOverviewStruct(formData);
+            ScenarioHTML.GenerateHTMLfiles(formData, overview);
         }
 
 
@@ -308,6 +312,36 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 zoom += 1; // to stop ide warning of unused zoom parameter
                            //        tiles.Add(MapTileCalculator.GetOSMtile(WikiTour[itemNo].longitude, WikiTour[itemNo].latitude, zoom));
             }
+        }
+
+        public static ScenarioHTML.Overview SetOverviewStruct(ScenarioFormData formData)
+        {
+            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
+            briefing += " as you navigate from one Wikipedia list location to the next using IFR (I follow roads) ";
+            briefing += "You'll take off, fly to a series of list locations, ";
+            briefing += "and land at another airport. The scenario begins on runway ";
+            briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
+            briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
+
+            string objective = "Take off and visit a series of Wikipedia list locations before landing at ";
+            objective += $"at {formData.DestinationRunway.IcaoName} (any runway)";
+
+            // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
+            double duration = Wikipedia.WikiDistance / formData.AircraftCruiseSpeed * 60;
+
+            ScenarioHTML.Overview overview = new()
+            {
+                Title = "Wikipedia List Tour",
+                Heading1 = "Wikipedia List Tour",
+                Location = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}",
+                Difficulty = "Intermediate",
+                Duration = $"{string.Format("{0:0}", duration)} minutes",
+                Aircraft = $"{formData.AircraftTitle}",
+                Briefing = briefing,
+                Objective = objective
+            };
+
+            return overview;
         }
 
         #endregion

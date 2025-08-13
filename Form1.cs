@@ -2,7 +2,6 @@
 using P3D_Scenario_Generator.CircuitScenario;
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Interfaces;
-using P3D_Scenario_Generator.Legacy;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.Runways;
@@ -27,37 +26,37 @@ namespace P3D_Scenario_Generator
         private bool _isFormLoaded = false;
         private readonly List<string> allRunwayStrings = [];
         private RunwayManager _runwayManager;
-        private readonly IFileOps _fileOps;
-        private readonly ICacheManager _cacheManager;
-        private readonly Logger _log;
+
+        // Services dependencies
         private readonly Aircraft _aircraft;
-        private readonly PhotoTour _photoTour;
-        private readonly IHtmlParser _htmlParser;
+        private readonly ICacheManager _cacheManager;
+        private readonly IFileOps _fileOps;
         private readonly IHttpRoutines _httpRoutines;
-        private readonly CelestialNav _celestialNav;
+        private readonly Logger _logger;
         private readonly IOsmTileCache _osmTileCache;
+
+        // Scenario-specific dependencies
+        private readonly MakeCircuit _makeCircuit;
+        private readonly PhotoTour _photoTour;
+        private readonly CelestialNav _celestialNav;
+
+        // Utilities dependencies
+        private readonly IHtmlParser _htmlParser;
 
         public Form()
         {
             InitializeComponent();
 
-            // Instantiate the dependencies once, at the form level.
-            // Replace these with your actual implementations.
             _fileOps = new Services.FileOps();
-            _log = new Logger();
-            _cacheManager = new CacheManager(_log);
-            _aircraft = new Aircraft(_log, _cacheManager, _fileOps);
-            _htmlParser = new HtmlParser(_log);
-            _httpRoutines = new HttpRoutines(_fileOps, _log);
-            _photoTour = new PhotoTour(_log, _fileOps, _httpRoutines);
-            _celestialNav = new CelestialNav(_log, _fileOps, _httpRoutines);
+            _logger = new Logger();
+            _cacheManager = new CacheManager(_logger);
+            _aircraft = new Aircraft(_logger, _cacheManager, _fileOps);
+            _htmlParser = new HtmlParser(_logger);
+            _httpRoutines = new HttpRoutines(_fileOps, _logger);
+            _photoTour = new PhotoTour(_logger, _fileOps, _httpRoutines);
+            _celestialNav = new CelestialNav(_logger, _fileOps, _httpRoutines);
             _osmTileCache = new OSMTileCache(_fileOps, _httpRoutines, _progressReporter);
-
-            // Perform custom initialization tasks after the designer-generated components are set up.
-            if (!PostInitializeComponent())
-            {
-                return;
-            }
+            _makeCircuit = new MakeCircuit(_logger, _fileOps, _progressReporter);
 
             // If the associated control has an error, cancel the display of the standard ToolTip.
             toolTip1.Popup += ToolTip1_Popup;
@@ -83,14 +82,21 @@ namespace P3D_Scenario_Generator
         /// </remarks>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">An <see cref="EventArgs"/> object that contains the event data.</param>
-        private void Form_Load(object sender, EventArgs e)
+        private async void Form_Load(object sender, EventArgs e)
         {
             Enabled = true;
+
+            // Perform custom initialization tasks after the designer-generated components are set up.
+            var success = await PostInitializeComponentAsync();
+            if (!success)
+            {
+                return;
+            }
 
             // Start the asynchronous loading process without blocking the UI thread.
             // The continuation logic is moved to a new method.
             // We use Task.Run to ensure the heavy lifting happens on a background thread.
-            Task.Run(InitializeRunwayDataAsync);
+            await Task.Run(InitializeRunwayDataAsync);
         }
 
         /// <summary>
@@ -213,13 +219,13 @@ namespace P3D_Scenario_Generator
         /// This method applies layout constants and derived calculations to various controls
         /// within the form's TabControl, TableLayoutPanels, and GroupBoxes.
         /// </summary>
-        private bool PostInitializeComponent()
+        private async Task<bool> PostInitializeComponentAsync()
         {
             // Find the single TabControl on the form
             TabControl mainTabControl = Controls.OfType<TabControl>().FirstOrDefault();
             if (mainTabControl == null)
             {
-                Log.Error("PostInitializeComponent: No TabControl found on the form.");
+                await _logger.ErrorAsync("PostInitializeComponent: No TabControl found on the form.");
                 return false;
             }
 
@@ -230,7 +236,7 @@ namespace P3D_Scenario_Generator
                 TableLayoutPanel parentTableLayoutPanel = tabPage.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
                 if (parentTableLayoutPanel == null)
                 {
-                    Log.Error($"PostInitializeComponent: No parent TableLayoutPanel found on TabPage: {tabPage.Name}");
+                    await _logger.ErrorAsync($"PostInitializeComponent: No parent TableLayoutPanel found on TabPage: {tabPage.Name}");
                     return false;
                 }
                 parentTableLayoutPanel.Margin = Constants.ParentTableLayoutMargin;
@@ -262,13 +268,13 @@ namespace P3D_Scenario_Generator
                         TableLayoutPanel leafTableLayoutPanel = groupBox.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
                         if (leafTableLayoutPanel == null)
                         {
-                            Log.Error($"PostInitializeComponent: No leaf TableLayoutPanel found in GroupBox: {groupBox.Name}");
+                            await _logger.ErrorAsync($"PostInitializeComponent: No leaf TableLayoutPanel found in GroupBox: {groupBox.Name}");
                             return false;
                         }
                         int numberOfLeafRows = leafTableLayoutPanel.RowCount;
                         if (numberOfLeafRows == 0)
                         {
-                            Log.Error($"PostInitializeComponent: Leaf TableLayoutPanel '{leafTableLayoutPanel.Name}' in GroupBox '{groupBox.Name}' has 0 rows.");
+                            await _logger.ErrorAsync($"PostInitializeComponent: Leaf TableLayoutPanel '{leafTableLayoutPanel.Name}' in GroupBox '{groupBox.Name}' has 0 rows.");
                             return false;
                         }
 
@@ -359,11 +365,11 @@ namespace P3D_Scenario_Generator
         private async Task<RunwayUiManager> GetRunwaysAsync(FormProgressReporter progressReporter, CancellationToken cancellationToken)
         {
             // Pass the form's dependencies to the RunwayLoader constructor.
-            RunwayLoader loader = new(_fileOps, _cacheManager, _log);
+            RunwayLoader loader = new(_fileOps, _cacheManager, _logger);
 
             // Pass the loader to the RunwayManager constructor.
             _runwayManager = new(loader); // Assign to the form-level field.
-            bool success = await _runwayManager.InitializeAsync(progressReporter, _log, _cacheManager, cancellationToken);
+            bool success = await _runwayManager.InitializeAsync(progressReporter, _logger, _cacheManager, cancellationToken);
 
             // Return the UiManager if successful, otherwise null.
             return success ? _runwayManager.UiManager : null;
@@ -384,7 +390,7 @@ namespace P3D_Scenario_Generator
         /// If a warning is displayed, the last modified date of runways.cache is updated to the current time. This action prevents the warning from
         /// being shown repeatedly on subsequent program runs until the user has recreated the runways data.
         /// </remarks>
-        internal void CheckRunwaysUpToDate()
+        internal async void CheckRunwaysUpToDate()
         {
             string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
             string dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
@@ -397,15 +403,15 @@ namespace P3D_Scenario_Generator
             try
             {
                 // Get the last modified dates for all relevant files, handling non-existence with null.
-                DateTime? cacheLastModified = Legacy.FileOps.GetFileLastWriteTime(cacheFilePath);
-                DateTime? xmlLastModified = Legacy.FileOps.GetFileLastWriteTime(xmlFilePath);
-                DateTime? sceneryLastModified = Legacy.FileOps.GetFileLastWriteTime(sceneryCFGfilePath);
+                DateTime? cacheLastModified = _fileOps.GetFileLastWriteTime(cacheFilePath);
+                DateTime? xmlLastModified = _fileOps.GetFileLastWriteTime(xmlFilePath);
+                DateTime? sceneryLastModified = _fileOps.GetFileLastWriteTime(sceneryCFGfilePath);
 
                 if (!sceneryLastModified.HasValue)
                 {
                     string sceneryCfgMissingMessage = $"The scenery.cfg file is not in folder \"{sceneryCFGdirectory}\"." +
                                                       " The program uses scenery.cfg's last modified date to check whether the runways data is up-to-date.";
-                    Log.Warning(sceneryCfgMissingMessage);
+                    await _logger.WarningAsync(sceneryCfgMissingMessage);
                     _progressReporter?.Report($"WARNING: {sceneryCfgMissingMessage.Replace(Environment.NewLine, " ")}");
                     return;
                 }
@@ -420,7 +426,7 @@ namespace P3D_Scenario_Generator
                     string runwaysDataOutOfDateMessage = $"The scenery.cfg file has been modified more recently than the cached runways data and/or the source runways.xml file." +
                                                          " Consider recreating the runways data to include recently added airports." +
                                                          " The program will now refresh the last modified date on the cache to prevent repeated warnings.";
-                    Log.Warning(runwaysDataOutOfDateMessage);
+                    await _logger.WarningAsync(runwaysDataOutOfDateMessage);
                     _progressReporter?.Report($"WARNING: {runwaysDataOutOfDateMessage.Replace(Environment.NewLine, " ")}");
 
                     DateTime currentTime = DateTime.Now;
@@ -428,30 +434,30 @@ namespace P3D_Scenario_Generator
                     {
                         File.SetLastWriteTime(cacheFilePath, currentTime);
                     }
-                    Log.Info($"Refreshed last modified date of '{cacheFilePath}' to {currentTime}.");
+                    await _logger.InfoAsync($"Refreshed last modified date of '{cacheFilePath}' to {currentTime}.");
                 }
                 else
                 {
-                    Log.Info("Runways data is up-to-date with scenery.cfg.");
+                    await _logger.InfoAsync("Runways data is up-to-date with scenery.cfg.");
                     _progressReporter?.Report("INFO: Runways data is up-to-date.");
                 }
             }
             catch (UnauthorizedAccessException ex)
             {
                 string errorMessage = $"Error: Access to a file is denied while checking runway files. Please check permissions. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
+                await _logger.ErrorAsync(errorMessage, ex);
                 _progressReporter?.Report($"ERROR: {errorMessage}");
             }
             catch (IOException ex)
             {
                 string errorMessage = $"An I/O error occurred while checking file dates for runway data. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
+                await _logger.ErrorAsync(errorMessage, ex);
                 _progressReporter?.Report($"ERROR: {errorMessage}");
             }
             catch (Exception ex)
             {
                 string errorMessage = $"An unexpected error occurred in CheckRunwaysUpToDate: {ex.Message}";
-                Log.Error(errorMessage, ex);
+                await _logger.ErrorAsync(errorMessage, ex);
                 _progressReporter?.Report($"ERROR: {errorMessage}");
             }
         }
@@ -636,7 +642,7 @@ namespace P3D_Scenario_Generator
                 {
                     case ScenarioTypes.Circuit:
                         // This method is now async, so we must await its result.
-                        if (!await MakeCircuit.SetCircuit(_formData, _runwayManager))
+                        if (!await _makeCircuit.SetCircuitAsync(_formData, _runwayManager))
                         {
                             return false;
                         }
@@ -675,7 +681,7 @@ namespace P3D_Scenario_Generator
             }
             catch (Exception ex)
             {
-                await _log.ErrorAsync($"An unhandled error occurred during scenario specific task execution: {ex.Message}", ex);
+                await _logger.ErrorAsync($"An unhandled error occurred during scenario specific task execution: {ex.Message}", ex);
                 _progressReporter.Report("An unexpected error occurred. See logs.");
                 return false;
             }
@@ -1630,7 +1636,7 @@ namespace P3D_Scenario_Generator
             }
             catch (Exception ex)
             {
-                Log.Error($"An unhandled error occurred during Wiki page loading: {ex.Message}");
+                await _logger.ErrorAsync($"An unhandled error occurred during Wiki page loading: {ex.Message}");
                 _progressReporter.Report("An unexpected error occurred. See logs.");
             }
             finally
@@ -2016,7 +2022,7 @@ namespace P3D_Scenario_Generator
         /// Settings are retrieved by control.Name. For ComboBoxes, it restores items and SelectedIndex.
         /// </summary>
         /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
-        private static void RestoreUserSettings(Control.ControlCollection controlCollection)
+        private async void RestoreUserSettings(Control.ControlCollection controlCollection)
         {
             foreach (Control control in controlCollection)
             {
@@ -2049,15 +2055,15 @@ namespace P3D_Scenario_Generator
                     {
                         // Use Log.Info or Log.Warning, as not finding a setting isn't necessarily an error.
                         // For example, if a new control is added but no setting for it yet.
-                        Log.Info($"RestoreUserSettings: Setting '{settingName}' not found for TextBox. Skipping.");
+                        await _logger.InfoAsync($"RestoreUserSettings: Setting '{settingName}' not found for TextBox. Skipping.");
                     }
                     catch (InvalidCastException ex)
                     {
-                        Log.Error($"RestoreUserSettings: Type mismatch for TextBox setting '{settingName}'. Exception: {ex.Message}");
+                        await _logger.ErrorAsync($"RestoreUserSettings: Type mismatch for TextBox setting '{settingName}'. Exception: {ex.Message}");
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"RestoreUserSettings: An unexpected error occurred for TextBox '{settingName}'. Exception: {ex.Message}", ex);
+                        await _logger.ErrorAsync($"RestoreUserSettings: An unexpected error occurred for TextBox '{settingName}'. Exception: {ex.Message}", ex);
                     }
                 }
                 // Handle ComboBox
@@ -2082,15 +2088,15 @@ namespace P3D_Scenario_Generator
                     }
                     catch (SettingsPropertyNotFoundException)
                     {
-                        Log.Info($"RestoreUserSettings: Items setting '{itemsSettingName}' not found for ComboBox. Skipping items restoration.");
+                        await _logger.InfoAsync($"RestoreUserSettings: Items setting '{itemsSettingName}' not found for ComboBox. Skipping items restoration.");
                     }
                     catch (InvalidCastException ex)
                     {
-                        Log.Error($"RestoreUserSettings: Type mismatch for ComboBox items setting '{itemsSettingName}'. Exception: {ex.Message}");
+                        await _logger.ErrorAsync($"RestoreUserSettings: Type mismatch for ComboBox items setting '{itemsSettingName}'. Exception: {ex.Message}");
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"RestoreUserSettings: An unexpected error occurred for ComboBox items '{itemsSettingName}'. Exception: {ex.Message}", ex);
+                        await _logger.ErrorAsync($"RestoreUserSettings: An unexpected error occurred for ComboBox items '{itemsSettingName}'. Exception: {ex.Message}", ex);
                     }
 
                     // Restore ComboBox SelectedIndex
@@ -2106,7 +2112,7 @@ namespace P3D_Scenario_Generator
                             }
                             else if (comboBox.Items.Count > 0)
                             {
-                                Log.Warning($"RestoreUserSettings: Invalid saved SelectedIndex for '{selectedIndexSettingName}' ({savedIndex}). Defaulted to 0.");
+                                await _logger.WarningAsync($"RestoreUserSettings: Invalid saved SelectedIndex for '{selectedIndexSettingName}' ({savedIndex}). Defaulted to 0.");
                             }
                             else
                             {
@@ -2116,15 +2122,15 @@ namespace P3D_Scenario_Generator
                     }
                     catch (SettingsPropertyNotFoundException)
                     {
-                        Log.Info($"RestoreUserSettings: SelectedIndex setting '{selectedIndexSettingName}' not found for ComboBox. Skipping index restoration.");
+                        await _logger.InfoAsync($"RestoreUserSettings: SelectedIndex setting '{selectedIndexSettingName}' not found for ComboBox. Skipping index restoration.");
                     }
                     catch (InvalidCastException ex)
                     {
-                        Log.Error($"RestoreUserSettings: Type mismatch for ComboBox SelectedIndex setting '{selectedIndexSettingName}'. Exception: {ex.Message}");
+                        await _logger.ErrorAsync($"RestoreUserSettings: Type mismatch for ComboBox SelectedIndex setting '{selectedIndexSettingName}'. Exception: {ex.Message}");
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"RestoreUserSettings: An unexpected error occurred for ComboBox SelectedIndex '{selectedIndexSettingName}'. Exception: {ex.Message}", ex);
+                        await _logger.ErrorAsync($"RestoreUserSettings: An unexpected error occurred for ComboBox SelectedIndex '{selectedIndexSettingName}'. Exception: {ex.Message}", ex);
                     }
                 }
             }
@@ -2136,7 +2142,7 @@ namespace P3D_Scenario_Generator
         /// All changes are saved to disk once at the end.
         /// </summary>
         /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
-        private static void SaveUserSettings(Control.ControlCollection controlCollection)
+        private async void SaveUserSettings(Control.ControlCollection controlCollection)
         {
             // Flag to track if any settings were modified in this specific call of the method
             bool settingsModifiedInThisCall = false;
@@ -2162,7 +2168,7 @@ namespace P3D_Scenario_Generator
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"SaveUserSettings: Error saving TextBox '{settingName}'. Exception: {ex.Message}", ex);
+                        await _logger.ErrorAsync($"SaveUserSettings: Error saving TextBox '{settingName}'. Exception: {ex.Message}", ex);
                     }
                 }
                 // Handle ComboBox
@@ -2184,7 +2190,7 @@ namespace P3D_Scenario_Generator
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"SaveUserSettings: Error saving ComboBox items for '{itemsSettingName}'. Exception: {ex.Message}", ex);
+                        await _logger.ErrorAsync($"SaveUserSettings: Error saving ComboBox items for '{itemsSettingName}'. Exception: {ex.Message}", ex);
                     }
 
                     // Save ComboBox SelectedIndex
@@ -2194,7 +2200,7 @@ namespace P3D_Scenario_Generator
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"SaveUserSettings: Error saving ComboBox SelectedIndex for '{selectedIndexSettingName}'. Exception: {ex.Message}", ex);
+                        await _logger.ErrorAsync($"SaveUserSettings: Error saving ComboBox SelectedIndex for '{selectedIndexSettingName}'. Exception: {ex.Message}", ex);
                     }
                 }
             }
@@ -2216,11 +2222,11 @@ namespace P3D_Scenario_Generator
                 try
                 {
                     Properties.Settings.Default.Save();
-                    Log.Info($"SaveUserSettings: {collectionIdentifier} settings saved successfully.");
+                    await _logger.InfoAsync($"SaveUserSettings: {collectionIdentifier} settings saved successfully.");
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"SaveUserSettings: Failed to save {collectionIdentifier} settings. Exception: {ex.Message}", ex);
+                    await _logger.ErrorAsync($"SaveUserSettings: Failed to save {collectionIdentifier} settings. Exception: {ex.Message}", ex);
                 }
             }
         }
@@ -2463,38 +2469,38 @@ namespace P3D_Scenario_Generator
         /// Deletes the temporary directory and its contents stored in ScenarioFormData.
         /// Reports progress and logs errors.
         /// </summary>
-        private void DeleteTempScenarioDirectory()
+        private async void DeleteTempScenarioDirectory()
         {
             if (!string.IsNullOrEmpty(_formData.TempScenarioDirectory) && Directory.Exists(_formData.TempScenarioDirectory))
             {
                 try
                 {
                     Directory.Delete(_formData.TempScenarioDirectory, true); // 'true' for recursive delete
-                    Log.Info($"Temporary directory deleted: {_formData.TempScenarioDirectory}");
+                    await _logger.InfoAsync($"Temporary directory deleted: {_formData.TempScenarioDirectory}");
                     _formData.TempScenarioDirectory = null; // Clear the path after deletion
                 }
                 catch (UnauthorizedAccessException ex)
                 {
                     string errorMessage = $"Access denied when deleting temporary directory. Please check permissions for '{_formData.TempScenarioDirectory}'. Error: {ex.Message}";
                     _progressReporter?.Report(errorMessage);
-                    Log.Error(errorMessage, ex);
+                    await _logger.ErrorAsync(errorMessage, ex);
                 }
                 catch (IOException ex)
                 {
                     string errorMessage = $"I/O error when deleting temporary directory. It might be in use. Error: {ex.Message}";
                     _progressReporter?.Report(errorMessage);
-                    Log.Error(errorMessage, ex);
+                    await _logger.ErrorAsync(errorMessage, ex);
                 }
                 catch (Exception ex)
                 {
                     string errorMessage = $"An unexpected error occurred while deleting temporary directory. Error: {ex.Message}";
                     _progressReporter?.Report(errorMessage);
-                    Log.Error(errorMessage, ex);
+                    await _logger.ErrorAsync(errorMessage, ex);
                 }
             }
             else if (!string.IsNullOrEmpty(_formData.TempScenarioDirectory))
             {
-                Log.Warning($"Attempted to delete temporary directory, but path was set but directory did not exist: {_formData.TempScenarioDirectory}");
+                await _logger.WarningAsync($"Attempted to delete temporary directory, but path was set but directory did not exist: {_formData.TempScenarioDirectory}");
             }
         }
 
@@ -2513,7 +2519,7 @@ namespace P3D_Scenario_Generator
             errorProvider1.Clear();
             bool allValid = true;
 
-            if (!PopulateAndValidateTempScenarioDirectory())
+            if (!await PopulateAndValidateTempScenarioDirectory())
             {
                 return false;
             }
@@ -2526,7 +2532,7 @@ namespace P3D_Scenario_Generator
             }
 
             // 2. General Tab Data
-            if (!PopulateAndValidateGeneralTabData(_aircraft.GetCurrentVariant()))
+            if (!await PopulateAndValidateGeneralTabData(_aircraft.GetCurrentVariant()))
             {
                 allValid = false;
             }
@@ -2582,7 +2588,7 @@ namespace P3D_Scenario_Generator
         /// in the ScenarioFormData. Reports progress and logs errors.
         /// </summary>
         /// <returns>True if the temporary directory was successfully created; otherwise, false.</returns>
-        private bool PopulateAndValidateTempScenarioDirectory()
+        private async Task<bool> PopulateAndValidateTempScenarioDirectory()
         {
             try
             {
@@ -2592,28 +2598,28 @@ namespace P3D_Scenario_Generator
 
                 Directory.CreateDirectory(_formData.TempScenarioDirectory);
                 _progressReporter?.Report($"Temporary directory created at: {_formData.TempScenarioDirectory}");
-                Log.Info($"Temporary directory created at: {_formData.TempScenarioDirectory}");
+                await _logger.InfoAsync($"Temporary directory created at: {_formData.TempScenarioDirectory}");
                 return true;
             }
             catch (UnauthorizedAccessException ex)
             {
                 string errorMessage = $"Access denied when creating temporary directory. Please check permissions for '{Path.GetTempPath()}'. Error: {ex.Message}";
                 _progressReporter?.Report(errorMessage);
-                Log.Error(errorMessage, ex);
+                await _logger.ErrorAsync(errorMessage, ex);
                 return false;
             }
             catch (IOException ex)
             {
                 string errorMessage = $"I/O error when creating temporary directory. Error: {ex.Message}";
                 _progressReporter?.Report(errorMessage);
-                Log.Error(errorMessage, ex);
+                await _logger.ErrorAsync(errorMessage, ex);
                 return false;
             }
             catch (Exception ex)
             {
                 string errorMessage = $"An unexpected error occurred while creating temporary directory. Error: {ex.Message}";
                 _progressReporter?.Report(errorMessage);
-                Log.Error(errorMessage, ex);
+                await _logger.ErrorAsync(errorMessage, ex);
                 return false;
             }
         }
@@ -2927,12 +2933,12 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="selectedAircraftVariant">The currently selected AircraftVariant object.</param>
         /// <returns>True if all General tab data is valid; otherwise, false.</returns>
-        private bool PopulateAndValidateGeneralTabData(AircraftVariant selectedAircraftVariant)
+        private async Task<bool> PopulateAndValidateGeneralTabData(AircraftVariant selectedAircraftVariant)
         {
             bool allValid = true;
 
             // Handle direct UI element assignments and basic type parsing
-            allValid &= PopulateBasicGeneralTabValues();
+            allValid &= await PopulateBasicGeneralTabValues();
 
             // Validate and populate the Scenario Title
             allValid &= ValidateAndPopulateScenarioTitle();
@@ -2947,7 +2953,7 @@ namespace P3D_Scenario_Generator
         /// Populates basic values from General tab UI elements into formData.
         /// </summary>
         /// <returns>True if basic values are successfully populated; otherwise, false.</returns>
-        private bool PopulateBasicGeneralTabValues()
+        private async Task<bool> PopulateBasicGeneralTabValues()
         {
             bool isValid = true;
 
@@ -2960,7 +2966,7 @@ namespace P3D_Scenario_Generator
                 "Scenario Type",
                 value => _formData.ScenarioType = value))
             {
-                Log.Error("Invalid scenario type selected unexpectedly.");
+                await _logger.ErrorAsync("Invalid scenario type selected unexpectedly.");
                 isValid = false;
                 string message = "Invalid scenario type selected. An unexpected error occurred; please notify the developer.";
                 _progressReporter?.Report(message);
