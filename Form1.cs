@@ -27,6 +27,9 @@ namespace P3D_Scenario_Generator
         private readonly List<string> allRunwayStrings = [];
         private RunwayManager _runwayManager;
 
+        // Model dependencies
+        private readonly AlmanacData _almanacData;
+
         // Services dependencies
         private readonly Aircraft _aircraft;
         private readonly ICacheManager _cacheManager;
@@ -54,7 +57,8 @@ namespace P3D_Scenario_Generator
             _htmlParser = new HtmlParser(_logger);
             _httpRoutines = new HttpRoutines(_fileOps, _logger);
             _photoTour = new PhotoTour(_logger, _fileOps, _httpRoutines);
-            _celestialNav = new CelestialNav(_logger, _fileOps, _httpRoutines);
+            _almanacData = new AlmanacData();
+            _celestialNav = new CelestialNav(_logger, _fileOps, _httpRoutines, _progressReporter, _almanacData);
             _osmTileCache = new OSMTileCache(_fileOps, _httpRoutines, _progressReporter);
             _makeCircuit = new MakeCircuit(_logger, _fileOps, _progressReporter);
 
@@ -663,7 +667,7 @@ namespace P3D_Scenario_Generator
                         break;
                     case ScenarioTypes.Celestial:
                         // This method is now async, so we must await its result.
-                        if (!await _celestialNav.SetCelestial(_formData, _runwayManager, _httpRoutines))
+                        if (!await _celestialNav.SetCelestial(_formData, _runwayManager))
                         {
                             return false;
                         }
@@ -2555,6 +2559,12 @@ namespace P3D_Scenario_Generator
                 allValid = false;
             }
 
+            // 6. Celestial Tab Data
+            if (!PopulateAndValidateCelestialTabData())
+            {
+                allValid = false;
+            }
+
             // Derived fields
             if (allValid)
             {
@@ -3720,6 +3730,45 @@ namespace P3D_Scenario_Generator
                 + Constants.SignWindowVerticalPaddingPixels     // Distance between sign window title bottom edge and canvas/console top edge
                 + canvasHeight                                  // Canvas/Console height
                 + Constants.SignWindowVerticalPaddingPixels;    // Distance between canvas/console bottom edge and bottom edge of window
+        }
+
+        /// <summary>
+        /// Populates and validates data from the Celestial tab.
+        /// </summary>
+        /// <returns>True if all Celestial tab data is valid; otherwise, false.</returns>
+        private bool PopulateAndValidateCelestialTabData()
+        {
+            bool allValid = true;
+
+            // TextBoxCelestialMinDist
+            allValid &= ValidateAndSetDouble(
+                TextBoxCelestialMinDist,
+                "Minimum Celestial Distance",
+                0,
+                Constants.MilesInEarthCircumference,
+                "",
+                value => _formData.CelestialMinDistance = value);
+
+            // TextBoxCelestialMaxDist
+            allValid &= ValidateAndSetDouble(
+                TextBoxCelestialMaxDist,
+                "Maximum Celestial Distance",
+                0,
+                Constants.MilesInEarthCircumference,
+                "",
+                value => _formData.CelestialMaxDistance = value);
+
+            if (_formData.CelestialMinDistance >= _formData.CelestialMaxDistance)
+            {
+                string message = "Minimum celestial distance must be less than maximum celestial distance.";
+                errorProvider1.SetError(TextBoxCelestialMinDist, message);
+                _progressReporter?.Report(message);
+                allValid = false;
+            }
+
+            _formData.UseCustomStarsDat = CheckBoxCelestialUseStarsDat.AutoCheck;
+
+            return allValid;
         }
 
         /// <summary>

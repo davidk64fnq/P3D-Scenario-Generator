@@ -19,7 +19,7 @@ namespace P3D_Scenario_Generator
         /// <param name="distanceMeters">The distance to travel in meters.</param>
         /// <param name="finishLat">Output parameter: The calculated destination latitude in degrees.</param>
         /// <param name="finishLon">Output parameter: The calculated destination longitude in degrees.</param>
-        internal static void AdjCoords(double startLat, double startLon, double heading, double distanceMeters, ref double finishLat, ref double finishLon)
+        internal static void AdjCoords(double startLat, double startLon, double heading, double distanceMeters, out double finishLat, out double finishLon)
         {
             // Create a *new* Coordinate object that we will modify.
             // We need a mutable CoordinateSharp object to call .Move() on.

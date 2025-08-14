@@ -32,7 +32,7 @@ When a log message and a UI progress message convey the same information, use a 
 
  ```csharp
  string message = "Loading runways from binary cache...";
-_log.Info(message);
+_log.InfoAsync(message);
 progressReporter.Report($"INFO: {message}");
  ```
 

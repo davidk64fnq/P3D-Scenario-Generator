@@ -294,6 +294,32 @@ namespace P3D_Scenario_Generator
         /// </summary>
         public double CelestialMaxDistance { get; set; }
 
+        /// <summary>
+        /// CelestialScenario scenario starts in mid air - this is the initial heading in degrees
+        /// </summary>
+        public double MidairStartHdgDegrees { get; set; }
+
+        /// <summary>
+        /// CelestialScenario scenario starts in mid air - this is the initial latitude in degrees
+        /// </summary>
+        public double MidairStartLatDegrees { get; set; }
+
+        /// <summary>
+        /// CelestialScenario scenario starts in mid air - this is the initial longitude in degrees
+        /// </summary>
+        public double MidairStartLonDegrees { get; set; }
+
+        /// <summary>
+        /// CelestialScenario scenario starts in mid air - this is the randomly set radius distance from midair start to destination airport in nautical miles
+        /// </summary>
+        public double RandomRadiusNM { get; set; }
+
+        /// <summary>
+        /// User has option of using custom stars.dat file instead of default P3D depiction of stars in the simulator. Using custom aligns view outside plane
+        /// with that in the HTML browser based sextant. This setting tells program whether to backup default version of stars.dat and place custom version
+        /// </summary>
+        public bool UseCustomStarsDat { get; set; }
+
         #endregion
 
         #region Wikipedia Tab Data

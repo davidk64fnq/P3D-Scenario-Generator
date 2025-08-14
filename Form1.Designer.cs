@@ -149,6 +149,7 @@ namespace P3D_Scenario_Generator
             groupBox12 = new GroupBox();
             tableLayoutPanelRunwaySelection = new TableLayoutPanel();
             ButtonRandRunway = new Button();
+            ListBoxGeneralRunwayResults = new ListBox();
             groupBox13 = new GroupBox();
             tableLayoutPanel9 = new TableLayoutPanel();
             ButtonRandomScenario = new Button();
@@ -181,8 +182,10 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapMonitorHeight = new TextBox();
             GroupBoxCelestialNavigationConstraints = new GroupBox();
             TableLayoutPanelCelestialNavigationConstraints = new TableLayoutPanel();
+            label8 = new Label();
             label25 = new Label();
             label26 = new Label();
+            CheckBoxCelestialUseStarsDat = new CheckBox();
             ButtonBrowseScenarioFolder = new Button();
             TextBoxSettingsScenarioFolderBase = new TextBox();
             TextBoxSettingsP3DprogramInstall = new TextBox();
@@ -247,7 +250,6 @@ namespace P3D_Scenario_Generator
             errorProvider1 = new ErrorProvider(components);
             helpProvider1 = new HelpProvider();
             buttonClearP3DPath = new Button();
-            ListBoxGeneralRunwayResults = new ListBox();
             GroupBoxSettingsMapTileCacheInfo.SuspendLayout();
             TableLayoutPanelSettingsMapTileCacheInfo.SuspendLayout();
             GroupBoxWikipediaListParameters.SuspendLayout();
@@ -340,7 +342,7 @@ namespace P3D_Scenario_Generator
             // 
             TextBoxCelestialMaxDist.AccessibleName = "Celestial: Maximum distance";
             TextBoxCelestialMaxDist.Anchor = AnchorStyles.None;
-            TextBoxCelestialMaxDist.Location = new Point(141, 33);
+            TextBoxCelestialMaxDist.Location = new Point(141, 32);
             TextBoxCelestialMaxDist.Name = "TextBoxCelestialMaxDist";
             TextBoxCelestialMaxDist.Size = new Size(100, 23);
             TextBoxCelestialMaxDist.TabIndex = 3;
@@ -1847,6 +1849,16 @@ namespace P3D_Scenario_Generator
             ButtonRandRunway.UseVisualStyleBackColor = true;
             ButtonRandRunway.Click += ButtonRandRunway_Click;
             // 
+            // ListBoxGeneralRunwayResults
+            // 
+            ListBoxGeneralRunwayResults.Anchor = AnchorStyles.None;
+            ListBoxGeneralRunwayResults.FormattingEnabled = true;
+            ListBoxGeneralRunwayResults.ItemHeight = 15;
+            ListBoxGeneralRunwayResults.Location = new Point(115, 7);
+            ListBoxGeneralRunwayResults.Name = "ListBoxGeneralRunwayResults";
+            ListBoxGeneralRunwayResults.Size = new Size(100, 19);
+            ListBoxGeneralRunwayResults.TabIndex = 4;
+            // 
             // groupBox13
             // 
             groupBox13.Anchor = AnchorStyles.Bottom;
@@ -2272,9 +2284,9 @@ namespace P3D_Scenario_Generator
             GroupBoxCelestialNavigationConstraints.Anchor = AnchorStyles.None;
             GroupBoxCelestialNavigationConstraints.BackColor = Color.FromArgb(255, 192, 128);
             GroupBoxCelestialNavigationConstraints.Controls.Add(TableLayoutPanelCelestialNavigationConstraints);
-            GroupBoxCelestialNavigationConstraints.Location = new Point(60, 150);
+            GroupBoxCelestialNavigationConstraints.Location = new Point(60, 117);
             GroupBoxCelestialNavigationConstraints.Name = "GroupBoxCelestialNavigationConstraints";
-            GroupBoxCelestialNavigationConstraints.Size = new Size(285, 100);
+            GroupBoxCelestialNavigationConstraints.Size = new Size(285, 165);
             GroupBoxCelestialNavigationConstraints.TabIndex = 4;
             GroupBoxCelestialNavigationConstraints.TabStop = false;
             GroupBoxCelestialNavigationConstraints.Text = "Constraints";
@@ -2287,18 +2299,32 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelCelestialNavigationConstraints.ColumnCount = 2;
             TableLayoutPanelCelestialNavigationConstraints.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             TableLayoutPanelCelestialNavigationConstraints.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(label8, 0, 2);
             TableLayoutPanelCelestialNavigationConstraints.Controls.Add(label25, 0, 0);
             TableLayoutPanelCelestialNavigationConstraints.Controls.Add(TextBoxCelestialMaxDist, 1, 1);
             TableLayoutPanelCelestialNavigationConstraints.Controls.Add(TextBoxCelestialMinDist, 1, 0);
             TableLayoutPanelCelestialNavigationConstraints.Controls.Add(label26, 0, 1);
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(CheckBoxCelestialUseStarsDat, 1, 2);
             TableLayoutPanelCelestialNavigationConstraints.ImeMode = ImeMode.On;
-            TableLayoutPanelCelestialNavigationConstraints.Location = new Point(15, 22);
+            TableLayoutPanelCelestialNavigationConstraints.Location = new Point(15, 52);
             TableLayoutPanelCelestialNavigationConstraints.Name = "TableLayoutPanelCelestialNavigationConstraints";
-            TableLayoutPanelCelestialNavigationConstraints.RowCount = 2;
-            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelCelestialNavigationConstraints.Size = new Size(255, 60);
+            TableLayoutPanelCelestialNavigationConstraints.RowCount = 3;
+            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            TableLayoutPanelCelestialNavigationConstraints.Size = new Size(255, 87);
             TableLayoutPanelCelestialNavigationConstraints.TabIndex = 36;
+            // 
+            // label8
+            // 
+            label8.Anchor = AnchorStyles.None;
+            label8.AutoSize = true;
+            label8.Location = new Point(5, 65);
+            label8.Name = "label8";
+            label8.Size = new Size(116, 15);
+            label8.TabIndex = 4;
+            label8.Text = "Use custom stars.dat";
+            label8.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // label25
             // 
@@ -2315,12 +2341,23 @@ namespace P3D_Scenario_Generator
             // 
             label26.Anchor = AnchorStyles.None;
             label26.AutoSize = true;
-            label26.Location = new Point(9, 37);
+            label26.Location = new Point(9, 36);
             label26.Name = "label26";
             label26.Size = new Size(108, 15);
             label26.TabIndex = 1;
             label26.Text = "Maximum distance";
             label26.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // CheckBoxCelestialUseStarsDat
+            // 
+            CheckBoxCelestialUseStarsDat.Anchor = AnchorStyles.None;
+            CheckBoxCelestialUseStarsDat.AutoSize = true;
+            CheckBoxCelestialUseStarsDat.Location = new Point(169, 63);
+            CheckBoxCelestialUseStarsDat.Name = "CheckBoxCelestialUseStarsDat";
+            CheckBoxCelestialUseStarsDat.Size = new Size(43, 19);
+            CheckBoxCelestialUseStarsDat.TabIndex = 5;
+            CheckBoxCelestialUseStarsDat.Text = "Yes";
+            CheckBoxCelestialUseStarsDat.UseVisualStyleBackColor = true;
             // 
             // ButtonBrowseScenarioFolder
             // 
@@ -3245,16 +3282,6 @@ namespace P3D_Scenario_Generator
             buttonClearP3DPath.UseVisualStyleBackColor = true;
             buttonClearP3DPath.Click += ButtonClearP3DPath_Click;
             // 
-            // ListBoxGeneralRunwayResults
-            // 
-            ListBoxGeneralRunwayResults.Anchor = AnchorStyles.None;
-            ListBoxGeneralRunwayResults.FormattingEnabled = true;
-            ListBoxGeneralRunwayResults.ItemHeight = 15;
-            ListBoxGeneralRunwayResults.Location = new Point(115, 5);
-            ListBoxGeneralRunwayResults.Name = "ListBoxGeneralRunwayResults";
-            ListBoxGeneralRunwayResults.Size = new Size(100, 19);
-            ListBoxGeneralRunwayResults.TabIndex = 4;
-            // 
             // Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -3580,6 +3607,8 @@ namespace P3D_Scenario_Generator
         private HelpProvider helpProvider1;
         private Button buttonClearP3DPath;
         private ListBox ListBoxGeneralRunwayResults;
+        private Label label8;
+        private CheckBox CheckBoxCelestialUseStarsDat;
     }
 }
 

@@ -20,41 +20,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
         private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly AlmanacDataSource _almanacDataSource = new(logger, progressReporter, httpRoutines, almanacData);
-
-        /// <summary>
-        /// CelestialScenario scenario starts in mid air - this is the initial heading in degrees
-        /// </summary>
-        internal static double midairStartHdg;
-
-        /// <summary>
-        /// CelestialScenario scenario starts in mid air - this is the initial latitude in degrees
-        /// </summary>
-        internal static double midairStartLat;
-
-        /// <summary>
-        /// CelestialScenario scenario starts in mid air - this is the initial longitude in degrees
-        /// </summary>
-        internal static double midairStartLon;
-
-        /// <summary>
-        /// Used to define celestial sextant plotting tab northern latitude
-        /// </summary>
-        internal static double celestialImageNorth;
-
-        /// <summary>
-        /// Used to define celestial sextant plotting tab eastern longitude
-        /// </summary>
-        internal static double celestialImageEast;
-
-        /// <summary>
-        /// Used to define celestial sextant plotting tab southern latitude
-        /// </summary>
-        internal static double celestialImageSouth;
-
-        /// <summary>
-        /// Used to define celestial sextant plotting tab western longitude
-        /// </summary>
-        internal static double celestialImageWest;
+        private readonly StarDataManager _starDataManager = new(logger, fileOps, progressReporter);
+        private readonly SextantViewGenerator _sextantViewGenerator = new(logger, fileOps, progressReporter, almanacData);
+        private readonly SimulatorFileGenerator _simulatorFileGenerator = new(logger, fileOps, progressReporter);
 
         /// <summary>
         /// Initializes the celestial navigation system for a new scenario.
@@ -66,46 +34,46 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// <returns>True if all celestial setup operations complete successfully; otherwise, false.</returns>
         internal async Task<bool> SetCelestial(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            // The GetFilteredRandomRunway method is now asynchronous.
-            // It must be awaited, and the calling method's signature must be updated accordingly.
             formData.DestinationRunway = await runwayManager.Searcher.GetFilteredRandomRunwayAsync(formData);
 
             ScenarioLocationGenerator.SetMidairStartLocation(formData.CelestialMinDistance, formData.CelestialMaxDistance, formData.DestinationRunway,
                 out double midairStartHdg, out double midairStartLat, out double midairStartLon, out double randomRadiusNM);
-            SextantViewGenerator.SetCelestialMapEdges(midairStartLat, midairStartLon, randomRadiusNM);
+            formData.MidairStartHdgDegrees = midairStartHdg;
+            formData.MidairStartLatDegrees = midairStartLat;
+            formData.MidairStartLonDegrees = midairStartLon;
+            formData.RandomRadiusNM = randomRadiusNM;
 
-            // The call to GetAlmanacData must be awaited.
             if (!await _almanacDataSource.GetAlmanacDataAsync(formData))
             {
                 await _logger.ErrorAsync("Failed to get almanac data during celestial setup.");
                 return false;
             }
 
-            if (!StarDataManager.InitStars())
+            if (!await _starDataManager.InitStarsAsync())
             {
                 await _logger.ErrorAsync("Failed to initialize stars data during celestial setup.");
                 return false;
             }
 
-            if (!SimulatorFileGenerator.CreateStarsDat(formData))
+            if (!await _simulatorFileGenerator.CreateStarsDatAsync(formData, _starDataManager))
             {
                 await _logger.ErrorAsync("Failed to create stars.dat file during celestial setup.");
                 return false;
             }
 
-            if (!SextantViewGenerator.SetCelestialSextantHTML(formData))
+            if (!await _sextantViewGenerator.SetCelestialSextantHtmlAsync(formData, _starDataManager))
             {
                 await _logger.ErrorAsync("Failed to set celestial sextant HTML during celestial setup.");
                 return false;
             }
 
-            if (!SextantViewGenerator.SetCelestialSextantJS(formData))
+            if (!await _sextantViewGenerator.SetCelestialSextantJsAsync(formData, _starDataManager))
             {
                 await _logger.ErrorAsync("Failed to set celestial sextant JavaScript during celestial setup.");
                 return false;
             }
 
-            if (!SextantViewGenerator.TrySetCelestialSextantCSS(formData))
+            if (!await _sextantViewGenerator.TrySetCelestialSextantCssAsync(formData))
             {
                 await _logger.ErrorAsync("Failed to set celestial sextant CSS during celestial setup.");
                 return false;
@@ -148,7 +116,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         {
             IEnumerable<Coordinate> coordinates =
             [
-                new Coordinate(midairStartLat, midairStartLon),    
+                new Coordinate(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees),    
                 new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon)     
             ];
             return coordinates;
@@ -178,7 +146,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// <returns>The calculated celestial distance in nautical miles.</returns>
         static internal double GetCelestialDistance(ScenarioFormData formData)
         {
-            return MathRoutines.CalcDistance(midairStartLat, midairStartLon, formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon);
+            return MathRoutines.CalcDistance(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees, formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon);
         }
 
         public static Overview SetOverviewStruct(ScenarioFormData formData)

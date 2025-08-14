@@ -1,5 +1,6 @@
 ﻿using P3D_Scenario_Generator.CelestialScenario;
-using P3D_Scenario_Generator.Legacy;
+using P3D_Scenario_Generator.Interfaces;
+using System.Text;
 
 namespace P3D_Scenario_Generator
 {
@@ -10,79 +11,60 @@ namespace P3D_Scenario_Generator
     /// It provides functionality to backup the original "stars.dat" and
     /// replace it with a program-generated version containing relevant star data.
     /// </summary>
-    internal class SimulatorFileGenerator
+    public sealed class SimulatorFileGenerator(ILogger logger, IFileOps fileOps, IProgress<string> progressReporter)
     {
+        // Guard clauses to validate the constructor parameters.
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+
         /// <summary>
-        /// Creates P3D Scenario Generator specific version of "stars.dat" and backs up original if user agrees. If user doesn't agree
-        /// a dummy copy of "stars.dat" is created so that user isn't asked again.
+        /// Creates a P3D Scenario Generator specific version of "stars.dat" if requested by user.
         /// </summary>
-        /// <returns>True if all needed file operations complete successfully</returns>
-        static internal bool CreateStarsDat(ScenarioFormData formData)
+        /// <param name="formData">The scenario data containing the file paths.</param>
+        /// <param name="starDataManager">The star data manager instance.</param>
+        /// <returns><see langword="true"/> if all needed file operations complete successfully; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> CreateStarsDatAsync(ScenarioFormData formData, StarDataManager starDataManager)
         {
-            string starsDatPath = Path.Combine(formData.P3DProgramData, "stars.dat");
-            string starsDatBackupPath = Path.Combine(formData.P3DProgramData, "stars.dat.P3DscenarioGenerator.backup");
+            string starsDatGGversionPath = Path.Combine(formData.P3DProgramData, "stars.dat.P3DscenarioGenerator");
 
-            string starsDatContent = $"[Star Settings]\nIntensity=230\nNumStars={StarDataManager.noStars}\n[Star Locations]\n";
-
-            // If the file "stars.dat.P3DscenarioGenerator.backup" exists then assume user has previously said yes to the prompt below
-            // and there is no need to do it again as the replacement "stars.dat" doesn't change over time
-            if (!File.Exists(starsDatBackupPath))
+            if (formData.UseCustomStarsDat == false)
             {
-                string message = "To see the same stars out the window as are displayed in the celestial sextant, the program" +
-                                    " needs to backup the existing stars.dat file (to stars.dat.P3DscenarioGenerator.backup) and replace" +
-                                    " it with a program generated version. Press \"Yes\" to go ahead with backup and replacement, \"No\" to leave stars.dat as is";
-                string title = "Confirm backup and replacement of stars.dat";
-                MessageBoxButtons buttons = MessageBoxButtons.YesNo;
-                DialogResult result = MessageBox.Show(message, title, buttons, MessageBoxIcon.Question);
-
-                if (result == DialogResult.Yes)
-                {
-                    // Backup existing stars.dat if it exists
-                    if (File.Exists(starsDatPath))
-                    {
-                        // Try to delete the old backup. If it fails, report and stop.
-                        if (!FileOps.TryDeleteFile(starsDatBackupPath, null))
-                        {
-                            return false;
-                        }
-
-                        // Try to move the current stars.dat. If it fails, report and stop.
-                        if (!FileOps.TryMoveFile(starsDatPath, starsDatBackupPath, null))
-                        {
-                            return false;
-                        }
-                    }
-
-                    // Populate the content for the new stars.dat
-                    for (int index = 0; index < StarDataManager.noStars; index++)
-                    {
-                        starsDatContent += $"Star.{index} = {index + 1}";
-                        starsDatContent += $",{StarDataManager.stars[index].RaH}";
-                        starsDatContent += $",{StarDataManager.stars[index].RaM}";
-                        starsDatContent += $",{StarDataManager.stars[index].RaS}";
-                        starsDatContent += $",{StarDataManager.stars[index].DecD}";
-                        starsDatContent += $",{StarDataManager.stars[index].DecM}";
-                        starsDatContent += $",{StarDataManager.stars[index].DecS}";
-                        starsDatContent += $",{StarDataManager.stars[index].VisMag}\n";
-                    }
-
-                    // Try to write the new stars.dat file. If it fails, report and stop.
-                    if (!FileOps.TryWriteAllText(starsDatPath, starsDatContent, null))
-                    {
-                        return false;
-                    }
-
-                    MessageBox.Show("stars.dat successfully updated and backed up.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return true; // Operation successful
-                }
-                else // Copy "stars.dat" to "stars.dat.P3DscenarioGenerator.backup" to prevent future prompting of user
-                {
-                    if (!FileOps.TryCopyFile(starsDatPath, starsDatBackupPath, null, false))
-                    {
-                        return false;
-                    }
-                }
+                _progressReporter.Report("INFO: User does not require creation of stars.dat.P3DscenarioGenerator file.");
+                return false;
             }
+
+            _progressReporter.Report("INFO: Preparing to create stars.dat.P3DscenarioGenerator file.");
+
+            // Use StringBuilder for efficient string concatenation in a loop.
+            StringBuilder starsDatContentBuilder = new();
+            starsDatContentBuilder.AppendLine("[Star Settings]");
+            starsDatContentBuilder.AppendLine($"Intensity=230");
+            starsDatContentBuilder.AppendLine($"NumStars={starDataManager.NoStars}");
+            starsDatContentBuilder.AppendLine("[Star Locations]");
+
+            for (int index = 0; index < starDataManager.NoStars; index++)
+            {
+                starsDatContentBuilder.Append($"Star.{index} = {index + 1}");
+                starsDatContentBuilder.Append($",{starDataManager.Stars[index].RaH}");
+                starsDatContentBuilder.Append($",{starDataManager.Stars[index].RaM}");
+                starsDatContentBuilder.Append($",{starDataManager.Stars[index].RaS}");
+                starsDatContentBuilder.Append($",{starDataManager.Stars[index].DecD}");
+                starsDatContentBuilder.Append($",{starDataManager.Stars[index].DecM}");
+                starsDatContentBuilder.Append($",{starDataManager.Stars[index].DecS}");
+                starsDatContentBuilder.Append($",{starDataManager.Stars[index].VisMag}\n");
+            }
+
+            if (!await _fileOps.TryWriteAllTextAsync(starsDatGGversionPath, starsDatContentBuilder.ToString(), _progressReporter))
+            {
+                await _logger.ErrorAsync($"Failed to write file to '{starsDatGGversionPath}'.");
+                _progressReporter.Report($"ERROR: Failed to write file to '{starsDatGGversionPath}'.");
+                return false;
+            }
+
+            _progressReporter.Report("INFO: Successfully created new 'stars.dat.P3DscenarioGenerator' file.");
+            await _logger.InfoAsync("Successfully created new 'stars.dat.P3DscenarioGenerator' file.");
+
             return true;
         }
     }
