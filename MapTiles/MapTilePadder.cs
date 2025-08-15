@@ -848,7 +848,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 Log.Error($"{methodName}: Failed to download {columnName} column tiles for '{fullPathNoExt}'.");
                 return false;
             }
-            if (!MapTileMontager.MontageTilesToColumn(boundingBox.YAxis.Count, columnId, fullPathNoExt))
+            if (!MapTileMontager.MontageTilesToColumnAsync(boundingBox.YAxis.Count, columnId, fullPathNoExt))
             {
                 Log.Error($"{methodName}: Failed to montage {columnName} column tiles for '{fullPathNoExt}'.");
                 return false;

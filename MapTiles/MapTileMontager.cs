@@ -1,6 +1,6 @@
 ﻿using ImageMagick;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Legacy;
+using P3D_Scenario_Generator.Interfaces;
 
 namespace P3D_Scenario_Generator.MapTiles
 {
@@ -9,8 +9,13 @@ namespace P3D_Scenario_Generator.MapTiles
     /// This class handles the process of combining individual tile images into vertical columns,
     /// horizontal rows, and ultimately a complete grid image, while also managing temporary files.
     /// </summary>
-    internal class MapTileMontager
+    public class MapTileMontager(ILogger logger, FormProgressReporter progressReporter, IFileOps fileOps, IHttpRoutines httpRoutines)
     {
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly IHttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
+        private readonly MapTileDownloader _mapTileDownloader = new(fileOps, httpRoutines, progressReporter);
 
         /// <summary>
         /// Montages a column of individual tile images into a single vertical image.
@@ -21,7 +26,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="columnID">The X-index of the column, used for naming the input and output files.</param>
         /// <param name="fullPathNoExt">The base path and fullPathNoExt prefix for the input individual tiles and the output montaged column image.</param>
         /// <returns><see langword="true"/> if the tiles were successfully montaged into a column image; otherwise, <see langword="false"/>.</returns>
-        static internal bool MontageTilesToColumn(int yCount, int columnID, string fullPathNoExt)
+        public async Task<bool> MontageTilesToColumnAsync(int yCount, int columnID, string fullPathNoExt)
         {
             try
             {
@@ -41,9 +46,9 @@ namespace P3D_Scenario_Generator.MapTiles
                 for (int yIndex = 0; yIndex < yCount; yIndex++)
                 {
                     string tilePath = $"{fullPathNoExt}_{columnID}_{yIndex}.png";
-                    if (!File.Exists(tilePath))
+                    if (!_fileOps.FileExists(tilePath))
                     {
-                        Log.Error($"MontageTilesToColumn: Required tile image not found: {tilePath}");
+                        await _logger.ErrorAsync($"Required tile image not found: {tilePath}");
                         return false; // Fail if a source tile is missing
                     }
                     images.Add(new MagickImage(tilePath));
@@ -70,25 +75,25 @@ namespace P3D_Scenario_Generator.MapTiles
             catch (MagickErrorException mex)
             {
                 // Catch specific Magick.NET exceptions
-                Log.Error($"Magick.NET error during column montage for '{fullPathNoExt}_{columnID}': {mex.Message}", mex);
+                await _logger.ErrorAsync($"Magick.NET error during column montage for '{fullPathNoExt}_{columnID}': {mex.Message}", mex);
                 return false;
             }
             catch (FileNotFoundException fex)
             {
                 // Catch if a specific tile file was not found during loading
-                Log.Error($"File not found error during column montage: {fex.FileName}. Details: {fex.Message}", fex);
+                await _logger.ErrorAsync($"File not found error during column montage: {fex.FileName}. Details: {fex.Message}", fex);
                 return false;
             }
             catch (IOException ioex)
             {
                 // Catch general I/O errors (e.g., file locked, disk full)
-                Log.Error($"I/O error during column montage for '{fullPathNoExt}_{columnID}': {ioex.Message}", ioex);
+                await _logger.ErrorAsync($"I/O error during column montage for '{fullPathNoExt}_{columnID}': {ioex.Message}", ioex);
                 return false;
             }
             catch (Exception ex)
             {
                 // Catch any other unexpected exceptions
-                Log.Error($"An unexpected error occurred during column montage for '{fullPathNoExt}_{columnID}': {ex.Message}", ex);
+                await _logger.ErrorAsync($"An unexpected error occurred during column montage for '{fullPathNoExt}_{columnID}': {ex.Message}", ex);
                 return false;
             }
         }
@@ -102,7 +107,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="rowId">The Y-index of the row, used for naming the input and output files.</param>
         /// <param name="fullPathNoExt">The base path and fullPathNoExt prefix for the input individual tiles and the output montaged row image.</param>
         /// <returns><see langword="true"/> if the tiles were successfully montaged into a row image; otherwise, <see langword="false"/>.</returns>
-        static internal bool MontageTilesToRow(int xCount, int rowId, string fullPathNoExt)
+        public async Task<bool> MontageTilesToRowAsync(int xCount, int rowId, string fullPathNoExt)
         {
             try
             {
@@ -122,9 +127,9 @@ namespace P3D_Scenario_Generator.MapTiles
                 for (int xIndex = 0; xIndex < xCount; xIndex++)
                 {
                     string tilePath = $"{fullPathNoExt}_{xIndex}_{rowId}.png";
-                    if (!File.Exists(tilePath))
+                    if (!_fileOps.FileExists(tilePath))
                     {
-                        Log.Error($"MontageTilesToRow: Required tile image not found: {tilePath}");
+                        await _logger.ErrorAsync($"Required tile image not found: {tilePath}");
                         return false; // Fail if a source tile is missing
                     }
                     images.Add(new MagickImage(tilePath));
@@ -151,25 +156,25 @@ namespace P3D_Scenario_Generator.MapTiles
             catch (MagickErrorException mex)
             {
                 // Catch specific Magick.NET exceptions
-                Log.Error($"Magick.NET error during row montage for '{fullPathNoExt}_{rowId}': {mex.Message}", mex);
+                await _logger.ErrorAsync($"Magick.NET error during row montage for '{fullPathNoExt}_{rowId}': {mex.Message}", mex);
                 return false;
             }
             catch (FileNotFoundException fex)
             {
                 // Catch if a specific tile file was not found during loading
-                Log.Error($"File not found error during row montage: {fex.FileName}. Details: {fex.Message}", fex);
+                await _logger.ErrorAsync($"File not found error during row montage: {fex.FileName}. Details: {fex.Message}", fex);
                 return false;
             }
             catch (IOException ioex)
             {
                 // Catch general I/O errors (e.g., file locked, disk full)
-                Log.Error($"I/O error during row montage for '{fullPathNoExt}_{rowId}': {ioex.Message}", ioex);
+                await _logger.ErrorAsync($"I/O error during row montage for '{fullPathNoExt}_{rowId}': {ioex.Message}", ioex);
                 return false;
             }
             catch (Exception ex)
             {
                 // Catch any other unexpected exceptions
-                Log.Error($"An unexpected error occurred during row montage for '{fullPathNoExt}_{rowId}': {ex.Message}", ex);
+                await _logger.ErrorAsync($"An unexpected error occurred during row montage for '{fullPathNoExt}_{rowId}': {ex.Message}", ex);
                 return false;
             }
         }
@@ -183,7 +188,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="yCount">The height of each individual column image in tiles, used for geometry calculation.</param>
         /// <param name="fullPathNoExt">The base path and fullPathNoExt prefix for the input individual column images and the output final montaged image.</param>
         /// <returns><see langword="true"/> if the columns were successfully montaged into a single image; otherwise, <see langword="false"/>.</returns>
-        static internal bool MontageColumns(int xCount, int yCount, string fullPathNoExt)
+        public async Task<bool> MontageColumnsAsync(int xCount, int yCount, string fullPathNoExt)
         {
             try
             {
@@ -203,9 +208,9 @@ namespace P3D_Scenario_Generator.MapTiles
                 for (int xIndex = 0; xIndex < xCount; xIndex++)
                 {
                     string columnPath = $"{fullPathNoExt}_{xIndex}.png";
-                    if (!File.Exists(columnPath))
+                    if (!_fileOps.FileExists(columnPath))
                     {
-                        Log.Error($"MontageColumns: Required column image not found: {columnPath}");
+                        await _logger.ErrorAsync($"Required column image not found: {columnPath}");
                         return false; // Fail if a source column image is missing
                     }
                     images.Add(new MagickImage(columnPath));
@@ -232,25 +237,25 @@ namespace P3D_Scenario_Generator.MapTiles
             catch (MagickErrorException mex)
             {
                 // Catch specific Magick.NET exceptions
-                Log.Error($"Magick.NET error during full image montage for '{fullPathNoExt}': {mex.Message}", mex);
+                await _logger.ErrorAsync($"Magick.NET error during full image montage for '{fullPathNoExt}': {mex.Message}", mex);
                 return false;
             }
             catch (FileNotFoundException fex)
             {
                 // Catch if a specific column file was not found during loading
-                Log.Error($"File not found error during full image montage: {fex.FileName}. Details: {fex.Message}", fex);
+                await _logger.ErrorAsync($"File not found error during full image montage: {fex.FileName}. Details: {fex.Message}", fex);
                 return false;
             }
             catch (IOException ioex)
             {
                 // Catch general I/O errors (e.g., file locked, disk full)
-                Log.Error($"I/O error during full image montage for '{fullPathNoExt}': {ioex.Message}", ioex);
+                await _logger.ErrorAsync($"I/O error during full image montage for '{fullPathNoExt}': {ioex.Message}", ioex);
                 return false;
             }
             catch (Exception ex)
             {
                 // Catch any other unexpected exceptions
-                Log.Error($"An unexpected error occurred during full image montage for '{fullPathNoExt}': {ex.Message}", ex);
+                await _logger.ErrorAsync($"An unexpected error occurred during full image montage for '{fullPathNoExt}': {ex.Message}", ex);
                 return false;
             }
         }
@@ -264,7 +269,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="yCount">The number of rows to montage (height of the montage in rows).</param>
         /// <param name="fullPathNoExt">The base path and fullPathNoExt prefix for the input individual row images and the output final montaged image.</param>
         /// <returns><see langword="true"/> if the rows were successfully montaged into a single image; otherwise, <see langword="false"/>.</returns>
-        static internal bool MontageRows(int xCount, int yCount, string fullPathNoExt)
+        public async Task<bool> MontageRowsAsync(int xCount, int yCount, string fullPathNoExt)
         {
             try
             {
@@ -284,9 +289,9 @@ namespace P3D_Scenario_Generator.MapTiles
                 for (int yIndex = 0; yIndex < yCount; yIndex++)
                 {
                     string rowPath = $"{fullPathNoExt}_{yIndex}.png";
-                    if (!File.Exists(rowPath))
+                    if (!_fileOps.FileExists(rowPath))
                     {
-                        Log.Error($"MontageRows: Required row image not found: {rowPath}");
+                        await _logger.ErrorAsync($"Required row image not found: {rowPath}");
                         return false; // Fail if a source row image is missing
                     }
                     images.Add(new MagickImage(rowPath));
@@ -313,25 +318,25 @@ namespace P3D_Scenario_Generator.MapTiles
             catch (MagickErrorException mex)
             {
                 // Catch specific Magick.NET exceptions
-                Log.Error($"Magick.NET error during full image montage for '{fullPathNoExt}': {mex.Message}", mex);
+                await _logger.ErrorAsync($"Magick.NET error during full image montage for '{fullPathNoExt}': {mex.Message}", mex);
                 return false;
             }
             catch (FileNotFoundException fex)
             {
                 // Catch if a specific row file was not found during loading
-                Log.Error($"File not found error during full image montage: {fex.FileName}. Details: {fex.Message}", fex);
+                await _logger.ErrorAsync($"File not found error during full image montage: {fex.FileName}. Details: {fex.Message}", fex);
                 return false;
             }
             catch (IOException ioex)
             {
                 // Catch general I/O errors (e.g., file locked, disk full)
-                Log.Error($"I/O error during full image montage for '{fullPathNoExt}': {ioex.Message}", ioex);
+                await _logger.ErrorAsync($"I/O error during full image montage for '{fullPathNoExt}': {ioex.Message}", ioex);
                 return false;
             }
             catch (Exception ex)
             {
                 // Catch any other unexpected exceptions
-                Log.Error($"An unexpected error occurred during full image montage for '{fullPathNoExt}': {ex.Message}", ex);
+                await _logger.ErrorAsync($"An unexpected error occurred during full image montage for '{fullPathNoExt}': {ex.Message}", ex);
                 return false;
             }
         }
@@ -349,7 +354,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <returns><see langword="true"/> if the entire montage process (downloading, montaging, and cleanup)
         /// completes successfully; otherwise, <see langword="false"/> if any step fails (errors are logged by
         /// underlying methods).</returns>
-        static internal bool MontageTiles(BoundingBox boundingBox, int zoom, string fullPathNoExt, ScenarioFormData formData)
+        public async Task<bool> MontageTilesAsync(BoundingBox boundingBox, int zoom, string fullPathNoExt, ScenarioFormData formData)
         {
             // Step 1: Download individual tiles column by column and montage them into vertical strips.
             // This loop processes each column (columnID) within the specified bounding box.
@@ -357,35 +362,35 @@ namespace P3D_Scenario_Generator.MapTiles
             {
                 // Download all individual tiles for the current column.
                 // If the download of any tile in the column fails, the entire process fails.
-                if (!MapTileDownloader.DownloadOSMtileColumn(boundingBox.XAxis[xIndex], xIndex, boundingBox, zoom, fullPathNoExt, formData))
+                if (!await _mapTileDownloader.DownloadOSMtileColumnAsync(boundingBox.XAxis[xIndex], xIndex, boundingBox, zoom, fullPathNoExt, formData))
                 {
-                    Log.Error($"MontageTiles: Failed to download OSM tile column for xIndex {xIndex}.");
+                    await _logger.ErrorAsync($"Failed to download OSM tile column for xIndex {xIndex}.");
                     return false; // Propagate failure from column download.
                 }
 
                 // Montage the individual tiles (downloaded in the previous step) into a single vertical column image.
                 // If the montage of any column fails, the entire process fails.
-                if (!MontageTilesToColumn(boundingBox.YAxis.Count, xIndex, fullPathNoExt))
+                if (!await MontageTilesToColumnAsync(boundingBox.YAxis.Count, xIndex, fullPathNoExt))
                 {
-                    Log.Error($"MontageTiles: Failed to montage tiles to column for xIndex {xIndex}.");
+                    await _logger.ErrorAsync($"Failed to montage tiles to column for xIndex {xIndex}.");
                     return false; // Propagate failure from column montage.
                 }
             }
 
             // Step 2: Montage the generated column strips horizontally to form the final complete image.
             // This combines all the vertical strips into one large map image.
-            if (!MontageColumns(boundingBox.XAxis.Count, boundingBox.YAxis.Count, fullPathNoExt))
+            if (!await MontageColumnsAsync(boundingBox.XAxis.Count, boundingBox.YAxis.Count, fullPathNoExt))
             {
-                Log.Error($"MontageTiles: Failed to montage columns into final image.");
+                await _logger.ErrorAsync($"Failed to montage columns into final image.");
                 return false; // Propagate failure from final montage.
             }
 
             // Step 3: Delete all temporary individual tile and column strip files.
             // Although cleanup is typically a post-process, if it fails, it's still considered
             // a failure of the overall operation to ensure a clean state (or at least report an issue).
-            if (!FileOps.TryDeleteTempOSMfiles(fullPathNoExt, null)) 
+            if (!await _fileOps.TryDeleteTempOSMfilesAsync(fullPathNoExt, null)) 
             {
-                Log.Error($"MontageTiles: Failed to delete temporary OSM files.");
+                await _logger.ErrorAsync($"Failed to delete temporary OSM files.");
                 return false; // Propagate failure from temporary file deletion.
             }
 

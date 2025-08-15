@@ -1,4 +1,5 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.MapTiles
@@ -15,8 +16,12 @@ namespace P3D_Scenario_Generator.MapTiles
     /// if a tile is not found there, it is downloaded and then stored in the cache
     /// for future use.
     /// </remarks>
-    internal class MapTileDownloader
+    public class MapTileDownloader(IFileOps fileOps, IHttpRoutines httpRoutines, FormProgressReporter progressReporter)
     {
+        private readonly IFileOps _fileOps = fileOps;
+        private readonly IHttpRoutines _httpRoutines = httpRoutines;
+        private readonly FormProgressReporter _progressReporter = progressReporter;
+        private readonly OSMTileCache _osmTileCache = new(fileOps, httpRoutines, progressReporter);
 
         /// <summary>
         /// Orchestrates the retrieval of a single OpenStreetMap (OSM) tile.
@@ -30,7 +35,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="fullPath">The full local path and filename including extension where the OSM tile will be stored after retrieval.</param>
         /// <returns><see langword="true"/> if the OSM tile was successfully retrieved (either from cache or by download) and saved;
         /// otherwise, <see langword="false"/> if any error occurred during the process (errors are logged by underlying methods).</returns>
-        static internal bool DownloadOSMtile(int xTileNo, int yTileNo, int zoom, string fullPath, ScenarioFormData formData)
+        public async Task<bool> DownloadOSMtileAsync(int xTileNo, int yTileNo, int zoom, string fullPath, ScenarioFormData formData)
         {
             // Construct the full URL for the OSM tile based on configured server URL, tile coordinates, zoom, and API key.
             string url = $"{Constants.OSMtileServerURLprefix}/{zoom}/{xTileNo}/{yTileNo}.png?rapidapi-key={formData.CacheServerAPIkey}";
@@ -38,7 +43,7 @@ namespace P3D_Scenario_Generator.MapTiles
             // Delegate the actual retrieval (from cache or download) and saving to the Cache class.
             // The key is constructed using zoom, xTileNo, and yTileNo for cache lookup.
             // Errors are handled and logged by the Cache.GetOrCopyOSMtile method and its dependencies.
-            return OSMTileCache.GetOrCopyOSMtile($"{zoom}-{xTileNo}-{yTileNo}.png", url, fullPath);
+            return await _osmTileCache.GetOrCopyOSMtile($"{zoom}-{xTileNo}-{yTileNo}.png", url, fullPath);
         }
 
         /// <summary>
@@ -54,7 +59,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// Each tile's filename will be suffixed with its columnId and rowId (e.g., "basefilename_xIndex_yIndex.png").</param>
         /// <returns><see langword="true"/> if all tiles in the column were successfully downloaded or retrieved from cache;
         /// otherwise, <see langword="false"/> if any tile operation failed.</returns>
-        static internal bool DownloadOSMtileColumn(int xTileNo, int columnId, BoundingBox boundingBox, int zoom, string fullPathNoExt, ScenarioFormData formData)
+        public async Task<bool> DownloadOSMtileColumnAsync(int xTileNo, int columnId, BoundingBox boundingBox, int zoom, string fullPathNoExt, ScenarioFormData formData)
         {
             // Iterate through each y-axis tile number in the bounding box
             for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
@@ -65,7 +70,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // Attempt to download or copy the individual OSM tile.
                 // If DownloadOSMtile returns false (indicating a failure),
                 // we immediately return false for the entire column download.
-                if (!DownloadOSMtile(xTileNo, boundingBox.YAxis[yIndex], zoom, tileFilename, formData))
+                if (!await DownloadOSMtileAsync(xTileNo, boundingBox.YAxis[yIndex], zoom, tileFilename, formData))
                 {
                     return false; // An individual tile failed to download/copy, so the column download fails.
                 }
@@ -88,7 +93,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// Each tile's filename will be suffixed with its columnId and rowId (e.g., "basefilename_xIndex_yIndex.png").</param>
         /// <returns><see langword="true"/> if all tiles in the row were successfully downloaded or retrieved from cache;
         /// otherwise, <see langword="false"/> if any tile operation failed.</returns>
-        static internal bool DownloadOSMtileRow(int yTileNo, int rowId, BoundingBox boundingBox, int zoom, string fullPathNoExt, ScenarioFormData formData)
+        public async Task<bool> DownloadOSMtileRowAsync(int yTileNo, int rowId, BoundingBox boundingBox, int zoom, string fullPathNoExt, ScenarioFormData formData)
         {
             // Iterate through each x-axis tile number in the bounding box
             for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
@@ -99,7 +104,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 // Attempt to download or copy the individual OSM tile.
                 // If DownloadOSMtile returns false (indicating a failure),
                 // we immediately return false for the entire row download.
-                if (!DownloadOSMtile(boundingBox.XAxis[xIndex], yTileNo, zoom, tileFilename, formData))
+                if (!await DownloadOSMtileAsync(boundingBox.XAxis[xIndex], yTileNo, zoom, tileFilename, formData))
                 {
                     return false; // An individual tile failed to download/copy, so the row download fails.
                 }
