@@ -1,5 +1,5 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Legacy;
+using P3D_Scenario_Generator.Interfaces;
 
 namespace P3D_Scenario_Generator
 {
@@ -7,8 +7,11 @@ namespace P3D_Scenario_Generator
     /// Provides helper methods for parsing and validating numerical string inputs,
     /// specifically for degrees and minutes values, with integrated error logging.
     /// </summary>
-    internal class ParsingHelpers
+    public class ParsingHelpers(ILogger logger, IProgress<string> progressReporter)
     {
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+
         /// <summary>
         /// Attempts to parse a string into an integer representing degrees and validates its range (0 to 360, inclusive).
         /// Logs an error if parsing fails or if the value is out of the valid range.
@@ -16,20 +19,20 @@ namespace P3D_Scenario_Generator
         /// <param name="degreesStringIn">The string containing the degrees value to parse.</param>
         /// <param name="degreesName">A descriptive name for the degrees value (e.g., "Aries GHA") used in error messages.</param>
         /// <param name="degreesIntOut">When this method returns, contains the parsed integer value if successful; otherwise, 0.</param>
-        /// <returns>True if the string was successfully parsed into a valid degree value; otherwise, false.</returns>
-        static internal bool TryParseDegrees(string degreesStringIn, string degreesName, out int degreesIntOut)
+        /// <returns><see langword="true"/> and the parsed integer value if the string was successfully parsed into a valid degree value; otherwise, <see langword="false"/>.</returns>
+        public async Task<(bool success, int degreesIntOut)> TryParseDegreesAsync(string degreesStringIn, string degreesName)
         {
-            if (!int.TryParse(degreesStringIn, out degreesIntOut))
+            if (!int.TryParse(degreesStringIn, out int degreesIntOut))
             {
-                Log.Error($"Failed to parse {degreesName} degrees in string: '{degreesStringIn}'");
-                return false;
+                await _logger.ErrorAsync($"Failed to parse {degreesName} degrees in string: '{degreesStringIn}'");
+                return (false, degreesIntOut);
             }
             if (degreesIntOut < 0 || degreesIntOut > Constants.DegreesInACircle)
             {
-                Log.Error($"{degreesName} degrees out of range in string: {degreesStringIn}");
-                return false;
+                await _logger.ErrorAsync($"{degreesName} degrees out of range in string: {degreesStringIn}");
+                return (false, degreesIntOut);
             }
-            return true;
+            return (true, degreesIntOut);
         }
 
         /// <summary>
@@ -38,21 +41,20 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="minutesStringIn">The string containing the minutes value to parse.</param>
         /// <param name="minutesName">A descriptive name for the minutes value (e.g., "Aries GHA") used in error messages.</param>
-        /// <param name="minutesDoubleOut">When this method returns, contains the parsed double value if successful; otherwise, 0.</param>
-        /// <returns>True if the string was successfully parsed into a valid minute value; otherwise, false.</returns>
-        static internal bool TryParseMinutes(string minutesStringIn, string minutesName, out double minutesDoubleOut)
+        /// <returns><see langword="true"/> and the parsed double value if the string was successfully parsed into a valid minute value; otherwise, <see langword="false"/>.</returns>
+        public async Task<(bool success, double minutesDoubleOut)> TryParseMinutesAsync(string minutesStringIn, string minutesName)
         {
-            if (!double.TryParse(minutesStringIn, out minutesDoubleOut))
+            if (!double.TryParse(minutesStringIn, out double minutesDoubleOut))
             {
-                Log.Error($"Failed to parse {minutesName} minutes in string: '{minutesStringIn}'");
-                return false;
+                await _logger.ErrorAsync($"Failed to parse {minutesName} minutes in string: '{minutesStringIn}'");
+                return (false, minutesDoubleOut);
             }
             if (minutesDoubleOut < 0 || minutesDoubleOut > Constants.MinutesInAnHour)
             {
-                Log.Error($"{minutesName} minutes out of range in string: {minutesStringIn}");
-                return false;
+                await _logger.ErrorAsync($"{minutesName} minutes out of range in string: {minutesStringIn}");
+                return (false, minutesDoubleOut);
             }
-            return true;
+            return (true, minutesDoubleOut);
         }
 
         /// <summary>
@@ -66,7 +68,7 @@ namespace P3D_Scenario_Generator
         /// <param name="doubleOut">When this method returns, contains the parsed double value if successful; otherwise, 0.</param>
         /// <param name="errorMessage">When this method returns, contains an error message if parsing fails or the value is out of range; otherwise, null or empty.</param>
         /// <param name="units">Optional: A string representing the units of the value (e.g., "miles", "knots").</param>
-        /// <returns>True if the string was successfully parsed into a double and is within the specified range; otherwise, false.</returns>
+        /// <returns><see langword="true"/> if the string was successfully parsed into a double and is within the specified range; otherwise, <see langword="false"/>.</returns>
         // Modified method with 'units' parameter
         internal static bool TryParseDouble(
             string valueStringIn,
@@ -108,7 +110,7 @@ namespace P3D_Scenario_Generator
         /// <param name="intOut">When this method returns, contains the parsed integer value if successful; otherwise, 0.</param>
         /// <param name="errorMessage">When this method returns, contains an error message if parsing fails or the value is out of range; otherwise, null or empty.</param>
         /// <param name="units">Optional: A string representing the units of the value (e.g., "feet", "meters").</param>
-        /// <returns>True if the string was successfully parsed into an integer and is within the specified range; otherwise, false.</returns>
+        /// <returns><see langword="true"/> if the string was successfully parsed into an integer and is within the specified range; otherwise, <see langword="false"/>.</returns>
         internal static bool TryParseInteger(
             string valueStringIn,
             string valueName,

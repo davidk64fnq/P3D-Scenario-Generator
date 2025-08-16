@@ -19,6 +19,8 @@ namespace P3D_Scenario_Generator.MapTiles
         private readonly MapTileCalculator _mapTileCalculator = new(logger, progressReporter);
         private readonly BoundingBoxCalculator _boundingBoxCalculator = new(logger, progressReporter);
         private readonly MapTileMontager _mapTileMontager = new(logger, progressReporter, fileOps, httpRoutines);
+        private readonly ImageUtils _imageUtils = new(logger, fileOps, progressReporter);
+        private readonly MapTilePadder _mapTilePadder = new(logger, progressReporter, fileOps, httpRoutines);
 
         /// <summary>
         /// Generates an overview image with dimensions 2 x 2 map tiles from OpenStreetMap tiles based on a set of geographical coordinates.
@@ -72,25 +74,26 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Draw a line connecting coordinates onto image
-            if (drawRoute && !ImageUtils.DrawRoute(tiles, boundingBox, fullPathNoExt))
+            if (drawRoute && !await _imageUtils.DrawRouteAsync(tiles, boundingBox, fullPathNoExt))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.CreateOverviewImage: Failed to draw route on image '{fullPathNoExt}'.");
+                await _logger.ErrorAsync($"Failed to draw route on image '{fullPathNoExt}'.");
                 return false;
             }
 
             // Extend montage of tiles to make the image square (if it isn't already)
-            if (!MakeSquare(boundingBox, fullPathNoExt, zoom, out _, formData))
+            (success, _) = await MakeSquareAsync(boundingBox, fullPathNoExt, zoom, formData);
+            if (!success)
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.CreateOverviewImage: Failed to make image '{fullPathNoExt}' square.");
+                await _logger.ErrorAsync($"Failed to make image '{fullPathNoExt}' square.");
                 return false;
             }
 
             // Move image from temp folder to scenario images folder
             string sourceFullPath = Path.Combine(formData.TempScenarioDirectory, "Charts_01.png");
             string destinationFullPath = Path.Combine(formData.ScenarioImageFolder, "Charts_01.png");
-            if (!FileOps.TryMoveFile(sourceFullPath, destinationFullPath, null))
+            if (!await _fileOps.TryMoveFileAsync(sourceFullPath, destinationFullPath, _progressReporter))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.CreateOverviewImage: Failed to copy image '{sourceFullPath}' to scenario images directory '{destinationFullPath}'.");
+                await _logger.ErrorAsync($"Failed to copy image '{sourceFullPath}' to scenario images directory '{destinationFullPath}'.");
                 return false;
             }
 
@@ -105,37 +108,40 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <returns>True if the location image was successfully created, false otherwise.</returns>
         public async Task<bool> CreateLocationImage(IEnumerable<Coordinate> coordinates, ScenarioFormData formData)
         {
+            bool success;
+
             // Input validation for coordinates
             if (coordinates == null || !coordinates.Any())
             {
-                await _logger.ErrorAsync("MapTileImageMaker.CreateLocationImage: Input coordinates list is null or empty. Cannot create location image.");
+                await _logger.ErrorAsync("Input coordinates list is null or empty. Cannot create location image.");
                 return false;
             }
 
             // Build list of OSM tiles at zoom 15 for all coordinates (the approx zoom to see airport on 1 x 1 map tile image)
             List<Tile> tiles = [];
             int locationImageZoomLevel = 15;
-            _mapTileCalculator.SetOSMTilesForCoordinates(tiles, locationImageZoomLevel, coordinates);
+            await _mapTileCalculator.SetOSMTilesForCoordinatesAsync(tiles, locationImageZoomLevel, coordinates);
 
             // Validate retrieved tiles
             if (tiles == null || tiles.Count == 0)
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.CreateLocationImage: No unique OSM tiles were found for the given coordinates at zoom {locationImageZoomLevel}. This may indicate an issue with coordinate data or tile calculation.");
+                await _logger.ErrorAsync($"No unique OSM tiles were found for the given coordinates at zoom {locationImageZoomLevel}. This may indicate an issue with coordinate data or tile calculation.");
                 return false;
             }
 
             // Build list of x axis and y axis tile numbers that make up montage of tiles to cover set of coordinates
-            if (!_boundingBoxCalculator.GetBoundingBox(tiles, locationImageZoomLevel, out BoundingBox boundingBox)) 
+            (success, BoundingBox boundingBox) = await _boundingBoxCalculator.GetBoundingBoxAsync(tiles, locationImageZoomLevel);
+            if (!success) 
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.CreateLocationImage: Failed to calculate bounding box at zoom {locationImageZoomLevel}.");
+                await _logger.ErrorAsync($"Failed to calculate bounding box at zoom {locationImageZoomLevel}.");
                 return false;
             }
 
             // Create montage of tiles in temp folder
             string fullPathNoExt = Path.Combine(formData.TempScenarioDirectory, "chart_thumb");
-            if (!_mapTileMontager.MontageTilesAsync(boundingBox, locationImageZoomLevel, fullPathNoExt, formData))
+            if (!await _mapTileMontager.MontageTilesAsync(boundingBox, locationImageZoomLevel, fullPathNoExt, formData))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.CreateLocationImage: Failed to montage tiles for image '{fullPathNoExt}'.");
+                await _logger.ErrorAsync($"Failed to montage tiles for image '{fullPathNoExt}'.");
                 return false;
             }
 
@@ -144,19 +150,20 @@ namespace P3D_Scenario_Generator.MapTiles
             if (boundingBox.XAxis.Count != 1 || boundingBox.YAxis.Count != 1)
             {
                 // Attempt to make the image square.
-                if (MakeSquare(boundingBox, fullPathNoExt, locationImageZoomLevel, out _, formData)) 
+                (success, _) = await MakeSquareAsync(boundingBox, fullPathNoExt, locationImageZoomLevel, formData);
+                if (success) 
                 {
                     // ONLY if MakeSquare succeeds, then attempt to resize to the final 1x1 target size.
-                    if (!ImageUtils.Resize($"{fullPathNoExt}.png", Constants.TileSizePixels, Constants.TileSizePixels))
+                    if (!await _imageUtils.ResizeAsync($"{fullPathNoExt}.png", Constants.TileSizePixels, Constants.TileSizePixels))
                     {
-                        await _logger.ErrorAsync($"MapTileImageMaker.CreateLocationImage: Failed to resize image '{fullPathNoExt}.png' after successful MakeSquare. Aborting.");
+                        await _logger.ErrorAsync($"Failed to resize image '{fullPathNoExt}.png' after successful MakeSquare. Aborting.");
                         return false;
                     }
                 }
                 else
                 {
                     // MakeSquare failed. The whole operation for this 'if' branch fails.
-                    await _logger.ErrorAsync($"MapTileImageMaker.CreateLocationImage: Failed to make image '{fullPathNoExt}' square. Aborting.");
+                    await _logger.ErrorAsync($"Failed to make image '{fullPathNoExt}' square. Aborting.");
                     return false;
                 }
             }
@@ -165,9 +172,9 @@ namespace P3D_Scenario_Generator.MapTiles
             // Move image from temp folder to scenario images folder
             string sourceFullPath = Path.Combine(formData.TempScenarioDirectory, "chart_thumb.png");
             string destinationFullPath = Path.Combine(formData.ScenarioImageFolder, "chart_thumb.png");
-            if (!FileOps.TryMoveFile(sourceFullPath, destinationFullPath, null))
+            if (!await _fileOps.TryMoveFileAsync(sourceFullPath, destinationFullPath, _progressReporter))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.CreateLocationImage: Failed to copy image '{sourceFullPath}' to scenario images directory '{destinationFullPath}'.");
+                await _logger.ErrorAsync($"Failed to copy image '{sourceFullPath}' to scenario images directory '{destinationFullPath}'.");
                 return false;
             }
 
@@ -183,20 +190,19 @@ namespace P3D_Scenario_Generator.MapTiles
         /// as input for padding operations.</param>
         /// <param name="fullPathNoExt">The full path without extension of the image being processed. This file will be modified.</param>
         /// <param name="zoom">The current zoom level of the map tiles.</param>
-        /// <param name="paddingMethod">When this method returns, indicates the <see cref="PaddingMethod"/> applied to make the image square, 
-        /// or <see cref="PaddingMethod.None"/> if no padding was needed or an error occurred.</param>
         /// <param name="formData">Contains scenario-specific data, such as temporary directories, needed for operations like tile retrieval.</param>
-        /// <returns><see langword="true"/> if the image was successfully made square; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> MakeSquare(BoundingBox boundingBox, string fullPathNoExt, int zoom, out PaddingMethod paddingMethod, ScenarioFormData formData)
+        /// <returns><see langword="true"/> and padding method if the image was successfully made square; otherwise, <see langword="false"/> and <see cref="PaddingMethod.None"/>.</returns>
+        public async Task<(bool, PaddingMethod paddingMethod)> MakeSquareAsync(BoundingBox boundingBox, string fullPathNoExt, int zoom, ScenarioFormData formData)
         {
+            PaddingMethod paddingMethod;
             try
             {
                 // Input validation
                 if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
                 {
-                    await _logger.ErrorAsync($"MapTileImageMaker.MakeSquare: Input boundingBox is null or empty for file '{fullPathNoExt}'.");
+                    await _logger.ErrorAsync($"Input boundingBox is null or empty for file '{fullPathNoExt}'.");
                     paddingMethod = PaddingMethod.None; 
-                    return false;
+                    return (false, paddingMethod);
                 }
 
                 // Get next tile East and West - allow for possible wrap around meridian
@@ -211,69 +217,69 @@ namespace P3D_Scenario_Generator.MapTiles
                 // Determine padding strategy based on current bounding box dimensions
                 if (boundingBox.XAxis.Count < boundingBox.YAxis.Count) // Current image is taller than it is wide, pad horizontally
                 {
-                    Log.Info($"MakeSquare: Padding West/East for {fullPathNoExt}.");
+                    await _logger.InfoAsync($"Padding West/East for {fullPathNoExt}.");
                     paddingMethod = PaddingMethod.WestEast; 
-                    if (!MapTilePadder.PadWestEast(boundingBox, newWestXindex, newEastXIndex, fullPathNoExt, zoom, formData))
+                    if (!await _mapTilePadder.PadWestEastAsync(boundingBox, newWestXindex, newEastXIndex, fullPathNoExt, zoom, formData))
                     {
-                        await _logger.ErrorAsync($"MakeSquare: Failed to pad West/East for '{fullPathNoExt}'.");
-                        return false;
+                        await _logger.ErrorAsync($"Failed to pad West/East for '{fullPathNoExt}'.");
+                        return (false, paddingMethod);
                     }
                 }
                 else if (boundingBox.YAxis.Count < boundingBox.XAxis.Count) // Current image is wider than it is tall, pad vertically
                 {
                     if (newSouthYindex < 0) // At or near South Pole, can only pad North
                     {
-                        Log.Info($"MakeSquare: At South Pole, padding North only for {fullPathNoExt}.");
+                        await _logger.InfoAsync($"At South Pole, padding North only for {fullPathNoExt}.");
                         paddingMethod = PaddingMethod.North;
-                        if (!MapTilePadder.PadNorth(boundingBox, newNorthYindex, fullPathNoExt, zoom, formData))
+                        if (!await _mapTilePadder.PadNorthAsync(boundingBox, newNorthYindex, fullPathNoExt, zoom, formData))
                         {
-                            await _logger.ErrorAsync($"MakeSquare: Failed to pad North (South Pole) for '{fullPathNoExt}'.");
-                            return false;
+                            await _logger.ErrorAsync($"Failed to pad North (South Pole) for '{fullPathNoExt}'.");
+                            return (false, paddingMethod);
                         }
                     }
                     else if (newNorthYindex < 0) // At or near North Pole, can only pad South
                     {
-                        Log.Info($"MakeSquare: At North Pole, padding South only for {fullPathNoExt}.");
+                        await _logger.InfoAsync($"At North Pole, padding South only for {fullPathNoExt}.");
                         paddingMethod = PaddingMethod.South;
-                        if (!MapTilePadder.PadSouth(boundingBox, newSouthYindex, fullPathNoExt, zoom, formData))
+                        if (!await _mapTilePadder.PadNorthAsync(boundingBox, newSouthYindex, fullPathNoExt, zoom, formData))
                         {
-                            await _logger.ErrorAsync($"MakeSquare: Failed to pad South (North Pole) for '{fullPathNoExt}'.");
-                            return false;
+                            await _logger.ErrorAsync($"Failed to pad South (North Pole) for '{fullPathNoExt}'.");
+                            return (false, paddingMethod);
                         }
                     }
                     else // Can pad both North and South
                     {
-                        Log.Info($"MakeSquare: Padding North/South (general) for {fullPathNoExt}.");
+                        await _logger.InfoAsync($"Padding North/South (general) for {fullPathNoExt}.");
                         paddingMethod = PaddingMethod.NorthSouth;
-                        if (!MapTilePadder.PadNorthSouth(boundingBox, newNorthYindex, newSouthYindex, fullPathNoExt, zoom, formData))
+                        if (!await _mapTilePadder.PadNorthSouthAsync(boundingBox, newNorthYindex, newSouthYindex, fullPathNoExt, zoom, formData))
                         {
-                            await _logger.ErrorAsync($"MakeSquare: Failed to pad North/South (general) for '{fullPathNoExt}'.");
-                            return false;
+                            await _logger.ErrorAsync($"Failed to pad North/South (general) for '{fullPathNoExt}'.");
+                            return (false, paddingMethod);
                         }
                     }
                 }
                 else if (boundingBox.XAxis.Count == boundingBox.YAxis.Count && boundingBox.XAxis.Count == 1) // Image is square but smaller than target size of 2 x 2
                 {
-                    Log.Info($"MakeSquare: Image is square but smaller than target size of 2 x 2, attempting NorthSouthWestEast padding for {fullPathNoExt}.");
+                    await _logger.InfoAsync($"MakeSquare: Image is square but smaller than target size of 2 x 2, attempting NorthSouthWestEast padding for {fullPathNoExt}.");
                     paddingMethod = PaddingMethod.NorthSouthWestEast;
-                    if (!MapTilePadder.PadNorthSouthWestEast(boundingBox, newNorthYindex, newSouthYindex, newWestXindex, newEastXIndex, fullPathNoExt, zoom, formData))
+                    if (!await _mapTilePadder.PadNorthSouthWestEastAsync(boundingBox, newNorthYindex, newSouthYindex, newWestXindex, newEastXIndex, fullPathNoExt, zoom, formData))
                     {
-                        await _logger.ErrorAsync($"MakeSquare: Failed to pad North/South/West/East for '{fullPathNoExt}'.");
-                        return false;
+                        await _logger.ErrorAsync($"Failed to pad North/South/West/East for '{fullPathNoExt}'.");
+                        return (false, paddingMethod);
                     }
                 }
                 else // Already square and at desired size. 
                 {
-                    Log.Info($"MakeSquare: Already square and at desired size.");
+                    await _logger.InfoAsync($"Already square and at desired size.");
                     paddingMethod = PaddingMethod.None; 
                 }
-                return true;
+                return (true, paddingMethod);
             }
             catch (Exception ex)
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.MakeSquare: An unexpected error occurred while trying to make image square for '{fullPathNoExt}': {ex.Message}", ex);
+                await _logger.ErrorAsync($"An unexpected error occurred while trying to make image square for '{fullPathNoExt}': {ex.Message}", ex);
                 paddingMethod = PaddingMethod.None;
-                return false;
+                return (false, paddingMethod);
             }
         }
 
@@ -291,19 +297,21 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <returns><see langword="true"/> if all leg route images were successfully created and their boundaries calculated; otherwise, <see langword="false"/>.</returns>
         public async Task<bool> SetLegRouteImages(IEnumerable<Coordinate> coordinates, List<MapEdges> legMapEdges, int legNo, bool drawRoute, ScenarioFormData formData)
         {
-
+            bool success;
             int legZoomLabel = 1;
             // Create first zoom level image for leg route
-            if (!SetFirstLegRouteImage(coordinates, legNo, drawRoute, legZoomLabel, out int zoom, out PaddingMethod paddingMethod, out BoundingBox boundingBox, formData))
+            (success, int zoom, PaddingMethod paddingMethod, BoundingBox boundingBox) = await SetFirstLegRouteImageAsync(coordinates, legNo, drawRoute, legZoomLabel, formData);
+            if (!success)
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to create route image LegRoute_{legNo:00}_zoom{legZoomLabel}.");
+                await _logger.ErrorAsync($"Failed to create route image LegRoute_{legNo:00}_zoom{legZoomLabel}.");
                 return false;
             }
 
             // Calculate next zoom level bounding box
-            if (!MapTilePadder.GetNextZoomBoundingBox(paddingMethod, boundingBox, out BoundingBox zoomInBoundingBox))
+            (success, BoundingBox zoomInBoundingBox) = await _mapTilePadder.GetNextZoomBoundingBoxAsync(paddingMethod, boundingBox);
+            if (!success)
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to calculate next zoom level bounding box image LegRoute_{legNo:00}_zoom{legZoomLabel}.");
+                await _logger.ErrorAsync($"Failed to calculate next zoom level bounding box image LegRoute_{legNo:00}_zoom{legZoomLabel}.");
                 return false;
             }
 
@@ -316,17 +324,18 @@ namespace P3D_Scenario_Generator.MapTiles
             {
                 legZoomLabel = 1 + inc;
                 // Create subsequent zoom level images for leg route
-                if (!SetNextLegRouteImage(coordinates, legNo, drawRoute, legZoomLabel, zoom + inc, nextBoundingBox, formData))
+                if (!await SetNextLegRouteImageAsync(coordinates, legNo, drawRoute, legZoomLabel, zoom + inc, nextBoundingBox, formData))
                 {
-                    await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to create route image LegRoute_{legNo:00}_zoom{legZoomLabel}.");
+                    await _logger.ErrorAsync($"Failed to create route image LegRoute_{legNo:00}_zoom{legZoomLabel}.");
                     return false;
                 }
 
                 // Calculate next zoom level bounding box
                 paddingMethod = PaddingMethod.None;
-                if (!MapTilePadder.GetNextZoomBoundingBox(paddingMethod, nextBoundingBox, out nextBoundingBox))
+                (success, nextBoundingBox) = await _mapTilePadder.GetNextZoomBoundingBoxAsync(paddingMethod, nextBoundingBox);
+                if (!success)
                 {
-                    await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to calculate next zoom level bounding box image LegRoute_{legNo:00}_zoom{legZoomLabel}.");
+                    await _logger.ErrorAsync($"Failed to calculate next zoom level bounding box image LegRoute_{legNo:00}_zoom{legZoomLabel}.");
                     return false;
                 }
             }
@@ -335,7 +344,7 @@ namespace P3D_Scenario_Generator.MapTiles
             if (!SetLegImageBoundaries(nextBoundingBox, zoom + numberZoomLevels + 1, legMapEdges))
             {
                 string fileName = $"LegRoute_{legNo:00}_zoom{legZoomLabel}";
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to calculate leg route lat/lon boundaries on image '{fileName}'.");
+                await _logger.ErrorAsync($"Failed to calculate leg route lat/lon boundaries on image '{fileName}'.");
                 return false;
             }
 
@@ -357,86 +366,90 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="paddingMethod">When this method returns, indicates the <see cref="PaddingMethod"/> applied to make the image square.</param>
         /// <param name="boundingBox">When this method returns, contains the <see cref="BoundingBox"/> of the generated image after any padding.</param>
         /// <param name="formData">Scenario-specific data, including temporary directories.</param>
-        /// <returns><see langword="true"/> if the initial leg route image was successfully created; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> SetFirstLegRouteImage(IEnumerable<Coordinate> coordinates, int legNo, bool drawRoute, int legZoomLabel, 
-            out int zoom, out PaddingMethod paddingMethod, out BoundingBox boundingBox, ScenarioFormData formData)
+        /// <returns><see langword="true"/> and tupple (zoom, paddingMethod, boundingBox) if the initial leg route image was successfully created; otherwise, <see langword="false"/>.</returns>
+        public async Task<(bool success, int zoom, PaddingMethod paddingMethod, BoundingBox boundingBox)> SetFirstLegRouteImageAsync(IEnumerable<Coordinate> coordinates, 
+            int legNo, bool drawRoute, int legZoomLabel, ScenarioFormData formData)
         {
-            // Initialize out parameters
-            zoom = 0; // Default value for out parameter
-            paddingMethod = PaddingMethod.None; // Default value for out parameter
-            boundingBox = new BoundingBox(); // Initialize the bounding box
+            int zoom = 0; // Default value for out parameter
+            PaddingMethod paddingMethod = PaddingMethod.None; // Default value for out parameter
+            BoundingBox boundingBox = new(); // Initialize the bounding box
+
+            bool success;
 
             // Input validation for coordinates
             if (coordinates == null || !coordinates.Any())
             {
-                await _logger.ErrorAsync("MapTileImageMaker.SetLegRouteImage: Input coordinates list is null or empty. Cannot create route image.");
-                return false;
+                await _logger.ErrorAsync("Input coordinates list is null or empty. Cannot create route image.");
+                return (false, zoom, paddingMethod, boundingBox);
             }
 
-            if (!_mapTileCalculator.GetOptimalZoomLevel(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor, out zoom))
+            (success, zoom) = await _mapTileCalculator.GetOptimalZoomLevelAsync(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor);
+            if (!success)
             {
                 // GetOptimalZoomLevel already logs specific errors internally.
-                await _logger.ErrorAsync("MapTileImageMaker.SetLegRouteImage: Failed to determine optimal zoom level. See previous logs for details.");
-                return false;
+                await _logger.ErrorAsync("Failed to determine optimal zoom level. See previous logs for details.");
+                return (false, zoom, paddingMethod, boundingBox);
             }
 
             // Build list of OSM tiles at required zoom for all coordinates
             List<Tile> tiles = [];
-            _mapTileCalculator.SetOSMTilesForCoordinates(tiles, zoom, coordinates);
+            await _mapTileCalculator.SetOSMTilesForCoordinatesAsync(tiles, zoom, coordinates);
 
             // Ensure tiles were successfully retrieved before proceeding
             if (tiles == null || tiles.Count == 0)
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: No OSM tiles found for the given coordinates at zoom {zoom}.");
-                return false;
+                await _logger.ErrorAsync($"No OSM tiles found for the given coordinates at zoom {zoom}.");
+                return (false, zoom, paddingMethod, boundingBox);
             }
 
             // Build list of x axis and y axis tile numbers that make up montage of tiles to cover set of coordinates
-            if (!_boundingBoxCalculator.GetBoundingBox(tiles, zoom, out boundingBox))
+            (success, boundingBox) = await _boundingBoxCalculator.GetBoundingBoxAsync(tiles, zoom);
+            if (!success)
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to calculate bounding box at zoom {zoom}.");
-                return false;
+                await _logger.ErrorAsync($"Failed to calculate bounding box at zoom {zoom}.");
+                return (false, zoom, paddingMethod, boundingBox);
             }
 
             // Create montage of tiles in temp folder
             string fullPathNoExt = Path.Combine(formData.TempScenarioDirectory, $"LegRoute_{legNo:00}_zoom{legZoomLabel}");
-            if (!_mapTileMontager.MontageTilesAsync(boundingBox, zoom, fullPathNoExt, formData))
+            if (!await _mapTileMontager.MontageTilesAsync(boundingBox, zoom, fullPathNoExt, formData))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to montage tiles for image '{fullPathNoExt}'.");
-                return false;
+                await _logger.ErrorAsync($"Failed to montage tiles for image '{fullPathNoExt}'.");
+                return (false, zoom, paddingMethod, boundingBox);
             }
 
             // Draw a line connecting coordinates onto image
-            if (drawRoute && !ImageUtils.DrawRoute(tiles, boundingBox, fullPathNoExt))
+            if (drawRoute && !await _imageUtils.DrawRouteAsync(tiles, boundingBox, fullPathNoExt))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to draw route on image '{fullPathNoExt}'.");
-                return false;
+                await _logger.ErrorAsync($"Failed to draw route on image '{fullPathNoExt}'.");
+                return (false, zoom, paddingMethod, boundingBox);
             }
 
             // Extend montage of tiles to make the image square (if it isn't already)
-            if (!MakeSquare(boundingBox, fullPathNoExt, zoom, out paddingMethod, formData))
+            (success, paddingMethod) = await MakeSquareAsync(boundingBox, fullPathNoExt, zoom, formData);
+            if (!success)
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to make image '{fullPathNoExt}' square.");
-                return false;
+                await _logger.ErrorAsync($"Failed to make image '{fullPathNoExt}' square.");
+                return (false, zoom, paddingMethod, boundingBox);
             }
 
             // Convert image format from png to jpg
-            if (!ImageUtils.ConvertImageformat(fullPathNoExt, "png", "jpg"))
+            if (!await _imageUtils.ConvertImageformatAsync(fullPathNoExt, "png", "jpg"))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to convert from png to jpg on image '{fullPathNoExt}'.");
-                return false;
+                await _logger.ErrorAsync($"Failed to convert from png to jpg on image '{fullPathNoExt}'.");
+                return (false, zoom, paddingMethod, boundingBox);
             }
 
             // Move image from temp folder to scenario images folder
             string sourceFullPath = $"{fullPathNoExt}.jpg";
             string destinationFullPath = Path.Combine(formData.ScenarioImageFolder, Path.GetFileNameWithoutExtension(fullPathNoExt) + ".jpg");
-            if (!FileOps.TryMoveFile(sourceFullPath, destinationFullPath, null))
+            if (!await _fileOps.TryMoveFileAsync(sourceFullPath, destinationFullPath, _progressReporter))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.CreateLocationImage: Failed to copy image '{sourceFullPath}' to scenario images directory '{destinationFullPath}'.");
-                return false;
+                await _logger.ErrorAsync($"Failed to copy image '{sourceFullPath}' to scenario images directory '{destinationFullPath}'.");
+                return (false, zoom, paddingMethod, boundingBox);
             }
 
-            return true;
+            return (true, zoom, paddingMethod, boundingBox);
         }
 
         /// <summary>
@@ -453,48 +466,48 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="nextBoundingBox">The <see cref="BoundingBox"/> corresponding to the tiles at the current zoom level for this image.</param>
         /// <param name="formData">Scenario-specific data, including temporary directories.</param>
         /// <returns><see langword="true"/> if the leg route image for the specified zoom level was successfully created; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> SetNextLegRouteImage(IEnumerable<Coordinate> coordinates, int legNo, bool drawRoute, int legZoomLabel, int zoom, 
+        public async Task<bool> SetNextLegRouteImageAsync(IEnumerable<Coordinate> coordinates, int legNo, bool drawRoute, int legZoomLabel, int zoom, 
             BoundingBox nextBoundingBox, ScenarioFormData formData)
         {
             // Build list of OSM tiles at required zoom for all coordinates
             List<Tile> tiles = [];
-            _mapTileCalculator.SetOSMTilesForCoordinatesAsync(tiles, zoom, coordinates);
+            await _mapTileCalculator.SetOSMTilesForCoordinatesAsync(tiles, zoom, coordinates);
 
             // Ensure tiles were successfully retrieved before proceeding
             if (tiles == null || tiles.Count == 0)
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: No OSM tiles found for the given coordinates at zoom {zoom}.");
+                await _logger.ErrorAsync($"No OSM tiles found for the given coordinates at zoom {zoom}.");
                 return false;
             }
 
             // Create montage of tiles in temp folder
             string fullPathNoExt = Path.Combine(formData.TempScenarioDirectory, $"LegRoute_{legNo:00}_zoom{legZoomLabel}");
-            if (!_mapTileMontager.MontageTilesAsync(nextBoundingBox, zoom, fullPathNoExt, formData))
+            if (!await _mapTileMontager.MontageTilesAsync(nextBoundingBox, zoom, fullPathNoExt, formData))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to montage tiles for image '{fullPathNoExt}'.");
+                await _logger.ErrorAsync($"Failed to montage tiles for image '{fullPathNoExt}'.");
                 return false;
             }
 
             // Draw a line connecting coordinates onto image
-            if (drawRoute && !ImageUtils.DrawRoute(tiles, nextBoundingBox, fullPathNoExt))
+            if (drawRoute && !await _imageUtils.DrawRouteAsync(tiles, nextBoundingBox, fullPathNoExt))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to draw route on image '{fullPathNoExt}'.");
+                await _logger.ErrorAsync($"Failed to draw route on image '{fullPathNoExt}'.");
                 return false;
             }
 
             // Convert image format from png to jpg
-            if (!ImageUtils.ConvertImageformat(fullPathNoExt, "png", "jpg"))
+            if (!await _imageUtils.ConvertImageformatAsync(fullPathNoExt, "png", "jpg"))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.SetLegRouteImage: Failed to convert from png to jpg on image '{fullPathNoExt}'.");
+                await _logger.ErrorAsync($"Failed to convert from png to jpg on image '{fullPathNoExt}'.");
                 return false;
             }
 
             // Move image from temp folder to scenario images folder
             string sourceFullPath = $"{fullPathNoExt}.jpg";
             string destinationFullPath = Path.Combine(formData.ScenarioImageFolder, Path.GetFileNameWithoutExtension(fullPathNoExt) + ".jpg");
-            if (!FileOps.TryMoveFile(sourceFullPath, destinationFullPath, null))
+            if (!await _fileOps.TryMoveFileAsync(sourceFullPath, destinationFullPath, _progressReporter))
             {
-                await _logger.ErrorAsync($"MapTileImageMaker.CreateLocationImage: Failed to copy image '{sourceFullPath}' to scenario images directory '{destinationFullPath}'.");
+                await _logger.ErrorAsync($"Failed to copy image '{sourceFullPath}' to scenario images directory '{destinationFullPath}'.");
                 return false;
             }
 
