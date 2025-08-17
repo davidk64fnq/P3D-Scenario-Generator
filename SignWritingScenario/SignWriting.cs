@@ -1,5 +1,6 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
@@ -14,18 +15,23 @@ namespace P3D_Scenario_Generator.SignWritingScenario
     /// This includes initializing character segment mappings, generating flight gates for the sign message,
     /// and preparing map images for scenario overview and location display.
     /// </summary>
-    internal class SignWriting
+    public class SignWriting(ILogger logger, IFileOps fileOps, FormProgressReporter progressReporter, IHttpRoutines httpRoutines)
     {
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly IHttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
+        private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
 
         /// <summary>
         /// The gates comprising the message for the signwriting scenario. Methods for setting gates are in gates.cs
         /// </summary>
-        static internal List<Gate> gates = [];
+        internal List<Gate> gates = [];
 
         /// <summary>
         /// Called from Form1.cs to do the scenario specific work in creating a signwriting scenario
         /// </summary>
-        static internal async Task<bool> SetSignWriting(ScenarioFormData formData, RunwayManager runwayManager)
+        public async Task<bool> SetSignWritingAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
             // Scenario starts and finishes at user selected airport
             // The GetRunwayByIndex method is now asynchronous and must be awaited.
@@ -40,25 +46,36 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             gates = SignGateGenerator.SetSignGatesMessage(formData);
             if (gates.Count == 0)
             {
-                await Log.ErrorAsync("Failed to generate the sign writing scenario.");
+                await _logger.ErrorAsync("Failed to generate the sign writing scenario.");
                 return false;
             }
 
             bool drawRoute = false;
-            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(formData), drawRoute, formData))
+            if (!await _mapTileImageMaker.CreateOverviewImageAsync(SetOverviewCoords(formData), drawRoute, formData))
             {
-                await Log.ErrorAsync("Failed to create overview image during sign writing setup.");
+                await _logger.ErrorAsync("Failed to create overview image during sign writing setup.");
                 return false;
             }
 
-            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(formData), formData))
+            if (!await _mapTileImageMaker.CreateLocationImageAsync(SetLocationCoords(formData), formData))
             {
-                await Log.ErrorAsync("Failed to create location image during sign writing setup.");
+                await _logger.ErrorAsync("Failed to create location image during sign writing setup.");
                 return false;
             }
 
-            ScenarioHTML.Overview overview = SetOverviewStruct(formData);
-            ScenarioHTML.GenerateHTMLfiles(formData, overview);
+            Overview overview = SetOverviewStruct(formData);
+            ScenarioHTML scenarioHTML = new(_logger, _fileOps, _progressReporter);
+            if (!await scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
+            {
+                string message = "Failed to generate HTML files during circuit setup.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
+                return false;
+            }
+
+            ScenarioXML.SetSimbaseDocumentXML(formData, overview);
+            ScenarioXML.SetSignWritingWorldBaseFlightXML(formData, overview, this, _progressReporter, fileOps);
+            ScenarioXML.WriteXML(formData, fileOps, progressReporter);
 
             return true;
         }
@@ -174,16 +191,26 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// <paramref name="formData"/>, respectively. The resulting HTML content is then
         /// saved as "htmlSignWriting.html" in the scenario's image folder.
         /// </remarks>
-        static internal void SetSignWritingHTML(ScenarioFormData formData)
+        public async Task<bool> SetSignWritingHTML(ScenarioFormData formData)
         {
             string signWritingHTML;
 
-            FileOps.TryGetResourceStream("HTML.SignWriting.html", null, out Stream stream);
-            StreamReader reader = new(stream);
-            signWritingHTML = reader.ReadToEnd();
-            string saveLocation = $"{formData.ScenarioImageFolder}\\htmlSignWriting.html";
-            File.WriteAllText(saveLocation, signWritingHTML);
-            stream.Dispose();
+            (bool success, Stream stream) = await _fileOps.TryGetResourceStreamAsync("HTML.SignWriting.html", _progressReporter);
+            if (!success)
+            {
+                return false;
+            }
+            using (stream)
+            using (StreamReader reader = new(stream))
+            {
+                signWritingHTML = reader.ReadToEnd();
+                string saveLocation = $"{formData.ScenarioImageFolder}\\htmlSignWriting.html";
+                if (!await _fileOps.TryWriteAllTextAsync(saveLocation, signWritingHTML, _progressReporter))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <summary>
@@ -193,16 +220,17 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// </summary>
         /// <param name="formData">The scenario form data containing configuration details.</param>
         /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        internal static void SetSignWritingJS(ScenarioFormData formData, IProgress<string> progressReporter = null)
+        public async Task<bool> SetSignWritingJS(ScenarioFormData formData, IProgress<string> progressReporter)
         {
             // --- 1. Process and save the main signWriting.js file ---
 
             string signWritingJS;
+            bool success;
 
-            if (!FileOps.TryGetResourceStream("Javascript.scriptsSignWriting.js", progressReporter, out Stream mainJsStream))
+            (success, Stream mainJsStream) = await _fileOps.TryGetResourceStreamAsync("Javascript.scriptsSignWriting.js", progressReporter);
+            if (!success)
             {
-                // Error already reported by TryGetResourceStream
-                return;
+                return false;
             }
 
             using (mainJsStream) // Ensure the stream is disposed
@@ -287,11 +315,9 @@ namespace P3D_Scenario_Generator.SignWritingScenario
 
             // --- Save the modified main JavaScript file using FileOps.TryWriteAllText ---
             string mainJsSaveLocation = Path.Combine(formData.ScenarioImageFolder, "scriptsSignWriting.js");
-            if (!FileOps.TryWriteAllText(mainJsSaveLocation, signWritingJS, progressReporter))
+            if (!await _fileOps.TryWriteAllTextAsync(mainJsSaveLocation, signWritingJS, progressReporter))
             {
-                // FileOps.TryWriteAllText already logs/reports errors, so just return false.
-                // No need for additional progressReporter.Report here.
-                return; // Exit if critical file write fails
+                return false; // Exit if critical file write fails
             }
 
             // --- 2. Copy Geodesy library files using FileOps.TryCopyStreamToFile ---
@@ -314,7 +340,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             string[] resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
             foreach (string name in resourceNames)
             {
-                Log.Info($"Found resource: {name}");
+                await _logger.InfoAsync($"Found resource: {name}");
                 // Or logToConsole, or a MessageBox for immediate feedback during testing
             }
 
@@ -327,16 +353,16 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 string destinationPath = Path.Combine(geodesySaveDirectory, fileName); // Save directly to formData.ScenarioImageFolder
 
                 // Use the new helper to get the resource stream
-                if (!FileOps.TryGetResourceStream(resourcePath, progressReporter, out Stream resourceStream))
+                (success, Stream resourceStream) = await _fileOps.TryGetResourceStreamAsync(resourcePath, progressReporter);
+                if (!success)
                 {
-                    // Error already reported by TryGetResourceStream. Continue to the next file.
                     continue;
                 }
 
                 using (resourceStream) // Ensure the stream is disposed
                 {
                     // Use FileOps.TryCopyStreamToFile to copy the resource stream to the destination file
-                    if (!FileOps.TryCopyStreamToFile(resourceStream, destinationPath, progressReporter))
+                    if (!await _fileOps.TryCopyStreamToFileAsync(resourceStream, destinationPath, progressReporter))
                     {
                         // FileOps.TryCopyStreamToFile already logs/reports errors.
                         // For now, just continue to the next file as FileOps handles the reporting.
@@ -348,21 +374,34 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                     }
                 }
             }
+
+            return true;
         }
 
-        static internal void SetSignWritingCSS(ScenarioFormData formData)
+        public async Task<bool> SetSignWritingCSS(ScenarioFormData formData)
         {
             string signWritingCSS;
-            FileOps.TryGetResourceStream("CSS.styleSignWriting.css", null, out Stream stream);
-            StreamReader reader = new(stream);
-            signWritingCSS = reader.ReadToEnd();
+            (bool success, Stream stream) = await _fileOps.TryGetResourceStreamAsync("CSS.styleSignWriting.css", null); if (!success)
+            if (!success)
+            {
+                return false;
+            }
 
-            string saveLocation = $"{formData.ScenarioImageFolder}\\styleSignWriting.css";
-            File.WriteAllText(saveLocation, signWritingCSS);
-            stream.Dispose();
+            using (stream)
+            using (StreamReader reader = new(stream))
+            {
+                signWritingCSS = reader.ReadToEnd();
+                string saveLocation = $"{formData.ScenarioImageFolder}\\styleSignWriting.css";
+                if(!await _fileOps.TryWriteAllTextAsync(saveLocation, signWritingCSS, _progressReporter))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
-        public static ScenarioHTML.Overview SetOverviewStruct(ScenarioFormData formData)
+        public static Overview SetOverviewStruct(ScenarioFormData formData)
         {
             string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
             briefing += " as you take on the role of sign writer in the sky! ";
@@ -374,7 +413,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
             double duration = GetSignWritingDistance(formData) / formData.AircraftCruiseSpeed * 60;
 
-            ScenarioHTML.Overview overview = new()
+            Overview overview = new()
             {
                 Title = "Sign Writing",
                 Heading1 = "Sign Writing",

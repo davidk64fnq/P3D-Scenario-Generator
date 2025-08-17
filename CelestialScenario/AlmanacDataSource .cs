@@ -15,6 +15,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly IHttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
         private readonly AlmanacData _almanacData = almanacData ?? throw new ArgumentNullException(nameof(almanacData));
+        private readonly ParsingHelpers _parsingHelpers = new(logger, progressReporter);
 
         /// <summary>
         /// Using scenario date provided by user, obtain almanac data for three days, and extract Aries GHA degrees and minutes,
@@ -85,6 +86,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             const int StarGHAdegreesIndex = 0;
             const int StarGHAminutesIndex = 1;
             int day = 0, hour = 0;
+            bool success;
             var hourDataLines = await GetAriesGHAdataBlockAsync(almanacDataHtml);
             if (hourDataLines != null)
             {
@@ -100,10 +102,12 @@ namespace P3D_Scenario_Generator.CelestialScenario
                             return false;
                         }
 
-                        if (!ParsingHelpers.TryParseDegrees(spaces[StarGHAdegreesIndex], "Aries GHA", out _almanacData.ariesGHAd[day, hour]))
+                        (success, _almanacData.ariesGHAd[day, hour]) = await _parsingHelpers.TryParseDegreesAsync(spaces[StarGHAdegreesIndex], "Aries GHA");
+                        if (!success)
                             return false;
 
-                        if (!ParsingHelpers.TryParseMinutes(spaces[StarGHAminutesIndex], "Aries GHA", out _almanacData.ariesGHAm[day, hour++]))
+                        (success, _almanacData.ariesGHAm[day, hour++]) = await _parsingHelpers.TryParseMinutesAsync(spaces[StarGHAminutesIndex], "Aries GHA");
+                        if (!success)
                             return false;
 
                         if (hour == Constants.HoursInADay) { hour = 0; day++; }
@@ -150,7 +154,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                     return false;
                 }
 
-                if (!TryParseStarDataValues(starDataValues, starIndex, starName))
+                if (!await TryParseStarDataValues(starDataValues, starIndex, starName))
                 {
                     await _logger.ErrorAsync($"Unable to parse the star data values for star name \"{starName}\" in almanac data.");
                     return false;
@@ -355,18 +359,21 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// <param name="starIndex">The array index at which to store the parsed star data (e.g., 0 for Acamar, 1 for Achernar).</param>
         /// <param name="starName">The name of the star for context in error messages (e.g., "Acamar").</param>
         /// <returns><see langword="true"/> if all SHA and Declination values are successfully parsed and validated; otherwise, <see langword="false"/>.</returns>
-        internal bool TryParseStarDataValues(string[] starDataValues, int starIndex, string starName)
+        internal async Task<bool> TryParseStarDataValues(string[] starDataValues, int starIndex, string starName)
         {
             const int StarSHAdegreesIndex = 0;
             const int StarSHAminutesIndex = 1;
             const int ExpectedMinSpaceParts = 4;
             const int ExpectedMaxSpaceParts = 5;
+            bool success;
 
             // Store SHA degrees and minutes for current star
-            if (!ParsingHelpers.TryParseDegrees(starDataValues[StarSHAdegreesIndex], $"{starName} SHA", out _almanacData.starsSHAd[starIndex]))
+            (success, _almanacData.starsSHAd[starIndex]) = await _parsingHelpers.TryParseDegreesAsync(starDataValues[StarSHAdegreesIndex], $"{starName} SHA");
+            if (!success)
                 return false;
 
-            if (!ParsingHelpers.TryParseMinutes(starDataValues[StarSHAminutesIndex], $"{starName} SHA", out _almanacData.starsSHAm[starIndex]))
+            (success, _almanacData.starsSHAm[starIndex]) = await _parsingHelpers.TryParseMinutesAsync(starDataValues[StarSHAminutesIndex], $"{starName} SHA");
+            if (!success)
                 return false;
 
             // Store SHA declination degrees and minutes, if degrees is < 10 then there is a space between the N or S character and the degrees number
@@ -375,11 +382,14 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 const int starDECsignIndex = 2;
                 const int starDECdegreesIndex = 2;
                 const int starDECminutesIndex = 3;
-                if (!ParsingHelpers.TryParseDegrees(starDataValues[starDECdegreesIndex][1..], $"{starName} Dec", out _almanacData.starsDECd[starIndex])) // Exclude N or S character
+
+                (success, _almanacData.starsDECd[starIndex]) = await _parsingHelpers.TryParseDegreesAsync(starDataValues[starDECdegreesIndex][1..], $"{starName} Dec"); // Exclude N or S character
+                if (!success) 
                     return false;
                 if (starDataValues[starDECsignIndex][0] == 'S')
                     _almanacData.starsDECd[starIndex] *= -1;
-                if (!ParsingHelpers.TryParseMinutes(starDataValues[starDECminutesIndex], $"{starName} Dec", out _almanacData.starsDECm[starIndex]))
+                (success, _almanacData.starsDECm[starIndex]) = await _parsingHelpers.TryParseMinutesAsync(starDataValues[starDECminutesIndex], $"{starName} Dec");
+                if (!success)
                     return false;
             }
             else if (starDataValues.Length == ExpectedMaxSpaceParts)
@@ -387,11 +397,14 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 const int starDECsignIndex = 2;
                 const int starDECdegreesIndex = 3;
                 const int starDECminutesIndex = 4;
-                if (!ParsingHelpers.TryParseDegrees(starDataValues[starDECdegreesIndex], $"{starName} Dec", out _almanacData.starsDECd[starIndex])) // Exclude N or S character
+
+                (success, _almanacData.starsDECd[starIndex]) = await _parsingHelpers.TryParseDegreesAsync(starDataValues[starDECdegreesIndex], $"{starName} Dec"); // Exclude N or S character
+                if (!success) 
                     return false;
                 if (starDataValues[starDECsignIndex][0] == 'S')
                     _almanacData.starsDECd[starIndex] *= -1;
-                if (!ParsingHelpers.TryParseMinutes(starDataValues[starDECminutesIndex], $"{starName} Dec", out _almanacData.starsDECm[starIndex]))
+                (success, _almanacData.starsDECm[starIndex]) = await _parsingHelpers.TryParseMinutesAsync(starDataValues[starDECminutesIndex], $"{starName} Dec");
+                if (!success)
                     return false;
             }
             return true;

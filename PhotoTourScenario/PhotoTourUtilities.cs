@@ -1,6 +1,7 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.PhotoTourScenario
@@ -10,10 +11,13 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// including geographical coordinate extraction for mapping, tour distance calculations,
     /// photo location retrieval, and photo download/resizing operations.
     /// </summary>
-    public class PhotoTourUtilities(ILogger logger, IHttpRoutines httpRoutines)
+    public class PhotoTourUtilities(ILogger logger, IHttpRoutines httpRoutines, IProgress<string> progressReporter, IFileOps fileOps)
     {
-        private readonly ILogger _log = logger;
+        private readonly ILogger _logger = logger;
         private readonly IHttpRoutines _httpRoutines = httpRoutines;
+        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly ImageUtils _imageUtils = new(logger, fileOps, progressReporter);
 
         /// <summary>
         /// Creates and returns an enumerable collection of <see cref="Coordinate"/> objects
@@ -120,7 +124,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 // 1. Download the photo
                 if (!await _httpRoutines.DownloadBinaryFileAsync(photoLocations[index].photoURL, filePath))
                 {
-                    Log.Error($"PhotoTour.GetPhotos: Failed to download photo from '{photoLocations[index].photoURL}'.");
+                    await _logger.ErrorAsync($"Failed to download photo from '{photoLocations[index].photoURL}'.");
                     return false;
                 }
 
@@ -143,7 +147,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"PhotoTour.GetPhotos: Could not load image '{filePath}' into memory for dimension check. Error: {ex.Message}");
+                    await _logger.ErrorAsync($"Could not load image '{filePath}' into memory for dimension check. Error: {ex.Message}");
                     return false;
                 }
                 // At this point, the file `filePath` is no longer locked by your `Bitmap` object.
@@ -188,16 +192,16 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                     if (newWidth <= 0) newWidth = 1;
                     if (newHeight <= 0) newHeight = 1;
 
-                    Log.Info($"PhotoTour.GetPhotos: Resizing '{filename}' from {originalWidth}x{originalHeight} to {newWidth}x{newHeight}.");
+                    await _logger.InfoAsync($"Resizing '{filename}' from {originalWidth}x{originalHeight} to {newWidth}x{newHeight}.");
                 }
 
                 // If photo needs resizing, call ImageUtils.Resize with calculated dimensions
                 if (needsResize)
                 {
                     // ImageUtils.Resize should now be able to open and modify the file
-                    if (!ImageUtils.Resize(filePath, newWidth, newHeight))
+                    if (!await _imageUtils.ResizeAsync(filePath, newWidth, newHeight))
                     {
-                        Log.Error($"PhotoTour.GetPhotos: Failed to resize image '{filename}'.");
+                        await _logger.ErrorAsync($"Failed to resize image '{filename}'.");
                         return false;
                     }
                 }
@@ -206,7 +210,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             return true;
         }
 
-        public static ScenarioHTML.Overview SetOverviewStruct(ScenarioFormData formData, List<PhotoLocParams> photoLocations)
+        public static Overview SetOverviewStruct(ScenarioFormData formData, List<PhotoLocParams> photoLocations)
         {
             // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
             double duration = PhotoTourUtilities.GetPhotoTourDistance(photoLocations) / formData.AircraftCruiseSpeed * 60;
@@ -218,7 +222,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
             briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
 
-            ScenarioHTML.Overview overview = new()
+            Overview overview = new()
             {
                 Title = "Photo Tour",
                 Heading1 = "Photo Tour",

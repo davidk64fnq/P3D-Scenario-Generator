@@ -4,7 +4,7 @@ using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
     /// Provides utility methods for various image manipulations, including drawing, resizing,
@@ -58,8 +58,8 @@ namespace P3D_Scenario_Generator
                 for (int tileNo = 0; tileNo < tiles.Count; tileNo++)
                 {
                     // Calculate the pixel coordinates for the current tile's offset point
-                    int centreX = (boundingBox.XAxis.IndexOf(tiles[tileNo].XIndex) * Constants.TileSizePixels) + tiles[tileNo].XOffset;
-                    int centreY = (boundingBox.YAxis.IndexOf(tiles[tileNo].YIndex) * Constants.TileSizePixels) + tiles[tileNo].YOffset;
+                    int centreX = boundingBox.XAxis.IndexOf(tiles[tileNo].XIndex) * Constants.TileSizePixels + tiles[tileNo].XOffset;
+                    int centreY = boundingBox.YAxis.IndexOf(tiles[tileNo].YIndex) * Constants.TileSizePixels + tiles[tileNo].YOffset;
 
                     if (tileNo > 0)
                     {

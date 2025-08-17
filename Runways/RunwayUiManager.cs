@@ -1,5 +1,4 @@
 ﻿using P3D_Scenario_Generator.Interfaces;
-using P3D_Scenario_Generator.Legacy;
 
 namespace P3D_Scenario_Generator.Runways
 {
@@ -14,11 +13,12 @@ namespace P3D_Scenario_Generator.Runways
     /// <param name="searcher">An instance of RunwaySearcher to get raw runway data from.</param>
     /// <param name="logger">An instance of an asynchronous logging service.</param>
     /// <param name="cacheManager">An instance of a cache manager for serialization/deserialization.</param>
-    public class RunwayUiManager(RunwaySearcher searcher, ILogger logger, ICacheManager cacheManager)
+    public class RunwayUiManager(RunwaySearcher searcher, ILogger logger, ICacheManager cacheManager, IFileOps fileOps)
     {
         private readonly RunwaySearcher _searcher = searcher ?? throw new ArgumentNullException(nameof(searcher));
         private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly ICacheManager _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
 
         public RunwayUILists UILists { get; } = new RunwayUILists();
 
@@ -93,7 +93,8 @@ namespace P3D_Scenario_Generator.Runways
                 try
                 {
                     // Assuming FileOps and embedded resource logic are elsewhere.
-                    if (FileOps.TryGetResourceStream("Text.LocationFavouritesJSON.txt", progressReporter, out Stream resourceStream))
+                    (bool success, Stream resourceStream) = await _fileOps.TryGetResourceStreamAsync("Text.LocationFavouritesJSON.txt", progressReporter);
+                    if (success)
                     {
                         using (resourceStream)
                         {

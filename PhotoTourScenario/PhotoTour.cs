@@ -60,13 +60,15 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// <param name="logger">The logging service.</param>
     /// <param name="fileOps">The file operations service.</param>
     /// <param name="httpRoutines">The HTTP routines service.</param>
-    public class PhotoTour(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines)
+    public class PhotoTour(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines, FormProgressReporter progressReporter)
     {
-        private readonly Pic2MapHtmlParser _pic2MapHtmlParser = new(logger, httpRoutines);
-        private readonly PhotoTourUtilities _photoTourUtilities = new(logger, httpRoutines);
+        private readonly PhotoTourUtilities _photoTourUtilities = new(logger, httpRoutines, progressReporter, fileOps);
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly ILogger _logger = logger;
         private readonly IFileOps _fileOps = fileOps;
         private readonly IHttpRoutines _httpRoutines = httpRoutines;
+        private readonly Pic2MapHtmlParser _pic2MapHtmlParser = new(logger, httpRoutines);
+        private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
 
         internal List<PhotoLocParams> PhotoLocations { get; private set; } = [];
 
@@ -77,7 +79,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <summary>
         /// Populate PhotoLocations plus set airport(s) and create OSM images
         /// </summary>
-        internal async Task<bool> SetPhotoTour(ScenarioFormData formData, RunwayManager runwayManager, IProgress<string> progressReporter = null)
+        public async Task<bool> SetPhotoTourAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
             if (!await SetRandomPhotoTour(formData, runwayManager, progressReporter))
             {
@@ -86,13 +88,13 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
 
             bool drawRoute = false;
-            if (!MapTileImageMaker.CreateOverviewImage(PhotoTourUtilities.SetOverviewCoords(PhotoLocations), drawRoute, formData))
+            if (!await _mapTileImageMaker.CreateOverviewImageAsync(PhotoTourUtilities.SetOverviewCoords(PhotoLocations), drawRoute, formData))
             {
                 await _logger.ErrorAsync("Failed to create overview image during photo tour setup.");
                 return false;
             }
 
-            if (!MapTileImageMaker.CreateLocationImage(PhotoTourUtilities.SetLocationCoords(formData), formData))
+            if (!await _mapTileImageMaker.CreateLocationImageAsync(PhotoTourUtilities.SetLocationCoords(formData), formData))
             {
                 await _logger.ErrorAsync("Failed to create location image during photo tour setup.");
                 return false;
@@ -103,15 +105,26 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             for (int index = 0; index < PhotoLocations.Count - 1; index++)
             {
                 int legNo = index + 1;
-                if (!MapTileImageMaker.SetLegRouteImages(PhotoTourUtilities.SetRouteCoords(PhotoLocations, index), PhotoTourLegMapEdges, legNo, drawRoute, formData))
+                if (!await _mapTileImageMaker.SetLegRouteImagesAsync(PhotoTourUtilities.SetRouteCoords(PhotoLocations, index), PhotoTourLegMapEdges, legNo, drawRoute, formData))
                 {
                     await _logger.ErrorAsync($"Failed to create route image for leg {index} during photo tour setup.");
                     return false;
                 }
             }
 
-            Overview overview = PhotoTourUtilities.SetOverviewStruct(formData, PhotoLocations);
-            ScenarioHTML.GenerateHTMLfiles(formData, overview);
+            Overview overview = SetOverviewStruct(formData);
+            ScenarioHTML scenarioHTML = new(_logger, _fileOps, _progressReporter);
+            if (!await scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
+            {
+                string message = "Failed to generate HTML files during Phototour setup.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
+                return false;
+            }
+
+            ScenarioXML.SetSimbaseDocumentXML(formData, overview);
+            ScenarioXML.SetPhotoTourWorldBaseFlightXMLAsync(formData, overview, this, fileOps, progressReporter);
+            ScenarioXML.WriteXML(formData, fileOps, progressReporter);
 
             return true;
         }
@@ -422,6 +435,36 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             {
                 return SetLegResult.NoAirportFound;
             }
+        }
+
+        public Overview SetOverviewStruct(ScenarioFormData formData)
+        {
+            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
+            briefing += " as you navigate from one PhotoTour location to the next using IFR (I follow roads) ";
+            briefing += "You'll take off, fly to a series of list locations, ";
+            briefing += "and land at another airport. The scenario begins on runway ";
+            briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
+            briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
+
+            string objective = "Take off and visit a series of PhotoTour locations before landing at ";
+            objective += $"at {formData.DestinationRunway.IcaoName} (any runway)";
+
+            // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
+            double duration = PhotoTourUtilities.GetPhotoTourDistance(PhotoLocations) / formData.AircraftCruiseSpeed * 60;
+
+            Overview overview = new()
+            {
+                Title = "PhotoTour",
+                Heading1 = "PhotoTour",
+                Location = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}",
+                Difficulty = "Intermediate",
+                Duration = $"{string.Format("{0:0}", duration)} minutes",
+                Aircraft = $"{formData.AircraftTitle}",
+                Briefing = briefing,
+                Objective = objective
+            };
+
+            return overview;
         }
     }
 }

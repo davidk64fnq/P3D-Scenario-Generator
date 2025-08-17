@@ -1,6 +1,7 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.MapTiles
 {
@@ -106,7 +107,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// </summary>
         /// <param name="coordinates">A collection of geographical coordinates to be included on the map.</param>
         /// <returns>True if the location image was successfully created, false otherwise.</returns>
-        public async Task<bool> CreateLocationImage(IEnumerable<Coordinate> coordinates, ScenarioFormData formData)
+        public async Task<bool> CreateLocationImageAsync(IEnumerable<Coordinate> coordinates, ScenarioFormData formData)
         {
             bool success;
 
@@ -295,7 +296,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="drawRoute">Indicates whether the flight route should be drawn on the generated images.</param>
         /// <param name="formData">Scenario-specific data, including map window size option and temporary directories.</param>
         /// <returns><see langword="true"/> if all leg route images were successfully created and their boundaries calculated; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> SetLegRouteImages(IEnumerable<Coordinate> coordinates, List<MapEdges> legMapEdges, int legNo, bool drawRoute, ScenarioFormData formData)
+        public async Task<bool> SetLegRouteImagesAsync(IEnumerable<Coordinate> coordinates, List<MapEdges> legMapEdges, int legNo, bool drawRoute, ScenarioFormData formData)
         {
             bool success;
             int legZoomLabel = 1;

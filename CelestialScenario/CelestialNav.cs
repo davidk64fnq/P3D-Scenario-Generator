@@ -13,16 +13,17 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// dynamic web content (HTML, JavaScript, CSS) for a celestial sextant display.
     /// It also handles the creation and backup of the simulator's stars.dat file,
     /// and determines the geographical parameters for scenario setup.
-    class CelestialNav(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines, IProgress<string> progressReporter, AlmanacData almanacData)
+    class CelestialNav(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines, FormProgressReporter progressReporter, AlmanacData almanacData)
     {
         // Guard clauses to validate the constructor parameters.
         private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly AlmanacDataSource _almanacDataSource = new(logger, progressReporter, httpRoutines, almanacData);
         private readonly StarDataManager _starDataManager = new(logger, fileOps, progressReporter);
         private readonly SextantViewGenerator _sextantViewGenerator = new(logger, fileOps, progressReporter, almanacData);
         private readonly SimulatorFileGenerator _simulatorFileGenerator = new(logger, fileOps, progressReporter);
+        private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
 
         /// <summary>
         /// Initializes the celestial navigation system for a new scenario.
@@ -32,7 +33,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// If all these steps are successful, it also updates the overview and location images.
         /// </summary>
         /// <returns>True if all celestial setup operations complete successfully; otherwise, false.</returns>
-        internal async Task<bool> SetCelestial(ScenarioFormData formData, RunwayManager runwayManager)
+        internal async Task<bool> SetCelestialAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
             formData.DestinationRunway = await runwayManager.Searcher.GetFilteredRandomRunwayAsync(formData);
 
@@ -80,13 +81,13 @@ namespace P3D_Scenario_Generator.CelestialScenario
             }
 
             bool drawRoute = false;
-            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(formData), drawRoute, formData))
+            if (!await _mapTileImageMaker.CreateOverviewImageAsync(SetOverviewCoords(formData), drawRoute, formData))
             {
                 await _logger.ErrorAsync("Failed to create overview image during celestial setup.");
                 return false;
             }
 
-            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(formData), formData))
+            if (!await _mapTileImageMaker.CreateLocationImageAsync(SetLocationCoords(formData), formData))
             {
                 await _logger.ErrorAsync("Failed to create location image during celestial setup.");
                 return false;
@@ -101,6 +102,10 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 _progressReporter.Report($"ERROR: {message}");
                 return false;
             }
+
+            ScenarioXML.SetSimbaseDocumentXML(formData, overview);
+            ScenarioXML.SetCelestialWorldBaseFlightXML(formData, overview, fileOps, progressReporter);
+            ScenarioXML.WriteXML(formData, fileOps, progressReporter);
 
             return true;
         }

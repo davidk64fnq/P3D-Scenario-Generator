@@ -1,6 +1,4 @@
-﻿using P3D_Scenario_Generator.Legacy;
-
-namespace P3D_Scenario_Generator
+﻿namespace P3D_Scenario_Generator
 {
     /// <summary>
     /// A custom <see cref="IProgress{T}"/> implementation for reporting progress updates to a <see cref="ToolStripStatusLabel"/> on a <see cref="Form"/>.
@@ -30,7 +28,7 @@ namespace P3D_Scenario_Generator
         {
             if (!string.IsNullOrEmpty(value))
             {
-                Log.Info($"FormProgressReporter.Report: {value}");
+                return;
             }
 
             if (_parentForm.InvokeRequired)
@@ -57,7 +55,6 @@ namespace P3D_Scenario_Generator
 
             if (_statusLabel == null)
             {
-                Log.Error("FormProgressReporter.UpdateStatusLabel: Attempted to update a null ToolStripStatusLabel.");
                 return;
             }
 

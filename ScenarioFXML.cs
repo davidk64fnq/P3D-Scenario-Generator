@@ -1,17 +1,25 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Interfaces;
 using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator
 {
-    public class ScenarioFXML
-	{
-		private static readonly string fxmlFilename = "source.fxml";
+    public class ScenarioFXML(IFileOps fileOps, IProgress<string> progressReporter)
+    {
+        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+
+        private static readonly string fxmlFilename = "source.fxml";
         private static object formattedLatitude;
         private static object formattedLongitude;
 
-        static internal void GenerateFXMLfile(ScenarioFormData formData)
+        public async Task GenerateFXMLfileAsync(ScenarioFormData formData)
 		{
-			TryReadSourceFXML(out SimBaseDocument simBaseDocument, null);
+			(bool success, SimBaseDocument simBaseDocument) = await TryReadSourceFXMLAsync(_progressReporter);
+			if (!success)
+			{
+				return;
+			}
             EditSourceFXML(simBaseDocument, formData);
 			WriteSourceFXML(simBaseDocument, formData);
         }
@@ -19,15 +27,18 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Attempts to read and deserialize a <see cref="SimBaseDocument"/> from its embedded resource XML file.
         /// </summary>
-        /// <param name="simBaseDocument">When this method returns, contains the deserialized object if successful; otherwise, null.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <returns>True if the document was successfully deserialized; otherwise, false.</returns>
-        static internal bool TryReadSourceFXML(out SimBaseDocument simBaseDocument, IProgress<string> progressReporter = null)
+        /// <param name="progressReporter">IProgress<string> for reporting progress or errors to the UI.</param>
+        /// <returns><see langword="true"/> and simBaseDocument if the document was successfully deserialized; otherwise, <see langword="false"/>.</returns>
+        public async Task<(bool success, SimBaseDocument simBaseDocument)> TryReadSourceFXMLAsync(IProgress<string> progressReporter)
         {
             string resourceName = $"XML.{fxmlFilename}";
 
-            // Call the new generic method in FileOps to handle all the complex logic
-            return FileOps.TryDeserializeXmlFromResource<SimBaseDocument>(resourceName, progressReporter, out simBaseDocument);
+			(bool success, SimBaseDocument simBaseDocument) = await _fileOps.TryDeserializeXmlFromResourceAsync<SimBaseDocument>(resourceName, progressReporter);
+			if (!success)
+			{
+				return (false, null);
+			}
+            return (true, simBaseDocument);
         }
 
 		static private void EditSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)

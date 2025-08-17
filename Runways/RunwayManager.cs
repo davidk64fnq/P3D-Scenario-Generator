@@ -27,7 +27,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="cacheManager">The ICacheManager implementation for handling caching.</param>
         /// <param name="cancellationToken">A token to observe for cancellation requests during initialization.</param>
         /// <returns>True if initialization was successful, otherwise false.</returns>
-        public async Task<bool> InitializeAsync(FormProgressReporter progressReporter, ILogger log, ICacheManager cacheManager, CancellationToken cancellationToken)
+        public async Task<bool> InitializeAsync(FormProgressReporter progressReporter, ILogger log, ICacheManager cacheManager, IFileOps fileOps, CancellationToken cancellationToken)
         {
             // Pass the cancellationToken to the LoadRunwaysAsync method.
             RunwayData data = await _loader.LoadRunwaysAsync(progressReporter, cancellationToken);
@@ -42,7 +42,7 @@ namespace P3D_Scenario_Generator.Runways
 
             // Pass the searcher to the UI manager.
             progressReporter.IsThrottlingEnabled = false;
-            _uiManager = new RunwayUiManager(_searcher, log, cacheManager);
+            _uiManager = new RunwayUiManager(_searcher, log, cacheManager, fileOps);
             _uiManager.PopulateUiLists();
 
             return true;

@@ -149,7 +149,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
 
                 // Move gate to position relative to airport location
                 MathRoutines.AdjCoords(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon, bearing, distanceMeters,
-                    ref gates[index].lat, ref gates[index].lon);
+                    out gates[index].lat, out gates[index].lon);
 
                 // Set the altitude of the gate to the airport altitude plus the sign gate height
                 gates[index].amsl += formData.StartRunway.Altitude + formData.SignGateHeightFeet;
@@ -217,17 +217,13 @@ namespace P3D_Scenario_Generator.SignWritingScenario
 
             // Calculate the segment's latitude and longitude relative to the letter's origin (bottom-left at 0,0).
             // The latitude calculation assumes a northerly bearing (0 degrees) for the distance.
-            double finishLat = 0;
-            double finishLon = 0;
-            // Using a named discard variable as recommended for ref parameters, instead of directly using `_`.
-            double ignoredLatLon = 0;
 
             double latitudeDistance = (formData.SignGridUnitSizeFeet * HeightFactor + formData.SignSegmentRadiusFeet * HeightRadiusFactor) * Constants.MetresInFoot;
-            MathRoutines.AdjCoords(0, 0, 0, latitudeDistance, ref finishLat, ref ignoredLatLon);
+            MathRoutines.AdjCoords(0, 0, 0, latitudeDistance, out double finishLat, out _);
 
             // The longitude calculation assumes an easterly bearing (90 degrees) for the distance.
             double longitudeDistance = (formData.SignGridUnitSizeFeet * WidthFactor + formData.SignSegmentRadiusFeet * WidthRadiusFactor) * Constants.MetresInFoot;
-            MathRoutines.AdjCoords(0, 0, 90, longitudeDistance, ref ignoredLatLon, ref finishLon);
+            MathRoutines.AdjCoords(0, 0, 90, longitudeDistance, out _, out double finishLon);
 
             // Initial altitude (AMSL) is set to zero; the entire sign will be translated to its final height later.
             double amsl = 0;
@@ -270,7 +266,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             const double headingToMoveEast = 90;
             for (int index = startGateIndex; index < startGateIndex + noGates; index++)
             {
-                MathRoutines.AdjCoords(gates[index].lat, gates[index].lon, headingToMoveEast, distance, ref gates[index].lat, ref gates[index].lon); 
+                MathRoutines.AdjCoords(gates[index].lat, gates[index].lon, headingToMoveEast, distance, out gates[index].lat, out gates[index].lon); 
                 gates[index].amsl += altAmt;
             }
         }
@@ -324,18 +320,18 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 //    The altitude adjustment is always positive as it represents an upward shift due to tilt.
                 double altitudeAdjustment = initialMeridianDistanceMeters * Math.Sin(tiltAngleRadians);
 
-                // 4. Adjust the gate's latitude based on the tilted distance from the equator.
-                //    The longitude remains constant as the tilt is strictly within the meridian plane.
-                double newLat = 0; // Will hold the calculated new latitude
-                double tempLon = originalLon; // Used by AdjCoords, should ideally remain originalLon
 
                 // Since gates are always in the Northern Hemisphere, the heading to move from the
                 // equator to the new latitude will always be 0 (North).
                 const double headingToMoveNorth = 0;
 
+
+                // 4. Adjust the gate's latitude based on the tilted distance from the equator.
+                //    The longitude remains constant as the tilt is strictly within the meridian plane.
+                // Will hold the calculated new latitude
                 // Use AdjCoords to find the new latitude by starting from the equator at the
                 // gate's longitude and moving the 'tiltedMeridianDistanceMeters' along the meridian.
-                MathRoutines.AdjCoords(0, originalLon, headingToMoveNorth, tiltedMeridianDistanceMeters, ref newLat, ref tempLon);
+                MathRoutines.AdjCoords(0, originalLon, headingToMoveNorth, tiltedMeridianDistanceMeters, out double newLat, out _);
 
                 // Update the gate's latitude with the newly calculated value.
                 gates[index].lat = newLat;

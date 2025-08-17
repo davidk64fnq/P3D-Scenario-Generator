@@ -19,12 +19,13 @@ namespace P3D_Scenario_Generator.CircuitScenario
     /// <param name="logger">The logger for writing log messages.</param>
     /// <param name="fileOps">The file operations service for reading and writing files.</param>
     /// <param name="progressReporter">The progress reporter for UI updates.</param>
-    internal class MakeCircuit(ILogger logger, IFileOps fileOps, IProgress<string> progressReporter)
+    public class MakeCircuit(ILogger logger, IFileOps fileOps, FormProgressReporter progressReporter, IHttpRoutines httpRoutines)
     {
         // Guard clauses to validate the constructor parameters.
         private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
 
         /// <summary>
         /// Start and finish airport (the same) plus the 8 gates making up the circuit.
@@ -33,6 +34,8 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// This field is kept private to enforce encapsulation. Access is provided via the GetGate method.
         /// </remarks>
         private readonly List<Gate> _gates = [];
+
+        public int GatesCount => _gates.Count;
 
         /// <summary>
         /// Sets start/destination airports, calculates gate positions, and creates overview and location images.
@@ -67,7 +70,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
             bool drawRoute = true;
-            if (!MapTileImageMaker.CreateOverviewImage(SetOverviewCoords(), drawRoute, formData))
+            if (!await _mapTileImageMaker.CreateOverviewImageAsync(SetOverviewCoords(), drawRoute, formData))
             {
                 message = "Failed to create overview image during circuit setup.";
                 await _logger.ErrorAsync(message);
@@ -78,7 +81,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
             message = "Creating location image.";
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
-            if (!MapTileImageMaker.CreateLocationImage(SetLocationCoords(formData), formData))
+            if (!await _mapTileImageMaker.CreateLocationImageAsync(SetLocationCoords(formData), formData))
             {
                 message = "Failed to create location image during circuit setup.";
                 await _logger.ErrorAsync(message);
@@ -95,6 +98,10 @@ namespace P3D_Scenario_Generator.CircuitScenario
                 _progressReporter.Report($"ERROR: {message}");
                 return false;
             }
+
+            ScenarioXML.SetSimbaseDocumentXML(formData, overview);
+            ScenarioXML.SetCircuitWorldBaseFlightXML(formData, overview, this, fileOps, progressReporter);
+            ScenarioXML.WriteXML(formData, fileOps, progressReporter);
 
             return true;
         }

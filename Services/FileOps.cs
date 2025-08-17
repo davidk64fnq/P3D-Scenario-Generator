@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualBasic.Logging;
-using P3D_Scenario_Generator.Interfaces;
+﻿using P3D_Scenario_Generator.Interfaces;
 using System.Reflection;
 using System.Text;
 using System.Xml.Serialization;
@@ -12,8 +11,10 @@ namespace P3D_Scenario_Generator.Services
     /// returning a boolean to indicate success or failure and logging detailed information
     /// for developer debugging.
     /// </summary>
-    public class FileOps : IFileOps
+    public class FileOps(ILogger logger) : IFileOps
     {
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
         #region Read Operations
 
         /// <summary>
@@ -34,13 +35,13 @@ namespace P3D_Scenario_Generator.Services
             try
             {
                 // XmlSerializer.Deserialize is a synchronous operation. We wrap it in Task.Run to avoid blocking the calling thread.
-                return await Task.Run(() =>
+                return await Task.Run(async () =>
                 {
                     using (stream)
                     {
                         XmlSerializer serializer = new(typeof(T));
                         T result = (T)serializer.Deserialize(stream);
-                        Log.Info($"FileOpsAsync.TryDeserializeXmlFromResourceAsync: Successfully deserialized '{resourcePath}'.");
+                        await _logger.InfoAsync($"FileOpsAsync.TryDeserializeXmlFromResourceAsync: Successfully deserialized '{resourcePath}'.");
                         return (true, result);
                     }
                 });
@@ -48,7 +49,7 @@ namespace P3D_Scenario_Generator.Services
             catch (Exception ex)
             {
                 string errorMessage = $"FileOpsAsync.TryDeserializeXmlFromResourceAsync: An unexpected error occurred during deserialization of '{resourcePath}'. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
+                await _logger.ErrorAsync(errorMessage, ex);
                 progressReporter?.Report(errorMessage);
                 return (false, null);
             }
@@ -66,13 +67,13 @@ namespace P3D_Scenario_Generator.Services
             try
             {
                 byte[] bytes = await File.ReadAllBytesAsync(fullPath);
-                Log.Info($"FileOpsAsync.TryReadAllBytesAsync: Successfully read all bytes from '{fullPath}'.");
+                await _logger.InfoAsync($"FileOpsAsync.TryReadAllBytesAsync: Successfully read all bytes from '{fullPath}'.");
                 return (true, bytes);
             }
             catch (Exception ex)
             {
                 string errorMessage = $"FileOpsAsync.TryReadAllBytesAsync: An unexpected error occurred reading file '{fullPath}'. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
+                await _logger.ErrorAsync(errorMessage, ex);
                 progressReporter?.Report(errorMessage);
                 return (false, null);
             }
@@ -90,13 +91,13 @@ namespace P3D_Scenario_Generator.Services
             try
             {
                 string content = await File.ReadAllTextAsync(fullPath);
-                Log.Info($"FileOpsAsync.TryReadAllTextAsync: Successfully read all text from '{fullPath}'.");
+                await _logger.InfoAsync($"FileOpsAsync.TryReadAllTextAsync: Successfully read all text from '{fullPath}'.");
                 return (true, content);
             }
             catch (Exception ex)
             {
                 string errorMessage = $"FileOpsAsync.TryReadAllTextAsync: An unexpected error occurred while reading file: '{fullPath}'. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
+                await _logger.ErrorAsync(errorMessage, ex);
                 progressReporter?.Report(errorMessage);
                 return (false, null);
             }
@@ -122,14 +123,14 @@ namespace P3D_Scenario_Generator.Services
                 using (StreamReader reader = new(stream, Encoding.UTF8))
                 {
                     string content = await reader.ReadToEndAsync();
-                    Log.Info($"FileOpsAsync.TryReadAllTextFromResourceAsync: Successfully read resource '{resourcePath}'.");
+                    await _logger.InfoAsync($"FileOpsAsync.TryReadAllTextFromResourceAsync: Successfully read resource '{resourcePath}'.");
                     return (true, content);
                 }
             }
             catch (Exception ex)
             {
                 string errorMessage = $"FileOpsAsync.TryReadAllTextFromResourceAsync: An error occurred reading resource '{resourcePath}'. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
+                await _logger.ErrorAsync(errorMessage, ex);
                 progressReporter?.Report(errorMessage);
                 return (false, null);
             }
@@ -152,13 +153,13 @@ namespace P3D_Scenario_Generator.Services
             try
             {
                 await Task.Run(() => File.Copy(sourceFullPath, destinationFullPath, overwrite));
-                Log.Info($"FileOpsAsync.TryCopyFileAsync: Successfully wrote to '{destinationFullPath}' from '{sourceFullPath}'.");
+                await _logger.InfoAsync($"Successfully wrote to '{destinationFullPath}' from '{sourceFullPath}'.");
                 return true;
             }
             catch (Exception ex)
             {
-                string errorMessage = $"FileOpsAsync.TryCopyFileAsync: An unexpected error occurred while copying file from '{sourceFullPath}' to '{destinationFullPath}'. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
+                string errorMessage = $"An unexpected error occurred while copying file from '{sourceFullPath}' to '{destinationFullPath}'. Details: {ex.Message}";
+                await _logger.ErrorAsync(errorMessage, ex);
                 progressReporter?.Report(errorMessage);
                 return false;
             }
@@ -183,13 +184,13 @@ namespace P3D_Scenario_Generator.Services
 
                 using FileStream fileStream = new(destinationFullPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
                 await sourceStream.CopyToAsync(fileStream);
-                Log.Info($"FileOpsAsync.TryCopyStreamToFileAsync: Successfully wrote stream to '{destinationFullPath}'.");
+                await _logger.InfoAsync($"Successfully wrote stream to '{destinationFullPath}'.");
                 return true;
             }
             catch (Exception ex)
             {
-                string errorMessage = $"FileOpsAsync.TryCopyStreamToFileAsync: An unexpected error occurred while copying stream to file: '{destinationFullPath}'. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
+                string errorMessage = $"An unexpected error occurred while copying stream to file: '{destinationFullPath}'. Details: {ex.Message}";
+                await _logger.ErrorAsync(errorMessage, ex);
                 progressReporter?.Report(errorMessage);
                 return false;
             }
@@ -208,13 +209,13 @@ namespace P3D_Scenario_Generator.Services
             try
             {
                 await sourceStream.CopyToAsync(destinationStream);
-                Log.Info($"FileOpsAsync.TryCopyStreamToStreamAsync: Successfully copied stream contents.");
+                await _logger.InfoAsync($"Successfully copied stream contents.");
                 return true;
             }
             catch (Exception ex)
             {
-                string errorMessage = $"FileOpsAsync.TryCopyStreamToStreamAsync: An unexpected error occurred while copying stream content. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
+                string errorMessage = $"An unexpected error occurred while copying stream content. Details: {ex.Message}";
+                await _logger.ErrorAsync(errorMessage, ex);
                 progressReporter?.Report(errorMessage);
                 return false;
             }
@@ -232,13 +233,13 @@ namespace P3D_Scenario_Generator.Services
             try
             {
                 await File.WriteAllTextAsync(fullPath, content);
-                Log.Info($"FileOpsAsync.TryWriteAllTextAsync: Successfully wrote to '{fullPath}'.");
+                await _logger.InfoAsync($"Successfully wrote to '{fullPath}'.");
                 return true;
             }
             catch (Exception ex)
             {
-                string errorMessage = $"FileOpsAsync.TryWriteAllTextAsync: An unexpected error occurred while writing to file: '{fullPath}'. Details: {ex.Message}";
-                Log.Error(errorMessage, ex);
+                string errorMessage = $"An unexpected error occurred while writing to file: '{fullPath}'. Details: {ex.Message}";
+                await _logger.ErrorAsync(errorMessage, ex);
                 progressReporter?.Report(errorMessage);
                 return false;
             }
@@ -270,7 +271,7 @@ namespace P3D_Scenario_Generator.Services
                 {
                     // File.Delete is a synchronous operation. We wrap it in Task.Run.
                     await Task.Run(() => File.Delete(fullPath));
-                    Log.Info($"FileOpsAsync.TryDeleteFileAsync: Successfully deleted '{fullPath}'.");
+                    await _logger.InfoAsync($"FileOpsAsync.TryDeleteFileAsync: Successfully deleted '{fullPath}'.");
                     return true;
                 }
                 catch (IOException ex)
@@ -278,7 +279,7 @@ namespace P3D_Scenario_Generator.Services
                     if (attempts < retries)
                     {
                         string warningMessage = $"FileOpsAsync.TryDeleteFileAsync: Failed to delete '{fullPath}' due to I/O error (attempt {attempts + 1}). Retrying... Details: {ex.Message}";
-                        Log.Warning(warningMessage);
+                        await _logger.WarningAsync(warningMessage);
                         progressReporter?.Report(warningMessage);
                         // Use Task.Delay for non-blocking wait.
                         await Task.Delay(delayMs);
@@ -287,14 +288,14 @@ namespace P3D_Scenario_Generator.Services
                 catch (Exception ex)
                 {
                     string errorMessage = $"FileOpsAsync.TryDeleteFileAsync: An unexpected error occurred while deleting file: '{fullPath}'. Details: {ex.Message}";
-                    Log.Error(errorMessage, ex);
+                    await _logger.ErrorAsync(errorMessage, ex);
                     progressReporter?.Report(errorMessage);
                     return false;
                 }
             }
 
             string finalErrorMessage = $"FileOpsAsync.TryDeleteFileAsync: Failed to delete file '{fullPath}' after {retries + 1} attempts.";
-            Log.Error(finalErrorMessage);
+            await _logger.ErrorAsync(finalErrorMessage);
             progressReporter?.Report(finalErrorMessage);
             return false;
         }
@@ -347,7 +348,7 @@ namespace P3D_Scenario_Generator.Services
                 {
                     // File.Move is a synchronous operation. We wrap it in Task.Run.
                     await Task.Run(() => File.Move(sourceFullPath, destinationFullPath));
-                    Log.Info($"FileOpsAsync.TryMoveFileAsync: Successfully moved '{sourceFullPath}' to '{destinationFullPath}'.");
+                    await _logger.InfoAsync($"FileOpsAsync.TryMoveFileAsync: Successfully moved '{sourceFullPath}' to '{destinationFullPath}'.");
                     return true;
                 }
                 catch (IOException ex)
@@ -355,7 +356,7 @@ namespace P3D_Scenario_Generator.Services
                     if (attempts < retries)
                     {
                         string warningMessage = $"FileOpsAsync.TryMoveFileAsync: Failed to move file due to an I/O error (attempt {attempts + 1}). Retrying... Details: {ex.Message}";
-                        Log.Warning(warningMessage);
+                        await _logger.WarningAsync(warningMessage);
                         progressReporter?.Report(warningMessage);
                         await Task.Delay(delayMs);
                     }
@@ -363,14 +364,14 @@ namespace P3D_Scenario_Generator.Services
                 catch (Exception ex)
                 {
                     string errorMessage = $"FileOpsAsync.TryMoveFileAsync: An unexpected error occurred while moving file from '{sourceFullPath}' to '{destinationFullPath}'. Details: {ex.Message}";
-                    Log.Error(errorMessage, ex);
+                    await _logger.ErrorAsync(errorMessage, ex);
                     progressReporter?.Report(errorMessage);
                     return false;
                 }
             }
 
             string finalErrorMessage = $"FileOpsAsync.TryMoveFileAsync: Failed to move file from '{sourceFullPath}' to '{destinationFullPath}' after {retries + 1} attempts.";
-            Log.Error(finalErrorMessage);
+            await _logger.ErrorAsync(finalErrorMessage);
             progressReporter?.Report(finalErrorMessage);
             return false;
         }
@@ -428,7 +429,7 @@ namespace P3D_Scenario_Generator.Services
         public Task<(bool success, Stream stream)> TryGetResourceStreamAsync(string resourcePath, IProgress<string> progressReporter)
         {
             // GetManifestResourceStream is a synchronous operation. We wrap it for API consistency.
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 Stream stream = null;
                 string fullResourceName = string.Empty;
@@ -442,17 +443,17 @@ namespace P3D_Scenario_Generator.Services
                     if (stream == null)
                     {
                         string errorMessage = $"FileOpsAsync.TryGetResourceStreamAsync: Embedded resource '{fullResourceName}' not found.";
-                        Log.Error(errorMessage);
+                        await _logger.ErrorAsync(errorMessage);
                         progressReporter?.Report(errorMessage);
                         return (false, null);
                     }
-                    Log.Info($"FileOpsAsync.TryGetResourceStreamAsync: Successfully retrieved stream for '{fullResourceName}'.");
+                    await _logger.InfoAsync($"FileOpsAsync.TryGetResourceStreamAsync: Successfully retrieved stream for '{fullResourceName}'.");
                     return (true, stream);
                 }
                 catch (Exception ex)
                 {
                     string errorMessage = $"FileOpsAsync.TryGetResourceStreamAsync: An unexpected error occurred while trying to get resource stream for '{fullResourceName}'. Details: {ex.Message}";
-                    Log.Error(errorMessage, ex);
+                    await _logger.ErrorAsync(errorMessage, ex);
                     progressReporter?.Report(errorMessage);
                     return (false, null);
                 }

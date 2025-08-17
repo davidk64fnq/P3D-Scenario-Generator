@@ -37,11 +37,15 @@ namespace P3D_Scenario_Generator
         private readonly IHttpRoutines _httpRoutines;
         private readonly Logger _logger;
         private readonly IOsmTileCache _osmTileCache;
+        private readonly ImageUtils _imageUtils;
 
         // Scenario-specific dependencies
         private readonly MakeCircuit _makeCircuit;
         private readonly PhotoTour _photoTour;
+        private readonly SignWriting _signWriting;
         private readonly CelestialNav _celestialNav;
+        private readonly Wikipedia _wikipedia;
+        private readonly WikiPageHtmlParser _wikiPageHtmlParser;
 
         // Utilities dependencies
         private readonly IHtmlParser _htmlParser;
@@ -50,17 +54,21 @@ namespace P3D_Scenario_Generator
         {
             InitializeComponent();
 
-            _fileOps = new Services.FileOps();
             _logger = new Logger();
+            _fileOps = new FileOps(_logger);
             _cacheManager = new CacheManager(_logger);
             _aircraft = new Aircraft(_logger, _cacheManager, _fileOps);
             _htmlParser = new HtmlParser(_logger);
             _httpRoutines = new HttpRoutines(_fileOps, _logger);
-            _photoTour = new PhotoTour(_logger, _fileOps, _httpRoutines);
+            _photoTour = new PhotoTour(_logger, _fileOps, _httpRoutines, _progressReporter);
             _almanacData = new AlmanacData();
             _celestialNav = new CelestialNav(_logger, _fileOps, _httpRoutines, _progressReporter, _almanacData);
             _osmTileCache = new OSMTileCache(_fileOps, _httpRoutines, _progressReporter);
-            _makeCircuit = new MakeCircuit(_logger, _fileOps, _progressReporter);
+            _makeCircuit = new MakeCircuit(_logger, _fileOps, _progressReporter, _httpRoutines);
+            _imageUtils = new(_logger, _fileOps, _progressReporter);
+            _signWriting = new(_logger, _fileOps, _progressReporter, _httpRoutines);
+            _wikipedia = new(_logger, _fileOps, _progressReporter);
+            _wikiPageHtmlParser = new(_logger, _fileOps, _httpRoutines, _progressReporter);
 
             // If the associated control has an error, cancel the display of the standard ToolTip.
             toolTip1.Popup += ToolTip1_Popup;
@@ -548,7 +556,7 @@ namespace P3D_Scenario_Generator
             {
                 DisplayStartMessage();
                 CheckRunwaysUpToDate();
-                ImageUtils.DrawScenarioImages(_formData);
+                await _imageUtils.DrawScenarioImagesAsync(_formData);
 
                 // Await the task and capture the boolean result indicating success or failure
                 bool success = await DoScenarioSpecificTasks();
@@ -562,8 +570,7 @@ namespace P3D_Scenario_Generator
                 SaveSettingsAfterDoSpecific();
                 SaveUserSettings(TabPageSettings.Controls);
                 ScenarioFXML.GenerateFXMLfile(_formData);
-             //   ScenarioHTML.GenerateHTMLfiles(_formData);
-                ScenarioXML.GenerateXMLfile(_formData);
+            //    ScenarioXML.GenerateXMLfile(_formData);
                 DeleteTempScenarioDirectory();
                 DisplayFinishMessage();
             }
@@ -653,21 +660,21 @@ namespace P3D_Scenario_Generator
                         break;
                     case ScenarioTypes.PhotoTour:
                         // This method is now async, so we must await its result.
-                        if (!await _photoTour.SetPhotoTour(_formData, _runwayManager, _progressReporter))
+                        if (!await _photoTour.SetPhotoTourAsync(_formData, _runwayManager, _progressReporter))
                         {
                             return false;
                         }
                         break;
                     case ScenarioTypes.SignWriting:
                         // This method is now async, so we must await its result.
-                        if (!await SignWriting.SetSignWriting(_formData, _runwayManager))
+                        if (!await _signWriting.SetSignWritingAsync(_formData, _runwayManager))
                         {
                             return false;
                         }
                         break;
                     case ScenarioTypes.Celestial:
                         // This method is now async, so we must await its result.
-                        if (!await _celestialNav.SetCelestial(_formData, _runwayManager))
+                        if (!await _celestialNav.SetCelestialAsync(_formData, _runwayManager))
                         {
                             return false;
                         }
@@ -675,7 +682,7 @@ namespace P3D_Scenario_Generator
                     case ScenarioTypes.WikiList:
                         // SetWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance,
                         //      ScenarioFormData formData, RunwayManager runwayManager)
-                        await Wikipedia.SetWikiTour(0, null, null, null, null, _formData, _runwayManager);
+                        await _wikipedia.SetWikiTourAsync(0, null, null, null, null, _formData, _runwayManager);
                         break;
                     default:
                         break;
@@ -1620,7 +1627,7 @@ namespace P3D_Scenario_Generator
             {
                 bool success = await Task.Run(() =>
                 {
-                    return WikiPageHtmlParser.PopulateWikiPage(
+                    return _wikiPageHtmlParser.PopulateWikiPageAsync(
                         selectedWikiUrl,
                         columnNo,
                         _formData,

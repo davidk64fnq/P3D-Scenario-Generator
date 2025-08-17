@@ -1,14 +1,16 @@
 ﻿using HtmlAgilityPack;
-using P3D_Scenario_Generator.Legacy;
-using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Interfaces;
 using System.Web;
-using System.Windows.Forms;
 
 namespace P3D_Scenario_Generator.WikipediaScenario
 {
     // Populating WikiPage when user pastes in Wikipedia URL, called from main form
-    internal class WikiPageHtmlParser
+    public class WikiPageHtmlParser(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines, FormProgressReporter progressReporter)
     {
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly IHttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         /// <summary>
         /// Parses user supplied URL for table(s) identified by class='sortable wikitable'.
@@ -17,13 +19,13 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// </summary>
         /// <param name="wikiURL">User supplied Wikipedia URL</param>
         /// <param name="columnNo">User supplied column number of items in table</param>
-        static internal bool PopulateWikiPage(string wikiURL, int columnNo, ScenarioFormData formData, IProgress<string> progressReporter = null)
+        public async Task<bool> PopulateWikiPageAsync(string wikiURL, int columnNo, ScenarioFormData formData, IProgress<string> progressReporter = null)
         {
             // Report initial status when starting the overall operation
             progressReporter?.Report($"Fetching data from {wikiURL}, please wait...");
 
             Wikipedia.WikiPage = [];
-            HtmlAgilityPack.HtmlDocument htmlDoc = HttpRoutines.GetWebDoc(wikiURL);
+            HtmlAgilityPack.HtmlDocument htmlDoc = await _httpRoutines.GetWebDocAsync(wikiURL);
             HtmlNodeCollection tables = null;
             HtmlNodeCollection rows = null;
             HtmlNodeCollection cells = null;
@@ -32,14 +34,14 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             if (htmlDoc == null)
             {
                 progressReporter?.Report($"Failed to retrieve HTML document from {wikiURL}.");
-                Log.Error($"Failed to retrieve HTML document from {wikiURL}");
+                await _logger.ErrorAsync($"Failed to retrieve HTML document from {wikiURL}");
                 return false; // Return false on failure to get HTML
             }
 
             if (!GetNodeCollection(htmlDoc.DocumentNode, ref tables, tableSelection, true, formData))
             {
                 progressReporter?.Report($"No relevant tables found at {wikiURL}.");
-                Log.Warning($"No tables matching selection '{tableSelection}' found at {wikiURL}.");
+                await _logger.WarningAsync($"No tables matching selection '{tableSelection}' found at {wikiURL}.");
                 return true; // Return true if no tables, as it's not strictly an error, just no data. Adjust based on your definition of success.
             }
 
@@ -65,7 +67,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                         // currentRowIndex++;
                         if (GetNodeCollection(row, ref cells, ".//th | .//td", true, formData) && cells.Count >= columnNo)
                         {
-                            ReadWikiCell(cells[columnNo - 1], curTable, formData);
+                            await ReadWikiCellAsync(cells[columnNo - 1], curTable, formData);
                         }
                     }
                 }
@@ -106,7 +108,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// </summary>
         /// <param name="cell">The cell in a table row containing item title and hyperlink</param>
         /// <param name="curTable">The current table being populated in <see cref="WikiPage"/></param>
-        static internal void ReadWikiCell(HtmlNode cell, List<WikiItemParams> curTable, ScenarioFormData formData)
+        public async Task ReadWikiCellAsync(HtmlNode cell, List<WikiItemParams> curTable, ScenarioFormData formData)
         {
             WikiItemParams wikiItem = new();
             List<HtmlNode> cellDescendants = [.. cell.Descendants("a")];
@@ -120,9 +122,9 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             {
                 wikiItem.title = HttpUtility.HtmlDecode(title);
                 wikiItem.itemURL = link;
-                if (GetWikiItemCoordinates(wikiItem, formData))
+                if (await GetWikiItemCoordinatesAsync(wikiItem, formData))
                 {
-                    wikiItem.hrefs = GetWikiItemHREFs(wikiItem);
+                    wikiItem.hrefs = await GetWikiItemHREFsAsync(wikiItem);
                     curTable.Add(wikiItem);
                 }
             }
@@ -134,9 +136,9 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// </summary>
         /// <param name="wikiItem">The current row in table being populated in <see cref="WikiPage"/></param>
         /// <returns></returns>
-        static internal bool GetWikiItemCoordinates(WikiItemParams wikiItem, ScenarioFormData formData)
+        public async Task<bool> GetWikiItemCoordinatesAsync(WikiItemParams wikiItem, ScenarioFormData formData)
         {
-            var htmlDoc = HttpRoutines.GetWebDoc($"https://en.wikipedia.org/{wikiItem.itemURL}");
+            var htmlDoc = await _httpRoutines.GetWebDocAsync($"https://en.wikipedia.org/{wikiItem.itemURL}");
             HtmlNodeCollection spans = null;
             if (htmlDoc != null && GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='latitude']", false, formData))
             {
@@ -156,9 +158,9 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// of the item page using joystick mapped buttons as an alternative to scrolling with a mouse.
         /// </summary>
         /// <param name="wikiItem">The current row in table being populated in <see cref="WikiPage"/></param>
-        static internal List<string> GetWikiItemHREFs(WikiItemParams wikiItem)
+        public async Task<List<string>> GetWikiItemHREFsAsync(WikiItemParams wikiItem)
         {
-            var htmlDoc = HttpRoutines.GetWebDoc($"https://en.wikipedia.org/{wikiItem.itemURL}");
+            var htmlDoc = await _httpRoutines.GetWebDocAsync($"https://en.wikipedia.org/{wikiItem.itemURL}");
             string htmlDocContents = htmlDoc.Text;
             int indexSearchFrom = 0;
             string hrefTag = "href=\"#";
