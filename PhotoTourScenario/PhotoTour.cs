@@ -62,10 +62,10 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// <param name="httpRoutines">The HTTP routines service.</param>
     public class PhotoTour(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines, FormProgressReporter progressReporter)
     {
+        private readonly IFileOps _fileOps = fileOps;
         private readonly PhotoTourUtilities _photoTourUtilities = new(logger, httpRoutines, progressReporter, fileOps);
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly ILogger _logger = logger;
-        private readonly IFileOps _fileOps = fileOps;
         private readonly IHttpRoutines _httpRoutines = httpRoutines;
         private readonly Pic2MapHtmlParser _pic2MapHtmlParser = new(logger, httpRoutines);
         private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
@@ -123,8 +123,8 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            ScenarioXML.SetPhotoTourWorldBaseFlightXMLAsync(formData, overview, this, fileOps, progressReporter);
-            ScenarioXML.WriteXML(formData, fileOps, progressReporter);
+            await ScenarioXML.SetPhotoTourWorldBaseFlightXMLAsync(formData, overview, this, _fileOps, progressReporter);
+            ScenarioXML.WriteXML(formData, _fileOps, progressReporter);
 
             return true;
         }

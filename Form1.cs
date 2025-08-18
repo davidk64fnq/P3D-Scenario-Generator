@@ -38,6 +38,7 @@ namespace P3D_Scenario_Generator
         private readonly Logger _logger;
         private readonly IOsmTileCache _osmTileCache;
         private readonly ImageUtils _imageUtils;
+        private readonly ScenarioFXML _scenarioFXML;
 
         // Scenario-specific dependencies
         private readonly MakeCircuit _makeCircuit;
@@ -67,8 +68,9 @@ namespace P3D_Scenario_Generator
             _makeCircuit = new MakeCircuit(_logger, _fileOps, _progressReporter, _httpRoutines);
             _imageUtils = new(_logger, _fileOps, _progressReporter);
             _signWriting = new(_logger, _fileOps, _progressReporter, _httpRoutines);
-            _wikipedia = new(_logger, _fileOps, _progressReporter);
+            _wikipedia = new(_logger, _fileOps, _progressReporter, _httpRoutines);
             _wikiPageHtmlParser = new(_logger, _fileOps, _httpRoutines, _progressReporter);
+            _scenarioFXML = new(_fileOps, _progressReporter);
 
             // If the associated control has an error, cancel the display of the standard ToolTip.
             toolTip1.Popup += ToolTip1_Popup;
@@ -381,7 +383,7 @@ namespace P3D_Scenario_Generator
 
             // Pass the loader to the RunwayManager constructor.
             _runwayManager = new(loader); // Assign to the form-level field.
-            bool success = await _runwayManager.InitializeAsync(progressReporter, _logger, _cacheManager, cancellationToken);
+            bool success = await _runwayManager.InitializeAsync(progressReporter, _logger, _cacheManager, _fileOps, cancellationToken);
 
             // Return the UiManager if successful, otherwise null.
             return success ? _runwayManager.UiManager : null;
@@ -569,8 +571,7 @@ namespace P3D_Scenario_Generator
                 // Only proceed with these steps if DoScenarioSpecificTasks succeeded
                 SaveSettingsAfterDoSpecific();
                 SaveUserSettings(TabPageSettings.Controls);
-                ScenarioFXML.GenerateFXMLfile(_formData);
-            //    ScenarioXML.GenerateXMLfile(_formData);
+                await _scenarioFXML.GenerateFXMLfileAsync(_formData);
                 DeleteTempScenarioDirectory();
                 DisplayFinishMessage();
             }
@@ -660,7 +661,7 @@ namespace P3D_Scenario_Generator
                         break;
                     case ScenarioTypes.PhotoTour:
                         // This method is now async, so we must await its result.
-                        if (!await _photoTour.SetPhotoTourAsync(_formData, _runwayManager, _progressReporter))
+                        if (!await _photoTour.SetPhotoTourAsync(_formData, _runwayManager))
                         {
                             return false;
                         }
@@ -1591,7 +1592,7 @@ namespace P3D_Scenario_Generator
             Properties.Settings.Default.Save();
         }
 
-        private async void ComboBoxWikiURL_TextChanged(object sender, EventArgs e) // Make it async
+        private async void ComboBoxWikiURL_TextChanged(object sender, EventArgs e) 
         {
             if (!_isFormLoaded)
             {
@@ -1631,13 +1632,14 @@ namespace P3D_Scenario_Generator
                         selectedWikiUrl,
                         columnNo,
                         _formData,
-                        _progressReporter
+                        _progressReporter,
+                        _wikipedia
                     );
                 });
 
                 if (success)
                 {
-                    ComboBoxWikiTableNames.DataSource = Wikipedia.CreateWikiTablesDesc();
+                    ComboBoxWikiTableNames.DataSource = _wikipedia.CreateWikiTablesDesc();
                     _progressReporter.Report("Wiki page data loaded successfully.");
                 }
                 else
@@ -1692,7 +1694,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiDistance.Text = "";
             if (ComboBoxWikiTableNames.Items.Count > 0)
             {
-                ComboBoxWikiRoute.DataSource = Wikipedia.CreateWikiTableRoute(ComboBoxWikiTableNames.SelectedIndex);
+                ComboBoxWikiRoute.DataSource = _wikipedia.CreateWikiTableRoute(ComboBoxWikiTableNames.SelectedIndex);
                 List<string> itemList = [];
                 for (int index = 0; index < ComboBoxWikiRoute.Items.Count; index++)
                 {

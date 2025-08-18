@@ -100,7 +100,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
             }
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            ScenarioXML.SetCircuitWorldBaseFlightXML(formData, overview, this, fileOps, progressReporter);
+            ScenarioXML.SetCircuitWorldBaseFlightXML(formData, overview, this);
             ScenarioXML.WriteXML(formData, fileOps, progressReporter);
 
             return true;

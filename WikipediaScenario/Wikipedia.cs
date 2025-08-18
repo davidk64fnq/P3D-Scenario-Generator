@@ -310,7 +310,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             }
         }
 
-        public static Overview SetOverviewStruct(ScenarioFormData formData)
+        public Overview SetOverviewStruct(ScenarioFormData formData)
         {
             string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
             briefing += " as you navigate from one Wikipedia list location to the next using IFR (I follow roads) ";
@@ -323,7 +323,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             objective += $"at {formData.DestinationRunway.IcaoName} (any runway)";
 
             // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-            double duration = Wikipedia.WikiDistance / formData.AircraftCruiseSpeed * 60;
+            double duration = WikiDistance / formData.AircraftCruiseSpeed * 60;
 
             Overview overview = new()
             {

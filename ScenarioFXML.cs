@@ -4,10 +4,10 @@ using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator
 {
-    public class ScenarioFXML(IFileOps fileOps, IProgress<string> progressReporter)
+    public class ScenarioFXML(IFileOps fileOps, FormProgressReporter progressReporter)
     {
         private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         private static readonly string fxmlFilename = "source.fxml";
         private static object formattedLatitude;
@@ -21,7 +21,7 @@ namespace P3D_Scenario_Generator
 				return;
 			}
             EditSourceFXML(simBaseDocument, formData);
-			WriteSourceFXML(simBaseDocument, formData);
+			WriteSourceFXML(simBaseDocument, formData, _fileOps, _progressReporter);
         }
 
         /// <summary>
@@ -180,7 +180,7 @@ namespace P3D_Scenario_Generator
 			return sCoordLine;
 		}
 
-		static private void WriteSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)
+		static private void WriteSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData, IFileOps fileOps, FormProgressReporter progressReporter)
         {
 			XmlSerializer xmlSerializer = new(simBaseDocument.GetType());
 
@@ -188,7 +188,7 @@ namespace P3D_Scenario_Generator
             xmlSerializer.Serialize(writer, simBaseDocument);
 			writer.Close();
 
-            ScenarioXML.RemoveXMLNSattributes($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.fxml");
+            ScenarioXML.RemoveXMLNSattributes($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.fxml", fileOps, progressReporter);
         }
 
 	}

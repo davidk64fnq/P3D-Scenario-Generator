@@ -19,12 +19,12 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// </summary>
         /// <param name="wikiURL">User supplied Wikipedia URL</param>
         /// <param name="columnNo">User supplied column number of items in table</param>
-        public async Task<bool> PopulateWikiPageAsync(string wikiURL, int columnNo, ScenarioFormData formData, IProgress<string> progressReporter = null)
+        public async Task<bool> PopulateWikiPageAsync(string wikiURL, int columnNo, ScenarioFormData formData, IProgress<string> progressReporter, Wikipedia wikipedia)
         {
             // Report initial status when starting the overall operation
             progressReporter?.Report($"Fetching data from {wikiURL}, please wait...");
 
-            Wikipedia.WikiPage = [];
+            wikipedia.WikiPage = [];
             HtmlAgilityPack.HtmlDocument htmlDoc = await _httpRoutines.GetWebDocAsync(wikiURL);
             HtmlNodeCollection tables = null;
             HtmlNodeCollection rows = null;
@@ -74,7 +74,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
 
                 if (curTable.Count > 0)
                 {
-                    Wikipedia.WikiPage.Add(curTable);
+                    wikipedia.WikiPage.Add(curTable);
                 }
             }
 

@@ -104,7 +104,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             }
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            ScenarioXML.SetCelestialWorldBaseFlightXML(formData, overview, fileOps, progressReporter);
+            ScenarioXML.SetCelestialWorldBaseFlightXML(formData, overview);
             ScenarioXML.WriteXML(formData, fileOps, progressReporter);
 
             return true;

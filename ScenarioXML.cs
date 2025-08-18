@@ -24,11 +24,11 @@ namespace P3D_Scenario_Generator
 			simBaseDocumentXML.WorldBaseFlight = worldBaseFlight;
         }
 
-        public static void SetCircuitWorldBaseFlightXML(ScenarioFormData formData, Overview overview, MakeCircuit makeCircuit, IFileOps fileOps, FormProgressReporter progressReporter)
+        public static void SetCircuitWorldBaseFlightXML(ScenarioFormData formData, Overview overview, MakeCircuit makeCircuit)
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
-            SetScenarioMetadata(formData);
+            SetScenarioMetadata(formData, overview);
             SetDialogAction("Intro01", overview.Briefing, "2", "Text-To-Speech");
             SetDialogAction("Intro02", overview.Tips, "2", "Text-To-Speech");
             SetGoal("Goal01", overview.Objective);
@@ -120,7 +120,7 @@ namespace P3D_Scenario_Generator
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
-            SetScenarioMetadata(formData);
+            SetScenarioMetadata(formData, overview);
             SetDialogAction("Intro01", overview.Briefing, "2", "Text-To-Speech");
             SetDialogAction("Intro02", overview.Tips, "2", "Text-To-Speech");
             SetGoal("Goal01", overview.Objective);
@@ -137,11 +137,11 @@ namespace P3D_Scenario_Generator
             SetUIPanelWindow(photoTour.PhotoCount - 1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for windows
-            SetResourcesFile("HTML", "MovingMap.html", formData);
-            SetResourcesFile("HTML", "PhotoTour.html", formData);
+            SetResourcesFile("HTML", "MovingMap.html", formData, fileOps, progressReporter);
+            SetResourcesFile("HTML", "PhotoTour.html", formData, fileOps, progressReporter);
             await SetMovingMapJS(photoTour.PhotoTourLegMapEdges, photoTour.PhotoCount, formData, fileOps, progressReporter);
-            SetResourcesFile("Javascript", "scriptsPhotoTour.js", formData);
-            SetResourcesFile("CSS", "styleMovingMap.css", formData);
+            SetResourcesFile("Javascript", "scriptsPhotoTour.js", formData, fileOps, progressReporter);
+            SetResourcesFile("CSS", "styleMovingMap.css", formData, fileOps, progressReporter);
 
             // Create map window open/close actions
             string[] mapWindowParameters = GetMapWindowParameters(formData);
@@ -221,11 +221,11 @@ namespace P3D_Scenario_Generator
             SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", photoTour.PhotoCount - 2, "ProximityTrigger");
         }
 
-        public static async void SetSignWritingWorldBaseFlightXML(ScenarioFormData formData, Overview overview, SignWriting signWriting, IProgress<string> progressReporter, IFileOps fileOps)
+        public static async void SetSignWritingWorldBaseFlightXML(ScenarioFormData formData, Overview overview, SignWriting signWriting, IProgress<string> progressReporter)
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
-            SetScenarioMetadata(formData);
+            SetScenarioMetadata(formData, overview);
             SetDialogAction("Intro01", overview.Briefing, "2", "Text-To-Speech");
             SetDialogAction("Intro02", overview.Tips, "2", "Text-To-Speech");
             SetGoal("Goal01", overview.Objective);
@@ -364,11 +364,11 @@ namespace P3D_Scenario_Generator
             SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", signWriting.gates.Count, "ProximityTrigger");
         }
 
-        public static void SetCelestialWorldBaseFlightXML(ScenarioFormData formData, Overview overview, IFileOps fileOps, FormProgressReporter progressReporter)
+        public static void SetCelestialWorldBaseFlightXML(ScenarioFormData formData, Overview overview)
         {
             SetDisabledTrafficAirports($"{formData.DestinationRunway.IcaoId}");
             SetRealismOverrides();
-            SetScenarioMetadata(formData);
+            SetScenarioMetadata(formData, overview);
             SetDialogAction("Intro01", overview.Briefing, "2", "Text-To-Speech");
             SetDialogAction("Intro02", overview.Tips, "2", "Text-To-Speech");
             SetGoal("Goal01", overview.Objective);
@@ -411,7 +411,7 @@ namespace P3D_Scenario_Generator
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
-            SetScenarioMetadata(formData);
+            SetScenarioMetadata(formData, overview);
             SetDialogAction("Intro01", overview.Briefing, "2", "Text-To-Speech");
             SetDialogAction("Intro02", overview.Tips, "2", "Text-To-Speech");
             SetGoal("Goal01", overview.Objective);
@@ -429,11 +429,11 @@ namespace P3D_Scenario_Generator
             SetUIPanelWindow(2, "UIpanelWindow", "False", "True", $"images\\WikipediaItem.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for windows
-            SetResourcesFile("HTML", "MovingMap.html", formData);
+            SetResourcesFile("HTML", "MovingMap.html", formData, fileOps, progressReporter);
             await SetMovingMapJS(wikipedia.WikiLegMapEdges, wikipedia.WikiCount, formData, fileOps, progressReporter);
-            SetResourcesFile("CSS", "styleMovingMap.css", formData);
-            SetResourcesFile("HTML", "WikipediaItem.html", formData);
-            SetWikiTourJS(formData, wikipedia);
+            SetResourcesFile("CSS", "styleMovingMap.css", formData, fileOps, progressReporter);
+            SetResourcesFile("HTML", "WikipediaItem.html", formData, fileOps, progressReporter);
+            SetWikiTourJS(formData, wikipedia, fileOps, progressReporter);
 
             // Create window open/close actions
             string[] mapWindowParameters = GetMapWindowParameters(formData);
@@ -1027,25 +1027,31 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea = [ra];
         }
 
-        static private void SetResourcesFile(string resourceFolder, string resourceFileName, ScenarioFormData formData)
+        public static async void SetResourcesFile(string resourceFolder, string resourceFileName, ScenarioFormData formData, IFileOps fileOps, FormProgressReporter progressReporter)
         {
             string saveLocation = $"{formData.ScenarioImageFolder}\\{resourceFileName}";
-            FileOps.TryGetResourceStream($"{resourceFolder}.{resourceFileName}", null, out Stream stream);
-            StreamReader reader = new(stream);
-            string streamContents = reader.ReadToEnd();
-            File.WriteAllText(saveLocation, streamContents);
-            stream.Dispose();
+            (bool success, Stream stream) = await fileOps.TryGetResourceStreamAsync($"{resourceFolder}.{resourceFileName}", null);
+            if (!success)
+            {
+                return;
+            }
+            using (stream)
+            using (StreamReader reader = new(stream))
+            {
+                string streamContents = reader.ReadToEnd();
+                await fileOps.TryWriteAllTextAsync(saveLocation, streamContents, progressReporter);
+            }
         }
 
-        static private void SetScenarioMetadata(ScenarioFormData formData)
+        static private void SetScenarioMetadata(ScenarioFormData formData, Overview overview)
         {
             SimMissionUIScenarioMetadata md = new()
             {
                 InstanceId = GetGUID(),
-                SkillLevel = ScenarioHTML.overview.Difficulty,
+                SkillLevel = overview.Difficulty,
                 LocationDescr = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}",
                 DifficultyLevel = 1,
-                EstimatedTime = ScenarioHTML.GetDuration(),
+                EstimatedTime = ScenarioHTML.GetDuration(overview),
                 UncompletedImage = "images\\imgM_i.bmp",
                 CompletedImage = "images\\imgM_c.bmp",
                 MissionBrief = "Overview.htm",
@@ -1147,25 +1153,31 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow = [upw];
         }
 
-        static private void SetWikiTourJS(ScenarioFormData formData, Wikipedia wikipedia)
+        public static async void SetWikiTourJS(ScenarioFormData formData, Wikipedia wikipedia, IFileOps fileOps, FormProgressReporter progressReporter)
         {
             string saveLocation = $"{formData.ScenarioImageFolder}\\scriptsWikipediaItem.js";
-            FileOps.TryGetResourceStream("Javascript.scriptsWikipediaItem.js", null, out Stream stream);
-            StreamReader reader = new(stream);
-            string wikipediaJS = reader.ReadToEnd();
-            string itemURLs = "\"https://en.wikipedia.org" + wikipedia.WikiTour[1].itemURL + "\"";
-            for (int legNo = 2; legNo < wikipedia.WikiCount - 1; legNo++)
+            (bool success, Stream stream) = await fileOps.TryGetResourceStreamAsync("Javascript.scriptsWikipediaItem.js", progressReporter);
+            if (!success)
             {
-                itemURLs += ", " + "\"https://en.wikipedia.org" + wikipedia.WikiTour[legNo].itemURL + "\"";
+                return;
             }
-            // double up last url to display while travelling from last item to destination airport
-            itemURLs += ", " + "\"https://en.wikipedia.org" + wikipedia.WikiTour[wikipedia.WikiCount - 2].itemURL + "\"";
-            wikipediaJS = wikipediaJS.Replace("itemURLsX", itemURLs);
-            wikipediaJS = wikipediaJS.Replace("itemHREFsX", SetWikiTourAllLegHREFsJS(wikipedia));
-            wikipediaJS = wikipediaJS.Replace("widthX", formData.WikiURLWindowWidth.ToString());
-            wikipediaJS = wikipediaJS.Replace("heightX", (formData.WikiURLWindowHeight - 50).ToString());
-            File.WriteAllText(saveLocation, wikipediaJS);
-            stream.Dispose();
+            using (stream)
+            using (StreamReader reader = new(stream))
+            {
+                string wikipediaJS = reader.ReadToEnd();
+                string itemURLs = "\"https://en.wikipedia.org" + wikipedia.WikiTour[1].itemURL + "\"";
+                for (int legNo = 2; legNo < wikipedia.WikiCount - 1; legNo++)
+                {
+                    itemURLs += ", " + "\"https://en.wikipedia.org" + wikipedia.WikiTour[legNo].itemURL + "\"";
+                }
+                // double up last url to display while travelling from last item to destination airport
+                itemURLs += ", " + "\"https://en.wikipedia.org" + wikipedia.WikiTour[wikipedia.WikiCount - 2].itemURL + "\"";
+                wikipediaJS = wikipediaJS.Replace("itemURLsX", itemURLs);
+                wikipediaJS = wikipediaJS.Replace("itemHREFsX", SetWikiTourAllLegHREFsJS(wikipedia));
+                wikipediaJS = wikipediaJS.Replace("widthX", formData.WikiURLWindowWidth.ToString());
+                wikipediaJS = wikipediaJS.Replace("heightX", (formData.WikiURLWindowHeight - 50).ToString());
+                await fileOps.TryWriteAllTextAsync(saveLocation, wikipediaJS, progressReporter);
+            }
         }
 
         static private string SetWikiTourAllLegHREFsJS(Wikipedia wikipedia)

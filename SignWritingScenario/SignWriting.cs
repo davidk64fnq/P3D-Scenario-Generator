@@ -74,7 +74,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             }
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            ScenarioXML.SetSignWritingWorldBaseFlightXML(formData, overview, this, _progressReporter, fileOps);
+            ScenarioXML.SetSignWritingWorldBaseFlightXML(formData, overview, this, _progressReporter);
             ScenarioXML.WriteXML(formData, fileOps, progressReporter);
 
             return true;
@@ -87,7 +87,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
         /// the the sign writing gate's latitude/longitude and start/destination runway's latitude/longitude.</returns>
-        public static IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
+        public IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
         {
             IEnumerable<Coordinate> coordinates = gates.Select(gate => new Coordinate(gate.lat, gate.lon));
 
@@ -122,7 +122,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// between segments.
         /// </summary>
         /// <returns>The estimated flight distance in nautical miles.</returns>
-        static internal double GetSignWritingDistance(ScenarioFormData formData)
+        internal double GetSignWritingDistance(ScenarioFormData formData)
         {
             return gates.Count / 2 * formData.SignSegmentLengthFeet * Constants.FeetInDegreeOfLatitude / Constants.FeetInNauticalMile * 1.5;
         }
@@ -283,9 +283,9 @@ namespace P3D_Scenario_Generator.SignWritingScenario
 
             // Assuming SignWriting.gates is a List<Gate> and Gate has public topPixels, leftPixels, and orientation properties
             Gate gate;
-            for (int index = 1; index <= SignWriting.gates.Count; index++)
+            for (int index = 1; index <= gates.Count; index++)
             {
-                gate = SignWriting.gates[index - 1];
+                gate = gates[index - 1];
                 topPixels += gate.topPixels.ToString();
                 leftPixels += gate.leftPixels.ToString();
                 bearings += gate.orientation.ToString();
@@ -294,7 +294,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 altitudes += gate.amsl.ToString();
 
                 // Add comma if not the last element
-                if (index <= SignWriting.gates.Count - 1)
+                if (index <= gates.Count - 1)
                 {
                     topPixels += ",";
                     leftPixels += ",";
@@ -401,7 +401,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             return true;
         }
 
-        public static Overview SetOverviewStruct(ScenarioFormData formData)
+        public Overview SetOverviewStruct(ScenarioFormData formData)
         {
             string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
             briefing += " as you take on the role of sign writer in the sky! ";
