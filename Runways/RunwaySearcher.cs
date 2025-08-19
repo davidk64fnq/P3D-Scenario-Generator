@@ -167,7 +167,15 @@ namespace P3D_Scenario_Generator.Runways
         {
             if (index >= 0 && index < _allRunways.Count)
             {
-                return _allRunways[index];
+                // Use a LINQ query to find the first runway where the RunwaysIndex property matches.
+                var result = _allRunways.FirstOrDefault(r => r.RunwaysIndex == index);
+
+                if (result == null)
+                {
+                    await _log.WarningAsync($"Could not find runway with RunwaysIndex of {index}.");
+                }
+
+                return result; ;
             }
 
             await _log.WarningAsync($"Attempted to access runway at index {index}, which is out of bounds (list size: {_allRunways.Count}).");

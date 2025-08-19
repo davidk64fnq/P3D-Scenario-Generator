@@ -336,7 +336,6 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMinDist.Text = "20";
             TextBoxCelestialMinDist.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCelestialMinDist, "Min run home from starting position (miles)");
-            TextBoxCelestialMinDist.Validating += TextBox_Validating;
             // 
             // TextBoxCelestialMaxDist
             // 
@@ -350,7 +349,6 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMaxDist.Text = "30";
             TextBoxCelestialMaxDist.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxCelestialMaxDist, "Max run home from starting position (miles)");
-            TextBoxCelestialMaxDist.Validating += TextBox_Validating;
             // 
             // label19
             // 
@@ -1560,7 +1558,6 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLWindowHeight.Text = "1024";
             TextBoxWikiURLWindowHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLWindowHeight, "Resolution height in pixels of the Wiki URL window.");
-            TextBoxWikiURLWindowHeight.Validating += TextBox_Validating;
             // 
             // TextBoxWikiURLWindowWidth
             // 
@@ -1574,7 +1571,6 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLWindowWidth.Text = "800";
             TextBoxWikiURLWindowWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLWindowWidth, "Resolution width in pixels of the Wiki URL window. ");
-            TextBoxWikiURLWindowWidth.Validating += TextBox_Validating;
             // 
             // label56
             // 
@@ -1599,7 +1595,6 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorHeight.Text = "1080";
             TextBoxWikiURLMonitorHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLMonitorHeight, "Resolution height in pixels of the monitor that Wiki URL window will display on.");
-            TextBoxWikiURLMonitorHeight.Validating += TextBox_Validating;
             // 
             // TextBoxWikiURLMonitorWidth
             // 
@@ -1613,7 +1608,6 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorWidth.Text = "1920";
             TextBoxWikiURLMonitorWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLMonitorWidth, "Resolution width in pixels of the monitor that Wiki URL window will display on. ");
-            TextBoxWikiURLMonitorWidth.Validating += TextBox_Validating;
             // 
             // label51
             // 
@@ -1660,7 +1654,6 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLOffset.Text = "20";
             TextBoxWikiURLOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLOffset, resources.GetString("TextBoxWikiURLOffset.ToolTip"));
-            TextBoxWikiURLOffset.Validating += TextBox_Validating;
             // 
             // label54
             // 
@@ -1685,7 +1678,6 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorNumber.Text = "0";
             TextBoxWikiURLMonitorNumber.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLMonitorNumber, "The default monitor that the Wiki URL window will display in. Experiment with values between 0 and the number of monitors minus 1.");
-            TextBoxWikiURLMonitorNumber.Validating += TextBox_Validating;
             // 
             // label55
             // 

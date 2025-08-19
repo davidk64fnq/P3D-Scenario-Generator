@@ -10,7 +10,6 @@ using P3D_Scenario_Generator.SignWritingScenario;
 using P3D_Scenario_Generator.Utilities;
 using P3D_Scenario_Generator.WikipediaScenario;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -26,6 +25,7 @@ namespace P3D_Scenario_Generator
         private bool _isFormLoaded = false;
         private readonly List<string> allRunwayStrings = [];
         private RunwayManager _runwayManager;
+        private bool _isShuttingDown = false; 
 
         // Model dependencies
         private readonly AlmanacData _almanacData;
@@ -55,6 +55,12 @@ namespace P3D_Scenario_Generator
         {
             InitializeComponent();
 
+            // If the associated control has an error, cancel the display of the standard ToolTip.
+            toolTip1.Popup += ToolTip1_Popup;
+
+            // Initializes the progress reporter to update the status bar label on the UI thread.
+            _progressReporter = new FormProgressReporter(this.toolStripStatusLabel1, this);
+
             _logger = new Logger();
             _fileOps = new FileOps(_logger);
             _cacheManager = new CacheManager(_logger);
@@ -71,13 +77,6 @@ namespace P3D_Scenario_Generator
             _wikipedia = new(_logger, _fileOps, _progressReporter, _httpRoutines);
             _wikiPageHtmlParser = new(_logger, _fileOps, _httpRoutines, _progressReporter);
             _scenarioFXML = new(_fileOps, _progressReporter);
-
-            // If the associated control has an error, cancel the display of the standard ToolTip.
-            toolTip1.Popup += ToolTip1_Popup;
-
-            // Initializes the progress reporter to update the status bar label on the UI thread.
-            _progressReporter = new FormProgressReporter(this.toolStripStatusLabel1, this);
-
             _formData = new ScenarioFormData();
         }
 
@@ -110,7 +109,7 @@ namespace P3D_Scenario_Generator
             // Start the asynchronous loading process without blocking the UI thread.
             // The continuation logic is moved to a new method.
             // We use Task.Run to ensure the heavy lifting happens on a background thread.
-            await Task.Run(InitializeRunwayDataAsync);
+            _ = Task.Run(InitializeRunwayDataAsync);
         }
 
         /// <summary>
@@ -226,7 +225,6 @@ namespace P3D_Scenario_Generator
                 allRunwayStrings.AddRange(uiManager.UILists.IcaoRunwayNumbers);
             }
         }
-
 
         /// <summary>
         /// Performs custom initialization tasks after the designer-generated components are set up.
@@ -576,7 +574,6 @@ namespace P3D_Scenario_Generator
                 DisplayFinishMessage();
             }
         }
-
 
         /// <summary>
         /// Handles the <see cref="ComboBoxGeneralScenarioType"/> selection change event. Updates the selected scenario
@@ -2176,8 +2173,11 @@ namespace P3D_Scenario_Generator
                 {
                     try
                     {
-                        Properties.Settings.Default[settingName] = textBox.Text;
-                        settingsModifiedInThisCall = true;
+                        if (textBox.Text != "")
+                        {
+                            Properties.Settings.Default[settingName] = textBox.Text;
+                            settingsModifiedInThisCall = true;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -2244,134 +2244,6 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private void TextBox_Validating(object sender, CancelEventArgs e)
-        {
-            int parameterTypeIndex = 1;
-            string[] parameterTokens = ((TextBox)sender).Tag.ToString().Split(',');
-            string parameterType = parameterTokens[parameterTypeIndex].Trim();
-
-            // First two tokens of textbox.Tag are the default value and value type, they should always be coded by developer!
-            if (parameterTokens.Length < 2 || parameterTokens.Length % 2 == 1)
-            {
-                DisplayParameterValidationMsg($"Developer has incorrectly set tag field of textbox control!", ((TextBox)sender).AccessibleName, e);
-                return;
-            }
-
-
-            // If it's one of the integer/whole/natural types
-            string integerTypes = "integer whole natural";
-            if (integerTypes.Contains(parameterType))
-            {
-                // Check it is an integer before looking at whole and natural types
-                if (!TextboxIsInteger(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
-                    return;
-
-                // Check whole type i.e. 0, 1, 2, ...
-                if (parameterType.Equals("whole") && !TextboxIsWhole(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
-                    return;
-
-                // Check natural type i.e. 1, 2, 3, ...
-                if (parameterType.Equals("natural") && !TextboxIsNatural(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
-                    return;
-            }
-
-            // If it's a double
-            if (parameterType.Equals("double") && !TextboxIsDouble(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
-                return;
-
-            // If it's a string
-            if (parameterType.Equals("string") && !TextboxIsString(((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
-                return;
-
-            // Do any custom checks
-            //   if (parameterTokens.Length > 2)
-            //   {
-            //       for (int index = 2; index < parameterTokens.Length; index += 2)
-            //       {
-            //    if (!TextboxComparison(parameterTokens[index].Trim(), parameterTokens[index + 1].Trim(), ((TextBox)sender).Text, ((TextBox)sender).AccessibleName, e))
-            //                return;
-            //       }
-            //   }
-        }
-
-        private static bool TextboxIsDouble(string text, string title, CancelEventArgs e)
-        {
-            try
-            {
-                double paramAsDouble = Convert.ToDouble(text);
-                if (paramAsDouble <= 0)
-                {
-                    DisplayParameterValidationMsg($"Numeric value greater than zero expected", title, e);
-                    return false;
-                }
-            }
-            catch (Exception)
-            {
-                DisplayParameterValidationMsg($"Numeric value expected", title, e);
-                return false;
-            }
-            return true;
-        }
-
-        private static bool TextboxIsInteger(string text, string title, CancelEventArgs e)
-        {
-            try
-            {
-                int paramAsInteger = Convert.ToInt32(text);
-            }
-            catch (Exception)
-            {
-                DisplayParameterValidationMsg($"Integer value expected", title, e);
-                return false;
-            }
-            return true;
-        }
-
-        private static bool TextboxIsNatural(string text, string title, CancelEventArgs e)
-        {
-            int paramAsInteger = Convert.ToInt32(text);
-            if (paramAsInteger <= 0)
-            {
-                DisplayParameterValidationMsg($"Integer value greater than zero expected", title, e);
-                return false;
-            }
-            return true;
-        }
-
-        private static bool TextboxIsString(string text, string title, CancelEventArgs e)
-        {
-            if (string.IsNullOrEmpty(text))
-            {
-                DisplayParameterValidationMsg($"Alphabetic string expected", title, e);
-                return false;
-            }
-
-            for (int i = 0; i < text.Length; i++)
-                if (!char.IsLetter(text[i]) && text[i] != ' ') // Include  && text[i] != '@' if using test character, see InitLetterPaths()
-                {
-                    DisplayParameterValidationMsg($"Alphabetic string expected, 'A' to 'Z' and 'a' to 'z' only", title, e);
-                    return false;
-                }
-            return true;
-        }
-
-        private static bool TextboxIsWhole(string text, string title, CancelEventArgs e)
-        {
-            int paramAsInteger = Convert.ToInt32(text);
-            if (paramAsInteger < 0)
-            {
-                DisplayParameterValidationMsg($"Integer value greater than or equal to zero expected", title, e);
-                return false;
-            }
-            return true;
-        }
-
-        private static void DisplayParameterValidationMsg(string message, string title, CancelEventArgs e)
-        {
-            MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            e.Cancel = true;
-        }
-
         private static void GetFormTextField(Control.ControlCollection controlCollection, string fieldName, ref string fieldValue, ref string accessibleName)
         {
             foreach (Control control in controlCollection)
@@ -2410,15 +2282,46 @@ namespace P3D_Scenario_Generator
         /// <param name="e">The event data.</param>
         private async void Form_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // The method name was changed during refactoring.
-            // The correct call is to SaveLocationFavouritesAsync.
-            await _runwayManager.UiManager.SaveLocationFavouritesAsync(_progressReporter);
+            // If the form is shutting down due to an unhandled exception, do not attempt to
+            // save data again.
+            if (_isShuttingDown)
+            {
+                // Do not call e.Cancel = false or this.Close() here.
+                // Let the application exit gracefully.
+                return;
+            }
 
+            // Await all of your asynchronous save operations.
+            await _runwayManager.UiManager.SaveLocationFavouritesAsync(_progressReporter);
             await _aircraft.SaveAircraftVariantsAsync(_progressReporter);
+
+            // Save the user settings synchronously.
             SaveUserSettings(TabPageSettings.Controls);
+
+            // After all tasks are complete, close the form properly.
+            e.Cancel = false; // Allow the form to close
+            this.Close();
         }
 
+        /// <summary>
+        /// Sets the flag to indicate whether the application is in the process of shutting down.
+        /// This method is called by the global exception handler in Program.cs.
+        /// </summary>
+        /// <param name="isShuttingDown">The boolean value to set for the shutdown flag.</param>
+        public void SetIsShuttingDown(bool isShuttingDown)
+        {
+            _isShuttingDown = isShuttingDown;
+        }
 
+        /// <summary>
+        /// Provides access to the progress reporter instance.
+        /// This method is called by the global exception handler in Program.cs.
+        /// </summary>
+        /// <returns>The FormProgressReporter instance.</returns>
+        public FormProgressReporter GetProgressReporter()
+        {
+            return _progressReporter;
+        }
 
         /// <summary>
         /// Handles the MouseEnter event for a TextBox. Checks if the text content of the TextBox is truncated
@@ -2716,7 +2619,6 @@ namespace P3D_Scenario_Generator
             return isValid;
         }
 
-
         /// <summary>
         /// Validates the P3D Program Install path and populates the <see cref="ScenarioFormData.P3DProgramInstall"/> property.
         /// Checks if the path is not empty and if the directory exists.
@@ -2976,8 +2878,18 @@ namespace P3D_Scenario_Generator
         {
             bool isValid = true;
 
-            RunwayUtils.ParseIcaoRunwayString(ListBoxGeneralRunwayResults.SelectedItem.ToString(), out string icaoId, out string runwayId);
-            RunwayParams selectedRunway = _runwayManager.Searcher.GetRunwayByIcaoAndId(icaoId, runwayId);
+            string selectedICAOandId = ListBoxGeneralRunwayResults.SelectedItem?.ToString();
+            RunwayParams selectedRunway;
+
+            if (!string.IsNullOrWhiteSpace(selectedICAOandId))
+            {
+                RunwayUtils.ParseIcaoRunwayString(ListBoxGeneralRunwayResults.SelectedItem.ToString(), out string icaoId, out string runwayId);
+                selectedRunway = _runwayManager.Searcher.GetRunwayByIcaoAndId(icaoId, runwayId);
+            }
+            else
+            {
+                selectedRunway = await _runwayManager.Searcher.GetFilteredRandomRunwayAsync(_formData);
+            }
             _formData.RunwayIndex = selectedRunway.RunwaysIndex;
 
             if (!ValidateAndSetEnum<ScenarioTypes>(
@@ -3815,8 +3727,11 @@ namespace P3D_Scenario_Generator
             }
             else
             {
+                if (!string.IsNullOrEmpty(errorProvider1.GetError(textBox)))
+                {
+                    _progressReporter?.Report("");
+                }
                 errorProvider1.SetError(textBox, "");
-                _progressReporter?.Report("");
                 setFormDataProperty(parsedValue); // Assign the parsed value using the delegate
                 return true;
             }
@@ -3857,8 +3772,11 @@ namespace P3D_Scenario_Generator
             }
             else
             {
+                if (!string.IsNullOrEmpty(errorProvider1.GetError(textBox)))
+                {
+                    _progressReporter?.Report("");
+                }
                 errorProvider1.SetError(textBox, "");
-                _progressReporter?.Report("");
                 setFormDataProperty(parsedValue); // Assign the parsed value using the delegate
                 return true;
             }

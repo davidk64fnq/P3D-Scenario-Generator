@@ -1,7 +1,6 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.Models;
-using System.Text.Json;
 
 namespace P3D_Scenario_Generator.Services
 {
@@ -533,8 +532,6 @@ namespace P3D_Scenario_Generator.Services
         /// <returns>A <see cref="Task{TResult}"/> that returns <see langword="true"/> if aircraft variants were successfully loaded, <see langword="false"/> otherwise.</returns>
         internal async Task<bool> LoadAircraftVariantsAsync(IProgress<string> progressReporter = null)
         {
-            // The `AircraftVariants` list should be an instance property of the Form class.
-            // We initialize it here to prevent NullReferenceExceptions on failure.
             AircraftVariants = [];
 
             string appDataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -556,53 +553,12 @@ namespace P3D_Scenario_Generator.Services
             }
             else
             {
-                // If the local file load failed (either not found or deserialization error),
-                // we fall back to the embedded resource.
-                await _log.WarningAsync("Local aircraft variants file not found or could not be deserialized. Falling back to embedded resource.");
-                try
-                {
-                    var (streamSuccess, resourceStream) = await _fileOps.TryGetResourceStreamAsync("Text.AircraftVariantsJSON.txt", progressReporter);
-
-                    if (streamSuccess)
-                    {
-                        await using (resourceStream)
-                        {
-                            // Use the asynchronous version of deserialization.
-                            AircraftVariants = await JsonSerializer.DeserializeAsync<List<AircraftVariant>>(resourceStream);
-                            await _log.InfoAsync("Successfully loaded aircraft variants from embedded resource.");
-                            progressReporter?.Report($"Aircraft variants loaded from embedded resource ({AircraftVariants.Count} entries).");
-                        }
-                    }
-                    else
-                    {
-                        // FileOps.TryGetResourceStreamAsync already reported the error.
-                        return false; // Indicate failure to get resource.
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Catch any errors during embedded resource deserialization.
-                    string errorMessage = $"An unexpected error occurred during fallback to embedded resource: {ex.Message}";
-                    await _log.ErrorAsync(errorMessage, ex);
-                    progressReporter?.Report($"ERROR: {errorMessage}");
-                    return false;
-                }
-            }
-
-            // Post-deserialization check
-            if (AircraftVariants == null || AircraftVariants.Count == 0)
-            {
                 AircraftVariants = [];
                 string warningMessage = "Aircraft variants file was empty or contained no valid data. Initializing with an empty list.";
                 await _log.WarningAsync(warningMessage);
                 progressReporter?.Report(warningMessage);
+                return false;
             }
-            else
-            {
-                await _log.InfoAsync($"Successfully loaded {AircraftVariants.Count} aircraft variants.");
-            }
-
-            return true; // Indicate success.
         }
 
         #endregion

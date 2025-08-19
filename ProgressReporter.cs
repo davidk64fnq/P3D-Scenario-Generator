@@ -26,7 +26,7 @@
         /// <param name="value">The progress message to display and log.</param>
         public void Report(string value)
         {
-            if (!string.IsNullOrEmpty(value))
+            if (value == null)
             {
                 return;
             }

@@ -1,5 +1,7 @@
 ﻿using P3D_Scenario_Generator.Interfaces;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace P3D_Scenario_Generator.Services
 {
@@ -15,11 +17,40 @@ namespace P3D_Scenario_Generator.Services
         private readonly string _warningLogFilePath;
 
         /// <summary>
-        /// Initializes a new instance of the Logger class.
+        /// Gets or sets a value indicating whether to include the date in the log entry.
+        /// </summary>
+        public bool IncludeDate { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to include the time in the log entry.
+        /// </summary>
+        public bool IncludeTime { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to include the log level (e.g., "INFO - ") in the log entry.
+        /// </summary>
+        public bool IncludeLevel { get; set; } = true;
+
+        /// <summary>
+        /// Initializes a new instance of the Logger class with default settings.
         /// It ensures the necessary log directory exists and clears previous log files on startup.
         /// </summary>
-        public Logger()
+        public Logger() : this(false, false, false)
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the Logger class with custom settings.
+        /// </summary>
+        /// <param name="includeDate">A boolean to control whether to include the date.</param>
+        /// <param name="includeTime">A boolean to control whether to include the time.</param>
+        /// <param name="includeLevel">A boolean to control whether to include the log level.</param>
+        public Logger(bool includeDate, bool includeTime, bool includeLevel)
+        {
+            IncludeDate = includeDate;
+            IncludeTime = includeTime;
+            IncludeLevel = includeLevel;
+
             // Primary log directory path: C:\Users\<user>\AppData\Roaming\<AppName>
             string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
             _logDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
@@ -63,10 +94,12 @@ namespace P3D_Scenario_Generator.Services
         }
 
         /// <inheritdoc/>
-        public async Task ErrorAsync(string message, Exception ex = null)
+        public async Task ErrorAsync(string message, Exception ex = null, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
-            string prefix = GetLogPrefix();
-            string logEntry = $"{DateTime.Now}: ERROR - {prefix}{message}";
+            string prefix = GetLogPrefix(callerName, callerFilePath);
+            string timestamp = GetTimestamp();
+            string logEntry = GetLogEntry("ERROR", prefix, timestamp, message);
+
             if (ex != null)
             {
                 logEntry += $"\nException Type: {ex.GetType().Name}\nMessage: {ex.Message}\nStack Trace:\n{ex.StackTrace}";
@@ -79,38 +112,92 @@ namespace P3D_Scenario_Generator.Services
         }
 
         /// <inheritdoc/>
-        public async Task WarningAsync(string message)
+        public async Task WarningAsync(string message, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
-            string prefix = GetLogPrefix();
-            string logEntry = $"{DateTime.Now}: WARNING - {prefix}{message}";
+            string prefix = GetLogPrefix(callerName, callerFilePath);
+            string timestamp = GetTimestamp();
+            string logEntry = GetLogEntry("WARNING", prefix, timestamp, message);
             await WriteLogEntryAsync(_warningLogFilePath, logEntry);
         }
 
         /// <inheritdoc/>
-        public async Task InfoAsync(string message)
+        public async Task InfoAsync(string message, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
-            string prefix = GetLogPrefix();
-            string logEntry = $"{DateTime.Now}: INFO - {prefix}{message}";
+            string prefix = GetLogPrefix(callerName, callerFilePath);
+            string timestamp = GetTimestamp();
+            string logEntry = GetLogEntry("INFO", prefix, timestamp, message);
             await WriteLogEntryAsync(_infoLogFilePath, logEntry);
         }
 
         /// <summary>
         /// A helper method to get the prefix for logging, including the calling method's name.
+        /// This method gets the class name from the file path and the method name from the caller.
         /// </summary>
-        private static string GetLogPrefix()
+        private static string GetLogPrefix(string callerName, string callerFilePath)
         {
-            // Skip 2 frames: one for this method, one for the public Error/Warning/Info method.
-            var stackFrame = new StackTrace().GetFrame(2);
-            var method = stackFrame?.GetMethod();
+            // Extract the class name from the file path.
+            string className = Path.GetFileNameWithoutExtension(callerFilePath);
 
-            if (method != null)
+            // For async methods, the compiler-generated name is in the format "<MethodName>d__<number>".
+            // We need to strip this off to get the original method name.
+            if (callerName.Contains('<') && callerName.Contains('>'))
             {
-                string className = method.DeclaringType?.Name ?? "UnknownClass";
-                string methodName = method.Name ?? "UnknownMethod";
-                return $"{className}.{methodName}: ";
+                int startIndex = callerName.IndexOf('<') + 1;
+                int endIndex = callerName.IndexOf('>');
+                callerName = callerName.Substring(startIndex, endIndex - startIndex);
             }
 
-            return "UnknownLocation: ";
+            return $"{className}.{callerName}: ";
+        }
+
+        /// <summary>
+        /// Gets the log entry string based on the current settings.
+        /// </summary>
+        /// <param name="level">The log level.</param>
+        /// <param name="prefix">The log prefix with class and method name.</param>
+        /// <param name="timestamp">The timestamp string.</param>
+        /// <param name="message">The log message.</param>
+        /// <returns>The formatted log entry string.</returns>
+        private string GetLogEntry(string level, string prefix, string timestamp, string message)
+        {
+            var sb = new StringBuilder();
+            if (!string.IsNullOrEmpty(timestamp))
+            {
+                sb.Append(timestamp);
+            }
+            if (IncludeLevel)
+            {
+                if (sb.Length > 0)
+                {
+                    sb.Append(" ");
+                }
+                sb.Append($"- {level} - ");
+            }
+            else if (sb.Length > 0)
+            {
+                sb.Append(" ");
+            }
+            sb.Append($"{prefix}{message}");
+
+            return sb.ToString().TrimStart(' ', '-');
+        }
+
+        /// <summary>
+        /// Gets the formatted timestamp based on the current settings.
+        /// </summary>
+        /// <returns>The formatted timestamp string.</returns>
+        private string GetTimestamp()
+        {
+            var parts = new List<string>();
+            if (IncludeDate)
+            {
+                parts.Add(DateTime.Now.ToShortDateString());
+            }
+            if (IncludeTime)
+            {
+                parts.Add(DateTime.Now.ToLongTimeString());
+            }
+            return string.Join(" ", parts);
         }
 
         /// <summary>
