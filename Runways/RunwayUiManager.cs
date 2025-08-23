@@ -1,4 +1,4 @@
-﻿using P3D_Scenario_Generator.Interfaces;
+﻿using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.Runways
 {
@@ -13,12 +13,12 @@ namespace P3D_Scenario_Generator.Runways
     /// <param name="searcher">An instance of RunwaySearcher to get raw runway data from.</param>
     /// <param name="logger">An instance of an asynchronous logging service.</param>
     /// <param name="cacheManager">An instance of a cache manager for serialization/deserialization.</param>
-    public class RunwayUiManager(RunwaySearcher searcher, ILogger logger, ICacheManager cacheManager, IFileOps fileOps)
+    public class RunwayUiManager(RunwaySearcher searcher, Logger logger, CacheManager cacheManager, FileOps fileOps)
     {
         private readonly RunwaySearcher _searcher = searcher ?? throw new ArgumentNullException(nameof(searcher));
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly ICacheManager _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly CacheManager _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
 
         public RunwayUILists UILists { get; } = new RunwayUILists();
 

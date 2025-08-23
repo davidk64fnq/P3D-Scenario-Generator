@@ -468,7 +468,7 @@ namespace P3D_Scenario_Generator
             buttonGeneralAircraft.Text = "Add Aircraft";
             toolTip1.SetToolTip(buttonGeneralAircraft, "To add a new aircraft to the list of favourites choose the image of preferred aircraft variant");
             buttonGeneralAircraft.UseVisualStyleBackColor = true;
-            buttonGeneralAircraft.Click += ButtonAddAircraft_Click;
+            buttonGeneralAircraft.Click += ButtonAddAircraft_ClickAsync;
             // 
             // TextBoxPhotoTourConstraintsMaxNoLegs
             // 
@@ -615,7 +615,6 @@ namespace P3D_Scenario_Generator
             ComboBoxPhotoTourPhotoAlignment.Anchor = AnchorStyles.None;
             ComboBoxPhotoTourPhotoAlignment.DropDownWidth = 100;
             ComboBoxPhotoTourPhotoAlignment.FormattingEnabled = true;
-            ComboBoxPhotoTourPhotoAlignment.Items.AddRange(new object[] { "Centered", "Top Left", "Top Right", "Bottom Right", "Bottom Left" });
             ComboBoxPhotoTourPhotoAlignment.Location = new Point(141, 63);
             ComboBoxPhotoTourPhotoAlignment.Name = "ComboBoxPhotoTourPhotoAlignment";
             ComboBoxPhotoTourPhotoAlignment.Size = new Size(100, 23);
@@ -1247,7 +1246,6 @@ namespace P3D_Scenario_Generator
             ComboBoxSignAlignment.Anchor = AnchorStyles.None;
             ComboBoxSignAlignment.DropDownWidth = 100;
             ComboBoxSignAlignment.FormattingEnabled = true;
-            ComboBoxSignAlignment.Items.AddRange(new object[] { "Centered", "Top Left", "Top Right", "Bottom Right", "Bottom Left" });
             ComboBoxSignAlignment.Location = new Point(139, 59);
             ComboBoxSignAlignment.Name = "ComboBoxSignAlignment";
             ComboBoxSignAlignment.Size = new Size(100, 23);
@@ -1696,7 +1694,6 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiURLAlignment.Anchor = AnchorStyles.None;
             ComboBoxWikiURLAlignment.DropDownWidth = 100;
             ComboBoxWikiURLAlignment.FormattingEnabled = true;
-            ComboBoxWikiURLAlignment.Items.AddRange(new object[] { "Centered", "Top Left", "Top Right", "Bottom Right", "Bottom Left" });
             ComboBoxWikiURLAlignment.Location = new Point(141, 63);
             ComboBoxWikiURLAlignment.Name = "ComboBoxWikiURLAlignment";
             ComboBoxWikiURLAlignment.Size = new Size(100, 23);
@@ -1948,7 +1945,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralAircraftSelection.TabIndex = 1;
             ComboBoxGeneralAircraftSelection.Tag = "";
             toolTip1.SetToolTip(ComboBoxGeneralAircraftSelection, "Choose an aircraft from the list of favourite aircraft to use in this scenario.\r\n\r\nTo change the display name of selected aircraft variant, type in the new name\r\nand press enter.");
-            ComboBoxGeneralAircraftSelection.SelectedIndexChanged += ComboBoxGeneralAircraftSelection_SelectedIndexChanged;
+            ComboBoxGeneralAircraftSelection.SelectedIndexChanged += ComboBoxGeneralAircraftSelection_SelectedIndexChangedAsync;
             ComboBoxGeneralAircraftSelection.KeyDown += ComboBoxGeneralAircraftSelection_KeyDown;
             // 
             // ComboBoxGeneralLocationFavourites
@@ -2971,7 +2968,7 @@ namespace P3D_Scenario_Generator
             ButtonCircuitDefault.TabIndex = 11;
             ButtonCircuitDefault.Text = "Default";
             ButtonCircuitDefault.UseVisualStyleBackColor = true;
-            ButtonCircuitDefault.Click += ButtonCircuitDefault_Click;
+            ButtonCircuitDefault.Click += ButtonCircuitDefault_ClickAsync;
             // 
             // TabPageMenu
             // 

@@ -1,5 +1,5 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.MapTiles
 {
@@ -8,9 +8,9 @@ namespace P3D_Scenario_Generator.MapTiles
     /// This class encapsulates the logic for determining the tile set that covers a given area,
     /// including handling edge conditions and meridian wrapping.
     /// </summary>
-    public class BoundingBoxCalculator(ILogger logger, IProgress<string> progressReporter)
+    public class BoundingBoxCalculator(Logger logger, IProgress<string> progressReporter)
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         /// <summary>
@@ -379,7 +379,8 @@ namespace P3D_Scenario_Generator.MapTiles
                     int newTileNo = MapTileCalculator.DecXtileNo(tileToCheck.XIndex, zoom);
                     if (newTileNo != boundingBox.XAxis[^1])
                     {
-                        string message = $"Extending bounding box west to {newTileNo} due to tile at ({tileToCheck.XIndex},{tileToCheck.YIndex}).";
+                        string message = $"Extending bounding box west to {newTileNo} due to coordinate on tile " +
+                            $"at ({tileToCheck.XIndex},{tileToCheck.YIndex}), zoom {zoom}.";
                         _progressReporter.Report($"INFO: {message}");
                         await _logger.InfoAsync(message);
                         boundingBox.XAxis.Insert(0, newTileNo);
@@ -388,7 +389,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
             catch (Exception ex)
             {
-                string errorMessage = $"Error checking west edge for tile {tileToCheck.XIndex},{tileToCheck.YIndex}.";
+                string errorMessage = $"Error checking west edge for tile {tileToCheck.XIndex},{tileToCheck.YIndex}, zoom {zoom}.";
                 await _logger.ErrorAsync(errorMessage, ex);
                 _progressReporter.Report($"ERROR: {errorMessage}");
             }

@@ -1,4 +1,6 @@
-﻿using P3D_Scenario_Generator.Interfaces;
+﻿using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Models;
+using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.Runways
 {
@@ -13,7 +15,7 @@ namespace P3D_Scenario_Generator.Runways
     /// formatting logic moved to a presentation layer.
     /// </remarks>
     /// <param name="data">The complete runway data object containing all runways and the KD-tree root.</param>
-    public class RunwaySearcher(RunwayData data, ILogger log)
+    public class RunwaySearcher(RunwayData data, Logger log)
     {
         // Holds the complete list of all runways loaded from the data source.
         // We ensure _allRunways is never null.
@@ -23,7 +25,7 @@ namespace P3D_Scenario_Generator.Runways
         private readonly KDNode _kdTreeRoot = data?.RunwayTreeRoot ?? new KDNode();
 
         // The ILog interface for logging errors and other messages.
-        private readonly ILogger _log = log;
+        private readonly Logger _log = log;
 
         // Using a thread-safe random number generator for robustness in a multi-threaded context.
         private static readonly Random _random = Random.Shared;
@@ -59,8 +61,8 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         /// <param name="targetLat">The latitude of the target point.</param>
         /// <param name="targetLon">The longitude of the target point.</param>
-        /// <param name="minDist">The minimum distance the runway can be from the target point.</param>
-        /// <param name="maxDist">The maximum distance the runway can be from the target point.</param>
+        /// <param name="minDist">The minimum distance the runway can be from the target point in nautical miles.</param>
+        /// <param name="maxDist">The maximum distance the runway can be from the target point in nautical miles.</param>
         /// <param name="scenarioFormData">The DTO containing location filters.</param>
         /// <returns>A runway that meets the distance and filter criteria, or null if no match is found.</returns>
         public async Task<RunwayParams> FindNearbyRunwayAsync(double targetLat, double targetLon, double minDist, double maxDist, ScenarioFormData scenarioFormData)
@@ -68,8 +70,8 @@ namespace P3D_Scenario_Generator.Runways
             try
             {
                 List<RunwayParams> nearbyRunways = [];
-                double minSq = minDist * minDist;
-                double maxSq = maxDist * maxDist;
+                double minSq = minDist / Constants.NMInDegreeOfLatitude * minDist / Constants.NMInDegreeOfLatitude;
+                double maxSq = maxDist / Constants.NMInDegreeOfLatitude * maxDist / Constants.NMInDegreeOfLatitude;
                 FindInRangeRecursive(_kdTreeRoot, targetLat, targetLon, minSq, maxSq, runway => IsRunwayInFilteredLocation(runway, scenarioFormData), 0, nearbyRunways);
 
                 if (nearbyRunways.Count == 0)

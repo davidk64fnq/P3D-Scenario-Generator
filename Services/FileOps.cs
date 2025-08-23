@@ -1,5 +1,4 @@
-﻿using P3D_Scenario_Generator.Interfaces;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using System.Xml.Serialization;
 
@@ -11,9 +10,9 @@ namespace P3D_Scenario_Generator.Services
     /// returning a boolean to indicate success or failure and logging detailed information
     /// for developer debugging.
     /// </summary>
-    public class FileOps(ILogger logger) : IFileOps
+    public class FileOps(Logger logger)
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         #region Read Operations
 
@@ -385,7 +384,7 @@ namespace P3D_Scenario_Generator.Services
         /// The directory is created if it does not already exist.
         /// </summary>
         /// <returns>A task that represents the asynchronous operation. The result is the full path to the application data directory.</returns>
-        public Task<string> GetApplicationDataDirectoryAsync()
+        public static Task<string> GetApplicationDataDirectoryAsync()
         {
             // This is not an I/O-bound operation, but it's wrapped for API consistency.
             return Task.Run(() => GetApplicationDataDirectory());
@@ -414,7 +413,7 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="filePath">The full path to the file.</param>
         /// <returns>The <see cref="DateTime"/> of the last write time, or <see langword="null"/> if the file does not exist.</returns>
-        public DateTime? GetFileLastWriteTime(string filePath)
+        public static DateTime? GetFileLastWriteTime(string filePath)
         {
             FileInfo fileInfo = new(filePath);
             return fileInfo.Exists ? fileInfo.LastWriteTime : null;
@@ -465,7 +464,7 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="filePath">The full path to the file.</param>
         /// <returns>The content of the file as a string.</returns>
-        public string ReadAllText(string filePath)
+        public static string ReadAllText(string filePath)
         {
             return File.ReadAllText(filePath);
         }
@@ -475,7 +474,7 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="filePath">The full path to the file.</param>
         /// <returns>True if the file exists, otherwise false.</returns>
-        public bool FileExists(string filePath)
+        public static bool FileExists(string filePath)
         {
             return File.Exists(filePath);
         }

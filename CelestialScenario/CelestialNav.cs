@@ -1,9 +1,9 @@
 ﻿using CoordinateSharp;
-using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
@@ -13,11 +13,11 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// dynamic web content (HTML, JavaScript, CSS) for a celestial sextant display.
     /// It also handles the creation and backup of the simulator's stars.dat file,
     /// and determines the geographical parameters for scenario setup.
-    class CelestialNav(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines, FormProgressReporter progressReporter, AlmanacData almanacData)
+    class CelestialNav(Logger logger, FileOps fileOps, HttpRoutines httpRoutines, FormProgressReporter progressReporter, AlmanacData almanacData)
     {
         // Guard clauses to validate the constructor parameters.
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly AlmanacDataSource _almanacDataSource = new(logger, progressReporter, httpRoutines, almanacData);
         private readonly StarDataManager _starDataManager = new(logger, fileOps, progressReporter);
@@ -105,7 +105,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
             ScenarioXML.SetCelestialWorldBaseFlightXML(formData, overview);
-            ScenarioXML.WriteXML(formData, fileOps, progressReporter);
+            await ScenarioXML.WriteXMLAsync(formData, fileOps, progressReporter);
 
             return true;
         }

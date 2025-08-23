@@ -1,11 +1,11 @@
 ﻿using P3D_Scenario_Generator.CircuitScenario;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.SignWritingScenario;
+using P3D_Scenario_Generator.Utilities;
 using P3D_Scenario_Generator.WikipediaScenario;
 using System.Xml.Serialization;
 
@@ -116,7 +116,7 @@ namespace P3D_Scenario_Generator
             SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", makeCircuit.GatesCount - 2, "ProximityTrigger");
         }
 
-        public static async Task SetPhotoTourWorldBaseFlightXMLAsync(ScenarioFormData formData, Overview overview, PhotoTour photoTour, IFileOps fileOps, FormProgressReporter progressReporter)
+        public static async Task SetPhotoTourWorldBaseFlightXMLAsync(ScenarioFormData formData, Overview overview, PhotoTour photoTour, FileOps fileOps, FormProgressReporter progressReporter)
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
@@ -407,7 +407,7 @@ namespace P3D_Scenario_Generator
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
         }
 
-        public static async void SetWikiListWorldBaseFlightXML(ScenarioFormData formData, Overview overview, Wikipedia wikipedia, IFileOps fileOps, FormProgressReporter progressReporter)
+        public static async void SetWikiListWorldBaseFlightXML(ScenarioFormData formData, Overview overview, Wikipedia wikipedia, FileOps fileOps, FormProgressReporter progressReporter)
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
@@ -506,7 +506,7 @@ namespace P3D_Scenario_Generator
             SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
         }
 
-        public static void WriteXML(ScenarioFormData formData, IFileOps fileOps, FormProgressReporter progressReporter)
+        public static async Task WriteXMLAsync(ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
         {
             XmlSerializer xmlSerializer = new(simBaseDocumentXML.GetType());
 
@@ -514,14 +514,14 @@ namespace P3D_Scenario_Generator
             xmlSerializer.Serialize(writer, simBaseDocumentXML);
             writer.Close();
 
-            RemoveXMLNSattributes($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.xml", fileOps, progressReporter);
+            await RemoveXMLNSattributesAsync($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.xml", fileOps, progressReporter);
         }
 
         /// <summary>
         /// Removes xmlns:xsi and xmlns:xsd attributes from XML file, assumed to be on second line and in that order.
         /// </summary>
         /// <param name="filePath">The XML file to be processed</param>
-        static internal void RemoveXMLNSattributes(string filePath, IFileOps fileOps, FormProgressReporter progressReporter)
+        static internal async Task RemoveXMLNSattributesAsync(string filePath, FileOps fileOps, FormProgressReporter progressReporter)
         {
             string attributeXSI = "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"";
             string attributeXSD = "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"";
@@ -548,8 +548,8 @@ namespace P3D_Scenario_Generator
             }
             sr.Close();
             sw.Close();
-            fileOps.TryCopyFileAsync(filePath + ".tmp", filePath, progressReporter, true);
-            fileOps.TryDeleteFileAsync(filePath + ".tmp", null);
+            await fileOps.TryCopyFileAsync(filePath + ".tmp", filePath, progressReporter, true);
+            await fileOps.TryDeleteFileAsync(filePath + ".tmp", null);
         }
 
         #region Object creation/editing utilities
@@ -852,7 +852,7 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject = [lo];
         }
 
-        static private async Task SetMovingMapJS(List<MapEdges> mapEdges, int count, ScenarioFormData formData, IFileOps fileOps, FormProgressReporter progressReporter)
+        static private async Task SetMovingMapJS(List<MapEdges> mapEdges, int count, ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
         {
             string saveLocation = $"{formData.ScenarioImageFolder}\\scriptsMovingMap.js";
             (bool success, Stream stream) = await fileOps.TryGetResourceStreamAsync("Javascript.scriptsMovingMap.js", progressReporter);
@@ -1027,7 +1027,7 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea = [ra];
         }
 
-        public static async void SetResourcesFile(string resourceFolder, string resourceFileName, ScenarioFormData formData, IFileOps fileOps, FormProgressReporter progressReporter)
+        public static async void SetResourcesFile(string resourceFolder, string resourceFileName, ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
         {
             string saveLocation = $"{formData.ScenarioImageFolder}\\{resourceFileName}";
             (bool success, Stream stream) = await fileOps.TryGetResourceStreamAsync($"{resourceFolder}.{resourceFileName}", null);
@@ -1153,7 +1153,7 @@ namespace P3D_Scenario_Generator
                 simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow = [upw];
         }
 
-        public static async void SetWikiTourJS(ScenarioFormData formData, Wikipedia wikipedia, IFileOps fileOps, FormProgressReporter progressReporter)
+        public static async void SetWikiTourJS(ScenarioFormData formData, Wikipedia wikipedia, FileOps fileOps, FormProgressReporter progressReporter)
         {
             string saveLocation = $"{formData.ScenarioImageFolder}\\scriptsWikipediaItem.js";
             (bool success, Stream stream) = await fileOps.TryGetResourceStreamAsync("Javascript.scriptsWikipediaItem.js", progressReporter);

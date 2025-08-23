@@ -1,10 +1,5 @@
-﻿// Services/HttpRoutines.cs
-// This file contains a refactored version of the HttpRoutines class, using dependency injection.
-// All legacy MessageBox calls have been replaced with the injected ILogger.
-
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
 using System.Net;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
@@ -19,10 +14,10 @@ namespace P3D_Scenario_Generator.Services
     /// </remarks>
     /// <param name="fileOps">The file operations service.</param>
     /// <param name="logger">The logging service.</param>
-    public class HttpRoutines(IFileOps fileOps, ILogger logger) : IHttpRoutines
+    public class HttpRoutines(FileOps fileOps, Logger logger) 
     {
-        private readonly IFileOps _fileOps = fileOps;
-        private readonly ILogger _logger = logger;
+        private readonly FileOps _fileOps = fileOps;
+        private readonly Logger _logger = logger;
         private readonly HttpClient _httpClient = new();
 
         /// <summary>
@@ -99,7 +94,7 @@ namespace P3D_Scenario_Generator.Services
         public async Task<HtmlDocument> GetHtmlDocumentFromFileAsync(string filePath)
         {
             // Use the injected _fileOps to check for file existence
-            if (!_fileOps.FileExists(filePath))
+            if (!FileOps.FileExists(filePath))
             {
                 await _logger.ErrorAsync($"GetHtmlDocumentFromFileAsync: The specified file does not exist: \"{filePath}\"");
                 return null;
@@ -235,7 +230,7 @@ namespace P3D_Scenario_Generator.Services
         /// <param name="node">The parent HTML node to start the search from.</param>
         /// <param name="xpath">The XPath expression to select the target node.</param>
         /// <returns>The InnerText of the selected node, or null if the node is not found.</returns>
-        public string SelectSingleNodeInnerText(HtmlNode node, string xpath)
+        public static string SelectSingleNodeInnerText(HtmlNode node, string xpath)
         {
             if (node == null)
             {

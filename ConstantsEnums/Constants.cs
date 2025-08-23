@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using P3D_Scenario_Generator.Models;
+using System.ComponentModel;
 using System.Reflection;
 
 namespace P3D_Scenario_Generator.ConstantsEnums
@@ -321,6 +322,11 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         /// The number of feet in one degree of latitude
         /// </summary>
         public const double FeetInDegreeOfLatitude = 364000;
+
+        /// <summary>
+        /// The number of nautical miles in one degree of latitude
+        /// </summary>
+        public const double NMInDegreeOfLatitude = 60;
 
         /// <summary>
         /// The number of feet in one nautical mile

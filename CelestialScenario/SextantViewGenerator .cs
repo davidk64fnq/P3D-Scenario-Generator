@@ -1,5 +1,6 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Models;
+using P3D_Scenario_Generator.Services;
 using System.Text;
 
 namespace P3D_Scenario_Generator.CelestialScenario
@@ -11,11 +12,11 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// and geographic parameters, and also defines the visible boundaries of the
     /// celestial map.
     /// </summary>
-    public class SextantViewGenerator(ILogger logger, IFileOps fileOps, IProgress<string> progressReporter, AlmanacData almanacData)
+    public class SextantViewGenerator(Logger logger, FileOps fileOps, IProgress<string> progressReporter, AlmanacData almanacData)
     {
         // Guard clauses to validate the constructor parameters.
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly AlmanacData _almanacData = almanacData ?? throw new ArgumentNullException(nameof(almanacData));
 

@@ -1,4 +1,4 @@
-﻿namespace P3D_Scenario_Generator
+﻿namespace P3D_Scenario_Generator.Utilities
 {
     /// <summary>
     /// A custom <see cref="IProgress{T}"/> implementation for reporting progress updates to a <see cref="ToolStripStatusLabel"/> on a <see cref="Form"/>.
@@ -48,7 +48,7 @@
         private void UpdateStatusLabel(string message)
         {
             // Apply throttling only if enabled.
-            if (IsThrottlingEnabled && (DateTime.Now - _lastUpdateTime) < _minUpdateInterval)
+            if (IsThrottlingEnabled && DateTime.Now - _lastUpdateTime < _minUpdateInterval)
             {
                 return;
             }

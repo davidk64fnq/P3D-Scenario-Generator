@@ -1,7 +1,8 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 
 namespace P3D_Scenario_Generator.MapTiles
 {
@@ -11,12 +12,12 @@ namespace P3D_Scenario_Generator.MapTiles
     /// tile retrieval, montage creation, and image manipulation. It manages the
     /// workflow from geographic coordinates to final image files.
     /// </summary>
-    public class MapTileImageMaker(ILogger logger, FormProgressReporter progressReporter, IFileOps fileOps, IHttpRoutines httpRoutines)
+    public class MapTileImageMaker(Logger logger, FormProgressReporter progressReporter, FileOps fileOps, HttpRoutines httpRoutines)
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly IHttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
         private readonly MapTileCalculator _mapTileCalculator = new(logger, progressReporter);
         private readonly BoundingBoxCalculator _boundingBoxCalculator = new(logger, progressReporter);
         private readonly MapTileMontager _mapTileMontager = new(logger, progressReporter, fileOps, httpRoutines);
@@ -301,6 +302,7 @@ namespace P3D_Scenario_Generator.MapTiles
             bool success;
             int legZoomLabel = 1;
             // Create first zoom level image for leg route
+            _progressReporter.Report($"Leg {legNo}: Creating zoom level {legZoomLabel} OSM image");
             (success, int zoom, PaddingMethod paddingMethod, BoundingBox boundingBox) = await SetFirstLegRouteImageAsync(coordinates, legNo, drawRoute, legZoomLabel, formData);
             if (!success)
             {
@@ -324,6 +326,7 @@ namespace P3D_Scenario_Generator.MapTiles
             for (int inc = 1; inc <= numberZoomLevels; inc++)
             {
                 legZoomLabel = 1 + inc;
+                _progressReporter.Report($"Leg {legNo}: Creating zoom level {legZoomLabel} OSM image");
                 // Create subsequent zoom level images for leg route
                 if (!await SetNextLegRouteImageAsync(coordinates, legNo, drawRoute, legZoomLabel, zoom + inc, nextBoundingBox, formData))
                 {

@@ -1,9 +1,9 @@
 ﻿using CoordinateSharp;
-using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 
 namespace P3D_Scenario_Generator.WikipediaScenario
 {
@@ -11,13 +11,13 @@ namespace P3D_Scenario_Generator.WikipediaScenario
     /// <summary>
     /// Provides routines for the Wikipedia scenario type
     /// </summary>
-    public class Wikipedia(ILogger logger, IFileOps fileOps, FormProgressReporter progressReporter, IHttpRoutines httpRoutines)
+    public class Wikipedia(Logger logger, FileOps fileOps, FormProgressReporter progressReporter, HttpRoutines httpRoutines)
     {
         // Guard clauses to validate the constructor parameters.
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly IHttpRoutines _httpRoutines = httpRoutines;
+        private readonly HttpRoutines _httpRoutines = httpRoutines;
         private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
 
         /// <summary>
@@ -244,7 +244,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
             ScenarioXML.SetWikiListWorldBaseFlightXML(formData, overview, this, fileOps, progressReporter);
-            ScenarioXML.WriteXML(formData, fileOps, progressReporter);
+            await ScenarioXML.WriteXMLAsync(formData, fileOps, progressReporter);
 
             return true;
         }

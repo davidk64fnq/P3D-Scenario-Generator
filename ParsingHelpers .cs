@@ -1,5 +1,5 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator
 {
@@ -7,9 +7,9 @@ namespace P3D_Scenario_Generator
     /// Provides helper methods for parsing and validating numerical string inputs,
     /// specifically for degrees and minutes values, with integrated error logging.
     /// </summary>
-    public class ParsingHelpers(ILogger logger, IProgress<string> progressReporter)
+    public class ParsingHelpers(Logger logger, IProgress<string> progressReporter)
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         /// <summary>

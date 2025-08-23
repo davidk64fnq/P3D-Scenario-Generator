@@ -1,9 +1,9 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 
 namespace P3D_Scenario_Generator.PhotoTourScenario
 {
@@ -60,13 +60,13 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// <param name="logger">The logging service.</param>
     /// <param name="fileOps">The file operations service.</param>
     /// <param name="httpRoutines">The HTTP routines service.</param>
-    public class PhotoTour(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines, FormProgressReporter progressReporter)
+    public class PhotoTour(Logger logger, FileOps fileOps, HttpRoutines httpRoutines, FormProgressReporter progressReporter)
     {
-        private readonly IFileOps _fileOps = fileOps;
+        private readonly FileOps _fileOps = fileOps;
         private readonly PhotoTourUtilities _photoTourUtilities = new(logger, httpRoutines, progressReporter, fileOps);
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly ILogger _logger = logger;
-        private readonly IHttpRoutines _httpRoutines = httpRoutines;
+        private readonly Logger _logger = logger;
+        private readonly HttpRoutines _httpRoutines = httpRoutines;
         private readonly Pic2MapHtmlParser _pic2MapHtmlParser = new(logger, httpRoutines);
         private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
 
@@ -124,7 +124,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
             await ScenarioXML.SetPhotoTourWorldBaseFlightXMLAsync(formData, overview, this, _fileOps, progressReporter);
-            ScenarioXML.WriteXML(formData, _fileOps, progressReporter);
+            await ScenarioXML.WriteXMLAsync(formData, _fileOps, progressReporter);
 
             return true;
         }
@@ -149,7 +149,6 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 progressReporter?.Report(message);
                 await _logger.InfoAsync(message);
                 PhotoLocations.Clear();
-
                 SetLegResult firstLegResult = await SetFirstLeg(formData, runwayManager);
                 if (firstLegResult == SetLegResult.NoAirportFound)
                 {
@@ -223,7 +222,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 return SetLegResult.WebDownloadFailed;
             }
 
-            if (!_fileOps.FileExists(pic2mapHtmlSaveLocation))
+            if (!FileOps.FileExists(pic2mapHtmlSaveLocation))
             {
                 await _logger.ErrorAsync($"SetFirstLeg: Web document was not saved to '{pic2mapHtmlSaveLocation}'. HttpRoutines.GetWebDocAsync likely failed.");
                 return SetLegResult.WebDownloadFailed;
@@ -330,7 +329,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 return SetLegResult.WebDownloadFailed;
             }
 
-            if (!_fileOps.FileExists(pic2mapHtmlSaveLocation))
+            if (!FileOps.FileExists(pic2mapHtmlSaveLocation))
             {
                 await _logger.ErrorAsync($"SetNextLeg: Downloaded web document was not found at '{pic2mapHtmlSaveLocation}' after HttpRoutines.GetWebDocAsync call.");
                 return SetLegResult.WebDownloadFailed;
@@ -461,7 +460,8 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 Duration = $"{string.Format("{0:0}", duration)} minutes",
                 Aircraft = $"{formData.AircraftTitle}",
                 Briefing = briefing,
-                Objective = objective
+                Objective = objective,
+                Tips = "If you get lost, just follow the road. It's in the name!"
             };
 
             return overview;

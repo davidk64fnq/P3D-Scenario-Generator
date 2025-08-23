@@ -1,7 +1,6 @@
 ﻿using P3D_Scenario_Generator.CelestialScenario;
 using P3D_Scenario_Generator.CircuitScenario;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.Runways;
@@ -20,25 +19,19 @@ namespace P3D_Scenario_Generator
 
     public partial class Form : System.Windows.Forms.Form
     {
-        private readonly FormProgressReporter _progressReporter;
-        private readonly ScenarioFormData _formData;
         private bool _isFormLoaded = false;
-        private readonly List<string> allRunwayStrings = [];
-        private RunwayManager _runwayManager;
         private bool _isShuttingDown = false; 
 
         // Model dependencies
         private readonly AlmanacData _almanacData;
+        private readonly ScenarioFormData _formData;
 
-        // Services dependencies
-        private readonly Aircraft _aircraft;
-        private readonly ICacheManager _cacheManager;
-        private readonly IFileOps _fileOps;
-        private readonly IHttpRoutines _httpRoutines;
-        private readonly Logger _logger;
-        private readonly IOsmTileCache _osmTileCache;
-        private readonly ImageUtils _imageUtils;
-        private readonly ScenarioFXML _scenarioFXML;
+        // Runway dependencies
+        private readonly RunwayData _runwayData;
+        private readonly RunwayLoader _runwayLoader;
+        private RunwayManager _runwayManager;
+        private readonly RunwaySearcher _runwaySearcher;
+        private RunwayUiManager _runwayUiManager;
 
         // Scenario-specific dependencies
         private readonly MakeCircuit _makeCircuit;
@@ -48,8 +41,17 @@ namespace P3D_Scenario_Generator
         private readonly Wikipedia _wikipedia;
         private readonly WikiPageHtmlParser _wikiPageHtmlParser;
 
+        // Services dependencies
+        private readonly Aircraft _aircraft;
+        private readonly CacheManager _cacheManager;
+        private readonly FileOps _fileOps;
+        private readonly HttpRoutines _httpRoutines;
+        private readonly ImageUtils _imageUtils;
+        private readonly Logger _logger;
+        private readonly ScenarioFXML _scenarioFXML;
+
         // Utilities dependencies
-        private readonly IHtmlParser _htmlParser;
+        private readonly FormProgressReporter _progressReporter;
 
         public Form()
         {
@@ -59,25 +61,28 @@ namespace P3D_Scenario_Generator
             toolTip1.Popup += ToolTip1_Popup;
 
             // Initializes the progress reporter to update the status bar label on the UI thread.
-            _progressReporter = new FormProgressReporter(this.toolStripStatusLabel1, this);
+            _progressReporter = new(toolStripStatusLabel1, this);
 
-            _logger = new Logger();
-            _fileOps = new FileOps(_logger);
-            _cacheManager = new CacheManager(_logger);
-            _aircraft = new Aircraft(_logger, _cacheManager, _fileOps);
-            _htmlParser = new HtmlParser(_logger);
-            _httpRoutines = new HttpRoutines(_fileOps, _logger);
-            _photoTour = new PhotoTour(_logger, _fileOps, _httpRoutines, _progressReporter);
-            _almanacData = new AlmanacData();
-            _celestialNav = new CelestialNav(_logger, _fileOps, _httpRoutines, _progressReporter, _almanacData);
-            _osmTileCache = new OSMTileCache(_fileOps, _httpRoutines, _progressReporter);
-            _makeCircuit = new MakeCircuit(_logger, _fileOps, _progressReporter, _httpRoutines);
+            _formData = new();
+            _logger = new(false, false, false, _formData);
+            _fileOps = new(_logger);
+            _cacheManager = new(_logger);
+            _aircraft = new(_logger, _cacheManager, _fileOps);
+            _httpRoutines = new(_fileOps, _logger);
+            _photoTour = new(_logger, _fileOps, _httpRoutines, _progressReporter);
+            _almanacData = new();
+            _celestialNav = new(_logger, _fileOps, _httpRoutines, _progressReporter, _almanacData);
+            _makeCircuit = new(_logger, _fileOps, _progressReporter, _httpRoutines);
             _imageUtils = new(_logger, _fileOps, _progressReporter);
             _signWriting = new(_logger, _fileOps, _progressReporter, _httpRoutines);
             _wikipedia = new(_logger, _fileOps, _progressReporter, _httpRoutines);
             _wikiPageHtmlParser = new(_logger, _fileOps, _httpRoutines, _progressReporter);
             _scenarioFXML = new(_fileOps, _progressReporter);
-            _formData = new ScenarioFormData();
+            _runwayLoader = new(_fileOps, _cacheManager, _logger);
+            _runwayManager = new(_runwayLoader);
+            _runwayData = new();
+            _runwaySearcher = new(_runwayData, _logger);
+            _runwayUiManager = new(_runwaySearcher, _logger, _cacheManager, _fileOps);
         }
 
         #region Form Initialization
@@ -129,14 +134,14 @@ namespace P3D_Scenario_Generator
             {
                 // Await the asynchronous data loading. This happens on a background thread
                 // and releases the UI thread so the form can load.
-                RunwayUiManager uiManager = await GetRunwaysAsync(_progressReporter, cancellationToken);
+                _runwayUiManager = await GetRunwaysAsync(_progressReporter, cancellationToken);
 
                 // Use an async lambda to allow awaiting within the UI thread invocation.
                 await this.Invoke(async () =>
                 {
-                    if (uiManager != null)
+                    if (_runwayUiManager != null)
                     {
-                        PopulateRunwayControls(uiManager);
+                        PopulateRunwayControls(_runwayUiManager);
                         // Await the now-asynchronous method to ensure it completes before proceeding.
                         await SetOtherFormFields();
                         _isFormLoaded = true;
@@ -168,23 +173,14 @@ namespace P3D_Scenario_Generator
         private async Task SetOtherFormFields()
         {
             // General tab
-
-            // Locations
-            // We await the async method and store the result to check for success.
             bool favouritesLoaded = await _runwayManager.UiManager.LoadLocationFavouritesAsync(_progressReporter);
-
             if (favouritesLoaded)
             {
-                // The check for null is no longer necessary as LocationFavourites is always initialized as an empty list.
                 _runwayManager.UiManager.CurrentLocationFavouriteIndex = 0;
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
                 ComboBoxGeneralLocationFavourites.DataSource = _runwayManager.UiManager.GetLocationFavouriteNames();
             }
-
-            // Scenario type
-            SetScenarioTypesComboBox();
-
-            // Aircraft variants
+            PopulateComboBoxWithEnum<ScenarioTypes>(ComboBoxGeneralScenarioType);
             bool variantsLoaded = await _aircraft.LoadAircraftVariantsAsync(_progressReporter);
             if (variantsLoaded && _aircraft.AircraftVariants != null && _aircraft.AircraftVariants.Count > 0)
             {
@@ -196,17 +192,19 @@ namespace P3D_Scenario_Generator
             RestoreUserSettings(TabPageCircuit.Controls);
 
             // PhotoTour tab
+            PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxPhotoTourPhotoAlignment);
             RestoreUserSettings(TabPagePhotoTour.Controls);
 
             // Signwriting tab
+            PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxSignAlignment);
             RestoreUserSettings(TabPageSign.Controls);
 
             // Wikipedia Lists tab
             RestoreUserSettings(TabPageWikiList.Controls);
 
             // Settings tab
-            SetMapAlignmentComboBox();
-            SetMapWindowSizeComboBox();
+            PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxSettingsMapAlignment);
+            PopulateComboBoxWithEnum<MapWindowSizeOption>(ComboBoxSettingsMapWindowSize);
             OSMTileCache.CheckCache();
             RestoreUserSettings(TabPageSettings.Controls);
         }
@@ -220,10 +218,6 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralLocationCity.DataSource = uiManager.UILists.Cities;
             ComboBoxGeneralLocationCountry.DataSource = uiManager.UILists.Countries;
             ComboBoxGeneralLocationState.DataSource = uiManager.UILists.States;
-            if (uiManager.UILists.IcaoRunwayNumbers != null)
-            {
-                allRunwayStrings.AddRange(uiManager.UILists.IcaoRunwayNumbers);
-            }
         }
 
         /// <summary>
@@ -404,8 +398,7 @@ namespace P3D_Scenario_Generator
         /// </remarks>
         internal async void CheckRunwaysUpToDate()
         {
-            string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
-            string dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
+            string dataDirectory = FileOps.GetApplicationDataDirectory();
             string cacheFilePath = Path.Combine(dataDirectory, "runways.cache");
             string xmlFilePath = Path.Combine(dataDirectory, "runways.xml");
 
@@ -415,9 +408,9 @@ namespace P3D_Scenario_Generator
             try
             {
                 // Get the last modified dates for all relevant files, handling non-existence with null.
-                DateTime? cacheLastModified = _fileOps.GetFileLastWriteTime(cacheFilePath);
-                DateTime? xmlLastModified = _fileOps.GetFileLastWriteTime(xmlFilePath);
-                DateTime? sceneryLastModified = _fileOps.GetFileLastWriteTime(sceneryCFGfilePath);
+                DateTime? cacheLastModified = FileOps.GetFileLastWriteTime(cacheFilePath);
+                DateTime? xmlLastModified = FileOps.GetFileLastWriteTime(xmlFilePath);
+                DateTime? sceneryLastModified = FileOps.GetFileLastWriteTime(sceneryCFGfilePath);
 
                 if (!sceneryLastModified.HasValue)
                 {
@@ -436,35 +429,15 @@ namespace P3D_Scenario_Generator
                 if (isOutOfDate)
                 {
                     string runwaysDataOutOfDateMessage = $"The scenery.cfg file has been modified more recently than the cached runways data and/or the source runways.xml file." +
-                                                         " Consider recreating the runways data to include recently added airports." +
-                                                         " The program will now refresh the last modified date on the cache to prevent repeated warnings.";
+                                                         " Consider recreating the runways data to include recently added airports.";
                     await _logger.WarningAsync(runwaysDataOutOfDateMessage);
                     _progressReporter?.Report($"WARNING: {runwaysDataOutOfDateMessage.Replace(Environment.NewLine, " ")}");
-
-                    DateTime currentTime = DateTime.Now;
-                    if (File.Exists(cacheFilePath))
-                    {
-                        File.SetLastWriteTime(cacheFilePath, currentTime);
-                    }
-                    await _logger.InfoAsync($"Refreshed last modified date of '{cacheFilePath}' to {currentTime}.");
                 }
                 else
                 {
                     await _logger.InfoAsync("Runways data is up-to-date with scenery.cfg.");
                     _progressReporter?.Report("INFO: Runways data is up-to-date.");
                 }
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                string errorMessage = $"Error: Access to a file is denied while checking runway files. Please check permissions. Details: {ex.Message}";
-                await _logger.ErrorAsync(errorMessage, ex);
-                _progressReporter?.Report($"ERROR: {errorMessage}");
-            }
-            catch (IOException ex)
-            {
-                string errorMessage = $"An I/O error occurred while checking file dates for runway data. Details: {ex.Message}";
-                await _logger.ErrorAsync(errorMessage, ex);
-                _progressReporter?.Report($"ERROR: {errorMessage}");
             }
             catch (Exception ex)
             {
@@ -486,7 +459,7 @@ namespace P3D_Scenario_Generator
             }
 
             // Filter the in-memory list based on the search text.
-            var filteredResults = allRunwayStrings.Where(s => s.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+            var filteredResults = _runwayUiManager.UILists.IcaoRunwayNumbers.Where(s => s.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
 
             // Update the list box with the filtered results.
             ListBoxGeneralRunwayResults.Items.Clear();
@@ -731,15 +704,6 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Populates the <see cref="ComboBoxGeneralScenarioType"/> with the values from the
-        /// <see cref="ScenarioTypes"/> enumeration, allowing the user to select a scenario type.
-        /// </summary>
-        internal void SetScenarioTypesComboBox()
-        {
-            PopulateComboBoxWithEnum<ScenarioTypes>(ComboBoxGeneralScenarioType);
-        }
-
-        /// <summary>
         /// Handles the <see cref="Control.Leave"/> event for the <see cref="TextBoxGeneralScenarioTitle"/> control.
         /// When the control loses focus, this method triggers the validation and population
         /// of the scenario title data.
@@ -777,12 +741,12 @@ namespace P3D_Scenario_Generator
 
         #region Aircraft selection
 
-        private void ButtonAddAircraft_Click(object sender, EventArgs e)
+        private async void ButtonAddAircraft_ClickAsync(object sender, EventArgs e)
         {
             if (ValidateP3DInstallFolder())
             {
                 // The call is now on the instance variable `_aircraft`
-                string displayName = _aircraft.ChooseAircraftVariant(_formData);
+                string displayName = await _aircraft.ChooseAircraftVariantAsync(_formData);
                 if (displayName != "")
                 {
                     // The call is now on the instance variable `_aircraft`
@@ -872,7 +836,7 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private void ComboBoxGeneralAircraftSelection_SelectedIndexChanged(object sender, EventArgs e)
+        private async void ComboBoxGeneralAircraftSelection_SelectedIndexChangedAsync(object sender, EventArgs e)
         {
             // The call is now on the instance variable `_aircraft`
             AircraftVariant aircraftVariant = _aircraft.AircraftVariants.Find(aircraft => aircraft.DisplayName == ((ComboBox)sender).Text);
@@ -886,7 +850,7 @@ namespace P3D_Scenario_Generator
                 // The call is now on the instance variable `_aircraft`
                 TextBoxGeneralAircraftValues.Text = _aircraft.SetTextBoxGeneralAircraftValues();
 
-                SetDefaultCircuitParams();
+                await SetDefaultCircuitParamsAsync();
             }
         }
 
@@ -1063,18 +1027,18 @@ namespace P3D_Scenario_Generator
 
         #region Circuit Tab
 
-        private void ButtonCircuitDefault_Click(object sender, EventArgs e)
+        private async void ButtonCircuitDefault_ClickAsync(object sender, EventArgs e)
         {
-            SetDefaultCircuitParams();
+            await SetDefaultCircuitParamsAsync();
         }
 
         /// <summary>
         /// Sets the default circuit parameters based on the current aircraft variant's performance.
         /// </summary>
-        private void SetDefaultCircuitParams()
+        private async Task SetDefaultCircuitParamsAsync()
         {
             // Call GetCurrentVariant() on the _aircraft instance
-            AircraftVariant aircraftVariant = _aircraft.GetCurrentVariant();
+            AircraftVariant aircraftVariant = await _aircraft.GetCurrentVariantAsync();
             if (aircraftVariant == null)
             {
                 _progressReporter?.Report("Select an aircraft to calculate default values");
@@ -1948,16 +1912,6 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        internal void SetMapAlignmentComboBox()
-        {
-            PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxSettingsMapAlignment);
-        }
-
-        internal void SetMapWindowSizeComboBox()
-        {
-            PopulateComboBoxWithEnum<MapWindowSizeOption>(ComboBoxSettingsMapWindowSize);
-        }
-
         #endregion
 
         #region Utilities
@@ -2448,7 +2402,7 @@ namespace P3D_Scenario_Generator
             }
 
             // 2. General Tab Data
-            if (!await PopulateAndValidateGeneralTabData(_aircraft.GetCurrentVariant()))
+            if (!await PopulateAndValidateGeneralTabData(await _aircraft.GetCurrentVariantAsync()))
             {
                 allValid = false;
             }
@@ -2878,6 +2832,8 @@ namespace P3D_Scenario_Generator
         {
             bool isValid = true;
 
+            ValidateAndPopulateLocationFilters();
+
             string selectedICAOandId = ListBoxGeneralRunwayResults.SelectedItem?.ToString();
             RunwayParams selectedRunway;
 
@@ -2905,8 +2861,6 @@ namespace P3D_Scenario_Generator
 
             _formData.DatePickerValue = GeneralDatePicker.Value;
             _formData.TimePickerValue = GeneralTimePicker.Value;
-
-            ValidateAndPopulateLocationFilters();
 
             return isValid;
         }

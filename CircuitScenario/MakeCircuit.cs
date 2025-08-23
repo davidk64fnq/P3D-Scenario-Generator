@@ -1,10 +1,10 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 
 namespace P3D_Scenario_Generator.CircuitScenario
 {
@@ -19,11 +19,11 @@ namespace P3D_Scenario_Generator.CircuitScenario
     /// <param name="logger">The logger for writing log messages.</param>
     /// <param name="fileOps">The file operations service for reading and writing files.</param>
     /// <param name="progressReporter">The progress reporter for UI updates.</param>
-    public class MakeCircuit(ILogger logger, IFileOps fileOps, FormProgressReporter progressReporter, IHttpRoutines httpRoutines)
+    public class MakeCircuit(Logger logger, FileOps fileOps, FormProgressReporter progressReporter, HttpRoutines httpRoutines)
     {
         // Guard clauses to validate the constructor parameters.
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
 
@@ -101,7 +101,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
             ScenarioXML.SetCircuitWorldBaseFlightXML(formData, overview, this);
-            ScenarioXML.WriteXML(formData, fileOps, progressReporter);
+            await ScenarioXML.WriteXMLAsync(formData, fileOps, progressReporter);
 
             return true;
         }

@@ -1,5 +1,4 @@
-﻿using P3D_Scenario_Generator.Interfaces;
-using P3D_Scenario_Generator.Models;
+﻿using P3D_Scenario_Generator.Models;
 
 namespace P3D_Scenario_Generator.Services
 {
@@ -9,10 +8,10 @@ namespace P3D_Scenario_Generator.Services
     /// <param name="logger">The logger for writing log messages.</param>
     /// <param name="fileOps">The file operations service for reading and writing files.</param>
     /// <param name="progressReporter">The progress reporter for UI updates.</param>
-    public class ScenarioHTML(ILogger logger, IFileOps fileOps, IProgress<string> progressReporter)
+    public class ScenarioHTML(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         /// <summary>
@@ -187,7 +186,7 @@ namespace P3D_Scenario_Generator.Services
             bool success;
             Stream resourceStream;
 
-            if (_fileOps.FileExists(aircraftImageSource))
+            if (FileOps.FileExists(aircraftImageSource))
             {
                 if (!await _fileOps.TryCopyFileAsync(aircraftImageSource, aircraftImageDest, _progressReporter, true))
                 {

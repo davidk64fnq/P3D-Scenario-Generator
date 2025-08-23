@@ -1,16 +1,14 @@
-﻿using P3D_Scenario_Generator.Interfaces;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
-    /// Provides asynchronous methods for serializing and deserializing data to and from a file,
-    /// implementing the <see cref="ICacheManager"/> interface. This class exclusively uses
+    /// Provides asynchronous methods for serializing and deserializing data to and from a file. This class exclusively uses
     /// asynchronous I/O operations for non-blocking file access.
     /// </summary>
-    public class CacheManager(ILogger log) : ICacheManager
+    public class CacheManager(Logger log)
     {
-        private readonly ILogger _log = log;
+        private readonly Logger _log = log;
 
         // Caching the options in a static field ensures it is only created once.
         // This resolves the CA1869 warning and improves performance.

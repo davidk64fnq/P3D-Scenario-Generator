@@ -1,10 +1,10 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -15,12 +15,12 @@ namespace P3D_Scenario_Generator.SignWritingScenario
     /// This includes initializing character segment mappings, generating flight gates for the sign message,
     /// and preparing map images for scenario overview and location display.
     /// </summary>
-    public class SignWriting(ILogger logger, IFileOps fileOps, FormProgressReporter progressReporter, IHttpRoutines httpRoutines)
+    public class SignWriting(Logger logger, FileOps fileOps, FormProgressReporter progressReporter, HttpRoutines httpRoutines)
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly IHttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
+        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
         private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
             ScenarioXML.SetSignWritingWorldBaseFlightXML(formData, overview, this, _progressReporter);
-            ScenarioXML.WriteXML(formData, fileOps, progressReporter);
+            await ScenarioXML.WriteXMLAsync(formData, fileOps, progressReporter);
 
             return true;
         }

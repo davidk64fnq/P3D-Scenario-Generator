@@ -1,4 +1,4 @@
-﻿using P3D_Scenario_Generator.Interfaces;
+﻿using P3D_Scenario_Generator.Utilities;
 
 namespace P3D_Scenario_Generator.Services
 {
@@ -7,10 +7,10 @@ namespace P3D_Scenario_Generator.Services
     /// OpenStreetMap (OSM) tiles. This includes operations like retrieving tiles from cache
     /// or downloading them, checking for cached file existence, and managing cache usage statistics.
     /// </summary>
-    public class OSMTileCache(IFileOps fileOps, IHttpRoutines httpRoutines, FormProgressReporter progressReporter) : IOsmTileCache
+    public class OSMTileCache(FileOps fileOps, HttpRoutines httpRoutines, FormProgressReporter progressReporter) 
     {
-        private readonly IFileOps _fileOps = fileOps;
-        private readonly IHttpRoutines _httpRoutines = httpRoutines;
+        private readonly FileOps _fileOps = fileOps;
+        private readonly HttpRoutines _httpRoutines = httpRoutines;
         private readonly FormProgressReporter _progressReporter = progressReporter;
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace P3D_Scenario_Generator.Services
         /// calculated file path where the tile *would be* or *is* cached, regardless of whether it exists.</param>
         /// <returns>Returns <see langword="true"/> if the tile file identified by the <paramref name="key"/> exists in the cache;
         /// otherwise, <see langword="false"/>.</returns>
-        public bool DoesKeyExist(string key, ref string cachePath)
+        public static bool DoesKeyExist(string key, ref string cachePath)
         {
             string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             directory = Path.Combine(directory, AppDomain.CurrentDomain.FriendlyName);
@@ -83,7 +83,7 @@ namespace P3D_Scenario_Generator.Services
             {
                 Directory.CreateDirectory(directory);
             }
-            else if (_fileOps.FileExists(cachePath))
+            else if (FileOps.FileExists(cachePath))
             {
                 return true;
             }

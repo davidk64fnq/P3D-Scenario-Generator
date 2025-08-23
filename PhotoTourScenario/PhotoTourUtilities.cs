@@ -1,8 +1,8 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 
 namespace P3D_Scenario_Generator.PhotoTourScenario
 {
@@ -11,12 +11,12 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// including geographical coordinate extraction for mapping, tour distance calculations,
     /// photo location retrieval, and photo download/resizing operations.
     /// </summary>
-    public class PhotoTourUtilities(ILogger logger, IHttpRoutines httpRoutines, IProgress<string> progressReporter, IFileOps fileOps)
+    public class PhotoTourUtilities(Logger logger, HttpRoutines httpRoutines, IProgress<string> progressReporter, FileOps fileOps)
     {
-        private readonly ILogger _logger = logger;
-        private readonly IHttpRoutines _httpRoutines = httpRoutines;
+        private readonly Logger _logger = logger;
+        private readonly HttpRoutines _httpRoutines = httpRoutines;
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly ImageUtils _imageUtils = new(logger, fileOps, progressReporter);
 
         /// <summary>

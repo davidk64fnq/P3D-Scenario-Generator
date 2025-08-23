@@ -1,15 +1,17 @@
 ﻿using HtmlAgilityPack;
-using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Models;
+using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 using System.Web;
 
 namespace P3D_Scenario_Generator.WikipediaScenario
 {
     // Populating WikiPage when user pastes in Wikipedia URL, called from main form
-    public class WikiPageHtmlParser(ILogger logger, IFileOps fileOps, IHttpRoutines httpRoutines, FormProgressReporter progressReporter)
+    public class WikiPageHtmlParser(Logger logger, FileOps fileOps, HttpRoutines httpRoutines, FormProgressReporter progressReporter)
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly IHttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         /// <summary>

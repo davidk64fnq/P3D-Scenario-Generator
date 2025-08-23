@@ -1,5 +1,4 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.Models;
 
 namespace P3D_Scenario_Generator.Services
@@ -19,11 +18,11 @@ namespace P3D_Scenario_Generator.Services
     /// <param name="log">The logging service instance.</param>
     /// <param name="cacheManager">The cache management service instance.</param>
     /// <param name="fileOps">The file operations service instance.</param>
-    internal class Aircraft(ILogger log, ICacheManager cacheManager, IFileOps fileOps)
+    internal class Aircraft(Logger log, CacheManager cacheManager, FileOps fileOps)
     {
-        private readonly ILogger _log = log;
-        private readonly ICacheManager _cacheManager = cacheManager;
-        private readonly IFileOps _fileOps = fileOps;
+        private readonly Logger _log = log;
+        private readonly CacheManager _cacheManager = cacheManager;
+        private readonly FileOps _fileOps = fileOps;
 
         /// <summary>
         /// List of aircraft variants maintained by user with current selection shown on General tab of form.
@@ -46,7 +45,7 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="formData">The scenario form data containing paths like the P3D install directory.</param>
         /// <returns>The display name of the new aircraft variant, or an empty string if none was selected or an error occurred.</returns>
-        internal string ChooseAircraftVariant(ScenarioFormData formData)
+        internal async Task<string> ChooseAircraftVariantAsync(ScenarioFormData formData)
         {
             AircraftVariant aircraftVariant = new();
 
@@ -55,11 +54,11 @@ namespace P3D_Scenario_Generator.Services
             if (thumbnailPath != "")
             {
                 aircraftVariant.ThumbnailImagePath = thumbnailPath;
-                aircraftVariant.Title = GetAircraftTitle(thumbnailPath);
+                aircraftVariant.Title = await GetAircraftTitleAsync(thumbnailPath);
                 aircraftVariant.DisplayName = aircraftVariant.Title;
-                aircraftVariant.CruiseSpeed = GetAircraftCruiseSpeed(thumbnailPath);
-                aircraftVariant.HasFloats = GetAircraftFloatsStatus(thumbnailPath);
-                aircraftVariant.HasWheelsOrEquiv = GetAircraftWheelsStatus(thumbnailPath);
+                aircraftVariant.CruiseSpeed = await GetAircraftCruiseSpeedAsync(thumbnailPath);
+                aircraftVariant.HasFloats = await GetAircraftFloatsStatusAsync(thumbnailPath);
+                aircraftVariant.HasWheelsOrEquiv = await GetAircraftWheelsStatusAsync(thumbnailPath);
 
                 if (AddAircraftVariant(aircraftVariant))
                 {
@@ -130,13 +129,13 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="thumbnailPath">Path to the user selected aircraft variant thumbnail image</param>
         /// <returns>The aircraft variant title string or an empty string</returns>
-        internal string GetAircraftTitle(string thumbnailPath)
+        internal async Task<string> GetAircraftTitleAsync(string thumbnailPath)
         {
             // Get texture value, used to find correct string in aircraft.cfg for retrieving aircraft variant title
             string textureValue = GetTextureValue(thumbnailPath);
 
             // Now get aircraft variant title, assumes "title" always comes before "texture" in each variant section
-            string aircraftCFG = GetAircraftCFG(thumbnailPath);
+            string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
             string currentLine;
             string currentTitle = "";
@@ -166,22 +165,22 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="thumbnailPath">Path to the user selected aircraft variant thumbnail image</param>
         /// <returns>Text string containing contents of aircraft.cfg file (or equivalent) otherwise empty string</returns>
-        internal string GetAircraftCFG(string thumbnailPath)
+        internal async Task<string> GetAircraftCFGAsync(string thumbnailPath)
         {
             string textureFolderPath = Path.GetDirectoryName(thumbnailPath);
             string aircraftFolderPath = Path.GetDirectoryName(textureFolderPath);
 
-            if (_fileOps.FileExists($"{aircraftFolderPath}\\aircraft.cfg"))
+            if (FileOps.FileExists($"{aircraftFolderPath}\\aircraft.cfg"))
             {
-                return _fileOps.ReadAllText($"{aircraftFolderPath}\\aircraft.cfg");
+                return FileOps.ReadAllText($"{aircraftFolderPath}\\aircraft.cfg");
             }
-            else if (_fileOps.FileExists($"{aircraftFolderPath}\\sim.cfg"))
+            else if (FileOps.FileExists($"{aircraftFolderPath}\\sim.cfg"))
             {
-                return _fileOps.ReadAllText($"{aircraftFolderPath}\\sim.cfg");
+                return FileOps.ReadAllText($"{aircraftFolderPath}\\sim.cfg");
             }
             else
             {
-                _log.ErrorAsync($"Unable to locate aircraft.cfg or sim.cfg for selected aircraft variant at '{aircraftFolderPath}'.");
+                await _log.ErrorAsync($"Unable to locate aircraft.cfg or sim.cfg for selected aircraft variant at '{aircraftFolderPath}'.");
                 MessageBox.Show($"Unable to locate aircraft.cfg or sim.cfg for selected aircraft variant, " +
                     "rename equivalent file and advise developer", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return "";
@@ -217,9 +216,9 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="thumbnailPath">From this is extracted the aircraft folder which contains the aircraft.cfg file</param>
         /// <returns>The aircraft variant cruise speed string or an empty string</returns>
-        internal double GetAircraftCruiseSpeed(string thumbnailPath)
+        internal async Task<double> GetAircraftCruiseSpeedAsync(string thumbnailPath)
         {
-            string aircraftCFG = GetAircraftCFG(thumbnailPath);
+            string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
             string currentLine;
             while ((currentLine = reader.ReadLine()) != null)
@@ -258,9 +257,9 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="thumbnailPath">From this is extracted the aircraft folder which contains the aircraft.cfg file</param>
         /// <returns>True if the aircraft is equipped with floats</returns>
-        internal bool GetAircraftFloatsStatus(string thumbnailPath)
+        internal async Task<bool> GetAircraftFloatsStatusAsync(string thumbnailPath)
         {
-            string aircraftCFG = GetAircraftCFG(thumbnailPath);
+            string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
             string currentLine;
             bool hasFloats = false, hasSkis = false;
@@ -292,9 +291,9 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="thumbnailPath">From this is extracted the aircraft folder which contains the aircraft.cfg file</param>
         /// <returns>True if the aircraft is equipped with wheels/scrapes/skids/skis</returns>
-        internal bool GetAircraftWheelsStatus(string thumbnailPath)
+        internal async Task<bool> GetAircraftWheelsStatusAsync(string thumbnailPath)
         {
-            string aircraftCFG = GetAircraftCFG(thumbnailPath);
+            string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
             string currentLine;
             while ((currentLine = reader.ReadLine()) != null)
@@ -462,11 +461,11 @@ namespace P3D_Scenario_Generator.Services
         /// Handles cases where no variant is selected or the index is invalid.
         /// </summary>
         /// <returns>The selected AircraftVariant, or null if no valid variant is currently selected.</returns>
-        public AircraftVariant GetCurrentVariant()
+        public async Task<AircraftVariant> GetCurrentVariantAsync()
         {
             if (AircraftVariants == null || CurrentAircraftVariantIndex < 0 || CurrentAircraftVariantIndex >= AircraftVariants.Count)
             {
-                _log.WarningAsync("Attempted to retrieve current aircraft variant with no variants loaded or an invalid index.");
+                await _log.WarningAsync("Attempted to retrieve current aircraft variant with no variants loaded or an invalid index.");
                 return null; // No valid aircraft selected or available
             }
             return AircraftVariants[CurrentAircraftVariantIndex];

@@ -1,6 +1,8 @@
 ﻿using ImageMagick;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Models;
+using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 
 namespace P3D_Scenario_Generator.MapTiles
 {
@@ -9,12 +11,12 @@ namespace P3D_Scenario_Generator.MapTiles
     /// This class handles the process of combining individual tile images into vertical columns,
     /// horizontal rows, and ultimately a complete grid image, while also managing temporary files.
     /// </summary>
-    public class MapTileMontager(ILogger logger, FormProgressReporter progressReporter, IFileOps fileOps, IHttpRoutines httpRoutines)
+    public class MapTileMontager(Logger logger, FormProgressReporter progressReporter, FileOps fileOps, HttpRoutines httpRoutines)
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly IHttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
         private readonly MapTileDownloader _mapTileDownloader = new(fileOps, httpRoutines, progressReporter);
 
         /// <summary>
@@ -46,7 +48,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 for (int yIndex = 0; yIndex < yCount; yIndex++)
                 {
                     string tilePath = $"{fullPathNoExt}_{columnID}_{yIndex}.png";
-                    if (!_fileOps.FileExists(tilePath))
+                    if (!FileOps.FileExists(tilePath))
                     {
                         await _logger.ErrorAsync($"Required tile image not found: {tilePath}");
                         return false; // Fail if a source tile is missing
@@ -127,7 +129,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 for (int xIndex = 0; xIndex < xCount; xIndex++)
                 {
                     string tilePath = $"{fullPathNoExt}_{xIndex}_{rowId}.png";
-                    if (!_fileOps.FileExists(tilePath))
+                    if (!FileOps.FileExists(tilePath))
                     {
                         await _logger.ErrorAsync($"Required tile image not found: {tilePath}");
                         return false; // Fail if a source tile is missing
@@ -208,7 +210,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 for (int xIndex = 0; xIndex < xCount; xIndex++)
                 {
                     string columnPath = $"{fullPathNoExt}_{xIndex}.png";
-                    if (!_fileOps.FileExists(columnPath))
+                    if (!FileOps.FileExists(columnPath))
                     {
                         await _logger.ErrorAsync($"Required column image not found: {columnPath}");
                         return false; // Fail if a source column image is missing
@@ -289,7 +291,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 for (int yIndex = 0; yIndex < yCount; yIndex++)
                 {
                     string rowPath = $"{fullPathNoExt}_{yIndex}.png";
-                    if (!_fileOps.FileExists(rowPath))
+                    if (!FileOps.FileExists(rowPath))
                     {
                         await _logger.ErrorAsync($"Required row image not found: {rowPath}");
                         return false; // Fail if a source row image is missing
@@ -356,42 +358,61 @@ namespace P3D_Scenario_Generator.MapTiles
         /// underlying methods).</returns>
         public async Task<bool> MontageTilesAsync(BoundingBox boundingBox, int zoom, string fullPathNoExt, ScenarioFormData formData)
         {
-            // Step 1: Download individual tiles column by column and montage them into vertical strips.
-            // This loop processes each column (columnID) within the specified bounding box.
+            // Step 1: Start tasks for downloading and montaging each column in parallel.
+            // Instead of a sequential loop, we create a list of Tasks and run them concurrently.
+            var columnTasks = new List<Task<bool>>();
+
             for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
             {
-                // Download all individual tiles for the current column.
-                // If the download of any tile in the column fails, the entire process fails.
-                if (!await _mapTileDownloader.DownloadOSMtileColumnAsync(boundingBox.XAxis[xIndex], xIndex, boundingBox, zoom, fullPathNoExt, formData))
-                {
-                    await _logger.ErrorAsync($"Failed to download OSM tile column for xIndex {xIndex}.");
-                    return false; // Propagate failure from column download.
-                }
+                var tempXIndex = xIndex;
 
-                // Montage the individual tiles (downloaded in the previous step) into a single vertical column image.
-                // If the montage of any column fails, the entire process fails.
-                if (!await MontageTilesToColumnAsync(boundingBox.YAxis.Count, xIndex, fullPathNoExt))
+                // For each column, start a task that handles both the tile download and the vertical montage.
+                // We do not 'await' this task immediately; we add it to a list of tasks to run in parallel.
+                columnTasks.Add(Task.Run(async () =>
                 {
-                    await _logger.ErrorAsync($"Failed to montage tiles to column for xIndex {xIndex}.");
-                    return false; // Propagate failure from column montage.
-                }
+                    // Download all individual tiles for the current column.
+                    if (!await _mapTileDownloader.DownloadOSMtileColumnAsync(boundingBox.XAxis[tempXIndex], tempXIndex, boundingBox, zoom, fullPathNoExt, formData))
+                    {
+                        await _logger.ErrorAsync($"Failed to download OSM tile column for xIndex {tempXIndex}.");
+                        return false; // Indicate failure for this specific column.
+                    }
+
+                    // Montage the individual tiles (downloaded in the previous step) into a single vertical column image.
+                    if (!await MontageTilesToColumnAsync(boundingBox.YAxis.Count, tempXIndex, fullPathNoExt))
+                    {
+                        await _logger.ErrorAsync($"Failed to montage tiles to column for xIndex {tempXIndex}.");
+                        return false; // Indicate failure for this specific column.
+                    }
+
+                    return true; // Indicate success for this specific column's operations.
+                }));
+            }
+
+            // Await all column tasks to complete. Task.WhenAll is crucial for parallel execution.
+            // It returns an array of results, one for each task.
+            bool[] results = await Task.WhenAll(columnTasks);
+
+            // Check if any of the parallel column tasks failed.
+            if (results.Any(result => !result))
+            {
+                // An error was logged by one of the tasks; we can now return false.
+                // No need to log here as the individual tasks already did.
+                return false;
             }
 
             // Step 2: Montage the generated column strips horizontally to form the final complete image.
-            // This combines all the vertical strips into one large map image.
+            // This part remains sequential because it depends on all columns being fully montaged first.
             if (!await MontageColumnsAsync(boundingBox.XAxis.Count, boundingBox.YAxis.Count, fullPathNoExt))
             {
                 await _logger.ErrorAsync($"Failed to montage columns into final image.");
-                return false; // Propagate failure from final montage.
+                return false;
             }
 
             // Step 3: Delete all temporary individual tile and column strip files.
-            // Although cleanup is typically a post-process, if it fails, it's still considered
-            // a failure of the overall operation to ensure a clean state (or at least report an issue).
-            if (!await _fileOps.TryDeleteTempOSMfilesAsync(fullPathNoExt, null)) 
+            if (!await _fileOps.TryDeleteTempOSMfilesAsync(fullPathNoExt, null))
             {
                 await _logger.ErrorAsync($"Failed to delete temporary OSM files.");
-                return false; // Propagate failure from temporary file deletion.
+                return false;
             }
 
             // If all steps completed without returning false, the entire process was successful.

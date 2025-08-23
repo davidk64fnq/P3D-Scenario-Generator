@@ -1,20 +1,21 @@
 ﻿using ImageMagick;
 using ImageMagick.Drawing;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
 using P3D_Scenario_Generator.MapTiles;
+using P3D_Scenario_Generator.Models;
+using P3D_Scenario_Generator.Services;
 
-namespace P3D_Scenario_Generator.Services
+namespace P3D_Scenario_Generator.Utilities
 {
     /// <summary>
     /// Provides utility methods for various image manipulations, including drawing, resizing,
     /// and format conversion, using the ImageMagick.NET library.
     /// </summary>
-    public sealed class ImageUtils(ILogger logger, IFileOps fileOps, IProgress<string> progressReporter)
+    public sealed class ImageUtils(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
     {
         // Guard clauses to validate the constructor parameters.
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         // Constants for hardcoded image names and resource paths

@@ -1,14 +1,15 @@
-﻿using P3D_Scenario_Generator.Interfaces;
+﻿using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 using System.Xml;
 
 namespace P3D_Scenario_Generator.Runways
 {
-    public class RunwayLoader(IFileOps fileOps, ICacheManager cacheManager, ILogger log)
+    public class RunwayLoader(FileOps fileOps, CacheManager cacheManager, Logger log)
     {
         // Parameter validation for the primary constructor.
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly ICacheManager _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
-        private readonly ILogger _log = log ?? throw new ArgumentNullException(nameof(log));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly CacheManager _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
+        private readonly Logger _log = log ?? throw new ArgumentNullException(nameof(log));
 
         /// <summary>
         /// Asynchronously loads runway data, first attempting to retrieve it and the KD-tree from a binary cache.
@@ -164,7 +165,7 @@ namespace P3D_Scenario_Generator.Runways
             const string xmlFilename = "runways.xml";
             const string embeddedResourceName = $"XML.{xmlFilename}";
 
-            string dataDirectory = await _fileOps.GetApplicationDataDirectoryAsync();
+            string dataDirectory = await FileOps.GetApplicationDataDirectoryAsync();
             string localFilePath = Path.Combine(dataDirectory, xmlFilename);
 
             string message = $"Attempting to retrieve runway XML stream for '{xmlFilename}' from local file.";
@@ -222,14 +223,14 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>The <see cref="RunwayData"/> object if successful; otherwise, <see langword="null"/>.</returns>
         private async Task<RunwayData> TryLoadFromCacheAsync(FormProgressReporter progressReporter, CancellationToken cancellationToken)
         {
-            string dataDirectory = await _fileOps.GetApplicationDataDirectoryAsync();
+            string dataDirectory = await FileOps.GetApplicationDataDirectoryAsync();
             string cacheFilePath = Path.Combine(dataDirectory, "runways.cache");
             string xmlFilePath = Path.Combine(dataDirectory, "runways.xml");
             cancellationToken.ThrowIfCancellationRequested();
 
             bool isCacheOutOfDate = false;
-            DateTime cacheLastModified = _fileOps.GetFileLastWriteTime(cacheFilePath) ?? DateTime.MinValue;
-            DateTime xmlLastModified = _fileOps.GetFileLastWriteTime(xmlFilePath) ?? DateTime.MinValue;
+            DateTime cacheLastModified = FileOps.GetFileLastWriteTime(cacheFilePath) ?? DateTime.MinValue;
+            DateTime xmlLastModified = FileOps.GetFileLastWriteTime(xmlFilePath) ?? DateTime.MinValue;
 
             if (File.Exists(cacheFilePath) && File.Exists(xmlFilePath))
             {
@@ -272,7 +273,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>A <see cref="Task"/> that represents the asynchronous save operation.</returns>
         private async Task SaveToCacheAsync(RunwayData runwayData, FormProgressReporter progressReporter, CancellationToken cancellationToken)
         {
-            string dataDirectory = await _fileOps.GetApplicationDataDirectoryAsync();
+            string dataDirectory = await FileOps.GetApplicationDataDirectoryAsync();
             string cacheFilePath = Path.Combine(dataDirectory, "runways.cache");
 
             // Serialize the entire RunwayData object, which includes the KD-tree.

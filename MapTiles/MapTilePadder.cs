@@ -1,6 +1,8 @@
 ﻿using ImageMagick;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Models;
+using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 
 namespace P3D_Scenario_Generator.MapTiles
 {
@@ -36,12 +38,12 @@ namespace P3D_Scenario_Generator.MapTiles
     /// To zoom in on a tile that is (X,Y) with bounding box x-axis = X and y-axis = Y, the new bounding box for that tile
     /// would be x-axis = 2X, 2X + 1 and y-axis = 2Y, 2Y + 1. This is applied to all tiles in the bounding box.
     /// </remarks>
-    public class MapTilePadder(ILogger logger, FormProgressReporter progressReporter, IFileOps fileOps, IHttpRoutines httpRoutines)
+    public class MapTilePadder(Logger logger, FormProgressReporter progressReporter, FileOps fileOps, HttpRoutines httpRoutines)
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly IHttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
         private readonly MapTileDownloader _mapTileDownloader = new(fileOps, httpRoutines, progressReporter);
         private readonly MapTileMontager _mapTileMontager = new(logger, progressReporter, fileOps, httpRoutines);
 
@@ -136,7 +138,7 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Crop the central 2x2 tile area from the newly montaged 3x3 image.
                 string finalImagePath = $"{fullPathNoExt}.png";
-                if (!_fileOps.FileExists(finalImagePath))
+                if (!FileOps.FileExists(finalImagePath))
                 {
                     await _logger.ErrorAsync($"Montaged image not found at '{finalImagePath}'. Cannot crop.");
                     return false;
@@ -283,7 +285,7 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Crop the central 2w x 2h area from the newly montaged 3w x 2h image.
                 string finalImagePath = $"{fullPathNoExt}.png";
-                if (!_fileOps.FileExists(finalImagePath))
+                if (!FileOps.FileExists(finalImagePath))
                 {
                     await _logger.ErrorAsync($"Montaged image not found at '{finalImagePath}'. Cannot crop.");
                     return false;
@@ -427,7 +429,7 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Crop the central 2w x 2h area from the newly montaged 2w x 3h image.
                 string finalImagePath = $"{fullPathNoExt}.png";
-                if (!_fileOps.FileExists(finalImagePath))
+                if (!FileOps.FileExists(finalImagePath))
                 {
                     await _logger.ErrorAsync($"Montaged image not found at '{finalImagePath}'. Cannot crop.");
                     return false;
@@ -835,7 +837,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <returns><see langword="true"/> if the new column was successfully created, montaged, and temporary files cleaned up; otherwise, <see langword="false"/>.</returns>
         public async Task<bool> CreateNewColumnAsync(int xTileNo, int columnId, BoundingBox boundingBox, int zoom, string fullPathNoExt, ScenarioFormData formData, string columnName)
         {
-            if (!await _mapTileDownloader.DownloadOSMtileRowAsync(xTileNo, columnId, boundingBox, zoom, fullPathNoExt, formData))
+            if (!await _mapTileDownloader.DownloadOSMtileColumnAsync(xTileNo, columnId, boundingBox, zoom, fullPathNoExt, formData))
             {
                 await _logger.ErrorAsync($"Failed to download {columnName} column tiles for '{fullPathNoExt}'.");
                 return false;

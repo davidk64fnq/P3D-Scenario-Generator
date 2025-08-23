@@ -1,5 +1,5 @@
 ﻿using OfficeOpenXml;
-using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
@@ -8,11 +8,11 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// It populates a list of all stars, identifies and organizes navigational stars,
     /// and provides methods to access individual star properties.
     /// </summary>
-    public sealed class StarDataManager(ILogger logger, IFileOps fileOps, IProgress<string> progressReporter)
+    public sealed class StarDataManager(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
     {
         // Guard clauses to validate the constructor parameters.
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         /// <summary>

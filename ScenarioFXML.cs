@@ -1,12 +1,14 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Models;
+using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator
 {
-    public class ScenarioFXML(IFileOps fileOps, FormProgressReporter progressReporter)
+    public class ScenarioFXML(FileOps fileOps, FormProgressReporter progressReporter)
     {
-        private readonly IFileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         private static readonly string fxmlFilename = "source.fxml";
@@ -21,7 +23,7 @@ namespace P3D_Scenario_Generator
 				return;
 			}
             EditSourceFXML(simBaseDocument, formData);
-			WriteSourceFXML(simBaseDocument, formData, _fileOps, _progressReporter);
+			await WriteSourceFXMLAsync(simBaseDocument, formData, _fileOps, _progressReporter);
         }
 
         /// <summary>
@@ -180,7 +182,7 @@ namespace P3D_Scenario_Generator
 			return sCoordLine;
 		}
 
-		static private void WriteSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData, IFileOps fileOps, FormProgressReporter progressReporter)
+		static private async Task WriteSourceFXMLAsync(SimBaseDocument simBaseDocument, ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
         {
 			XmlSerializer xmlSerializer = new(simBaseDocument.GetType());
 
@@ -188,7 +190,7 @@ namespace P3D_Scenario_Generator
             xmlSerializer.Serialize(writer, simBaseDocument);
 			writer.Close();
 
-            ScenarioXML.RemoveXMLNSattributes($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.fxml", fileOps, progressReporter);
+            await ScenarioXML.RemoveXMLNSattributesAsync($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.fxml", fileOps, progressReporter);
         }
 
 	}

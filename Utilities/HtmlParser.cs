@@ -1,5 +1,5 @@
 ﻿using HtmlAgilityPack;
-using P3D_Scenario_Generator.Interfaces;
+using P3D_Scenario_Generator.Services;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace P3D_Scenario_Generator.Utilities
@@ -13,9 +13,9 @@ namespace P3D_Scenario_Generator.Utilities
     /// Initializes a new instance of the HtmlParser class.
     /// </remarks>
     /// <param name="log">The logging service to use for reporting errors.</param>
-    internal class HtmlParser(ILogger log) : IHtmlParser
+    internal class HtmlParser(Logger log)
     {
-        private readonly ILogger _log = log;
+        private readonly Logger _log = log;
 
         /// <inheritdoc/>
         public async Task<(bool success, string innerText)> SelectSingleNodeInnerTextAsync(HtmlDocument htmlDoc, string nodeSelection)

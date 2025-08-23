@@ -1,7 +1,7 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Runways;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Models
 {
     /// <summary>
     /// Data Transfer Object (DTO) to encapsulate all user input from the main form
@@ -271,12 +271,12 @@ namespace P3D_Scenario_Generator
         public int SignCanvasHeight { get; set; }
 
         /// <summary>
-        /// Based on <see cref="ScenarioFormData.SignCanvasWidth"/>, <see cref="ScenarioFormData.SignConsoleWidth"/> and <see cref="Constants.SignSizeEdgeMarginPixels"/>.
+        /// Based on <see cref="SignCanvasWidth"/>, <see cref="SignConsoleWidth"/> and <see cref="Constants.SignSizeEdgeMarginPixels"/>.
         /// </summary>
         public int SignWindowWidth { get; set; }
 
         /// <summary>
-        /// Based on <see cref="ScenarioFormData.SignCanvasHeight"/> and <see cref="Constants.SignSizeEdgeMarginPixels"/>.
+        /// Based on <see cref="SignCanvasHeight"/> and <see cref="Constants.SignSizeEdgeMarginPixels"/>.
         /// </summary>
         public int SignWindowHeight { get; set; }
 

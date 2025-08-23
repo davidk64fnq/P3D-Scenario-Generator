@@ -1,4 +1,4 @@
-﻿using P3D_Scenario_Generator.Interfaces;
+﻿using P3D_Scenario_Generator.Models;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -9,12 +9,13 @@ namespace P3D_Scenario_Generator.Services
     /// Provides an asynchronous logging service that writes log entries to separate files based on severity.
     /// This implementation uses asynchronous file I/O to avoid blocking the calling thread.
     /// </summary>
-    public class Logger : ILogger
+    public class Logger 
     {
         private readonly string _logDirectory;
         private readonly string _errorLogFilePath;
         private readonly string _infoLogFilePath;
         private readonly string _warningLogFilePath;
+        private readonly ScenarioFormData _formData;
 
         /// <summary>
         /// Gets or sets a value indicating whether to include the date in the log entry.
@@ -35,7 +36,7 @@ namespace P3D_Scenario_Generator.Services
         /// Initializes a new instance of the Logger class with default settings.
         /// It ensures the necessary log directory exists and clears previous log files on startup.
         /// </summary>
-        public Logger() : this(false, false, false)
+        public Logger() : this(false, false, false, null)
         {
         }
 
@@ -45,11 +46,13 @@ namespace P3D_Scenario_Generator.Services
         /// <param name="includeDate">A boolean to control whether to include the date.</param>
         /// <param name="includeTime">A boolean to control whether to include the time.</param>
         /// <param name="includeLevel">A boolean to control whether to include the log level.</param>
-        public Logger(bool includeDate, bool includeTime, bool includeLevel)
+        /// <param name="formData">The ScenarioFormData instance containing the base paths.</param>
+        public Logger(bool includeDate, bool includeTime, bool includeLevel, ScenarioFormData formData)
         {
             IncludeDate = includeDate;
             IncludeTime = includeTime;
             IncludeLevel = includeLevel;
+            _formData = formData;
 
             // Primary log directory path: C:\Users\<user>\AppData\Roaming\<AppName>
             string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
@@ -144,7 +147,7 @@ namespace P3D_Scenario_Generator.Services
             {
                 int startIndex = callerName.IndexOf('<') + 1;
                 int endIndex = callerName.IndexOf('>');
-                callerName = callerName.Substring(startIndex, endIndex - startIndex);
+                callerName = callerName[startIndex..endIndex];
             }
 
             return $"{className}.{callerName}: ";
@@ -169,17 +172,69 @@ namespace P3D_Scenario_Generator.Services
             {
                 if (sb.Length > 0)
                 {
-                    sb.Append(" ");
+                    sb.Append(' ');
                 }
                 sb.Append($"- {level} - ");
             }
             else if (sb.Length > 0)
             {
-                sb.Append(" ");
+                sb.Append(' ');
             }
-            sb.Append($"{prefix}{message}");
+            sb.Append($"{prefix}{ProcessPath(message)}");
 
             return sb.ToString().TrimStart(' ', '-');
+        }
+
+        /// <summary>
+        /// Processes a string to replace any known path prefixes with their field names.
+        /// This version works even when the path is not at the beginning of the string.
+        /// </summary>
+        /// <param name="path">The log message string to process.</param>
+        /// <returns>The modified string with prefixes replaced, or the original string if no match is found.</returns>
+        private string ProcessPath(string message)
+        {
+            // Check if _formData is null to prevent errors.
+            if (_formData.P3DProgramInstall == null || _formData.P3DProgramData == null || _formData.ScenarioFolderBase == null ||
+                _formData.ScenarioFolder == null || _formData.ScenarioImageFolder == null || _formData.TempScenarioDirectory == null)
+            {
+                return message;
+            }
+
+            // We use a list of tuples to store the paths and their corresponding field names.
+            // The list is ordered by the length of the path in descending order
+            // to prevent partial matches (e.g., matching a shorter path that is a substring
+            // of a longer one first).
+            var pathMap = new List<(string Path, string Name)>
+            {
+                (_formData.P3DProgramInstall, "P3DProgramInstall"),
+                (_formData.P3DProgramData, "P3DProgramData"),
+                (_formData.ScenarioFolderBase, "ScenarioFolderBase"),
+                (_formData.ScenarioFolder, "ScenarioFolder"),
+                (_formData.ScenarioImageFolder, "ScenarioImageFolder"),
+                (_formData.TempScenarioDirectory, "TempScenarioDirectory"),
+                (FileOps.GetApplicationDataDirectory(), "P3DSGProgramData")
+            };
+
+            // Sort the list by path length in descending order.
+            pathMap.Sort((a, b) => b.Path.Length.CompareTo(a.Path.Length));
+
+            // Iterate through the mapped paths and check if the message contains any of them.
+            foreach (var entry in pathMap)
+            {
+                // Find the index of the path within the message, using a case-insensitive search.
+                int index = message.IndexOf(entry.Path, StringComparison.OrdinalIgnoreCase);
+
+                // If the path is found...
+                if (index >= 0)
+                {
+                    // ...replace it with the field name.
+                    // We use substring to reconstruct the string around the matched path.
+                    return string.Concat(message.AsSpan(0, index), entry.Name, message.AsSpan(index + entry.Path.Length));
+                }
+            }
+
+            // If no match is found, return the original message.
+            return message;
         }
 
         /// <summary>
