@@ -1767,10 +1767,10 @@ namespace P3D_Scenario_Generator
             // label1
             // 
             label1.Anchor = AnchorStyles.None;
-            label1.Location = new Point(5, 38);
+            label1.Location = new Point(5, 39);
             label1.Margin = new Padding(5);
             label1.Name = "label1";
-            label1.Size = new Size(100, 23);
+            label1.Size = new Size(100, 13);
             label1.TabIndex = 2;
             label1.Text = "Search";
             label1.TextAlign = ContentAlignment.MiddleCenter;
@@ -1780,7 +1780,7 @@ namespace P3D_Scenario_Generator
             // 
             TextBoxGeneralSearchRunway.AccessibleName = "Runway Selection: Search";
             TextBoxGeneralSearchRunway.Anchor = AnchorStyles.None;
-            TextBoxGeneralSearchRunway.Location = new Point(115, 38);
+            TextBoxGeneralSearchRunway.Location = new Point(115, 35);
             TextBoxGeneralSearchRunway.Margin = new Padding(5);
             TextBoxGeneralSearchRunway.Name = "TextBoxGeneralSearchRunway";
             TextBoxGeneralSearchRunway.Size = new Size(100, 23);
@@ -1823,7 +1823,8 @@ namespace P3D_Scenario_Generator
             tableLayoutPanelRunwaySelection.RowCount = 2;
             tableLayoutPanelRunwaySelection.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanelRunwaySelection.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanelRunwaySelection.Size = new Size(220, 66);
+            tableLayoutPanelRunwaySelection.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanelRunwaySelection.Size = new Size(220, 61);
             tableLayoutPanelRunwaySelection.TabIndex = 36;
             // 
             // ButtonRandRunway
@@ -1832,7 +1833,7 @@ namespace P3D_Scenario_Generator
             ButtonRandRunway.Location = new Point(5, 5);
             ButtonRandRunway.Margin = new Padding(5);
             ButtonRandRunway.Name = "ButtonRandRunway";
-            ButtonRandRunway.Size = new Size(100, 23);
+            ButtonRandRunway.Size = new Size(100, 20);
             ButtonRandRunway.TabIndex = 0;
             ButtonRandRunway.Text = "Random";
             ButtonRandRunway.UseVisualStyleBackColor = true;
@@ -1843,7 +1844,7 @@ namespace P3D_Scenario_Generator
             ListBoxGeneralRunwayResults.Anchor = AnchorStyles.None;
             ListBoxGeneralRunwayResults.FormattingEnabled = true;
             ListBoxGeneralRunwayResults.ItemHeight = 15;
-            ListBoxGeneralRunwayResults.Location = new Point(115, 7);
+            ListBoxGeneralRunwayResults.Location = new Point(115, 5);
             ListBoxGeneralRunwayResults.Name = "ListBoxGeneralRunwayResults";
             ListBoxGeneralRunwayResults.Size = new Size(100, 19);
             ListBoxGeneralRunwayResults.TabIndex = 4;

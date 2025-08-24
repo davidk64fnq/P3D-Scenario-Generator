@@ -8,29 +8,28 @@
     <body>
         <h2>Runway selection</h2>
         <p>
-            The list of runways corresponds to the default airports included with Prepar3D v5. It was generated using the freeware <a href="http://fsuipc.com/" title="fsuipc.com" target="_blank">"MakeRunways"</a> program (version 5.131) provided by Pete & John Dowson.
+            There are two ways to select an airport. One is to click on the "Random" button, the other is to start typing in the "Search"" input field. In both cases the result will be displayed in the listbox to the right of the "Random button. There is no facility to browse a complete list of all available airports, the simulator provides this already.
         </p>
         <p>
-            The list is alphabetical showing airport ICAO and runway id in parentheses. P3D Scenario Generator doesn't display location information for the selected airport in order to preserve the element of surprise when a random runway is chosen.
+            The runways available in a new installation of P3D Scenario Generator corresponds to the default airports included with Prepar3D v5. These were generated using the freeware <a href="http://fsuipc.com/" title="fsuipc.com" target="_blank">"MakeRunways"</a> program (version 5.131) provided by Pete & John Dowson.
+        </p>
+        <p>
+            Search results show airport ICAO with the runway id in parentheses. P3D Scenario Generator doesn't display location information for the selected airport in order to preserve the element of surprise when a random runway is chosen.
         </p>
         <h4>Random button</h4>
         <p>
-            Click on this to get a randomly selected runway. The chosen runway will be constrained by the <a href="locationFilter.htm">Location Filter</a> settings.   
-        </p>
-        <h4>Runway combobox</h4>
-        <p>
-            Click the dropdown arrow and then drag to the desired airport. Alternatively typing a letter will take you to the first runway in the list beginning with that letter. 
+            Click on this to get a randomly selected runway. The chosen runway will be constrained by the <a href="locationFilter.htm">Location Filter</a> settings.
         </p>
         <h4>Search input field</h4>
         <p>
-            Start typing a runway code and the runway combobox will update dynamically to show the first runway in the list that matches the search string. Assumes search string is starting with first letter of the runway.
+            Start typing a runway code and the runway listbox will update dynamically to show those runways that match the search string. The matching runways will <b>NOT</b> be constrained by the <a href="locationFilter.htm">Location Filter</a> settings.
         </p>
         <h4>Optional: Including addon runways</h4>
         <p>
-            The runway data is derived from a file produced by the "MakeRunways" program named "runways.xml". To include add-on airports in the available list, download a copy of "MakeRunways" and generate a copy of "runways.xml" that reflects the airports installed on your PC.   
+            The runway data is derived from a file produced by the "MakeRunways" program named "runways.xml". To include add-on airports in the available list, download a copy of "MakeRunways" and generate a copy of "runways.xml" that reflects the airports installed on your PC.
         </p>
         <p>
-            This involves using a utility included with "MakeRunways" called "LorbySceneryExport", details are provided in the "MakeRwys README.pdf" file. Place the generated "runways.xml" file in the same directory as the P3D Scenario Generator program files and it will be used in preference to the default "runways.xml" list incorporated in the P3D Scenario Generator executable.
+            This involves using a utility included with "MakeRunways" called "LorbySceneryExport", details are provided in the "MakeRwys README.pdf" file. Place the generated "runways.xml" file in the same directory as the P3D Scenario Generator program data files and it will be used in preference to the default "runways.xml" list incorporated in the P3D Scenario Generator executable.
         </p>
         <p>
             <b>Note 1:</b> Rather than double clicking MakeRwys.exe to execute it, use Windows Powershell from the directory containing Prepar3D.exe with the command ".\MakeRwys />0" This will ensure the really short runways are included rather than by default only greater 1500m.
@@ -39,7 +38,7 @@
             <b>Note 2:</b> Make sure all add-on scenery is activated before running MakeRwys!
         </p>
         <p>
-            P3D Scenario Generator runs a check each time you generate a scenario to see whether a user generated "runways.xml" exists and if so that the last modified date of the file is more recent than that of "scenery.cfg" in the P3D Program Data folder. The first time it detects this a warning is displayed and then the "runways.xml" last modified date is set to now to stop the warning from repeating indefinitely.
+            <b>Note 3:</b> The onus is on the user to remember to create a new version of "runways.xml" after adding new airports to the simulator.
         </p>
     </body>
 </html>

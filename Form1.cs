@@ -27,10 +27,8 @@ namespace P3D_Scenario_Generator
         private readonly ScenarioFormData _formData;
 
         // Runway dependencies
-        private readonly RunwayData _runwayData;
         private readonly RunwayLoader _runwayLoader;
-        private RunwayManager _runwayManager;
-        private readonly RunwaySearcher _runwaySearcher;
+        private readonly RunwayManager _runwayManager;
         private RunwayUiManager _runwayUiManager;
 
         // Scenario-specific dependencies
@@ -65,8 +63,8 @@ namespace P3D_Scenario_Generator
 
             _formData = new();
             _logger = new(false, false, false, _formData);
-            _fileOps = new(_logger);
             _cacheManager = new(_logger);
+            _fileOps = new(_logger);
             _aircraft = new(_logger, _cacheManager, _fileOps);
             _httpRoutines = new(_fileOps, _logger);
             _photoTour = new(_logger, _fileOps, _httpRoutines, _progressReporter);
@@ -80,26 +78,16 @@ namespace P3D_Scenario_Generator
             _scenarioFXML = new(_fileOps, _progressReporter);
             _runwayLoader = new(_fileOps, _cacheManager, _logger);
             _runwayManager = new(_runwayLoader);
-            _runwayData = new();
-            _runwaySearcher = new(_runwayData, _logger);
-            _runwayUiManager = new(_runwaySearcher, _logger, _cacheManager, _fileOps);
         }
 
         #region Form Initialization
 
         /// <summary>
-        /// Asynchronously initializes the form upon loading.
+        /// Handles the form's load event, performing asynchronous initialization and data loading.
+        /// This method ensures the UI remains responsive by not blocking the main thread for long-running operations.
         /// </summary>
-        /// <remarks>
-        /// This event handler performs the following actions:
-        /// <list type="number">
-        /// <item>Enables the form immediately to allow the UI to render.</item>
-        /// <item>Restores user settings and starts the asynchronous loading of runway data in the background.</item>
-        /// <item>The rest of the logic is moved to a separate method that will execute after the data is loaded.</item>
-        /// </list>
-        /// </remarks>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">An <see cref="EventArgs"/> object that contains the event data.</param>
+        /// <param name="sender">The source of the event, which is the form itself.</param>
+        /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
         private async void Form_Load(object sender, EventArgs e)
         {
             Enabled = true;
@@ -112,7 +100,6 @@ namespace P3D_Scenario_Generator
             }
 
             // Start the asynchronous loading process without blocking the UI thread.
-            // The continuation logic is moved to a new method.
             // We use Task.Run to ensure the heavy lifting happens on a background thread.
             _ = Task.Run(InitializeRunwayDataAsync);
         }
@@ -122,11 +109,6 @@ namespace P3D_Scenario_Generator
         /// </summary>
         private async Task InitializeRunwayDataAsync()
         {
-            // Create a CancellationTokenSource to manage the cancellation of the asynchronous operation.
-            // The 'using' statement ensures the source is properly disposed of when the method exits.
-            using CancellationTokenSource cts = new();
-            CancellationToken cancellationToken = cts.Token;
-
             //_log.Info("Form initialization started.");
             _progressReporter.Report("INFO: Initializing form...");
 
@@ -134,10 +116,10 @@ namespace P3D_Scenario_Generator
             {
                 // Await the asynchronous data loading. This happens on a background thread
                 // and releases the UI thread so the form can load.
-                _runwayUiManager = await GetRunwaysAsync(_progressReporter, cancellationToken);
+                _runwayUiManager = await GetRunwaysAsync(_progressReporter);
 
                 // Use an async lambda to allow awaiting within the UI thread invocation.
-                await this.Invoke(async () =>
+                await Invoke(async () =>
                 {
                     if (_runwayUiManager != null)
                     {
@@ -147,24 +129,39 @@ namespace P3D_Scenario_Generator
                         _isFormLoaded = true;
 
                         _progressReporter.Report("INFO: Initialization complete. Runways loaded.");
-                        //_log.Info("Initialization complete. Runways loaded.");
+                        await _logger.InfoAsync("Initialization complete. Runways loaded.");
                     }
                     else
                     {
                         _progressReporter.Report("ERROR: Failed to load runway data.");
-                        //_log.Error("Failed to load runway data.");
+                        await _logger.ErrorAsync("Failed to load runway data.");
                     }
                 });
             }
             catch (Exception ex)
             {
-                //_log.Error($"An error occurred during form initialization: {ex.Message}");
                 // Ensure the error message is also reported on the UI thread.
-                this.Invoke(() =>
+                await Invoke(async () =>
                 {
                     _progressReporter.Report($"ERROR: Form initialization failed: {ex.Message}");
+                    await _logger.ErrorAsync($"An error occurred during form initialization: {ex.Message}");
                 });
             }
+        }
+
+        /// <summary>
+        /// Initializes the runway data asynchronously by loading it from the cache or a remote source.
+        /// </summary>
+        /// <param name="progressReporter">The progress reporter instance for reporting initialization progress to the UI.</param>
+        /// <returns>
+        /// The populated <see cref="RunwayUiManager"/> instance if the data was loaded successfully; otherwise, <see langword="null"/>.
+        /// </returns>
+        private async Task<RunwayUiManager> GetRunwaysAsync(FormProgressReporter progressReporter)
+        {
+            bool success = await _runwayManager.InitializeAsync(progressReporter, _logger, _cacheManager, _fileOps);
+
+            // Return the UiManager if successful, otherwise null.
+            return success ? _runwayManager.UiManager : null;
         }
 
         /// <summary>
@@ -360,27 +357,6 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        /// <summary>
-        /// Asynchronously loads runway data using a background task.
-        /// </summary>
-        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
-        /// <param name="cancellationToken">A token to observe for cancellation requests during the operation.</param>
-        /// <returns>
-        /// The populated RunwayUiManager instance if the data was loaded successfully; otherwise, <see langword="null"/>.
-        /// </returns>
-        private async Task<RunwayUiManager> GetRunwaysAsync(FormProgressReporter progressReporter, CancellationToken cancellationToken)
-        {
-            // Pass the form's dependencies to the RunwayLoader constructor.
-            RunwayLoader loader = new(_fileOps, _cacheManager, _logger);
-
-            // Pass the loader to the RunwayManager constructor.
-            _runwayManager = new(loader); // Assign to the form-level field.
-            bool success = await _runwayManager.InitializeAsync(progressReporter, _logger, _cacheManager, _fileOps, cancellationToken);
-
-            // Return the UiManager if successful, otherwise null.
-            return success ? _runwayManager.UiManager : null;
-        }
-
         #endregion
 
         #region General Tab
@@ -388,13 +364,13 @@ namespace P3D_Scenario_Generator
         #region Runway selection
 
         /// <summary>
-        /// Compares the last modified date of scenery.cfg with that of the runways.cache file and the runways.xml file.
-        /// If scenery.cfg has been modified more recently than either, it warns the user that the runways data
-        /// may be out of date and needs to be recreated.
+        /// Asynchronously checks if the cached runways data is up-to-date by comparing file modification dates.
+        /// The data is considered outdated if the `scenery.cfg` file has been modified more recently than the `runways.cache` or `runways.xml` files.
+        /// Logs warnings if the `scenery.cfg` file is missing or if the runways data is out of date.
         /// </summary>
         /// <remarks>
-        /// If a warning is displayed, the last modified date of runways.cache is updated to the current time. This action prevents the warning from
-        /// being shown repeatedly on subsequent program runs until the user has recreated the runways data.
+        /// This method does not return a value. Instead, it logs its findings and reports progress.
+        /// It gracefully handles cases where the `scenery.cfg` or other data files do not exist.
         /// </remarks>
         internal async void CheckRunwaysUpToDate()
         {
@@ -504,7 +480,6 @@ namespace P3D_Scenario_Generator
             }
         }
 
-
         #endregion
 
         #region Scenario selection
@@ -524,14 +499,12 @@ namespace P3D_Scenario_Generator
 
         private async void ButtonGenerateScenario_Click(object sender, EventArgs e)
         {
-            // The GetValidatedScenarioFormData() method is now async and must be awaited.
             if (await GetValidatedScenarioFormData())
             {
                 DisplayStartMessage();
                 CheckRunwaysUpToDate();
                 await _imageUtils.DrawScenarioImagesAsync(_formData);
 
-                // Await the task and capture the boolean result indicating success or failure
                 bool success = await DoScenarioSpecificTasks();
 
                 if (!success)
@@ -539,7 +512,6 @@ namespace P3D_Scenario_Generator
                     return;
                 }
 
-                // Only proceed with these steps if DoScenarioSpecificTasks succeeded
                 SaveSettingsAfterDoSpecific();
                 SaveUserSettings(TabPageSettings.Controls);
                 await _scenarioFXML.GenerateFXMLfileAsync(_formData);
@@ -623,7 +595,6 @@ namespace P3D_Scenario_Generator
                 switch (currentScenarioType)
                 {
                     case ScenarioTypes.Circuit:
-                        // This method is now async, so we must await its result.
                         if (!await _makeCircuit.SetCircuitAsync(_formData, _runwayManager))
                         {
                             return false;
@@ -664,7 +635,7 @@ namespace P3D_Scenario_Generator
             catch (Exception ex)
             {
                 await _logger.ErrorAsync($"An unhandled error occurred during scenario specific task execution: {ex.Message}", ex);
-                _progressReporter.Report("An unexpected error occurred. See logs.");
+                _progressReporter.Report("Error: An unexpected error occurred. See logs.");
                 return false;
             }
             finally
@@ -2839,8 +2810,8 @@ namespace P3D_Scenario_Generator
 
             if (!string.IsNullOrWhiteSpace(selectedICAOandId))
             {
-                RunwayUtils.ParseIcaoRunwayString(ListBoxGeneralRunwayResults.SelectedItem.ToString(), out string icaoId, out string runwayId);
-                selectedRunway = _runwayManager.Searcher.GetRunwayByIcaoAndId(icaoId, runwayId);
+                RunwayUtils.ParseIcaoRunwayString(ListBoxGeneralRunwayResults.SelectedItem.ToString(), out string icaoId, out string runwayId, out string runwayDesignator);
+                selectedRunway = _runwayManager.Searcher.GetRunwayByIcaoIdDesignator(icaoId, runwayId, runwayDesignator);
             }
             else
             {

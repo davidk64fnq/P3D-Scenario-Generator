@@ -127,12 +127,13 @@ namespace P3D_Scenario_Generator.Runways
         }
 
         /// <summary>
-        /// Finds a specific runway by its ICAO ID and runway ID.
+        /// Finds a specific runway by its ICAO ID, runway ID and runway designator.
         /// </summary>
         /// <param name="icaoId">The ICAO ID of the airport.</param>
-        /// <param name="runwayId">The ID of the runway (e.g., "14L", "26").</param>
+        /// <param name="runwayId">The ID of the runway (e.g., "14", "26").</param>
+        /// <param name="runwayDesignator">The designator of the runway (e.g., "Left", "Centre").</param>
         /// <returns>The matching RunwayParams object, or null if not found.</returns>
-        public RunwayParams GetRunwayByIcaoAndId(string icaoId, string runwayId)
+        public RunwayParams GetRunwayByIcaoIdDesignator(string icaoId, string runwayId, string runwayDesignator)
         {
             if (string.IsNullOrEmpty(icaoId) || string.IsNullOrEmpty(runwayId) || _allRunways == null)
             {
@@ -142,7 +143,8 @@ namespace P3D_Scenario_Generator.Runways
             // Using LINQ's FirstOrDefault for a clean search.
             return _allRunways.FirstOrDefault(r =>
                 r.IcaoId.Equals(icaoId, StringComparison.OrdinalIgnoreCase) &&
-                r.Id.Equals(runwayId, StringComparison.OrdinalIgnoreCase));
+                r.Id.Equals(runwayId, StringComparison.OrdinalIgnoreCase) &&
+                r.Designator.Equals(runwayDesignator, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>

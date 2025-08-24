@@ -16,14 +16,11 @@ namespace P3D_Scenario_Generator.Runways
         /// If the cache is unavailable or outdated, it falls back to parsing an XML file and then builds and caches the KD-tree.
         /// </summary>
         /// <param name="progressReporter">The object for reporting progress and status updates to the UI.</param>
-        /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
         /// <returns>A <see cref="RunwayData"/> object containing the loaded runway information; otherwise, <see langword="null"/> if the data could not be loaded.</returns>
-        public async Task<RunwayData> LoadRunwaysAsync(FormProgressReporter progressReporter, CancellationToken cancellationToken)
+        public async Task<RunwayData> LoadRunwaysAsync(FormProgressReporter progressReporter)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             // Attempt to load the entire RunwayData object from cache first.
-            RunwayData runwayData = await TryLoadFromCacheAsync(progressReporter, cancellationToken);
+            RunwayData runwayData = await TryLoadFromCacheAsync(progressReporter);
 
             if (runwayData != null)
             {
@@ -35,7 +32,7 @@ namespace P3D_Scenario_Generator.Runways
             {
                 // Fallback to XML
                 progressReporter.Report("INFO: Cache not found or invalid. Parsing XML...");
-                List<RunwayParams> runways = await LoadFromXmlAsync(progressReporter, cancellationToken);
+                List<RunwayParams> runways = await LoadFromXmlAsync(progressReporter);
 
                 if (runways != null)
                 {
@@ -43,11 +40,11 @@ namespace P3D_Scenario_Generator.Runways
 
                     try
                     {
-                        KDNode treeRoot = await Task.Run(() => BuildKDTree(runways, progressReporter, cancellationToken), cancellationToken);
+                        KDNode treeRoot = await Task.Run(() => BuildKDTree(runways, progressReporter));
 
                         // Create the full RunwayData object to be cached.
                         runwayData = new RunwayData { Runways = runways, RunwayTreeRoot = treeRoot };
-                        await SaveToCacheAsync(runwayData, progressReporter, cancellationToken);
+                        await SaveToCacheAsync(runwayData, progressReporter);
                         progressReporter.Report($"INFO: Successfully loaded {runways.Count} runways from XML and cached.");
                         return runwayData;
                     }
@@ -71,12 +68,11 @@ namespace P3D_Scenario_Generator.Runways
         /// Asynchronously loads runway data from an XML source, either a local file or an embedded resource.
         /// </summary>
         /// <param name="progressReporter">The progress reporter for UI updates.</param>
-        /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
         /// <returns>A list of <see cref="RunwayParams"/> if successful; otherwise, <see langword="null"/>.</returns>
-        private async Task<List<RunwayParams>> LoadFromXmlAsync(FormProgressReporter progressReporter, CancellationToken cancellationToken)
+        private async Task<List<RunwayParams>> LoadFromXmlAsync(FormProgressReporter progressReporter)
         {
             // Await the asynchronous TryGet method and deconstruct the returned tuple.
-            var (isSuccess, loadedRunways) = await TryGetRunwayXMLDataAsync(progressReporter, cancellationToken);
+            var (isSuccess, loadedRunways) = await TryGetRunwayXMLDataAsync(progressReporter);
 
             if (isSuccess)
             {
@@ -94,16 +90,15 @@ namespace P3D_Scenario_Generator.Runways
         /// Asynchronously attempts to get a list of runways by parsing XML data.
         /// </summary>
         /// <param name="progressReporter">The object for reporting progress and status updates to the UI.</param>
-        /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
         /// <returns>
         /// A tuple containing a boolean indicating success and the loaded list of runways.
         /// The list will be <see langword="null"/> if the operation failed.
         /// </returns>
-        private async Task<(bool success, List<RunwayParams> runways)> TryGetRunwayXMLDataAsync(FormProgressReporter progressReporter, CancellationToken cancellationToken)
+        private async Task<(bool success, List<RunwayParams> runways)> TryGetRunwayXMLDataAsync(FormProgressReporter progressReporter)
         {
             var runways = new List<RunwayParams>();
 
-            var (streamSuccess, stream) = await TryGetRunwayXMLStreamAsync(progressReporter, cancellationToken);
+            var (streamSuccess, stream) = await TryGetRunwayXMLStreamAsync(progressReporter);
 
             if (!streamSuccess)
             {
@@ -118,7 +113,6 @@ namespace P3D_Scenario_Generator.Runways
                     int curIndex = 0;
                     while (reader.ReadToFollowing("ICAO"))
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
                         RunwayParams curAirport = ReadAirport(reader);
 
                         progressReporter?.Report($"INFO: Loading runway data for airport: {curAirport.IcaoId}");
@@ -127,7 +121,6 @@ namespace P3D_Scenario_Generator.Runways
                         {
                             do
                             {
-                                cancellationToken.ThrowIfCancellationRequested();
                                 RunwayParams newRunway = ReadRunway(reader, curAirport);
                                 newRunway.RunwaysIndex = curIndex++;
                                 runways.Add(newRunway);
@@ -155,12 +148,11 @@ namespace P3D_Scenario_Generator.Runways
         /// first from a local file and then from an embedded resource.
         /// </summary>
         /// <param name="progressReporter">The object for reporting progress and status updates to the UI.</param>
-        /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
         /// <returns>
         /// A tuple containing a boolean indicating success and the loaded Stream.
         /// The stream will be <see langword="null"/> if the operation failed.
         /// </returns>
-        private async Task<(bool success, Stream stream)> TryGetRunwayXMLStreamAsync(FormProgressReporter progressReporter, CancellationToken cancellationToken)
+        private async Task<(bool success, Stream stream)> TryGetRunwayXMLStreamAsync(FormProgressReporter progressReporter)
         {
             const string xmlFilename = "runways.xml";
             const string embeddedResourceName = $"XML.{xmlFilename}";
@@ -171,7 +163,6 @@ namespace P3D_Scenario_Generator.Runways
             string message = $"Attempting to retrieve runway XML stream for '{xmlFilename}' from local file.";
             await _log.InfoAsync(message);
             progressReporter?.Report($"INFO: {message}");
-            cancellationToken.ThrowIfCancellationRequested();
 
             if (File.Exists(localFilePath))
             {
@@ -197,7 +188,6 @@ namespace P3D_Scenario_Generator.Runways
                 progressReporter?.Report("INFO: Local runways XML not found. Attempting to load from embedded resource.");
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
             // The IFileOps.TryGetResourceStreamAsync method does not accept a CancellationToken.
             var (embeddedFileSuccess, embeddedFileStream) = await _fileOps.TryGetResourceStreamAsync(embeddedResourceName, progressReporter);
             if (embeddedFileSuccess)
@@ -219,14 +209,12 @@ namespace P3D_Scenario_Generator.Runways
         /// Attempts to load the entire RunwayData object, including the KD-tree, from a binary cache file.
         /// </summary>
         /// <param name="progressReporter">The progress reporter for UI updates.</param>
-        /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
         /// <returns>The <see cref="RunwayData"/> object if successful; otherwise, <see langword="null"/>.</returns>
-        private async Task<RunwayData> TryLoadFromCacheAsync(FormProgressReporter progressReporter, CancellationToken cancellationToken)
+        private async Task<RunwayData> TryLoadFromCacheAsync(FormProgressReporter progressReporter)
         {
             string dataDirectory = await FileOps.GetApplicationDataDirectoryAsync();
             string cacheFilePath = Path.Combine(dataDirectory, "runways.cache");
             string xmlFilePath = Path.Combine(dataDirectory, "runways.xml");
-            cancellationToken.ThrowIfCancellationRequested();
 
             bool isCacheOutOfDate = false;
             DateTime cacheLastModified = FileOps.GetFileLastWriteTime(cacheFilePath) ?? DateTime.MinValue;
@@ -245,7 +233,7 @@ namespace P3D_Scenario_Generator.Runways
             {
                 progressReporter.Report("INFO: Loading runways from binary cache...");
                 // Deserialize the entire RunwayData object, including the KD-tree.
-                var (success, runwayData) = await _cacheManager.TryDeserializeFromFileAsync<RunwayData>(cacheFilePath, cancellationToken);
+                var (success, runwayData) = await _cacheManager.TryDeserializeFromFileAsync<RunwayData>(cacheFilePath);
 
                 if (success)
                 {
@@ -269,15 +257,14 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         /// <param name="runwayData">The RunwayData object to be cached.</param>
         /// <param name="progressReporter">The object for reporting progress and status updates to the UI.</param>
-        /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous save operation.</returns>
-        private async Task SaveToCacheAsync(RunwayData runwayData, FormProgressReporter progressReporter, CancellationToken cancellationToken)
+        private async Task SaveToCacheAsync(RunwayData runwayData, FormProgressReporter progressReporter)
         {
             string dataDirectory = await FileOps.GetApplicationDataDirectoryAsync();
             string cacheFilePath = Path.Combine(dataDirectory, "runways.cache");
 
             // Serialize the entire RunwayData object, which includes the KD-tree.
-            await _cacheManager.TrySerializeToFileAsync(runwayData, cacheFilePath, cancellationToken);
+            await _cacheManager.TrySerializeToFileAsync(runwayData, cacheFilePath);
 
             const string message = "Runway data (including KD-tree) cached to binary file.";
             await _log.InfoAsync(message);
@@ -432,13 +419,12 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         /// <param name="runways">The list of runway parameters to build the tree from.</param>
         /// <param name="progressReporter">The progress reporter for UI updates.</param>
-        /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
         /// <returns>The root node of the constructed KD-tree.</returns>
-        private static KDNode BuildKDTree(List<RunwayParams> runways, FormProgressReporter progressReporter, CancellationToken cancellationToken)
+        private static KDNode BuildKDTree(List<RunwayParams> runways, FormProgressReporter progressReporter)
         {
             progressReporter.Report("INFO: Building KD-tree for spatial indexing...");
             // Start the recursive build process.
-            return BuildKDTreeRecursive(runways, 0, cancellationToken);
+            return BuildKDTreeRecursive(runways, 0);
         }
 
         /// <summary>
@@ -446,12 +432,9 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         /// <param name="runways">The list of runways for the current subtree.</param>
         /// <param name="axis">The current splitting axis (0 for Latitude, 1 for Longitude).</param>
-        /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
         /// <returns>The root node of the current subtree.</returns>
-        private static KDNode BuildKDTreeRecursive(List<RunwayParams> runways, int axis, CancellationToken cancellationToken)
+        private static KDNode BuildKDTreeRecursive(List<RunwayParams> runways, int axis)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             if (runways == null || runways.Count == 0)
             {
                 return null;
@@ -477,8 +460,8 @@ namespace P3D_Scenario_Generator.Runways
                 Runway = medianRunway,
                 Axis = axis,
                 // Recursively build the left and right subtrees.
-                Left = BuildKDTreeRecursive([.. runways.Take(medianIndex)], (axis + 1) % 2, cancellationToken),
-                Right = BuildKDTreeRecursive([.. runways.Skip(medianIndex + 1)], (axis + 1) % 2, cancellationToken)
+                Left = BuildKDTreeRecursive([.. runways.Take(medianIndex)], (axis + 1) % 2),
+                Right = BuildKDTreeRecursive([.. runways.Skip(medianIndex + 1)], (axis + 1) % 2)
             };
 
             return node;
