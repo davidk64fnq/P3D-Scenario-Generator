@@ -10,13 +10,10 @@ using P3D_Scenario_Generator.Utilities;
 using P3D_Scenario_Generator.WikipediaScenario;
 using System.Collections.Specialized;
 using System.Configuration;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace P3D_Scenario_Generator
 {
-    [SuppressMessage("Performance", "CA1859:Use concrete types when possible for better performance", Justification = "Interfaces are used for loose coupling and testability across the entire class.")]
-
     public partial class Form : System.Windows.Forms.Form
     {
         private bool _isFormLoaded = false;
@@ -768,6 +765,13 @@ namespace P3D_Scenario_Generator
                 // Don't delete a character
                 e.SuppressKeyPress = true;
 
+                // Use the helper to confirm the action. If the user doesn't confirm,
+                // return early and do nothing else.
+                if (!UIHelpers.ConfirmAction("Are you sure you want to delete this aircraft variant?"))
+                {
+                    return;
+                }
+
                 if (((ComboBox)sender).Items.Count == 0)
                 {
                     ((ComboBox)sender).Text = "";
@@ -900,6 +904,13 @@ namespace P3D_Scenario_Generator
                 // Don't delete a character
                 e.SuppressKeyPress = true;
 
+                // Use the helper to confirm the action. If the user doesn't confirm,
+                // return early and do nothing else.
+                if (!UIHelpers.ConfirmAction("Are you sure you want to delete this location favourite?"))
+                {
+                    return;
+                }
+
                 // Delete locationFavourite instance in RunwayUIManager
                 string deleteFavouriteName = ((ComboBox)sender).Text;
                 string currentFavouriteName = _runwayManager.UiManager.DeleteLocationFavourite(deleteFavouriteName);
@@ -998,9 +1009,25 @@ namespace P3D_Scenario_Generator
 
         #region Circuit Tab
 
-        private async void ButtonCircuitDefault_ClickAsync(object sender, EventArgs e)
+        private async void ButtonDefault_ClickAsync(object sender, EventArgs e)
         {
-            await SetDefaultCircuitParamsAsync();
+            ScenarioTypes currentScenarioType = _formData.ScenarioType;
+            switch (currentScenarioType)
+            {
+                case ScenarioTypes.Circuit:
+                    await SetDefaultCircuitParamsAsync();
+                    break;
+                case ScenarioTypes.PhotoTour:
+                    break;
+                case ScenarioTypes.SignWriting:
+                    break;
+                case ScenarioTypes.Celestial:
+                    break;
+                case ScenarioTypes.WikiList:
+                    break;
+                default:
+                    break;
+            }
         }
 
         /// <summary>
@@ -1236,7 +1263,6 @@ namespace P3D_Scenario_Generator
                 "minutes",
                 value => _formData.CircuitTurnDuration360Degrees = value);
         }
-
 
         #endregion
 
@@ -1931,6 +1957,14 @@ namespace P3D_Scenario_Generator
             else if (e.KeyCode == Keys.Delete)
             {
                 e.SuppressKeyPress = true;
+
+                // Use the helper to confirm the action. If the user doesn't confirm,
+                // return early and do nothing else.
+                if (!UIHelpers.ConfirmAction("Are you sure you want to delete this comboobx string?"))
+                {
+                    return;
+                }
+
                 if (((ComboBox)sender).Items.Contains(s))
                 {
                     ((ComboBox)sender).Items.Remove(s);
@@ -3806,18 +3840,5 @@ namespace P3D_Scenario_Generator
         }
 
         #endregion
-
-        private void ButtonClearP3DPath_Click(object sender, EventArgs e)
-        {
-            // Clear the value in the textbox and the formData object
-            TextBoxSettingsP3DprogramData.Text = string.Empty;
-            _formData.P3DProgramData = string.Empty;
-
-            // Call your method to save the settings
-            // SaveUserSettings(); // Assuming you have a method for this
-
-            // You could also re-trigger a load attempt to simulate the user experience
-            //GetRunwaysAsync(_progressReporter, _formData);
-        }
     }
 }

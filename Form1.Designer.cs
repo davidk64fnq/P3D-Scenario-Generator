@@ -249,7 +249,6 @@ namespace P3D_Scenario_Generator
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             errorProvider1 = new ErrorProvider(components);
             helpProvider1 = new HelpProvider();
-            buttonClearP3DPath = new Button();
             GroupBoxSettingsMapTileCacheInfo.SuspendLayout();
             TableLayoutPanelSettingsMapTileCacheInfo.SuspendLayout();
             GroupBoxWikipediaListParameters.SuspendLayout();
@@ -2969,7 +2968,7 @@ namespace P3D_Scenario_Generator
             ButtonCircuitDefault.TabIndex = 11;
             ButtonCircuitDefault.Text = "Default";
             ButtonCircuitDefault.UseVisualStyleBackColor = true;
-            ButtonCircuitDefault.Click += ButtonCircuitDefault_ClickAsync;
+            ButtonCircuitDefault.Click += ButtonDefault_ClickAsync;
             // 
             // TabPageMenu
             // 
@@ -3262,23 +3261,12 @@ namespace P3D_Scenario_Generator
             // 
             helpProvider1.HelpNamespace = "resources/help/Help.chm";
             // 
-            // buttonClearP3DPath
-            // 
-            buttonClearP3DPath.Location = new Point(684, 497);
-            buttonClearP3DPath.Name = "buttonClearP3DPath";
-            buttonClearP3DPath.Size = new Size(75, 23);
-            buttonClearP3DPath.TabIndex = 42;
-            buttonClearP3DPath.Text = "test";
-            buttonClearP3DPath.UseVisualStyleBackColor = true;
-            buttonClearP3DPath.Click += ButtonClearP3DPath_Click;
-            // 
             // Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(844, 553);
-            Controls.Add(buttonClearP3DPath);
             Controls.Add(ButtonSignWritingSaved);
             Controls.Add(ButtonSignWritingDefault);
             Controls.Add(ButtonPhotoTourSaved);
@@ -3595,7 +3583,6 @@ namespace P3D_Scenario_Generator
         private TableLayoutPanel tableLayoutPanel21;
         private TableLayoutPanel tableLayoutPanel22;
         private HelpProvider helpProvider1;
-        private Button buttonClearP3DPath;
         private ListBox ListBoxGeneralRunwayResults;
         private Label label8;
         private CheckBox CheckBoxCelestialUseStarsDat;

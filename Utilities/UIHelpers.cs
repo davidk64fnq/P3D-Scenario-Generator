@@ -1,7 +1,24 @@
-﻿namespace P3D_Scenario_Generator
+﻿namespace P3D_Scenario_Generator.Utilities
 {
     public static class UIHelpers
     {
+        /// <summary>
+        /// Displays a confirmation dialog to the user with a "Yes" or "No" option.
+        /// </summary>
+        /// <param name="message">The message to display in the dialog.</param>
+        /// <returns>True if the user clicks "Yes"; otherwise, false.</returns>
+        public static bool ConfirmAction(string message)
+        {
+            DialogResult result = MessageBox.Show(
+                message,
+                "Confirm Action",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            return result == DialogResult.Yes;
+        }
+
         /// <summary>
         /// Truncates a string with an ellipsis (...) if it exceeds a maximum width,
         /// considering the specified font for accurate measurement.
