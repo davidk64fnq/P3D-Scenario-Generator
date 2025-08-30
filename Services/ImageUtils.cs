@@ -3,9 +3,8 @@ using ImageMagick.Drawing;
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
-using P3D_Scenario_Generator.Services;
 
-namespace P3D_Scenario_Generator.Utilities
+namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
     /// Provides utility methods for various image manipulations, including drawing, resizing,

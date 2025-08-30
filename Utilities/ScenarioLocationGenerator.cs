@@ -1,6 +1,6 @@
 ﻿using P3D_Scenario_Generator.Runways;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Utilities
 {
     /// <summary>
     /// Provides functionality for generating random geographical starting locations and headings
@@ -23,7 +23,7 @@ namespace P3D_Scenario_Generator
             out double midairStartHdg, out double midairStartLat, out double midairStartLon, out double randomRadiusNM)
         {
             // 1. Set a random heading between -180 and 180 degrees
-            midairStartHdg = -180.0 + (_random.NextDouble() * 360.0); // Continuous double for heading
+            midairStartHdg = -180.0 + _random.NextDouble() * 360.0; // Continuous double for heading
 
             // 2. Position plane randomly around destination within min/max distance
             // Using continuous random for angle and radius for better distribution
@@ -32,7 +32,7 @@ namespace P3D_Scenario_Generator
             double randomAngleRad = _random.NextDouble() * 2 * Math.PI;
 
             // Generate a random radius (distance) within the specified range (in NM)
-            randomRadiusNM = minDistanceNM + (_random.NextDouble() * (maxDistanceNM - minDistanceNM));
+            randomRadiusNM = minDistanceNM + _random.NextDouble() * (maxDistanceNM - minDistanceNM);
 
             // Convert radius from nautical miles to degrees latitude for calculation reference
             // Assuming 1 nautical mile = 1 minute of arc (1/60th of a degree latitude)
@@ -45,7 +45,7 @@ namespace P3D_Scenario_Generator
             // For short distances, this approximation is often acceptable.
 
             // Calculate latitude adjustment
-            midairStartLat = runway.AirportLat + (randomRadiusDegreesLat * Math.Cos(randomAngleRad));
+            midairStartLat = runway.AirportLat + randomRadiusDegreesLat * Math.Cos(randomAngleRad);
 
             // Calculate longitude adjustment, accounting for convergence of meridians
             // Longitude adjustment depends on latitude (cos(latitude))
@@ -54,7 +54,7 @@ namespace P3D_Scenario_Generator
             double degreesLongitudePerDegreeLatitudeAtDest = 1.0 / Math.Cos(runway.AirportLat * Math.PI / 180.0);
             double randomRadiusDegreesLon = randomRadiusDegreesLat * degreesLongitudePerDegreeLatitudeAtDest;
 
-            midairStartLon = runway.AirportLon + (randomRadiusDegreesLon * Math.Sin(randomAngleRad));
+            midairStartLon = runway.AirportLon + randomRadiusDegreesLon * Math.Sin(randomAngleRad);
 
             // 3. Normalize Latitude and Longitude
             // Latitude normalization (-90 to +90)

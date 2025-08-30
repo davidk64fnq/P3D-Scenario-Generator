@@ -1,7 +1,6 @@
 ﻿using HtmlAgilityPack;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Services;
-using P3D_Scenario_Generator.Utilities;
 using System.Web;
 
 namespace P3D_Scenario_Generator.WikipediaScenario

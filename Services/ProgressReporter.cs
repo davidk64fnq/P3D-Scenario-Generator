@@ -1,4 +1,6 @@
-﻿namespace P3D_Scenario_Generator.Utilities
+﻿using P3D_Scenario_Generator.Utilities;
+
+namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
     /// A custom <see cref="IProgress{T}"/> implementation for reporting progress updates to a <see cref="ToolStripStatusLabel"/> on a <see cref="Form"/>.

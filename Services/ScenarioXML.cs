@@ -3,13 +3,11 @@ using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.PhotoTourScenario;
-using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.SignWritingScenario;
-using P3D_Scenario_Generator.Utilities;
 using P3D_Scenario_Generator.WikipediaScenario;
 using System.Xml.Serialization;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Services
 {
     public class ScenarioXML
     {
@@ -572,7 +570,7 @@ namespace P3D_Scenario_Generator
 
         static private string GetGUID()
 		{
-            Guid guid = System.Guid.NewGuid();
+            Guid guid = Guid.NewGuid();
 			string guidUpper = guid.ToString().ToUpper();
             return $"{{{guidUpper}}}";
         }
@@ -715,8 +713,8 @@ namespace P3D_Scenario_Generator
             }
             else // alignment == "Centered"
             {
-                horizontalOffset = (monitorWidth / 2) - (windowWidth / 2);
-                verticalOffset = (monitorHeight / 2) - (windowHeight / 2);
+                horizontalOffset = monitorWidth / 2 - windowWidth / 2;
+                verticalOffset = monitorHeight / 2 - windowHeight / 2;
             }
 
             return [windowWidth.ToString(), windowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];

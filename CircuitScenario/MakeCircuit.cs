@@ -4,7 +4,6 @@ using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
-using P3D_Scenario_Generator.Utilities;
 
 namespace P3D_Scenario_Generator.CircuitScenario
 {

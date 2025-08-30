@@ -1,9 +1,8 @@
 ﻿using P3D_Scenario_Generator.CelestialScenario;
 using P3D_Scenario_Generator.Models;
-using P3D_Scenario_Generator.Services;
 using System.Text;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
     /// Handles the generation and management of simulator-specific files,

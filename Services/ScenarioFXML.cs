@@ -1,10 +1,9 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Models;
-using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.Utilities;
 using System.Xml.Serialization;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Services
 {
     public class ScenarioFXML(FileOps fileOps, FormProgressReporter progressReporter)
     {

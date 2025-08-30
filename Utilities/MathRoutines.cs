@@ -1,6 +1,6 @@
 ﻿using CoordinateSharp;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Utilities
 {
     /// <summary>
     /// Provides a collection of mathematical and geographical utility routines

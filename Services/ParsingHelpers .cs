@@ -1,7 +1,6 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Services;
 
-namespace P3D_Scenario_Generator
+namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
     /// Provides helper methods for parsing and validating numerical string inputs,

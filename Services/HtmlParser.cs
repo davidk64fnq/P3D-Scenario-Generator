@@ -1,13 +1,10 @@
 ﻿using HtmlAgilityPack;
-using P3D_Scenario_Generator.Services;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
-namespace P3D_Scenario_Generator.Utilities
+namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
     /// Provides utility methods for parsing HTML documents.
-    /// This class is now a non-static implementation of IHtmlParser,
-    /// allowing for dependency injection of a logging service.
     /// </summary>
     /// <remarks>
     /// Initializes a new instance of the HtmlParser class.

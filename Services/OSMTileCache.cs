@@ -1,6 +1,4 @@
-﻿using P3D_Scenario_Generator.Utilities;
-
-namespace P3D_Scenario_Generator.Services
+﻿namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
     /// Provides static utility methods for managing a local file cache, primarily used for
