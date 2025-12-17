@@ -1,4 +1,5 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Runways;
 
 namespace P3D_Scenario_Generator.Models
@@ -320,9 +321,59 @@ namespace P3D_Scenario_Generator.Models
         /// </summary>
         public bool UseCustomStarsDat { get; set; }
 
+        /// <summary>
+        /// Reference integer for the monitor that sextant window is to be displayed in initially.
+        /// </summary>
+        public int SextantMonitorNumber { get; set; }
+
+        /// <summary>
+        /// Specifies how close the corner of sextant window is relative to the monitor corner in pixels (vertically and horizontally).
+        /// </summary>
+        public int SextantOffsetPixels { get; set; }
+
+        /// <summary>
+        /// Which of four corners of monitor to position sextant window relative to or else in the center of monitor.
+        /// </summary>
+        public WindowAlignment SextantAlignment { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where sextant window is positioned relative to monitor
+        /// </summary>
+        public int SextantMonitorWidth { get; set; }
+
+        /// <summary>
+        /// In pixels, used to aid in calculating where sextant window is positioned relative to monitor
+        /// </summary>
+        public int SextantMonitorHeight { get; set; }
+
         #endregion
 
         #region Wikipedia Tab Data
+
+        /// <summary>
+        /// Reference integer for the selected table on Wiki page the tour will be built from.
+        /// </summary>
+        public int WikiURLTableNo { get; set; }
+
+        /// <summary>
+        /// List of legs making up the route for the selected table on Wiki page the tour will be built from.
+        /// </summary>
+        public ComboBox.ObjectCollection WikiURLRoute { get; set; }
+
+        /// <summary>
+        /// User selected start leg from the route for the selected table on Wiki page the tour will be built from.
+        /// </summary>
+        public object WikiURLTourStartItem { get; set; }
+
+        /// <summary>
+        /// User selected finish leg from the route for the selected table on Wiki page the tour will be built from.
+        /// </summary>
+        public object WikiURLTourFinishItem { get; set; }
+
+        /// <summary>
+        /// Distance of the route in nautical miles for the selected table on Wiki page the tour will be built from.
+        /// </summary>
+        public int WikiURLTourDistance { get; set; }
 
         /// <summary>
         /// Reference integer for the monitor that URL window is to be displayed in initially.
@@ -417,6 +468,11 @@ namespace P3D_Scenario_Generator.Models
         #endregion
 
         #region Derived Properties
+
+        /// <summary>
+        /// Lat/Lon boundaries for each OSM montage leg image
+        /// </summary>
+        public List<MapData> OSMmapData { get; set; }
 
         /// <summary>
         /// Location of scenario folder.

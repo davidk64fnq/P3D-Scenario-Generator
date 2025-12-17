@@ -863,5 +863,76 @@ namespace P3D_Scenario_Generator.Properties {
                 this["TextBoxSettingsP3DprogramInstall"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxSextantMonitorHeight {
+            get {
+                return ((string)(this["TextBoxSextantMonitorHeight"]));
+            }
+            set {
+                this["TextBoxSextantMonitorHeight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxSextantMonitorNumber {
+            get {
+                return ((string)(this["TextBoxSextantMonitorNumber"]));
+            }
+            set {
+                this["TextBoxSextantMonitorNumber"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxSextantMonitorWidth {
+            get {
+                return ((string)(this["TextBoxSextantMonitorWidth"]));
+            }
+            set {
+                this["TextBoxSextantMonitorWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string TextBoxSextantOffset {
+            get {
+                return ((string)(this["TextBoxSextantOffset"]));
+            }
+            set {
+                this["TextBoxSextantOffset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ComboBoxSextantAlignment {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxSextantAlignment"]));
+            }
+            set {
+                this["ComboBoxSextantAlignment"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public string ComboBoxSextantAlignmentSelectedIndex {
+            get {
+                return ((string)(this["ComboBoxSextantAlignmentSelectedIndex"]));
+            }
+            set {
+                this["ComboBoxSextantAlignmentSelectedIndex"] = value;
+            }
+        }
     }
 }

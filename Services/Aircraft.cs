@@ -487,7 +487,7 @@ namespace P3D_Scenario_Generator.Services
             if (AircraftVariants == null || AircraftVariants.Count == 0)
             {
                 string warningMessage = "Aircraft variants list is empty. Save operation aborted to prevent data loss.";
-                await _log.WarningAsync(warningMessage);
+                await _log.WarningAsync(warningMessage).ConfigureAwait(false);
                 progressReporter?.Report(warningMessage);
                 return;
             }
@@ -510,7 +510,7 @@ namespace P3D_Scenario_Generator.Services
                 else
                 {
                     // The CacheManagerAsync logs the specific error, so we can provide a general message here.
-                    await _log.ErrorAsync("Failed to save aircraft variants.");
+                    await _log.ErrorAsync("Failed to save aircraft variants.").ConfigureAwait(false);
                     progressReporter?.Report("ERROR: Failed to save aircraft variants. See log for details.");
                 }
             }

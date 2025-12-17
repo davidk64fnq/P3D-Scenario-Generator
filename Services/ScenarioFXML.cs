@@ -75,14 +75,19 @@ namespace P3D_Scenario_Generator.Services
             // Simvars.0 section
             sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
-			// Convert format of runway heading from magnetic North nearest degree to plus/minus 180 degrees true North
-			double absTrueHdg = absTrueHdg = formData.StartRunway.Hdg + formData.StartRunway.MagVar;
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{MathRoutines.ConvertHeadingAbsoluteToRelative(absTrueHdg)}";
+
+            // The runway object to use for calculations. Use StartRunway if available, otherwise use DestinationRunway.
+            var selectedRunway = formData.StartRunway ?? formData.DestinationRunway;
+
+            // Convert format of runway heading from magnetic North nearest degree to plus/minus 180 degrees true North
+            double absTrueHdg = selectedRunway.Hdg + selectedRunway.MagVar;
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{MathRoutines.ConvertHeadingAbsoluteToRelative(absTrueHdg)}";
+
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
-            formattedLatitude = FormatCoordXML(formData.StartRunway.ThresholdStartLat, "N", "S", false);
+            formattedLatitude = FormatCoordXML(selectedRunway.ThresholdStartLat, "N", "S", false);
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
-            formattedLongitude = FormatCoordXML(formData.StartRunway.ThresholdStartLon, "E", "W", false);
+            formattedLongitude = FormatCoordXML(selectedRunway.ThresholdStartLon, "E", "W", false);
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "+0";
@@ -109,8 +114,12 @@ namespace P3D_Scenario_Generator.Services
 			// Simvars.0 section
 			int sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
             int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
+
+            // The runway object to use for calculations. Use StartRunway if available, otherwise use DestinationRunway.
+            var selectedRunway = formData.StartRunway ?? formData.DestinationRunway;
+
             // Convert format of runway heading from magnetic North nearest degree to plus/minus 180 degrees true North
-            double absTrueHdg = absTrueHdg = formData.MidairStartHdgDegrees + formData.StartRunway.MagVar;
+            double absTrueHdg = absTrueHdg = formData.MidairStartHdgDegrees + selectedRunway.MagVar;
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{MathRoutines.ConvertHeadingAbsoluteToRelative(absTrueHdg)}";
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
             formattedLatitude = FormatCoordXML(formData.MidairStartLatDegrees, "N", "S", false);
@@ -119,8 +128,10 @@ namespace P3D_Scenario_Generator.Services
             formattedLongitude = FormatCoordXML(formData.MidairStartLonDegrees, "E", "W", false);
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "+3000";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "SimOnGround");
+			fs.Section[sectionIndex].Property[propertyIndex].Value = "+2000";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "AltitudeIsAGL");
+            fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "SimOnGround");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "False";
 
 			// Engine Parameters section
@@ -205,7 +216,7 @@ namespace P3D_Scenario_Generator.Services
 
 		[XmlAttribute(AttributeName = "Value")]
 		public string Value { get; set; }
-	}
+    }
 
 	[XmlRoot(ElementName = "Section")]
 	public class Section

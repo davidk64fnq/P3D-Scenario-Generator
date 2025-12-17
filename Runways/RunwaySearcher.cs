@@ -143,7 +143,7 @@ namespace P3D_Scenario_Generator.Runways
             // Using LINQ's FirstOrDefault for a clean search.
             return _allRunways.FirstOrDefault(r =>
                 r.IcaoId.Equals(icaoId, StringComparison.OrdinalIgnoreCase) &&
-                r.Id.Equals(runwayId, StringComparison.OrdinalIgnoreCase) &&
+                r.Number.Equals(runwayId, StringComparison.OrdinalIgnoreCase) &&
                 r.Designator.Equals(runwayDesignator, StringComparison.OrdinalIgnoreCase));
         }
 

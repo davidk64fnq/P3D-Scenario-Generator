@@ -1,4 +1,5 @@
 ﻿using CoordinateSharp;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
@@ -80,8 +81,8 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 return false;
             }
 
-            bool drawRoute = false;
-            if (!await _mapTileImageMaker.CreateOverviewImageAsync(SetOverviewCoords(formData), drawRoute, formData))
+            formData.OSMmapData = [];
+            if (!await _mapTileImageMaker.CreateOverviewImageAsync(SetOverviewCoords(formData), formData))
             {
                 await _logger.ErrorAsync("Failed to create overview image during celestial setup.");
                 return false;
@@ -92,7 +93,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 await _logger.ErrorAsync("Failed to create location image during celestial setup.");
                 return false;
             }
-
             Overview overview = SetOverviewStruct(formData);
             ScenarioHTML scenarioHTML = new(_logger, _fileOps, _progressReporter);
             if (!await scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
@@ -178,6 +178,58 @@ namespace P3D_Scenario_Generator.CelestialScenario
             };
 
             return overview;
+        }
+
+        /// <summary>
+        /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
+        /// for the sextant window based on the specified alignment and monitor properties.
+        /// </summary>
+        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
+        /// sextant window's desired alignment, offsets, monitor dimensions, and calculated window size.</param>
+        /// <returns>
+        /// A <see cref="T:System.String[]"/> array containing four elements in the order:
+        /// <list type="bullet">
+        /// <item><description>Window Width (string)</description></item>
+        /// <item><description>Window Height (string)</description></item>
+        /// <item><description>Horizontal Offset (string)</description></item>
+        /// <item><description>Vertical Offset (string)</description></item>
+        /// </list>
+        /// These parameters are suitable for configuring the sextant window's display.
+        /// </returns>
+        static internal string[] GetSextantWindowParameters(ScenarioFormData formData)
+        {
+
+            int horizontalOffset;
+            int verticalOffset;
+
+            // Offsets
+            if (formData.SextantAlignment == WindowAlignment.TopLeft)
+            {
+                horizontalOffset = formData.SextantOffsetPixels;
+                verticalOffset = formData.SextantOffsetPixels;
+            }
+            else if (formData.SextantAlignment == WindowAlignment.TopRight)
+            {
+                horizontalOffset = formData.SextantMonitorWidth - formData.SextantOffsetPixels - Constants.SextantWindowWidth;
+                verticalOffset = formData.SextantOffsetPixels;
+            }
+            else if (formData.SextantAlignment == WindowAlignment.BottomRight)
+            {
+                horizontalOffset = formData.SextantMonitorWidth - formData.SextantOffsetPixels - formData.SignWindowWidth;
+                verticalOffset = formData.SextantMonitorHeight - formData.SextantOffsetPixels - formData.SignWindowHeight;
+            }
+            else if (formData.SextantAlignment == WindowAlignment.BottomLeft)
+            {
+                horizontalOffset = formData.SextantOffsetPixels;
+                verticalOffset = formData.SextantMonitorHeight - formData.SextantOffsetPixels - formData.SignWindowHeight;
+            }
+            else // Parameters.SextantAlignment == "Centered"
+            {
+                horizontalOffset = (formData.SextantMonitorWidth / 2) - (Constants.SextantWindowWidth / 2);
+                verticalOffset = (formData.SextantMonitorHeight / 2) - (Constants.SextantWindowHeight / 2);
+            }
+
+            return [Constants.SextantWindowWidth.ToString(), Constants.SextantWindowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
         }
     }
 }

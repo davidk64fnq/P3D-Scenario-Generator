@@ -1,6 +1,6 @@
-﻿using P3D_Scenario_Generator.CircuitScenario;
+﻿using P3D_Scenario_Generator.CelestialScenario;
+using P3D_Scenario_Generator.CircuitScenario;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.SignWritingScenario;
@@ -135,11 +135,11 @@ namespace P3D_Scenario_Generator.Services
             SetUIPanelWindow(photoTour.PhotoCount - 1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for windows
-            SetResourcesFile("HTML", "MovingMap.html", formData, fileOps, progressReporter);
-            SetResourcesFile("HTML", "PhotoTour.html", formData, fileOps, progressReporter);
-            await SetMovingMapJS(photoTour.PhotoTourLegMapEdges, photoTour.PhotoCount, formData, fileOps, progressReporter);
-            SetResourcesFile("Javascript", "scriptsPhotoTour.js", formData, fileOps, progressReporter);
-            SetResourcesFile("CSS", "styleMovingMap.css", formData, fileOps, progressReporter);
+            await SetResourcesFile("HTML", "MovingMap.html", formData, fileOps, progressReporter);
+            await SetResourcesFile("HTML", "PhotoTour.html", formData, fileOps, progressReporter);
+            await SetMovingMapJS(photoTour.PhotoCount, formData, fileOps, progressReporter);
+            await SetResourcesFile("Javascript", "scriptsPhotoTour.js", formData, fileOps, progressReporter);
+            await SetResourcesFile("CSS", "styleMovingMap.css", formData, fileOps, progressReporter);
 
             // Create map window open/close actions
             string[] mapWindowParameters = GetMapWindowParameters(formData);
@@ -219,7 +219,7 @@ namespace P3D_Scenario_Generator.Services
             SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", photoTour.PhotoCount - 2, "ProximityTrigger");
         }
 
-        public static async void SetSignWritingWorldBaseFlightXML(ScenarioFormData formData, Overview overview, SignWriting signWriting, IProgress<string> progressReporter)
+        public static async Task SetSignWritingWorldBaseFlightXML(ScenarioFormData formData, Overview overview, SignWriting signWriting, IProgress<string> progressReporter)
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
@@ -374,7 +374,7 @@ namespace P3D_Scenario_Generator.Services
 
             // Create sextant window object
             SetUIPanelWindow(1, "CelestialSextant", "False", "True", "images\\htmlCelestialSextant.html", "False", "True");
-			SetOpenWindowAction(1, "UIPanelWindow", "CelestialSextant", ["986", "755", "20", "20"], "2");
+			SetOpenWindowAction(1, "UIPanelWindow", "CelestialSextant", CelestialNav.GetSextantWindowParameters(formData), formData.SextantMonitorNumber.ToString());
             SetCloseWindowAction(1, "UIPanelWindow", "CelestialSextant");
 
             // Create onscreen text object for displaying error message from sextant
@@ -405,7 +405,7 @@ namespace P3D_Scenario_Generator.Services
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
         }
 
-        public static async void SetWikiListWorldBaseFlightXML(ScenarioFormData formData, Overview overview, Wikipedia wikipedia, FileOps fileOps, FormProgressReporter progressReporter)
+        public static async Task SetWikiListWorldBaseFlightXML(ScenarioFormData formData, Overview overview, Wikipedia wikipedia, FileOps fileOps, FormProgressReporter progressReporter)
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
@@ -427,11 +427,11 @@ namespace P3D_Scenario_Generator.Services
             SetUIPanelWindow(2, "UIpanelWindow", "False", "True", $"images\\WikipediaItem.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for windows
-            SetResourcesFile("HTML", "MovingMap.html", formData, fileOps, progressReporter);
-            await SetMovingMapJS(wikipedia.WikiLegMapEdges, wikipedia.WikiCount, formData, fileOps, progressReporter);
-            SetResourcesFile("CSS", "styleMovingMap.css", formData, fileOps, progressReporter);
-            SetResourcesFile("HTML", "WikipediaItem.html", formData, fileOps, progressReporter);
-            SetWikiTourJS(formData, wikipedia, fileOps, progressReporter);
+            await SetResourcesFile("HTML", "MovingMap.html", formData, fileOps, progressReporter);
+            await SetMovingMapJS(wikipedia.WikiCount, formData, fileOps, progressReporter);
+            await SetResourcesFile("CSS", "styleMovingMap.css", formData, fileOps, progressReporter);
+            await SetWikiItemHTML(formData, fileOps, progressReporter);
+            await SetWikiTourJS(formData, wikipedia, fileOps, progressReporter);
 
             // Create window open/close actions
             string[] mapWindowParameters = GetMapWindowParameters(formData);
@@ -459,6 +459,8 @@ namespace P3D_Scenario_Generator.Services
                 // Create proximity trigger actions to activate and deactivate as required
                 SetObjectActivationAction(legNo, "ProximityTrigger", "ProximityTrigger", "ActProximityTrigger", "True");
                 SetObjectActivationAction(legNo, "ProximityTrigger", "ProximityTrigger", "DeactProximityTrigger", "False");
+                if (legNo == 1)
+                    SetProximityTriggerOnEnterAction(2, "OpenWindowAction", "OpenUIpanelWindow", 1, "ProximityTrigger");
 
                 // Add deactivate proximity trigger action as on enter event to proximity trigger
                 SetProximityTriggerOnEnterAction(legNo, "ObjectActivationAction", "DeactProximityTrigger", legNo, "ProximityTrigger");
@@ -476,10 +478,9 @@ namespace P3D_Scenario_Generator.Services
                 SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", legNo, "ProximityTrigger");
             }
 
-            // Create timer trigger to play audio introductions and open window when scenario starts
+            // Create timer trigger to play audio introductions and open map window when scenario starts
             SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
             SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
-            SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow02", "TimerTrigger01");
             SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
             SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
             SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
@@ -850,7 +851,7 @@ namespace P3D_Scenario_Generator.Services
                 simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject = [lo];
         }
 
-        static private async Task SetMovingMapJS(List<MapEdges> mapEdges, int count, ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
+        static private async Task SetMovingMapJS(int count, ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
         {
             string saveLocation = $"{formData.ScenarioImageFolder}\\scriptsMovingMap.js";
             (bool success, Stream stream) = await fileOps.TryGetResourceStreamAsync("Javascript.scriptsMovingMap.js", progressReporter);
@@ -865,16 +866,16 @@ namespace P3D_Scenario_Generator.Services
                 string movingMapJS = reader.ReadToEnd();
 
                 // Set map edges
-                string mapNorth = mapEdges[0].north.ToDouble().ToString();
-                string mapEast = mapEdges[0].east.ToDouble().ToString();
-                string mapSouth = mapEdges[0].south.ToDouble().ToString();
-                string mapWest = mapEdges[0].west.ToDouble().ToString();
+                string mapNorth = formData.OSMmapData[0].north.ToDouble().ToString();
+                string mapEast = formData.OSMmapData[0].east.ToDouble().ToString();
+                string mapSouth = formData.OSMmapData[0].south.ToDouble().ToString();
+                string mapWest = formData.OSMmapData[0].west.ToDouble().ToString();
                 for (int legNo = 1; legNo < count - 1; legNo++)
                 {
-                    mapNorth += ", " + mapEdges[legNo].north.ToDouble().ToString();
-                    mapEast += ", " + mapEdges[legNo].east.ToDouble().ToString();
-                    mapSouth += ", " + mapEdges[legNo].south.ToDouble().ToString();
-                    mapWest += ", " + mapEdges[legNo].west.ToDouble().ToString();
+                    mapNorth += ", " + formData.OSMmapData[legNo].north.ToDouble().ToString();
+                    mapEast += ", " + formData.OSMmapData[legNo].east.ToDouble().ToString();
+                    mapSouth += ", " + formData.OSMmapData[legNo].south.ToDouble().ToString();
+                    mapWest += ", " + formData.OSMmapData[legNo].west.ToDouble().ToString();
                 }
                 movingMapJS = movingMapJS.Replace("mapNorthX", mapNorth);
                 movingMapJS = movingMapJS.Replace("mapEastX", mapEast);
@@ -1025,7 +1026,7 @@ namespace P3D_Scenario_Generator.Services
                 simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea = [ra];
         }
 
-        public static async void SetResourcesFile(string resourceFolder, string resourceFileName, ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
+        public static async Task SetResourcesFile(string resourceFolder, string resourceFileName, ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
         {
             string saveLocation = $"{formData.ScenarioImageFolder}\\{resourceFileName}";
             (bool success, Stream stream) = await fileOps.TryGetResourceStreamAsync($"{resourceFolder}.{resourceFileName}", null);
@@ -1151,7 +1152,25 @@ namespace P3D_Scenario_Generator.Services
                 simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow = [upw];
         }
 
-        public static async void SetWikiTourJS(ScenarioFormData formData, Wikipedia wikipedia, FileOps fileOps, FormProgressReporter progressReporter)
+        public static async Task SetWikiItemHTML(ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
+        {
+            string saveLocation = $"{formData.ScenarioImageFolder}\\WikipediaItem.html";
+            (bool success, Stream stream) = await fileOps.TryGetResourceStreamAsync("HTML.WikipediaItem.html", progressReporter);
+            if (!success)
+            {
+                return;
+            }
+            using (stream)
+            using (StreamReader reader = new(stream))
+            {
+                string wikipediaHTML = reader.ReadToEnd();
+                wikipediaHTML = wikipediaHTML.Replace("widthX", formData.WikiURLWindowWidth.ToString());
+                wikipediaHTML = wikipediaHTML.Replace("heightX", (formData.WikiURLWindowHeight - 50).ToString());
+                await fileOps.TryWriteAllTextAsync(saveLocation, wikipediaHTML, progressReporter);
+            }
+        }
+
+        public static async Task SetWikiTourJS(ScenarioFormData formData, Wikipedia wikipedia, FileOps fileOps, FormProgressReporter progressReporter)
         {
             string saveLocation = $"{formData.ScenarioImageFolder}\\scriptsWikipediaItem.js";
             (bool success, Stream stream) = await fileOps.TryGetResourceStreamAsync("Javascript.scriptsWikipediaItem.js", progressReporter);
@@ -1172,8 +1191,6 @@ namespace P3D_Scenario_Generator.Services
                 itemURLs += ", " + "\"https://en.wikipedia.org" + wikipedia.WikiTour[wikipedia.WikiCount - 2].itemURL + "\"";
                 wikipediaJS = wikipediaJS.Replace("itemURLsX", itemURLs);
                 wikipediaJS = wikipediaJS.Replace("itemHREFsX", SetWikiTourAllLegHREFsJS(wikipedia));
-                wikipediaJS = wikipediaJS.Replace("widthX", formData.WikiURLWindowWidth.ToString());
-                wikipediaJS = wikipediaJS.Replace("heightX", (formData.WikiURLWindowHeight - 50).ToString());
                 await fileOps.TryWriteAllTextAsync(saveLocation, wikipediaJS, progressReporter);
             }
         }

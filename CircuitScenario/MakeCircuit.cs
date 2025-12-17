@@ -25,6 +25,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
+        private readonly ImageUtils _imageUtils = new(logger, fileOps, progressReporter);
 
         /// <summary>
         /// Start and finish airport (the same) plus the 8 gates making up the circuit.
@@ -65,11 +66,11 @@ namespace P3D_Scenario_Generator.CircuitScenario
 
             SetCircuitAirport(formData);
 
+            formData.OSMmapData = [];
             message = "Creating overview image.";
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
-            bool drawRoute = true;
-            if (!await _mapTileImageMaker.CreateOverviewImageAsync(SetOverviewCoords(), drawRoute, formData))
+            if (!await _mapTileImageMaker.CreateOverviewImageAsync(SetOverviewCoords(), formData))
             {
                 message = "Failed to create overview image during circuit setup.";
                 await _logger.ErrorAsync(message);

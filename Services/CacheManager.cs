@@ -39,13 +39,13 @@ namespace P3D_Scenario_Generator.Services
 
                 // Use the async version of file creation for better performance.
                 await using FileStream createStream = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
-                await JsonSerializer.SerializeAsync(createStream, data, _serializerOptions, cancellationToken);
-                await _log.InfoAsync($"Successfully serialized data to file '{filePath}'.");
+                await JsonSerializer.SerializeAsync(createStream, data, _serializerOptions, cancellationToken).ConfigureAwait(false);
+                await _log.InfoAsync($"Successfully serialized data to file '{filePath}'.").ConfigureAwait(false);
                 return true;
             }
             catch (Exception ex)
             {
-                await _log.ErrorAsync($"Error serializing data to file '{filePath}'. Details: {ex.Message}", ex);
+                await _log.ErrorAsync($"Error serializing data to file '{filePath}'. Details: {ex.Message}", ex).ConfigureAwait(false);
                 return false;
             }
         }

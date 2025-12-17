@@ -26,6 +26,7 @@
             <Property Name="Latitude" Value="" />
             <Property Name="Longitude" Value="" />
             <Property Name="Altitude" Value="+0.0" />
+			<Property Name="AltitudeIsAGL" Value="False" />
             <Property Name="Heading" Value="" />
             <Property Name="SimOnGround" Value="True" />
         </Section>

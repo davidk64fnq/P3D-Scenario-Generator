@@ -1,8 +1,10 @@
-﻿using P3D_Scenario_Generator.ConstantsEnums;
+﻿using CoordinateSharp.Formatters;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.Utilities;
-using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
@@ -21,6 +23,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly AlmanacData _almanacData = almanacData ?? throw new ArgumentNullException(nameof(almanacData));
 
+        private const double DegreesToRadiansFactor = Math.PI / 180.0;
+        private const double RadiansToDegreesFactor = 180.0 / Math.PI;
+
         /// <summary>
         /// Generates and writes the Celestial Sextant HTML file to the specified output folder.
         /// </summary>
@@ -30,7 +35,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         {
             string message;
             string htmlOutputPath = Path.Combine(formData.ScenarioImageFolder, "htmlCelestialSextant.html");
-            string resourceName = "CelestialSextant.html";
+            string resourceName = "HTML.CelestialSextant.html";
             string celestialHtml;
 
             _progressReporter.Report($"INFO: Preparing to generate Celestial Sextant HTML file...");
@@ -76,6 +81,33 @@ namespace P3D_Scenario_Generator.CelestialScenario
         }
 
         /// <summary>
+        /// Safely replaces the assignment value of a specific JavaScript variable using Regex,
+        /// preserving its original declaration keyword (let, const, or var).
+        /// </summary>
+        /// <param name="jsContent">The original JavaScript file content.</param>
+        /// <param name="varName">The exact name of the JavaScript variable (e.g., 'linesX').</param>
+        /// <param name="rawValue">The raw string value to inject (e.g., a JSON array or a quoted string).</param>
+        /// <returns>The modified JavaScript content.</returns>
+        private static string ReplaceJsVariable(string jsContent, string varName, string rawValue)
+        {
+            // Capture Group 1: The declaration keyword (let, const, or var)
+            // Non-capture Group: Ensures the match starts on a newline or file start boundary
+            // The pattern captures the declaration, variable name, and the assignment operator (=),
+            // and then matches everything up to the semicolon, which is necessary to include.
+
+            string pattern = $@"(^|\r?\n|\r)\s*(let|const|var)\s+{Regex.Escape(varName)}\s*[^;]*;";
+
+            // The replacement reconstructs the line:
+            // $1: The boundary (\n or start of file)
+            // $2: The original declaration keyword (let/const/var)
+            // The new assignment statement is formed using the provided rawValue.
+            string replacement = $"$1$2 {varName} = {rawValue};";
+
+            // Use RegexOptions.Multiline to handle ^ (start of line) and ignore comments/JSDoc above the declaration.
+            return Regex.Replace(jsContent, pattern, replacement, RegexOptions.Multiline);
+        }
+
+        /// <summary>
         /// Generates and writes the Celestial Sextant JavaScript and related asset files.
         /// This includes populating the main JavaScript file with star and almanac data,
         /// writing the astronomical calculations JavaScript file, and copying the plot image.
@@ -88,6 +120,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             string saveLocation = formData.ScenarioImageFolder;
             string sextantJsOutputPath = Path.Combine(saveLocation, "scriptsCelestialSextant.js");
             string astroCalcsJsOutputPath = Path.Combine(saveLocation, "scriptsCelestialAstroCalcs.js");
+            string typesJsOutputPath = Path.Combine(saveLocation, "types.js"); // Added output path for types.js
             string plotImageOutputPath = Path.Combine(saveLocation, "plotImage.jpg");
             bool success;
 
@@ -114,61 +147,53 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 celestialJsContent = await reader.ReadToEndAsync();
             }
 
-            // Build star data as a collection for LINQ processing
-            IEnumerable<Star> allStars = Enumerable.Range(0, starDataManager.NoStars).Select(starDataManager.GetStar);
+            // --- DIRECT INJECTION OF JSON-SERIALIZED ARRAYS (Now only providing the raw value) ---
 
-            // Prepare all replacement values in a dictionary
-            Dictionary<string, string> replacements = new()
+            // 1D Array Data (JSON Serialized)
+            celestialJsContent = ReplaceJsVariable(celestialJsContent, "constellationLines",
+                JsonSerializer.Serialize(starDataManager.StarLineConnections));
+
+            var starCatalogList = starDataManager.GetStarCatalog();
+            celestialJsContent = ReplaceJsVariable(celestialJsContent, "starCatalog", JsonSerializer.Serialize(starCatalogList));
+
+            // Number Data (Injected as raw object values)
+            string destCoordValue =
+                $"{{ latitude: {formData.DestinationRunway.AirportLat.ToRadians()}, longitude: {formData.DestinationRunway.AirportLon.ToRadians()} }}";
+            celestialJsContent = ReplaceJsVariable(celestialJsContent, "destCoord", destCoordValue);
+
+            string drCoordValue =
+                $"{{ latitude: {formData.DestinationRunway.AirportLat.ToRadians()}, longitude: {formData.DestinationRunway.AirportLon.ToRadians()} }}";
+            celestialJsContent = ReplaceJsVariable(celestialJsContent, "currentDRCoord", drCoordValue);
+
+            // Almanac Data (2D Arrays, JSON Serialized)
+            var ariesGHADataObject = new
             {
-                // Star Data Replacements
-                { "constellationX", string.Join(",", allStars.Select(s => $"\"{s.Constellation}\"")) },
-                { "idX", string.Join(",", allStars.Select(s => $"\"{s.Id}\"")) },
-                { "starNumberX", string.Join(",", allStars.Select(s => $"\"{s.StarNumber}\"")) },
-                { "starNameX", string.Join(",", allStars.Select(s => $"\"{s.StarName}\"")) },
-                { "bayerX", string.Join(",", allStars.Select(s => $"\"{s.Bayer}\"")) },
-                { "raHX", string.Join(",", allStars.Select(s => s.RaH.ToString())) },
-                { "raMX", string.Join(",", allStars.Select(s => s.RaM.ToString())) },
-                { "raSX", string.Join(",", allStars.Select(s => s.RaS.ToString())) },
-                { "decDX", string.Join(",", allStars.Select(s => s.DecD.ToString())) },
-                { "decMX", string.Join(",", allStars.Select(s => s.DecM.ToString())) },
-                { "decSX", string.Join(",", allStars.Select(s => s.DecS.ToString())) },
-                { "visMagX", string.Join(",", allStars.Select(s => s.VisMag.ToString())) },
-                { "linesX", string.Join(", ", allStars
-                    .Where(s => !string.IsNullOrEmpty(s.ConnectedId))
-                    .SelectMany(s => new[] { $"\"{s.Id}\"", $"\"{s.ConnectedId}\"" }))
-                },
-
-                // Geographic Coordinates
-                { "destLatX", formData.DestinationRunway?.AirportLat.ToString() ?? "0.0" },
-                { "destLonX", formData.DestinationRunway?.AirportLon.ToString() ?? "0.0" },
-
-                // Aries GHA data
-                { "ariesGHAdX", BuildNestedArrayString(_almanacData.ariesGHAd) },
-                { "ariesGHAmX", BuildNestedArrayString(_almanacData.ariesGHAm) },
-
-                // Star SHA data
-                { "starsSHAdX", string.Join(",", _almanacData.starsSHAd?.Select(d => d.ToString()) ?? []) },
-                { "starsSHAmX", string.Join(",", _almanacData.starsSHAm?.Select(m => m.ToString()) ?? []) },
-
-                // Star DEC data
-                { "starsDECdX", string.Join(",", _almanacData.starsDECd?.Select(d => d.ToString()) ?? []) },
-                { "starsDECmX", string.Join(",", _almanacData.starsDECm?.Select(m => m.ToString()) ?? []) },
-
-                // Nav Star Names
-                { "starNameListX", string.Join(",", starDataManager.NavStarNames.Select(name => $"\"{name}\"")) },
-
-                // Date and Image Edge Parameters
-                { "startDateX", $"\"{formData.DatePickerValue:MM/dd/yyyy}\"" }
+                Degrees = _almanacData.AriesGhaDeg, // Maps to the JavaScript 'Degrees' property
+                Minutes = _almanacData.AriesGhaMin  // Maps to the JavaScript 'Minutes' property
             };
+            celestialJsContent = ReplaceJsVariable(celestialJsContent, "ariesGHAData", JsonSerializer.Serialize(ariesGHADataObject));
 
-            // Set the celestial map edges and add them to the replacements dictionary.
-            SetCelestialMapEdges(formData, replacements);
+            var navStarNames = starDataManager.NavStarNames;
+            var navStarCatalogList = new List<NavStarData>(AlmanacData.NoStarsInAlmanacData);
 
-            // Apply all replacements
-            foreach (var entry in replacements)
+            for (int i = 0; i < AlmanacData.NoStarsInAlmanacData; i++)
             {
-                celestialJsContent = celestialJsContent.Replace(entry.Key, entry.Value);
+                navStarCatalogList.Add(new NavStarData(
+                    SHADegrees: _almanacData.starsSHAd[i],
+                    SHAMinutes: _almanacData.starsSHAm[i],
+                    DECdegrees: _almanacData.starsDECd[i],
+                    DECMinutes: _almanacData.starsDECm[i],
+                    NavStarName: navStarNames[i] // This array comes from starDataManager
+                ));
             }
+
+            celestialJsContent = ReplaceJsVariable(celestialJsContent, "navStarCatalog", JsonSerializer.Serialize(navStarCatalogList));
+
+            // String Data (Quoted string injection)
+            celestialJsContent = ReplaceJsVariable(celestialJsContent, "startDate", $"\"{formData.DatePickerValue:MM/dd/yyyy}\"");
+
+            // Set the celestial map edges and perform in-place replacement
+            celestialJsContent = SetCelestialMapEdges(formData, celestialJsContent);
 
             // Write the modified scriptsCelestialSextant.js file
             message = $"Writing '{sextantJsOutputPath}'...";
@@ -220,6 +245,39 @@ namespace P3D_Scenario_Generator.CelestialScenario
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
 
+            // --- Process types.js ---
+            string typesJsResourceName = "Javascript.types.js";
+            string typesJsContent;
+
+            (success, Stream typesJsStream) = await _fileOps.TryGetResourceStreamAsync(typesJsResourceName, _progressReporter);
+            if (!success)
+            {
+                message = $"Failed to load embedded resource: '{typesJsResourceName}'. Cannot generate types JS.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
+                return false;
+            }
+
+            using (typesJsStream)
+            using (StreamReader reader = new(typesJsStream))
+            {
+                typesJsContent = await reader.ReadToEndAsync();
+            }
+
+            // Write the types.js file
+            message = $"Writing '{typesJsOutputPath}'...";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
+            if (!await _fileOps.TryWriteAllTextAsync(typesJsOutputPath, typesJsContent, _progressReporter))
+            {
+                message = $"Failed to write '{typesJsOutputPath}'. Aborting JS generation.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
+                return false;
+            }
+            message = $"Successfully generated and wrote '{typesJsOutputPath}'.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
 
             // --- Copy plotImage.jpg ---
             string plotImageResourceName = "Images.plotImage.jpg";
@@ -296,54 +354,59 @@ namespace P3D_Scenario_Generator.CelestialScenario
         }
 
         /// <summary>
-        /// Helper method to build a JavaScript-style 2D array string from a C# 2D array.
-        /// </summary>
-        /// <param name="array">The 2D array of type T to convert.</param>
-        /// <typeparam name="T">The type of the elements in the array.</typeparam>
-        /// <returns>A string representation of the 2D array in JavaScript array syntax.</returns>
-        private static string BuildNestedArrayString<T>(T[,] array)
-        {
-            StringBuilder sb = new();
-            sb.Append('[');
-            for (int i = 0; i < array.GetLength(0); i++)
-            {
-                sb.Append('[');
-                for (int j = 0; j < array.GetLength(1); j++)
-                {
-                    sb.Append(array[i, j]);
-                    if (j < array.GetLength(1) - 1)
-                    {
-                        sb.Append(',');
-                    }
-                }
-                sb.Append(']');
-                if (i < array.GetLength(0) - 1)
-                {
-                    sb.Append(',');
-                }
-            }
-            sb.Append(']');
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Calculates and sets the geographical boundaries (North, East, South, West) for a celestial map image.
-        /// These boundaries define the extent of the map based on a starting point and a specified distance.
+        /// Calculates the map boundaries and performs in-place replacement on the JavaScript content,
+        /// consolidating the four edge variables into a single 'plotBoundaries' object.
         /// </summary>
         /// <param name="formData">The scenario data object containing the location and distance parameters.</param>
-        /// <param name="replacements">The dictionary to which the calculated boundaries will be added.</param>
-        private static void SetCelestialMapEdges(ScenarioFormData formData, Dictionary<string, string> replacements)
+        /// <param name="jsContent">The content of the scriptsCelestialSextant.js file.</param>
+        /// <returns>The modified JavaScript content with the consolidated plot boundaries injected.</returns>
+        private static string SetCelestialMapEdges(ScenarioFormData formData, string jsContent)
         {
-            const double mapMarginFactor = 1.1; // Factor to extend the map edges beyond the specified distance
+            const double mapMarginFactor = 1.1;
             double distanceMetres = formData.RandomRadiusNM * mapMarginFactor * Constants.MetresInNauticalMile;
+
+            // Use MathRoutines (assumed to be available) to calculate the boundaries
             MathRoutines.AdjCoords(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees, 0, distanceMetres, out double celestialImageNorth, out _);
             MathRoutines.AdjCoords(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees, 90, distanceMetres, out _, out double celestialImageEast);
             MathRoutines.AdjCoords(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees, 180, distanceMetres, out double celestialImageSouth, out _);
             MathRoutines.AdjCoords(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees, 270, distanceMetres, out _, out double celestialImageWest);
-            replacements["northEdgeX"] = celestialImageNorth.ToString();
-            replacements["eastEdgeX"] = celestialImageEast.ToString();
-            replacements["southEdgeX"] = celestialImageSouth.ToString();
-            replacements["westEdgeX"] = celestialImageWest.ToString();
+
+            // 1. Create a C# object matching the JavaScript PlotArea structure (camelCase property names).
+            var plotBoundariesObject = new
+            {
+                north = ToRadians(celestialImageNorth),
+                east = ToRadians(celestialImageEast),
+                south = ToRadians(celestialImageSouth),
+                west = ToRadians(celestialImageWest)
+            };
+
+            // 2. Serialize the object and prepare the injection string.
+            string rawValue = JsonSerializer.Serialize(plotBoundariesObject);
+
+            // 3. Use the new helper to inject the consolidated object.
+            jsContent = ReplaceJsVariable(jsContent, "plotBoundaries", rawValue);
+
+            return jsContent;
+        }
+
+        /// <summary>
+        /// Converts an angle from degrees to radians.
+        /// </summary>
+        /// <param name="degrees">The angle in degrees.</param>
+        /// <returns>The angle in radians.</returns>
+        public static double ToRadians(double degrees)
+        {
+            return degrees * DegreesToRadiansFactor;
+        }
+
+        /// <summary>
+        /// Converts an angle from radians to degrees.
+        /// </summary>
+        /// <param name="radians">The angle in radians.</param>
+        /// <returns>The angle in degrees.</returns>
+        public static double ToDegrees(double radians)
+        {
+            return radians * RadiansToDegreesFactor;
         }
     }
 }

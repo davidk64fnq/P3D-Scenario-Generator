@@ -137,7 +137,7 @@ function refreshClip(clipTop, clipRight){
 }
 
 function refreshPlane(planeTopPixels, planeLeftPixels, clipTop, clipRight) {
-	var planeHeadingDeg = VarGet("A:PLANE HEADING DEGREES MAGNETIC" ,"Radians") * 180 / Math.PI;
+	var planeHeadingDeg = VarGet("A:PLANE HEADING DEGREES TRUE" ,"Radians") * 180 / Math.PI;
 	var plane = document.getElementById("plane");
 	var clipLeft = clipRight - viewPortWidth;
 	plane.style.top = planeTopPixels - clipTop - 15 + "px";		// Plane top pixel reference in viewport coordinate system

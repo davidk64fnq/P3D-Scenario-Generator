@@ -38,6 +38,10 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             formData.StartRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
             formData.DestinationRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
 
+            string message = "Setting sign writing gates.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
+
             // Set the letter segment paths for the sign writing letters
             SignCharacterMap.InitLetterPaths();
 
@@ -49,13 +53,19 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 return false;
             }
 
-            bool drawRoute = false;
-            if (!await _mapTileImageMaker.CreateOverviewImageAsync(SetOverviewCoords(formData), drawRoute, formData))
+            formData.OSMmapData = [];
+            message = "Creating overview image.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
+            if (!await _mapTileImageMaker.CreateOverviewImageAsync(SetOverviewCoords(formData), formData))
             {
                 await _logger.ErrorAsync("Failed to create overview image during sign writing setup.");
                 return false;
             }
 
+            message = "Creating location image.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
             if (!await _mapTileImageMaker.CreateLocationImageAsync(SetLocationCoords(formData), formData))
             {
                 await _logger.ErrorAsync("Failed to create location image during sign writing setup.");
@@ -66,14 +76,14 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             ScenarioHTML scenarioHTML = new(_logger, _fileOps, _progressReporter);
             if (!await scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
             {
-                string message = "Failed to generate HTML files during circuit setup.";
+                message = "Failed to generate HTML files during circuit setup.";
                 await _logger.ErrorAsync(message);
                 _progressReporter.Report($"ERROR: {message}");
                 return false;
             }
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            ScenarioXML.SetSignWritingWorldBaseFlightXML(formData, overview, this, _progressReporter);
+            await ScenarioXML.SetSignWritingWorldBaseFlightXML(formData, overview, this, _progressReporter);
             await ScenarioXML.WriteXMLAsync(formData, fileOps, progressReporter);
 
             return true;
@@ -123,7 +133,10 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// <returns>The estimated flight distance in nautical miles.</returns>
         internal double GetSignWritingDistance(ScenarioFormData formData)
         {
-            return gates.Count / 2 * formData.SignSegmentLengthFeet * Constants.FeetInDegreeOfLatitude / Constants.FeetInNauticalMile * 1.5;
+            return ((double)gates.Count / 2.0)
+           * formData.SignSegmentLengthFeet
+           / Constants.FeetInNauticalMile
+           * 1.5;
         }
 
         /// <summary>
@@ -321,7 +334,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
 
             // --- 2. Copy Geodesy library files using FileOps.TryCopyStreamToFile ---
 
-            string geodesySaveDirectory = formData.ScenarioImageFolder;
+            string geodesySaveDirectory = $"{formData.ScenarioImageFolder}/third-party/geodesy";
 
             // Ensure the target directory exists. FileOps.TryCopyStreamToFile handles directory creation
             // for the file itself, but this ensures the base directory is there for the set of files.

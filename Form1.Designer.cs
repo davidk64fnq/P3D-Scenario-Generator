@@ -75,7 +75,6 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourConstraintsMaxAttempts = new TextBox();
             label15 = new Label();
             ButtonPhotoTourSaved = new Button();
-            ButtonPhotoTourDefault = new Button();
             TextBoxCircuitSpeed = new TextBox();
             TextBoxCircuitTurnRate = new TextBox();
             TextBoxCircuitHeightDown = new TextBox();
@@ -108,8 +107,6 @@ namespace P3D_Scenario_Generator
             TextBoxSignMonitorNumber = new TextBox();
             label44 = new Label();
             ComboBoxSignAlignment = new ComboBox();
-            ButtonSignWritingSaved = new Button();
-            ButtonSignWritingDefault = new Button();
             TextBoxWikiDistance = new TextBox();
             LabelWikiDistance = new Label();
             GroupBoxWikipediaListParameters = new GroupBox();
@@ -191,6 +188,17 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsP3DprogramInstall = new TextBox();
             button1 = new Button();
             ButtonP3DDataFolderSelect = new Button();
+            ButtonCircuitDefault = new Button();
+            TextBoxCelestialMonitorHeight = new TextBox();
+            TextBoxCelestialMonitorWidth = new TextBox();
+            label32 = new Label();
+            label33 = new Label();
+            label34 = new Label();
+            TextBoxCelestialOffset = new TextBox();
+            label35 = new Label();
+            TextBoxCelestialMonitorNumber = new TextBox();
+            label36 = new Label();
+            ComboBoxCelestialAlignment = new ComboBox();
             GroupBoxSignWritingParameters = new GroupBox();
             TableLayoutPanelSignWritingParameters = new TableLayoutPanel();
             GroupBoxSignWritingSignWindowLocation = new GroupBox();
@@ -218,6 +226,8 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel13 = new TableLayoutPanel();
             tableLayoutPanel18 = new TableLayoutPanel();
             tableLayoutPanel19 = new TableLayoutPanel();
+            GroupBoxCelestialNavigationSextant = new GroupBox();
+            TableLayoutPanelCelestialNavigationSextant = new TableLayoutPanel();
             TabPageSign = new TabPage();
             tableLayoutPanel7 = new TableLayoutPanel();
             tableLayoutPanel16 = new TableLayoutPanel();
@@ -225,7 +235,6 @@ namespace P3D_Scenario_Generator
             TabPageCircuit = new TabPage();
             tableLayoutPanel4 = new TableLayoutPanel();
             tableLayoutPanel5 = new TableLayoutPanel();
-            ButtonCircuitDefault = new Button();
             TabPageMenu = new TabPage();
             tableLayoutPanel1 = new TableLayoutPanel();
             tableLayoutPanel2 = new TableLayoutPanel();
@@ -288,6 +297,9 @@ namespace P3D_Scenario_Generator
             TabPageCelestial.SuspendLayout();
             tableLayoutPanel13.SuspendLayout();
             tableLayoutPanel18.SuspendLayout();
+            tableLayoutPanel19.SuspendLayout();
+            GroupBoxCelestialNavigationSextant.SuspendLayout();
+            TableLayoutPanelCelestialNavigationSextant.SuspendLayout();
             TabPageSign.SuspendLayout();
             tableLayoutPanel7.SuspendLayout();
             tableLayoutPanel16.SuspendLayout();
@@ -827,7 +839,7 @@ namespace P3D_Scenario_Generator
             // 
             // ButtonPhotoTourSaved
             // 
-            ButtonPhotoTourSaved.Location = new Point(190, 495);
+            ButtonPhotoTourSaved.Location = new Point(109, 495);
             ButtonPhotoTourSaved.Name = "ButtonPhotoTourSaved";
             ButtonPhotoTourSaved.Size = new Size(75, 23);
             ButtonPhotoTourSaved.TabIndex = 38;
@@ -835,17 +847,6 @@ namespace P3D_Scenario_Generator
             toolTip1.SetToolTip(ButtonPhotoTourSaved, "Click to reset field values to those used for the last generated Photo Tour scenario.");
             ButtonPhotoTourSaved.UseVisualStyleBackColor = true;
             ButtonPhotoTourSaved.Click += ButtonSaved_Click;
-            // 
-            // ButtonPhotoTourDefault
-            // 
-            ButtonPhotoTourDefault.Location = new Point(97, 495);
-            ButtonPhotoTourDefault.Name = "ButtonPhotoTourDefault";
-            ButtonPhotoTourDefault.Size = new Size(75, 23);
-            ButtonPhotoTourDefault.TabIndex = 12;
-            ButtonPhotoTourDefault.Text = "Default";
-            toolTip1.SetToolTip(ButtonPhotoTourDefault, "Click to reset fields to program default values");
-            ButtonPhotoTourDefault.UseVisualStyleBackColor = true;
-            ButtonPhotoTourDefault.Click += ButtonDefault_Click;
             // 
             // TextBoxCircuitSpeed
             // 
@@ -1254,28 +1255,6 @@ namespace P3D_Scenario_Generator
             toolTip1.SetToolTip(ComboBoxSignAlignment, "Default location of sign window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.\r\n");
             ComboBoxSignAlignment.SelectedIndexChanged += ComboBoxSignAlignment_SelectedIndexChanged;
             // 
-            // ButtonSignWritingSaved
-            // 
-            ButtonSignWritingSaved.Location = new Point(515, 495);
-            ButtonSignWritingSaved.Name = "ButtonSignWritingSaved";
-            ButtonSignWritingSaved.Size = new Size(75, 23);
-            ButtonSignWritingSaved.TabIndex = 40;
-            ButtonSignWritingSaved.Text = "Saved";
-            toolTip1.SetToolTip(ButtonSignWritingSaved, "Click to reset field values to those used for the last generated Sign Writing scenario.");
-            ButtonSignWritingSaved.UseVisualStyleBackColor = true;
-            ButtonSignWritingSaved.Click += ButtonSaved_Click;
-            // 
-            // ButtonSignWritingDefault
-            // 
-            ButtonSignWritingDefault.Location = new Point(268, 495);
-            ButtonSignWritingDefault.Name = "ButtonSignWritingDefault";
-            ButtonSignWritingDefault.Size = new Size(75, 23);
-            ButtonSignWritingDefault.TabIndex = 41;
-            ButtonSignWritingDefault.Text = "Default";
-            toolTip1.SetToolTip(ButtonSignWritingDefault, "Click to reset fields to program default values");
-            ButtonSignWritingDefault.UseVisualStyleBackColor = true;
-            ButtonSignWritingDefault.Click += ButtonDefault_Click;
-            // 
             // TextBoxWikiDistance
             // 
             TextBoxWikiDistance.AccessibleDescription = "Wikipedia List: Distance";
@@ -1555,6 +1534,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLWindowHeight.Text = "1024";
             TextBoxWikiURLWindowHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLWindowHeight, "Resolution height in pixels of the Wiki URL window.");
+            TextBoxWikiURLWindowHeight.Leave += TextBoxWikiURLWindowHeight_Leave;
             // 
             // TextBoxWikiURLWindowWidth
             // 
@@ -1568,6 +1548,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLWindowWidth.Text = "800";
             TextBoxWikiURLWindowWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLWindowWidth, "Resolution width in pixels of the Wiki URL window. ");
+            TextBoxWikiURLWindowWidth.Leave += TextBoxWikiURLWindowWidth_Leave;
             // 
             // label56
             // 
@@ -1592,6 +1573,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorHeight.Text = "1080";
             TextBoxWikiURLMonitorHeight.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLMonitorHeight, "Resolution height in pixels of the monitor that Wiki URL window will display on.");
+            TextBoxWikiURLMonitorHeight.Leave += TextBoxWikiURLMonitorHeight_Leave;
             // 
             // TextBoxWikiURLMonitorWidth
             // 
@@ -1605,6 +1587,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorWidth.Text = "1920";
             TextBoxWikiURLMonitorWidth.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLMonitorWidth, "Resolution width in pixels of the monitor that Wiki URL window will display on. ");
+            TextBoxWikiURLMonitorWidth.Leave += TextBoxWikiURLMonitorWidth_Leave;
             // 
             // label51
             // 
@@ -1651,6 +1634,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLOffset.Text = "20";
             TextBoxWikiURLOffset.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLOffset, resources.GetString("TextBoxWikiURLOffset.ToolTip"));
+            TextBoxWikiURLOffset.Leave += TextBoxWikiURLOffset_Leave;
             // 
             // label54
             // 
@@ -1675,6 +1659,7 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorNumber.Text = "0";
             TextBoxWikiURLMonitorNumber.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiURLMonitorNumber, "The default monitor that the Wiki URL window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            TextBoxWikiURLMonitorNumber.Leave += TextBoxWikiURLMonitorNumber_Leave;
             // 
             // label55
             // 
@@ -1700,6 +1685,7 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiURLAlignment.Tag = "";
             ComboBoxWikiURLAlignment.Text = "Top Right";
             toolTip1.SetToolTip(ComboBoxWikiURLAlignment, "Default location of Wiki URL window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            ComboBoxWikiURLAlignment.Leave += ComboBoxWikiURLAlignment_Leave;
             // 
             // label57
             // 
@@ -1834,7 +1820,7 @@ namespace P3D_Scenario_Generator
             ButtonRandRunway.Name = "ButtonRandRunway";
             ButtonRandRunway.Size = new Size(100, 20);
             ButtonRandRunway.TabIndex = 0;
-            ButtonRandRunway.Text = "Random";
+            ButtonRandRunway.Text = "Random Runway";
             ButtonRandRunway.UseVisualStyleBackColor = true;
             ButtonRandRunway.Click += ButtonRandRunway_Click;
             // 
@@ -1890,7 +1876,7 @@ namespace P3D_Scenario_Generator
             ButtonRandomScenario.Name = "ButtonRandomScenario";
             ButtonRandomScenario.Size = new Size(91, 23);
             ButtonRandomScenario.TabIndex = 0;
-            ButtonRandomScenario.Text = "Random Runway";
+            ButtonRandomScenario.Text = "Random Scenario";
             ButtonRandomScenario.UseVisualStyleBackColor = true;
             ButtonRandomScenario.Click += ButtonRandomScenario_Click;
             // 
@@ -2408,6 +2394,145 @@ namespace P3D_Scenario_Generator
             ButtonP3DDataFolderSelect.UseVisualStyleBackColor = true;
             ButtonP3DDataFolderSelect.Click += ButtonBrowseP3DDataFolder_Click;
             // 
+            // ButtonCircuitDefault
+            // 
+            ButtonCircuitDefault.BackColor = Color.FromArgb(255, 192, 128);
+            ButtonCircuitDefault.ForeColor = SystemColors.ControlText;
+            ButtonCircuitDefault.Location = new Point(16, 495);
+            ButtonCircuitDefault.Name = "ButtonCircuitDefault";
+            ButtonCircuitDefault.Size = new Size(75, 23);
+            ButtonCircuitDefault.TabIndex = 11;
+            ButtonCircuitDefault.Text = "Default";
+            toolTip1.SetToolTip(ButtonCircuitDefault, "Sets default parameters for currently selected scenario type, on that scenarios tab. Where appropriate uses currently selected aircraft parameters.");
+            ButtonCircuitDefault.UseVisualStyleBackColor = true;
+            ButtonCircuitDefault.Click += ButtonDefault_ClickAsync;
+            // 
+            // TextBoxCelestialMonitorHeight
+            // 
+            TextBoxCelestialMonitorHeight.AccessibleName = "Sign Window Location: Monitor Height";
+            TextBoxCelestialMonitorHeight.Anchor = AnchorStyles.None;
+            TextBoxCelestialMonitorHeight.Location = new Point(139, 116);
+            TextBoxCelestialMonitorHeight.Name = "TextBoxCelestialMonitorHeight";
+            TextBoxCelestialMonitorHeight.Size = new Size(100, 23);
+            TextBoxCelestialMonitorHeight.TabIndex = 39;
+            TextBoxCelestialMonitorHeight.Tag = "";
+            TextBoxCelestialMonitorHeight.Text = "1080";
+            TextBoxCelestialMonitorHeight.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCelestialMonitorHeight, "Resolution height in pixels of the monitor that sextant window will display on.\r\n");
+            TextBoxCelestialMonitorHeight.Leave += TextBoxCelestialMonitorHeight_Leave;
+            // 
+            // TextBoxCelestialMonitorWidth
+            // 
+            TextBoxCelestialMonitorWidth.AccessibleName = "Sign Window Location: Monitor Width";
+            TextBoxCelestialMonitorWidth.Anchor = AnchorStyles.None;
+            TextBoxCelestialMonitorWidth.Location = new Point(139, 87);
+            TextBoxCelestialMonitorWidth.Name = "TextBoxCelestialMonitorWidth";
+            TextBoxCelestialMonitorWidth.Size = new Size(100, 23);
+            TextBoxCelestialMonitorWidth.TabIndex = 39;
+            TextBoxCelestialMonitorWidth.Tag = "";
+            TextBoxCelestialMonitorWidth.Text = "1920";
+            TextBoxCelestialMonitorWidth.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCelestialMonitorWidth, "Resolution width in pixels of the monitor that sextant window will display on. \r\n");
+            TextBoxCelestialMonitorWidth.Leave += TextBoxCelestialMonitorWidth_Leave;
+            // 
+            // label32
+            // 
+            label32.Anchor = AnchorStyles.None;
+            label32.AutoSize = true;
+            label32.Location = new Point(18, 120);
+            label32.Name = "label32";
+            label32.Size = new Size(89, 15);
+            label32.TabIndex = 39;
+            label32.Text = "Monitor Height";
+            toolTip1.SetToolTip(label32, "Resolution height in pixels of the monitor that sextant window will display on.");
+            // 
+            // label33
+            // 
+            label33.Anchor = AnchorStyles.None;
+            label33.AutoSize = true;
+            label33.Location = new Point(20, 90);
+            label33.Name = "label33";
+            label33.Size = new Size(85, 15);
+            label33.TabIndex = 39;
+            label33.Text = "Monitor Width";
+            toolTip1.SetToolTip(label33, "Resolution width in pixels of the monitor that sextant window will display on. ");
+            // 
+            // label34
+            // 
+            label34.Anchor = AnchorStyles.None;
+            label34.AutoSize = true;
+            label34.Location = new Point(43, 34);
+            label34.Name = "label34";
+            label34.Size = new Size(39, 15);
+            label34.TabIndex = 30;
+            label34.Text = "Offset";
+            toolTip1.SetToolTip(label34, resources.GetString("label34.ToolTip"));
+            // 
+            // TextBoxCelestialOffset
+            // 
+            TextBoxCelestialOffset.AccessibleName = "Sign Window Location: Horizontal Offset";
+            TextBoxCelestialOffset.Anchor = AnchorStyles.None;
+            TextBoxCelestialOffset.Location = new Point(139, 31);
+            TextBoxCelestialOffset.Name = "TextBoxCelestialOffset";
+            TextBoxCelestialOffset.Size = new Size(100, 23);
+            TextBoxCelestialOffset.TabIndex = 33;
+            TextBoxCelestialOffset.Tag = "";
+            TextBoxCelestialOffset.Text = "20";
+            TextBoxCelestialOffset.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCelestialOffset, resources.GetString("TextBoxCelestialOffset.ToolTip"));
+            TextBoxCelestialOffset.Leave += TextBoxCelestialOffset_Leave;
+            // 
+            // label35
+            // 
+            label35.Anchor = AnchorStyles.None;
+            label35.AutoSize = true;
+            label35.Location = new Point(31, 62);
+            label35.Name = "label35";
+            label35.Size = new Size(63, 15);
+            label35.TabIndex = 31;
+            label35.Text = "Alignment";
+            toolTip1.SetToolTip(label35, "Default location of sextant window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            // 
+            // TextBoxCelestialMonitorNumber
+            // 
+            TextBoxCelestialMonitorNumber.AccessibleName = "Sign Window Location: Monitor Number";
+            TextBoxCelestialMonitorNumber.Anchor = AnchorStyles.None;
+            TextBoxCelestialMonitorNumber.Location = new Point(139, 3);
+            TextBoxCelestialMonitorNumber.Name = "TextBoxCelestialMonitorNumber";
+            TextBoxCelestialMonitorNumber.Size = new Size(100, 23);
+            TextBoxCelestialMonitorNumber.TabIndex = 32;
+            TextBoxCelestialMonitorNumber.Tag = "";
+            TextBoxCelestialMonitorNumber.Text = "0";
+            TextBoxCelestialMonitorNumber.TextAlign = HorizontalAlignment.Center;
+            toolTip1.SetToolTip(TextBoxCelestialMonitorNumber, "The default monitor that the sextant window will display in. Experiment with values between 0 and the number of monitors minus 1.\r\n");
+            TextBoxCelestialMonitorNumber.Leave += TextBoxCelestialMonitorNumber_Leave;
+            // 
+            // label36
+            // 
+            label36.Anchor = AnchorStyles.None;
+            label36.AutoSize = true;
+            label36.Location = new Point(14, 6);
+            label36.Name = "label36";
+            label36.Size = new Size(97, 15);
+            label36.TabIndex = 29;
+            label36.Text = "Monitor Number";
+            toolTip1.SetToolTip(label36, "The default monitor that the sextant window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            // 
+            // ComboBoxCelestialAlignment
+            // 
+            ComboBoxCelestialAlignment.AccessibleName = "Sign Window Location: Alignment";
+            ComboBoxCelestialAlignment.Anchor = AnchorStyles.None;
+            ComboBoxCelestialAlignment.DropDownWidth = 100;
+            ComboBoxCelestialAlignment.FormattingEnabled = true;
+            ComboBoxCelestialAlignment.Location = new Point(139, 59);
+            ComboBoxCelestialAlignment.Name = "ComboBoxCelestialAlignment";
+            ComboBoxCelestialAlignment.Size = new Size(100, 23);
+            ComboBoxCelestialAlignment.TabIndex = 43;
+            ComboBoxCelestialAlignment.Tag = "";
+            ComboBoxCelestialAlignment.Text = "Top Right";
+            toolTip1.SetToolTip(ComboBoxCelestialAlignment, "Default location of sextant window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.\r\n");
+            ComboBoxCelestialAlignment.SelectedIndexChanged += ComboBoxCelestialAlignment_SelectedIndexChanged;
+            // 
             // GroupBoxSignWritingParameters
             // 
             GroupBoxSignWritingParameters.Anchor = AnchorStyles.None;
@@ -2635,7 +2760,7 @@ namespace P3D_Scenario_Generator
             ButtonRandomLocation.Name = "ButtonRandomLocation";
             ButtonRandomLocation.Size = new Size(91, 23);
             ButtonRandomLocation.TabIndex = 8;
-            ButtonRandomLocation.Text = "Random";
+            ButtonRandomLocation.Text = "Random Favourite";
             ButtonRandomLocation.UseVisualStyleBackColor = true;
             ButtonRandomLocation.Click += ButtonRandomLocation_Click;
             // 
@@ -2856,6 +2981,7 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel19.Anchor = AnchorStyles.None;
             tableLayoutPanel19.ColumnCount = 1;
             tableLayoutPanel19.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel19.Controls.Add(GroupBoxCelestialNavigationSextant, 0, 0);
             tableLayoutPanel19.Location = new Point(406, 19);
             tableLayoutPanel19.Margin = new Padding(0);
             tableLayoutPanel19.Name = "tableLayoutPanel19";
@@ -2863,6 +2989,48 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel19.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel19.Size = new Size(406, 400);
             tableLayoutPanel19.TabIndex = 6;
+            // 
+            // GroupBoxCelestialNavigationSextant
+            // 
+            GroupBoxCelestialNavigationSextant.Anchor = AnchorStyles.None;
+            GroupBoxCelestialNavigationSextant.BackColor = Color.FromArgb(255, 192, 128);
+            GroupBoxCelestialNavigationSextant.Controls.Add(TableLayoutPanelCelestialNavigationSextant);
+            GroupBoxCelestialNavigationSextant.Location = new Point(60, 112);
+            GroupBoxCelestialNavigationSextant.Name = "GroupBoxCelestialNavigationSextant";
+            GroupBoxCelestialNavigationSextant.Size = new Size(286, 175);
+            GroupBoxCelestialNavigationSextant.TabIndex = 40;
+            GroupBoxCelestialNavigationSextant.TabStop = false;
+            GroupBoxCelestialNavigationSextant.Text = "Sextant Window Location";
+            // 
+            // TableLayoutPanelCelestialNavigationSextant
+            // 
+            TableLayoutPanelCelestialNavigationSextant.AccessibleName = "";
+            TableLayoutPanelCelestialNavigationSextant.Anchor = AnchorStyles.None;
+            TableLayoutPanelCelestialNavigationSextant.ColumnCount = 2;
+            TableLayoutPanelCelestialNavigationSextant.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelCelestialNavigationSextant.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelCelestialNavigationSextant.Controls.Add(TextBoxCelestialMonitorHeight, 1, 4);
+            TableLayoutPanelCelestialNavigationSextant.Controls.Add(TextBoxCelestialMonitorWidth, 1, 3);
+            TableLayoutPanelCelestialNavigationSextant.Controls.Add(label32, 0, 4);
+            TableLayoutPanelCelestialNavigationSextant.Controls.Add(label33, 0, 3);
+            TableLayoutPanelCelestialNavigationSextant.Controls.Add(label34, 0, 1);
+            TableLayoutPanelCelestialNavigationSextant.Controls.Add(TextBoxCelestialOffset, 1, 1);
+            TableLayoutPanelCelestialNavigationSextant.Controls.Add(label35, 0, 2);
+            TableLayoutPanelCelestialNavigationSextant.Controls.Add(TextBoxCelestialMonitorNumber, 1, 0);
+            TableLayoutPanelCelestialNavigationSextant.Controls.Add(label36, 0, 0);
+            TableLayoutPanelCelestialNavigationSextant.Controls.Add(ComboBoxCelestialAlignment, 1, 2);
+            TableLayoutPanelCelestialNavigationSextant.ImeMode = ImeMode.On;
+            TableLayoutPanelCelestialNavigationSextant.Location = new Point(17, 22);
+            TableLayoutPanelCelestialNavigationSextant.Name = "TableLayoutPanelCelestialNavigationSextant";
+            TableLayoutPanelCelestialNavigationSextant.RowCount = 5;
+            TableLayoutPanelCelestialNavigationSextant.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelCelestialNavigationSextant.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelCelestialNavigationSextant.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelCelestialNavigationSextant.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelCelestialNavigationSextant.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelCelestialNavigationSextant.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TableLayoutPanelCelestialNavigationSextant.Size = new Size(253, 143);
+            TableLayoutPanelCelestialNavigationSextant.TabIndex = 35;
             // 
             // TabPageSign
             // 
@@ -2957,18 +3125,6 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel5.Size = new Size(406, 400);
             tableLayoutPanel5.TabIndex = 43;
-            // 
-            // ButtonCircuitDefault
-            // 
-            ButtonCircuitDefault.BackColor = Color.FromArgb(255, 192, 128);
-            ButtonCircuitDefault.ForeColor = SystemColors.ControlText;
-            ButtonCircuitDefault.Location = new Point(16, 495);
-            ButtonCircuitDefault.Name = "ButtonCircuitDefault";
-            ButtonCircuitDefault.Size = new Size(75, 23);
-            ButtonCircuitDefault.TabIndex = 11;
-            ButtonCircuitDefault.Text = "Default";
-            ButtonCircuitDefault.UseVisualStyleBackColor = true;
-            ButtonCircuitDefault.Click += ButtonDefault_ClickAsync;
             // 
             // TabPageMenu
             // 
@@ -3077,7 +3233,7 @@ namespace P3D_Scenario_Generator
             ButtonRandomTime.Name = "ButtonRandomTime";
             ButtonRandomTime.Size = new Size(91, 23);
             ButtonRandomTime.TabIndex = 2;
-            ButtonRandomTime.Text = "Random Runway";
+            ButtonRandomTime.Text = "Random Time";
             ButtonRandomTime.UseVisualStyleBackColor = true;
             ButtonRandomTime.Click += ButtonRandomTime_Click;
             // 
@@ -3088,7 +3244,7 @@ namespace P3D_Scenario_Generator
             ButtonRandomDate.Name = "ButtonRandomDate";
             ButtonRandomDate.Size = new Size(91, 23);
             ButtonRandomDate.TabIndex = 0;
-            ButtonRandomDate.Text = "Random Runway";
+            ButtonRandomDate.Text = "Random Date";
             ButtonRandomDate.UseVisualStyleBackColor = true;
             ButtonRandomDate.Click += ButtonRandomDate_Click;
             // 
@@ -3152,7 +3308,7 @@ namespace P3D_Scenario_Generator
             ButtonRandomAircraft.Name = "ButtonRandomAircraft";
             ButtonRandomAircraft.Size = new Size(91, 23);
             ButtonRandomAircraft.TabIndex = 0;
-            ButtonRandomAircraft.Text = "Random";
+            ButtonRandomAircraft.Text = "Random Aircraft";
             ButtonRandomAircraft.UseVisualStyleBackColor = true;
             ButtonRandomAircraft.Click += ButtonRandomAircraft_Click;
             // 
@@ -3267,13 +3423,10 @@ namespace P3D_Scenario_Generator
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(844, 553);
-            Controls.Add(ButtonSignWritingSaved);
-            Controls.Add(ButtonSignWritingDefault);
             Controls.Add(ButtonPhotoTourSaved);
             Controls.Add(ButtonCircuitDefault);
             Controls.Add(statusStrip1);
             Controls.Add(ButtonHelp);
-            Controls.Add(ButtonPhotoTourDefault);
             Controls.Add(ButtonGenerateScenario);
             Controls.Add(TabControlP3DSG);
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -3336,6 +3489,10 @@ namespace P3D_Scenario_Generator
             TabPageCelestial.ResumeLayout(false);
             tableLayoutPanel13.ResumeLayout(false);
             tableLayoutPanel18.ResumeLayout(false);
+            tableLayoutPanel19.ResumeLayout(false);
+            GroupBoxCelestialNavigationSextant.ResumeLayout(false);
+            TableLayoutPanelCelestialNavigationSextant.ResumeLayout(false);
+            TableLayoutPanelCelestialNavigationSextant.PerformLayout();
             TabPageSign.ResumeLayout(false);
             tableLayoutPanel7.ResumeLayout(false);
             tableLayoutPanel16.ResumeLayout(false);
@@ -3401,7 +3558,6 @@ namespace P3D_Scenario_Generator
         private Label label14;
         private Label label13;
         private Label label12;
-        private Button ButtonPhotoTourDefault;
         private Label label11;
         private TabPage TabPageCircuit;
         private Button ButtonCircuitDefault;
@@ -3476,8 +3632,6 @@ namespace P3D_Scenario_Generator
         internal TextBox TextBoxSignMonitorNumber;
         private Label label44;
         internal ComboBox ComboBoxSignAlignment;
-        private Button ButtonSignWritingDefault;
-        private Button ButtonSignWritingSaved;
         private GroupBox GroupBoxWikipediaListParameters;
         private TableLayoutPanel TableLayoutPanelWikipediaListParameters;
         internal TextBox TextBoxWikiItemLinkColumn;
@@ -3586,6 +3740,18 @@ namespace P3D_Scenario_Generator
         private ListBox ListBoxGeneralRunwayResults;
         private Label label8;
         private CheckBox CheckBoxCelestialUseStarsDat;
+        private GroupBox GroupBoxCelestialNavigationSextant;
+        private TableLayoutPanel TableLayoutPanelCelestialNavigationSextant;
+        internal TextBox TextBoxCelestialMonitorHeight;
+        internal TextBox TextBoxCelestialMonitorWidth;
+        private Label label32;
+        private Label label33;
+        private Label label34;
+        internal TextBox TextBoxCelestialOffset;
+        private Label label35;
+        internal TextBox TextBoxCelestialMonitorNumber;
+        private Label label36;
+        internal ComboBox ComboBoxCelestialAlignment;
     }
 }
 

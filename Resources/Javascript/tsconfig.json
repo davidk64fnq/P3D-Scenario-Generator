@@ -1,0 +1,39 @@
+// tsconfig.json
+
+{
+  "compilerOptions": {
+    // 1. Module System: Defines the output module structure. 'ESNext' is modern.
+    "module": "ESNext",
+
+    // 2. Module Resolution: Crucial for finding the imported files.
+    // Use 'Node' for now, but if relative imports fail, try 'Bundler' or 'NodeNext'.
+    "moduleResolution": "Node",
+
+    // 3. Target JavaScript Version: Use a modern target that supports modules well.
+    "target": "ES2022",
+
+    // 4. Library Files: Defines built-in environments (DOM is for browser, ESNext for modern JS features).
+    "lib": [ "dom", "ESNext" ],
+
+    // 5. Allow/Check JavaScript: Enables type checking on your JS files.
+    "allowJs": true,
+    "checkJs": true,
+    "noImplicitAny": true,
+
+    // 6. Interoperability: Recommended for working with external libraries or legacy JS.
+    "esModuleInterop": true,
+
+    // 7. Force file consistency.
+    "forceConsistentCasingInFileNames": true
+
+    // 8. Output Directory (If you compile TS files): You'll need this if compiling .ts to .js
+    // "outDir": "./dist" 
+  },
+  "include": [
+    "**/*.js",
+    "prepar3d-globals.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -104,18 +104,29 @@ namespace P3D_Scenario_Generator.MapTiles
                     await _logger.ErrorAsync($"Input boundingBox is not 1 x 1 for file '{fullPathNoExt}'.");
                     return false;
                 }
+                
+                // --- Use the defined DeepCopy() method to create a local, modifiable copy. ---
+                BoundingBox workingBoundingBox = boundingBox.DeepCopy();
+
+                // Adjust boundingBox so retrieval of tiles works
+                workingBoundingBox.YAxis.Insert(0, newNorthYindex);
+                workingBoundingBox.YAxis.Add(newSouthYindex);
+                workingBoundingBox.XAxis.Insert(0, newWestXindex);
+                workingBoundingBox.XAxis.Add(newEastXindex);
+
+
 
                 // Download eight additional tiles and rename the existing tile image to be in the centre.
                 // The filename_X_Y.png convention is used for temporary tiles where (1,1) is the original tile, (0,0) is top left and (2,2) is bottom right.
 
                 // Download new North row of tiles (0,0), (1,0), (2,0).
                 int northernRowId = 0;
-                if (!await _mapTileDownloader.DownloadOSMtileRowAsync(newNorthYindex, northernRowId, boundingBox, zoom, fullPathNoExt, formData)) return false;
+                if (!await _mapTileDownloader.DownloadOSMtileRowAsync(newNorthYindex, northernRowId, workingBoundingBox, zoom, fullPathNoExt, formData)) return false;
 
                 // Download new West middle row tile (0,1).
                 int originalRowId = 1;
                 int westernColId = 0;
-                if (!await _mapTileDownloader.DownloadOSMtileAsync(newWestXindex, boundingBox.YAxis[1], zoom, $"{fullPathNoExt}_{westernColId}_{originalRowId}.png", formData)) return false;     
+                if (!await _mapTileDownloader.DownloadOSMtileAsync(newWestXindex, workingBoundingBox.YAxis[1], zoom, $"{fullPathNoExt}_{westernColId}_{originalRowId}.png", formData)) return false;     
 
                 // Move the original tile to the centre position (1,1).
                 int originalColId = 1;
@@ -125,14 +136,14 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Download new East middle row tile (2,1).
                 int easternColId = 2;
-                if (!await _mapTileDownloader.DownloadOSMtileAsync(newEastXindex, boundingBox.YAxis[1], zoom, $"{fullPathNoExt}_{easternColId}_{originalRowId}.png", formData)) return false;
+                if (!await _mapTileDownloader.DownloadOSMtileAsync(newEastXindex, workingBoundingBox.YAxis[1], zoom, $"{fullPathNoExt}_{easternColId}_{originalRowId}.png", formData)) return false;
 
                 // Download new South row of tiles (0,2), (1,2), (2,2).
                 int southernRowId = 2;
-                if (!await _mapTileDownloader.DownloadOSMtileRowAsync(newSouthYindex, southernRowId, boundingBox, zoom, fullPathNoExt, formData)) return false;                    
+                if (!await _mapTileDownloader.DownloadOSMtileRowAsync(newSouthYindex, southernRowId, workingBoundingBox, zoom, fullPathNoExt, formData)) return false;                    
 
                 // Montage the entire expanded 3x3 grid into a single image.
-                if (!await _mapTileMontager.MontageTilesAsync(boundingBox, zoom, fullPathNoExt, formData)) return false;
+                if (!await _mapTileMontager.MontageTilesAsync(workingBoundingBox, zoom, fullPathNoExt, formData)) return false;
                 if (!await _fileOps.TryDeleteTempOSMfilesAsync(fullPathNoExt, _progressReporter)) return false; 
 
                 // Crop the central 2x2 tile area from the newly montaged 3x3 image.

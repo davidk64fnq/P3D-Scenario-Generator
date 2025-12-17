@@ -21,11 +21,16 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="coordinates">A list of geographic coordinates to be covered by the tiles.</param>
         /// <param name="tilesWidth">Maximum number of tiles allowed for the X-axis.</param>
         /// <param name="tilesHeight">Maximum number of tiles allowed for the Y-axis.</param>
+        /// <param name="maxAllowedZoom">The absolute maximum zoom level permitted for the initial image (e.g., 15 or 16).</param>
         /// <returns>
         /// A value tuple indicating success and the optimal zoom level if found.
         /// Returns <see langword="true"/> and the optimal zoom level if found; otherwise, returns <see langword="false"/> and 0.
         /// </returns>
-        public async Task<(bool success, int optimalZoomLevel)> GetOptimalZoomLevelAsync(IEnumerable<Coordinate> coordinates, int tilesWidth, int tilesHeight)
+        public async Task<(bool success, int optimalZoomLevel)> GetOptimalZoomLevelAsync(
+            IEnumerable<Coordinate> coordinates,
+            int tilesWidth,
+            int tilesHeight,
+            int maxAllowedZoom) 
         {
             int optimalZoomLevel = 0; 
 
@@ -40,6 +45,13 @@ namespace P3D_Scenario_Generator.MapTiles
 
             for (int zoom = 2; zoom <= Constants.MaxZoomLevel; zoom++)
             {
+                // If we hit the absolute cap, stop looking for the "optimal" fit.
+                if (zoom > maxAllowedZoom)
+                {
+                    // We can stop iterating here, the last valid zoom is the optimal one, but capped.
+                    break;
+                }
+
                 List<Tile> tempTiles = [];
 
                 bool success = await SetOSMTilesForCoordinatesAsync(tempTiles, zoom, coordinates);
@@ -76,8 +88,16 @@ namespace P3D_Scenario_Generator.MapTiles
                 lastValidZoom = zoom;
             }
 
-            // If the loop completes, it means even the MaxZoomLevel fits the constraints.
-            optimalZoomLevel = Constants.MaxZoomLevel;
+            // If the loop completes (either due to hitting Constants.MaxZoomLevel OR maxAllowedZoom),
+            // we take the last valid zoom found, then apply the cap.
+            optimalZoomLevel = lastValidZoom > 0 ? lastValidZoom : Constants.MaxZoomLevel; // Fallback to last valid or MaxZoom
+
+            // If the calculated optimal zoom is > maxAllowedZoom, we use maxAllowedZoom.
+            if (optimalZoomLevel > maxAllowedZoom)
+            {
+                optimalZoomLevel = maxAllowedZoom;
+            }
+
             return (true, optimalZoomLevel); // Successfully found an optimal zoom up to MaxZoomLevel.
         }
 

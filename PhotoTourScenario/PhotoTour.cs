@@ -69,10 +69,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         private readonly HttpRoutines _httpRoutines = httpRoutines;
         private readonly Pic2MapHtmlParser _pic2MapHtmlParser = new(logger, httpRoutines);
         private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
+        private readonly ImageUtils _imageUtils = new(logger, fileOps, progressReporter);
 
         internal List<PhotoLocParams> PhotoLocations { get; private set; } = [];
-
-        internal List<MapEdges> PhotoTourLegMapEdges { get; private set; } = [];
 
         internal int PhotoCount { get; private set; }
 
@@ -81,42 +80,59 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// </summary>
         public async Task<bool> SetPhotoTourAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
+            string message = "Setting photo tour.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
+
             if (!await SetRandomPhotoTour(formData, runwayManager, progressReporter))
             {
                 await _logger.ErrorAsync("Failed to generate a random photo tour.");
                 return false;
             }
 
-            bool drawRoute = false;
-            if (!await _mapTileImageMaker.CreateOverviewImageAsync(PhotoTourUtilities.SetOverviewCoords(PhotoLocations), drawRoute, formData))
+            formData.OSMmapData = [];
+            message = "Creating overview image.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
+            if (!await _mapTileImageMaker.CreateOverviewImageAsync(PhotoTourUtilities.SetOverviewCoords(PhotoLocations), formData))
             {
                 await _logger.ErrorAsync("Failed to create overview image during photo tour setup.");
                 return false;
             }
 
+            message = "Creating location image.";
+            await _logger.InfoAsync(message);
+            _progressReporter.Report($"INFO: {message}");
             if (!await _mapTileImageMaker.CreateLocationImageAsync(PhotoTourUtilities.SetLocationCoords(formData), formData))
             {
-                await _logger.ErrorAsync("Failed to create location image during photo tour setup.");
+                message = "Failed to create location image during circuit setup.";
+                await _logger.ErrorAsync(message);
+                _progressReporter.Report($"ERROR: {message}");
                 return false;
             }
 
-            PhotoTourLegMapEdges.Clear();
-            drawRoute = true;
+            formData.OSMmapData.Clear();
             for (int index = 0; index < PhotoLocations.Count - 1; index++)
             {
                 int legNo = index + 1;
-                if (!await _mapTileImageMaker.SetLegRouteImagesAsync(PhotoTourUtilities.SetRouteCoords(PhotoLocations, index), PhotoTourLegMapEdges, legNo, drawRoute, formData))
+                if (!await _mapTileImageMaker.SetLegRouteImagesAsync(PhotoTourUtilities.SetRouteCoords(PhotoLocations, index), legNo, formData))
                 {
-                    await _logger.ErrorAsync($"Failed to create route image for leg {index} during photo tour setup.");
+                    await _logger.ErrorAsync("Failed to create location image for leg {index} during photo tour setup.");
                     return false;
                 }
+            }
+
+            if (!await _imageUtils.DrawRouteBulkAsync(formData))
+            {
+                await _logger.ErrorAsync($"Failed to draw image routes during PhotoTour setup.");
+                return false;
             }
 
             Overview overview = SetOverviewStruct(formData);
             ScenarioHTML scenarioHTML = new(_logger, _fileOps, _progressReporter);
             if (!await scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
             {
-                string message = "Failed to generate HTML files during Phototour setup.";
+                message = "Failed to generate HTML files during Phototour setup.";
                 await _logger.ErrorAsync(message);
                 _progressReporter.Report($"ERROR: {message}");
                 return false;

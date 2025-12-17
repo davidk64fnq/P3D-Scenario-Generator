@@ -77,6 +77,7 @@
     <None Remove="Resources\Javascript\third-party\geodesy\dms.js" />
     <None Remove="Resources\Javascript\third-party\geodesy\latlon-ellipsoidal.js" />
     <None Remove="Resources\Javascript\third-party\geodesy\vector3d.js" />
+    <None Remove="Resources\Javascript\types.js" />
     <None Remove="Resources\LocationFavouritesJSON.txt" />
     <None Remove="Resources\Sounds\ThruHoop.wav" />
     <None Remove="Resources\XML\runways.xml" />
@@ -204,6 +205,7 @@
     <EmbeddedResource Include="Resources\Javascript\third-party\geodesy\dms.js" />
     <EmbeddedResource Include="Resources\Javascript\third-party\geodesy\latlon-ellipsoidal.js" />
     <EmbeddedResource Include="Resources\Javascript\third-party\geodesy\vector3d.js" />
+    <EmbeddedResource Include="Resources\Javascript\types.js" />
     <EmbeddedResource Include="Resources\Text\LocationFavouritesJSON.txt" />
     <EmbeddedResource Include="Resources\Sounds\ThruHoop.wav" />
     <EmbeddedResource Include="Resources\XML\runways.xml" />
@@ -212,16 +214,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoordinateSharp" Version="3.2.1.1" />
-    <PackageReference Include="EPPlus" Version="8.0.8" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.12.2" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.7.0" />
-    <PackageReference Include="Magick.NET.SystemDrawing" Version="8.0.7" />
-    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1001" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.7" />
+    <PackageReference Include="CoordinateSharp" Version="3.3.2.1" />
+    <PackageReference Include="EPPlus" Version="8.4.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.10.0" />
+    <PackageReference Include="Magick.NET.SystemDrawing" Version="8.0.13" />
+    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.1" />
     <PackageReference Include="UwpDesktop-Updated" Version="10.0.17763.132" />
-    <PackageReference Include="WindowsAPICodePack" Version="8.0.6" />
+    <PackageReference Include="WindowsAPICodePack" Version="8.0.14" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,8 +2,6 @@
 <html>	
 <head>
     <link rel="stylesheet" href="styleCelestialSextant.css">
-    <script src="scriptsCelestialSextant.js"></script>
-    <script src="scriptsCelestialAstroCalcs.js"></script>
     <style>
     </style>
 </head>
@@ -13,44 +11,51 @@
     <button class="tablink" onclick="openPage('Plotting')">Plotting</button>
     <button class="tablink" onclick="openPage('Tables')">Tables</button>
 
+    <!--
+    <div id="app-status">
+        <p style="color: blue;">[INFO] Application initializing...</p>
+    </div>
+    -->
+
     <div id="Star Chart" class="tabcontent">
         <div id="INFO">
-            <button type="button" onclick="toggleLabelStars()">Stars</button>
-            <button type="button" onclick="toggleLabelConstellations()">Constellations</button>
+            <button type="button" onclick="toggleStarNamesWrapper()">Star Names</button>
+            <button type="button" onclick="toggleConstellationLinesWrapper()">Constellation Lines</button>
+            <button type="button" onclick="toggleConstellationNamesWrapper()">Constellation Names</button>
         </div>
         <div id="FIX">
-            <button type="button" onclick="takeSighting()">Take Sighting</button>
+            <button type="button" onclick="takeSightingWrapper()">Take Sighting</button>
         </div>
         <div>
             <canvas id="canvas" width="960" height="540"></canvas>
         </div>
         <div id="FOV">
-            <button type="button" onmousedown="panFOV(-5)" onmouseup="freezeFOV()">-5</button>
-            <button type="button" onclick="moveFOVreset()">FOV</button>
-            <button type="button" onmousedown="panFOV(5)" onmouseup="freezeFOV()">+5</button>
+            <button type="button" onmousedown="panFOVWrapper(-5)" onmouseup="freezeFOVWrapper()">-5</button>
+            <button type="button" onclick="moveFOVresetWrapper()">FOV</button>
+            <button type="button" onmousedown="panFOVWrapper(5)" onmouseup="freezeFOVWrapper()">+5</button>
         </div>
         <div id="AZ">
-            <button type="button" onmousedown="panAZ(-1)" onmouseup="freezeAZ()">-1</button>
-            <button type="button" onmousedown="panAZ(-5)" onmouseup="freezeAZ()">-5</button>
-            <button type="button" onclick="moveAZreset()">AZ</button>
-            <button type="button" onmousedown="panAZ(5)" onmouseup="freezeAZ()">+5</button>
-            <button type="button" onmousedown="panAZ(1)" onmouseup="freezeAZ()">+1</button>
+            <button type="button" onmousedown="panAZWrapper(-1)" onmouseup="freezeAZWrapper()">-1</button>
+            <button type="button" onmousedown="panAZWrapper(-5)" onmouseup="freezeAZWrapper()">-5</button>
+            <button type="button" onclick="moveAZresetWrapper()">AZ</button>
+            <button type="button" onmousedown="panAZWrapper(5)" onmouseup="freezeAZWrapper()">+5</button>
+            <button type="button" onmousedown="panAZWrapper(1)" onmouseup="freezeAZWrapper()">+1</button>
         </div>
         <div id="ALT">
-            <button type="button" onmousedown="panALT(1)" onmouseup="freezeALT()">+1</button>
-            <button type="button" onmousedown="panALT(5)" onmouseup="freezeALT()">+5</button>
-            <button type="button" onclick="moveALTreset()">ALT</button>
-            <button type="button" onmousedown="panALT(-5)" onmouseup="freezeALT()">-5</button>
-            <button type="button" onmousedown="panALT(-1)" onmouseup="freezeALT()">-1</button>
+            <button type="button" onmousedown="panALTWrapper(1)" onmouseup="freezeALTWrapper()">+1</button>
+            <button type="button" onmousedown="panALTWrapper(5)" onmouseup="freezeALTWrapper()">+5</button>
+            <button type="button" onclick="moveALTresetWrapper()">ALT</button>
+            <button type="button" onmousedown="panALTWrapper(-5)" onmouseup="freezeALTWrapper()">-5</button>
+            <button type="button" onmousedown="panALTWrapper(-1)" onmouseup="freezeALTWrapper()">-1</button>
         </div>
         <div id="Ho">
-            <button type="button" onclick="moveHup01()">+1</button>
-            <button type="button" onclick="moveHup1()">+10</button>
-            <button type="button" onclick="moveHup5()">+50</button>
-            <button type="button" onclick="moveHreset()">Ho</button>
-            <button type="button" onclick="moveHdown5()">-50</button>
-            <button type="button" onclick="moveHdown1()">-10</button>
-            <button type="button" onclick="moveHdown01()">-1</button>
+            <button type="button" onclick="adjustHoWrapper(-1)">+1</button>
+            <button type="button" onclick="adjustHoWrapper(-10)">+10</button>
+            <button type="button" onclick="adjustHoWrapper(-50)">+50</button>
+            <button type="button" onclick="moveHoResetWrapper()">Ho</button>
+            <button type="button" onclick="adjustHoWrapper(50)">-50</button>
+            <button type="button" onclick="adjustHoWrapper(10)">-10</button>
+            <button type="button" onclick="adjustHoWrapper(1)">-1</button>
         </div>
     </div>
 
@@ -207,9 +212,9 @@
 
     <div id="Plotting" class="tabcontent">
         <div id="plotFinalLeg">
-            <button type="button" id="finalLegButton" onclick="plotFinalLeg()">Show Leg Info</button>
-            <button type="button" id="hideButton" onclick="hidePlane()">Hide Plane</button>
-            <button type="button" id="showButton" onclick="showPlane()">Show Plane</button>
+            <button type="button" id="finalLegButton" onclick="plotFinalLegWrapper()">Show Leg Info</button>
+            <button type="button" id="hideButton" onclick="hidePlaneWrapper()">Hide Plane</button>
+            <button type="button" id="showButton" onclick="showPlaneWrapper()">Show Plane</button>
         </div>
         <Canvas id="plottingCanvas" width="960" height="540">
         </Canvas>
@@ -218,13 +223,14 @@
 
     <div id="Tables" class="tabcontent">
         <!--
-    <p id="debug1"></p>
-    <p id="debug2"></p>
-    <p id="debug3"></p>
-            document.getElementById("debug1").innerHTML = " " + ;
-    -->
+        <p id="debug1"></p>
+        <p id="debug2"></p>
+        <p id="debug3"></p>
+                document.getElementById("debug1").innerHTML = " " + ;
+        -->
     </div>
-    <script>
-    </script>
+    <script src="types.js"></script>
+    <script src="scriptsCelestialAstroCalcs.js"></script>
+    <script src="scriptsCelestialSextant.js"></script>
 </body>
 </html>

@@ -3,6 +3,23 @@ using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
+    // This record is used to map the internal Star object to the JSON structure 
+    // expected by the JavaScript's starCatalog array of objects.
+    public record StarData(
+        string ConstellationName,
+        string CatalogID,
+        string ShaIndex,
+        string NavName,
+        string BayerDesignation,
+        double RaH,
+        double RaM,
+        double RaS,
+        double DecD,
+        double DecM,
+        double DecS,
+        double VisualMagnitude
+    );
+
     /// <summary>
     /// Manages the loading, storage, and retrieval of star data from an embedded Excel resource.
     /// It populates a list of all stars, identifies and organizes navigational stars,
@@ -14,6 +31,50 @@ namespace P3D_Scenario_Generator.CelestialScenario
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+
+        // --- Star Data Accessors for JavaScript Injection ---
+
+        /// <summary>
+        /// Gets the entire star catalog as a consolidated list of StarData records, 
+        /// optimized for a single JSON serialization to the client-side JavaScript.
+        /// </summary>
+        /// <returns>A read-only list of StarData records.</returns>
+        public IReadOnlyList<StarData> GetStarCatalog()
+        {
+            // The mapping ensures that the property names match the JavaScript StarData typedef.
+            return _stars.Select(s => new StarData(
+                ConstellationName: s.Constellation,
+                CatalogID: s.Id,
+                ShaIndex: s.StarNumber,
+                NavName: s.StarName,
+                BayerDesignation: s.Bayer,
+                RaH: s.RaH,
+                RaM: s.RaM,
+                RaS: s.RaS,
+                DecD: s.DecD,
+                DecM: s.DecM,
+                DecS: s.DecS,
+                VisualMagnitude: s.VisMag
+            )).ToList().AsReadOnly();
+        }
+
+        /// <summary>
+        /// Gets a flattened list of star ID pairs ([Id1, ConnectedId1, Id2, ConnectedId2, ...]) 
+        /// used to draw lines between stars in constellations.
+        /// </summary>
+        public IReadOnlyList<string> StarLineConnections
+        {
+            get
+            {
+                // Selects pairs of (Id, ConnectedId) where ConnectedId is not null or empty, 
+                // then flattens them into a single List<string> to match the typical JSON array format for JS drawing.
+                return _stars
+                    .Where(s => !string.IsNullOrEmpty(s.ConnectedId))
+                    .SelectMany(s => new[] { s.Id, s.ConnectedId })
+                    .ToList()
+                    .AsReadOnly();
+            }
+        }
 
         /// <summary>
         /// Read in from embedded Excel resource and then written to "stars.dat"
@@ -114,10 +175,10 @@ namespace P3D_Scenario_Generator.CelestialScenario
                                 raH, raM, raS, decD, decM, decS, visMag
                             ));
 
-                            // Add to navigational star names if Bayer value is present
-                            if (!string.IsNullOrEmpty(bayer))
+                            // Add to navigational star names if starName value is present
+                            if (!string.IsNullOrEmpty(starName))
                             {
-                                _navStarNames.Add(bayer);
+                                _navStarNames.Add(starName);
                             }
 
                             _noStars++;

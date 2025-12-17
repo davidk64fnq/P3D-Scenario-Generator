@@ -2,6 +2,7 @@
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Services;
+using Constants = P3D_Scenario_Generator.ConstantsEnums.Constants;
 
 namespace P3D_Scenario_Generator.MapTiles
 {
@@ -28,9 +29,8 @@ namespace P3D_Scenario_Generator.MapTiles
         /// Stores the image in scenario images folder.
         /// </summary>
         /// <param name="coordinates">A collection of geographical coordinates to be included on the image.</param>
-        /// <param name="drawRoute">Whether to draw route on the image.</param>
         /// <returns><see langword="true"/> if the overview image was successfully created; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> CreateOverviewImageAsync(IEnumerable<Coordinate> coordinates, bool drawRoute, ScenarioFormData formData)
+        public async Task<bool> CreateOverviewImageAsync(IEnumerable<Coordinate> coordinates, ScenarioFormData formData)
         {
             bool success;
 
@@ -40,7 +40,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 return false;
             }
 
-            (success, int zoom) = await _mapTileCalculator.GetOptimalZoomLevelAsync(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor);
+            (success, int zoom) = await _mapTileCalculator.GetOptimalZoomLevelAsync(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor, Constants.MaxZoomLevel);
             if (!success)
             {
                 await _logger.ErrorAsync("Failed to determine optimal zoom level. See previous logs for details.");
@@ -74,15 +74,8 @@ namespace P3D_Scenario_Generator.MapTiles
                 return false;
             }
 
-            // Draw a line connecting coordinates onto image
-            if (drawRoute && !await _imageUtils.DrawRouteAsync(tiles, boundingBox, fullPathNoExt))
-            {
-                await _logger.ErrorAsync($"Failed to draw route on image '{fullPathNoExt}'.");
-                return false;
-            }
-
             // Extend montage of tiles to make the image square (if it isn't already)
-            (success, _) = await MakeSquareAsync(boundingBox, fullPathNoExt, zoom, formData);
+            (success, PaddingMethod paddingMethod) = await MakeSquareAsync(boundingBox, fullPathNoExt, zoom, formData);
             if (!success)
             {
                 await _logger.ErrorAsync($"Failed to make image '{fullPathNoExt}' square.");
@@ -95,6 +88,27 @@ namespace P3D_Scenario_Generator.MapTiles
             if (!await _fileOps.TryMoveFileAsync(sourceFullPath, destinationFullPath, _progressReporter))
             {
                 await _logger.ErrorAsync($"Failed to copy image '{sourceFullPath}' to scenario images directory '{destinationFullPath}'.");
+                return false;
+            }
+
+            // Calculate next zoom level bounding box
+            (success, BoundingBox zoomInBoundingBox) = await _mapTilePadder.GetNextZoomBoundingBoxAsync(paddingMethod, boundingBox);
+            if (!success)
+            {
+                await _logger.ErrorAsync($"Failed to calculate next zoom level bounding box for overview image.");
+                return false;
+            }
+
+            // Calculate lat/lon boundaries of overview image
+            if (!SetImageBoundaries(coordinates, zoomInBoundingBox, zoom + 1, formData))
+            {
+                await _logger.ErrorAsync($"Failed to calculate lat/lon boundaries on image Charts_01.png.");
+                return false;
+            }
+
+            if (!await _imageUtils.DrawRouteSingleChartAsync(formData))
+            {
+                await _logger.ErrorAsync($"Failed to draw overview image routes during Wikipedia Tour setup.");
                 return false;
             }
 
@@ -291,18 +305,16 @@ namespace P3D_Scenario_Generator.MapTiles
         /// These images are intended to represent the route of a flight leg.
         /// </summary>
         /// <param name="coordinates">A collection of geographical coordinates defining the flight leg route.</param>
-        /// <param name="legMapEdges">A list to store the geographical boundaries (latitude/longitude) for each generated leg map image.</param>
         /// <param name="legNo">The sequential number of the current flight leg.</param>
-        /// <param name="drawRoute">Indicates whether the flight route should be drawn on the generated images.</param>
         /// <param name="formData">Scenario-specific data, including map window size option and temporary directories.</param>
         /// <returns><see langword="true"/> if all leg route images were successfully created and their boundaries calculated; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> SetLegRouteImagesAsync(IEnumerable<Coordinate> coordinates, List<MapEdges> legMapEdges, int legNo, bool drawRoute, ScenarioFormData formData)
+        public async Task<bool> SetLegRouteImagesAsync(IEnumerable<Coordinate> coordinates, int legNo, ScenarioFormData formData)
         {
             bool success;
             int legZoomLabel = 1;
             // Create first zoom level image for leg route
             _progressReporter.Report($"Leg {legNo}: Creating zoom level {legZoomLabel} OSM image");
-            (success, int zoom, PaddingMethod paddingMethod, BoundingBox boundingBox) = await SetFirstLegRouteImageAsync(coordinates, legNo, drawRoute, legZoomLabel, formData);
+            (success, int zoom, PaddingMethod paddingMethod, BoundingBox boundingBox) = await SetFirstZoomLegImageAsync(coordinates, legNo, legZoomLabel, formData);
             if (!success)
             {
                 await _logger.ErrorAsync($"Failed to create route image LegRoute_{legNo:00}_zoom{legZoomLabel}.");
@@ -327,7 +339,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 legZoomLabel = 1 + inc;
                 _progressReporter.Report($"Leg {legNo}: Creating zoom level {legZoomLabel} OSM image");
                 // Create subsequent zoom level images for leg route
-                if (!await SetNextLegRouteImageAsync(coordinates, legNo, drawRoute, legZoomLabel, zoom + inc, nextBoundingBox, formData))
+                if (!await SetNextZoomLegImageAsync(coordinates, legNo, legZoomLabel, zoom + inc, nextBoundingBox, formData))
                 {
                     await _logger.ErrorAsync($"Failed to create route image LegRoute_{legNo:00}_zoom{legZoomLabel}.");
                     return false;
@@ -344,7 +356,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Calculate leg map photoURL lat/lon boundaries, assumes called in leg number sequence starting with first leg
-            if (!SetLegImageBoundaries(nextBoundingBox, zoom + numberZoomLevels + 1, legMapEdges))
+            if (!SetImageBoundaries(coordinates, nextBoundingBox, zoom + numberZoomLevels + 1, formData))
             {
                 string fileName = $"LegRoute_{legNo:00}_zoom{legZoomLabel}";
                 await _logger.ErrorAsync($"Failed to calculate leg route lat/lon boundaries on image '{fileName}'.");
@@ -363,15 +375,14 @@ namespace P3D_Scenario_Generator.MapTiles
         /// </summary>
         /// <param name="coordinates">A collection of geographical coordinates defining the flight leg route.</param>
         /// <param name="legNo">The sequential number of the current flight leg.</param>
-        /// <param name="drawRoute">Indicates whether the flight route should be drawn on the image.</param>
         /// <param name="legZoomLabel">A label identifying the specific zoom level for this leg image (e.g., "zoom1").</param>
         /// <param name="zoom">When this method returns, contains the determined optimal zoom level used for the image.</param>
         /// <param name="paddingMethod">When this method returns, indicates the <see cref="PaddingMethod"/> applied to make the image square.</param>
         /// <param name="boundingBox">When this method returns, contains the <see cref="BoundingBox"/> of the generated image after any padding.</param>
         /// <param name="formData">Scenario-specific data, including temporary directories.</param>
         /// <returns><see langword="true"/> and tupple (zoom, paddingMethod, boundingBox) if the initial leg route image was successfully created; otherwise, <see langword="false"/>.</returns>
-        public async Task<(bool success, int zoom, PaddingMethod paddingMethod, BoundingBox boundingBox)> SetFirstLegRouteImageAsync(IEnumerable<Coordinate> coordinates, 
-            int legNo, bool drawRoute, int legZoomLabel, ScenarioFormData formData)
+        public async Task<(bool success, int zoom, PaddingMethod paddingMethod, BoundingBox boundingBox)> SetFirstZoomLegImageAsync(IEnumerable<Coordinate> coordinates, 
+            int legNo, int legZoomLabel, ScenarioFormData formData)
         {
             int zoom = 0; // Default value for out parameter
             PaddingMethod paddingMethod = PaddingMethod.None; // Default value for out parameter
@@ -386,7 +397,13 @@ namespace P3D_Scenario_Generator.MapTiles
                 return (false, zoom, paddingMethod, boundingBox);
             }
 
-            (success, zoom) = await _mapTileCalculator.GetOptimalZoomLevelAsync(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor);
+            int maxZoomLevel = 16;
+            if (formData.MapWindowSize == MapWindowSizeOption.Size1024)
+            {
+                maxZoomLevel = 15;
+            }
+
+            (success, zoom) = await _mapTileCalculator.GetOptimalZoomLevelAsync(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor, maxZoomLevel);
             if (!success)
             {
                 // GetOptimalZoomLevel already logs specific errors internally.
@@ -418,13 +435,6 @@ namespace P3D_Scenario_Generator.MapTiles
             if (!await _mapTileMontager.MontageTilesAsync(boundingBox, zoom, fullPathNoExt, formData))
             {
                 await _logger.ErrorAsync($"Failed to montage tiles for image '{fullPathNoExt}'.");
-                return (false, zoom, paddingMethod, boundingBox);
-            }
-
-            // Draw a line connecting coordinates onto image
-            if (drawRoute && !await _imageUtils.DrawRouteAsync(tiles, boundingBox, fullPathNoExt))
-            {
-                await _logger.ErrorAsync($"Failed to draw route on image '{fullPathNoExt}'.");
                 return (false, zoom, paddingMethod, boundingBox);
             }
 
@@ -463,13 +473,12 @@ namespace P3D_Scenario_Generator.MapTiles
         /// </summary>
         /// <param name="coordinates">A collection of geographical coordinates defining the flight leg route.</param>
         /// <param name="legNo">The sequential number of the current flight leg.</param>
-        /// <param name="drawRoute">Indicates whether the flight route should be drawn on the image.</param>
         /// <param name="legZoomLabel">A label identifying the specific zoom level for this leg image (e.g., "zoom2", "zoom3").</param>
         /// <param name="zoom">The actual OpenStreetMap zoom level to be used for this image.</param>
         /// <param name="nextBoundingBox">The <see cref="BoundingBox"/> corresponding to the tiles at the current zoom level for this image.</param>
         /// <param name="formData">Scenario-specific data, including temporary directories.</param>
         /// <returns><see langword="true"/> if the leg route image for the specified zoom level was successfully created; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> SetNextLegRouteImageAsync(IEnumerable<Coordinate> coordinates, int legNo, bool drawRoute, int legZoomLabel, int zoom, 
+        public async Task<bool> SetNextZoomLegImageAsync(IEnumerable<Coordinate> coordinates, int legNo, int legZoomLabel, int zoom, 
             BoundingBox nextBoundingBox, ScenarioFormData formData)
         {
             // Build list of OSM tiles at required zoom for all coordinates
@@ -488,13 +497,6 @@ namespace P3D_Scenario_Generator.MapTiles
             if (!await _mapTileMontager.MontageTilesAsync(nextBoundingBox, zoom, fullPathNoExt, formData))
             {
                 await _logger.ErrorAsync($"Failed to montage tiles for image '{fullPathNoExt}'.");
-                return false;
-            }
-
-            // Draw a line connecting coordinates onto image
-            if (drawRoute && !await _imageUtils.DrawRouteAsync(tiles, nextBoundingBox, fullPathNoExt))
-            {
-                await _logger.ErrorAsync($"Failed to draw route on image '{fullPathNoExt}'.");
                 return false;
             }
 
@@ -518,32 +520,39 @@ namespace P3D_Scenario_Generator.MapTiles
         }
 
         /// <summary>
-        /// Calculates and stores the geographical (latitude/longitude) boundaries for a map image representing a flight leg,
+        /// Calculates and stores the geographical (latitude/longitude) boundaries for a map image usually representing a flight leg,
         /// based on its OpenStreetMap tile bounding box and zoom level. This method assumes it is called
         /// sequentially for each leg, starting from the first leg, to correctly populate the provided list of map edges.
         /// </summary>
+        /// <param name="coordinates">A set of geographical coordinates on the image.</param>
         /// <param name="boundingBox">The <see cref="BoundingBox"/> containing the X and Y OpenStreetMap tile numbers that cover the area depicted in the image.</param>
         /// <param name="zoom">The OpenStreetMap tile zoom level corresponding to the provided <paramref name="boundingBox"/>.</param>
-        /// <param name="legMapEdges">A list to which the calculated <see cref="MapEdges"/> (north, south, east, west geographical coordinates) for the current leg's image will be added.</param>
+        /// <param name="formData">Scenario-specific data, including a list to which the calculated <see cref="MapData"/> 
+        /// (north, south, east, west geographical coordinates) for the current leg's image will be added.</param>
         /// <returns><see langword="true"/> if the leg image boundaries were successfully calculated and added to the list; otherwise, <see langword="false"/>.</returns>
-        static internal bool SetLegImageBoundaries(BoundingBox boundingBox, int zoom, List<MapEdges> legMapEdges)
+        static internal bool SetImageBoundaries(IEnumerable<Coordinate> coordinates, BoundingBox boundingBox, int zoom, ScenarioFormData formData)
         {
-            MapEdges legEdges = new();
+            MapData mapData = new();
             Coordinate c;
 
             // Get the lat/lon coordinates of top left corner of bounding box
             c = MapTileCalculator.TileNoToLatLon(boundingBox.XAxis[0], boundingBox.YAxis[0], zoom);
-            legEdges.north = c.Latitude;
-            legEdges.west = c.Longitude;
+            mapData.north = c.Latitude;
+            mapData.west = c.Longitude;
 
             // Get the lat/lon coordinates of top left corner of tile immediately below and right of bottom right corner of bounding box
             c = MapTileCalculator.TileNoToLatLon(boundingBox.XAxis[^1] + 1, boundingBox.YAxis[^1] + 1, zoom);
-            legEdges.south = c.Latitude;
-            legEdges.east = c.Longitude;
+            mapData.south = c.Latitude;
+            mapData.east = c.Longitude;
 
-            legMapEdges.Add(legEdges);
+            // Store item coordinates
+            mapData.items = [.. coordinates];
+
+            formData.OSMmapData.Add(mapData);
 
             return true;
         }
+
+
     }
 }

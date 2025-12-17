@@ -3,6 +3,8 @@ itemURLs = ["", itemURLsX];
 itemHREFs = [[""], itemHREFsX];
 
 var oldLegNo = 0;			// Tracks scenario variable that indicates current leg number
+var hrefToggle = 0;         // Tracks state of a simulator variable toggle to know when to advance display of Wikipedia item to next href
+var curHREF = 0;
 
 function update(timestamp)
 {
@@ -12,10 +14,40 @@ function update(timestamp)
 window.requestAnimationFrame(update);
 
 function refreshLegURL() {
-	legNo = VarGet("S:currentLegNo" ,"NUMBER");
-	if (legNo != oldLegNo) {
-		oldLegNo = legNo;
-		const element = document.getElementById("content");
-		element.innerHTML = '<object type="text/html" data="' + itemURLs[legNo] + '" height="heightXpx" width="widthXpx"></object>';
-	}
+    legNo = VarGet("S:currentLegNo", "NUMBER");
+    // Get the object element once
+    const objectElement = document.getElementById("item-object");
+
+    // Safety check to ensure the element exists
+    if (!objectElement) return;
+
+    const newURLBase = itemURLs[legNo - 1];
+
+    // --- 1. Handle Leg Change (Primary URL Load) ---
+    if (legNo != oldLegNo) {
+        oldLegNo = legNo;
+        // Reset the section index for the new page
+        curHREF = 0;
+
+        // Only update the data property to load the new base URL
+        objectElement.data = newURLBase;
+    }
+
+    // --- 2. Handle HREF Toggle (Section Scroll) ---
+    var changeHREF = VarGet("A:CABIN SEATBELTS ALERT SWITCH", "Bool");
+    if (changeHREF != hrefToggle) {
+        hrefToggle = changeHREF;
+
+        // Construct the full URL with the new section hash
+        const fullURL = newURLBase + "#" + itemHREFs[legNo - 1][curHREF];
+
+        // Only update the data property to change the hash (hoping for a scroll)
+        objectElement.data = fullURL;
+
+        // Advance the section index
+        curHREF = curHREF + 1;
+        if (curHREF >= itemHREFs[legNo - 1].length) {
+            curHREF = 0;
+        }
+    }
 }

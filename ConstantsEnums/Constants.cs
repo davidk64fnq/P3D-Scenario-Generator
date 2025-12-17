@@ -210,6 +210,10 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         /// </summary>
         public const int AlmanacExtractDaysCount = 3;
 
+        public const int SextantWindowWidth = 986;
+
+        public const int SextantWindowHeight = 755;
+
         #endregion
 
         #region Form layout constants
@@ -589,6 +593,16 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         /// Number of degrees in a circle
         /// </summary>
         public const int DegreesInACircle = 360;
+
+        #endregion
+
+        #region Wikipedia scenario constants
+
+        /// <summary>
+        /// How much gap to leave as a minimum around a Wiki page to ensure there is room for the window borders and still have the Wiki page 
+        /// window fit on the monitor
+        /// </summary>
+        public const int WikiPageSizeEdgeMarginPixels = 50;
 
         #endregion
 

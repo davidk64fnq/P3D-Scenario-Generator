@@ -10,7 +10,6 @@
 
 // Import the necessary Geodesy classes.
 import LatLon from './third-party/geodesy/latlon-ellipsoidal.js';
-import { Cartesian } from './third-party/geodesy/latlon-ellipsoidal.js';
 
 // --- JSDoc Global Variable Declarations (Injected by C#) ---
 // These variables are declared globally. Their string values are expected to be
@@ -32,7 +31,7 @@ var gateLatitudesX = null;
 /** @type {string | null} gateLongitudesX - String representation of gate bearings in degrees, injected by C#.*/
 var gateLongitudesX = null;
 
-/** @type {string | null} gateAltitudesX - String representation of gate altitudes in degrees, injected by C#.*/
+/** @type {string | null} gateAltitudesX - String representation of gate altitudes in feet, injected by C#.*/
 var gateAltitudesX = null;
 
 /** @type {string | null} paddingLeft - String representation of vertical window padding in pixels, injected by C#*/
@@ -139,7 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	gateBearings = String(gateBearingsX).split(',').map(Number);
 	gateLatitudes = String(gateLatitudesX).split(',').map(Number);
 	gateLongitudes = String(gateLongitudesX).split(',').map(Number);
-	gateAltitudes = String(gateAltitudesX).split(',').map(Number);
+	// gateAltitudesX is in feet (injected by C#), convert each element to metres before storing.
+	gateAltitudes = String(gateAltitudesX).split(',').map(Number).map(altInFeet => altInFeet * metresInFoot);
 
     // Calculate segment distance based on the first two gates
 	currentSegmentDistance = calculate3DDistance(gateLatitudes[1], gateLongitudes[1], gateAltitudes[1], gateLatitudes[2], gateLongitudes[2], gateAltitudes[2]);
@@ -174,8 +174,21 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.documentElement.style.setProperty('--console-height', initialConsoleHeightParsed + 'px');
 	document.documentElement.style.setProperty('--window-horizontal-padding', initialWindowHorizontalPaddingParsed + 'px');
 	document.documentElement.style.setProperty('--window-vertical-padding', initialWindowVerticalPaddingParsed + 'px');
-	window.requestAnimationFrame(update);
+	// ** NEW: Start the throttled update loop **
+	scheduleUpdate(); // Call a new function to start the loop
 });
+
+/**
+ * @summary Schedules the next execution of the update function.
+ * @description Uses setTimeout to control the execution rate to approximately 5 times per second (200ms).
+ */
+function scheduleUpdate() {
+	setTimeout(() => {
+		update();
+		// Recursively call scheduleUpdate to maintain the loop
+		scheduleUpdate();
+	}, 200); // 200ms = 5 updates per second
+}
 
 /** @type {number} currentSegmentDistance - Should be constant if gates have been set up correctly by C# application code.*/
 var currentSegmentDistance = 0; 
@@ -477,6 +490,65 @@ function logToConsole(...args) {
 }
 
 /**
+ * @summary Calculates the clamped 3D distance of the plane's projection onto the gate segment from the start gate.
+ *
+ * @description
+ * This method determines the plane's forward progress along the straight line connecting the two gates
+ * by calculating the scalar projection of the vector (Gate Start to Plane) onto the vector (Gate Start to Gate Finish).
+ * The resulting distance is clamped between 0 and the total segment length.
+ * Note: Altitude values are expected to be in METERS.
+ *
+ * @param {LatLon} pStart - LatLon object for the start gate (Gate 1). Altitude must be in meters.
+ * @param {LatLon} pFinish - LatLon object for the finish gate (Gate 2). Altitude must be in meters.
+ * @param {LatLon} pPlane - LatLon object for the plane's position. Altitude must be in meters.
+ * @returns {number} The distance in meters from pStart to the projection point on the segment, clamped to [0, segment length].
+ */
+function getProjectedProgressDistance(pStart, pFinish, pPlane) {
+
+	// 1. Convert to ECEF Cartesian Coordinates (X, Y, Z in meters)
+	const cartesianStart = pStart.toCartesian();
+	const cartesianFinish = pFinish.toCartesian();
+	const cartesianPlane = pPlane.toCartesian();
+
+	// 2. Define the Segment Vector (V_seg = P_finish - P_start)
+	const V_seg_x = cartesianFinish.x - cartesianStart.x;
+	const V_seg_y = cartesianFinish.y - cartesianStart.y;
+	const V_seg_z = cartesianFinish.z - cartesianStart.z;
+
+	// 3. Define the Vector from Start Gate to Plane (V_plane = P_plane - P_start)
+	const V_plane_x = cartesianPlane.x - cartesianStart.x;
+	const V_plane_y = cartesianPlane.y - cartesianStart.y;
+	const V_plane_z = cartesianPlane.z - cartesianStart.z;
+
+	// 4. Calculate Dot Product (V_plane . V_seg) and Squared Magnitude (||V_seg||^2)
+	// The dot product is the numerator for the projection.
+	const dotProduct = V_plane_x * V_seg_x + V_plane_y * V_seg_y + V_plane_z * V_seg_z;
+
+	// The squared magnitude is the denominator for the ratio (t).
+	const segMagnitudeSq = V_seg_x * V_seg_x + V_seg_y * V_seg_y + V_seg_z * V_seg_z;
+
+	// 5. Calculate the total segment length (Magnitude of V_seg)
+	const segmentLength = Math.sqrt(segMagnitudeSq);
+
+	// Check for a zero-length segment to prevent division by zero
+	if (segMagnitudeSq === 0) {
+		return 0;
+	}
+
+	// 6. Calculate the progress ratio (t)
+	// t = (V_plane . V_seg) / ||V_seg||^2
+	let progressRatio = dotProduct / segMagnitudeSq;
+
+	// 7. Calculate the raw projected distance
+	const rawProjectedDistance = progressRatio * segmentLength;
+
+	// 8. Clamp the distance to ensure it lies within the segment [0, segmentLength]
+	const clampedDistance = Math.max(0, Math.min(segmentLength, rawProjectedDistance));
+
+	return clampedDistance;
+}
+
+/**
  * @summary Calculates and updates the plane's pixel coordinates on the canvas.
  *
  * @description
@@ -485,21 +557,14 @@ function logToConsole(...args) {
  * start and end gates of the current segment. It first fetches the plane's current
  * 3D position from the simulator.
  *
- * It then checks if the plane is within a defined `currentSegmentDistance` from both
- * the previous gate and the current (next) gate. If the plane is outside this range
- * for either gate, it logs a warning and exits, indicating the plane is not correctly
- * positioned within the expected segment bounds.
- *
- * If the plane is within bounds, it calculates its progress along the segment as a ratio
- * of the distance from the last gate to the total segment length. This ratio is then
+ * It calculates its progress along the segment as a ratio
+ * of the distance from the start gate to the total segment length. This ratio is then
  * used to interpolate the plane's pixel position along the appropriate axis (vertical
  * for 0/180 degree bearings, horizontal for 90/270 degree bearings) on the canvas,
  * updating the global `planeTopPixels` and `planeLeftPixels` variables.
  *
- * @param {number} currentGateNo - The index of the *current* (or next) gate in the sequence,
- * which defines the end point of the active segment and helps identify the previous gate.
- * @returns {void} This function updates global variables (`planeTopPixels`, `planeLeftPixels`)
- * and does not return a value.
+ * @param {number} currentGateNo - The index of the start gate in the sequence.
+ * @returns {number} The distance the plane has progressed along the current segment, in pixels.
  */
 function getPlanePixelCoords(currentGateNo) {
 	// Fetch real-time simulation variables for plane's geographic position
@@ -507,41 +572,47 @@ function getPlanePixelCoords(currentGateNo) {
 	var planeLatDeg = VarGet("A:PLANE LATITUDE", "Radians") * 180 / Math.PI; // Convert latitude from radians to degrees
 	var planeAltMetres = VarGet("A:PLANE ALTITUDE", "Feet") * metresInFoot; // Convert altitude from feet to metres
 
-	// Check that plane is within segment distance from BOTH gates that mark the start and end of the current segment.
-	// This helps ensure the plane is flying along the intended path.
-	var distanceFromLastGate = calculate3DDistance(
-		gateLatitudes[currentGateNo - 1], gateLongitudes[currentGateNo - 1], gateAltitudes[currentGateNo - 1],
-		planeLatDeg, planeLonDeg, planeAltMetres
-	);
-	var distanceToNextGate = calculate3DDistance(
-		planeLatDeg, planeLonDeg, planeAltMetres,
-		gateLatitudes[currentGateNo], gateLongitudes[currentGateNo], gateAltitudes[currentGateNo]
-	);
-
-	// If the plane is outside the defined operational distance from either gate,
-	// log a warning and exit to prevent drawing errors for out-of-segment positions.
-	if (distanceFromLastGate > currentSegmentDistance || distanceToNextGate > currentSegmentDistance) {
-		logToConsole(`Plane is outside segment distance from gates ${currentGateNo - 1} and ${currentGateNo}.`);
-		return; // Exit if plane is not within the segment distance
-	}
+	const pStart = new LatLon(gateLatitudes[currentGateNo], gateLongitudes[currentGateNo], gateAltitudes[currentGateNo]);
+	const pFinish = new LatLon(gateLatitudes[currentGateNo + 1], gateLongitudes[currentGateNo + 1], gateAltitudes[currentGateNo + 1]);
+	const pPlane = new LatLon(planeLatDeg, planeLonDeg, planeAltMetres);
+	const distanceFromLastGate = getProjectedProgressDistance(pStart, pFinish, pPlane)
 
 	// Calculate the plane's progress along the current segment as a ratio (0 to 1).
 	var distanceProgressedRatio = distanceFromLastGate / currentSegmentDistance;
 	// Convert this ratio into pixels to determine the plane's position on the canvas segment.
 	var distanceProgressedPixels = Math.round(distanceProgressedRatio * segmentLengthPixels);
 
+	const segmentBearing = gateBearings[currentGateNo];
+	const startTop = gateTopPixels[currentGateNo];
+	const startLeft = gateLeftPixels[currentGateNo];
+
 	// Update plane's pixel coordinates based on the gate bearing (segment orientation).
-	// For vertical segments (bearings 0 or 180), movement is along the Y-axis (planeTopPixels).
-	// For horizontal segments (bearings 90 or 270), movement is along the X-axis (planeLeftPixels).
-	if (gateBearings[currentGateNo] == 0 || gateBearings[currentGateNo] == 180) {
-		// Vertical segment: Adjust Y-coordinate. X-coordinate remains fixed relative to the gate's X.
-		planeTopPixels = gateTopPixels[currentGateNo - 1] + distanceProgressedPixels;
-		planeLeftPixels = gateLeftPixels[currentGateNo - 1]; // X-coordinate is not used for rendering vertical segment progression
+	if (segmentBearing == 0 || segmentBearing == 180) {
+		// Vertical segment (North or South)
+		planeLeftPixels = startLeft; // X-coordinate remains fixed relative to the gate's X.
+
+		if (segmentBearing == 180) {
+			// South: Moving DOWN. Y increases.
+			planeTopPixels = startTop + distanceProgressedPixels;
+		} else { // segmentBearing == 0
+			// North: Moving UP. Y decreases.
+			planeTopPixels = startTop - distanceProgressedPixels;
+		}
 	} else {
-		// Horizontal segment: Adjust X-coordinate. Y-coordinate remains fixed relative to the gate's Y.
-		planeTopPixels = gateTopPixels[currentGateNo - 1]; // Y-coordinate is not used for rendering horizontal segment progression
-		planeLeftPixels = gateLeftPixels[currentGateNo - 1] + distanceProgressedPixels;
+		// Horizontal segment (East or West)
+		planeTopPixels = startTop; // Y-coordinate remains fixed relative to the gate's Y.
+
+		if (segmentBearing == 90) {
+			// East: Moving RIGHT. X increases.
+			planeLeftPixels = startLeft + distanceProgressedPixels;
+		} else { // segmentBearing == 270
+			// West: Moving LEFT. X decreases.
+			planeLeftPixels = startLeft - distanceProgressedPixels;
+		}
 	}
+
+	// Return the calculated pixel progress
+	return distanceProgressedPixels;
 }
 
 /**
@@ -559,17 +630,16 @@ function getPlanePixelCoords(currentGateNo) {
  * and the current/next gate's parameters.</p>
  * <p>5. Managing the drawing of entry and exit caps at gates when smoke is toggled.</p>
  * <p>6. Scheduling itself for the next animation frame.</p>
- * 
- * @param {DOMHighResTimeStamp} timestamp - The current time provided by `requestAnimationFrame`,
- * typically used for frame-rate independent animations, though not directly used for time calculations in this implementation.
  */
-function update(timestamp) {
+function update() {
 	// Fetch real-time simulation variables
 	var currentGateNo = VarGet("S:currentGateNo", "NUMBER");
 	var smokeOn = VarGet("S:smokeOn", "NUMBER");
 
-    // Map planes geographic coordinates to canvas pixel coordinates
-	getPlanePixelCoords(currentGateNo);
+	if (currentGateNo <= 0) {
+		// The scheduleUpdate() function handles the next execution, so we just exit here.
+		return;
+	}
 
 	// Smoke toggle detection and logging
 	if (smokeOn != smokeOld) {
@@ -583,7 +653,13 @@ function update(timestamp) {
 
 	smokeOld = smokeOn; // Update previous smoke state
 
-	// Drawing logic when smoke is turned ON or is ON
+	// Map plane's geographic coordinates to canvas pixel coordinates ONLY when smoke is ON,
+	// as this position is only needed to draw the smoke trail endpoint.
+	if (smokeOn == 1) {
+		const distanceProgressedPixels = getPlanePixelCoords(currentGateNo);
+	}
+
+	// Drawing logic when smoke is turned ON or is ON 
 	if (smokeHasToggled && smokeOn == 1) {
 		startTopPixels = gateTopPixels[currentGateNo];
 		startLeftPixels = gateLeftPixels[currentGateNo];
@@ -623,7 +699,4 @@ function update(timestamp) {
 			drawCap(startTopPixels - 5 + parsedCharPaddingTop, startLeftPixels + parsedCharPaddingLeft, curCap);
 		smokeHasToggled = false; // Reset toggle flag
 	}
-
-	// Schedule the next animation frame
-	window.requestAnimationFrame(update);
 }

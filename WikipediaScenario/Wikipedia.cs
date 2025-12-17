@@ -18,6 +18,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly HttpRoutines _httpRoutines = httpRoutines;
         private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
+        private readonly ImageUtils _imageUtils = new(logger, fileOps, progressReporter);
 
         /// <summary>
         /// The wikipedia list items plus start and finish airports
@@ -28,11 +29,6 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// From start to finish airport
         /// </summary>
         internal int WikiDistance { get; private set; }
-
-        /// <summary>
-        /// Lat/Lon boundaries for each OSM montage leg image
-        /// </summary>
-        internal List<MapEdges> WikiLegMapEdges { get; private set; }
 
         /// <summary>
         /// Table(s) of items scraped from user supplied Wikipedia URL
@@ -191,23 +187,17 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <summary>
         /// Populate WikiTour using methods in next section plus set airport(s) and create OSM images
         /// </summary>
-        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
-        /// <param name="route">Route leg summary strings</param>
-        /// <param name="tourStartItem">User specified first item of tour</param>
-        /// <param name="tourFinishItem">User specified last item of tour</param>
-        /// <param name="tourDistance">The distance from first to last item in miles</param>
         /// <param name="formData">The scenario form data.</param>
         /// <param name="runwayManager">The runway manager instance.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
-        public async Task<bool> SetWikiTourAsync(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance,
-          ScenarioFormData formData, RunwayManager runwayManager)
+        public async Task<bool> SetWikiTourAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            PopulateWikiTour(tableNo, route, tourStartItem, tourFinishItem, tourDistance);
+            PopulateWikiTour(formData);
 
             await SetWikiAirports(formData, runwayManager);
 
-            bool drawRoute = false;
-            if (!await _mapTileImageMaker.CreateOverviewImageAsync(SetOverviewCoords(WikiTour), drawRoute, formData))
+            formData.OSMmapData = [];
+            if (!await _mapTileImageMaker.CreateOverviewImageAsync(SetOverviewCoords(WikiTour), formData))
             {
                 await _logger.ErrorAsync("Failed to create overview image during Wikipedia Tour setup.");
                 return false;
@@ -215,20 +205,25 @@ namespace P3D_Scenario_Generator.WikipediaScenario
 
             if (!await _mapTileImageMaker.CreateLocationImageAsync(SetLocationCoords(formData), formData))
             {
-                await _logger.ErrorAsync("Failed to create location image during Wikipedia Tour setup.");
+                await _logger.ErrorAsync($"Failed to draw route on overview image during Wikipedia Tour setup.");
                 return false;
             }
 
-            WikiLegMapEdges.Clear();
-            drawRoute = true;
+            formData.OSMmapData.Clear();
             for (int index = 0; index < WikiTour.Count - 1; index++)
             {
                 int legNo = index + 1;
-                if (!await _mapTileImageMaker.SetLegRouteImagesAsync(SetRouteCoords(WikiTour, index), WikiLegMapEdges, legNo, drawRoute, formData))
+                if (!await _mapTileImageMaker.SetLegRouteImagesAsync(SetRouteCoords(WikiTour, index), legNo, formData))
                 {
-                    await _logger.ErrorAsync($"Failed to create route image for leg {index} during Wikipedia Tour setup.");
+                    await _logger.ErrorAsync($"Failed to create location image for leg {index} during Wikipedia Tour setup.");
                     return false;
                 }
+            }
+
+            if (!await _imageUtils.DrawRouteBulkAsync(formData))
+            {
+                await _logger.ErrorAsync($"Failed to draw image routes during Wikipedia Tour setup.");
+                return false;
             }
 
             Overview overview = SetOverviewStruct(formData);
@@ -242,7 +237,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             }
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            ScenarioXML.SetWikiListWorldBaseFlightXML(formData, overview, this, fileOps, progressReporter);
+            await ScenarioXML.SetWikiListWorldBaseFlightXML(formData, overview, this, fileOps, progressReporter);
             await ScenarioXML.WriteXMLAsync(formData, fileOps, progressReporter);
 
             return true;
@@ -333,7 +328,8 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 Duration = $"{string.Format("{0:0}", duration)} minutes",
                 Aircraft = $"{formData.AircraftTitle}",
                 Briefing = briefing,
-                Objective = objective
+                Objective = objective,
+                Tips = "Do not, under any circumstances, fly over a 'Dead-end page.' The lack of outgoing links makes for treacherous, inescapable airspace."
             };
 
             return overview;
@@ -404,38 +400,31 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <summary>
         /// Populates WikiTour for selected table based on user specified start and finish items and current route
         /// </summary>
-        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
-        /// <param name="route">Route leg summary strings</param>
-        /// <param name="tourStartItem">User specified first item of tour</param>
-        /// <param name="tourFinishItem">User specified last item of tour</param>
-        /// <param name="tourDistance">The distance from first to last item in miles</param>
-        internal void PopulateWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance)
+        /// <param name="formData">The scenario form data.</param>
+        internal void PopulateWikiTour(ScenarioFormData formData)
         {
             WikiTour = [];
-            bool finished = PopulateWikiTourOneItem(tableNo, tourStartItem, tourFinishItem);
+            bool finished = PopulateWikiTourOneItem(formData);
             if (!finished)
             {
-                PopulateWikiTourMultipleItems(tableNo, route, tourStartItem, tourFinishItem);
+                PopulateWikiTourMultipleItems(formData);
             }
             WikiCount = WikiTour.Count + 2; // Wiki tour items plus two airports
-            WikiDistance = int.Parse(tourDistance.Split(' ')[0]);
+            WikiDistance = formData.WikiURLTourDistance;
         }
 
         /// <summary>
         /// Handles case where user has selected a single item.
         /// </summary>
-        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
-        /// <param name="route">Route leg summary strings</param>
-        /// <param name="tourStartItem">User specified first item of tour</param>
-        /// <param name="tourFinishItem">User specified last item of tour</param>
+        /// <param name="formData">The scenario form data.</param>
         /// <returns>True if this case applies</returns>
-        internal bool PopulateWikiTourOneItem(int tableNo, object tourStartItem, object tourFinishItem)
+        internal bool PopulateWikiTourOneItem(ScenarioFormData formData)
         {
-            int tourStartItemNo = GetWikiRouteLegFirstItemNo(tourStartItem.ToString());
-            int tourFinishItemNo = GetWikiRouteLegFirstItemNo(tourFinishItem.ToString());
+            int tourStartItemNo = GetWikiRouteLegFirstItemNo(formData.WikiURLTourStartItem.ToString());
+            int tourFinishItemNo = GetWikiRouteLegFirstItemNo(formData.WikiURLTourFinishItem.ToString());
             if (tourStartItemNo == tourFinishItemNo)
             {
-                WikiTour.Add(SetWikiItem(tableNo, tourStartItemNo));
+                WikiTour.Add(SetWikiItem(formData.WikiURLTableNo, tourStartItemNo));
                 return true;
             }
             return false;
@@ -444,31 +433,28 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <summary>
         /// Handles case where user has selected two or more items.
         /// </summary>
-        /// <param name="tableNo">The table in <see cref="WikiPage"/></param>
-        /// <param name="route">Route leg summary strings</param>
-        /// <param name="tourStartItem">User specified first item of tour</param>
-        /// <param name="tourFinishItem">User specified last item of tour</param>
+        /// <param name="formData">The scenario form data.</param>
         /// <returns>True if this case applies</returns>
-        internal bool PopulateWikiTourMultipleItems(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem)
+        internal bool PopulateWikiTourMultipleItems(ScenarioFormData formData)
         {
-            int tourStartItemNo = GetWikiRouteLegFirstItemNo(tourStartItem.ToString());
-            int tourFinishItemNo = GetWikiRouteLegFirstItemNo(tourFinishItem.ToString());
+            int tourStartItemNo = GetWikiRouteLegFirstItemNo(formData.WikiURLTourStartItem.ToString());
+            int tourFinishItemNo = GetWikiRouteLegFirstItemNo(formData.WikiURLTourFinishItem.ToString());
             int legStartItemNo, legFinishItemNo, startLegNo = 0;
-            var routeLegs = route.GetEnumerator();
+            var routeLegs = formData.WikiURLRoute.GetEnumerator();
 
             // Find tourStartItemNo in route
-            for (int legNo = 0; legNo < route.Count; legNo++)
+            for (int legNo = 0; legNo < formData.WikiURLRoute.Count; legNo++)
             {
                 routeLegs.MoveNext();
                 legStartItemNo = GetWikiRouteLegFirstItemNo(routeLegs.Current.ToString());
                 legFinishItemNo = GetWikiRouteLegLastItemNo(routeLegs.Current.ToString());
                 if (tourStartItemNo == legStartItemNo)
                 {
-                    WikiTour.Add(SetWikiItem(tableNo, tourStartItemNo));
+                    WikiTour.Add(SetWikiItem(formData.WikiURLTableNo, tourStartItemNo));
                     startLegNo = legNo;
                     if (tourFinishItemNo == legFinishItemNo)
                     {
-                        WikiTour.Add(SetWikiItem(tableNo, tourFinishItemNo)); // tourStartItemNo and tourFinishItemNo were in same leg
+                        WikiTour.Add(SetWikiItem(formData.WikiURLTableNo, tourFinishItemNo)); // tourStartItemNo and tourFinishItemNo were in same leg
                         return false;
                     }
                     break;
@@ -476,15 +462,15 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             }
 
             // Add legStartItemNo's until tourFinishItemNo == legFinishItemNo then add legFinishItemNo
-            for (int legNo = startLegNo; legNo < route.Count; legNo++)
+            for (int legNo = startLegNo; legNo < formData.WikiURLRoute.Count; legNo++)
             {
                 routeLegs.MoveNext();
                 legStartItemNo = GetWikiRouteLegFirstItemNo(routeLegs.Current.ToString());
                 legFinishItemNo = GetWikiRouteLegLastItemNo(routeLegs.Current.ToString());
-                WikiTour.Add(SetWikiItem(tableNo, legStartItemNo));
+                WikiTour.Add(SetWikiItem(formData.WikiURLTableNo, legStartItemNo));
                 if (tourFinishItemNo == legFinishItemNo)
                 {
-                    WikiTour.Add(SetWikiItem(tableNo, tourFinishItemNo));
+                    WikiTour.Add(SetWikiItem(formData.WikiURLTableNo, tourFinishItemNo));
                     return false;
                 }
             }

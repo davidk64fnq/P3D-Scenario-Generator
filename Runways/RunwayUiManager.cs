@@ -145,7 +145,7 @@ namespace P3D_Scenario_Generator.Runways
             if (LocationFavourites == null || LocationFavourites.Count == 0)
             {
                 string warningMessage = "Location favourites list is empty. Save operation aborted to prevent data loss.";
-                await _logger.WarningAsync(warningMessage);
+                await _logger.WarningAsync(warningMessage).ConfigureAwait(false);
                 progressReporter?.Report(warningMessage);
                 return;
             }
@@ -160,7 +160,7 @@ namespace P3D_Scenario_Generator.Runways
                 }
                 else
                 {
-                    await _logger.ErrorAsync("Failed to save location favourites.");
+                    await _logger.ErrorAsync("Failed to save location favourites.").ConfigureAwait(false);
                     progressReporter?.Report("ERROR: Failed to save location favourites. See log for details.");
                 }
             }

@@ -17,7 +17,8 @@ namespace P3D_Scenario_Generator
     public partial class Form : System.Windows.Forms.Form
     {
         private bool _isFormLoaded = false;
-        private bool _isShuttingDown = false; 
+        private bool _isShuttingDown = false;
+        private bool _isDeferringCloseForSave = false;
 
         // Model dependencies
         private readonly AlmanacData _almanacData;
@@ -192,6 +193,10 @@ namespace P3D_Scenario_Generator
             // Signwriting tab
             PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxSignAlignment);
             RestoreUserSettings(TabPageSign.Controls);
+
+            // Celestial Navigation tab
+            PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxCelestialAlignment);
+            RestoreUserSettings(TabPageCelestial.Controls);
 
             // Wikipedia Lists tab
             RestoreUserSettings(TabPageWikiList.Controls);
@@ -369,7 +374,7 @@ namespace P3D_Scenario_Generator
         /// This method does not return a value. Instead, it logs its findings and reports progress.
         /// It gracefully handles cases where the `scenery.cfg` or other data files do not exist.
         /// </remarks>
-        internal async void CheckRunwaysUpToDate()
+        internal async Task CheckRunwaysUpToDate()
         {
             string dataDirectory = FileOps.GetApplicationDataDirectory();
             string cacheFilePath = Path.Combine(dataDirectory, "runways.cache");
@@ -499,20 +504,21 @@ namespace P3D_Scenario_Generator
             if (await GetValidatedScenarioFormData())
             {
                 DisplayStartMessage();
-                CheckRunwaysUpToDate();
+                await CheckRunwaysUpToDate();
                 await _imageUtils.DrawScenarioImagesAsync(_formData);
 
                 bool success = await DoScenarioSpecificTasks();
 
                 if (!success)
                 {
+                    DisplayErrorMessage();
                     return;
                 }
 
-                SaveSettingsAfterDoSpecific();
-                SaveUserSettings(TabPageSettings.Controls);
+                await SaveSettingsAfterDoSpecificAsync();
+                await SaveUserSettings(TabPageSettings.Controls);
                 await _scenarioFXML.GenerateFXMLfileAsync(_formData);
-                DeleteTempScenarioDirectory();
+                await DeleteTempScenarioDirectory();
                 DisplayFinishMessage();
             }
         }
@@ -562,6 +568,13 @@ namespace P3D_Scenario_Generator
             _progressReporter?.Report(message);
         }
 
+        private void DisplayErrorMessage()
+        {
+            Cursor.Current = Cursors.Default;
+            string message = $"An error occured creating the sceanrio files, see logs for details";
+            _progressReporter?.Report(message);
+        }
+
         /// <summary>
         /// Displays a completion message to the user and restores the cursor to its default state.
         /// This method reports the success message via the progress reporter.
@@ -598,30 +611,28 @@ namespace P3D_Scenario_Generator
                         }
                         break;
                     case ScenarioTypes.PhotoTour:
-                        // This method is now async, so we must await its result.
                         if (!await _photoTour.SetPhotoTourAsync(_formData, _runwayManager))
                         {
                             return false;
                         }
                         break;
                     case ScenarioTypes.SignWriting:
-                        // This method is now async, so we must await its result.
                         if (!await _signWriting.SetSignWritingAsync(_formData, _runwayManager))
                         {
                             return false;
                         }
                         break;
                     case ScenarioTypes.Celestial:
-                        // This method is now async, so we must await its result.
                         if (!await _celestialNav.SetCelestialAsync(_formData, _runwayManager))
                         {
                             return false;
                         }
                         break;
                     case ScenarioTypes.WikiList:
-                        // SetWikiTour(int tableNo, ComboBox.ObjectCollection route, object tourStartItem, object tourFinishItem, string tourDistance,
-                        //      ScenarioFormData formData, RunwayManager runwayManager)
-                        await _wikipedia.SetWikiTourAsync(0, null, null, null, null, _formData, _runwayManager);
+                        if (!await _wikipedia.SetWikiTourAsync(_formData, _runwayManager))
+                        {
+                            return false;
+                        }
                         break;
                     default:
                         break;
@@ -646,26 +657,26 @@ namespace P3D_Scenario_Generator
         /// This method uses a switch statement to determine which tab page's controls
         /// should have their settings persisted after a scenario operation.
         /// </summary>
-        private void SaveSettingsAfterDoSpecific()
+        private async Task SaveSettingsAfterDoSpecificAsync()
         {
             ScenarioTypes currentScenarioType = _formData.ScenarioType;
 
             switch (currentScenarioType)
             {
                 case ScenarioTypes.Circuit:
-                    SaveUserSettings(TabPageCircuit.Controls);
+                    await SaveUserSettings(TabPageCircuit.Controls);
                     break;
                 case ScenarioTypes.PhotoTour:
-                    SaveUserSettings(TabPagePhotoTour.Controls);
+                    await SaveUserSettings(TabPagePhotoTour.Controls);
                     break;
                 case ScenarioTypes.SignWriting:
-                    SaveUserSettings(TabPageSign.Controls);
+                    await SaveUserSettings(TabPageSign.Controls);
                     break;
                 case ScenarioTypes.Celestial:
-                    SaveUserSettings(TabPageWikiList.Controls);
+                    await SaveUserSettings(TabPageCelestial.Controls);
                     break;
                 case ScenarioTypes.WikiList:
-                    SaveUserSettings(TabPageWikiList.Controls);
+                    await SaveUserSettings(TabPageWikiList.Controls);
                     ClearWikiListSettingsFields();
                     break;
             }
@@ -1009,90 +1020,75 @@ namespace P3D_Scenario_Generator
 
         #region Circuit Tab
 
-        private async void ButtonDefault_ClickAsync(object sender, EventArgs e)
-        {
-            ScenarioTypes currentScenarioType = _formData.ScenarioType;
-            switch (currentScenarioType)
-            {
-                case ScenarioTypes.Circuit:
-                    await SetDefaultCircuitParamsAsync();
-                    break;
-                case ScenarioTypes.PhotoTour:
-                    break;
-                case ScenarioTypes.SignWriting:
-                    break;
-                case ScenarioTypes.Celestial:
-                    break;
-                case ScenarioTypes.WikiList:
-                    break;
-                default:
-                    break;
-            }
-        }
-
         /// <summary>
         /// Sets the default circuit parameters based on the current aircraft variant's performance.
         /// </summary>
         private async Task SetDefaultCircuitParamsAsync()
         {
-            // Call GetCurrentVariant() on the _aircraft instance
+            // Await the asynchronous call to get the current variant.
             AircraftVariant aircraftVariant = await _aircraft.GetCurrentVariantAsync();
+
+            // === 1. GUARD CLAUSE: Exit immediately if the aircraft variant is not available. ===
             if (aircraftVariant == null)
             {
                 _progressReporter?.Report("Select an aircraft to calculate default values");
                 return;
             }
+
+            // === 2. Profile Selection: aircraftVariant is guaranteed non-null here. ===
+            // Find the appropriate performance profile based on the aircraft's cruise speed.
+            // Using LastOrDefault with MinCruiseSpeedKnots in ascending order ensures the highest matching range is selected.
+            var profile = Constants.DefaultAircraftProfiles
+                .LastOrDefault(p => aircraftVariant.CruiseSpeed >= p.MinCruiseSpeedKnots);
+
+            // === 3. Apply Values: Use profile values if found, otherwise use fallback defaults. ===
+            if (profile != null)
+            {
+                // --- Profile Found Logic ---
+
+                // Set default circuit parameters based on the profile
+                TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed);
+
+                // Set circuit heights based on the profile's CircuitHeightFeet.
+                TextBoxCircuitHeightDown.Text = profile.CircuitHeightFeet.ToString();
+                TextBoxCircuitHeightUpwind.Text = (profile.CircuitHeightFeet / 2).ToString();
+                TextBoxCircuitHeightBase.Text = (profile.CircuitHeightFeet / 2).ToString();
+
+                // Calculate time required to climb/descend.
+                double timeToClimbMinutes = (double)profile.CircuitHeightFeet / profile.ClimbRateFpm;
+
+                // Recalculate Upwind/Final distance based on time to climb/descend.
+                double calculatedDistance = aircraftVariant.CruiseSpeed * timeToClimbMinutes / Constants.MinutesInAnHour;
+
+                TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", calculatedDistance);
+                TextBoxCircuitFinal.Text = string.Format("{0:0.0}", calculatedDistance);
+
+                // Base distance remains based on fixed time (0.5 minutes for preparation/turn)
+                TextBoxCircuitBase.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 0.5 / Constants.MinutesInAnHour);
+
+                TextBoxCircuitTurnRate.Text = "2.0";
+            }
             else
             {
-                // Find the appropriate performance profile based on the aircraft's cruise speed.
-                // Using LastOrDefault with MinCruiseSpeedKnots in ascending order ensures the highest matching range is selected.
-                var profile = Constants.DefaultAircraftProfiles
-                    .LastOrDefault(p => aircraftVariant.CruiseSpeed >= p.MinCruiseSpeedKnots);
+                // --- Fallback Logic ---
+                _progressReporter?.Report("No matching aircraft performance profile found. Using default circuit parameters.");
 
-                // If a matching profile is found, use its associated values.
-                if (profile != null)
-                {
-                    // Set default circuit parameters based on the profile
-                    TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed);
+                // NOTE: aircraftVariant is safely accessible here for setting speed.
+                TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed);
+                TextBoxCircuitHeightDown.Text = "1000";
+                TextBoxCircuitHeightUpwind.Text = "500";
+                TextBoxCircuitHeightBase.Text = "500";
 
-                    // Set circuit heights based on the profile's CircuitHeightFeet.
-                    TextBoxCircuitHeightDown.Text = profile.CircuitHeightFeet.ToString();
-                    // Typically, Upwind and Base circuit heights are half the Downwind height for standard circuits.
-                    TextBoxCircuitHeightUpwind.Text = (profile.CircuitHeightFeet / 2).ToString();
-                    TextBoxCircuitHeightBase.Text = (profile.CircuitHeightFeet / 2).ToString();
+                // Recalculate Upwind/Final distance using a fixed time (1.25 minutes)
+                double fixedDistance = aircraftVariant.CruiseSpeed * 1.25 / Constants.MinutesInAnHour;
 
-                    // Calculate the time required to climb/descend the circuit height using the profile's climb rate.
-                    // This time is then used to estimate the horizontal distance covered during those phases.
-                    double timeToClimbMinutes = (double)profile.CircuitHeightFeet / profile.ClimbRateFpm;
+                TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", fixedDistance);
+                TextBoxCircuitFinal.Text = string.Format("{0:0.0}", fixedDistance);
 
-                    // Recalculate Upwind distance using the calculated time to climb to full circuit height.
-                    // Distance (miles) = Speed (knots) * Time (minutes) / MinutesInAnHour (60)
-                    TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * timeToClimbMinutes / Constants.MinutesInAnHour);
+                // Recalculate Base distance using fixed time (0.5 minutes)
+                TextBoxCircuitBase.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 0.5 / Constants.MinutesInAnHour);
 
-                    // Recalculate Final distance using the calculated time to descend (assuming descent rate equals climb rate for this calculation).
-                    TextBoxCircuitFinal.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * timeToClimbMinutes / Constants.MinutesInAnHour);
-
-                    // Base distance remains based on fixed time (0.5 minutes for preparation/turn)
-                    TextBoxCircuitBase.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 0.5 / Constants.MinutesInAnHour);
-
-                    TextBoxCircuitTurnRate.Text = "2.0";
-                }
-                else
-                {
-                    // Fallback for cases where no profile is matched (e.g., if DefaultAircraftProfiles is empty
-                    // or aircraftVariant.CruiseSpeed is exceptionally low/negative, though it should be >= 0).
-                    // Revert to original hardcoded defaults if a profile cannot be found.
-                    _progressReporter?.Report("No matching aircraft performance profile found. Using default circuit parameters.");
-
-                    TextBoxCircuitSpeed.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed);
-                    TextBoxCircuitHeightDown.Text = "1000";
-                    TextBoxCircuitHeightUpwind.Text = "500";
-                    TextBoxCircuitHeightBase.Text = "500";
-                    TextBoxCircuitUpwind.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 1.25 / Constants.MinutesInAnHour);
-                    TextBoxCircuitBase.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 0.5 / Constants.MinutesInAnHour);
-                    TextBoxCircuitFinal.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 1.25 / Constants.MinutesInAnHour);
-                    TextBoxCircuitTurnRate.Text = "2.0";
-                }
+                TextBoxCircuitTurnRate.Text = "2.0";
             }
         }
 
@@ -1268,6 +1264,22 @@ namespace P3D_Scenario_Generator
 
         #region Photo Tour Tab
 
+        private void SetDefaultPhotoTourParams()
+        {
+            _progressReporter?.Report("Using default photo tour parameters.");
+
+            TextBoxPhotoTourConstraintsMinLegDist.Text = "3";
+            TextBoxPhotoTourConstraintsMaxLegDist.Text = "10";
+            TextBoxPhotoTourConstraintsMinNoLegs.Text = "2";
+            TextBoxPhotoTourConstraintsMaxNoLegs.Text = "7";
+            TextBoxPhotoTourConstraintsMaxBearingChange.Text = "135";
+            TextBoxPhotoTourConstraintsHotspotRadius.Text = "1000";
+            TextBoxPhotoTourConstraintsMaxAttempts.Text = "100";
+            TextBoxPhotoTourPhotoOffset.Text = "20";
+            TextBoxPhotoTourPhotoMonitorWidth.Text = "1920";
+            TextBoxPhotoTourPhotoMonitorHeight.Text = "1080";
+        }
+
         private void TextBoxPhotoTourConstraintsMinLegDist_Leave(object sender, EventArgs e)
         {
             ValidateAndSetDouble(
@@ -1399,6 +1411,67 @@ namespace P3D_Scenario_Generator
 
         #region Sign Writing Tab
 
+        /// <summary>
+        /// Sets the default signwriting parameters based on the current aircraft variant's performance.
+        /// </summary>
+        private async Task SetDefaultSignwritingParamsAsync()
+        {
+            // Await the asynchronous call to get the current variant.
+            AircraftVariant aircraftVariant = await _aircraft.GetCurrentVariantAsync();
+
+            // === 1. GUARD CLAUSE: Exit immediately if the aircraft variant is not available. ===
+            if (aircraftVariant == null)
+            {
+                _progressReporter?.Report("Select an aircraft to calculate default values");
+                return;
+            }
+
+            // === 2. Profile Selection: aircraftVariant is guaranteed non-null here. ===
+            // Find the appropriate performance profile based on the aircraft's cruise speed.
+            // Using LastOrDefault with MinCruiseSpeedKnots in ascending order ensures the highest matching range is selected.
+            var profile = Constants.DefaultAircraftProfiles
+                .LastOrDefault(p => aircraftVariant.CruiseSpeed >= p.MinCruiseSpeedKnots);
+
+            // === 3. Apply Values: Use profile values if found, otherwise use fallback defaults. ===
+            if (profile != null)
+            {
+                // --- Profile Found Logic ---
+
+                // Use profile values for signwriting parameters
+                TextBoxSignTilt.Text = "10";
+                TextBoxSignGateHeight.Text = profile.CircuitHeightFeet.ToString();
+
+                // Calculate segment length based on cruise speed (Distance = Speed * 1 minute / 60)
+                TextBoxSignSegmentLength.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed / Constants.MinutesInAnHour);
+
+                // Calculate segment radius based on a portion (0.1 minute) of cruise time
+                TextBoxSignSegmentRadius.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 0.1 / Constants.MinutesInAnHour);
+
+                TextBoxSignOffset.Text = "20";
+                TextBoxSignMonitorWidth.Text = "1920";
+                TextBoxSignMonitorHeight.Text = "1080";
+            }
+            else
+            {
+                // --- Fallback Logic: Use hardcoded defaults for signwriting parameters. ---
+                _progressReporter?.Report("No matching aircraft performance profile found. Using default signwriting parameters.");
+
+                TextBoxSignTilt.Text = "10";
+                // Use a standard default height
+                TextBoxSignGateHeight.Text = "1000";
+
+                // Calculate segment length using cruise speed and a hardcoded time (1 minute)
+                TextBoxSignSegmentLength.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed / Constants.MinutesInAnHour);
+
+                // Calculate segment radius using cruise speed and a hardcoded time (0.1 minute)
+                TextBoxSignSegmentRadius.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 0.1 / Constants.MinutesInAnHour);
+
+                TextBoxSignOffset.Text = "20";
+                TextBoxSignMonitorWidth.Text = "1920";
+                TextBoxSignMonitorHeight.Text = "1080";
+            }
+        }
+
         private void ComboBoxSignMessage_Leave(object sender, EventArgs e)
         {
             bool allValid = true;
@@ -1525,9 +1598,78 @@ namespace P3D_Scenario_Generator
 
         #region Celestial Navigation Tab
 
+        private void SetDefaultCelestialParams()
+        {
+            _progressReporter?.Report("Using default celestial navigation parameters.");
+
+            TextBoxCelestialMinDist.Text = "20";
+            TextBoxCelestialMaxDist.Text = "30";
+            CheckBoxCelestialUseStarsDat.Checked = false;
+        }
+
+        private void TextBoxCelestialMonitorNumber_Leave(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateSextantWindowSettingsGroup((Control)sender);
+        }
+
+        private void TextBoxCelestialOffset_Leave(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateSextantWindowSettingsGroup((Control)sender);
+        }
+
+        private void ComboBoxCelestialAlignment_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateSextantWindowSettingsGroup((Control)sender);
+        }
+
+        private void TextBoxCelestialMonitorWidth_Leave(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateSextantWindowSettingsGroup((Control)sender);
+        }
+
+        private void TextBoxCelestialMonitorHeight_Leave(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateSextantWindowSettingsGroup((Control)sender);
+        }
+
         #endregion
 
         #region Wikipedia Lists Tab
+
+        private void SetDefaultWikipediaParams()
+        {
+            _progressReporter?.Report("Using default Wikipedia list parameters.");
+
+            TextBoxWikiItemLinkColumn.Text = "1";
+            TextBoxWikiURLOffset.Text = "20";
+            TextBoxWikiURLWindowWidth.Text = "1920";
+            TextBoxWikiURLWindowHeight.Text = "1080";
+        }
 
         /// <summary>
         /// After saving all of the Wikipedia scenario related settings this method is called to clear the settings
@@ -1550,7 +1692,7 @@ namespace P3D_Scenario_Generator
             Properties.Settings.Default.Save();
         }
 
-        private async void ComboBoxWikiURL_TextChanged(object sender, EventArgs e) 
+        private async void ComboBoxWikiURL_TextChanged(object sender, EventArgs e)
         {
             if (!_isFormLoaded)
             {
@@ -1726,6 +1868,76 @@ namespace P3D_Scenario_Generator
             stringBegin = route.IndexOf("...") + 4;
             stringEnd = route.LastIndexOf('(') - 1;
             return route[stringBegin..stringEnd];
+        }
+
+        private void TextBoxWikiURLMonitorNumber_Leave(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateWikiWindowSettingsGroup((Control)sender);
+        }
+
+        private void TextBoxWikiURLOffset_Leave(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateWikiWindowSettingsGroup((Control)sender);
+        }
+
+        private void ComboBoxWikiURLAlignment_Leave(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateWikiWindowSettingsGroup((Control)sender);
+        }
+
+        private void TextBoxWikiURLMonitorWidth_Leave(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateWikiWindowSettingsGroup((Control)sender);
+        }
+
+        private void TextBoxWikiURLMonitorHeight_Leave(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateWikiWindowSettingsGroup((Control)sender);
+        }
+
+        private void TextBoxWikiURLWindowWidth_Leave(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateWikiWindowSettingsGroup((Control)sender);
+        }
+
+        private void TextBoxWikiURLWindowHeight_Leave(object sender, EventArgs e)
+        {
+            if (!_isFormLoaded)
+            {
+                return;
+            }
+
+            ValidateWikiWindowSettingsGroup((Control)sender);
         }
 
         #endregion
@@ -1932,8 +2144,30 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private void ButtonDefault_Click(object sender, EventArgs e)
+        private async void ButtonDefault_ClickAsync(object sender, EventArgs e)
         {
+            ScenarioTypes currentScenarioType = _formData.ScenarioType;
+            switch (currentScenarioType)
+            {
+                case ScenarioTypes.Circuit:
+                    await SetDefaultCircuitParamsAsync();
+                    break;
+                case ScenarioTypes.PhotoTour:
+                    SetDefaultPhotoTourParams();
+                    break;
+                case ScenarioTypes.SignWriting:
+                    await SetDefaultSignwritingParamsAsync();
+                    break;
+                case ScenarioTypes.Celestial:
+                    SetDefaultCelestialParams();
+                    break;
+                case ScenarioTypes.WikiList:
+                    SetDefaultWikipediaParams();
+                    break;
+                default:
+                    break;
+            }
+            await GetValidatedScenarioFormData();
         }
 
         private void ButtonSaved_Click(object sender, EventArgs e)
@@ -2111,7 +2345,7 @@ namespace P3D_Scenario_Generator
         /// All changes are saved to disk once at the end.
         /// </summary>
         /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
-        private async void SaveUserSettings(Control.ControlCollection controlCollection)
+        private async Task SaveUserSettings(Control.ControlCollection controlCollection)
         {
             // Flag to track if any settings were modified in this specific call of the method
             bool settingsModifiedInThisCall = false;
@@ -2121,7 +2355,7 @@ namespace P3D_Scenario_Generator
                 // Process child controls recursively first
                 if (control.Controls.Count > 0)
                 {
-                    SaveUserSettings(control.Controls);
+                    await SaveUserSettings(control.Controls);
                 }
 
                 // Now process the current control
@@ -2241,25 +2475,54 @@ namespace P3D_Scenario_Generator
         /// <param name="e">The event data.</param>
         private async void Form_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // If the form is shutting down due to an unhandled exception, do not attempt to
-            // save data again.
+            // 1. If the form is shutting down due to an unhandled exception, do not attempt to
+            // save data.
             if (_isShuttingDown)
             {
-                // Do not call e.Cancel = false or this.Close() here.
-                // Let the application exit gracefully.
                 return;
             }
 
-            // Await all of your asynchronous save operations.
-            await _runwayManager.UiManager.SaveLocationFavouritesAsync(_progressReporter);
-            await _aircraft.SaveAircraftVariantsAsync(_progressReporter);
+            // 2. Check if this is the deferred, final closing call.
+            if (_isDeferringCloseForSave)
+            {
+                // Allow the form to close this time.
+                e.Cancel = false;
+                return;
+            }
 
-            // Save the user settings synchronously.
-            SaveUserSettings(TabPageSettings.Controls);
+            // 3. This is the initial FormClosing call. Cancel the close until saves complete.
+            e.Cancel = true;
 
-            // After all tasks are complete, close the form properly.
-            e.Cancel = false; // Allow the form to close
-            this.Close();
+            // Set flag to ensure we only run the save logic once.
+            _isDeferringCloseForSave = true;
+
+            try
+            {
+                // Await all of your asynchronous save operations.
+                // These now run while the closing process is deferred.
+                await _runwayManager.UiManager.SaveLocationFavouritesAsync(_progressReporter);
+                await _aircraft.SaveAircraftVariantsAsync(_progressReporter);
+
+                // Save the user settings.
+                await SaveUserSettings(TabPageSettings.Controls);
+            }
+            catch (Exception ex)
+            {
+                // Log any unexpected exceptions during the saving process.
+                await _logger.ErrorAsync($"An error occurred during asynchronous shutdown saves. Details: {ex.Message}", ex);
+            }
+            finally
+            {
+                // 4. After all tasks are complete (success or fail), 
+                // safely re-call Close() on the UI thread to finish the process.
+                // This re-triggers Form_FormClosing, where the _isDeferringCloseForSave check 
+                // will now allow the closure to proceed.
+                // We use BeginInvoke to ensure the Close() call is processed safely by the message pump.
+                if (this.IsHandleCreated)
+                {
+                    this.BeginInvoke(new Action(this.Close));
+                }
+            }
         }
 
         /// <summary>
@@ -2344,7 +2607,7 @@ namespace P3D_Scenario_Generator
         /// Deletes the temporary directory and its contents stored in ScenarioFormData.
         /// Reports progress and logs errors.
         /// </summary>
-        private async void DeleteTempScenarioDirectory()
+        private async Task DeleteTempScenarioDirectory()
         {
             if (!string.IsNullOrEmpty(_formData.TempScenarioDirectory) && Directory.Exists(_formData.TempScenarioDirectory))
             {
@@ -2436,6 +2699,12 @@ namespace P3D_Scenario_Generator
                 allValid = false;
             }
 
+            // 7. Wikipedia Tab Data
+            if (!PopulateAndValidateWikipediaTabData())
+            {
+                allValid = false;
+            }
+
             // Derived fields
             if (allValid)
             {
@@ -2453,7 +2722,7 @@ namespace P3D_Scenario_Generator
             if (!allValid)
             {
                 _progressReporter?.Report("Please correct the highlighted errors on all relevant tabs. Hover over error icon(s) for details.");
-                DeleteTempScenarioDirectory();
+                await DeleteTempScenarioDirectory();
                 return false;
             }
             else
@@ -2872,8 +3141,6 @@ namespace P3D_Scenario_Generator
 
         private void ValidateAndPopulateLocationFilters()
         {
-            // The call to the obsolete static 'Runway' class has been replaced
-            // with the correct instance of RunwayUIManager.
             LocationFavourite selectedLocationFavourite = _runwayManager.UiManager.GetCurrentLocationFavourite();
 
             _formData.LocationCountries = selectedLocationFavourite?.Countries ?? [];
@@ -3648,7 +3915,303 @@ namespace P3D_Scenario_Generator
 
             _formData.UseCustomStarsDat = CheckBoxCelestialUseStarsDat.AutoCheck;
 
+            // Validate and populate Sextant Window settings as a group
+            allValid &= ValidateSextantWindowSettingsGroup(null);
+            if (!allValid)
+            {
+                return false;
+            }
+
             return allValid;
+        }
+
+        /// <summary>
+        /// Validates the group of sextant window settings (monitor number, offset, alignment, width, height).
+        /// Performs individual validation for each control and then checks interdependencies.
+        /// Reports errors via ErrorProvider for specific controls and _progressReporter for general messages.
+        /// </summary>
+        /// <param name="triggeringControl">The control that initiated this validation, or null if called from a general validation.</param>
+        /// <returns>True if all sextant window settings are valid individually and as a group; otherwise, false.</returns>
+        private bool ValidateSextantWindowSettingsGroup(Control triggeringControl)
+        {
+            bool allValid = true;
+            string groupErrorMessage = ""; // To accumulate group-level errors
+
+            // Clear any existing errors on these controls before re-validating the group
+            errorProvider1.SetError(TextBoxCelestialMonitorNumber, "");
+            errorProvider1.SetError(TextBoxCelestialOffset, "");
+            errorProvider1.SetError(ComboBoxCelestialAlignment, "");
+            errorProvider1.SetError(TextBoxCelestialMonitorWidth, "");
+            errorProvider1.SetError(TextBoxCelestialMonitorHeight, "");
+            _progressReporter?.Report(""); // Clear previous group messages
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxCelestialMonitorNumber,
+                "Sextant Monitor Number",
+                0,
+                Constants.MaxMonitorNumber,
+                "",
+                value => _formData.SextantMonitorNumber = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxCelestialOffset,
+                "Sextant Offset",
+                0,
+                Constants.MaxWindowOffsetPixels,
+                "pixels",
+                value => _formData.SextantOffsetPixels = value);
+
+            allValid &= ValidateAndSetEnum<WindowAlignment>(
+                ComboBoxCelestialAlignment,
+                "Sextant Alignment",
+                value => _formData.SextantAlignment = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxCelestialMonitorWidth,
+                "Sextant Monitor Width",
+                Constants.MinMonitorWidthPixels,
+                Constants.MaxMonitorWidthPixels,
+                "pixels",
+                value => _formData.SextantMonitorWidth = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxCelestialMonitorHeight,
+                "Sextant Monitor Height",
+                Constants.MinMonitorHeightPixels,
+                Constants.MaxMonitorHeightPixels,
+                "pixels",
+                value => _formData.SextantMonitorHeight = value);
+
+            // If any individual validation failed, return false immediately.
+            if (!allValid)
+            {
+                groupErrorMessage = "Please correct individual errors in Sextant Window settings.";
+                _progressReporter?.Report(groupErrorMessage);
+                return false;
+            }
+
+            // Interdependent Validation (only if all individual fields are valid)
+            WindowAlignment currentAlignment = _formData.SextantAlignment;
+
+            bool groupValidationPassed = true;
+
+            // Calculate maximum possible offset for both dimensions relative to the "safe" monitor size, offset doesn't apply for centred alignment
+            if (currentAlignment != WindowAlignment.Centered)
+            {
+                int maxOffsetWidth = _formData.SextantMonitorWidth - Constants.SignSizeEdgeMarginPixels;
+                int maxOffsetHeight = _formData.SextantMonitorHeight - Constants.SignSizeEdgeMarginPixels;
+
+                if (_formData.SextantOffsetPixels >= maxOffsetWidth || _formData.SextantOffsetPixels >= maxOffsetHeight)
+                {
+                    int maxWidth = _formData.SextantMonitorWidth - Constants.SignSizeEdgeMarginPixels;
+                    int maxHeight = _formData.SextantMonitorHeight - Constants.SignSizeEdgeMarginPixels;
+                    groupErrorMessage = $"Sextant Window offset ({_formData.SignOffsetPixels}px) exceeds maximum safe sextant dimension " +
+                                        $"{maxWidth}px * {maxHeight}px.";
+                    groupValidationPassed = false;
+                }
+                else
+                {
+                    int maxWidth = _formData.SextantMonitorWidth - Constants.SignSizeEdgeMarginPixels - _formData.SextantOffsetPixels;
+                    int maxHeight = _formData.SextantMonitorHeight - Constants.SignSizeEdgeMarginPixels - _formData.SextantOffsetPixels;
+                    groupErrorMessage = $"This offset value ({_formData.SignOffsetPixels}px) allows a maximum safe sextant dimension of " +
+                                        $"{maxWidth}px * {maxHeight}px.";
+                }
+            }
+            else
+            {
+                groupErrorMessage = "Sextant Window settings are valid.";
+            }
+
+            _progressReporter?.Report(groupErrorMessage);
+            // Set the error on the triggering control if available, otherwise fall back to TextBoxCelestialOffset
+            if (!groupValidationPassed)
+            {
+                if (triggeringControl != null)
+                {
+                    errorProvider1.SetError(triggeringControl, groupErrorMessage);
+                }
+                else
+                {
+                    errorProvider1.SetError(TextBoxCelestialOffset, groupErrorMessage);
+                }
+            }
+
+            return allValid && groupValidationPassed;
+        }
+
+        /// <summary>
+        /// Populates and validates data from the Wikipedia tab.
+        /// </summary>
+        /// <returns>True if all Wikipedia tab data is valid; otherwise, false.</returns>
+        private bool PopulateAndValidateWikipediaTabData()
+        {
+            bool allValid = true;
+
+            // ComboBoxWikiTableNames
+            _formData.WikiURLTableNo = ComboBoxWikiTableNames.SelectedIndex;
+
+            // ComboBoxWikiRoute
+            _formData.WikiURLRoute = ComboBoxWikiRoute.Items;
+
+            // ComboBoxWikiStartingItem
+            _formData.WikiURLTourStartItem = ComboBoxWikiStartingItem.SelectedItem;
+
+            // ComboBoxWikiFinishItem
+            _formData.WikiURLTourFinishItem = ComboBoxWikiFinishingItem.SelectedItem;
+
+            // TextBoxWikiDistance
+            string distanceText = TextBoxWikiDistance.Text;
+
+            if (!string.IsNullOrWhiteSpace(distanceText))
+            {
+                // Split and try to parse only if the box contains text
+                string partToParse = distanceText.Split(' ')[0];
+
+                if (int.TryParse(partToParse, out int wikiURLTourDistance))
+                {
+                    _formData.WikiURLTourDistance = wikiURLTourDistance;
+                }
+            }
+
+            // Validate and populate Map Window settings as a group
+            allValid &= ValidateWikiWindowSettingsGroup(null);
+
+            return allValid;
+        }
+
+        /// <summary>
+        /// Validates the group of Wikipedia list window settings (monitor number, offset, alignment, width, height).
+        /// Performs individual validation for each control and then checks interdependencies.
+        /// Reports errors via ErrorProvider for specific controls and _progressReporter for general messages.
+        /// </summary>
+        /// <param name="triggeringControl">The control that initiated this validation, or null if called from a general validation.</param>
+        /// <returns>True if all photo window settings are valid individually and as a group; otherwise, false.</returns>
+        private bool ValidateWikiWindowSettingsGroup(Control triggeringControl)
+        {
+            bool allValid = true;
+            string groupErrorMessage = ""; // To accumulate group-level errors
+
+            // Clear any existing errors on these controls before re-validating the group
+            errorProvider1.SetError(TextBoxWikiURLMonitorNumber, "");
+            errorProvider1.SetError(TextBoxWikiURLOffset, "");
+            errorProvider1.SetError(ComboBoxWikiURLAlignment, "");
+            errorProvider1.SetError(TextBoxWikiURLMonitorWidth, "");
+            errorProvider1.SetError(TextBoxWikiURLMonitorHeight, "");
+            errorProvider1.SetError(TextBoxWikiURLWindowWidth, "");
+            errorProvider1.SetError(TextBoxWikiURLWindowHeight, "");
+            _progressReporter?.Report(""); // Clear previous group messages
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxWikiURLMonitorNumber,
+                "Wiki Monitor Number",
+                0,
+                Constants.MaxMonitorNumber,
+                "",
+                value => _formData.WikiURLMonitorNumber = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxWikiURLOffset,
+                "Wiki Offset",
+                0,
+                Constants.MaxWindowOffsetPixels,
+                "pixels",
+                value => _formData.WikiURLOffset = value);
+
+            allValid &= ValidateAndSetEnum<WindowAlignment>(
+                ComboBoxWikiURLAlignment,
+                "Wiki Alignment",
+                value => _formData.WikiURLAlignment = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxWikiURLMonitorWidth,
+                "Wiki Monitor Width",
+                Constants.MinMonitorWidthPixels,
+                Constants.MaxMonitorWidthPixels,
+                "pixels",
+                value => _formData.WikiURLMonitorWidth = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxWikiURLMonitorHeight,
+                "Wiki Monitor Height",
+                Constants.MinMonitorHeightPixels,
+                Constants.MaxMonitorHeightPixels,
+                "pixels",
+                value => _formData.WikiURLMonitorHeight = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxWikiURLWindowWidth,
+                "Wiki Page Width",
+                Constants.MinMonitorWidthPixels,
+                Constants.MaxMonitorWidthPixels,
+                "pixels",
+                value => _formData.WikiURLWindowWidth = value);
+
+            allValid &= ValidateAndSetInteger(
+                TextBoxWikiURLWindowHeight,
+                "Wiki Page Height",
+                Constants.MinMonitorHeightPixels,
+                Constants.MaxMonitorHeightPixels,
+                "pixels",
+                value => _formData.WikiURLWindowHeight = value);
+
+            // If any individual validation failed, return false immediately.
+            // The specific error providers are already set.
+            if (!allValid)
+            {
+                groupErrorMessage = "Please correct individual errors in Wiki URL Window Location settings.";
+                _progressReporter?.Report(groupErrorMessage);
+                return false;
+            }
+
+            // Interdependent Validation (only if all individual fields are valid)
+            WindowAlignment currentAlignment = _formData.WikiURLAlignment;
+
+            bool groupValidationPassed = true;
+
+            // Calculate maximum possible offset for both dimensions relative to the "safe" monitor size, offset doesn't apply for centred alignment
+            int maxOffsetWidth;
+            int maxOffsetHeight;
+            if (currentAlignment != WindowAlignment.Centered)
+            {
+                maxOffsetWidth = _formData.WikiURLMonitorWidth - Constants.WikiPageSizeEdgeMarginPixels;
+                maxOffsetHeight = _formData.WikiURLMonitorHeight - Constants.WikiPageSizeEdgeMarginPixels;
+
+                if (_formData.WikiURLOffset >= maxOffsetWidth || _formData.WikiURLOffset >= maxOffsetHeight)
+                {
+                    int maxWidth = _formData.WikiURLMonitorWidth - Constants.WikiPageSizeEdgeMarginPixels;
+                    int maxHeight = _formData.WikiURLMonitorHeight - Constants.WikiPageSizeEdgeMarginPixels;
+                    groupErrorMessage = $"Wiki Page Window offset ({_formData.WikiURLOffset}px) exceeds maximum safe Wiki page dimension " +
+                        $"{maxWidth}px * {maxHeight}px.";
+                    groupValidationPassed = false;
+                }
+                else
+                {
+                    int maxWidth = _formData.WikiURLMonitorWidth - Constants.WikiPageSizeEdgeMarginPixels - _formData.WikiURLOffset;
+                    int maxHeight = _formData.WikiURLMonitorHeight - Constants.WikiPageSizeEdgeMarginPixels - _formData.WikiURLOffset;
+                    groupErrorMessage = $"This offset value ({_formData.WikiURLOffset}px) allows a maximum safe Wiki page dimension of " +
+                        $"{maxWidth}px * {maxHeight}px.";
+                }
+            }
+            else
+            {
+                groupErrorMessage = "Wiki Page Window settings are valid.";
+            }
+
+            _progressReporter?.Report(groupErrorMessage);
+            // Set the error on the triggering control if available, otherwise fall back to TextBoxSettingsMapOffset
+            if (!groupValidationPassed)
+            {
+                if (triggeringControl != null)
+                {
+                    errorProvider1.SetError(triggeringControl, groupErrorMessage);
+                }
+                else
+                {
+                    errorProvider1.SetError(TextBoxPhotoTourPhotoOffset, groupErrorMessage);
+                }
+            }
+
+            return allValid && groupValidationPassed;
         }
 
         /// <summary>

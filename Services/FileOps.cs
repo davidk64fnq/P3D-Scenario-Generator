@@ -333,12 +333,6 @@ namespace P3D_Scenario_Generator.Services
         /// Attempts to move a file asynchronously, with a retry mechanism for transient file locks.
         /// Displays an error message and logs if it ultimately fails.
         /// </summary>
-        /// <param name="sourceFullPath">The source full path to the file to move.</param>
-        /// <param name="destinationFullPath">The destination full path for the file to move.</param>
-        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
-        /// <param name="retries">Number of retry attempts.</param>
-        /// <param name="delayMs">Delay in milliseconds between retries.</param>
-        /// <returns>A task that represents the asynchronous move operation. The result is <see langword="true"/> if the file was moved successfully, <see langword="false"/> if an error occurred.</returns>
         public async Task<bool> TryMoveFileAsync(string sourceFullPath, string destinationFullPath, IProgress<string> progressReporter, int retries = 5, int delayMs = 100)
         {
             for (int attempts = 0; attempts <= retries; attempts++)
@@ -352,16 +346,35 @@ namespace P3D_Scenario_Generator.Services
                 }
                 catch (IOException ex)
                 {
+                    // --- FIX 1: Check if the file successfully appeared despite the IOException (OneDrive Race Condition) ---
+                    if (File.Exists(destinationFullPath))
+                    {
+                        // The file move succeeded, but the method threw a transient error. Treat as success.
+                        await _logger.InfoAsync($"FileOpsAsync.TryMoveFileAsync: Move operation completed successfully despite transient IOException. File found at '{destinationFullPath}'.");
+                        return true;
+                    }
+
+                    // --- Original Retry Logic ---
                     if (attempts < retries)
                     {
-                        string warningMessage = $"FileOpsAsync.TryMoveFileAsync: Failed to move file due to an I/O error (attempt {attempts + 1}). Retrying... Details: {ex.Message}";
+                        string warningMessage = $"FileOpsAsync.TryMoveFileAsync: Failed to move file due to an I/O error (attempt {attempts + 1} of {retries + 1}). Retrying... Details: {ex.Message}";
                         await _logger.WarningAsync(warningMessage);
                         progressReporter?.Report(warningMessage);
                         await Task.Delay(delayMs);
+                        continue; // Move to the next retry attempt
                     }
+                }
+                // --- FIX 2: Explicitly catch UnauthorizedAccessException, which should not be retried ---
+                catch (UnauthorizedAccessException ex)
+                {
+                    string errorMessage = $"FileOpsAsync.TryMoveFileAsync: Permission denied while moving file from '{sourceFullPath}'. Details: {ex.Message}";
+                    await _logger.ErrorAsync(errorMessage, ex);
+                    progressReporter?.Report(errorMessage);
+                    return false; // Fatal error, do not retry
                 }
                 catch (Exception ex)
                 {
+                    // Catch all other unexpected, non-transient exceptions
                     string errorMessage = $"FileOpsAsync.TryMoveFileAsync: An unexpected error occurred while moving file from '{sourceFullPath}' to '{destinationFullPath}'. Details: {ex.Message}";
                     await _logger.ErrorAsync(errorMessage, ex);
                     progressReporter?.Report(errorMessage);
@@ -369,6 +382,7 @@ namespace P3D_Scenario_Generator.Services
                 }
             }
 
+            // This block is reached only if all retries failed AND the file does not exist at the destination.
             string finalErrorMessage = $"FileOpsAsync.TryMoveFileAsync: Failed to move file from '{sourceFullPath}' to '{destinationFullPath}' after {retries + 1} attempts.";
             await _logger.ErrorAsync(finalErrorMessage);
             progressReporter?.Report(finalErrorMessage);

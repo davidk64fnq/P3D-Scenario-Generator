@@ -1,8 +1,9 @@
-﻿using ImageMagick;
+﻿using CoordinateSharp;
+using ImageMagick;
 using ImageMagick.Drawing;
-using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
+using System.Text.RegularExpressions;
 
 namespace P3D_Scenario_Generator.Services
 {
@@ -10,7 +11,7 @@ namespace P3D_Scenario_Generator.Services
     /// Provides utility methods for various image manipulations, including drawing, resizing,
     /// and format conversion, using the ImageMagick.NET library.
     /// </summary>
-    public sealed class ImageUtils(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
+    public sealed partial class ImageUtils(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
     {
         // Guard clauses to validate the constructor parameters.
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -24,84 +25,240 @@ namespace P3D_Scenario_Generator.Services
         private const string FailureOutputName = "imgM_i";
         private const string BaseImageResourcePath = "Images.imgM.png";
 
+        private static readonly Regex LegRouteRegexPattern = new(@"LegRoute_(\d+)", RegexOptions.Compiled);
 
         /// <summary>
-        /// Draws a route defined by a list of tiles onto an existing map image.
-        /// The route is drawn as a series of connected lines between the specified offsets within tiles.
+        /// Draws routes onto existing map images matching the "LegRoute_XX_*.jpg" pattern found in the scenario folder.
         /// </summary>
-        /// <param name="tiles">A list of <see cref="Tile"/> objects representing the route points.</param>
-        /// <param name="boundingBox">The <see cref="BoundingBox"/> representing the overall area of the map image,
-        /// used to translate tile indices and offsets into pixel coordinates.</param>
-        /// <param name="fullPathNoExt">The base path and filename of the existing map image to draw on, and where the modified image will be saved.</param>
-        /// <returns><see langword="true"/> if the route was successfully drawn and saved; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> DrawRouteAsync(List<Tile> tiles, BoundingBox boundingBox, string fullPathNoExt)
+        /// <returns><see langword="true"/> if the routes were successfully processed; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> DrawRouteBulkAsync(ScenarioFormData formData)
         {
-            string imagePath = $"{fullPathNoExt}.png";
-
             try
             {
-                if (!File.Exists(imagePath))
+                string folderPath = formData.ScenarioImageFolder;
+
+                if (!Directory.Exists(folderPath))
                 {
-                    await _logger.ErrorAsync($"Map image not found at '{imagePath}'. Cannot draw route.");
+                    await _logger.ErrorAsync($"Scenario image folder not found at '{folderPath}'. Cannot draw routes.");
                     return false;
                 }
 
-                using MagickImage image = new(imagePath);
+                // Find all files matching the pattern LegRoute_*.jpg
+                var files = Directory.EnumerateFiles(folderPath, "LegRoute_*.jpg", SearchOption.TopDirectoryOnly);
 
-                // Define drawing attributes for the route line
-                DrawableStrokeColor strokeColor = new(new MagickColor("blue"));
-                DrawableStrokeWidth strokeWidth = new(1);
-                DrawableFillColor fillColor = new(MagickColors.Transparent);
-
-                int centrePrevX = 0, centrePrevY = 0;
-
-                for (int tileNo = 0; tileNo < tiles.Count; tileNo++)
+                foreach (string filePath in files)
                 {
-                    // Calculate the pixel coordinates for the current tile's offset point
-                    int centreX = boundingBox.XAxis.IndexOf(tiles[tileNo].XIndex) * Constants.TileSizePixels + tiles[tileNo].XOffset;
-                    int centreY = boundingBox.YAxis.IndexOf(tiles[tileNo].YIndex) * Constants.TileSizePixels + tiles[tileNo].YOffset;
+                    string fileName = Path.GetFileNameWithoutExtension(filePath);
 
-                    if (tileNo > 0)
+                    var match = LegRouteRegexPattern.Match(fileName);
+
+                    if (!match.Success || !int.TryParse(match.Groups[1].Value, out int currentLegNo))
                     {
-                        // Draw a line connecting the previous point to the current point
-                        DrawableLine line = new(centrePrevX, centrePrevY, centreX, centreY);
-                        image.Draw(strokeColor, strokeWidth, fillColor, line);
+                        continue; // Skip files that don't match the expected number format
                     }
 
-                    // Store current point as previous for the next iteration
-                    centrePrevX = centreX;
-                    centrePrevY = centreY;
+                    // Validate leg number against MapData bounds
+                    if (currentLegNo < 1 || currentLegNo > formData.OSMmapData.Count)
+                    {
+                        await _logger.WarningAsync($"Leg number {currentLegNo} from file '{fileName}' is out of bounds for OSMmapData.");
+                        continue;
+                    }
+
+                    // Get the MapData for this leg (1-indexed filename, 0-indexed list)
+                    MapData mapData = formData.OSMmapData[currentLegNo - 1];
+
+                    // Use the shared core drawing logic
+                    bool success = await DrawRouteCoreAsync(filePath, mapData, currentLegNo);
                 }
-
-                var directory = Path.GetDirectoryName(imagePath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
-                image.Write(imagePath);
-
                 return true;
+            }
+            catch (Exception ex)
+            {
+                await _logger.ErrorAsync($"An unexpected error occurred while drawing routes in bulk: {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Draws the entire route onto a single, specific chart file called "Charts_01.png".
+        /// Assumes the required MapData is the first (and only) item in formData.OSMmapData.
+        /// </summary>
+        /// <returns><see langword="true"/> if the chart was successfully processed or did not exist; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> DrawRouteSingleChartAsync(ScenarioFormData formData)
+        {
+            string folderPath = formData.ScenarioImageFolder;
+            string filePath = Path.Combine(folderPath, "Charts_01.png");
+
+            if (!File.Exists(filePath))
+            {
+                await _logger.WarningAsync($"Single chart file '{filePath}' not found. Skipping single chart drawing.");
+                return true;
+            }
+
+            // Assumption check: Use the first MapData instance for the single chart.
+            if (formData.OSMmapData == null || formData.OSMmapData.Count == 0)
+            {
+                await _logger.ErrorAsync("Cannot draw single chart. formData.OSMmapData is empty and required for coordinate boundaries.");
+                return false;
+            }
+
+            // Get the MapData instance for the single chart.
+            // If the list contains multiple legs, this will be the MapData for the first leg.
+            MapData chartMapData = formData.OSMmapData[0];
+
+            // Use legNo 0 (or 1) to denote the single chart processing.
+            // Since the file is already a PNG, DrawRouteCoreAsync will load the PNG and overwrite it.
+            return await DrawRouteCoreAsync(filePath, chartMapData, 1);
+        }
+
+        /// <summary>
+        /// Private core method to draw a sequenced route (list of coordinates) onto a single image file.
+        /// </summary>
+        /// <param name="filePath">The path to the image file to draw on.</param>
+        /// <param name="mapData">The MapData object containing the geographical boundaries and route coordinates.</param>
+        /// <param name="legNo">The associated leg number (or 1 for a non-leg specific chart).</param>
+        /// <returns><see langword="true"/> if the route was successfully drawn and the file saved; otherwise, <see langword="false"/>.</returns>
+        private async Task<bool> DrawRouteCoreAsync(string filePath, MapData mapData, int legNo)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
+
+            // Define drawing attributes for the route line
+            var strokeColor = new DrawableStrokeColor(new MagickColor("blue"));
+            var strokeWidth = new DrawableStrokeWidth(1);
+            var fillColor = new DrawableFillColor(MagickColors.Transparent);
+            var drawables = new List<IDrawable>();
+
+            try
+            {
+                using MagickImage image = new(filePath);
+                int width = (int)image.Width;
+                int height = (int)image.Height;
+
+                drawables.Add(strokeColor);
+                drawables.Add(strokeWidth);
+                drawables.Add(fillColor);
+
+                // Check if there are enough points to draw a route (at least two)
+                if (mapData.items == null || mapData.items.Count < 2)
+                {
+                    await logger.WarningAsync($"Image '{fileName}' (Leg {legNo}) has insufficient coordinate items ({mapData.items?.Count ?? 0}) to draw a route.");
+                    return false;
+                }
+
+                bool drawingSuccess = false;
+
+                // Iterate from the first item up to the second-to-last item
+                for (int i = 0; i < mapData.items.Count - 1; i++)
+                {
+                    Coordinate startCoord = mapData.items[i];
+                    Coordinate finishCoord = mapData.items[i + 1];
+
+                    // Calculate Start Point pixels
+                    var (successStart, startX, startY) = CalculatePixelCoords(width, height, mapData, startCoord);
+
+                    // Calculate Finish Point pixels
+                    var (successFinish, finishX, finishY) = CalculatePixelCoords(width, height, mapData, finishCoord);
+
+                    if (successStart && successFinish)
+                    {
+                        // Add a line segment between the current point (i) and the next point (i+1)
+                        drawables.Add(new DrawableLine(startX, startY, finishX, finishY));
+                        drawingSuccess = true;
+                    }
+                    else
+                    {
+                        await logger.WarningAsync($"Could not calculate valid pixel coordinates for route segment {i + 1} on image '{fileName}' (Leg {legNo}). Skipping line.");
+                    }
+                }
+
+                // Apply all drawing instructions if at least one valid line was added
+                if (drawingSuccess)
+                {
+                    image.Draw(drawables);
+                    image.Write(filePath);
+                    return true;
+                }
+                else
+                {
+                    await logger.WarningAsync($"No valid route lines could be drawn for image '{fileName}' (Leg {legNo}).");
+                    return false;
+                }
             }
             catch (MagickErrorException mex)
             {
-                await _logger.ErrorAsync($"Magick.NET error while drawing route on '{fullPathNoExt}': {mex.Message}", mex);
-                return false;
-            }
-            catch (FileNotFoundException fex)
-            {
-                await _logger.ErrorAsync($"File not found error while drawing route: {fex.FileName}. Details: {fex.Message}", fex);
-                return false;
-            }
-            catch (IOException ioex)
-            {
-                await _logger.ErrorAsync($"I/O error while drawing route on '{fullPathNoExt}': {ioex.Message}", ioex);
+                await logger.ErrorAsync($"Magick.NET error while processing image '{fileName}': {mex.Message}", mex);
                 return false;
             }
             catch (Exception ex)
             {
-                await _logger.ErrorAsync($"An unexpected error occurred while drawing route on '{fullPathNoExt}': {ex.Message}", ex);
+                await logger.ErrorAsync($"An unexpected error occurred while drawing route on image '{fileName}': {ex.Message}", ex);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Calculates the pixel coordinates for a specific geographical coordinate within the bounds of the provided MapData.
+        /// </summary>
+        private static (bool Success, int CentreX, int CentreY) CalculatePixelCoords(int imageWidth, int imageHeight, MapData mapData, Coordinate coordinate)
+        {
+            if (mapData == null || coordinate == null)
+            {
+                return (false, 0, 0);
+            }
+
+            try
+            {
+                // 1. Get Geographical Bounds
+                double northLat = mapData.north.ToDouble();
+                double southLat = mapData.south.ToDouble();
+                double westLon = mapData.west.ToDouble();
+                double eastLon = mapData.east.ToDouble();
+
+                // The point we want to plot 
+                double itemLat = coordinate.Latitude.ToDouble();
+                double itemLon = coordinate.Longitude.ToDouble();
+
+                // 2. Calculate Geographical Ranges
+                double latRange = northLat - southLat;
+                // Handle longitude wrap-around (crossing the antimeridian, 180/-180)
+                double lonRange = westLon < eastLon
+                    ? eastLon - westLon
+                    : (180.0 - westLon) + (eastLon + 180.0);
+
+                // Check for zero range to prevent division by zero
+                if (latRange == 0 || lonRange == 0)
+                {
+                    // _logger.ErrorAsync is unavailable in this synchronous/helper context without async plumbing, 
+                    // but you could store errors in a collection or just return false.
+                    return (false, 0, 0);
+                }
+
+                // 3. Calculate Relative Position (0.0 to 1.0)
+
+                // X-position (Longitude): Relative position from west boundary
+                double lonDelta = westLon < eastLon
+                    ? itemLon - westLon
+                    : (itemLon >= westLon ? itemLon - westLon : (180.0 - westLon) + (itemLon + 180.0));
+
+                double xRelative = lonDelta / lonRange;
+
+                // Y-position (Latitude): Relative position from north boundary (Y increases downwards, Latitude decreases downwards)
+                double yRelative = (northLat - itemLat) / latRange;
+
+                // 4. Convert Relative Position to Pixel Coordinates
+                int centreX = (int)Math.Round(xRelative * imageWidth);
+                int centreY = (int)Math.Round(yRelative * imageHeight);
+
+                // 5. Ensure coordinates are within image bounds (optional safety check, though drawing outside bounds is usually fine for Magick.NET)
+                // We clamp strictly to image dimensions to ensure the line endpoint is "on canvas"
+                centreX = Math.Clamp(centreX, 0, imageWidth - 1);
+                centreY = Math.Clamp(centreY, 0, imageHeight - 1);
+
+                return (true, centreX, centreY);
+            }
+            catch
+            {
+                return (false, 0, 0);
             }
         }
 
