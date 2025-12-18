@@ -69,6 +69,7 @@
  * @typedef {object} PlotDisplayConfig
  * @property {number} showFinalLeg - Whether to show the final leg of the flight (0 or 1).
  * @property {number} plotPlane - Whether to show the plane marker on the plot (0 or 1).
+ * @property {number} plotNeedsUpdate - Whether to redraw the plotting tab, usually only when a new fix is made (0 or 1).
  */
 
 /**

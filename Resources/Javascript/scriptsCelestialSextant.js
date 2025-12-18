@@ -1,4 +1,3 @@
-// --- Title comment block ---
 /**
  * @file scriptsCelestialSextant.js
  * @description One of two script files for the Celestial Navigation type mission.
@@ -190,7 +189,8 @@ const fixHistory = [];
  */
 const plotDisplayConfig = {
 	showFinalLeg: 0,
-	plotPlane: 0
+	plotPlane: 0,
+	plotNeedsUpdate: 1
 };
 
 // #endregion
@@ -239,7 +239,6 @@ if (!starCanvas) {
 	displayStatusMessage('ERROR', 'Failed to get 2D rendering context for canvas!');
 }
 
-
 // --- Plotting tab CANVAS INITIALIZATION ---
 
 // 3. Declare plotCanvas as const, initialized via lookup
@@ -271,8 +270,6 @@ plotBgImage.onerror = () => {
 // 2. Image Success Handler
 plotBgImage.onload = () => {
 	displayStatusMessage('INFO', "Plotting background image loaded successfully. Starting application loops.");
-
-	// START THE NEW, STABLE LOOPS ON SUCCESS
 	initializeApplicationLoops();
 };
 
@@ -982,15 +979,76 @@ function takeSighting(sightHistory, fixHistory) {
 				fixPositionCoord: fixCoord
 			};
 			fixHistory.push(currentFixResult);
+			plotDisplayConfig.plotNeedsUpdate = 1;
 		}
 	}
 }
 
 /**
- * Resets the display for the last 6 sightings, while preserving any
- * older sightings and allowing new sightings to overwrite the cleared slots.
+ * Clears the sightings display area without impacting the stored sighting history. This provides space to take and display more sightings.
+ * Display area only shows data for up to six sightings at a time. This button normally pressed after user has completed 6 sightings and 
+ * needs more space in display area.
  */
-function clearSightings() {
+function clearSightingsDisplay() {
+
+	// Cast to HTMLElement for collections only using '.innerHTML'
+	/** @type {HTMLCollectionOf<HTMLElement>} */
+	const HsArray = /** @type {HTMLCollectionOf<HTMLElement>} */(document.getElementsByClassName("Hs"));
+
+	for (let index = 0; index < HsArray.length; index++) {
+		clearSighting(index)
+	}
+}
+
+/**
+ * Clears the most recently used sighting display area (completed) and deletes that sighting from the sight history.
+ * If last sighting was part of a fix then deletes associated fix from history. This button is used when user has made a sighting
+ * and then realises they had selected the wrong star. If the incorrect sighting was the third in a set and resulted in a fix
+ * being recorded the dead reckoning position will be invalid so in that case adjust it to prior fix coordinates.
+ */
+function deleteLastSighting() {
+
+	// Cast to HTMLElement for collections only using '.innerHTML'
+	/** @type {HTMLCollectionOf<HTMLElement>} */
+	const interceptArray = /** @type {HTMLCollectionOf<HTMLElement>} */(document.getElementsByClassName("Intercept"));
+
+	let latestIndex = -1;
+	// Find the most recent completed sighting (value in interceptArray)
+	for (let index = interceptArray.length - 1; index >= 0; index--) {
+		if (interceptArray[index].innerHTML != "") {
+			latestIndex = index;
+			break;
+		}
+	}
+
+	// Nothing to delete if no completed sightings
+	if (latestIndex === -1) {
+		return;
+	}
+
+	// Clear sighting display and remove it from sight history
+	clearSighting(latestIndex);
+	sightHistory.pop();
+
+	// If latest sighting invalidates a fix then remove last fix from fix history, adjust dead reckoning position and flag redraw of plot tab
+	if (latestIndex === 2 || latestIndex === 5) {
+		fixHistory.pop();
+		plotDisplayConfig.plotNeedsUpdate = 1;
+		if (fixHistory.length >= 1) {
+			currentDRCoord = fixHistory[fixHistory.length - 1].fixPositionCoord
+		}
+		else {
+			currentDRCoord = destCoord;
+		}
+	}
+}
+
+/**
+ * Resets the display area for the specified sighting index. Doesn't affect sight history.
+ * @param {number} sightingIndex - The index in sighting data display area to be cleared.
+ * @returns {void}
+ */
+function clearSighting(sightingIndex) {
 	// Cast to HTMLSelectElement collection to access the '.options' property
 	/** @type {HTMLCollectionOf<HTMLSelectElement>} */
 	const starArray = /** @type {HTMLCollectionOf<HTMLSelectElement>} */(document.getElementsByClassName("starName"));
@@ -1025,23 +1083,21 @@ function clearSightings() {
 	/** @type {HTMLCollectionOf<HTMLElement>} */
 	const interceptArray = /** @type {HTMLCollectionOf<HTMLElement>} */(document.getElementsByClassName("Intercept"));
 
-	for (let index = 0; index < HsArray.length; index++) {
-		starArray[index].options[0].selected = true;
-		APlatArray[index].value = "";
-		APlonArray[index].value = "";
+	starArray[sightingIndex].options[0].selected = true;
+	APlatArray[sightingIndex].value = "";
+	APlonArray[sightingIndex].value = "";
 
-		DateArray[index].innerHTML = "";
-		UTArray[index].innerHTML = "";
-		HsArray[index].innerHTML = "";
-		GHAhourArray[index].innerHTML = "";
-		GHAincArray[index].innerHTML = "";
-		SHAincArray[index].innerHTML = "";
-		GHAtotalArray[index].innerHTML = "";
-		DecArray[index].innerHTML = "";
-		HcArray[index].innerHTML = "";
-		ZnArray[index].innerHTML = "";
-		interceptArray[index].innerHTML = "";
-	}
+	DateArray[sightingIndex].innerHTML = "";
+	UTArray[sightingIndex].innerHTML = "";
+	HsArray[sightingIndex].innerHTML = "";
+	GHAhourArray[sightingIndex].innerHTML = "";
+	GHAincArray[sightingIndex].innerHTML = "";
+	SHAincArray[sightingIndex].innerHTML = "";
+	GHAtotalArray[sightingIndex].innerHTML = "";
+	DecArray[sightingIndex].innerHTML = "";
+	HcArray[sightingIndex].innerHTML = "";
+	ZnArray[sightingIndex].innerHTML = "";
+	interceptArray[sightingIndex].innerHTML = "";
 }
 
 // #endregion
@@ -1055,25 +1111,27 @@ function clearSightings() {
  * @param {FixResult[]} fixHistory - The array of historical fix results.
  * @param {PlotDisplayConfig} plotDisplayConfig - Configuration for plot tab display. 
  * */
-function updatePlotTab(fixHistory, plotDisplayConfig) {
-	// 1. CONTEXT SAFETY CHECK: Ensure context and image object are ready
-	if (!plotContext || !plotBgImage) {
-		// Quietly return if not initialized to prevent a crash.
+function updatePlotTab(fixHistory, plotDisplayConfig) {// 1. Context and Canvas Safety Check
+
+	// Only update plot if a new fix has been added or displaying plane
+	if (plotDisplayConfig.plotNeedsUpdate == 0 && plotDisplayConfig.plotPlane == 0) {
 		return;
 	}
 
-	// 2. IMAGE SAFETY CHECK: Only draw the background image if it has fully loaded
-	if (plotBgImage.complete) {
-		// Clear the canvas and draw the loaded background image
-		plotContext.clearRect(0, 0, plotCanvas.width, plotCanvas.height);
-		plotContext.drawImage(plotBgImage, 0, 0);
-	} else {
-		// If the image is still loading, clear the canvas and draw a black background 
-		// to avoid drawing over previous frames and return silently.
+	// If context is missing or canvas dimensions are 0, exit immediately.
+	if (!plotContext || !plotCanvas) return;
+
+	// 2. Image Loading State
+	if (!plotBgImage.complete || plotBgImage.naturalWidth === 0) {
+		// Draw a placeholder background if image isn't ready
 		plotContext.fillStyle = "black";
 		plotContext.fillRect(0, 0, plotCanvas.width, plotCanvas.height);
 		return;
 	}
+
+	// 3. Clear and Draw Background
+	plotContext.clearRect(0, 0, plotCanvas.width, plotCanvas.height);
+	plotContext.drawImage(plotBgImage, 0, 0);
 
 	// 3. PLOTTING LOGIC: This code runs only if the context and image are confirmed working.
 
@@ -1164,6 +1222,8 @@ function updatePlotTab(fixHistory, plotDisplayConfig) {
 		plotContext.fillStyle = "red";
 		plotContext.fillRect(coordPixels.left - 1, coordPixels.top - 1, 3, 3);
 	}
+
+	plotDisplayConfig.plotNeedsUpdate = 0;
 }
 
 // #endregion
@@ -1692,10 +1752,12 @@ function plotFinalLeg(plotDisplayConfig) {
 	if (plotDisplayConfig.showFinalLeg == 0) {
 		plotDisplayConfig.showFinalLeg = 1;
 		document.getElementById("finalLegButton").innerHTML = "Hide Leg Info";
+		plotDisplayConfig.plotNeedsUpdate = 1;
 	}
 	else {
 		plotDisplayConfig.showFinalLeg = 0;
 		document.getElementById("finalLegButton").innerHTML = "Show Leg Info";
+		plotDisplayConfig.plotNeedsUpdate = 1;
 	}
 }
 
@@ -1713,6 +1775,7 @@ function hidePlaneWrapper() {
  */
 function hidePlane(plotDisplayConfig) {
 	plotDisplayConfig.plotPlane = 0;
+	plotDisplayConfig.plotNeedsUpdate = 1;
 
 	// 2. DOM Manipulation (Kept as is for button logic)
 	document.getElementById('plane').style.display = 'none';
