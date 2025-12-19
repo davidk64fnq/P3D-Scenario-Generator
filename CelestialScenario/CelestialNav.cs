@@ -209,13 +209,13 @@ namespace P3D_Scenario_Generator.CelestialScenario
             }
             else if (formData.SextantAlignment == WindowAlignment.BottomRight)
             {
-                horizontalOffset = formData.SextantMonitorWidth - formData.SextantOffsetPixels - formData.SignWindowWidth;
-                verticalOffset = formData.SextantMonitorHeight - formData.SextantOffsetPixels - formData.SignWindowHeight;
+                horizontalOffset = formData.SextantMonitorWidth - formData.SextantOffsetPixels - Constants.SextantWindowWidth;
+                verticalOffset = formData.SextantMonitorHeight - formData.SextantOffsetPixels - Constants.SextantWindowHeight;
             }
             else if (formData.SextantAlignment == WindowAlignment.BottomLeft)
             {
                 horizontalOffset = formData.SextantOffsetPixels;
-                verticalOffset = formData.SextantMonitorHeight - formData.SextantOffsetPixels - formData.SignWindowHeight;
+                verticalOffset = formData.SextantMonitorHeight - formData.SextantOffsetPixels - Constants.SextantWindowHeight;
             }
             else // Parameters.SextantAlignment == "Centered"
             {

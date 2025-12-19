@@ -995,6 +995,11 @@ function clearSightingsDisplay() {
 	/** @type {HTMLCollectionOf<HTMLElement>} */
 	const HsArray = /** @type {HTMLCollectionOf<HTMLElement>} */(document.getElementsByClassName("Hs"));
 
+	// Only clear sighting display if not part way through making a fix - to avoid orphans
+	if (sightHistory.length % 3 !== 0) {
+		return;
+	}
+
 	for (let index = 0; index < HsArray.length; index++) {
 		clearSighting(index)
 	}
@@ -1135,23 +1140,40 @@ function updatePlotTab(fixHistory, plotDisplayConfig) {// 1. Context and Canvas 
 
 	// 3. PLOTTING LOGIC: This code runs only if the context and image are confirmed working.
 
-	// Plot LOPLOP coordinates (intersections of Lines of Position)
-	plotContext.fillStyle = "green";
-	for (let fixResult of fixHistory) {
+	let hasOutOfBoundsVertex = false;
 
-		// Each fixResult contains the three vertices that form the Cocked Hat
+	// Plot cocked hat vertices (intersections of Lines of Position) and fix coordinates
+	for (let fixResult of fixHistory) {
+		// Reset flag for EACH fix in the history
+		let isCurrentFixOutOfBounds = false;
+
+		// 1. Check if any part of this specific fix is out of bounds
 		for (let vertex of fixResult.cockedHatVerticesPixels) {
-			// Plot the individual vertex (intersection point)
-			plotContext.fillRect(vertex.left - 1, vertex.top - 1, 3, 3);
+			if (vertex.left === -1 || vertex.top === -1) {
+				isCurrentFixOutOfBounds = true;
+				break;
+			}
 		}
-	}
 
-	// Plot fix coordinates (the final calculated position)
-	plotContext.fillStyle = "purple";
-	for (let fixResult of fixHistory) {
-		const fixPixel = fixResult.fixPositionPixels;
-		// Plot the calculated fix position (centroid)
-		plotContext.fillRect(fixPixel.left - 1, fixPixel.top - 1, 3, 3);
+		// 2. Conditional Rendering
+		if (!isCurrentFixOutOfBounds) {
+			// Plot Cocked Hat Vertices (Green)
+			plotContext.fillStyle = "green";
+			for (let vertex of fixResult.cockedHatVerticesPixels) {
+				plotContext.fillRect(vertex.left - 1, vertex.top - 1, 3, 3);
+			}
+
+			// Plot Centroid/Fix Position (Purple)
+			plotContext.fillStyle = "purple";
+			const fixPixel = fixResult.fixPositionPixels;
+			plotContext.fillRect(fixPixel.left - 1, fixPixel.top - 1, 3, 3);
+		}
+		else {
+			// Only show warning for the most recent fix if it's the one off-screen
+			// Or keep it simple and show a general warning
+			plotContext.fillStyle = "red";
+			plotContext.fillText("⚠️ FIX OUTSIDE PLOT AREA", 10, 20);
+		}
 	}
 
 	// Optionally plot leg info

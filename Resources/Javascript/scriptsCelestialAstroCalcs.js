@@ -589,7 +589,7 @@ function convertCoordToPixels(coord) {
 		left = (lon - westEdge) / (eastEdge - westEdge) * windowW;
 	} else {
 		// If out of horizontal bounds, set to 0.
-		left = 0;
+		left = -1;
 	}
 
 	// --- 2. Calculate Top Pixel (Latitude Mapping) ---
@@ -598,7 +598,7 @@ function convertCoordToPixels(coord) {
 		top = (northEdge - lat) / (northEdge - southEdge) * windowH;
 	} else {
 		// If out of vertical bounds, set to 0.
-		top = 0;
+		top = -1;
 	}
 
 	return { left, top };
