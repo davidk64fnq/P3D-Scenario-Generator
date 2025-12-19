@@ -914,24 +914,24 @@ namespace P3D_Scenario_Generator.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection ComboBoxSextantAlignment {
+        public global::System.Collections.Specialized.StringCollection ComboBoxCelestialAlignment {
             get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxSextantAlignment"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["ComboBoxCelestialAlignment"]));
             }
             set {
-                this["ComboBoxSextantAlignment"] = value;
+                this["ComboBoxCelestialAlignment"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string ComboBoxSextantAlignmentSelectedIndex {
+        public int ComboBoxCelestialAlignmentSelectedIndex {
             get {
-                return ((string)(this["ComboBoxSextantAlignmentSelectedIndex"]));
+                return ((int)(this["ComboBoxCelestialAlignmentSelectedIndex"]));
             }
             set {
-                this["ComboBoxSextantAlignmentSelectedIndex"] = value;
+                this["ComboBoxCelestialAlignmentSelectedIndex"] = value;
             }
         }
     }

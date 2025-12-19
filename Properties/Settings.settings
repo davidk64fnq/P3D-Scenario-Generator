@@ -227,10 +227,10 @@
     <Setting Name="TextBoxSextantOffset" Type="System.String" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="ComboBoxSextantAlignment" Type="System.Collections.Specialized.StringCollection" Scope="User">
+    <Setting Name="ComboBoxCelestialAlignment" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ComboBoxSextantAlignmentSelectedIndex" Type="System.String" Scope="User">
+    <Setting Name="ComboBoxCelestialAlignmentSelectedIndex" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
