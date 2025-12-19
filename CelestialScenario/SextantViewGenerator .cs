@@ -107,250 +107,113 @@ namespace P3D_Scenario_Generator.CelestialScenario
             return Regex.Replace(jsContent, pattern, replacement, RegexOptions.Multiline);
         }
 
-        /// <summary>
-        /// Generates and writes the Celestial Sextant JavaScript and related asset files.
-        /// This includes populating the main JavaScript file with star and almanac data,
-        /// writing the astronomical calculations JavaScript file, and copying the plot image.
-        /// </summary>
-        /// <param name="formData">The scenario data containing the output folder path and celestial data.</param>
-        /// <returns><see langword="true"/> if all files were successfully created and copied; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> SetCelestialSextantJsAsync(ScenarioFormData formData, StarDataManager starDataManager)
+        public async Task<bool> SetCelestialSextantAssetsAsync(ScenarioFormData formData, StarDataManager starDataManager)
         {
-            string message;
             string saveLocation = formData.ScenarioImageFolder;
-            string sextantJsOutputPath = Path.Combine(saveLocation, "scriptsCelestialSextant.js");
-            string astroCalcsJsOutputPath = Path.Combine(saveLocation, "scriptsCelestialAstroCalcs.js");
-            string typesJsOutputPath = Path.Combine(saveLocation, "types.js"); // Added output path for types.js
-            string plotImageOutputPath = Path.Combine(saveLocation, "plotImage.jpg");
-            bool success;
+            await _logger.InfoAsync("Starting generation of Celestial Sextant web assets.");
 
-            message = "Starting generation of Celestial Sextant JavaScript files.";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-
-            // --- Process scriptsCelestialSextant.js ---
-            string celestialSextantResourceName = "Javascript.scriptsCelestialSextant.js";
-            string celestialJsContent;
-
-            (success, Stream celestialJsStream) = await _fileOps.TryGetResourceStreamAsync(celestialSextantResourceName, _progressReporter);
-            if (!success)
+            // 1. Prepare Data for Main Script Injection
+            var mainReplacements = new Dictionary<string, string>
             {
-                message = $"Failed to load embedded resource: '{celestialSextantResourceName}'. Cannot generate sextant JS.";
-                await _logger.ErrorAsync(message);
-                _progressReporter.Report($"ERROR: {message}");
-                return false;
-            }
-
-            using (celestialJsStream)
-            using (StreamReader reader = new(celestialJsStream))
-            {
-                celestialJsContent = await reader.ReadToEndAsync();
-            }
-
-            // --- DIRECT INJECTION OF JSON-SERIALIZED ARRAYS (Now only providing the raw value) ---
-
-            // 1D Array Data (JSON Serialized)
-            celestialJsContent = ReplaceJsVariable(celestialJsContent, "constellationLines",
-                JsonSerializer.Serialize(starDataManager.StarLineConnections));
-
-            var starCatalogList = starDataManager.GetStarCatalog();
-            celestialJsContent = ReplaceJsVariable(celestialJsContent, "starCatalog", JsonSerializer.Serialize(starCatalogList));
-
-            // Number Data (Injected as raw object values)
-            string destCoordValue =
-                $"{{ latitude: {formData.DestinationRunway.AirportLat.ToRadians()}, longitude: {formData.DestinationRunway.AirportLon.ToRadians()} }}";
-            celestialJsContent = ReplaceJsVariable(celestialJsContent, "destCoord", destCoordValue);
-
-            string drCoordValue =
-                $"{{ latitude: {formData.DestinationRunway.AirportLat.ToRadians()}, longitude: {formData.DestinationRunway.AirportLon.ToRadians()} }}";
-            celestialJsContent = ReplaceJsVariable(celestialJsContent, "currentDRCoord", drCoordValue);
-
-            // Almanac Data (2D Arrays, JSON Serialized)
-            var ariesGHADataObject = new
-            {
-                Degrees = _almanacData.AriesGhaDeg, // Maps to the JavaScript 'Degrees' property
-                Minutes = _almanacData.AriesGhaMin  // Maps to the JavaScript 'Minutes' property
+                { "constellationLines", JsonSerializer.Serialize(starDataManager.StarLineConnections) },
+                { "starCatalog", JsonSerializer.Serialize(starDataManager.GetStarCatalog()) },
+                { "destCoord", $"{{ latitude: {formData.DestinationRunway.AirportLat.ToRadians()}, longitude: {formData.DestinationRunway.AirportLon.ToRadians()} }}" },
+                { "currentDRCoord", $"{{ latitude: {formData.DestinationRunway.AirportLat.ToRadians()}, longitude: {formData.DestinationRunway.AirportLon.ToRadians()} }}" },
+                { "ariesGHAData", JsonSerializer.Serialize(new { Degrees = _almanacData.AriesGhaDeg, Minutes = _almanacData.AriesGhaMin }) },
+                { "navStarCatalog", JsonSerializer.Serialize(PrepareNavStarCatalog(starDataManager)) },
+                { "startDate", $"\"{formData.DatePickerValue:MM/dd/yyyy}\"" }
             };
-            celestialJsContent = ReplaceJsVariable(celestialJsContent, "ariesGHAData", JsonSerializer.Serialize(ariesGHADataObject));
 
+            // 2. Generate Files (Expanding is now just adding lines here)
+
+            // Main JS with coordinate logic injected via the lambda
+            if (!await WriteAssetFileAsync("Javascript.scriptsCelestialSextant.js", "scriptsCelestialSextant.js", saveLocation, mainReplacements, c => SetCelestialMapEdges(formData, c))) return false;
+
+            // Static JS Files
+            if (!await WriteAssetFileAsync("Javascript.scriptsCelestialAstroCalcs.js", "scriptsCelestialAstroCalcs.js", saveLocation)) return false;
+            if (!await WriteAssetFileAsync("Javascript.types.js", "types.js", saveLocation)) return false;
+
+            // CSS File (Handled by the same helper)
+            if (!await WriteAssetFileAsync("CSS.styleCelestialSextant.css", "styleCelestialSextant.css", saveLocation)) return false;
+
+            // Binary Assets
+            return await CopyAssetImageAsync("Images.plotImage.jpg", Path.Combine(saveLocation, "plotImage.jpg"));
+        }
+
+        private List<NavStarData> PrepareNavStarCatalog(StarDataManager starDataManager)
+        {
             var navStarNames = starDataManager.NavStarNames;
-            var navStarCatalogList = new List<NavStarData>(AlmanacData.NoStarsInAlmanacData);
+            var list = new List<NavStarData>(AlmanacData.NoStarsInAlmanacData);
 
             for (int i = 0; i < AlmanacData.NoStarsInAlmanacData; i++)
             {
-                navStarCatalogList.Add(new NavStarData(
+                list.Add(new NavStarData(
                     SHADegrees: _almanacData.starsSHAd[i],
                     SHAMinutes: _almanacData.starsSHAm[i],
                     DECdegrees: _almanacData.starsDECd[i],
                     DECMinutes: _almanacData.starsDECm[i],
-                    NavStarName: navStarNames[i] // This array comes from starDataManager
+                    NavStarName: navStarNames[i]
                 ));
             }
-
-            celestialJsContent = ReplaceJsVariable(celestialJsContent, "navStarCatalog", JsonSerializer.Serialize(navStarCatalogList));
-
-            // String Data (Quoted string injection)
-            celestialJsContent = ReplaceJsVariable(celestialJsContent, "startDate", $"\"{formData.DatePickerValue:MM/dd/yyyy}\"");
-
-            // Set the celestial map edges and perform in-place replacement
-            celestialJsContent = SetCelestialMapEdges(formData, celestialJsContent);
-
-            // Write the modified scriptsCelestialSextant.js file
-            message = $"Writing '{sextantJsOutputPath}'...";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-            if (!await _fileOps.TryWriteAllTextAsync(sextantJsOutputPath, celestialJsContent, _progressReporter))
-            {
-                message = $"Failed to write '{sextantJsOutputPath}'. Aborting JS generation.";
-                await _logger.ErrorAsync(message);
-                _progressReporter.Report($"ERROR: {message}");
-                return false;
-            }
-            message = $"Successfully generated and wrote '{sextantJsOutputPath}'.";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-
-
-            // --- Process scriptsCelestialAstroCalcs.js ---
-            string celestialAstroCalcsResourceName = "Javascript.scriptsCelestialAstroCalcs.js";
-            string astroCalcsJsContent;
-
-            (success, Stream astroCalcsJsStream) = await _fileOps.TryGetResourceStreamAsync(celestialAstroCalcsResourceName, _progressReporter);
-            if (!success)
-            {
-                message = $"Failed to load embedded resource: '{celestialAstroCalcsResourceName}'. Cannot generate astro calcs JS.";
-                await _logger.ErrorAsync(message);
-                _progressReporter.Report($"ERROR: {message}");
-                return false;
-            }
-
-            using (astroCalcsJsStream)
-            using (StreamReader reader = new(astroCalcsJsStream))
-            {
-                astroCalcsJsContent = await reader.ReadToEndAsync();
-            }
-
-            // Write the scriptsCelestialAstroCalcs.js file
-            message = $"Writing '{astroCalcsJsOutputPath}'...";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-            if (!await _fileOps.TryWriteAllTextAsync(astroCalcsJsOutputPath, astroCalcsJsContent, _progressReporter))
-            {
-                message = $"Failed to write '{astroCalcsJsOutputPath}'. Aborting JS generation.";
-                await _logger.ErrorAsync(message);
-                _progressReporter.Report($"ERROR: {message}");
-                return false;
-            }
-            message = $"Successfully generated and wrote '{astroCalcsJsOutputPath}'.";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-
-            // --- Process types.js ---
-            string typesJsResourceName = "Javascript.types.js";
-            string typesJsContent;
-
-            (success, Stream typesJsStream) = await _fileOps.TryGetResourceStreamAsync(typesJsResourceName, _progressReporter);
-            if (!success)
-            {
-                message = $"Failed to load embedded resource: '{typesJsResourceName}'. Cannot generate types JS.";
-                await _logger.ErrorAsync(message);
-                _progressReporter.Report($"ERROR: {message}");
-                return false;
-            }
-
-            using (typesJsStream)
-            using (StreamReader reader = new(typesJsStream))
-            {
-                typesJsContent = await reader.ReadToEndAsync();
-            }
-
-            // Write the types.js file
-            message = $"Writing '{typesJsOutputPath}'...";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-            if (!await _fileOps.TryWriteAllTextAsync(typesJsOutputPath, typesJsContent, _progressReporter))
-            {
-                message = $"Failed to write '{typesJsOutputPath}'. Aborting JS generation.";
-                await _logger.ErrorAsync(message);
-                _progressReporter.Report($"ERROR: {message}");
-                return false;
-            }
-            message = $"Successfully generated and wrote '{typesJsOutputPath}'.";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-
-            // --- Copy plotImage.jpg ---
-            string plotImageResourceName = "Images.plotImage.jpg";
-
-            (success, Stream plotImageStream) = await _fileOps.TryGetResourceStreamAsync(plotImageResourceName, _progressReporter);
-            if (!success)
-            {
-                message = $"Failed to load embedded resource: '{plotImageResourceName}'. Cannot copy plot image.";
-                await _logger.ErrorAsync(message);
-                _progressReporter.Report($"ERROR: {message}");
-                return false;
-            }
-
-            using (plotImageStream)
-            {
-                message = $"Copying '{plotImageResourceName}' to '{plotImageOutputPath}'...";
-                await _logger.InfoAsync(message);
-                _progressReporter.Report($"INFO: {message}");
-                if (!await _fileOps.TryCopyStreamToFileAsync(plotImageStream, plotImageOutputPath, _progressReporter))
-                {
-                    message = $"Failed to copy embedded resource '{plotImageResourceName}' to '{plotImageOutputPath}'.";
-                    await _logger.ErrorAsync(message);
-                    _progressReporter.Report($"ERROR: {message}");
-                    return false;
-                }
-            }
-            message = $"Successfully copied '{plotImageResourceName}' to '{plotImageOutputPath}'.";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-
-
-            message = "Finished generation of Celestial Sextant JavaScript files and plot image.";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-            return true;
+            return list;
         }
 
         /// <summary>
-        /// Generates and writes the Celestial Sextant CSS file to the specified output folder.
+        /// General purpose helper to Load, Process (optional), and Write text assets (JS/CSS).
         /// </summary>
-        /// <param name="formData">The scenario data containing the output folder path.</param>
-        /// <returns><see langword="true"/> if the CSS file was successfully created; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> TrySetCelestialSextantCssAsync(ScenarioFormData formData)
+        private async Task<bool> WriteAssetFileAsync(
+            string resourceName,
+            string fileName,
+            string saveLocation,
+            Dictionary<string, string> replacements = null,
+            Func<string, string> customLogic = null)
         {
-            string message;
-            string resourceName = "CSS.styleCelestialSextant.css";
-            string cssOutputPath = Path.Combine(formData.ScenarioImageFolder, "styleCelestialSextant.css");
+            string outputPath = Path.Combine(saveLocation, fileName);
 
-            message = $"Attempting to write Celestial Sextant CSS to '{cssOutputPath}'.";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-
-            (bool success, string cssContent) = await _fileOps.TryReadAllTextFromResourceAsync(resourceName, _progressReporter);
+            // Using your existing TryReadAllTextFromResourceAsync for simplicity
+            (bool success, string content) = await _fileOps.TryReadAllTextFromResourceAsync(resourceName, _progressReporter);
             if (!success)
             {
-                message = $"CSS content could not be read from resource '{resourceName}'. CSS file will not be created.";
-                await _logger.ErrorAsync(message);
-                _progressReporter.Report($"ERROR: {message}");
+                await _logger.ErrorAsync($"Resource missing: {resourceName}");
                 return false;
             }
 
-            if (!await _fileOps.TryWriteAllTextAsync(cssOutputPath, cssContent, _progressReporter))
+            // Apply standard replacements
+            if (replacements != null)
             {
-                message = "Failed to write Celestial Sextant CSS file.";
-                await _logger.ErrorAsync(message);
-                _progressReporter.Report($"ERROR: {message}");
+                foreach (var kvp in replacements)
+                {
+                    content = ReplaceJsVariable(content, kvp.Key, kvp.Value);
+                }
+            }
+
+            // Apply logic like SetCelestialMapEdges
+            if (customLogic != null)
+            {
+                content = customLogic(content);
+            }
+
+            if (!await _fileOps.TryWriteAllTextAsync(outputPath, content, _progressReporter))
+            {
+                await _logger.ErrorAsync($"Failed to write asset: {fileName}");
                 return false;
             }
 
-            message = "Successfully wrote Celestial Sextant CSS file.";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
+            await _logger.InfoAsync($"Successfully generated: {fileName}");
             return true;
+        }
+
+        private async Task<bool> CopyAssetImageAsync(string resourceName, string outputPath)
+        {
+            // Uses your existing FileOps method
+            var (success, stream) = await _fileOps.TryGetResourceStreamAsync(resourceName, _progressReporter);
+            if (!success) return false;
+
+            using (stream)
+            {
+                // Uses your existing FileOps method
+                return await _fileOps.TryCopyStreamToFileAsync(stream, outputPath, _progressReporter);
+            }
         }
 
         /// <summary>

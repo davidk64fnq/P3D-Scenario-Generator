@@ -69,15 +69,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 return false;
             }
 
-            if (!await _sextantViewGenerator.SetCelestialSextantJsAsync(formData, _starDataManager))
+            if (!await _sextantViewGenerator.SetCelestialSextantAssetsAsync(formData, _starDataManager))
             {
                 await _logger.ErrorAsync("Failed to set celestial sextant JavaScript during celestial setup.");
-                return false;
-            }
-
-            if (!await _sextantViewGenerator.TrySetCelestialSextantCssAsync(formData))
-            {
-                await _logger.ErrorAsync("Failed to set celestial sextant CSS during celestial setup.");
                 return false;
             }
 
