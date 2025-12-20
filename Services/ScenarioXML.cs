@@ -444,7 +444,7 @@ namespace P3D_Scenario_Generator.Services
             {
                 // Create cylinder area objects to put over each photo location
                 SetCylinderArea(legNo, "CylinderArea", "0.0,0.0,0.0", "300", "18520.0", "None");
-                string pwp = GetWikiItemWorldPosition(legNo, wikipedia);
+                string pwp = Wikipedia.GetWikiItemWorldPosition(legNo, wikipedia);
                 AttachedWorldPosition awp = GetAttachedWorldPosition(pwp, "True");
                 SetAttachedWorldPosition("CylinderArea", $"CylinderArea{legNo:00}", awp);
 
@@ -682,11 +682,6 @@ namespace P3D_Scenario_Generator.Services
             }
 
             return [windowWidth.ToString(), windowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
-        }
-
-        static private string GetWikiItemWorldPosition(int legNo, Wikipedia wikipedia)
-        {
-            return $"{wikipedia.WikiTour[legNo].latitude}, {wikipedia.WikiTour[legNo].longitude},+0.0";
         }
 
         static private void SetAirportLandingTrigger(string descr, string landingType, string activated, string airportIdent)

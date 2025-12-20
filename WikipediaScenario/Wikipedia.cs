@@ -574,6 +574,11 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 formData.WikiURLMonitorWidth, formData.WikiURLMonitorHeight, formData.WikiURLOffset);
         }
 
+        static internal string GetWikiItemWorldPosition(int legNo, Wikipedia wikipedia)
+        {
+            return $"{wikipedia.WikiTour[legNo].latitude}, {wikipedia.WikiTour[legNo].longitude},+0.0";
+        }
+
         #endregion
     }
 }
