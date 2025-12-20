@@ -263,8 +263,6 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             formData.MapMonitorWidth, formData.MapMonitorHeight, formData.MapOffset);
         }
 
-
-
         /// <summary>
         /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
         /// for the photo window based on the specified alignment and monitor properties.
@@ -287,6 +285,13 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             using Bitmap drawing = new(bitmapFilename);
             return ScenarioXML.GetWindowParameters(drawing.Width, drawing.Height, formData.PhotoTourPhotoAlignment,
                 formData.PhotoTourPhotoMonitorWidth, formData.PhotoTourPhotoMonitorHeight, formData.PhotoTourPhotoOffset);
+        }
+
+        static internal string GetPhotoWorldPosition(PhotoTour photoTour, int photoNo)
+        {
+            PhotoLocParams photoLegParams = PhotoTourUtilities.GetPhotoLocation(photoTour.PhotoLocations, photoNo);
+            return $"{ScenarioFXML.FormatCoordXML(photoLegParams.latitude, "N", "S", true)}, " +
+                $"{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W", true)},+0.0";
         }
     }
 }
