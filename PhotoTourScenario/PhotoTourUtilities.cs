@@ -236,5 +236,57 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
             return overview;
         }
+
+        /// <summary>
+        /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
+        /// for the map window based on the specified alignment and monitor properties.
+        /// </summary>
+        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
+        /// map window's desired alignment, offsets, monitor dimensions, and calculated window size.</param>
+        /// <returns>
+        /// A <see cref="T:System.String[]"/> array containing four elements in the order:
+        /// <list type="bullet">
+        /// <item><description>Window Width (string)</description></item>
+        /// <item><description>Window Height (string)</description></item>
+        /// <item><description>Horizontal Offset (string)</description></item>
+        /// <item><description>Vertical Offset (string)</description></item>
+        /// </list>
+        /// These parameters are suitable for configuring the map window's display.
+        /// </returns>
+        static internal string[] GetMapWindowParameters(ScenarioFormData formData)
+        {
+            // Dimensions
+            int mapWindowWidth = (int)formData.MapWindowSize;
+            int mapWindowHeight = (int)formData.MapWindowSize;
+
+            return ScenarioXML.GetWindowParameters(mapWindowWidth, mapWindowHeight, formData.MapAlignment,
+            formData.MapMonitorWidth, formData.MapMonitorHeight, formData.MapOffset);
+        }
+
+
+
+        /// <summary>
+        /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
+        /// for the photo window based on the specified alignment and monitor properties.
+        /// </summary>
+        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
+        /// Photo window's desired alignment, offsets, monitor dimensions, and calculated window size.</param>
+        /// <returns>
+        /// A <see cref="T:System.String[]"/> array containing four elements in the order:
+        /// <list type="bullet">
+        /// <item><description>Window Width (string)</description></item>
+        /// <item><description>Window Height (string)</description></item>
+        /// <item><description>Horizontal Offset (string)</description></item>
+        /// <item><description>Vertical Offset (string)</description></item>
+        /// </list>
+        /// These parameters are suitable for configuring the photo window's display.
+        /// </returns>
+        static internal string[] GetPhotoWindowParameters(int photoNo, ScenarioFormData formData)
+        {
+            string bitmapFilename = $"{formData.ScenarioImageFolder}\\photo_{photoNo:00}.jpg";
+            using Bitmap drawing = new(bitmapFilename);
+            return ScenarioXML.GetWindowParameters(drawing.Width, drawing.Height, formData.PhotoTourPhotoAlignment,
+                formData.PhotoTourPhotoMonitorWidth, formData.PhotoTourPhotoMonitorHeight, formData.PhotoTourPhotoOffset);
+        }
     }
 }

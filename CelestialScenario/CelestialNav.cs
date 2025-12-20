@@ -23,7 +23,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         private readonly AlmanacDataSource _almanacDataSource = new(logger, progressReporter, httpRoutines, almanacData);
         private readonly StarDataManager _starDataManager = new(logger, fileOps, progressReporter);
         private readonly SextantViewGenerator _sextantViewGenerator = new(logger, fileOps, progressReporter, almanacData);
-        private readonly SimulatorFileGenerator _simulatorFileGenerator = new(logger, fileOps, progressReporter);
+        private readonly StarsDatFileGenerator _simulatorFileGenerator = new(logger, fileOps, progressReporter);
         private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
 
         /// <summary>
@@ -192,38 +192,8 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// </returns>
         static internal string[] GetSextantWindowParameters(ScenarioFormData formData)
         {
-
-            int horizontalOffset;
-            int verticalOffset;
-
-            // Offsets
-            if (formData.SextantAlignment == WindowAlignment.TopLeft)
-            {
-                horizontalOffset = formData.SextantOffsetPixels;
-                verticalOffset = formData.SextantOffsetPixels;
-            }
-            else if (formData.SextantAlignment == WindowAlignment.TopRight)
-            {
-                horizontalOffset = formData.SextantMonitorWidth - formData.SextantOffsetPixels - Constants.SextantWindowWidth;
-                verticalOffset = formData.SextantOffsetPixels;
-            }
-            else if (formData.SextantAlignment == WindowAlignment.BottomRight)
-            {
-                horizontalOffset = formData.SextantMonitorWidth - formData.SextantOffsetPixels - Constants.SextantWindowWidth;
-                verticalOffset = formData.SextantMonitorHeight - formData.SextantOffsetPixels - Constants.SextantWindowHeight;
-            }
-            else if (formData.SextantAlignment == WindowAlignment.BottomLeft)
-            {
-                horizontalOffset = formData.SextantOffsetPixels;
-                verticalOffset = formData.SextantMonitorHeight - formData.SextantOffsetPixels - Constants.SextantWindowHeight;
-            }
-            else // Parameters.SextantAlignment == "Centered"
-            {
-                horizontalOffset = (formData.SextantMonitorWidth / 2) - (Constants.SextantWindowWidth / 2);
-                verticalOffset = (formData.SextantMonitorHeight / 2) - (Constants.SextantWindowHeight / 2);
-            }
-
-            return [Constants.SextantWindowWidth.ToString(), Constants.SextantWindowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
+            return ScenarioXML.GetWindowParameters(Constants.SextantWindowWidth, Constants.SextantWindowHeight, formData.SextantAlignment,
+                formData.SextantMonitorWidth, formData.SextantMonitorHeight, formData.SextantOffsetPixels);
         }
     }
 }

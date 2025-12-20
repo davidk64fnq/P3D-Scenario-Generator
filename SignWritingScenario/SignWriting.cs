@@ -157,38 +157,8 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// </returns>
         static internal string[] GetSignWritingWindowParameters(ScenarioFormData formData)
         {
-
-            int horizontalOffset;
-            int verticalOffset;
-
-            // Offsets
-            if (formData.SignAlignment == WindowAlignment.TopLeft)
-            {
-                horizontalOffset = formData.SignOffsetPixels;
-                verticalOffset = formData.SignOffsetPixels;
-            }
-            else if (formData.SignAlignment == WindowAlignment.TopRight)
-            {
-                horizontalOffset = formData.SignMonitorWidth - formData.SignOffsetPixels - formData.SignWindowWidth;
-                verticalOffset = formData.SignOffsetPixels;
-            }
-            else if (formData.SignAlignment == WindowAlignment.BottomRight)
-            {
-                horizontalOffset = formData.SignMonitorWidth - formData.SignOffsetPixels - formData.SignWindowWidth;
-                verticalOffset = formData.SignMonitorHeight - formData.SignOffsetPixels - formData.SignWindowHeight;
-            }
-            else if (formData.SignAlignment == WindowAlignment.BottomLeft)
-            {
-                horizontalOffset = formData.SignOffsetPixels;
-                verticalOffset = formData.SignMonitorHeight - formData.SignOffsetPixels - formData.SignWindowHeight;
-            }
-            else // Parameters.SignAlignment == "Centered"
-            {
-                horizontalOffset = (formData.SignMonitorWidth / 2) - (formData.SignWindowWidth / 2);
-                verticalOffset = (formData.SignMonitorHeight / 2) - (formData.SignWindowHeight / 2);
-            }
-
-            return [formData.SignWindowWidth.ToString(), formData.SignWindowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
+            return ScenarioXML.GetWindowParameters(formData.SignWindowWidth, formData.SignWindowHeight, formData.SignAlignment,
+            formData.SignMonitorWidth, formData.SignMonitorHeight, formData.SignOffsetPixels);
         }
 
         /// <summary>

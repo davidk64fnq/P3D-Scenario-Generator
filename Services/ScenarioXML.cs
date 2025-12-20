@@ -142,8 +142,7 @@ namespace P3D_Scenario_Generator.Services
             await SetResourcesFile("CSS", "styleMovingMap.css", formData, fileOps, progressReporter);
 
             // Create map window open/close actions
-            string[] mapWindowParameters = GetMapWindowParameters(formData);
-            SetOpenWindowAction(photoTour.PhotoCount - 1, "UIPanelWindow", "UIpanelWindow", mapWindowParameters, formData.MapMonitorNumber.ToString());
+            SetOpenWindowAction(photoTour.PhotoCount - 1, "UIPanelWindow", "UIpanelWindow", PhotoTourUtilities.GetMapWindowParameters(formData), formData.MapMonitorNumber.ToString());
             SetCloseWindowAction(photoTour.PhotoCount - 1, "UIPanelWindow", "UIpanelWindow");
 
             // Pass 1 - setup proximity triggers, there is a trigger for each photo location
@@ -155,8 +154,7 @@ namespace P3D_Scenario_Generator.Services
 
                 // Create photo window open/close actions
                 SetUIPanelWindow(photoNo, "UIpanelWindow", "False", "True", $"images\\PhotoTour.html", "False", "False");
-                string[] photoWindowParameters = GetPhotoWindowParameters(photoNo, formData);
-                SetOpenWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow", photoWindowParameters, formData.PhotoTourPhotoMonitorNumber.ToString());
+                SetOpenWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow", PhotoTourUtilities.GetPhotoWindowParameters(photoNo, formData), formData.PhotoTourPhotoMonitorNumber.ToString());
                 SetCloseWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow");
 
                 // Create cylinder area objects to put over each photo location
@@ -434,11 +432,9 @@ namespace P3D_Scenario_Generator.Services
             await SetWikiTourJS(formData, wikipedia, fileOps, progressReporter);
 
             // Create window open/close actions
-            string[] mapWindowParameters = GetMapWindowParameters(formData);
-            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", mapWindowParameters, formData.MapMonitorNumber.ToString());
+            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", Wikipedia.GetMapWindowParameters(formData), formData.MapMonitorNumber.ToString());
             SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
-            string[] wikiURLwindowDimensions = GetWikiURLWindowParameters(formData);
-            SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", wikiURLwindowDimensions, formData.WikiURLMonitorNumber.ToString());
+            SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", Wikipedia.GetWikiURLWindowParameters(formData), formData.WikiURLMonitorNumber.ToString());
             SetCloseWindowAction(2, "UIPanelWindow", "UIpanelWindow");
 
             // Pass 1 - setup proximity triggers, there is a trigger for each wiki item location
@@ -494,15 +490,6 @@ namespace P3D_Scenario_Generator.Services
 
             // Add activate airport landing trigger action as event to last proximity trigger 
             SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", wikipedia.WikiCount - 2, "ProximityTrigger");
-        }
-
-        static private void SetTestingWorldBaseFlightXML(ScenarioFormData formData)
-        {
-            SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\PhotoTour.html", "False", "False");
-            string[] photoWindowParameters = GetPhotoWindowParameters(1, formData);
-            SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", photoWindowParameters, formData.PhotoTourPhotoMonitorNumber.ToString());
-            SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
-            SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
         }
 
         public static async Task WriteXMLAsync(ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
@@ -664,31 +651,7 @@ namespace P3D_Scenario_Generator.Services
             return or;
         }
 
-        static private string[] GetMapWindowParameters(ScenarioFormData formData)
-        {
-            // Dimensions
-            int mapWindowWidth = (int)formData.MapWindowSize;
-            int mapWindowHeight = (int)formData.MapWindowSize;
-
-            return GetWindowParameters(mapWindowWidth, mapWindowHeight, formData.MapAlignment,
-            formData.MapMonitorWidth, formData.MapMonitorHeight, formData.MapOffset);
-        }
-
-        static private string[] GetPhotoWindowParameters(int photoNo, ScenarioFormData formData)
-        {
-            string bitmapFilename = $"{formData.ScenarioImageFolder}\\photo_{photoNo:00}.jpg";
-            using Bitmap drawing = new(bitmapFilename);
-            return GetWindowParameters(drawing.Width, drawing.Height, formData.PhotoTourPhotoAlignment,
-                formData.PhotoTourPhotoMonitorWidth, formData.PhotoTourPhotoMonitorHeight, formData.PhotoTourPhotoOffset);
-        }
-
-        static private string[] GetWikiURLWindowParameters(ScenarioFormData formData)
-        {
-            return GetWindowParameters(formData.WikiURLWindowWidth, formData.WikiURLWindowHeight, formData.WikiURLAlignment,
-                formData.WikiURLMonitorWidth, formData.WikiURLMonitorHeight, formData.WikiURLOffset);
-        }
-
-        static private string[] GetWindowParameters(int windowWidth, int windowHeight, WindowAlignment alignment, int monitorWidth, int monitorHeight, int offset)
+        static public string[] GetWindowParameters(int windowWidth, int windowHeight, WindowAlignment alignment, int monitorWidth, int monitorHeight, int offset)
         {
             int horizontalOffset, verticalOffset;
             // Offsets

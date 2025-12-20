@@ -1,8 +1,8 @@
-﻿using P3D_Scenario_Generator.CelestialScenario;
-using P3D_Scenario_Generator.Models;
+﻿using P3D_Scenario_Generator.Models;
+using P3D_Scenario_Generator.Services;
 using System.Text;
 
-namespace P3D_Scenario_Generator.Services
+namespace P3D_Scenario_Generator.CelestialScenario
 {
     /// <summary>
     /// Handles the generation and management of simulator-specific files,
@@ -11,7 +11,7 @@ namespace P3D_Scenario_Generator.Services
     /// It provides functionality to backup the original "stars.dat" and
     /// replace it with a program-generated version containing relevant star data.
     /// </summary>
-    public sealed class SimulatorFileGenerator(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
+    public sealed class StarsDatFileGenerator(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
     {
         // Guard clauses to validate the constructor parameters.
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
