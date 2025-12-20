@@ -159,7 +159,7 @@ namespace P3D_Scenario_Generator.Services
 
                 // Create cylinder area objects to put over each photo location
                 SetCylinderArea(photoNo, "CylinderArea", "0.0,0.0,0.0", formData.PhotoTourHotspotRadius.ToString(), "18520.0", "None");
-                string pwp = GetPhotoWorldPosition(PhotoTourUtilities.GetPhotoLocation(photoTour.PhotoLocations, photoNo));
+                string pwp = PhotoTourUtilities.GetPhotoWorldPosition(photoTour, photoNo);
                 AttachedWorldPosition awp = GetAttachedWorldPosition(pwp, "True");
                 SetAttachedWorldPosition("CylinderArea", $"CylinderArea{photoNo:00}", awp);
 
@@ -682,12 +682,6 @@ namespace P3D_Scenario_Generator.Services
             }
 
             return [windowWidth.ToString(), windowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];
-        }
-
-        static private string GetPhotoWorldPosition(PhotoLocParams photoLegParams)
-        {
-            return $"{ScenarioFXML.FormatCoordXML(photoLegParams.latitude, "N", "S", true)}, " +
-				$"{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W", true)},+0.0";
         }
 
         static private string GetWikiItemWorldPosition(int legNo, Wikipedia wikipedia)
