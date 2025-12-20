@@ -25,7 +25,9 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// <summary>
         /// The gates comprising the message for the signwriting scenario. Methods for setting gates are in gates.cs
         /// </summary>
-        internal List<Gate> gates = [];
+        private readonly List<Gate> _gates = [];
+
+        public int GatesCount => _gates.Count;
 
         /// <summary>
         /// Called from Form1.cs to do the scenario specific work in creating a signwriting scenario
@@ -46,8 +48,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             SignCharacterMap.InitLetterPaths();
 
             // Create the gates for the sign writing scenario
-            gates = SignGateGenerator.SetSignGatesMessage(formData);
-            if (gates.Count == 0)
+            if (!SignGateGenerator.SetSignGatesMessage(_gates, formData))
             {
                 await _logger.ErrorAsync("Failed to generate the sign writing scenario.");
                 return false;
@@ -98,7 +99,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// the the sign writing gate's latitude/longitude and start/destination runway's latitude/longitude.</returns>
         public IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
         {
-            IEnumerable<Coordinate> coordinates = gates.Select(gate => new Coordinate(gate.lat, gate.lon));
+            IEnumerable<Coordinate> coordinates = _gates.Select(gate => new Coordinate(gate.lat, gate.lon));
 
             // Add the start runway to the beginning
             coordinates = coordinates.Prepend(new Coordinate(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon));
@@ -133,7 +134,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// <returns>The estimated flight distance in nautical miles.</returns>
         internal double GetSignWritingDistance(ScenarioFormData formData)
         {
-            return ((double)gates.Count / 2.0)
+            return ((double)_gates.Count / 2.0)
            * formData.SignSegmentLengthFeet
            / Constants.FeetInNauticalMile
            * 1.5;
@@ -265,9 +266,9 @@ namespace P3D_Scenario_Generator.SignWritingScenario
 
             // Assuming SignWriting.gates is a List<Gate> and Gate has public topPixels, leftPixels, and orientation properties
             Gate gate;
-            for (int index = 1; index <= gates.Count; index++)
+            for (int index = 1; index <= _gates.Count; index++)
             {
-                gate = gates[index - 1];
+                gate = _gates[index - 1];
                 topPixels += gate.topPixels.ToString();
                 leftPixels += gate.leftPixels.ToString();
                 bearings += gate.orientation.ToString();
@@ -276,7 +277,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 altitudes += gate.amsl.ToString();
 
                 // Add comma if not the last element
-                if (index <= gates.Count - 1)
+                if (index <= _gates.Count - 1)
                 {
                     topPixels += ",";
                     leftPixels += ",";
@@ -409,6 +410,16 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             };
 
             return overview;
+        }
+
+        /// <summary>
+        /// Provides access to the gate at a specific index in the sign writing scenario.
+        /// </summary>
+        /// <param name="index">The zero-based index of the gate instance to be retrieved.</param>
+        /// <returns>The gate instance at the specified index.</returns>
+        public Gate GetGate(int index)
+        {
+            return _gates[index];
         }
     }
 }

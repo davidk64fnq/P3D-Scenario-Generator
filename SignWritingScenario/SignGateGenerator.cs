@@ -106,9 +106,8 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// segments used to represent a alphabet letter
         /// </summary>
         /// <returns>The list of gates</returns>
-        internal static List<Gate> SetSignGatesMessage(ScenarioFormData formData)
+        internal static bool SetSignGatesMessage(List<Gate> gates, ScenarioFormData formData)
         {
-            List<Gate> gates = [];
             for (int index = 0; index < formData.SignMessage.Length; index++)
             {
                 if (char.IsLetter(formData.SignMessage[index]))
@@ -127,7 +126,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
 
             // Move gates to airport and correct height
             MoveGatesToAirport(gates, formData);
-            return gates;
+            return true;
         }
 
         /// <summary>

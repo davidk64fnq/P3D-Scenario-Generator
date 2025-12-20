@@ -237,11 +237,11 @@ namespace P3D_Scenario_Generator.Services
             SetSignWritingScriptActions();
 
             // First pass
-            for (int gateNo = 1; gateNo <= signWriting.gates.Count; gateNo++)
+            for (int gateNo = 1; gateNo <= signWriting.GatesCount; gateNo++)
 			{
                 // Create gate objects (hoop active, hoop inactive and number)
-                string hwp = GetGateWorldPosition(signWriting.gates[gateNo - 1], Constants.HoopActVertOffsetFeet);
-                string go = GetGateOrientation(signWriting.gates[gateNo - 1]);
+                string hwp = GetGateWorldPosition(signWriting.GetGate(gateNo - 1), Constants.HoopActVertOffsetFeet);
+                string go = GetGateOrientation(signWriting.GetGate(gateNo - 1));
                 SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Constants.HoopActGuid, hwp, go, "False", "1", "False");
                 SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Constants.HoopInactGuid, hwp, go, "False", "1", "False");
 
@@ -301,7 +301,7 @@ namespace P3D_Scenario_Generator.Services
             }
 
             // Second pass
-            for (int gateNo = 1; gateNo <= signWriting.gates.Count; gateNo++)
+            for (int gateNo = 1; gateNo <= signWriting.GatesCount; gateNo++)
             {
                 if (gateNo % 2 == 1) // First of gate pair marking a segment
                 {
@@ -312,7 +312,7 @@ namespace P3D_Scenario_Generator.Services
                 }
                 else // Second of gate pair marking a segment
                 {
-                    if (gateNo + 1 < signWriting.gates.Count)
+                    if (gateNo + 1 < signWriting.GatesCount)
                     {
                         // Make next segment start gate active
                         SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActHoopAct", gateNo, "ProximityTrigger");
@@ -323,7 +323,7 @@ namespace P3D_Scenario_Generator.Services
                 }
 
                 // Add activate next gate proximity trigger action as event to proximity trigger
-                if (gateNo + 1 <= signWriting.gates.Count)
+                if (gateNo + 1 <= signWriting.GatesCount)
                     SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActProximityTrigger", gateNo, "ProximityTrigger");
             }
 
@@ -357,7 +357,7 @@ namespace P3D_Scenario_Generator.Services
             SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger
-            SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", signWriting.gates.Count, "ProximityTrigger");
+            SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", signWriting.GatesCount, "ProximityTrigger");
         }
 
         public static void SetCelestialWorldBaseFlightXML(ScenarioFormData formData, Overview overview)
