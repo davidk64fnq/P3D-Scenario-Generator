@@ -105,8 +105,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// Create a set of gates for signwriting message. Start and finish gate for a subset of the 22 possible
         /// segments used to represent a alphabet letter
         /// </summary>
-        /// <returns>The list of gates</returns>
-        internal static bool SetSignGatesMessage(List<Gate> gates, ScenarioFormData formData)
+        internal static void SetSignGatesMessage(List<Gate> gates, ScenarioFormData formData)
         {
             for (int index = 0; index < formData.SignMessage.Length; index++)
             {
@@ -126,7 +125,6 @@ namespace P3D_Scenario_Generator.SignWritingScenario
 
             // Move gates to airport and correct height
             MoveGatesToAirport(gates, formData);
-            return true;
         }
 
         /// <summary>

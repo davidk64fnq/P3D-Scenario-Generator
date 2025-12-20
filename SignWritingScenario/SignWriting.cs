@@ -48,11 +48,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             SignCharacterMap.InitLetterPaths();
 
             // Create the gates for the sign writing scenario
-            if (!SignGateGenerator.SetSignGatesMessage(_gates, formData))
-            {
-                await _logger.ErrorAsync("Failed to generate the sign writing scenario.");
-                return false;
-            }
+            SignGateGenerator.SetSignGatesMessage(_gates, formData);
 
             formData.OSMmapData = [];
             message = "Creating overview image.";
