@@ -16,7 +16,7 @@
 // The JSDoc provides type information for the TypeScript checker.
 
 /**
- * @type {StarData[]} starCatalog - Array of 446 StarData objects, where each object contains all properties for a single star.
+ * @type {StarData[]} starCatalog - Array of 445 StarData objects, where each object contains all properties for a single star.
  */
 const starCatalog = null;
 

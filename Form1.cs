@@ -3976,7 +3976,7 @@ namespace P3D_Scenario_Generator
                 allValid = false;
             }
 
-            _formData.UseCustomStarsDat = CheckBoxCelestialUseStarsDat.AutoCheck;
+            _formData.UseCustomStarsDat = CheckBoxCelestialUseStarsDat.Checked;
 
             // Validate and populate Sextant Window settings as a group
             allValid &= ValidateSextantWindowSettingsGroup(null);
