@@ -8,10 +8,10 @@ namespace P3D_Scenario_Generator.MapTiles
     /// This class encapsulates the logic for determining the tile set that covers a given area,
     /// including handling edge conditions and meridian wrapping.
     /// </summary>
-    public class BoundingBoxCalculator(Logger logger, IProgress<string> progressReporter)
+    public class BoundingBoxCalculator(Logger logger, FormProgressReporter progressReporter)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         /// <summary>
         /// Creates a bounding box of tiles needed at a given zoom level to include all tiles in a list.

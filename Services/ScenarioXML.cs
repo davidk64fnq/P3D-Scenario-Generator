@@ -9,9 +9,12 @@ using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator.Services
 {
-    public class ScenarioXML
+    public class ScenarioXML(AssetFileGenerator assetFileGenerator)
     {
-		private static readonly SimBaseDocumentXML simBaseDocumentXML = new();
+        // Guard clauses to validate the constructor parameters.
+        private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator ?? throw new ArgumentNullException(nameof(assetFileGenerator));
+
+        private static readonly SimBaseDocumentXML simBaseDocumentXML = new();
 
         public static void SetSimbaseDocumentXML(ScenarioFormData formData, Overview overview)
         {
@@ -114,7 +117,7 @@ namespace P3D_Scenario_Generator.Services
             SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", makeCircuit.GatesCount - 2, "ProximityTrigger");
         }
 
-        public static async Task SetPhotoTourWorldBaseFlightXMLAsync(ScenarioFormData formData, Overview overview, PhotoTour photoTour, FileOps fileOps, FormProgressReporter progressReporter)
+        public async Task SetPhotoTourWorldBaseFlightXMLAsync(ScenarioFormData formData, Overview overview, PhotoTour photoTour, FileOps fileOps, FormProgressReporter progressReporter)
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
@@ -135,11 +138,13 @@ namespace P3D_Scenario_Generator.Services
             SetUIPanelWindow(photoTour.PhotoCount - 1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for windows
-            await SetResourcesFile("HTML", "MovingMap.html", formData, fileOps, progressReporter);
-            await SetResourcesFile("HTML", "PhotoTour.html", formData, fileOps, progressReporter);
+            await _assetFileGenerator.WriteAssetFileAsync("HTML.MovingMap.html", "MovingMap.html", formData.ScenarioImageFolder);
+            await _assetFileGenerator.WriteAssetFileAsync("HTML.PhotoTour.html", "PhotoTour.html", formData.ScenarioImageFolder);
+            await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsPhotoTour.js", "scriptsPhotoTour.js", formData.ScenarioImageFolder);
+            await _assetFileGenerator.WriteAssetFileAsync("CSS.styleMovingMap.css", "styleMovingMap.css", formData.ScenarioImageFolder);
+
+            
             await SetMovingMapJS(photoTour.PhotoCount, formData, fileOps, progressReporter);
-            await SetResourcesFile("Javascript", "scriptsPhotoTour.js", formData, fileOps, progressReporter);
-            await SetResourcesFile("CSS", "styleMovingMap.css", formData, fileOps, progressReporter);
 
             // Create map window open/close actions
             SetOpenWindowAction(photoTour.PhotoCount - 1, "UIPanelWindow", "UIpanelWindow", PhotoTourUtilities.GetMapWindowParameters(formData), formData.MapMonitorNumber.ToString());

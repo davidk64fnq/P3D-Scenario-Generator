@@ -6,11 +6,11 @@ namespace P3D_Scenario_Generator.Services
     /// Manages the generation and updating of files (HTML, JavaScript, and CSS)
     /// necessary for the various scenario types within the simulation.
     /// </summary>
-    public class AssetFileGenerator(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
+    public class AssetFileGenerator(Logger logger, FileOps fileOps, FormProgressReporter progressReporter)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         /// <summary>
         /// Safely replaces the assignment value of a specific JavaScript variable using Regex,

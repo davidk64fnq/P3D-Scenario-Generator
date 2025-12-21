@@ -8,11 +8,11 @@ namespace P3D_Scenario_Generator.Services
     /// <param name="logger">The logger for writing log messages.</param>
     /// <param name="fileOps">The file operations service for reading and writing files.</param>
     /// <param name="progressReporter">The progress reporter for UI updates.</param>
-    public class ScenarioHTML(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
+    public class ScenarioHTML(Logger logger, FileOps fileOps, FormProgressReporter progressReporter)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         /// <summary>
         /// A struct to hold data for the mission brief HTML template.

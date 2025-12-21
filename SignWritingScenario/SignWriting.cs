@@ -14,13 +14,18 @@ namespace P3D_Scenario_Generator.SignWritingScenario
     /// This includes initializing character segment mappings, generating flight gates for the sign message,
     /// and preparing map images for scenario overview and location display.
     /// </summary>
-    public class SignWriting(Logger logger, FileOps fileOps, FormProgressReporter progressReporter, HttpRoutines httpRoutines)
+    public class SignWriting(
+        Logger logger,
+        FileOps fileOps,
+        FormProgressReporter progressReporter,
+        MapTileImageMaker mapTileImageMaker) 
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
-        private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
+
+        // Assigned from constructor
+        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
 
         /// <summary>
         /// The gates comprising the message for the signwriting scenario. Methods for setting gates are in gates.cs

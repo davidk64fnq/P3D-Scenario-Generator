@@ -18,14 +18,16 @@ namespace P3D_Scenario_Generator.CircuitScenario
     /// <param name="logger">The logger for writing log messages.</param>
     /// <param name="fileOps">The file operations service for reading and writing files.</param>
     /// <param name="progressReporter">The progress reporter for UI updates.</param>
-    public class MakeCircuit(Logger logger, FileOps fileOps, FormProgressReporter progressReporter, HttpRoutines httpRoutines)
+    public class MakeCircuit(
+    Logger logger,
+    FileOps fileOps,
+    FormProgressReporter progressReporter,
+    MapTileImageMaker mapTileImageMaker) 
     {
-        // Guard clauses to validate the constructor parameters.
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
-        private readonly ImageUtils _imageUtils = new(logger, fileOps, progressReporter);
+        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
 
         /// <summary>
         /// Start and finish airport (the same) plus the 8 gates making up the circuit.

@@ -10,7 +10,7 @@ namespace P3D_Scenario_Generator.Services
     /// Initializes a new instance of the HtmlParser class.
     /// </remarks>
     /// <param name="log">The logging service to use for reporting errors.</param>
-    internal class HtmlParser(Logger log)
+    public class HtmlParser(Logger log)
     {
         private readonly Logger _log = log;
 

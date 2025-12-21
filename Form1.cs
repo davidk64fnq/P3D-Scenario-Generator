@@ -1,6 +1,7 @@
 ﻿using P3D_Scenario_Generator.CelestialScenario;
 using P3D_Scenario_Generator.CircuitScenario;
 using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.PhotoTourScenario;
 using P3D_Scenario_Generator.Runways;
@@ -16,68 +17,126 @@ namespace P3D_Scenario_Generator
 {
     public partial class Form : System.Windows.Forms.Form
     {
+        // --- UI State ---
         private bool _isFormLoaded = false;
         private bool _isShuttingDown = false;
         private bool _isDeferringCloseForSave = false;
 
-        // Model dependencies
-        private readonly AlmanacData _almanacData;
+        // --- LAYER 1: Shared Models & UI Infrastructure ---
         private readonly ScenarioFormData _formData;
-
-        // Runway dependencies
-        private readonly RunwayLoader _runwayLoader;
-        private readonly RunwayManager _runwayManager;
-        private RunwayUiManager _runwayUiManager;
-
-        // Scenario-specific dependencies
-        private readonly MakeCircuit _makeCircuit;
-        private readonly PhotoTour _photoTour;
-        private readonly SignWriting _signWriting;
-        private readonly CelestialNav _celestialNav;
-        private readonly Wikipedia _wikipedia;
-        private readonly WikiPageHtmlParser _wikiPageHtmlParser;
-
-        // Services dependencies
-        private readonly Aircraft _aircraft;
-        private readonly CacheManager _cacheManager;
-        private readonly FileOps _fileOps;
-        private readonly HttpRoutines _httpRoutines;
-        private readonly ImageUtils _imageUtils;
-        private readonly Logger _logger;
-        private readonly ScenarioFXML _scenarioFXML;
-        private readonly AssetFileGenerator _assetFileGenerator;
-
-        // Utilities dependencies
+        private readonly AlmanacData _almanacData;
         private readonly FormProgressReporter _progressReporter;
+        private readonly HttpClient _httpClient;
+
+        // --- LAYER 2: Core Services ---
+        private readonly Logger _logger;
+        private readonly FileOps _fileOps;
+        private readonly CacheManager _cacheManager;
+        private readonly HttpRoutines _httpRoutines;
+        private readonly ScenarioFXML _scenarioFXML;
+        private readonly RunwayLoader _runwayLoader;
+
+        // --- LAYER 3: Specialized Utilities ---
+        private readonly OSMTileCache _osmTileCache;
+        private readonly MapTileDownloader _mapTileDownloader;
+        private readonly AssetFileGenerator _assetFileGenerator;
+        private readonly ImageUtils _imageUtils;
+        private readonly HtmlParser _htmlParser;
+        private readonly MapTileCalculator _mapTileCalculator;
+        private readonly BoundingBoxCalculator _boundingBoxCalculator;
+        private readonly ParsingHelpers _parsingHelpers;
+        private readonly StarDataManager _starDataManager;
+        private readonly StarsDatFileGenerator _simulatorFileGenerator;
+        private readonly WikiPageHtmlParser _wikiPageHtmlParser;
+        private readonly RunwayManager _runwayManager;
+        private readonly Aircraft _aircraft;
+        private RunwayUiManager _runwayUiManager; // Note: likely assigned later in UI events
+
+        // --- LAYER 4: Composite Services ---
+        private readonly ScenarioXML _scenarioXML;
+        private readonly Pic2MapHtmlParser _pic2MapHtmlParser;
+        private readonly PhotoTourUtilities _photoTourUtilities;
+        private readonly MapTileMontager _mapTileMontager;
+        private readonly MapTilePadder _mapTilePadder;
+        private readonly MapTileImageMaker _mapTileImageMaker;
+        private readonly AlmanacDataSource _almanacDataSource;
+        private readonly SextantViewGenerator _sextantViewGenerator;
+
+        // --- LAYER 5: Scenario Engines ---
+        private readonly PhotoTour _photoTour;
+        private readonly CelestialNav _celestialNav;
+        private readonly SignWriting _signWriting;
+        private readonly Wikipedia _wikipedia;
+        private readonly MakeCircuit _makeCircuit;
 
         public Form()
         {
             InitializeComponent();
-
-            // If the associated control has an error, cancel the display of the standard ToolTip.
             toolTip1.Popup += ToolTip1_Popup;
 
-            // Initializes the progress reporter to update the status bar label on the UI thread.
-            _progressReporter = new(toolStripStatusLabel1, this);
-
+            // --- LAYER 1: Shared Models & UI Infrastructure (No Dependencies) ---
             _formData = new();
-            _logger = new(false, false, false, _formData);
-            _cacheManager = new(_logger);
-            _fileOps = new(_logger);
-            _aircraft = new(_logger, _cacheManager, _fileOps);
-            _httpRoutines = new(_fileOps, _logger);
-            _assetFileGenerator = new(_logger, _fileOps, _progressReporter);
-            _photoTour = new(_logger, _fileOps, _httpRoutines, _progressReporter);
             _almanacData = new();
-            _celestialNav = new(_logger, _fileOps, _httpRoutines, _progressReporter, _almanacData, _assetFileGenerator);
-            _makeCircuit = new(_logger, _fileOps, _progressReporter, _httpRoutines);
-            _imageUtils = new(_logger, _fileOps, _progressReporter);
-            _signWriting = new(_logger, _fileOps, _progressReporter, _httpRoutines);
-            _wikipedia = new(_logger, _fileOps, _progressReporter, _httpRoutines);
-            _wikiPageHtmlParser = new(_logger, _fileOps, _httpRoutines, _progressReporter);
+            _progressReporter = new(toolStripStatusLabel1, this); 
+            _httpClient = new();
+
+            // --- LAYER 2: Core Services (Fundamental Building Blocks) ---
+            _logger = new(false, false, false, _formData);
+            _fileOps = new(_logger);
+            _cacheManager = new(_logger);
+            _httpRoutines = new(_fileOps, _logger, _httpClient);
             _scenarioFXML = new(_fileOps, _progressReporter);
             _runwayLoader = new(_fileOps, _cacheManager, _logger);
+
+            // --- LAYER 3: Specialized Utilities (Single-purpose workers) ---
+            _osmTileCache = new(_fileOps, _httpRoutines, _progressReporter);
+            _mapTileDownloader = new(_fileOps, _httpRoutines, _progressReporter, _osmTileCache);
+            _assetFileGenerator = new(_logger, _fileOps, _progressReporter);
+            _imageUtils = new(_logger, _fileOps, _progressReporter);
+            _htmlParser = new(_logger);
+            _boundingBoxCalculator = new(_logger, _progressReporter);
+            _mapTileCalculator = new(_logger, _progressReporter, _boundingBoxCalculator);
+            _parsingHelpers = new(_logger, _progressReporter);
+            _starDataManager = new(_logger, _fileOps, _progressReporter);
+            _simulatorFileGenerator = new(_logger, _fileOps, _progressReporter);
+            _wikiPageHtmlParser = new(_logger, _fileOps, _httpRoutines, _progressReporter);
             _runwayManager = new(_runwayLoader);
+            _aircraft = new(_logger, _cacheManager);
+
+            // --- LAYER 4: Composite Services (Depend on Layer 2 & 3) ---
+            _scenarioXML = new(_assetFileGenerator);
+            _pic2MapHtmlParser = new(_logger, _httpRoutines, _htmlParser);
+            _photoTourUtilities = new(_logger, _httpRoutines, _fileOps, _imageUtils);
+            _mapTileMontager = new(_logger, _progressReporter, _fileOps, _mapTileDownloader);
+            _mapTilePadder = new(_logger, _progressReporter, _fileOps, _mapTileDownloader, _mapTileMontager);
+            _mapTileImageMaker = new(_logger, _progressReporter, _fileOps, _mapTileCalculator, _boundingBoxCalculator, _mapTileMontager, _imageUtils, _mapTilePadder);
+            _almanacDataSource = new(_logger, _progressReporter, _httpRoutines, _almanacData, _parsingHelpers);
+            _sextantViewGenerator = new(_logger, _fileOps, _progressReporter, _almanacData, _assetFileGenerator);
+
+            // --- LAYER 5: Scenario Engines (The Top-Level Orchestrators) ---
+            _photoTour = new(
+                _logger, _fileOps, _httpRoutines, _progressReporter, _scenarioXML,
+                _photoTourUtilities, _pic2MapHtmlParser, _mapTileImageMaker, _imageUtils);
+            _celestialNav = new(
+                _logger, _fileOps, _httpRoutines, _progressReporter, _assetFileGenerator,
+                _almanacDataSource, _starDataManager, _sextantViewGenerator,
+                _simulatorFileGenerator, _mapTileImageMaker);
+            _signWriting = new(
+                _logger,
+                _fileOps,
+                _progressReporter,
+                _mapTileImageMaker);
+            _wikipedia = new(
+                _logger,
+                _fileOps,
+                _progressReporter,
+                _mapTileImageMaker,
+                _imageUtils);
+            _makeCircuit = new(
+                _logger,
+                _fileOps,
+                _progressReporter,
+                _mapTileImageMaker);
         }
 
         #region Form Initialization

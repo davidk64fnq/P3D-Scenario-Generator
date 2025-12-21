@@ -14,18 +14,31 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// dynamic web content (HTML, JavaScript, CSS) for a celestial sextant display.
     /// It also handles the creation and backup of the simulator's stars.dat file,
     /// and determines the geographical parameters for scenario setup.
-    class CelestialNav(Logger logger, FileOps fileOps, HttpRoutines httpRoutines, FormProgressReporter progressReporter, 
-        AlmanacData almanacData, AssetFileGenerator assetFileGenerator)
+    class CelestialNav(
+        Logger logger,
+        FileOps fileOps,
+        HttpRoutines httpRoutines,
+        FormProgressReporter progressReporter,
+        AssetFileGenerator assetFileGenerator,
+        AlmanacDataSource almanacDataSource,
+        StarDataManager starDataManager,
+        SextantViewGenerator sextantViewGenerator,
+        StarsDatFileGenerator simulatorFileGenerator,
+        MapTileImageMaker mapTileImageMaker)
     {
-        // Guard clauses to validate the constructor parameters.
-        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly AlmanacDataSource _almanacDataSource = new(logger, progressReporter, httpRoutines, almanacData);
-        private readonly StarDataManager _starDataManager = new(logger, fileOps, progressReporter);
-        private readonly SextantViewGenerator _sextantViewGenerator = new(logger, fileOps, progressReporter, almanacData, assetFileGenerator);
-        private readonly StarsDatFileGenerator _simulatorFileGenerator = new(logger, fileOps, progressReporter);
-        private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
+        // Field assignments from the primary constructor
+        private readonly Logger _logger = logger;
+        private readonly FileOps _fileOps = fileOps;
+        private readonly HttpRoutines _httpRoutines = httpRoutines;
+        private readonly FormProgressReporter _progressReporter = progressReporter;
+        private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator;
+
+        // Specialized workers injected from the Form (Composition Root)
+        private readonly AlmanacDataSource _almanacDataSource = almanacDataSource;
+        private readonly StarDataManager _starDataManager = starDataManager;
+        private readonly SextantViewGenerator _sextantViewGenerator = sextantViewGenerator;
+        private readonly StarsDatFileGenerator _simulatorFileGenerator = simulatorFileGenerator;
+        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
 
         /// <summary>
         /// Initializes the celestial navigation system for a new scenario.
@@ -100,7 +113,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
             ScenarioXML.SetCelestialWorldBaseFlightXML(formData, overview);
-            await ScenarioXML.WriteXMLAsync(formData, fileOps, progressReporter);
+            await ScenarioXML.WriteXMLAsync(formData, _fileOps, _progressReporter);
 
             return true;
         }

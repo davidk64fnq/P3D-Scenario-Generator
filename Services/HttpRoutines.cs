@@ -7,18 +7,15 @@ namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
     /// Provides utility methods for performing various HTTP-related routines.
-    /// This is a non-static class that uses dependency injection for its IFileOps and ILogger dependencies.
     /// </summary>
-    /// <remarks>
-    /// Initializes a new instance of the HttpRoutines class.
-    /// </remarks>
     /// <param name="fileOps">The file operations service.</param>
     /// <param name="logger">The logging service.</param>
-    public class HttpRoutines(FileOps fileOps, Logger logger) 
+    /// <param name="httpClient">The injected HttpClient instance.</param>
+    public class HttpRoutines(FileOps fileOps, Logger logger, HttpClient httpClient)
     {
         private readonly FileOps _fileOps = fileOps;
         private readonly Logger _logger = logger;
-        private readonly HttpClient _httpClient = new();
+        private readonly HttpClient _httpClient = httpClient;
 
         /// <summary>
         /// Asynchronously retrieves and parses an HTML document from the specified URL using HtmlAgilityPack.

@@ -60,16 +60,26 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// <param name="logger">The logging service.</param>
     /// <param name="fileOps">The file operations service.</param>
     /// <param name="httpRoutines">The HTTP routines service.</param>
-    public class PhotoTour(Logger logger, FileOps fileOps, HttpRoutines httpRoutines, FormProgressReporter progressReporter)
+    public class PhotoTour(
+        Logger logger,
+        FileOps fileOps,
+        HttpRoutines httpRoutines,
+        FormProgressReporter progressReporter,
+        ScenarioXML scenarioXML,
+        PhotoTourUtilities photoTourUtilities,
+        Pic2MapHtmlParser pic2MapHtmlParser,
+        MapTileImageMaker mapTileImageMaker,
+        ImageUtils imageUtils)
     {
         private readonly FileOps _fileOps = fileOps;
-        private readonly PhotoTourUtilities _photoTourUtilities = new(logger, httpRoutines, progressReporter, fileOps);
-        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly PhotoTourUtilities _photoTourUtilities = photoTourUtilities;
+        private readonly FormProgressReporter _progressReporter = progressReporter;
         private readonly Logger _logger = logger;
         private readonly HttpRoutines _httpRoutines = httpRoutines;
-        private readonly Pic2MapHtmlParser _pic2MapHtmlParser = new(logger, httpRoutines);
-        private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
-        private readonly ImageUtils _imageUtils = new(logger, fileOps, progressReporter);
+        private readonly Pic2MapHtmlParser _pic2MapHtmlParser = pic2MapHtmlParser;
+        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
+        private readonly ImageUtils _imageUtils = imageUtils;
+        private readonly ScenarioXML _scenarioXML = scenarioXML;
 
         internal List<PhotoLocParams> PhotoLocations { get; private set; } = [];
 
@@ -84,7 +94,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
 
-            if (!await SetRandomPhotoTour(formData, runwayManager, progressReporter))
+            if (!await SetRandomPhotoTour(formData, runwayManager, _progressReporter))
             {
                 await _logger.ErrorAsync("Failed to generate a random photo tour.");
                 return false;
@@ -139,8 +149,8 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            await ScenarioXML.SetPhotoTourWorldBaseFlightXMLAsync(formData, overview, this, _fileOps, progressReporter);
-            await ScenarioXML.WriteXMLAsync(formData, _fileOps, progressReporter);
+            await _scenarioXML.SetPhotoTourWorldBaseFlightXMLAsync(formData, overview, this, _fileOps, _progressReporter);
+            await ScenarioXML.WriteXMLAsync(formData, _fileOps, _progressReporter);
 
             return true;
         }

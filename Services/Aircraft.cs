@@ -18,11 +18,10 @@ namespace P3D_Scenario_Generator.Services
     /// <param name="log">The logging service instance.</param>
     /// <param name="cacheManager">The cache management service instance.</param>
     /// <param name="fileOps">The file operations service instance.</param>
-    internal class Aircraft(Logger log, CacheManager cacheManager, FileOps fileOps)
+    internal class Aircraft(Logger log, CacheManager cacheManager)
     {
         private readonly Logger _log = log;
         private readonly CacheManager _cacheManager = cacheManager;
-        private readonly FileOps _fileOps = fileOps;
 
         /// <summary>
         /// List of aircraft variants maintained by user with current selection shown on General tab of form.

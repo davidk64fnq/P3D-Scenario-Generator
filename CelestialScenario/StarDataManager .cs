@@ -25,12 +25,12 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// It populates a list of all stars, identifies and organizes navigational stars,
     /// and provides methods to access individual star properties.
     /// </summary>
-    public sealed class StarDataManager(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
+    public sealed class StarDataManager(Logger logger, FileOps fileOps, FormProgressReporter progressReporter)
     {
         // Guard clauses to validate the constructor parameters.
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         // --- Star Data Accessors for JavaScript Injection ---
 

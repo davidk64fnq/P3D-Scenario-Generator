@@ -15,11 +15,11 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// <param name="logger">The logging service used to report errors.</param>
     /// <param name="htmlParser">The HTML parsing service used to select nodes and extract data.</param>
     /// <param name="httpRoutines">The HTTP routines service used to get HTML documents from a file.</param>
-    internal class Pic2MapHtmlParser(Logger logger, HttpRoutines httpRoutines)
+    public class Pic2MapHtmlParser(Logger logger, HttpRoutines httpRoutines, HtmlParser htmlParser)
     {
         private readonly Logger _log = logger;
-        private readonly HttpRoutines _httpRoutines = httpRoutines;
-        private readonly HtmlParser _htmlParser = new(logger);
+        private readonly HttpRoutines _httpRoutines = httpRoutines; 
+        private readonly HtmlParser _htmlParser = htmlParser;
 
         /// <inheritdoc/>
         /// <summary>

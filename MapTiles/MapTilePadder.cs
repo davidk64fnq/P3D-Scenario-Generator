@@ -37,14 +37,20 @@ namespace P3D_Scenario_Generator.MapTiles
     /// To zoom in on a tile that is (X,Y) with bounding box x-axis = X and y-axis = Y, the new bounding box for that tile
     /// would be x-axis = 2X, 2X + 1 and y-axis = 2Y, 2Y + 1. This is applied to all tiles in the bounding box.
     /// </remarks>
-    public class MapTilePadder(Logger logger, FormProgressReporter progressReporter, FileOps fileOps, HttpRoutines httpRoutines)
+    public class MapTilePadder(
+        Logger logger,
+        FormProgressReporter progressReporter,
+        FileOps fileOps,
+        MapTileDownloader mapTileDownloader,
+        MapTileMontager mapTileMontager) 
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
-        private readonly MapTileDownloader _mapTileDownloader = new(fileOps, httpRoutines, progressReporter);
-        private readonly MapTileMontager _mapTileMontager = new(logger, progressReporter, fileOps, httpRoutines);
+
+        // Injected workers
+        private readonly MapTileDownloader _mapTileDownloader = mapTileDownloader;
+        private readonly MapTileMontager _mapTileMontager = mapTileMontager;
 
         /// <summary>
         /// Determines the appropriate bounding box for the next zoom level based on the specified padding method.

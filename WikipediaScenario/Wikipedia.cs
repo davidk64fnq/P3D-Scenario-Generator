@@ -10,15 +10,20 @@ namespace P3D_Scenario_Generator.WikipediaScenario
     /// <summary>
     /// Provides routines for the Wikipedia scenario type
     /// </summary>
-    public class Wikipedia(Logger logger, FileOps fileOps, FormProgressReporter progressReporter, HttpRoutines httpRoutines)
+    public class Wikipedia(
+    Logger logger,
+    FileOps fileOps,
+    FormProgressReporter progressReporter,
+    MapTileImageMaker mapTileImageMaker,
+    ImageUtils imageUtils)
     {
-        // Guard clauses to validate the constructor parameters.
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly HttpRoutines _httpRoutines = httpRoutines;
-        private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
-        private readonly ImageUtils _imageUtils = new(logger, fileOps, progressReporter);
+
+        // Injected from Form
+        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
+        private readonly ImageUtils _imageUtils = imageUtils;
 
         /// <summary>
         /// The wikipedia list items plus start and finish airports

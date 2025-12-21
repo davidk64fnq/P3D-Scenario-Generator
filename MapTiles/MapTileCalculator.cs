@@ -8,11 +8,16 @@ namespace P3D_Scenario_Generator.MapTiles
     /// Provides methods for calculating OpenStreetMap (OSM) tile information
     /// and optimal zoom levels based on geographic coordinates.
     /// </summary>
-    public class MapTileCalculator(Logger logger, IProgress<string> progressReporter)
+    public class MapTileCalculator(
+        Logger logger,
+        FormProgressReporter progressReporter,
+        BoundingBoxCalculator boundingBoxCalculator) 
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly BoundingBoxCalculator _boundingBoxCalculator = new(logger, progressReporter);
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+
+        // Assigned from constructor
+        private readonly BoundingBoxCalculator _boundingBoxCalculator = boundingBoxCalculator;
 
         /// <summary>
         /// Works out the most zoomed-in level that includes all specified coordinates,

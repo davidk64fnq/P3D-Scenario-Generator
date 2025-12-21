@@ -12,17 +12,24 @@ namespace P3D_Scenario_Generator.MapTiles
     /// tile retrieval, montage creation, and image manipulation. It manages the
     /// workflow from geographic coordinates to final image files.
     /// </summary>
-    public class MapTileImageMaker(Logger logger, FormProgressReporter progressReporter, FileOps fileOps, HttpRoutines httpRoutines)
+    public class MapTileImageMaker(
+        Logger logger,
+        FormProgressReporter progressReporter,
+        FileOps fileOps,
+        MapTileCalculator mapTileCalculator,
+        BoundingBoxCalculator boundingBoxCalculator,
+        MapTileMontager mapTileMontager,
+        ImageUtils imageUtils,
+        MapTilePadder mapTilePadder)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
-        private readonly MapTileCalculator _mapTileCalculator = new(logger, progressReporter);
-        private readonly BoundingBoxCalculator _boundingBoxCalculator = new(logger, progressReporter);
-        private readonly MapTileMontager _mapTileMontager = new(logger, progressReporter, fileOps, httpRoutines);
-        private readonly ImageUtils _imageUtils = new(logger, fileOps, progressReporter);
-        private readonly MapTilePadder _mapTilePadder = new(logger, progressReporter, fileOps, httpRoutines);
+        private readonly MapTileCalculator _mapTileCalculator = mapTileCalculator;
+        private readonly BoundingBoxCalculator _boundingBoxCalculator = boundingBoxCalculator;
+        private readonly MapTileMontager _mapTileMontager = mapTileMontager;
+        private readonly ImageUtils _imageUtils = imageUtils;
+        private readonly MapTilePadder _mapTilePadder = mapTilePadder;
 
         /// <summary>
         /// Generates an overview image with dimensions 2 x 2 map tiles from OpenStreetMap tiles based on a set of geographical coordinates.

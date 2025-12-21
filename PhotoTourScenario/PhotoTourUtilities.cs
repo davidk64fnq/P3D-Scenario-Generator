@@ -10,13 +10,12 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// including geographical coordinate extraction for mapping, tour distance calculations,
     /// photo location retrieval, and photo download/resizing operations.
     /// </summary>
-    public class PhotoTourUtilities(Logger logger, HttpRoutines httpRoutines, IProgress<string> progressReporter, FileOps fileOps)
+    public class PhotoTourUtilities(Logger logger, HttpRoutines httpRoutines, FileOps fileOps, ImageUtils imageUtils)
     {
         private readonly Logger _logger = logger;
         private readonly HttpRoutines _httpRoutines = httpRoutines;
-        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly ImageUtils _imageUtils = new(logger, fileOps, progressReporter);
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps)); 
+        private readonly ImageUtils _imageUtils = imageUtils;
 
         /// <summary>
         /// Creates and returns an enumerable collection of <see cref="Coordinate"/> objects

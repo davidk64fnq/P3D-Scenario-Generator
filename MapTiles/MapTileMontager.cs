@@ -10,13 +10,18 @@ namespace P3D_Scenario_Generator.MapTiles
     /// This class handles the process of combining individual tile images into vertical columns,
     /// horizontal rows, and ultimately a complete grid image, while also managing temporary files.
     /// </summary>
-    public class MapTileMontager(Logger logger, FormProgressReporter progressReporter, FileOps fileOps, HttpRoutines httpRoutines)
+    public class MapTileMontager(
+        Logger logger,
+        FormProgressReporter progressReporter,
+        FileOps fileOps,
+        MapTileDownloader mapTileDownloader) 
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
-        private readonly MapTileDownloader _mapTileDownloader = new(fileOps, httpRoutines, progressReporter);
+
+        // Assigned from constructor
+        private readonly MapTileDownloader _mapTileDownloader = mapTileDownloader;
 
         /// <summary>
         /// Montages a column of individual tile images into a single vertical image.

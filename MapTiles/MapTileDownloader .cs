@@ -16,12 +16,16 @@ namespace P3D_Scenario_Generator.MapTiles
     /// if a tile is not found there, it is downloaded and then stored in the cache
     /// for future use.
     /// </remarks>
-    public class MapTileDownloader(FileOps fileOps, HttpRoutines httpRoutines, FormProgressReporter progressReporter)
+    public class MapTileDownloader(
+        FileOps fileOps,
+        HttpRoutines httpRoutines,
+        FormProgressReporter progressReporter,
+        OSMTileCache osmTileCache) 
     {
         private readonly FileOps _fileOps = fileOps;
         private readonly HttpRoutines _httpRoutines = httpRoutines;
         private readonly FormProgressReporter _progressReporter = progressReporter;
-        private readonly OSMTileCache _osmTileCache = new(fileOps, httpRoutines, progressReporter);
+        private readonly OSMTileCache _osmTileCache = osmTileCache;
 
         /// <summary>
         /// Orchestrates the retrieval of a single OpenStreetMap (OSM) tile.

@@ -10,13 +10,18 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// This includes extracting Aries GHA (Greenwich Hour Angle) and navigational star
     /// SHA (Sidereal Hour Angle) and Declination values for use in celestial navigation calculations.
     /// </summary>
-    internal class AlmanacDataSource(Logger logger, IProgress<string> progressReporter, HttpRoutines httpRoutines, AlmanacData almanacData)
+    internal class AlmanacDataSource(
+        Logger logger,
+        FormProgressReporter progressReporter,
+        HttpRoutines httpRoutines,
+        AlmanacData almanacData,
+        ParsingHelpers parsingHelpers) 
     {
-        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
-        private readonly AlmanacData _almanacData = almanacData ?? throw new ArgumentNullException(nameof(almanacData));
-        private readonly ParsingHelpers _parsingHelpers = new(logger, progressReporter);
+        private readonly Logger _logger = logger;
+        private readonly FormProgressReporter _progressReporter = progressReporter;
+        private readonly HttpRoutines _httpRoutines = httpRoutines;
+        private readonly AlmanacData _almanacData = almanacData;
+        private readonly ParsingHelpers _parsingHelpers = parsingHelpers;
 
         /// <summary>
         /// Using scenario date provided by user, obtain almanac data for three days, and extract Aries GHA degrees and minutes,
