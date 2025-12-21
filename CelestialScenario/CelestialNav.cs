@@ -17,9 +17,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
     class CelestialNav(
         Logger logger,
         FileOps fileOps,
-        HttpRoutines httpRoutines,
         FormProgressReporter progressReporter,
-        AssetFileGenerator assetFileGenerator,
         AlmanacDataSource almanacDataSource,
         StarDataManager starDataManager,
         SextantViewGenerator sextantViewGenerator,
@@ -29,9 +27,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         // Field assignments from the primary constructor
         private readonly Logger _logger = logger;
         private readonly FileOps _fileOps = fileOps;
-        private readonly HttpRoutines _httpRoutines = httpRoutines;
         private readonly FormProgressReporter _progressReporter = progressReporter;
-        private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator;
 
         // Specialized workers injected from the Form (Composition Root)
         private readonly AlmanacDataSource _almanacDataSource = almanacDataSource;
