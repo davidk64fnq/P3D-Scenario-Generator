@@ -14,7 +14,8 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// dynamic web content (HTML, JavaScript, CSS) for a celestial sextant display.
     /// It also handles the creation and backup of the simulator's stars.dat file,
     /// and determines the geographical parameters for scenario setup.
-    class CelestialNav(Logger logger, FileOps fileOps, HttpRoutines httpRoutines, FormProgressReporter progressReporter, AlmanacData almanacData)
+    class CelestialNav(Logger logger, FileOps fileOps, HttpRoutines httpRoutines, FormProgressReporter progressReporter, 
+        AlmanacData almanacData, AssetFileGenerator assetFileGenerator)
     {
         // Guard clauses to validate the constructor parameters.
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -22,7 +23,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly AlmanacDataSource _almanacDataSource = new(logger, progressReporter, httpRoutines, almanacData);
         private readonly StarDataManager _starDataManager = new(logger, fileOps, progressReporter);
-        private readonly SextantViewGenerator _sextantViewGenerator = new(logger, fileOps, progressReporter, almanacData);
+        private readonly SextantViewGenerator _sextantViewGenerator = new(logger, fileOps, progressReporter, almanacData, assetFileGenerator);
         private readonly StarsDatFileGenerator _simulatorFileGenerator = new(logger, fileOps, progressReporter);
         private readonly MapTileImageMaker _mapTileImageMaker = new(logger, progressReporter, fileOps, httpRoutines);
 

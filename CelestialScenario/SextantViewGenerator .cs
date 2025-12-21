@@ -15,13 +15,14 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// and geographic parameters, and also defines the visible boundaries of the
     /// celestial map.
     /// </summary>
-    public class SextantViewGenerator(Logger logger, FileOps fileOps, IProgress<string> progressReporter, AlmanacData almanacData)
+    public class SextantViewGenerator(Logger logger, FileOps fileOps, IProgress<string> progressReporter, AlmanacData almanacData, AssetFileGenerator assetFileGenerator)
     {
         // Guard clauses to validate the constructor parameters.
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly AlmanacData _almanacData = almanacData ?? throw new ArgumentNullException(nameof(almanacData));
+        private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator ?? throw new ArgumentNullException(nameof(assetFileGenerator));
 
         private const double DegreesToRadiansFactor = Math.PI / 180.0;
         private const double RadiansToDegreesFactor = 180.0 / Math.PI;
@@ -30,54 +31,27 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// Generates and writes the Celestial Sextant HTML file to the specified output folder.
         /// </summary>
         /// <param name="formData">The scenario data containing the output folder path.</param>
+        /// <param name="starDataManager">The manager containing star name data.</param>
         /// <returns><see langword="true"/> if the HTML file was successfully created; otherwise, <see langword="false"/>.</returns>
         public async Task<bool> SetCelestialSextantHtmlAsync(ScenarioFormData formData, StarDataManager starDataManager)
         {
-            string message;
-            string htmlOutputPath = Path.Combine(formData.ScenarioImageFolder, "htmlCelestialSextant.html");
-            string resourceName = "HTML.CelestialSextant.html";
-            string celestialHtml;
+            _progressReporter.Report("INFO: Preparing to generate Celestial Sextant HTML file...");
 
-            _progressReporter.Report($"INFO: Preparing to generate Celestial Sextant HTML file...");
-
-            (bool success, Stream resourceStream) = await _fileOps.TryGetResourceStreamAsync(resourceName, _progressReporter);
-            if (!success)
-            {
-                message = $"Failed to retrieve embedded resource '{resourceName}' for Celestial Sextant HTML generation.";
-                await _logger.ErrorAsync(message);
-                _progressReporter.Report($"ERROR: {message}");
-                return false;
-            }
-
-            using (resourceStream)
-            using (StreamReader reader = new(resourceStream))
-            {
-                celestialHtml = await reader.ReadToEndAsync();
-            }
-
-            // Create the list of star names for the HTML dropdown options.
+            // Create the HTML dropdown options
             string starOptions = "<option>Select Star</option>" +
                                  string.Join("", starDataManager.NavStarNames.Select(name => $"<option>{name}</option>"));
 
-            // Replace the placeholder in the HTML.
-            celestialHtml = celestialHtml.Replace("starOptionsX", starOptions);
+            // Define the custom replacement logic for the HTML placeholder
+            string ApplyStarOptions(string content) => content.Replace("starOptionsX", starOptions);
 
-            // Write the modified HTML to the scenario folder.
-            message = "Generating Celestial Sextant HTML file...";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-            if (!await _fileOps.TryWriteAllTextAsync(htmlOutputPath, celestialHtml, _progressReporter))
-            {
-                message = $"Failed to write Celestial Sextant HTML to '{htmlOutputPath}'.";
-                await _logger.ErrorAsync(message);
-                _progressReporter.Report($"ERROR: {message}");
-                return false;
-            }
-
-            message = $"Successfully generated and wrote Celestial Sextant HTML to '{htmlOutputPath}'.";
-            await _logger.InfoAsync(message);
-            _progressReporter.Report($"INFO: {message}");
-            return true;
+            // Use the AssetFileGenerator helper
+            return await _assetFileGenerator.WriteAssetFileAsync(
+                resourceName: "HTML.CelestialSextant.html",
+                fileName: "htmlCelestialSextant.html",
+                saveLocation: formData.ScenarioImageFolder,
+                replacements: null, // No JS variable assignments to replace
+                customLogic: ApplyStarOptions
+            );
         }
 
         /// <summary>
@@ -127,17 +101,18 @@ namespace P3D_Scenario_Generator.CelestialScenario
             // 2. Generate Files (Expanding is now just adding lines here)
 
             // Main JS with coordinate logic injected via the lambda
-            if (!await WriteAssetFileAsync("Javascript.scriptsCelestialSextant.js", "scriptsCelestialSextant.js", saveLocation, mainReplacements, c => SetCelestialMapEdges(formData, c))) return false;
+            if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsCelestialSextant.js", "scriptsCelestialSextant.js", 
+                saveLocation, mainReplacements, c => SetCelestialMapEdges(formData, c))) return false;
 
             // Static JS Files
-            if (!await WriteAssetFileAsync("Javascript.scriptsCelestialAstroCalcs.js", "scriptsCelestialAstroCalcs.js", saveLocation)) return false;
-            if (!await WriteAssetFileAsync("Javascript.types.js", "types.js", saveLocation)) return false;
+            if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsCelestialAstroCalcs.js", "scriptsCelestialAstroCalcs.js", saveLocation)) return false;
+            if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.types.js", "types.js", saveLocation)) return false;
 
             // CSS File (Handled by the same helper)
-            if (!await WriteAssetFileAsync("CSS.styleCelestialSextant.css", "styleCelestialSextant.css", saveLocation)) return false;
+            if (!await _assetFileGenerator.WriteAssetFileAsync("CSS.styleCelestialSextant.css", "styleCelestialSextant.css", saveLocation)) return false;
 
             // Binary Assets
-            return await CopyAssetImageAsync("Images.plotImage.jpg", Path.Combine(saveLocation, "plotImage.jpg"));
+            return await _assetFileGenerator.CopyAssetImageAsync("Images.plotImage.jpg", Path.Combine(saveLocation, "plotImage.jpg"));
         }
 
         private List<NavStarData> PrepareNavStarCatalog(StarDataManager starDataManager)
@@ -156,64 +131,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 ));
             }
             return list;
-        }
-
-        /// <summary>
-        /// General purpose helper to Load, Process (optional), and Write text assets (JS/CSS).
-        /// </summary>
-        private async Task<bool> WriteAssetFileAsync(
-            string resourceName,
-            string fileName,
-            string saveLocation,
-            Dictionary<string, string> replacements = null,
-            Func<string, string> customLogic = null)
-        {
-            string outputPath = Path.Combine(saveLocation, fileName);
-
-            // Using your existing TryReadAllTextFromResourceAsync for simplicity
-            (bool success, string content) = await _fileOps.TryReadAllTextFromResourceAsync(resourceName, _progressReporter);
-            if (!success)
-            {
-                await _logger.ErrorAsync($"Resource missing: {resourceName}");
-                return false;
-            }
-
-            // Apply standard replacements
-            if (replacements != null)
-            {
-                foreach (var kvp in replacements)
-                {
-                    content = ReplaceJsVariable(content, kvp.Key, kvp.Value);
-                }
-            }
-
-            // Apply logic like SetCelestialMapEdges
-            if (customLogic != null)
-            {
-                content = customLogic(content);
-            }
-
-            if (!await _fileOps.TryWriteAllTextAsync(outputPath, content, _progressReporter))
-            {
-                await _logger.ErrorAsync($"Failed to write asset: {fileName}");
-                return false;
-            }
-
-            await _logger.InfoAsync($"Successfully generated: {fileName}");
-            return true;
-        }
-
-        private async Task<bool> CopyAssetImageAsync(string resourceName, string outputPath)
-        {
-            // Uses your existing FileOps method
-            var (success, stream) = await _fileOps.TryGetResourceStreamAsync(resourceName, _progressReporter);
-            if (!success) return false;
-
-            using (stream)
-            {
-                // Uses your existing FileOps method
-                return await _fileOps.TryCopyStreamToFileAsync(stream, outputPath, _progressReporter);
-            }
         }
 
         /// <summary>
@@ -247,7 +164,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             string rawValue = JsonSerializer.Serialize(plotBoundariesObject);
 
             // 3. Use the new helper to inject the consolidated object.
-            jsContent = ReplaceJsVariable(jsContent, "plotBoundaries", rawValue);
+            jsContent = AssetFileGenerator.ReplaceJsVariable(jsContent, "plotBoundaries", rawValue);
 
             return jsContent;
         }
@@ -260,16 +177,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
         public static double ToRadians(double degrees)
         {
             return degrees * DegreesToRadiansFactor;
-        }
-
-        /// <summary>
-        /// Converts an angle from radians to degrees.
-        /// </summary>
-        /// <param name="radians">The angle in radians.</param>
-        /// <returns>The angle in degrees.</returns>
-        public static double ToDegrees(double radians)
-        {
-            return radians * RadiansToDegreesFactor;
         }
     }
 }

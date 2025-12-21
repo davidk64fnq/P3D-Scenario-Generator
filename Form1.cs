@@ -45,6 +45,7 @@ namespace P3D_Scenario_Generator
         private readonly ImageUtils _imageUtils;
         private readonly Logger _logger;
         private readonly ScenarioFXML _scenarioFXML;
+        private readonly AssetFileGenerator _assetFileGenerator;
 
         // Utilities dependencies
         private readonly FormProgressReporter _progressReporter;
@@ -65,9 +66,10 @@ namespace P3D_Scenario_Generator
             _fileOps = new(_logger);
             _aircraft = new(_logger, _cacheManager, _fileOps);
             _httpRoutines = new(_fileOps, _logger);
+            _assetFileGenerator = new(_logger, _fileOps, _progressReporter);
             _photoTour = new(_logger, _fileOps, _httpRoutines, _progressReporter);
             _almanacData = new();
-            _celestialNav = new(_logger, _fileOps, _httpRoutines, _progressReporter, _almanacData);
+            _celestialNav = new(_logger, _fileOps, _httpRoutines, _progressReporter, _almanacData, _assetFileGenerator);
             _makeCircuit = new(_logger, _fileOps, _progressReporter, _httpRoutines);
             _imageUtils = new(_logger, _fileOps, _progressReporter);
             _signWriting = new(_logger, _fileOps, _progressReporter, _httpRoutines);
