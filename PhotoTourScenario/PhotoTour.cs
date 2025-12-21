@@ -149,7 +149,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            await _scenarioXML.SetPhotoTourWorldBaseFlightXMLAsync(formData, overview, this, _fileOps, _progressReporter);
+            await _scenarioXML.SetPhotoTourWorldBaseFlightXMLAsync(formData, overview, this);
             await ScenarioXML.WriteXMLAsync(formData, _fileOps, _progressReporter);
 
             return true;

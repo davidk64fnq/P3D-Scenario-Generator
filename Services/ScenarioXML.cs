@@ -117,7 +117,7 @@ namespace P3D_Scenario_Generator.Services
             SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", makeCircuit.GatesCount - 2, "ProximityTrigger");
         }
 
-        public async Task SetPhotoTourWorldBaseFlightXMLAsync(ScenarioFormData formData, Overview overview, PhotoTour photoTour, FileOps fileOps, FormProgressReporter progressReporter)
+        public async Task SetPhotoTourWorldBaseFlightXMLAsync(ScenarioFormData formData, Overview overview, PhotoTour photoTour)
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
@@ -142,9 +142,7 @@ namespace P3D_Scenario_Generator.Services
             await _assetFileGenerator.WriteAssetFileAsync("HTML.PhotoTour.html", "PhotoTour.html", formData.ScenarioImageFolder);
             await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsPhotoTour.js", "scriptsPhotoTour.js", formData.ScenarioImageFolder);
             await _assetFileGenerator.WriteAssetFileAsync("CSS.styleMovingMap.css", "styleMovingMap.css", formData.ScenarioImageFolder);
-
-            
-            await SetMovingMapJS(photoTour.PhotoCount, formData, fileOps, progressReporter);
+            await _assetFileGenerator.GenerateMovingMapScriptAsync(photoTour.PhotoCount, formData);
 
             // Create map window open/close actions
             SetOpenWindowAction(photoTour.PhotoCount - 1, "UIPanelWindow", "UIpanelWindow", PhotoTourUtilities.GetMapWindowParameters(formData), formData.MapMonitorNumber.ToString());

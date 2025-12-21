@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Models;
+using System.Text.RegularExpressions;
 
 namespace P3D_Scenario_Generator.Services
 {
@@ -92,6 +94,54 @@ namespace P3D_Scenario_Generator.Services
             {
                 return await _fileOps.TryCopyStreamToFileAsync(stream, outputPath, _progressReporter);
             }
+        }
+
+        internal async Task<bool> GenerateMovingMapScriptAsync(int photoCount, ScenarioFormData formData)
+        {
+            // 1. Prepare data (LINQ makes this cleaner than the old loop)
+            var mapData = formData.OSMmapData.Take(photoCount - 1).ToList();
+
+            string mapNorth = string.Join(", ", mapData.Select(m => m.north.ToDouble().ToString()));
+            string mapEast = string.Join(", ", mapData.Select(m => m.east.ToDouble().ToString()));
+            string mapSouth = string.Join(", ", mapData.Select(m => m.south.ToDouble().ToString()));
+            string mapWest = string.Join(", ", mapData.Select(m => m.west.ToDouble().ToString()));
+
+            // 2. Build the replacement dictionary
+            var replacements = new Dictionary<string, string>
+            {
+                { "mapNorthX", $"[{mapNorth}]" },
+                { "mapEastX", $"[{mapEast}]" },
+                { "mapSouthX", $"[{mapSouth}]" },
+                { "mapWestX", $"[{mapWest}]" }
+            };
+
+            // 3. Handle Resolution-specific values
+            if (formData.MapWindowSize == MapWindowSizeOption.Size512)
+            {
+                replacements.Add("imagePixelsX", "[512, 1024, 2048]");
+                replacements.Add("viewPortWidthX", "512");
+                replacements.Add("viewPortHeightX", "512");
+                replacements.Add("zoom1FilenameSuffixX", "1");
+                replacements.Add("zoom2FilenameSuffixX", "2");
+                replacements.Add("zoom3FilenameSuffixX", "3");
+            }
+            else
+            {
+                replacements.Add("imagePixelsX", "[1024, 2048, 4096]");
+                replacements.Add("viewPortWidthX", "1024");
+                replacements.Add("viewPortHeightX", "1024");
+                replacements.Add("zoom1FilenameSuffixX", "2");
+                replacements.Add("zoom2FilenameSuffixX", "3");
+                replacements.Add("zoom3FilenameSuffixX", "4");
+            }
+
+            // 4. Delegate to the generic writer
+            return await WriteAssetFileAsync(
+                "Javascript.scriptsMovingMap.js",
+                "scriptsMovingMap.js",
+                formData.ScenarioImageFolder,
+                replacements
+            );
         }
     }
 }
