@@ -580,5 +580,16 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         }
 
         #endregion
+
+        static internal void SetWikiTourScriptActions()
+        {
+            string[] scripts =
+            [
+                "!lua local var currentLegNo = varget(\"S:currentLegNo\", \"NUMBER\") " +
+                "currentLegNo = currentLegNo + 1 varset(\"S:currentLegNo\", \"NUMBER\", currentLegNo)"
+            ];
+
+            ScenarioXML.SetScriptActions(scripts);
+        }
     }
 }

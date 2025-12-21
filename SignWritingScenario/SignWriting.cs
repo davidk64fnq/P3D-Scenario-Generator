@@ -417,5 +417,20 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         {
             return _gates[index];
         }
+
+        static internal void SetSignWritingScriptActions()
+        {
+            string[] scripts =
+            [
+                "!lua local var smokeOn = varget(\"S:smokeOn\", \"NUMBER\") " +
+                "if smokeOn == 1 then varset(\"S:smokeOn\", \"NUMBER\", 0) " +
+                "else varset(\"S:smokeOn\", \"NUMBER\", 1) end",
+
+                "!lua local var currentGateNo = varget(\"S:currentGateNo\", \"NUMBER\") " +
+                "currentGateNo = currentGateNo + 1 varset(\"S:currentGateNo\", \"NUMBER\", currentGateNo)"
+            ];
+
+            ScenarioXML.SetScriptActions(scripts);
+        }
     }
 }

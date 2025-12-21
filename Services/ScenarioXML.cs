@@ -129,7 +129,7 @@ namespace P3D_Scenario_Generator.Services
             SetScenarioVariableTriggerValue(0.0, 0, "ScenarioVariable01");
 
             // Create script actions which reference scenario variable
-            SetTourScriptActions();
+            PhotoTourUtilities.SetPhotoTourScriptActions();
 
             // Create map window objects
             SetUIPanelWindow(photoTour.PhotoCount - 1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
@@ -234,7 +234,7 @@ namespace P3D_Scenario_Generator.Services
             SetScenarioVariableTriggerValue(0.0, 0, "ScenarioVariable02");
 
             // Create script actions which reference scenario variables
-            SetSignWritingScriptActions();
+            SignWriting.SetSignWritingScriptActions();
 
             // First pass
             for (int gateNo = 1; gateNo <= signWriting.GatesCount; gateNo++)
@@ -418,7 +418,7 @@ namespace P3D_Scenario_Generator.Services
             SetScenarioVariableTriggerValue(0.0, 0, "ScenarioVariable01");
 
             // Create script actions which reference scenario variable
-            SetTourScriptActions();
+            Wikipedia.SetWikiTourScriptActions();
 
             // Create window objects 
             SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
@@ -1054,14 +1054,23 @@ namespace P3D_Scenario_Generator.Services
                 simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable[idIndex].TriggerCondition[tcIndex].TriggerValue = tv;
         }
 
-        static private void SetSignWritingScriptActions()
+        static internal void SetScriptActions(string[] scripts)
         {
             List<SimMissionScriptAction> saList = [];
-            saList.Add(new SimMissionScriptAction("ScriptAction01", "!lua local var smokeOn = varget(\"S:smokeOn\", \"NUMBER\") " +
-                "if smokeOn == 1 then varset(\"S:smokeOn\", \"NUMBER\", 0) " +
-                "else varset(\"S:smokeOn\", \"NUMBER\", 1) end", GetGUID(), ""));
-            saList.Add(new SimMissionScriptAction("ScriptAction02", "!lua local var currentGateNo = varget(\"S:currentGateNo\", \"NUMBER\") " +
-                "currentGateNo = currentGateNo + 1 varset(\"S:currentGateNo\", \"NUMBER\", currentGateNo)", GetGUID(), ""));
+
+            for (int index = 0; index < scripts.Length; index++)
+            {
+                // Use an interpolated string with math for the ID
+                string actionName = $"ScriptAction{index + 1:D2}";
+
+                saList.Add(new SimMissionScriptAction(
+                    actionName,
+                    scripts[index],
+                    GetGUID(),
+                    ""
+                ));
+            }
+
             simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction = saList;
         }
 
@@ -1084,14 +1093,6 @@ namespace P3D_Scenario_Generator.Services
 				simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions.ObjectReference.Add(or);
             else
                 simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions = new Actions([or]);
-        }
-
-        static private void SetTourScriptActions()
-        {
-            List<SimMissionScriptAction> saList = [];
-            saList.Add(new SimMissionScriptAction("ScriptAction01", "!lua local var currentLegNo = varget(\"S:currentLegNo\", \"NUMBER\") " +
-                "currentLegNo = currentLegNo + 1 varset(\"S:currentLegNo\", \"NUMBER\", currentLegNo)", GetGUID(), ""));
-            simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction = saList;
         }
 
         static private void SetUIPanelWindow(int index, string descr, string locked, string mouseI, string panel, string docked, string keyboardI)

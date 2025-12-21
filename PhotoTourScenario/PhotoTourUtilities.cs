@@ -293,5 +293,16 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             return $"{ScenarioFXML.FormatCoordXML(photoLegParams.latitude, "N", "S", true)}, " +
                 $"{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W", true)},+0.0";
         }
+
+        static internal void SetPhotoTourScriptActions()
+        {
+            string[] scripts =
+            [
+                "!lua local var currentLegNo = varget(\"S:currentLegNo\", \"NUMBER\") " +
+                "currentLegNo = currentLegNo + 1 varset(\"S:currentLegNo\", \"NUMBER\", currentLegNo)"
+            ];
+
+            ScenarioXML.SetScriptActions(scripts);
+        }
     }
 }
