@@ -4,8 +4,6 @@ using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
-using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace P3D_Scenario_Generator.SignWritingScenario
 {
@@ -18,11 +16,15 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         Logger logger,
         FileOps fileOps,
         FormProgressReporter progressReporter,
-        MapTileImageMaker mapTileImageMaker) 
+        MapTileImageMaker mapTileImageMaker,
+        ScenarioXML scenarioXML,
+        AssetFileGenerator assetFileGenerator) 
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly ScenarioXML _scenarioXML = scenarioXML; 
+        private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator;
 
         // Assigned from constructor
         private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
@@ -85,7 +87,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             }
 
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            await ScenarioXML.SetSignWritingWorldBaseFlightXML(formData, overview, this, _progressReporter);
+            await _scenarioXML.SetSignWritingWorldBaseFlightXML(formData, overview, this);
             await ScenarioXML.WriteXMLAsync(formData, fileOps, progressReporter);
 
             return true;
@@ -164,221 +166,73 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         }
 
         /// <summary>
-        /// Reads an HTML template for sign writing, replaces placeholders with dynamic dimensions,
-        /// and saves the modified HTML to a specified file path.
-        /// </summary>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
-        /// necessary sign message width, monitor height, console height and the target folder for saving the HTML file.</param>
-        /// <remarks>
-        /// This method retrieves the "HTML.SignWriting.html" resource, substitutes "canvasWidthX"
-        /// and "canvasHeightX" with the actual sign message width and monitor height from
-        /// <paramref name="formData"/>, respectively. The resulting HTML content is then
-        /// saved as "htmlSignWriting.html" in the scenario's image folder.
-        /// </remarks>
-        public async Task<bool> SetSignWritingHTML(ScenarioFormData formData)
-        {
-            string signWritingHTML;
-
-            (bool success, Stream stream) = await _fileOps.TryGetResourceStreamAsync("HTML.SignWriting.html", _progressReporter);
-            if (!success)
-            {
-                return false;
-            }
-            using (stream)
-            using (StreamReader reader = new(stream))
-            {
-                signWritingHTML = reader.ReadToEnd();
-                string saveLocation = $"{formData.ScenarioImageFolder}\\htmlSignWriting.html";
-                if (!await _fileOps.TryWriteAllTextAsync(saveLocation, signWritingHTML, _progressReporter))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        /// <summary>
         /// Prepares and writes the main sign writing JavaScript file,
-        /// and copies necessary third-party Geodesy library files,
-        /// to the scenario's output folder.
+        /// and copies necessary third-party Geodesy library files.
         /// </summary>
-        /// <param name="formData">The scenario form data containing configuration details.</param>
-        /// <param name="progressReporter">Optional IProgress<string> for reporting progress or errors to the UI.</param>
-        public async Task<bool> SetSignWritingJS(ScenarioFormData formData, IProgress<string> progressReporter)
+        public async Task<bool> SetSignWritingJS(ScenarioFormData formData)
         {
-            // --- 1. Process and save the main signWriting.js file ---
+            // --- 1. Prepare Gate Data Strings using LINQ ---
+            // Note: Maintaining the "0," prefix from the original logic
+            string topPixels = "0," + string.Join(",", _gates.Select(g => g.topPixels.ToString()));
+            string leftPixels = "0," + string.Join(",", _gates.Select(g => g.leftPixels.ToString()));
+            string bearings = "0," + string.Join(",", _gates.Select(g => g.orientation.ToString()));
+            string latitudes = "0," + string.Join(",", _gates.Select(g => g.lat.ToString()));
+            string longitudes = "0," + string.Join(",", _gates.Select(g => g.lon.ToString()));
+            string altitudes = "0," + string.Join(",", _gates.Select(g => g.amsl.ToString()));
 
-            string signWritingJS;
-            bool success;
-
-            (success, Stream mainJsStream) = await _fileOps.TryGetResourceStreamAsync("Javascript.scriptsSignWriting.js", progressReporter);
-            if (!success)
+            // --- 2. Build Replacement Dictionary ---
+            var replacements = new Dictionary<string, string>
             {
-                return false;
-            }
+                { "charPaddingLeftX", Constants.SignCharPaddingPixels.ToString() },
+                { "charPaddingTopX", Constants.SignCharPaddingPixels.ToString() },
+                { "canvasWidthX", formData.SignCanvasWidth.ToString() },
+                { "canvasHeightX", formData.SignCanvasHeight.ToString() },
+                { "consoleWidthX", formData.SignConsoleWidth.ToString() },
+                { "consoleHeightX", formData.SignConsoleHeight.ToString() },
+                { "windowHorizontalPaddingX", Constants.SignWindowHorizontalPaddingPixels.ToString() },
+                { "windowVerticalPaddingX", Constants.SignWindowVerticalPaddingPixels.ToString() },
+                
+                // Array-like strings (as prepared above)
+                { "gateTopPixelsX", topPixels },
+                { "gateLeftPixelsX", leftPixels },
+                { "gateBearingsX", bearings },
+                { "gateLatitudesX", latitudes },
+                { "gateLongitudesX", longitudes },
+                { "gateAltitudesX", altitudes }
+            };
 
-            using (mainJsStream) // Ensure the stream is disposed
-            using (StreamReader reader = new(mainJsStream))
-            {
-                signWritingJS = reader.ReadToEnd();
-            }
+            // --- 3. Write processed script file ---
+            bool mainJsSuccess = await _assetFileGenerator.WriteAssetFileAsync(
+                "Javascript.scriptsSignWriting.js",
+                "scriptsSignWriting.js",
+                formData.ScenarioImageFolder,
+                replacements
+            );
 
-            // --- Helper function to perform targeted replacement ---
-            // This helper ensures we only replace the specific 'var ... = null;' lines
-            // It captures the variable name and replaces its assignment part.
-            static string ReplaceJsVariable(string jsContent, string varName, string value)
-            {
-                // Regex pattern to match 'var varName = any_content;' and capture the content after '='
-                // We're looking for the exact variable name, followed by an equals sign, then any content
-                // up to the semicolon or newline, ensuring it's a 'var' declaration.
-                // The pattern handles potential whitespace variations.
-                string pattern = $@"(var\s+{Regex.Escape(varName)}\s*=\s*)([^;]*)(;)";
-                string replacement = $"$1\"{value}\"$3"; // Keep 'var varName = ' ($1), inject quoted value, keep ';' ($3)
+            if (!mainJsSuccess) return false;
 
-                // Use Regex.Replace with RegexOptions.Singleline for multi-line string if needed,
-                // though for single-line variable declarations, it's fine.
-                return Regex.Replace(jsContent, pattern, replacement, RegexOptions.Singleline);
-            }
+            // --- 4. Copy Geodesy library files ---
+            string geodesySaveDirectory = Path.Combine(formData.ScenarioImageFolder, "third-party", "geodesy");
 
-            // --- Targeted Replacements for individual var declarations ---
-            // The JavaScript file should have declarations like: var variableNameX = null;
-
-            // Character padding
-            signWritingJS = ReplaceJsVariable(signWritingJS, "charPaddingLeftX", Constants.SignCharPaddingPixels.ToString());
-            signWritingJS = ReplaceJsVariable(signWritingJS, "charPaddingTopX", Constants.SignCharPaddingPixels.ToString());
-
-            // Canvas and Console Dimensions
-            signWritingJS = ReplaceJsVariable(signWritingJS, "canvasWidthX", formData.SignCanvasWidth.ToString());
-            signWritingJS = ReplaceJsVariable(signWritingJS, "canvasHeightX", formData.SignCanvasHeight.ToString());
-            signWritingJS = ReplaceJsVariable(signWritingJS, "consoleWidthX", formData.SignConsoleWidth.ToString());
-            signWritingJS = ReplaceJsVariable(signWritingJS, "consoleHeightX", formData.SignConsoleHeight.ToString());
-
-            // Window Padding
-            signWritingJS = ReplaceJsVariable(signWritingJS, "windowHorizontalPaddingX", Constants.SignWindowHorizontalPaddingPixels.ToString());
-            signWritingJS = ReplaceJsVariable(signWritingJS, "windowVerticalPaddingX", Constants.SignWindowVerticalPaddingPixels.ToString());
-
-            // --- Prepare comma-separated gate data strings ---
-            string topPixels = "0,";
-            string leftPixels = "0,";
-            string bearings = "0,";
-            string latitudes = "0,";
-            string longitudes = "0,";
-            string altitudes = "0,";
-
-            // Assuming SignWriting.gates is a List<Gate> and Gate has public topPixels, leftPixels, and orientation properties
-            Gate gate;
-            for (int index = 1; index <= _gates.Count; index++)
-            {
-                gate = _gates[index - 1];
-                topPixels += gate.topPixels.ToString();
-                leftPixels += gate.leftPixels.ToString();
-                bearings += gate.orientation.ToString();
-                latitudes += gate.lat.ToString();
-                longitudes += gate.lon.ToString();
-                altitudes += gate.amsl.ToString();
-
-                // Add comma if not the last element
-                if (index <= _gates.Count - 1)
-                {
-                    topPixels += ",";
-                    leftPixels += ",";
-                    bearings += ",";
-                    latitudes += ",";
-                    longitudes += ",";
-                    altitudes += ",";
-                }
-            }
-
-            // --- Targeted Replacements for gate arrays ---
-            signWritingJS = ReplaceJsVariable(signWritingJS, "gateTopPixelsX", topPixels);
-            signWritingJS = ReplaceJsVariable(signWritingJS, "gateLeftPixelsX", leftPixels);
-            signWritingJS = ReplaceJsVariable(signWritingJS, "gateBearingsX", bearings);
-            signWritingJS = ReplaceJsVariable(signWritingJS, "gateLatitudesX", latitudes);
-            signWritingJS = ReplaceJsVariable(signWritingJS, "gateLongitudesX", longitudes);
-            signWritingJS = ReplaceJsVariable(signWritingJS, "gateAltitudesX", altitudes);
-
-            // --- Save the modified main JavaScript file using FileOps.TryWriteAllText ---
-            string mainJsSaveLocation = Path.Combine(formData.ScenarioImageFolder, "scriptsSignWriting.js");
-            if (!await _fileOps.TryWriteAllTextAsync(mainJsSaveLocation, signWritingJS, progressReporter))
-            {
-                return false; // Exit if critical file write fails
-            }
-
-            // --- 2. Copy Geodesy library files using FileOps.TryCopyStreamToFile ---
-
-            string geodesySaveDirectory = $"{formData.ScenarioImageFolder}/third-party/geodesy";
-
-            // Ensure the target directory exists. FileOps.TryCopyStreamToFile handles directory creation
-            // for the file itself, but this ensures the base directory is there for the set of files.
-            // This line is technically redundant if formData.ScenarioImageFolder is guaranteed to exist
-            // when mainJsSaveLocation is written, but safe to keep.
+            // Ensure directory exists (Directory.CreateDirectory is safe to call even if it exists)
             Directory.CreateDirectory(geodesySaveDirectory);
 
-            // List of Geodesy files to copy 
-            string[] geodesyFiles = [
-                "dms.js",
-                "vector3d.js",
-                "latlon-ellipsoidal.js"
-            ];
-
-            string[] resourceNames = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-            foreach (string name in resourceNames)
-            {
-                await _logger.InfoAsync($"Found resource: {name}");
-                // Or logToConsole, or a MessageBox for immediate feedback during testing
-            }
-
-            // This prefix refers to the path within your C# project's embedded resources, not the output path.
-            string resourceNamePrefix = "Javascript.third_party.geodesy."; 
+            string[] geodesyFiles = ["dms.js", "vector3d.js", "latlon-ellipsoidal.js"];
+            string resourceNamePrefix = "Javascript.third_party.geodesy.";
 
             foreach (string fileName in geodesyFiles)
             {
                 string resourcePath = resourceNamePrefix + fileName;
-                string destinationPath = Path.Combine(geodesySaveDirectory, fileName); // Save directly to formData.ScenarioImageFolder
+                string destinationPath = Path.Combine(geodesySaveDirectory, fileName);
 
-                // Use the new helper to get the resource stream
-                (success, Stream resourceStream) = await _fileOps.TryGetResourceStreamAsync(resourcePath, progressReporter);
-                if (!success)
+                if (!await _assetFileGenerator.CopyAssetImageAsync(resourcePath, destinationPath))
                 {
-                    continue;
+                    await _logger.ErrorAsync($"Failed to copy geodesy dependency: {fileName}");
+                    // Non-critical: continue to next file
                 }
-
-                using (resourceStream) // Ensure the stream is disposed
+                else
                 {
-                    // Use FileOps.TryCopyStreamToFile to copy the resource stream to the destination file
-                    if (!await _fileOps.TryCopyStreamToFileAsync(resourceStream, destinationPath, progressReporter))
-                    {
-                        // FileOps.TryCopyStreamToFile already logs/reports errors.
-                        // For now, just continue to the next file as FileOps handles the reporting.
-                    }
-                    else
-                    {
-                        // Report success for each copied file
-                        progressReporter?.Report($"Copied Geodesy file: {fileName}");
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        public async Task<bool> SetSignWritingCSS(ScenarioFormData formData)
-        {
-            string signWritingCSS;
-            (bool success, Stream stream) = await _fileOps.TryGetResourceStreamAsync("CSS.styleSignWriting.css", null); if (!success)
-            if (!success)
-            {
-                return false;
-            }
-
-            using (stream)
-            using (StreamReader reader = new(stream))
-            {
-                signWritingCSS = reader.ReadToEnd();
-                string saveLocation = $"{formData.ScenarioImageFolder}\\styleSignWriting.css";
-                if(!await _fileOps.TryWriteAllTextAsync(saveLocation, signWritingCSS, _progressReporter))
-                {
-                    return false;
+                    _progressReporter.Report($"Copied Geodesy file: {fileName}");
                 }
             }
 

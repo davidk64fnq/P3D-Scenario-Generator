@@ -125,7 +125,9 @@ namespace P3D_Scenario_Generator
                 _logger,
                 _fileOps,
                 _progressReporter,
-                _mapTileImageMaker);
+                _mapTileImageMaker, 
+                _scenarioXML,
+                _assetFileGenerator);
             _wikipedia = new(
                 _logger,
                 _fileOps,

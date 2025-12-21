@@ -220,7 +220,7 @@ namespace P3D_Scenario_Generator.Services
             SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", photoTour.PhotoCount - 2, "ProximityTrigger");
         }
 
-        public static async Task SetSignWritingWorldBaseFlightXML(ScenarioFormData formData, Overview overview, SignWriting signWriting, IProgress<string> progressReporter)
+        public async Task SetSignWritingWorldBaseFlightXML(ScenarioFormData formData, Overview overview, SignWriting signWriting)
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
@@ -334,9 +334,9 @@ namespace P3D_Scenario_Generator.Services
             SetUIPanelWindow(1, "UIpanelWindow", "False", "True", "images\\htmlSignWriting.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for window object
-            await signWriting.SetSignWritingHTML(formData);
-            await signWriting.SetSignWritingJS(formData, progressReporter);
-            await signWriting.SetSignWritingCSS(formData);
+            await _assetFileGenerator.WriteAssetFileAsync("HTML.SignWriting.html", "htmlSignWriting.html", formData.ScenarioImageFolder);
+            await signWriting.SetSignWritingJS(formData);
+            await _assetFileGenerator.WriteAssetFileAsync("CSS.styleSignWriting.css", "styleSignWriting.css", formData.ScenarioImageFolder);
 
             // Create  window open/close actions
             SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", SignWriting.GetSignWritingWindowParameters(formData), formData.SignMonitorNumber.ToString());
