@@ -406,7 +406,7 @@ namespace P3D_Scenario_Generator.Services
             SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
         }
 
-        public static async Task SetWikiListWorldBaseFlightXML(ScenarioFormData formData, Overview overview, Wikipedia wikipedia, FileOps fileOps, FormProgressReporter progressReporter)
+        public async Task SetWikiListWorldBaseFlightXML(ScenarioFormData formData, Overview overview, Wikipedia wikipedia)
         {
             SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             SetRealismOverrides();
@@ -428,11 +428,9 @@ namespace P3D_Scenario_Generator.Services
             SetUIPanelWindow(2, "UIpanelWindow", "False", "True", $"images\\WikipediaItem.html", "False", "False");
 
             // Create HTML, JavaScript and CSS files for windows
-            await SetResourcesFile("HTML", "MovingMap.html", formData, fileOps, progressReporter);
-            await SetMovingMapJS(wikipedia.WikiCount, formData, fileOps, progressReporter);
-            await SetResourcesFile("CSS", "styleMovingMap.css", formData, fileOps, progressReporter);
-            await SetWikiItemHTML(formData, fileOps, progressReporter);
-            await SetWikiTourJS(formData, wikipedia, fileOps, progressReporter);
+            await _assetFileGenerator.WriteAssetFileAsync("HTML.MovingMap.html", "MovingMap.html", formData.ScenarioImageFolder);
+            await _assetFileGenerator.GenerateMovingMapScriptAsync(wikipedia.WikiCount, formData);
+            await _assetFileGenerator.WriteAssetFileAsync("CSS.styleMovingMap.css", "styleMovingMap.css", formData.ScenarioImageFolder);
 
             // Create window open/close actions
             SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", Wikipedia.GetMapWindowParameters(formData), formData.MapMonitorNumber.ToString());
@@ -1106,76 +1104,6 @@ namespace P3D_Scenario_Generator.Services
                 simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow.Add(upw);
             else
                 simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow = [upw];
-        }
-
-        public static async Task SetWikiItemHTML(ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
-        {
-            string saveLocation = $"{formData.ScenarioImageFolder}\\WikipediaItem.html";
-            (bool success, Stream stream) = await fileOps.TryGetResourceStreamAsync("HTML.WikipediaItem.html", progressReporter);
-            if (!success)
-            {
-                return;
-            }
-            using (stream)
-            using (StreamReader reader = new(stream))
-            {
-                string wikipediaHTML = reader.ReadToEnd();
-                wikipediaHTML = wikipediaHTML.Replace("widthX", formData.WikiURLWindowWidth.ToString());
-                wikipediaHTML = wikipediaHTML.Replace("heightX", (formData.WikiURLWindowHeight - 50).ToString());
-                await fileOps.TryWriteAllTextAsync(saveLocation, wikipediaHTML, progressReporter);
-            }
-        }
-
-        public static async Task SetWikiTourJS(ScenarioFormData formData, Wikipedia wikipedia, FileOps fileOps, FormProgressReporter progressReporter)
-        {
-            string saveLocation = $"{formData.ScenarioImageFolder}\\scriptsWikipediaItem.js";
-            (bool success, Stream stream) = await fileOps.TryGetResourceStreamAsync("Javascript.scriptsWikipediaItem.js", progressReporter);
-            if (!success)
-            {
-                return;
-            }
-            using (stream)
-            using (StreamReader reader = new(stream))
-            {
-                string wikipediaJS = reader.ReadToEnd();
-                string itemURLs = "\"https://en.wikipedia.org" + wikipedia.WikiTour[1].itemURL + "\"";
-                for (int legNo = 2; legNo < wikipedia.WikiCount - 1; legNo++)
-                {
-                    itemURLs += ", " + "\"https://en.wikipedia.org" + wikipedia.WikiTour[legNo].itemURL + "\"";
-                }
-                // double up last url to display while travelling from last item to destination airport
-                itemURLs += ", " + "\"https://en.wikipedia.org" + wikipedia.WikiTour[wikipedia.WikiCount - 2].itemURL + "\"";
-                wikipediaJS = wikipediaJS.Replace("itemURLsX", itemURLs);
-                wikipediaJS = wikipediaJS.Replace("itemHREFsX", SetWikiTourAllLegHREFsJS(wikipedia));
-                await fileOps.TryWriteAllTextAsync(saveLocation, wikipediaJS, progressReporter);
-            }
-        }
-
-        static private string SetWikiTourAllLegHREFsJS(Wikipedia wikipedia)
-        {
-            string hrefs = SetWikiTourOneLegHREFsJS(1, wikipedia);
-            for (int legNo = 2; legNo < wikipedia.WikiCount - 1; legNo++)
-            {
-                hrefs += ", " + SetWikiTourOneLegHREFsJS(legNo, wikipedia);
-            }
-            // double up last url to display while travelling from last item to destination airport
-            hrefs += ", " + SetWikiTourOneLegHREFsJS(wikipedia.WikiCount - 2, wikipedia);
-            return hrefs;
-        }
-
-        static private string SetWikiTourOneLegHREFsJS(int legIndex, Wikipedia wikipedia)
-        {
-            int noHREFs = wikipedia.WikiTour[legIndex].hrefs.Count;
-            if (noHREFs == 0)
-                return "";
-            string itemHREFs = $"[";
-            itemHREFs += $"\"{wikipedia.WikiTour[legIndex].hrefs[0]}\"";
-            for (int hrefNo = 1; hrefNo < noHREFs - 1; hrefNo++)
-            {
-                itemHREFs += ", " + $"\"{wikipedia.WikiTour[legIndex].hrefs[hrefNo]}\"";
-            }
-            itemHREFs += "]";
-            return itemHREFs;
         }
 
         #endregion

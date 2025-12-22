@@ -1,6 +1,11 @@
 // Constants populated by P3D Scenario Generator application (0 array entry so first item is referenced as index 1)
-itemURLs = ["", itemURLsX];
-itemHREFs = [[""], itemHREFsX];
+// The X variables will be replaced with [item, item]
+var itemURLsX = null;
+var itemHREFsX = null;
+
+// Use spread operator to merge the arrays
+const itemURLs = ["", ...itemURLsX];
+const itemHREFs = [[""], ...itemHREFsX];
 
 var oldLegNo = 0;			// Tracks scenario variable that indicates current leg number
 var hrefToggle = 0;         // Tracks state of a simulator variable toggle to know when to advance display of Wikipedia item to next href

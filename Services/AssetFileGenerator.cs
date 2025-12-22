@@ -96,23 +96,19 @@ namespace P3D_Scenario_Generator.Services
             }
         }
 
-        internal async Task<bool> GenerateMovingMapScriptAsync(int photoCount, ScenarioFormData formData)
+        internal async Task<bool> GenerateMovingMapScriptAsync(int count, ScenarioFormData formData)
         {
-            // 1. Prepare data (LINQ makes this cleaner than the old loop)
-            var mapData = formData.OSMmapData.Take(photoCount - 1).ToList();
-
-            string mapNorth = string.Join(", ", mapData.Select(m => m.north.ToDouble().ToString()));
-            string mapEast = string.Join(", ", mapData.Select(m => m.east.ToDouble().ToString()));
-            string mapSouth = string.Join(", ", mapData.Select(m => m.south.ToDouble().ToString()));
-            string mapWest = string.Join(", ", mapData.Select(m => m.west.ToDouble().ToString()));
+            // 1. Prepare data using LINQ (Taking photoCount - 1 to match your logic)
+            var mapData = formData.OSMmapData.Take(count - 1).ToList();
 
             // 2. Build the replacement dictionary
+            // We wrap these in [] so they are treated as arrays in JS
             var replacements = new Dictionary<string, string>
             {
-                { "mapNorthX", $"[{mapNorth}]" },
-                { "mapEastX", $"[{mapEast}]" },
-                { "mapSouthX", $"[{mapSouth}]" },
-                { "mapWestX", $"[{mapWest}]" }
+                { "mapNorthX", $"[{string.Join(", ", mapData.Select(m => m.north.ToDouble().ToString()))}]" },
+                { "mapEastX",  $"[{string.Join(", ", mapData.Select(m => m.east.ToDouble().ToString()))}]"  },
+                { "mapSouthX", $"[{string.Join(", ", mapData.Select(m => m.south.ToDouble().ToString()))}]" },
+                { "mapWestX",  $"[{string.Join(", ", mapData.Select(m => m.west.ToDouble().ToString()))}]"  }
             };
 
             // 3. Handle Resolution-specific values
@@ -136,6 +132,7 @@ namespace P3D_Scenario_Generator.Services
             }
 
             // 4. Delegate to the generic writer
+            // Ensure the resource name matches your project folder structure (e.g., Javascript.scriptsMovingMap.js)
             return await WriteAssetFileAsync(
                 "Javascript.scriptsMovingMap.js",
                 "scriptsMovingMap.js",

@@ -1,10 +1,23 @@
 // Constants populated by P3D Scenario Generator application, the images for 3 zoom levels for each leg 
 // all have the same lat/lon boundaries (0 array entries so first leg is referenced as index 1)
-const mapNorth = [0,mapNorthX]; 
-const mapEast = [0,mapEastX];
-const mapSouth = [0,mapSouthX];
-const mapWest = [0,mapWestX];
-const imagePixels = [0, imagePixelsX]; // number of images pixels for zoom levels
+// Constants populated by P3D Scenario Generator application
+var mapNorthX = null;
+var mapEastX = null;
+var mapSouthX = null;
+var mapWestX = null;
+var imagePixelsX = null;
+var viewPortWidthX = null;
+var viewPortHeightX = null;
+var zoom1FilenameSuffixX = null;
+var zoom2FilenameSuffixX = null;
+var zoom3FilenameSuffixX = null;
+
+// The 0 entry ensures first leg starts at index 1
+const mapNorth = [0, ...mapNorthX];
+const mapEast = [0, ...mapEastX];
+const mapSouth = [0, ...mapSouthX];
+const mapWest = [0, ...mapWestX];
+const imagePixels = [0, ...imagePixelsX];
 const viewPortWidth = viewPortWidthX;
 const viewPortHeight = viewPortHeightX;
 

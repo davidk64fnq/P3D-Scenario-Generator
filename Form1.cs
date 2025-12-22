@@ -118,7 +118,7 @@ namespace P3D_Scenario_Generator
                 _logger, _fileOps, _httpRoutines, _progressReporter, _scenarioXML,
                 _photoTourUtilities, _pic2MapHtmlParser, _mapTileImageMaker, _imageUtils);
             _celestialNav = new(
-                _logger, _fileOps, _httpRoutines, _progressReporter, _assetFileGenerator,
+                _logger, _fileOps, _progressReporter,
                 _almanacDataSource, _starDataManager, _sextantViewGenerator,
                 _simulatorFileGenerator, _mapTileImageMaker);
             _signWriting = new(
@@ -133,7 +133,9 @@ namespace P3D_Scenario_Generator
                 _fileOps,
                 _progressReporter,
                 _mapTileImageMaker,
-                _imageUtils);
+                _imageUtils,
+                _assetFileGenerator,
+                _scenarioXML);
             _makeCircuit = new(
                 _logger,
                 _fileOps,

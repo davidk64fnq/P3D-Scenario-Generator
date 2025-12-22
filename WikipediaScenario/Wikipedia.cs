@@ -11,11 +11,13 @@ namespace P3D_Scenario_Generator.WikipediaScenario
     /// Provides routines for the Wikipedia scenario type
     /// </summary>
     public class Wikipedia(
-    Logger logger,
-    FileOps fileOps,
-    FormProgressReporter progressReporter,
-    MapTileImageMaker mapTileImageMaker,
-    ImageUtils imageUtils)
+        Logger logger,
+        FileOps fileOps,
+        FormProgressReporter progressReporter,
+        MapTileImageMaker mapTileImageMaker,
+        ImageUtils imageUtils,
+        AssetFileGenerator assetFileGenerator,
+        ScenarioXML scenarioXML)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
@@ -24,6 +26,8 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         // Injected from Form
         private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
         private readonly ImageUtils _imageUtils = imageUtils;
+        private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator;
+        private readonly ScenarioXML _scenarioXML = scenarioXML;
 
         /// <summary>
         /// The wikipedia list items plus start and finish airports
@@ -241,8 +245,20 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 return false;
             }
 
+            if (!await SetWikiItemHTMLAsync(formData))
+            {
+                await _logger.ErrorAsync("Failed to set item HTML during Wikipedia Tour setup.");
+                return false;
+            }
+
+            if (!await SetWikiTourJSAsync(formData))
+            {
+                await _logger.ErrorAsync("Failed to set item Javascript during Wikipedia Tour setup.");
+                return false;
+            }
+
             ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            await ScenarioXML.SetWikiListWorldBaseFlightXML(formData, overview, this, fileOps, progressReporter);
+            await _scenarioXML.SetWikiListWorldBaseFlightXML(formData, overview, this);
             await ScenarioXML.WriteXMLAsync(formData, fileOps, progressReporter);
 
             return true;
@@ -595,6 +611,75 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             ];
 
             ScenarioXML.SetScriptActions(scripts);
+        }
+
+        /// <summary>
+        /// Prepares and writes the Wikipedia Item HTML file with configured dimensions.
+        /// </summary>
+        public async Task<bool> SetWikiItemHTMLAsync(ScenarioFormData formData)
+        {
+            string ApplyHtmlReplacements(string content)
+            {
+                return content
+                    .Replace("widthX", formData.WikiURLWindowWidth.ToString())
+                    .Replace("heightX", (formData.WikiURLWindowHeight - 50).ToString());
+            }
+
+            return await _assetFileGenerator.WriteAssetFileAsync(
+                resourceName: "HTML.WikipediaItem.html",
+                fileName: "WikipediaItem.html",
+                saveLocation: formData.ScenarioImageFolder,
+                replacements: null, // We use customLogic instead of the JS variable regex
+                customLogic: ApplyHtmlReplacements
+            );
+        }
+
+        public async Task<bool> SetWikiTourJSAsync(ScenarioFormData formData)
+        {
+            // 1. Prepare Data using LINQ
+            // Original logic skips index 0, goes to Count - 1, and doubles the last entry.
+            var relevantTourItems = WikiTour.Skip(1).Take(WikiCount - 2).ToList();
+
+            // Ensure we have items to process
+            if (relevantTourItems.Count == 0) return false;
+
+            var lastItem = relevantTourItems.Last();
+
+            // 2. Build itemURLsX
+            var urlList = relevantTourItems
+                .Select(item => $"\"https://en.wikipedia.org{item.itemURL}\"")
+                .ToList();
+            urlList.Add($"\"https://en.wikipedia.org{lastItem.itemURL}\""); // Double last entry
+            string itemURLs = string.Join(", ", urlList);
+
+            // 3. Build itemHREFsX
+            var hrefList = relevantTourItems
+                .Select(item => FormatHrefsForJs(item.hrefs))
+                .ToList();
+            hrefList.Add(FormatHrefsForJs(lastItem.hrefs)); // Double last entry
+            string itemHREFs = string.Join(", ", hrefList);
+
+            // 4. Create Replacements Dictionary
+            var replacements = new Dictionary<string, string>
+            {
+                { "itemURLsX", $"[{itemURLs}]" },
+                { "itemHREFsX", $"[{itemHREFs}]" }
+            };
+
+            // 5. Delegate to AssetFileGenerator
+            return await _assetFileGenerator.WriteAssetFileAsync(
+                resourceName: "Javascript.scriptsWikipediaItem.js", 
+                fileName: "scriptsWikipediaItem.js",
+                saveLocation: formData.ScenarioImageFolder,
+                replacements: replacements
+            );
+
+            // Local function to handle the nested array formatting (IDE0039 compliant)
+            static string FormatHrefsForJs(List<string> hrefs)
+            {
+                if (hrefs == null || hrefs.Count == 0) return "[]";
+                return "[" + string.Join(", ", hrefs.Select(h => $"\"{h}\"")) + "]";
+            }
         }
     }
 }
