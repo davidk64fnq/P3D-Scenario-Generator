@@ -17,7 +17,8 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         MapTileImageMaker mapTileImageMaker,
         ImageUtils imageUtils,
         AssetFileGenerator assetFileGenerator,
-        ScenarioXML scenarioXML)
+        ScenarioXML scenarioXML,
+        ScenarioHTML scenarioHTML)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
@@ -27,7 +28,8 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
         private readonly ImageUtils _imageUtils = imageUtils;
         private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator;
-        private readonly ScenarioXML _scenarioXML = scenarioXML;
+        private readonly ScenarioXML _xml = scenarioXML;
+        private readonly ScenarioHTML _scenarioHTML = scenarioHTML;
 
         /// <summary>
         /// The wikipedia list items plus start and finish airports
@@ -236,8 +238,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             }
 
             Overview overview = SetOverviewStruct(formData);
-            ScenarioHTML scenarioHTML = new(_logger, _fileOps, _progressReporter);
-            if (!await scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
+            if (!await _scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
             {
                 string message = "Failed to generate HTML files during Wikipedia setup.";
                 await _logger.ErrorAsync(message);
@@ -257,9 +258,9 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 return false;
             }
 
-            ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            await _scenarioXML.SetWikiListWorldBaseFlightXML(formData, overview, this);
-            await ScenarioXML.WriteXMLAsync(formData, fileOps, progressReporter);
+            _xml.SetSimbaseDocumentXML(formData, overview);
+            await SetWikiListWorldBaseFlightXML(formData, overview);
+            _xml.WriteXML(formData);
 
             return true;
         }
@@ -547,6 +548,93 @@ namespace P3D_Scenario_Generator.WikipediaScenario
 
         #region XML routines
 
+        public async Task SetWikiListWorldBaseFlightXML(ScenarioFormData formData, Overview overview)
+        {
+            _xml.SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
+            _xml.SetRealismOverrides();
+            _xml.SetScenarioMetadata(formData, overview);
+            _xml.SetDialogAction("Intro01", overview.Briefing, "2", "Text-To-Speech");
+            _xml.SetDialogAction("Intro02", overview.Tips, "2", "Text-To-Speech");
+            _xml.SetGoal("Goal01", overview.Objective);
+            _xml.SetGoalResolutionAction("Goal01");
+
+            // Create scenario variable
+            _xml.SetScenarioVariable("ScenarioVariable01", "currentLegNo", "1");
+            _xml.SetScenarioVariableTriggerValue(0.0, 0, "ScenarioVariable01");
+
+            // Create script actions which reference scenario variable
+            SetWikiTourScriptActions();
+
+            // Create window objects 
+            _xml.SetUIPanelWindow(1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
+            _xml.SetUIPanelWindow(2, "UIpanelWindow", "False", "True", $"images\\WikipediaItem.html", "False", "False");
+
+            // Create HTML, JavaScript and CSS files for windows
+            await _assetFileGenerator.WriteAssetFileAsync("HTML.MovingMap.html", "MovingMap.html", formData.ScenarioImageFolder);
+            await _assetFileGenerator.GenerateMovingMapScriptAsync(WikiCount, formData);
+            await _assetFileGenerator.WriteAssetFileAsync("CSS.styleMovingMap.css", "styleMovingMap.css", formData.ScenarioImageFolder);
+
+            // Create window open/close actions
+            _xml.SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", Wikipedia.GetMapWindowParameters(formData), formData.MapMonitorNumber.ToString());
+            _xml.SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
+            _xml.SetOpenWindowAction(2, "UIPanelWindow", "UIpanelWindow", Wikipedia.GetWikiURLWindowParameters(formData), formData.WikiURLMonitorNumber.ToString());
+            _xml.SetCloseWindowAction(2, "UIPanelWindow", "UIpanelWindow");
+
+            // Pass 1 - setup proximity triggers, there is a trigger for each wiki item location
+            // Each trigger updates leg route images. ProximityTrigger01 is the first wiki item trigger,
+            // Wikipedia.WikiCount - 2 is the last wiki item trigger
+            for (int legNo = 1; legNo <= WikiCount - 2; legNo++)
+            {
+                // Create cylinder area objects to put over each photo location
+                _xml.SetCylinderArea(legNo, "CylinderArea", "0.0,0.0,0.0", "300", "18520.0", "None");
+                string pwp = Wikipedia.GetWikiItemWorldPosition(legNo, this);
+                AttachedWorldPosition awp = ScenarioXML.GetAttachedWorldPosition(pwp, "True");
+                _xml.SetAttachedWorldPosition("CylinderArea", $"CylinderArea{legNo:00}", awp);
+
+                // Create proximity trigger 
+                _xml.SetProximityTrigger(legNo, "ProximityTrigger", "False");
+                _xml.SetProximityTriggerArea(legNo, "CylinderArea", $"CylinderArea{legNo:00}", "ProximityTrigger");
+
+                // Create proximity trigger actions to activate and deactivate as required
+                _xml.SetObjectActivationAction(legNo, "ProximityTrigger", "ProximityTrigger", "ActProximityTrigger", "True");
+                _xml.SetObjectActivationAction(legNo, "ProximityTrigger", "ProximityTrigger", "DeactProximityTrigger", "False");
+                if (legNo == 1)
+                    _xml.SetProximityTriggerOnEnterAction(2, "OpenWindowAction", "OpenUIpanelWindow", 1, "ProximityTrigger");
+
+                // Add deactivate proximity trigger action as on enter event to proximity trigger
+                _xml.SetProximityTriggerOnEnterAction(legNo, "ObjectActivationAction", "DeactProximityTrigger", legNo, "ProximityTrigger");
+            }
+
+            // Pass 2 - setup proximity triggers on enter actions, each trigger increments leg number scenario variable 
+            for (int legNo = 1; legNo <= WikiCount - 2; legNo++)
+            {
+                // Add activate next gate proximity trigger action as event to proximity trigger
+                // legNo + 1 is next wiki item location, Wikipedia.WikiCount - 1 is destination airport
+                if (legNo + 1 < WikiCount - 1)
+                    _xml.SetProximityTriggerOnEnterAction(legNo + 1, "ObjectActivationAction", "ActProximityTrigger", legNo, "ProximityTrigger");
+
+                // Increment gate number
+                _xml.SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", legNo, "ProximityTrigger");
+            }
+
+            // Create timer trigger to play audio introductions and open map window when scenario starts
+            _xml.SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
+            _xml.SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
+
+            // Create airport landing trigger which does goal resolution and closes window
+            _xml.SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", WikiTour[^1].airportICAO);
+            _xml.SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow01", "AirportLandingTrigger01");
+            _xml.SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow02", "AirportLandingTrigger01");
+            _xml.SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
+            _xml.SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
+
+            // Add activate airport landing trigger action as event to last proximity trigger 
+            _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", WikiCount - 2, "ProximityTrigger");
+        }
+
         /// <summary>
         /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
         /// for the map window based on the specified alignment and monitor properties.
@@ -602,7 +690,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
 
         #endregion
 
-        static internal void SetWikiTourScriptActions()
+        public void SetWikiTourScriptActions()
         {
             string[] scripts =
             [
@@ -610,7 +698,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 "currentLegNo = currentLegNo + 1 varset(\"S:currentLegNo\", \"NUMBER\", currentLegNo)"
             ];
 
-            ScenarioXML.SetScriptActions(scripts);
+            _xml.SetScriptActions(scripts);
         }
 
         /// <summary>

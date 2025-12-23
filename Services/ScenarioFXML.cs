@@ -22,7 +22,7 @@ namespace P3D_Scenario_Generator.Services
 				return;
 			}
             EditSourceFXML(simBaseDocument, formData);
-			await WriteSourceFXMLAsync(simBaseDocument, formData, _fileOps, _progressReporter);
+            WriteSourceFXML(simBaseDocument, formData);
         }
 
         /// <summary>
@@ -192,18 +192,23 @@ namespace P3D_Scenario_Generator.Services
 			return sCoordLine;
 		}
 
-		static private async Task WriteSourceFXMLAsync(SimBaseDocument simBaseDocument, ScenarioFormData formData, FileOps fileOps, FormProgressReporter progressReporter)
+        private static void WriteSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)
         {
-			XmlSerializer xmlSerializer = new(simBaseDocument.GetType());
+            // 1. Setup clean namespaces to prevent xsi/xsd attributes
+            XmlSerializerNamespaces ns = new();
+            ns.Add("", "");
 
-            using StreamWriter writer = new($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.fxml");
-            xmlSerializer.Serialize(writer, simBaseDocument);
-			writer.Close();
+            XmlSerializer xmlSerializer = new(simBaseDocument.GetType());
 
-            await ScenarioXML.RemoveXMLNSattributesAsync($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.fxml", fileOps, progressReporter);
+            // 2. Safe path combination
+            string filePath = Path.Combine(formData.ScenarioFolder, $"{formData.ScenarioTitle}.fxml");
+
+            // 3. Serialize in one pass
+            using StreamWriter writer = new(filePath);
+            xmlSerializer.Serialize(writer, simBaseDocument, ns);
         }
 
-	}
+    }
 
     #region Simbase.Document class definitions
 

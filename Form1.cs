@@ -50,7 +50,8 @@ namespace P3D_Scenario_Generator
         private readonly WikiPageHtmlParser _wikiPageHtmlParser;
         private readonly RunwayManager _runwayManager;
         private readonly Aircraft _aircraft;
-        private RunwayUiManager _runwayUiManager; // Note: likely assigned later in UI events
+        private RunwayUiManager _runwayUiManager;
+        private readonly ScenarioHTML _scenarioHTML;
 
         // --- LAYER 4: Composite Services ---
         private readonly ScenarioXML _scenarioXML;
@@ -102,6 +103,7 @@ namespace P3D_Scenario_Generator
             _wikiPageHtmlParser = new(_logger, _fileOps, _httpRoutines, _progressReporter);
             _runwayManager = new(_runwayLoader);
             _aircraft = new(_logger, _cacheManager);
+            _scenarioHTML = new(_logger, _fileOps, _progressReporter);
 
             // --- LAYER 4: Composite Services (Depend on Layer 2 & 3) ---
             _scenarioXML = new(_assetFileGenerator);
@@ -116,18 +118,20 @@ namespace P3D_Scenario_Generator
             // --- LAYER 5: Scenario Engines (The Top-Level Orchestrators) ---
             _photoTour = new(
                 _logger, _fileOps, _httpRoutines, _progressReporter, _scenarioXML,
-                _photoTourUtilities, _pic2MapHtmlParser, _mapTileImageMaker, _imageUtils);
+                _photoTourUtilities, _pic2MapHtmlParser, _mapTileImageMaker, _imageUtils,
+                _assetFileGenerator, _scenarioHTML);
             _celestialNav = new(
                 _logger, _fileOps, _progressReporter,
                 _almanacDataSource, _starDataManager, _sextantViewGenerator,
-                _simulatorFileGenerator, _mapTileImageMaker);
+                _simulatorFileGenerator, _mapTileImageMaker, _scenarioXML, _scenarioHTML);
             _signWriting = new(
                 _logger,
                 _fileOps,
                 _progressReporter,
                 _mapTileImageMaker, 
                 _scenarioXML,
-                _assetFileGenerator);
+                _assetFileGenerator,
+                _scenarioHTML);
             _wikipedia = new(
                 _logger,
                 _fileOps,
@@ -135,12 +139,15 @@ namespace P3D_Scenario_Generator
                 _mapTileImageMaker,
                 _imageUtils,
                 _assetFileGenerator,
-                _scenarioXML);
+                _scenarioXML,
+                _scenarioHTML);
             _makeCircuit = new(
                 _logger,
                 _fileOps,
                 _progressReporter,
-                _mapTileImageMaker);
+                _mapTileImageMaker,
+                _scenarioXML,
+                _scenarioHTML);
         }
 
         #region Form Initialization

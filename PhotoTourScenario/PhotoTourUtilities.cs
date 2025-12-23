@@ -293,7 +293,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 $"{ScenarioFXML.FormatCoordXML(photoLegParams.longitude, "E", "W", true)},+0.0";
         }
 
-        static internal void SetPhotoTourScriptActions()
+        internal static void SetPhotoTourScriptActions(ScenarioXML xml)
         {
             string[] scripts =
             [
@@ -301,7 +301,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 "currentLegNo = currentLegNo + 1 varset(\"S:currentLegNo\", \"NUMBER\", currentLegNo)"
             ];
 
-            ScenarioXML.SetScriptActions(scripts);
+            xml.SetScriptActions(scripts);
         }
     }
 }

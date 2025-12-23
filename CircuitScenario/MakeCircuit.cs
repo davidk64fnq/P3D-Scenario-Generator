@@ -19,15 +19,19 @@ namespace P3D_Scenario_Generator.CircuitScenario
     /// <param name="fileOps">The file operations service for reading and writing files.</param>
     /// <param name="progressReporter">The progress reporter for UI updates.</param>
     public class MakeCircuit(
-    Logger logger,
-    FileOps fileOps,
-    FormProgressReporter progressReporter,
-    MapTileImageMaker mapTileImageMaker) 
+        Logger logger,
+        FileOps fileOps,
+        FormProgressReporter progressReporter,
+        MapTileImageMaker mapTileImageMaker,
+        ScenarioXML scenarioXML,
+        ScenarioHTML scenarioHTML) 
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
+        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker; 
+        private readonly ScenarioXML _xml = scenarioXML;
+        private readonly ScenarioHTML _scenarioHTML = scenarioHTML;
 
         /// <summary>
         /// Start and finish airport (the same) plus the 8 gates making up the circuit.
@@ -92,8 +96,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
             }
 
             Overview overview = SetOverviewStruct(formData);
-            ScenarioHTML scenarioHTML = new(_logger, _fileOps, _progressReporter);
-            if (!await scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
+            if (!await _scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
             {
                 message = "Failed to generate HTML files during circuit setup.";
                 await _logger.ErrorAsync(message);
@@ -101,9 +104,9 @@ namespace P3D_Scenario_Generator.CircuitScenario
                 return false;
             }
 
-            ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            ScenarioXML.SetCircuitWorldBaseFlightXML(formData, overview, this);
-            await ScenarioXML.WriteXMLAsync(formData, fileOps, progressReporter);
+            _xml.SetSimbaseDocumentXML(formData, overview);
+            SetCircuitWorldBaseFlightXML(formData, overview);
+            _xml.WriteXML(formData);
 
             return true;
         }
@@ -189,6 +192,98 @@ namespace P3D_Scenario_Generator.CircuitScenario
             };
 
             return overview;
+        }
+
+        public void SetCircuitWorldBaseFlightXML(ScenarioFormData formData, Overview overview)
+        {
+            _xml.SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
+            _xml.SetRealismOverrides();
+            _xml.SetScenarioMetadata(formData, overview);
+            _xml.SetDialogAction("Intro01", overview.Briefing, "2", "Text-To-Speech");
+            _xml.SetDialogAction("Intro02", overview.Tips, "2", "Text-To-Speech");
+            _xml.SetGoal("Goal01", overview.Objective);
+            _xml.SetGoalResolutionAction("Goal01");
+
+            // First pass
+            for (int gateNo = 1; gateNo < GatesCount - 1; gateNo++)
+            {
+                // Create gate objects (hoop active, hoop inactive and number)
+                string hwp = ScenarioXML.GetGateWorldPosition(GetGate(gateNo), Constants.HoopActVertOffsetFeet);
+                string nwp = ScenarioXML.GetGateWorldPosition(GetGate(gateNo), Constants.NumBlueVertOffsetFeet);
+                string go = ScenarioXML.GetGateOrientation(GetGate(gateNo));
+                _xml.SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Constants.HoopActGuid, hwp, go, "False", "1", "False");
+                _xml.SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Constants.HoopInactGuid, hwp, go, "False", "1", "True");
+                _xml.SetLibraryObject(gateNo, "GEN_game_blue", Constants.NumBlueGuid[gateNo], nwp, go, "False", "1", "True");
+
+                // Create sound action to play when each new gate entered
+                _xml.SetOneShotSoundAction(gateNo, "ThruHoop", "ThruHoop.wav");
+
+                // Create POI object corresponding to the gate number object
+                _xml.SetPointOfInterest(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "0, 80, 0, 0", "False", "False", "Gate ");
+
+                // Create activate/deactivate POI object actions
+                _xml.SetPOIactivationAction(gateNo, "PointOfInterest", $"POI", $"ActPOI", "True");
+                _xml.SetPOIactivationAction(gateNo, "PointOfInterest", $"POI", $"DeactPOI", "False");
+
+                // Create activate/deactivate gate object actions (hoop active and hoop inactive)
+                _xml.SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "ActHoopAct", "True");
+                _xml.SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "DeactHoopAct", "False");
+                _xml.SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_INACTIVE", "ActHoopInact", "True");
+                _xml.SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_INACTIVE", "DeactHoopInact", "False");
+
+                // Create rectangle area object to put over gate
+                _xml.SetRectangleArea($"RectangleArea{gateNo:00}", go, "100.0", "25.0", "100.0");
+                AttachedWorldPosition awp = ScenarioXML.GetAttachedWorldPosition(hwp, "False");
+                _xml.SetAttachedWorldPosition("RectangleArea", $"RectangleArea{gateNo:00}", awp);
+
+                // Create proximity trigger and actions to deactivate gate and POI, and play hoop sound as each gate entered
+                _xml.SetProximityTrigger(gateNo, "ProximityTrigger", "False");
+                _xml.SetProximityTriggerArea(gateNo, "RectangleArea", $"RectangleArea{gateNo:00}", "ProximityTrigger");
+                _xml.SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "ActHoopInact", gateNo, "ProximityTrigger");
+                _xml.SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "DeactHoopAct", gateNo, "ProximityTrigger");
+                _xml.SetProximityTriggerOnEnterAction(gateNo, "PointOfInterestActivationAction", "DeactPOI", gateNo, "ProximityTrigger");
+                _xml.SetProximityTriggerOnEnterAction(gateNo, "OneShotSoundAction", "ThruHoop", gateNo, "ProximityTrigger");
+
+                // Create proximity trigger actions to activate and deactivate as required
+                _xml.SetObjectActivationAction(gateNo, "ProximityTrigger", "ProximityTrigger", "ActProximityTrigger", "True");
+                _xml.SetObjectActivationAction(gateNo, "ProximityTrigger", "ProximityTrigger", "DeactProximityTrigger", "False");
+
+                // Add deactivate proximity trigger action as event to proximity trigger
+                _xml.SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "DeactProximityTrigger", gateNo, "ProximityTrigger");
+            }
+
+            // Second pass
+            for (int gateNo = 1; gateNo < GatesCount - 1; gateNo++)
+            {
+                // Create proximity trigger actions to activate next gate and POI as each gate entered
+                if (gateNo + 1 < GatesCount - 1)
+                {
+                    _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActHoopAct", gateNo, "ProximityTrigger");
+                    _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "DeactHoopInact", gateNo, "ProximityTrigger");
+                    _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "PointOfInterestActivationAction", "ActPOI", gateNo, "ProximityTrigger");
+                }
+
+                // Add activate next gate proximity trigger action as event to proximity trigger
+                if (gateNo + 1 < GatesCount - 1)
+                    _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActProximityTrigger", gateNo, "ProximityTrigger");
+            }
+
+            // Create timer trigger to play audio introductions, activate first gate and POI, activate first proximity trigger when scenario starts
+            _xml.SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
+            _xml.SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("ObjectActivationAction", "ActHoopAct01", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("ObjectActivationAction", "DeactHoopInact01", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("PointOfInterestActivationAction", "ActPOI01", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
+
+            // Create airport landing trigger and activation action 
+            _xml.SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", formData.DestinationRunway.IcaoId);
+            _xml.SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
+            _xml.SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
+
+            // Add activate airport landing trigger action as event to last proximity trigger
+            _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", GatesCount - 2, "ProximityTrigger");
         }
     }
 }

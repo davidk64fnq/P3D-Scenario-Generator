@@ -22,7 +22,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
         StarDataManager starDataManager,
         SextantViewGenerator sextantViewGenerator,
         StarsDatFileGenerator simulatorFileGenerator,
-        MapTileImageMaker mapTileImageMaker)
+        MapTileImageMaker mapTileImageMaker,
+        ScenarioXML scenarioXML,
+        ScenarioHTML scenarioHTML)
     {
         // Field assignments from the primary constructor
         private readonly Logger _logger = logger;
@@ -35,6 +37,8 @@ namespace P3D_Scenario_Generator.CelestialScenario
         private readonly SextantViewGenerator _sextantViewGenerator = sextantViewGenerator;
         private readonly StarsDatFileGenerator _simulatorFileGenerator = simulatorFileGenerator;
         private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
+        private readonly ScenarioXML _xml = scenarioXML;
+        private readonly ScenarioHTML _scenarioHTML = scenarioHTML;
 
         /// <summary>
         /// Initializes the celestial navigation system for a new scenario.
@@ -67,10 +71,13 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 return false;
             }
 
-            if (!await _simulatorFileGenerator.CreateStarsDatAsync(formData, _starDataManager))
+            if (formData.UseCustomStarsDat)
             {
-                await _logger.ErrorAsync("Failed to create stars.dat file during celestial setup.");
-                return false;
+                if (!await _simulatorFileGenerator.CreateStarsDatAsync(formData, _starDataManager))
+                {
+                    await _logger.ErrorAsync("Failed to create stars.dat file during celestial setup.");
+                    return false;
+                }
             }
 
             if (!await _sextantViewGenerator.SetCelestialSextantHtmlAsync(formData, _starDataManager))
@@ -98,8 +105,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 return false;
             }
             Overview overview = SetOverviewStruct(formData);
-            ScenarioHTML scenarioHTML = new(_logger, _fileOps, _progressReporter);
-            if (!await scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
+            if (!await _scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
             {
                 string message = "Failed to generate HTML files during Celestial Navigation scenario setup.";
                 await _logger.ErrorAsync(message);
@@ -107,9 +113,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 return false;
             }
 
-            ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            ScenarioXML.SetCelestialWorldBaseFlightXML(formData, overview);
-            await ScenarioXML.WriteXMLAsync(formData, _fileOps, _progressReporter);
+            _xml.SetSimbaseDocumentXML(formData, overview);
+            SetCelestialWorldBaseFlightXML(formData, overview);
+            _xml.WriteXML(formData);
 
             return true;
         }
@@ -204,6 +210,49 @@ namespace P3D_Scenario_Generator.CelestialScenario
         {
             return ScenarioXML.GetWindowParameters(Constants.SextantWindowWidth, Constants.SextantWindowHeight, formData.SextantAlignment,
                 formData.SextantMonitorWidth, formData.SextantMonitorHeight, formData.SextantOffsetPixels);
+        }
+
+        public void SetCelestialWorldBaseFlightXML(ScenarioFormData formData, Overview overview)
+        {
+            _xml.SetDisabledTrafficAirports($"{formData.DestinationRunway.IcaoId}");
+            _xml.SetRealismOverrides();
+            _xml.SetScenarioMetadata(formData, overview);
+            _xml.SetDialogAction("Intro01", overview.Briefing, "2", "Text-To-Speech");
+            _xml.SetDialogAction("Intro02", overview.Tips, "2", "Text-To-Speech");
+            _xml.SetGoal("Goal01", overview.Objective);
+            _xml.SetGoalResolutionAction("Goal01");
+
+            // Create sextant window object
+            _xml.SetUIPanelWindow(1, "CelestialSextant", "False", "True", "images\\htmlCelestialSextant.html", "False", "True");
+            _xml.SetOpenWindowAction(1, "UIPanelWindow", "CelestialSextant", CelestialNav.GetSextantWindowParameters(formData), formData.SextantMonitorNumber.ToString());
+            _xml.SetCloseWindowAction(1, "UIPanelWindow", "CelestialSextant");
+
+            // Create onscreen text object for displaying error message from sextant
+            _xml.SetOnScreenText("CelestialErrorMessage01", "Star not in FOV", "Center", "0.000000,0.000000,0.000000,255.000000", "False", "White");
+            _xml.SetObjectActivationAction(1, "OnScreenText", "CelestialErrorMessage", "DisplayCelestialErrorMessage", "True");
+            _xml.SetObjectActivationAction(1, "OnScreenText", "CelestialErrorMessage", "HideCelestialErrorMessage", "False");
+
+            // Create timer trigger for hiding onscreen text sextant message after 10 seconds
+            _xml.SetTimerTrigger("TimerTrigger01", 10.0, "False", "False");
+            _xml.SetTimerTriggerAction("ObjectActivationAction", "HideCelestialErrorMessage01", "TimerTrigger01");
+            _xml.SetObjectActivationAction(1, "TimerTrigger", "TimerTrigger", "ActTimerTrigger", "True");
+
+            // Create scenario variable which when set to 1.0 displays error message and activates trigger to hide message after 10 seconds
+            _xml.SetScenarioVariable("CelestialErrorMessage01", "errorMsgVar", "0");
+            _xml.SetScenarioVariableAction("ObjectActivationAction", "DisplayCelestialErrorMessage01", 0, "CelestialErrorMessage01");
+            _xml.SetScenarioVariableAction("ObjectActivationAction", "ActTimerTrigger01", 0, "CelestialErrorMessage01");
+            _xml.SetScenarioVariableTriggerValue(1.0, 0, "CelestialErrorMessage01");
+
+            // Create timer trigger to play audio introductions and open sextant window when scenario starts
+            _xml.SetTimerTrigger("TimerTrigger02", 1.0, "False", "True");
+            _xml.SetTimerTriggerAction("OpenWindowAction", "OpenCelestialSextant01", "TimerTrigger02");
+            _xml.SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger02");
+            _xml.SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger02");
+
+            // Create airport landing trigger which does goal resolution - starts activated
+            _xml.SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "True", formData.DestinationRunway.IcaoId);
+            _xml.SetAirportLandingTriggerAction("CloseWindowAction", "CloseCelestialSextant01", "AirportLandingTrigger01");
+            _xml.SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
         }
     }
 }

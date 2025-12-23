@@ -69,7 +69,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         PhotoTourUtilities photoTourUtilities,
         Pic2MapHtmlParser pic2MapHtmlParser,
         MapTileImageMaker mapTileImageMaker,
-        ImageUtils imageUtils)
+        ImageUtils imageUtils,
+        AssetFileGenerator assetFileGenerator,
+        ScenarioHTML scenarioHTML)
     {
         private readonly FileOps _fileOps = fileOps;
         private readonly PhotoTourUtilities _photoTourUtilities = photoTourUtilities;
@@ -79,7 +81,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         private readonly Pic2MapHtmlParser _pic2MapHtmlParser = pic2MapHtmlParser;
         private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
         private readonly ImageUtils _imageUtils = imageUtils;
-        private readonly ScenarioXML _scenarioXML = scenarioXML;
+        private readonly ScenarioXML _xml = scenarioXML;
+        private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator;
+        private readonly ScenarioHTML _scenarioHTML = scenarioHTML;
 
         internal List<PhotoLocParams> PhotoLocations { get; private set; } = [];
 
@@ -139,8 +143,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
 
             Overview overview = SetOverviewStruct(formData);
-            ScenarioHTML scenarioHTML = new(_logger, _fileOps, _progressReporter);
-            if (!await scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
+            if (!await _scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
             {
                 message = "Failed to generate HTML files during Phototour setup.";
                 await _logger.ErrorAsync(message);
@@ -148,9 +151,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 return false;
             }
 
-            ScenarioXML.SetSimbaseDocumentXML(formData, overview);
-            await _scenarioXML.SetPhotoTourWorldBaseFlightXMLAsync(formData, overview, this);
-            await ScenarioXML.WriteXMLAsync(formData, _fileOps, _progressReporter);
+            _xml.SetSimbaseDocumentXML(formData, overview);
+            await SetPhotoTourWorldBaseFlightXMLAsync(formData, overview);
+            _xml.WriteXML(formData);
 
             return true;
         }
@@ -491,6 +494,109 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             };
 
             return overview;
+        }
+
+        public async Task SetPhotoTourWorldBaseFlightXMLAsync(ScenarioFormData formData, Overview overview)
+        {
+            _xml.SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
+            _xml.SetRealismOverrides();
+            _xml.SetScenarioMetadata(formData, overview);
+            _xml.SetDialogAction("Intro01", overview.Briefing, "2", "Text-To-Speech");
+            _xml.SetDialogAction("Intro02", overview.Tips, "2", "Text-To-Speech");
+            _xml.SetGoal("Goal01", overview.Objective);
+            _xml.SetGoalResolutionAction("Goal01");
+
+            // Create scenario variable
+            _xml.SetScenarioVariable("ScenarioVariable01", "currentLegNo", "1");
+            _xml.SetScenarioVariableTriggerValue(0.0, 0, "ScenarioVariable01");
+
+            // Create script actions which reference scenario variable
+            PhotoTourUtilities.SetPhotoTourScriptActions(_xml);
+
+            // Create map window objects
+            _xml.SetUIPanelWindow(PhotoCount - 1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
+
+            // Create HTML, JavaScript and CSS files for windows
+            await _assetFileGenerator.WriteAssetFileAsync("HTML.MovingMap.html", "MovingMap.html", formData.ScenarioImageFolder);
+            await _assetFileGenerator.WriteAssetFileAsync("HTML.PhotoTour.html", "PhotoTour.html", formData.ScenarioImageFolder);
+            await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsPhotoTour.js", "scriptsPhotoTour.js", formData.ScenarioImageFolder);
+            await _assetFileGenerator.WriteAssetFileAsync("CSS.styleMovingMap.css", "styleMovingMap.css", formData.ScenarioImageFolder);
+            await _assetFileGenerator.GenerateMovingMapScriptAsync(PhotoCount, formData);
+
+            // Create map window open/close actions
+            _xml.SetOpenWindowAction(PhotoCount - 1, "UIPanelWindow", "UIpanelWindow", PhotoTourUtilities.GetMapWindowParameters(formData), formData.MapMonitorNumber.ToString());
+            _xml.SetCloseWindowAction(PhotoCount - 1, "UIPanelWindow", "UIpanelWindow");
+
+            // Pass 1 - setup proximity triggers, there is a trigger for each photo location
+            // ProximityTrigger01 is the first photo trigger, Photo_PhotoTour.PhotoCount - 2 is the last photo trigger
+            for (int photoNo = 1; photoNo <= PhotoCount - 2; photoNo++)
+            {
+                // Create sound action to play when each new photo location entered
+                _xml.SetOneShotSoundAction(photoNo, "ThruHoop", "ThruHoop.wav");
+
+                // Create photo window open/close actions
+                _xml.SetUIPanelWindow(photoNo, "UIpanelWindow", "False", "True", $"images\\PhotoTour.html", "False", "False");
+                _xml.SetOpenWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow", PhotoTourUtilities.GetPhotoWindowParameters(photoNo, formData), formData.PhotoTourPhotoMonitorNumber.ToString());
+                _xml.SetCloseWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow");
+
+                // Create cylinder area objects to put over each photo location
+                _xml.SetCylinderArea(photoNo, "CylinderArea", "0.0,0.0,0.0", formData.PhotoTourHotspotRadius.ToString(), "18520.0", "None");
+                string pwp = PhotoTourUtilities.GetPhotoWorldPosition(this, photoNo);
+                AttachedWorldPosition awp = ScenarioXML.GetAttachedWorldPosition(pwp, "True");
+                _xml.SetAttachedWorldPosition("CylinderArea", $"CylinderArea{photoNo:00}", awp);
+
+                // Create proximity trigger 
+                _xml.SetProximityTrigger(photoNo, "ProximityTrigger", "False");
+                _xml.SetProximityTriggerArea(photoNo, "CylinderArea", $"CylinderArea{photoNo:00}", "ProximityTrigger");
+
+                // Create proximity trigger actions to activate and deactivate as required
+                _xml.SetObjectActivationAction(photoNo, "ProximityTrigger", "ProximityTrigger", "ActProximityTrigger", "True");
+                _xml.SetObjectActivationAction(photoNo, "ProximityTrigger", "ProximityTrigger", "DeactProximityTrigger", "False");
+
+                // Add deactivate proximity trigger action as on enter event to proximity trigger
+                _xml.SetProximityTriggerOnEnterAction(photoNo, "ObjectActivationAction", "DeactProximityTrigger", photoNo, "ProximityTrigger");
+            }
+
+            // Pass 2 - setup proximity triggers on enter actions
+            // Each trigger increments leg number scenario variable which leads to updates in html window contents 
+            // ProximityTrigger01 is the first photo trigger, Photo_PhotoTour.PhotoCount - 2 is the last photo trigger
+            for (int photoNo = 1; photoNo <= PhotoCount - 2; photoNo++)
+            {
+                // Play sound
+                _xml.SetProximityTriggerOnEnterAction(photoNo, "OneShotSoundAction", "ThruHoop", photoNo, "ProximityTrigger");
+
+                // Add activate next gate proximity trigger action as event to proximity trigger
+                // itemNo + 1 is next photo location, PhotoTour.PhotoCount - 1 is destination airport
+                if (photoNo + 1 < PhotoCount - 1)
+                    _xml.SetProximityTriggerOnEnterAction(photoNo + 1, "ObjectActivationAction", "ActProximityTrigger", photoNo, "ProximityTrigger");
+
+                // Open new photo window 
+                _xml.SetProximityTriggerOnEnterAction(photoNo, "OpenWindowAction", "OpenUIpanelWindow", photoNo, "ProximityTrigger");
+
+                // Close old photo window 
+                if (photoNo > 1)
+                    _xml.SetProximityTriggerOnEnterAction(photoNo - 1, "CloseWindowAction", "CloseUIpanelWindow", photoNo, "ProximityTrigger");
+
+                // Increment photo number
+                _xml.SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", photoNo, "ProximityTrigger");
+            }
+
+            // Create timer trigger to play audio introductions and open map window when scenario starts
+            _xml.SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
+            _xml.SetTimerTriggerAction("OpenWindowAction", $"OpenUIpanelWindow{PhotoCount - 1:00}", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
+
+            // Create airport landing trigger which does goal resolution and closes windows
+            _xml.SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", formData.DestinationRunway.IcaoId);
+            _xml.SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoCount - 1:00}", "AirportLandingTrigger01");
+            _xml.SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoCount - 2:00}", "AirportLandingTrigger01");
+            _xml.SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
+            _xml.SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
+
+            // Add activate airport landing trigger action as event to last proximity trigger 
+            _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", PhotoCount - 2, "ProximityTrigger");
         }
     }
 }

@@ -22,12 +22,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// <returns><see langword="true"/> if all needed file operations complete successfully; otherwise, <see langword="false"/>.</returns>
         public async Task<bool> CreateStarsDatAsync(ScenarioFormData formData, StarDataManager starDataManager)
         {
-            if (!formData.UseCustomStarsDat)
-            {
-                _progressReporter.Report("INFO: User does not require creation of custom stars.dat.");
-                return false;
-            }
-
             _progressReporter.Report("INFO: Preparing to create stars.dat.P3DscenarioGenerator file.");
 
             // Use LINQ and string.Join for a cleaner, modern approach to the content block
