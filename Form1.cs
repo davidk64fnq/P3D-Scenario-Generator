@@ -142,7 +142,6 @@ namespace P3D_Scenario_Generator
                 _scenarioHTML);
             _makeCircuit = new(
                 _logger,
-                _fileOps,
                 _progressReporter,
                 _mapTileImageMaker,
                 _scenarioXML,

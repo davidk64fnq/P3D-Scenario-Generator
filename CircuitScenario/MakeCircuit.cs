@@ -19,14 +19,12 @@ namespace P3D_Scenario_Generator.CircuitScenario
     /// <param name="progressReporter">The progress reporter for UI updates.</param>
     public class MakeCircuit(
         Logger logger,
-        FileOps fileOps,
         FormProgressReporter progressReporter,
         MapTileImageMaker mapTileImageMaker,
         ScenarioXML scenarioXML,
         ScenarioHTML scenarioHTML) 
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker; 
         private readonly ScenarioXML _xml = scenarioXML;
