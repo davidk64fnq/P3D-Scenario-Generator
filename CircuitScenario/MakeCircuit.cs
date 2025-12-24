@@ -1,7 +1,6 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
-using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
 
@@ -219,7 +218,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
                 _xml.SetOneShotSoundAction(gateNo, "ThruHoop", "ThruHoop.wav");
 
                 // Create POI object corresponding to the gate number object
-                _xml.SetPointOfInterest(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "0, 80, 0, 0", "False", "False", "Gate ");
+                _xml.SetPointOfInterest(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "0, 80, 0, 0", "True", "True", "Gate ");
 
                 // Create activate/deactivate POI object actions
                 _xml.SetPOIactivationAction(gateNo, "PointOfInterest", $"POI", $"ActPOI", "True");
@@ -260,7 +259,6 @@ namespace P3D_Scenario_Generator.CircuitScenario
                 {
                     _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActHoopAct", gateNo, "ProximityTrigger");
                     _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "DeactHoopInact", gateNo, "ProximityTrigger");
-                    _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "PointOfInterestActivationAction", "ActPOI", gateNo, "ProximityTrigger");
                 }
 
                 // Add activate next gate proximity trigger action as event to proximity trigger
@@ -274,7 +272,6 @@ namespace P3D_Scenario_Generator.CircuitScenario
             _xml.SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
             _xml.SetTimerTriggerAction("ObjectActivationAction", "ActHoopAct01", "TimerTrigger01");
             _xml.SetTimerTriggerAction("ObjectActivationAction", "DeactHoopInact01", "TimerTrigger01");
-            _xml.SetTimerTriggerAction("PointOfInterestActivationAction", "ActPOI01", "TimerTrigger01");
             _xml.SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
             // Create airport landing trigger and activation action 
