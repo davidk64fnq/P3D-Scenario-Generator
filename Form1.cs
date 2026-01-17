@@ -105,7 +105,7 @@ namespace P3D_Scenario_Generator
             _scenarioHTML = new(_logger, _fileOps, _progressReporter);
 
             // --- LAYER 4: Composite Services (Depend on Layer 2 & 3) ---
-            _scenarioXML = new(_assetFileGenerator);
+            _scenarioXML = new();
             _pic2MapHtmlParser = new(_logger, _httpRoutines, _htmlParser);
             _photoTourUtilities = new(_logger, _httpRoutines, _fileOps, _imageUtils);
             _mapTileMontager = new(_logger, _progressReporter, _fileOps, _mapTileDownloader);
@@ -158,18 +158,15 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
         private async void Form_Load(object sender, EventArgs e)
         {
-            Enabled = true;
+            Enabled = false; // Disable UI during heavy load
 
-            // Perform custom initialization tasks after the designer-generated components are set up.
             var success = await PostInitializeComponentAsync();
-            if (!success)
-            {
-                return;
-            }
+            if (!success) return;
 
-            // Start the asynchronous loading process without blocking the UI thread.
-            // We use Task.Run to ensure the heavy lifting happens on a background thread.
-            _ = Task.Run(InitializeRunwayDataAsync);
+            // Remove the Task.Run wrapper and await the method directly
+            await InitializeRunwayDataAsync();
+
+            Enabled = true; // Re-enable UI
         }
 
         /// <summary>

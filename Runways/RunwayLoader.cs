@@ -109,12 +109,20 @@ namespace P3D_Scenario_Generator.Runways
                 using (stream)
                 using (XmlReader reader = XmlReader.Create(stream))
                 {
-                    int curIndex = 0;
+                    int curIndex = 0; 
+                    int airportCount = 0;
+
                     while (reader.ReadToFollowing("ICAO"))
                     {
+                        airportCount++;
                         RunwayParams curAirport = ReadAirport(reader);
 
-                        progressReporter?.Report($"INFO: Loading runway data for airport: {curAirport.IcaoId}");
+                        // YIELD THE THREAD every 500 airports to allow UI to update
+                        if (airportCount % 500 == 0)
+                        {
+                            progressReporter?.Report($"INFO: Processed {airportCount} airports...");
+                            await Task.Yield(); // This is the "Magic" line
+                        }
 
                         if (reader.Name == "Runway" && reader.NodeType == XmlNodeType.Element)
                         {
@@ -414,53 +422,55 @@ namespace P3D_Scenario_Generator.Runways
         }
 
         /// <summary>
-        /// Builds a KD-tree from a list of runway parameters.
+        /// Builds a KD-tree from a list of runway parameters using index-based boundaries
+        /// to prevent excessive memory allocation.
         /// </summary>
-        /// <param name="runways">The list of runway parameters to build the tree from.</param>
-        /// <param name="progressReporter">The progress reporter for UI updates.</param>
-        /// <returns>The root node of the constructed KD-tree.</returns>
         private static KDNode BuildKDTree(List<RunwayParams> runways, FormProgressReporter progressReporter)
         {
+            if (runways == null || runways.Count == 0) return null;
+
             progressReporter.Report("INFO: Building KD-tree for spatial indexing...");
-            // Start the recursive build process.
-            return BuildKDTreeRecursive(runways, 0);
+
+            // Pass the entire list with the full range (0 to Count - 1)
+            return BuildKDTreeRecursive(runways, 0, runways.Count - 1, 0);
         }
 
         /// <summary>
-        /// A recursive helper function to build the KD-tree.
+        /// A recursive helper function that operates on a single list using start and end pointers.
         /// </summary>
-        /// <param name="runways">The list of runways for the current subtree.</param>
-        /// <param name="axis">The current splitting axis (0 for Latitude, 1 for Longitude).</param>
-        /// <returns>The root node of the current subtree.</returns>
-        private static KDNode BuildKDTreeRecursive(List<RunwayParams> runways, int axis)
+        private static KDNode BuildKDTreeRecursive(List<RunwayParams> runways, int start, int end, int axis)
         {
-            if (runways == null || runways.Count == 0)
+            // Base case: if the segment is empty
+            if (start > end)
             {
                 return null;
             }
 
-            // Sort the list of runways based on the current axis.
+            // 1. Sort only the specific segment of the list we are interested in.
+            // This is much faster than copying the list first.
+            int length = end - start + 1;
             if (axis == 0) // Latitude
             {
-                runways.Sort((a, b) => a.AirportLat.CompareTo(b.AirportLat));
+                runways.Sort(start, length, Comparer<RunwayParams>.Create((a, b) => a.AirportLat.CompareTo(b.AirportLat)));
             }
             else // Longitude
             {
-                runways.Sort((a, b) => a.AirportLon.CompareTo(b.AirportLon));
+                runways.Sort(start, length, Comparer<RunwayParams>.Create((a, b) => a.AirportLon.CompareTo(b.AirportLon)));
             }
 
-            // Find the median and split the list.
-            int medianIndex = runways.Count / 2;
+            // 2. Find the median index of the current segment
+            int medianIndex = start + (end - start) / 2;
             RunwayParams medianRunway = runways[medianIndex];
 
-            // Create the node for the median runway.
+            // 3. Create the node and recursively build subtrees using index boundaries
             KDNode node = new()
             {
                 Runway = medianRunway,
                 Axis = axis,
-                // Recursively build the left and right subtrees.
-                Left = BuildKDTreeRecursive([.. runways.Take(medianIndex)], (axis + 1) % 2),
-                Right = BuildKDTreeRecursive([.. runways.Skip(medianIndex + 1)], (axis + 1) % 2)
+                // Left subtree is from start to the item before the median
+                Left = BuildKDTreeRecursive(runways, start, medianIndex - 1, (axis + 1) % 2),
+                // Right subtree is from the item after the median to the end
+                Right = BuildKDTreeRecursive(runways, medianIndex + 1, end, (axis + 1) % 2)
             };
 
             return node;

@@ -35,10 +35,16 @@
             <b>Note 1:</b> Rather than double clicking MakeRwys.exe to execute it, use Windows Powershell from the directory containing Prepar3D.exe with the command ".\MakeRwys />0" This will ensure the really short runways are included rather than by default only greater 1500m.
         </p>
         <p>
-            <b>Note 2:</b> Make sure all add-on scenery is activated before running MakeRwys!
+            <b>Note 2:</b> To include water runways use the command ".\MakeRwys /Water"
         </p>
         <p>
-            <b>Note 3:</b> The onus is on the user to remember to create a new version of "runways.xml" after adding new airports to the simulator.
+            <b>Note 3:</b> Make sure all add-on scenery is activated before running MakeRwys!
+        </p>
+        <p>
+            <b>Note 4:</b> The onus is on the user to remember to create a new version of "runways.xml" after adding new airports to the simulator.
+        </p>
+        <p>
+            <b>Note 5:</b> Running MakeRwys on a default P3D v5.4 installation finds 56145 runways from 23514 airports. Of the 23514, 1038 airports have no runway data in the xml output file. The P3D Scenario Generator program ignores these airports with no runway data as the user interface and scenario generation logic are centred around knowledge of runways at an airport. If you have an airport that falls into this category and you want to see it included in your instance of the program you need to use ADE to add atleast one runway definition to the relevant BGL file.
         </p>
     </body>
 </html>
