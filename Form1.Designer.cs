@@ -1833,6 +1833,7 @@ namespace P3D_Scenario_Generator
             ListBoxGeneralRunwayResults.Name = "ListBoxGeneralRunwayResults";
             ListBoxGeneralRunwayResults.Size = new Size(100, 19);
             ListBoxGeneralRunwayResults.TabIndex = 4;
+            ListBoxGeneralRunwayResults.MouseMove += ListBoxGeneralRunwayResults_MouseMove;
             // 
             // groupBox13
             // 

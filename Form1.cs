@@ -77,7 +77,7 @@ namespace P3D_Scenario_Generator
             // --- LAYER 1: Shared Models & UI Infrastructure (No Dependencies) ---
             _formData = new();
             _almanacData = new();
-            _progressReporter = new(toolStripStatusLabel1, this); 
+            _progressReporter = new(toolStripStatusLabel1, this);
             _httpClient = new();
 
             // --- LAYER 2: Core Services (Fundamental Building Blocks) ---
@@ -127,7 +127,7 @@ namespace P3D_Scenario_Generator
                 _logger,
                 _fileOps,
                 _progressReporter,
-                _mapTileImageMaker, 
+                _mapTileImageMaker,
                 _scenarioXML,
                 _assetFileGenerator,
                 _scenarioHTML);
@@ -546,6 +546,20 @@ namespace P3D_Scenario_Generator
             {
                 // Display a message to the user if no runways were found.
                 ListBoxGeneralRunwayResults.Items.Add("No runway found matching the filters.");
+            }
+        }
+
+        private void ListBoxGeneralRunwayResults_MouseMove(object sender, MouseEventArgs e)
+        {
+            int index = ListBoxGeneralRunwayResults.IndexFromPoint(e.Location);
+            if (index != -1 && index < ListBoxGeneralRunwayResults.Items.Count)
+            {
+                string text = ListBoxGeneralRunwayResults.Items[index].ToString();
+                // Only update if the text changed to prevent flickering
+                if (toolTip1.GetToolTip(ListBoxGeneralRunwayResults) != text)
+                {
+                    toolTip1.SetToolTip(ListBoxGeneralRunwayResults, text);
+                }
             }
         }
 
