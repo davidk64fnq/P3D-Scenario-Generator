@@ -1,6 +1,5 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.MapTiles;
-using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
 
@@ -694,7 +693,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         {
             string[] scripts =
             [
-                "!lua local var currentLegNo = varget(\"S:currentLegNo\", \"NUMBER\") " +
+                "!lua local currentLegNo = varget(\"S:currentLegNo\", \"NUMBER\") " +
                 "currentLegNo = currentLegNo + 1 varset(\"S:currentLegNo\", \"NUMBER\", currentLegNo)"
             ];
 

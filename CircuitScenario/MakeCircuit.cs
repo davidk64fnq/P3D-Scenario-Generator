@@ -218,8 +218,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
                 // Create POI object corresponding to the gate number object
                 _xml.SetPointOfInterest(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "0, 80, 0, 0", "True", "True", "Gate ");
 
-                // Create activate/deactivate POI object actions
-                _xml.SetPOIactivationAction(gateNo, "PointOfInterest", $"POI", $"ActPOI", "True");
+                // Create deactivate POI object actions
                 _xml.SetPOIactivationAction(gateNo, "PointOfInterest", $"POI", $"DeactPOI", "False");
 
                 // Create activate/deactivate gate object actions (hoop active and hoop inactive)

@@ -867,48 +867,48 @@ namespace P3D_Scenario_Generator.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxSextantMonitorHeight {
+        public string TextBoxCelestialMonitorHeight {
             get {
-                return ((string)(this["TextBoxSextantMonitorHeight"]));
+                return ((string)(this["TextBoxCelestialMonitorHeight"]));
             }
             set {
-                this["TextBoxSextantMonitorHeight"] = value;
+                this["TextBoxCelestialMonitorHeight"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxSextantMonitorNumber {
+        public string TextBoxCelestialMonitorNumber {
             get {
-                return ((string)(this["TextBoxSextantMonitorNumber"]));
+                return ((string)(this["TextBoxCelestialMonitorNumber"]));
             }
             set {
-                this["TextBoxSextantMonitorNumber"] = value;
+                this["TextBoxCelestialMonitorNumber"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxSextantMonitorWidth {
+        public string TextBoxCelestialMonitorWidth {
             get {
-                return ((string)(this["TextBoxSextantMonitorWidth"]));
+                return ((string)(this["TextBoxCelestialMonitorWidth"]));
             }
             set {
-                this["TextBoxSextantMonitorWidth"] = value;
+                this["TextBoxCelestialMonitorWidth"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public string TextBoxSextantOffset {
+        public string TextBoxCelestialOffset {
             get {
-                return ((string)(this["TextBoxSextantOffset"]));
+                return ((string)(this["TextBoxCelestialOffset"]));
             }
             set {
-                this["TextBoxSextantOffset"] = value;
+                this["TextBoxCelestialOffset"] = value;
             }
         }
         

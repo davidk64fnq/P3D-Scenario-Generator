@@ -1,7 +1,6 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
-using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
 
@@ -282,11 +281,11 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         {
             string[] scripts =
             [
-                "!lua local var smokeOn = varget(\"S:smokeOn\", \"NUMBER\") " +
+                "!lua local smokeOn = varget(\"S:smokeOn\", \"NUMBER\") " +
                 "if smokeOn == 1 then varset(\"S:smokeOn\", \"NUMBER\", 0) " +
                 "else varset(\"S:smokeOn\", \"NUMBER\", 1) end",
 
-                "!lua local var currentGateNo = varget(\"S:currentGateNo\", \"NUMBER\") " +
+                "!lua local currentGateNo = varget(\"S:currentGateNo\", \"NUMBER\") " +
                 "currentGateNo = currentGateNo + 1 varset(\"S:currentGateNo\", \"NUMBER\", currentGateNo)"
             ];
 
