@@ -217,8 +217,8 @@
     <PackageReference Include="CoordinateSharp" Version="3.4.1.1" />
     <PackageReference Include="EPPlus" Version="8.4.1" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.10.1" />
-    <PackageReference Include="Magick.NET.SystemDrawing" Version="8.0.14" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.10.2" />
+    <PackageReference Include="Magick.NET.SystemDrawing" Version="8.0.15" />
     <PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.2" />
