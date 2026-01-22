@@ -120,6 +120,17 @@ public class SimMissionRectangleArea(string? descr = null, string? orient = null
     [XmlElement("AttachedWorldObject")] public AttachedWorldObject? AttachedWorldObject { get; set; }
 }
 
+[XmlRoot("SimMission.Sphere Area")]
+public class SimMissionSphereArea(string? descr = null, string? areaRadius = null, AttachedWorldPosition? awp = null, string? id = null)
+{
+    public SimMissionSphereArea() : this(null, null, null, null) { }
+    [XmlElement("Descr")] public string? Descr { get; set; } = descr;
+    [XmlElement("AreaRadius")] public string? AreaRadius { get; set; } = areaRadius;
+    [XmlElement("AttachedWorldPosition")] public AttachedWorldPosition? AttachedWorldPosition { get; set; } = awp;
+    [XmlAttribute("InstanceId")] public string? InstanceId { get; set; } = id;
+    [XmlElement("AttachedWorldObject")] public AttachedWorldObject? AttachedWorldObject { get; set; }
+}
+
 #endregion
 
 #region Entities
@@ -367,6 +378,7 @@ public class WorldBaseFlight
     [XmlElement("SimMission.ScaleformPanelWindow")] public List<SimMissionScaleformPanelWindow> SimMissionScaleformPanelWindow { get; set; } = [];
     [XmlElement("SimMission.ScenarioVariable")] public List<SimMissionScenarioVariable> SimMissionScenarioVariable { get; set; } = [];
     [XmlElement("SimMission.ScriptAction")] public List<SimMissionScriptAction> SimMissionScriptAction { get; set; } = [];
+    [XmlElement("SimMission.SphereArea")] public List<SimMissionSphereArea> SimMissionSphereArea { get; set; } = [];
     [XmlElement("SimMission.TimerTrigger")] public List<SimMissionTimerTrigger> SimMissionTimerTrigger { get; set; } = [];
     [XmlElement("SimMissionUI.ScenarioMetadata")] public SimMissionUIScenarioMetadata? SimMissionUIScenarioMetadata { get; set; }
     [XmlElement("SimMission.UIPanelWindow")] public List<SimMissionUIPanelWindow> SimMissionUIPanelWindow { get; set; } = [];

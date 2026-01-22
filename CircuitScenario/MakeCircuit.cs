@@ -171,7 +171,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
             string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
             briefing += " by doing that most fundamental of tasks, flying a circuit! ";
             briefing += "You'll take off, fly through eight gates as you complete a circuit, ";
-            briefing += "and land back on the runway. The scenario begins on runway ";
+            briefing += "and land back at the runway. The scenario begins on runway ";
             briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
             briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
 
@@ -271,13 +271,18 @@ namespace P3D_Scenario_Generator.CircuitScenario
             _xml.SetTimerTriggerAction("ObjectActivationAction", "DeactHoopInact01", "TimerTrigger01");
             _xml.SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
-            // Create airport landing trigger and activation action 
-            _xml.SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", formData.DestinationRunway.IcaoId);
-            _xml.SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
-            _xml.SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
+            // Create destination area landing trigger and activation action 
+            _xml.SetAreaLandingTrigger("AreaLandingTrigger01", "Any", "False");
+            _xml.SetSphereArea($"SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
+            string dwp = ScenarioXML.GetCoordinateWorldPosition(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon, formData.DestinationRunway.Altitude);
+            AttachedWorldPosition adwp = ScenarioXML.GetAttachedWorldPosition(dwp, "False");
+            _xml.SetAttachedWorldPosition("SphereArea", "SphereArea01", adwp);
+            _xml.SetAreaLandingTriggerArea("SphereArea", "SphereArea01", "AreaLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("GoalResolutionAction", "Goal01", "AreaLandingTrigger01");
+            _xml.SetObjectActivationAction(1, "AreaLandingTrigger", "AreaLandingTrigger", "ActAreaLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger
-            _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", GatesCount - 2, "ProximityTrigger");
+            _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAreaLandingTrigger", GatesCount - 2, "ProximityTrigger");
         }
     }
 }

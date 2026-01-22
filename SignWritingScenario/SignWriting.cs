@@ -426,13 +426,18 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             _xml.SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
 
             // Create airport landing trigger and activation action 
-            _xml.SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", formData.DestinationRunway.IcaoId);
-            _xml.SetAirportLandingTriggerAction("CloseWindowAction", "CloseUIpanelWindow01", "AirportLandingTrigger01");
-            _xml.SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
-            _xml.SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
+            _xml.SetAreaLandingTrigger("AreaLandingTrigger01", "Any", "False");
+            _xml.SetSphereArea($"SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
+            string dwp = ScenarioXML.GetCoordinateWorldPosition(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon, formData.DestinationRunway.Altitude);
+            AttachedWorldPosition adwp = ScenarioXML.GetAttachedWorldPosition(dwp, "False");
+            _xml.SetAttachedWorldPosition("SphereArea", "SphereArea01", adwp);
+            _xml.SetAreaLandingTriggerArea("SphereArea", "SphereArea01", "AreaLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("CloseWindowAction", "CloseUIpanelWindow01", "AreaLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("GoalResolutionAction", "Goal01", "AreaLandingTrigger01");
+            _xml.SetObjectActivationAction(1, "AreaLandingTrigger", "AreaLandingTrigger", "ActAreaLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger
-            _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", GatesCount, "ProximityTrigger");
+            _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAreaLandingTrigger", GatesCount, "ProximityTrigger");
         }
     }
 }

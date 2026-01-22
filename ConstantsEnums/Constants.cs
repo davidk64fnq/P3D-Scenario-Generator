@@ -1,5 +1,4 @@
-﻿using P3D_Scenario_Generator.Models;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Reflection;
 
 namespace P3D_Scenario_Generator.ConstantsEnums
@@ -317,6 +316,15 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         /// Vertical offset for blue number library objects in feet
         /// </summary>
         public const double NumBlueVertOffsetFeet = 110;
+
+        #endregion
+
+        #region Generic Scenario constants
+
+        /// <summary>
+        /// The radius of sphere area for airport area landing trigger xml object.
+        /// </summary>
+        public const double AirportAreaTriggerRadiusMetres = 2000;
 
         #endregion
 

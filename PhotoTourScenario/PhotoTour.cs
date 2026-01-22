@@ -1,6 +1,5 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
-using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.Utilities;
@@ -589,14 +588,19 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             _xml.SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
             // Create airport landing trigger which does goal resolution and closes windows
-            _xml.SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "False", formData.DestinationRunway.IcaoId);
-            _xml.SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoCount - 1:00}", "AirportLandingTrigger01");
-            _xml.SetAirportLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoCount - 2:00}", "AirportLandingTrigger01");
-            _xml.SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
-            _xml.SetObjectActivationAction(1, "AirportLandingTrigger", "AirportLandingTrigger", "ActAirportLandingTrigger", "True");
+            _xml.SetAreaLandingTrigger("AreaLandingTrigger01", "Any", "False");
+            _xml.SetSphereArea($"SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
+            string dwp = ScenarioXML.GetCoordinateWorldPosition(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon, formData.DestinationRunway.Altitude);
+            AttachedWorldPosition adwp = ScenarioXML.GetAttachedWorldPosition(dwp, "False");
+            _xml.SetAttachedWorldPosition("SphereArea", "SphereArea01", adwp);
+            _xml.SetAreaLandingTriggerArea("SphereArea", "SphereArea01", "AreaLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoCount - 1:00}", "AreaLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("CloseWindowAction", $"CloseUIpanelWindow{PhotoCount - 2:00}", "AreaLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("GoalResolutionAction", "Goal01", "AreaLandingTrigger01");
+            _xml.SetObjectActivationAction(1, "AreaLandingTrigger", "AreaLandingTrigger", "ActAreaLandingTrigger", "True");
 
             // Add activate airport landing trigger action as event to last proximity trigger 
-            _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAirportLandingTrigger", PhotoCount - 2, "ProximityTrigger");
+            _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAreaLandingTrigger", PhotoCount - 2, "ProximityTrigger");
         }
     }
 }

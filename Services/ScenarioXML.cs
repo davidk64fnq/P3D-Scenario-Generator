@@ -9,6 +9,17 @@ namespace P3D_Scenario_Generator.Services
 
         #region Actions
 
+        public void SetAreaLandingTriggerAction(string objName, string orSearch, string tSearch)
+        {
+            ObjectReference or = GetObjectReference(objName, orSearch);
+            int idIndex;
+            idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger.FindIndex(o => o.Descr == tSearch);
+            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Actions != null)
+                _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Actions.ObjectReference.Add(or);
+            else
+                _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Actions = new Actions([or]);
+        }
+
         public void SetDialogAction(string descr, string text, string delay, string soundType)
         {
             SimMissionDialogAction da = new(descr, text, delay, soundType, GetGUID());
@@ -147,6 +158,15 @@ namespace P3D_Scenario_Generator.Services
                 _simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea = [ra];
         }
 
+        public void SetSphereArea(string descr, string areaRadius)
+        {
+            SimMissionSphereArea sa = new(descr, areaRadius, new AttachedWorldPosition(), GetGUID());
+            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea != null)
+                _simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea.Add(sa);
+            else
+                _simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea = [sa];
+        }
+
         public void SetAttachedWorldPosition(string objName, string search, AttachedWorldPosition wp)
         {
             int idIndex;
@@ -159,6 +179,10 @@ namespace P3D_Scenario_Generator.Services
                 case "RectangleArea":
                     idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.FindIndex(o => o.Descr == search);
                     _simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea[idIndex].AttachedWorldPosition = wp;
+                    break;
+                case "SphereArea":
+                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea.FindIndex(o => o.Descr == search);
+                    _simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea[idIndex].AttachedWorldPosition = wp;
                     break;
                 default:
                     break;
@@ -195,6 +219,10 @@ namespace P3D_Scenario_Generator.Services
                 case "AirportLandingTrigger":
                     idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.FindIndex(o => o.Descr == search);
                     or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].InstanceId);
+                    break;
+                case "AreaLandingTrigger":
+                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger.FindIndex(o => o.Descr == search);
+                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].InstanceId);
                     break;
                 case "CloseWindowAction":
                     idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionCloseWindowAction.FindIndex(o => o.Descr == search);
@@ -260,6 +288,10 @@ namespace P3D_Scenario_Generator.Services
                     idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction.FindIndex(o => o.Descr == search);
                     or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction[idIndex].InstanceId);
                     break;
+                case "SphereArea":
+                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea.FindIndex(o => o.Descr == search);
+                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea[idIndex].InstanceId);
+                    break;
                 case "TimerTrigger":
                     idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.FindIndex(o => o.Descr == search);
                     or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].InstanceId);
@@ -283,6 +315,11 @@ namespace P3D_Scenario_Generator.Services
         public static string GetGateOrientation(Gate gate)
         {
             return $"{string.Format("{0:0.0}", gate.pitch)},0.0,{string.Format("{0:0.0}", gate.orientation)}";
+        }
+
+        public static string GetCoordinateWorldPosition(double latitude, double longitude, double elevation)
+        {
+            return $"{ScenarioFXML.FormatCoordXML(latitude, "N", "S", false)},{ScenarioFXML.FormatCoordXML(longitude, "E", "W", false)},+{elevation}";
         }
 
         public static string GetGateWorldPosition(Gate gate, double vertOffset)
@@ -552,6 +589,34 @@ namespace P3D_Scenario_Generator.Services
         #endregion
 
         #region Triggers
+
+        public void SetAreaLandingTrigger(string descr, string landingType, string activated)
+        {
+            // Initialize the trigger using property initializers instead of a constructor
+            SimMissionAreaLandingTrigger alt = new()
+            {
+                Descr = descr,
+                LandingType = landingType,
+                Activated = activated,
+                Areas = new Areas([]), 
+                InstanceId = GetGUID()
+            };
+
+            // Using C# 12 null-coalescing assignment for cleaner list management
+            _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger ??= [];
+            _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger.Add(alt);
+        }
+
+        public void SetAreaLandingTriggerArea(string objName, string orSearch, string tSearch)
+        {
+            ObjectReference or = GetObjectReference(objName, orSearch);
+            int idIndex;
+            idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger.FindIndex(o => o.Descr == tSearch);
+            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Areas != null)
+                _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Areas.ObjectReference.Add(or);
+            else
+                _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Areas = new Areas([or]);
+        }
 
         public void SetProximityTrigger(int index, string descr, string activated)
         {

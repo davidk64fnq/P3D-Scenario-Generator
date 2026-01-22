@@ -1,7 +1,6 @@
 ﻿using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
-using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.Utilities;
@@ -249,10 +248,15 @@ namespace P3D_Scenario_Generator.CelestialScenario
             _xml.SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger02");
             _xml.SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger02");
 
-            // Create airport landing trigger which does goal resolution - starts activated
-            _xml.SetAirportLandingTrigger("AirportLandingTrigger01", "Any", "True", formData.DestinationRunway.IcaoId);
-            _xml.SetAirportLandingTriggerAction("CloseWindowAction", "CloseCelestialSextant01", "AirportLandingTrigger01");
-            _xml.SetAirportLandingTriggerAction("GoalResolutionAction", "Goal01", "AirportLandingTrigger01");
+            // Create area landing trigger which does goal resolution - starts activated
+            _xml.SetAreaLandingTrigger("AreaLandingTrigger01", "Any", "True");
+            _xml.SetSphereArea($"SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
+            string dwp = ScenarioXML.GetCoordinateWorldPosition(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon, formData.DestinationRunway.Altitude);
+            AttachedWorldPosition adwp = ScenarioXML.GetAttachedWorldPosition(dwp, "False");
+            _xml.SetAttachedWorldPosition("SphereArea", "SphereArea01", adwp);
+            _xml.SetAreaLandingTriggerArea("SphereArea", "SphereArea01", "AreaLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("CloseWindowAction", "CloseCelestialSextant01", "AirportLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("GoalResolutionAction", "Goal01", "AreaLandingTrigger01");
         }
     }
 }
