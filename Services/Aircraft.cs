@@ -1,5 +1,4 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Models;
 
 namespace P3D_Scenario_Generator.Services
 {
@@ -130,31 +129,54 @@ namespace P3D_Scenario_Generator.Services
         /// <returns>The aircraft variant title string or an empty string</returns>
         internal async Task<string> GetAircraftTitleAsync(string thumbnailPath)
         {
-            // Get texture value, used to find correct string in aircraft.cfg for retrieving aircraft variant title
             string textureValue = GetTextureValue(thumbnailPath);
-
-            // Now get aircraft variant title, assumes "title" always comes before "texture" in each variant section
             string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
+
             using StringReader reader = new(aircraftCFG);
             string currentLine;
             string currentTitle = "";
+
             while ((currentLine = reader.ReadLine()) != null)
             {
                 currentLine = currentLine.Trim();
-                // Store latest encountered title which may or may not be the right one
-                if (currentLine.StartsWith("title="))
+
+                // 1. Handle "title="
+                if (currentLine.StartsWith("title=", StringComparison.OrdinalIgnoreCase))
                 {
-                    currentTitle = currentLine["title=".Length..].Trim();
+                    currentTitle = SanitizeCfgValue(currentLine, "title=");
                 }
-                // If the texture string is right we know we have the right title string
-                if (currentLine.StartsWith("texture="))
+
+                // 2. Handle "texture="
+                if (currentLine.StartsWith("texture=", StringComparison.OrdinalIgnoreCase))
                 {
-                    string currentTexture = currentLine["texture=".Length..].Trim();
-                    if (currentTexture == textureValue)
+                    string currentTexture = SanitizeCfgValue(currentLine, "texture=");
+
+                    // Case-insensitive comparison is essential here
+                    if (currentTexture.Equals(textureValue, StringComparison.OrdinalIgnoreCase))
                         return currentTitle;
                 }
             }
             return "";
+        }
+
+        /// <summary>
+        /// Removes the key prefix, strips inline comments (; or //), 
+        /// and removes surrounding whitespace or quotes.
+        /// </summary>
+        private static string SanitizeCfgValue(string line, string key)
+        {
+            // Remove the "title=" or "texture=" part
+            string value = line[key.Length..];
+
+            // Strip inline comments (Flight Sim uses ';' primarily, but '//' appears in modern mods)
+            int commentIndex = value.IndexOfAny([';', '/']);
+            if (commentIndex != -1)
+            {
+                value = value[..commentIndex];
+            }
+
+            // Final trim of whitespace and common wrapping characters like quotes
+            return value.Trim().Trim('"');
         }
 
         /// <summary>
@@ -214,40 +236,45 @@ namespace P3D_Scenario_Generator.Services
         /// Gets the aircraft cruise speed from the aircraft.cfg file
         /// </summary>
         /// <param name="thumbnailPath">From this is extracted the aircraft folder which contains the aircraft.cfg file</param>
-        /// <returns>The aircraft variant cruise speed string or an empty string</returns>
+        /// <returns>The aircraft variant cruise speed double or 0.0 if not found/invalid</returns>
         internal async Task<double> GetAircraftCruiseSpeedAsync(string thumbnailPath)
         {
             string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
             string currentLine;
+
+            const string targetKey = "cruise_speed=";
+
             while ((currentLine = reader.ReadLine()) != null)
             {
                 currentLine = currentLine.Trim();
-                if (currentLine.StartsWith("cruise_speed"))
+
+                // Case-insensitive check for the key
+                if (currentLine.StartsWith(targetKey, StringComparison.OrdinalIgnoreCase))
                 {
-                    string[] splitOnEqualsSign = currentLine.Split("=");
-                    string cruiseSpeed = splitOnEqualsSign[1].Trim();
-                    string[] splitOnCommentIndicator = cruiseSpeed.Split("//"); // Remove any comment at end of line
-                    string cruiseSpeedWithoutAnyComment = splitOnCommentIndicator[0].Trim();
+                    // Reuse the sanitization logic to handle comments (// or ;) and quotes
+                    string cleanValue = SanitizeCfgValue(currentLine, targetKey);
+
                     const double minCruiseSpeed = 0.0;
                     const double maxCruiseSpeed = Constants.PlausibleMaxCruiseSpeedKnots;
+
                     if (ParsingHelpers.TryParseDouble(
-                        cruiseSpeedWithoutAnyComment,
+                        cleanValue,
                         "Aircraft cruise speed",
                         minCruiseSpeed,
                         maxCruiseSpeed,
                         out double cruiseSpeedOut,
-                        out string validationMessage,
+                        out string _, // validationMessage unused here
                         "knots"))
                     {
                         return cruiseSpeedOut;
                     }
-                    else
-                    {
-                        return 0.0;
-                    }
+
+                    // If found but failed to parse, we exit early with 0.0 per original logic
+                    return 0.0;
                 }
             }
+
             return 0.0;
         }
 
@@ -261,28 +288,52 @@ namespace P3D_Scenario_Generator.Services
             string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
             string currentLine;
-            bool hasFloats = false, hasSkis = false;
+            bool hasFloats = false;
+            bool hasSkis = false;
+
             while ((currentLine = reader.ReadLine()) != null)
             {
                 currentLine = currentLine.Trim();
-                if (currentLine.StartsWith("point."))
+
+                // Hardened: Ensure the line isn't a comment itself before checking for "point."
+                if (currentLine.StartsWith(';') || currentLine.StartsWith("//"))
+                    continue;
+
+                if (currentLine.StartsWith("point.", StringComparison.OrdinalIgnoreCase))
                 {
-                    string[] splitOnEqualsSign = currentLine.Split("=");
-                    string rhsEqualSign = splitOnEqualsSign[1].Trim();
-                    string[] splitOnCommaSign = rhsEqualSign.Split(',');
-                    if (int.TryParse(splitOnCommaSign[0], out int contactPointClass))
+                    int equalsIndex = currentLine.IndexOf('=');
+                    if (equalsIndex == -1) continue;
+
+                    // Extract everything after '=' and strip comments/quotes
+                    string rhs = currentLine[(equalsIndex + 1)..].Trim().Trim('"');
+                    int commentIndex = rhs.IndexOfAny([';', '/']);
+                    if (commentIndex != -1)
                     {
+                        rhs = rhs[..commentIndex].Trim();
+                    }
+
+                    // Contact points: Class, Long, Lat, Vert...
+                    string[] parts = rhs.Split(',');
+                    if (parts.Length > 0 && int.TryParse(parts[0].Trim(), out int contactPointClass))
+                    {
+                        // Class 4 = Floats (Water only or Amphibian)
                         if (contactPointClass == 4)
+                        {
                             hasFloats = true;
+                        }
+                        // Class 3 = Skis, Class 16 = Skids/Ski
+                        // If these exist, the plane is likely multi-surface capable
                         else if (contactPointClass == 3 || contactPointClass == 16)
+                        {
                             hasSkis = true;
+                        }
                     }
                 }
             }
-            if (hasFloats && !hasSkis)
-                return true;
-            else
-                return false;
+
+            // Result: True only for 'Pure' floatplanes or those without other specialized surface gear.
+            // If hasFloats is true but hasSkis is false, it's a candidate for water-only restrictions.
+            return hasFloats && !hasSkis;
         }
 
         /// <summary>
@@ -295,23 +346,46 @@ namespace P3D_Scenario_Generator.Services
             string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
             string currentLine;
+
             while ((currentLine = reader.ReadLine()) != null)
             {
                 currentLine = currentLine.Trim();
-                if (currentLine.StartsWith("point."))
+
+                // Skip lines that are entirely commented out
+                if (currentLine.StartsWith(';') || currentLine.StartsWith("//"))
+                    continue;
+
+                if (currentLine.StartsWith("point.", StringComparison.OrdinalIgnoreCase))
                 {
-                    string[] splitOnEqualsSign = currentLine.Split("=");
-                    string rhsEqualsSign = splitOnEqualsSign[1].Trim();
-                    string[] splitOnCommaSign = rhsEqualsSign.Split(',');
-                    if (int.TryParse(splitOnCommaSign[0], out int contactPointClass))
+                    int equalsIndex = currentLine.IndexOf('=');
+                    if (equalsIndex == -1) continue;
+
+                    // Extract everything after the '=' and sanitize
+                    string rhs = currentLine[(equalsIndex + 1)..].Trim().Trim('"');
+
+                    // Strip inline comments (e.g., point.0 = 1, 15, 0, -5 ; Wheel)
+                    int commentIndex = rhs.IndexOfAny([';', '/']);
+                    if (commentIndex != -1)
                     {
-                        if (contactPointClass >= 1 && contactPointClass <= 3 || contactPointClass == 16)
+                        rhs = rhs[..commentIndex].Trim();
+                    }
+
+                    // The first element in the comma-separated list is the Contact Point Class
+                    string[] parts = rhs.Split(',');
+                    if (parts.Length > 0 && int.TryParse(parts[0].Trim(), out int contactPointClass))
+                    {
+                        // Class 1: Wheels
+                        // Class 2: Scrapes
+                        // Class 3: Skis
+                        // Class 16: Skids/Special
+                        if ((contactPointClass >= 1 && contactPointClass <= 3) || contactPointClass == 16)
                         {
                             return true;
                         }
                     }
                 }
             }
+
             return false;
         }
 
