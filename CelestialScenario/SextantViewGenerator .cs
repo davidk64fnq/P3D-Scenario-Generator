@@ -1,10 +1,8 @@
 ﻿using CoordinateSharp.Formatters;
 using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.Utilities;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
@@ -52,33 +50,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 replacements: null, // No JS variable assignments to replace
                 customLogic: ApplyStarOptions
             );
-        }
-
-        /// <summary>
-        /// Safely replaces the assignment value of a specific JavaScript variable using Regex,
-        /// preserving its original declaration keyword (let, const, or var).
-        /// </summary>
-        /// <param name="jsContent">The original JavaScript file content.</param>
-        /// <param name="varName">The exact name of the JavaScript variable (e.g., 'linesX').</param>
-        /// <param name="rawValue">The raw string value to inject (e.g., a JSON array or a quoted string).</param>
-        /// <returns>The modified JavaScript content.</returns>
-        private static string ReplaceJsVariable(string jsContent, string varName, string rawValue)
-        {
-            // Capture Group 1: The declaration keyword (let, const, or var)
-            // Non-capture Group: Ensures the match starts on a newline or file start boundary
-            // The pattern captures the declaration, variable name, and the assignment operator (=),
-            // and then matches everything up to the semicolon, which is necessary to include.
-
-            string pattern = $@"(^|\r?\n|\r)\s*(let|const|var)\s+{Regex.Escape(varName)}\s*[^;]*;";
-
-            // The replacement reconstructs the line:
-            // $1: The boundary (\n or start of file)
-            // $2: The original declaration keyword (let/const/var)
-            // The new assignment statement is formed using the provided rawValue.
-            string replacement = $"$1$2 {varName} = {rawValue};";
-
-            // Use RegexOptions.Multiline to handle ^ (start of line) and ignore comments/JSDoc above the declaration.
-            return Regex.Replace(jsContent, pattern, replacement, RegexOptions.Multiline);
         }
 
         public async Task<bool> SetCelestialSextantAssetsAsync(ScenarioFormData formData, StarDataManager starDataManager)
