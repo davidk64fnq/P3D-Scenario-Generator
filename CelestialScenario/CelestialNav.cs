@@ -255,7 +255,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             AttachedWorldPosition adwp = ScenarioXML.GetAttachedWorldPosition(dwp, "False");
             _xml.SetAttachedWorldPosition("SphereArea", "SphereArea01", adwp);
             _xml.SetAreaLandingTriggerArea("SphereArea", "SphereArea01", "AreaLandingTrigger01");
-            _xml.SetAreaLandingTriggerAction("CloseWindowAction", "CloseCelestialSextant01", "AirportLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("CloseWindowAction", "CloseCelestialSextant01", "AreaLandingTrigger01");
             _xml.SetAreaLandingTriggerAction("GoalResolutionAction", "Goal01", "AreaLandingTrigger01");
         }
     }
