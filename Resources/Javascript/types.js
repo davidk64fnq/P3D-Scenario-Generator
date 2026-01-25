@@ -1,3 +1,5 @@
+// #region Celestial Scenario
+
 /**
  * @typedef {object} StarData
  * @property {string} ConstellationName - The star's constellation name (e.g., "Pegasus").
@@ -13,7 +15,6 @@
  * @property {number} DecS - Declination (Seconds).
  * @property {number} VisualMagnitude - Visual Magnitude.
  */
-
 
 /**
  * @typedef {object} CoordPair
@@ -126,3 +127,21 @@
  * @property {string} bayerDesignation - Bayer designation character.
  * @property {string} constellationName - Full constellation name.
  */
+
+// #endregion
+
+// #region Signwriting Scenario
+
+/**
+ * @typedef {object} Gate
+ * @property {number} altitude - Each value is a double representing gate altitude.
+ * @property {number} bearing - Each value is an integer representing the bearing in degrees (0, 90, 180, 270), the direction plane heading when it flys through the gate.
+ * @property {CoordPair} coordinates - The latitude and longitude coordinates for the gate.
+ * @property {PixelPosition} pixels - Origin is 0,0 top left corner of canvas. References coordinates of point pixel in segment cap.
+ */
+
+// #endregion
+
+// #region Shared by multiple scenarios
+
+// #endregion

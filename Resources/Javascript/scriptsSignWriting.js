@@ -11,57 +11,16 @@
 // Import the necessary Geodesy classes.
 import LatLon from './third-party/geodesy/latlon-ellipsoidal.js';
 
-// --- JSDoc Global Variable Declarations (Injected by C#) ---
+// #region Global declarations
+
+// #region JSDoc Global Variable Declarations (Injected by C#)
+
 // These variables are declared globally. Their string values are expected to be
 // injected/replaced by the C# application before script execution.
 // The JSDoc provides type information for the TypeScript checker.
 
-/** @type {string | null} gateTopPixelsX - String representation of top pixel coordinates for gates, injected by C#.*/
-var gateTopPixelsX = null;
-
-/** @type {string | null} gateLeftPixelsX - String representation of left pixel coordinates for gates, injected by C#.*/
-var gateLeftPixelsX = null;
-
-/** @type {string | null} gateBearingsX - String representation of gate bearings in degrees, injected by C#.*/
-var gateBearingsX = null;
-
-/** @type {string | null} gateLatitudesX - String representation of gate bearings in degrees, injected by C#.*/
-var gateLatitudesX = null;
-
-/** @type {string | null} gateLongitudesX - String representation of gate bearings in degrees, injected by C#.*/
-var gateLongitudesX = null;
-
-/** @type {string | null} gateAltitudesX - String representation of gate altitudes in feet, injected by C#.*/
-var gateAltitudesX = null;
-
-/** @type {string | null} paddingLeft - String representation of vertical window padding in pixels, injected by C#*/
-var charPaddingLeftX = null;
-
-/** @type {string | null} paddingTop - String representation of vertical window padding in pixels, injected by C#*/
-var charPaddingTopX = null;
-
-/** @type {string | null} canvasWidthX - String representation of the message canvas width in pixels, injected by C#.*/
-var canvasWidthX = null;
-
-/** @type {string | null} canvasHeightX - String representation of the message canvas height in pixels, injected by C#.*/
-var canvasHeightX = null;
-
-/** @type {string | null} consoleWidthX - String representation of the message console width in pixels, injected by C#.*/
-var consoleWidthX = null;
-
-/** @type {string | null} consoleHeightX - String representation of the message console height in pixels, injected by C#.*/
-var consoleHeightX = null;
-
-/** @type {string | null} windowHorizontalPaddingX - String representation of horizontal window padding in pixels, injected by C#.*/
-var windowHorizontalPaddingX = null;
-
-/** @type {string | null} windowVerticalPaddingX - String representation of vertical window padding in pixels, injected by C#.*/
-var windowVerticalPaddingX = null;
-
-
-// --- Script-Managed Global Variables ---
-// These variables are declared here and will be populated/assigned
-// by the JavaScript code itself, typically after DOM content is loaded.
+/** @type {Gate[]} gates - Array of gates information comprising the complete sign writing message.*/
+const gates = null;
 
 /** @type {HTMLCanvasElement | null} canvas - Reference to the main HTML canvas element for drawing.*/
 let canvas = null;
@@ -69,132 +28,39 @@ let canvas = null;
 /** @type {CanvasRenderingContext2D | null} context - The 2D rendering context of the canvas, used for drawing operations.*/
 let context = null;
 
-/** @type {number[]} gateTopPixels - Origin is 0,0 top left corner of canvas. References top coordinate of point pixel in segment cap.*/
-let gateTopPixels;
+/** @type {number} charPaddingLeft - Padding from left edge to the point of horizontal segments.*/
+const charPaddingLeft = null;
 
-/** @type {number[]} gateLeftPixels - Origin is 0,0 top left corner of canvas. References left coordinate of point pixel in segment cap.*/
-let gateLeftPixels;
+/** @type {number} charPaddingTop - Padding from top to the point of vertical segments.*/
+const charPaddingTop = null;
 
-/** @type {number[]} gateBearings - Each value is an integer representing the bearing in degrees (0, 90, 180, 270), the direction plane heading when it flys through the gate.*/
-let gateBearings;
+/** @type {number} canvasWidth - Message canvas width in pixels.*/
+const canvasWidth = null;
 
-/** @type {number[]} gateLatitudes - Each value is a double representing gate latitude.*/
-let gateLatitudes;
+/** @type {number} canvasHeight - Message canvas height in pixels.*/
+const canvasHeight = null;
 
-/** @type {number[]} gateLongitudes - Each value is a double representing gate longitude.*/
-let gateLongitudes;
+/** @type {number} consoleWidth - Message console width in pixels.*/
+const consoleWidth = null;
 
-/** @type {number[]} gateAltitudes - Each value is a double representing gate altitude.*/
-let gateAltitudes;
+/** @type {number} consoleHeight - Message console height in pixels.*/
+const consoleHeight = null;
 
-/** @type {number} paddingLeft - Padding from left edge to the point of horizontal segments.*/
-let parsedCharPaddingLeft;
+/** @type {number} windowHorizontalPadding - Horizontal window padding around and between canvas and console in pixels.*/
+const windowHorizontalPadding = null;
 
-/** @type {number} paddingTop - Padding from top to the point of vertical segments.*/
-let parsedCharPaddingTop;
+/** @type {number} windowVerticalPadding - Vertical window padding around and between canvas and console in pixels.*/
+const windowVerticalPadding = null;
 
-/** @type {number} initialCanvasWidthParsed - Message canvas width in pixels after parsing.*/
-let initialCanvasWidthParsed;
+// #endregion
 
-/** @type {number} initialCanvasHeightParsed - Message canvas height in pixels after parsing.*/
-let initialCanvasHeightParsed;
-
-/** @type {number} initialConsoleWidthParsed - Message console width in pixels after parsing.*/
-let initialConsoleWidthParsed;
-
-/** @type {number} initialConsoleHeightParsed - Message console height in pixels after parsing.*/
-let initialConsoleHeightParsed;
-
-/** @type {number} initialWindowHorizontalPaddingParsed - Horizontal window padding around and between canvas and console in pixels after parsing.*/
-let initialWindowHorizontalPaddingParsed;
-
-/** @type {number} initialWindowVerticalPaddingParsed - Vertical window padding around and between canvas and console in pixels after parsing.*/
-let initialWindowVerticalPaddingParsed;
-
-/**
- * @summary Initializes the application upon DOM content loading.
- *
- * @description
- * This event listener waits for the entire HTML document to be parsed
- * (but not necessarily all sub-resources like images to be loaded).
- * It performs the following critical setup tasks:
- * 1. Retrieves and parses all configuration values injected by the C# application
- * (e.g., map coordinates, canvas/console dimensions, gate pixel data).
- * 2. Identifies and initializes the main drawing canvas and its 2D rendering context.
- * Includes error handling if the canvas element is not found or context cannot be obtained.
- * 3. Sets CSS custom properties (variables) on the document's root element (`:root`)
- * based on the parsed dimensions, which allows CSS to adapt to the dynamic layout.
- * 4. Initiates the main animation loop by calling `window.requestAnimationFrame(update)`.
- *
- * @listens DOMContentLoaded
- */
-document.addEventListener('DOMContentLoaded', () => {
-	// Assign canvas and context ONLY after the DOM is fully loaded
-	const foundCanvas = document.getElementById('canvas');
-
-	// Parse the injected X variables here, where they are guaranteed to exist
-	gateTopPixels = String(gateTopPixelsX).split(',').map(Number);
-	gateLeftPixels = String(gateLeftPixelsX).split(',').map(Number);
-	gateBearings = String(gateBearingsX).split(',').map(Number);
-	gateLatitudes = String(gateLatitudesX).split(',').map(Number);
-	gateLongitudes = String(gateLongitudesX).split(',').map(Number);
-	// gateAltitudesX is in feet (injected by C#), convert each element to metres before storing.
-	gateAltitudes = String(gateAltitudesX).split(',').map(Number).map(altInFeet => altInFeet * metresInFoot);
-
-    // Calculate segment distance based on the first two gates
-	currentSegmentDistance = calculate3DDistance(gateLatitudes[1], gateLongitudes[1], gateAltitudes[1], gateLatitudes[2], gateLongitudes[2], gateAltitudes[2]);
-
-	parsedCharPaddingLeft = parseInt(String(charPaddingLeftX));
-	parsedCharPaddingTop = parseInt(String(charPaddingTopX));
-
-	initialCanvasWidthParsed = parseInt(String(canvasWidthX));
-	initialCanvasHeightParsed = parseInt(String(canvasHeightX));
-	initialConsoleWidthParsed = parseInt(String(consoleWidthX));
-	initialConsoleHeightParsed = parseInt(String(consoleHeightX));
-	initialWindowHorizontalPaddingParsed = parseInt(String(windowHorizontalPaddingX));
-	initialWindowVerticalPaddingParsed = parseInt(String(windowVerticalPaddingX));
-
-	if (foundCanvas instanceof HTMLCanvasElement) {
-		// Now TypeScript knows foundCanvas is an HTMLCanvasElement
-		canvas = foundCanvas;
-		canvas.width = initialCanvasWidthParsed;
-		canvas.height = initialCanvasHeightParsed;
-		context = canvas.getContext('2d');
-
-		if (!context) {
-			console.error('Failed to get 2D rendering context for canvas!');
-		}
-	} else {
-		console.error('Canvas element with id "canvas" not found or is not an HTMLCanvasElement!');
-	}
-
-	document.documentElement.style.setProperty('--canvas-width', initialCanvasWidthParsed + 'px');
-	document.documentElement.style.setProperty('--canvas-height', initialCanvasHeightParsed + 'px');
-	document.documentElement.style.setProperty('--console-width', initialConsoleWidthParsed + 'px');
-	document.documentElement.style.setProperty('--console-height', initialConsoleHeightParsed + 'px');
-	document.documentElement.style.setProperty('--window-horizontal-padding', initialWindowHorizontalPaddingParsed + 'px');
-	document.documentElement.style.setProperty('--window-vertical-padding', initialWindowVerticalPaddingParsed + 'px');
-	// ** NEW: Start the throttled update loop **
-	scheduleUpdate(); // Call a new function to start the loop
-});
-
-/**
- * @summary Schedules the next execution of the update function.
- * @description Uses setTimeout to control the execution rate to approximately 5 times per second (200ms).
- */
-function scheduleUpdate() {
-	setTimeout(() => {
-		update();
-		// Recursively call scheduleUpdate to maintain the loop
-		scheduleUpdate();
-	}, 200); // 200ms = 5 updates per second
-}
+// #region Application State Variables (Script-Managed Globals)
 
 /** @type {number} currentSegmentDistance - Should be constant if gates have been set up correctly by C# application code.*/
-var currentSegmentDistance = 0; 
+var currentSegmentDistance = 0;
 
 /** @type {number} smokeOld - Tracks the previous value of the smokeOn variable to detect when its state changes.*/
-var smokeOld = 0; 
+var smokeOld = 0;
 
 /** @type {boolean} smokeHasToggled - Acts as a flag to indicate if smokeOn has just toggled, controlling when certain drawing logic should execute.*/
 var smokeHasToggled = false;
@@ -205,22 +71,13 @@ var planeTopPixels;
 /** @type {number} planeLeftPixels - Origin is 0,0 top left corner of canvas. References left coordinate of pixel representing plane position on canvas.*/
 var planeLeftPixels;
 
-/** @type {number} startTopPixels - Origin is 0,0 top left corner of canvas. References top coordinate of point pixel in segment cap for current gate.*/
-var startTopPixels;
-
-/** @type {number} startLeftPixels - Origin is 0,0 top left corner of canvas. References left coordinate of point pixel in segment cap for current gate.*/
-var startLeftPixels;
-
-/** @type {number} capExtra - The number of pixels either side of central row/col of segment line.*/
-const capExtra = 5;
-
 /** @type {string[]} colours - Segments are red and outlined in black.*/
 const colours = ["", "red", "black"];
 
 /** @type {number} metresInFoot - The number of metres in one foot.*/
 const metresInFoot = .3048;
 
-/** @type {number} segmentLengthPixels - The length of a segment from point of start endcap to point of finsih endcap in pixels.*/
+/** @type {number} segmentLengthPixels - The length of a segment from point of start endcap to point of finish endcap in pixels.*/
 const segmentLengthPixels = 32;
 
 /** @type {number[][]} endCap - The cap at each end of segment is 11 x 6 pixels. Array is 11 x 11 as it gets rotated for rendering for different
@@ -252,6 +109,73 @@ curCap[7] = [];
 curCap[8] = [];
 curCap[9] = [];
 curCap[10] = [];
+
+// #endregion
+
+// #endregion
+
+// --- Script-Managed Global Variables ---
+// These variables are declared here and will be populated/assigned
+// by the JavaScript code itself, typically after DOM content is loaded.
+
+/**
+ * @summary Initializes the application upon DOM content loading.
+ *
+ * @description
+ * This event listener waits for the entire HTML document to be parsed
+ * (but not necessarily all sub-resources like images to be loaded).
+ * It performs the following critical setup tasks:
+ * 1. Identifies and initializes the main drawing canvas and its 2D rendering context.
+ * Includes error handling if the canvas element is not found or context cannot be obtained.
+ * 2. Sets CSS custom properties (variables) on the document's root element (`:root`)
+ * based on the parsed dimensions, which allows CSS to adapt to the dynamic layout.
+ * 3. Initiates the main animation loop by calling `window.requestAnimationFrame(update)`.
+ *
+ * @listens DOMContentLoaded
+ */
+document.addEventListener('DOMContentLoaded', () => {
+	// Assign canvas and context ONLY after the DOM is fully loaded
+	const foundCanvas = document.getElementById('canvas');
+
+    // Calculate segment distance based on the first two gates
+	currentSegmentDistance = calculate3DDistance(gates[0].coordinates.latitude, gates[0].coordinates.longitude, gates[0].altitude,
+		gates[1].coordinates.latitude, gates[1].coordinates.longitude, gates[1].altitude);
+
+	if (foundCanvas instanceof HTMLCanvasElement) {
+		// Now TypeScript knows foundCanvas is an HTMLCanvasElement
+		canvas = foundCanvas;
+		canvas.width = canvasWidth;
+		canvas.height = canvasHeight;
+		context = canvas.getContext('2d');
+
+		if (!context) {
+			console.error('Failed to get 2D rendering context for canvas!');
+		}
+	} else {
+		console.error('Canvas element with id "canvas" not found or is not an HTMLCanvasElement!');
+	}
+
+	document.documentElement.style.setProperty('--canvas-width', canvasWidth + 'px');
+	document.documentElement.style.setProperty('--canvas-height', canvasHeight + 'px');
+	document.documentElement.style.setProperty('--console-width', consoleWidth + 'px');
+	document.documentElement.style.setProperty('--console-height', consoleHeight + 'px');
+	document.documentElement.style.setProperty('--window-horizontal-padding', windowHorizontalPadding + 'px');
+	document.documentElement.style.setProperty('--window-vertical-padding', windowVerticalPadding + 'px');
+	// ** NEW: Start the throttled update loop **
+	scheduleUpdate(); // Call a new function to start the loop
+});
+
+/**
+ * @summary Schedules the next execution of the update function.
+ * @description Uses setTimeout to control the execution rate to approximately 5 times per second (200ms).
+ */
+function scheduleUpdate() {
+	setTimeout(() => {
+		update();
+		// Recursively call scheduleUpdate to maintain the loop
+		scheduleUpdate();
+	}, 200); // 200ms = 5 updates per second
+}
 
 /**
  * Calculates the 3D Euclidean distance between two geographical points,
@@ -371,60 +295,67 @@ function drawCap(top, left, capArray) {
  * (red with a black outline) extending from the plane's current mapped position towards
  * or up to the vicinity of the target gate.
  *
- * @param {number} finishGateNo - The index of the gate (from `gateBearings`, `gateTopPixels`, `gateLeftPixels` arrays)
+ * @param {number} finishGateNo - The index of the gate in gates array
  * that defines the target bearing and relative coordinates for the line's endpoint.
  */
 function drawLine(finishGateNo) {
-	if (gateBearings[finishGateNo] == 0) {
-		if (planeTopPixels >= gateTopPixels[finishGateNo - 1] - 5)
-			planeTopPixels = gateTopPixels[finishGateNo - 1] - 6;
-		if (planeTopPixels <= gateTopPixels[finishGateNo] + 5)
-			planeTopPixels = gateTopPixels[finishGateNo] + 6;
-		var lineHeight = (gateTopPixels[finishGateNo - 1] - 6) - planeTopPixels;
-		var lineStartTop = planeTopPixels + parsedCharPaddingTop;
-		var lineStartLeftMiddle = gateLeftPixels[finishGateNo -1] + parsedCharPaddingLeft;
+
+	const segmentBearing = gates[finishGateNo - 1].bearing;
+	const startTopPixels = gates[finishGateNo - 2].pixels.top;
+	const finishTopPixels = gates[finishGateNo - 1].pixels.top;
+	const startLeftPixels = gates[finishGateNo - 2].pixels.left;
+	const finishLeftPixels = gates[finishGateNo - 1].pixels.left;
+
+	if (segmentBearing == 0) {
+		if (planeTopPixels >= startTopPixels - 5)
+			planeTopPixels = startTopPixels - 6;
+		if (planeTopPixels <= finishTopPixels + 5)
+			planeTopPixels = finishTopPixels + 6;
+		var lineHeight = (startTopPixels - 6) - planeTopPixels;
+		var lineStartTop = planeTopPixels + charPaddingTop;
+		var lineStartLeftMiddle = startLeftPixels + charPaddingLeft;
 		context.fillStyle = colours[2];
 		context.fillRect(lineStartLeftMiddle - 5, lineStartTop, 1, lineHeight);
 		context.fillRect(lineStartLeftMiddle + 5, lineStartTop, 1, lineHeight);
 		context.fillStyle = colours[1];
 		context.fillRect(lineStartLeftMiddle - 4, lineStartTop, 9, lineHeight);
 	}
-	else if (gateBearings[finishGateNo] == 90) {
-		if (planeLeftPixels <= gateLeftPixels[finishGateNo - 1] + 5)
-			planeLeftPixels = gateLeftPixels[finishGateNo - 1] + 6;
-		if (planeLeftPixels >= gateLeftPixels[finishGateNo] - 5)
-			planeLeftPixels = gateLeftPixels[finishGateNo] - 6;
-		var lineLength = planeLeftPixels - (gateLeftPixels[finishGateNo - 1] + 6);
-		var lineStartLeft = gateLeftPixels[finishGateNo - 1] + 6 + parsedCharPaddingLeft;
-		var lineStartTopMiddle = gateTopPixels[finishGateNo -1] + parsedCharPaddingTop;
+	else if (segmentBearing == 90) {
+		if (planeLeftPixels <= startLeftPixels + 5)
+			planeLeftPixels = startLeftPixels + 6;
+		if (planeLeftPixels >= finishLeftPixels - 5)
+			planeLeftPixels = finishLeftPixels - 6;
+		var lineLength = planeLeftPixels - (startLeftPixels + 6);
+		var lineStartLeft = startLeftPixels + 6 + charPaddingLeft;
+		var lineStartTopMiddle = startTopPixels + charPaddingTop;
 		context.fillStyle = colours[2];
 		context.fillRect(lineStartLeft, lineStartTopMiddle - 5, lineLength, 1);
 		context.fillRect(lineStartLeft, lineStartTopMiddle + 5, lineLength, 1);
 		context.fillStyle = colours[1];
 		context.fillRect(lineStartLeft, lineStartTopMiddle - 4, lineLength, 9);
 	}
-	else if (gateBearings[finishGateNo] == 180) {
-		if (planeTopPixels <= gateTopPixels[finishGateNo - 1] + 5)
-			planeTopPixels = gateTopPixels[finishGateNo - 1] + 6;
-		if (planeTopPixels >= gateTopPixels[finishGateNo] - 5)
-			planeTopPixels = gateTopPixels[finishGateNo] - 6;
-		var lineHeight = planeTopPixels - (gateTopPixels[finishGateNo - 1] + 6);
-		var lineStartTop = gateTopPixels[finishGateNo - 1] + 6 + parsedCharPaddingTop;
-		var lineStartLeftMiddle = gateLeftPixels[finishGateNo -1] + parsedCharPaddingLeft;
+	else if (segmentBearing == 180) {
+		if (planeTopPixels <= startTopPixels + 5)
+			planeTopPixels = startTopPixels + 6;
+		if (planeTopPixels >= finishTopPixels - 5)
+			planeTopPixels = finishTopPixels - 6;
+		var lineHeight = planeTopPixels - (startTopPixels + 6);
+		var lineStartTop = startTopPixels + 6 + charPaddingTop;
+		var lineStartLeftMiddle = startLeftPixels + charPaddingLeft;
 		context.fillStyle = colours[2];
 		context.fillRect(lineStartLeftMiddle - 5, lineStartTop, 1, lineHeight);
 		context.fillRect(lineStartLeftMiddle + 5, lineStartTop, 1, lineHeight);
 		context.fillStyle = colours[1];
 		context.fillRect(lineStartLeftMiddle - 4, lineStartTop, 9, lineHeight);
 	}
-	else if (gateBearings[finishGateNo] == 270) {
-		if (planeLeftPixels >= gateLeftPixels[finishGateNo - 1] - 5)
-			planeLeftPixels = gateLeftPixels[finishGateNo - 1] - 6;
-		if (planeLeftPixels <= gateLeftPixels[finishGateNo] + 5)
-			planeLeftPixels = gateLeftPixels[finishGateNo] + 6;
-		var lineLength = (gateLeftPixels[finishGateNo - 1] - 6) - planeLeftPixels;
-		var lineStartLeft = planeLeftPixels + parsedCharPaddingLeft;
-		var lineStartTopMiddle = gateTopPixels[finishGateNo -1] + parsedCharPaddingTop;
+	else if (segmentBearing == 270) {
+		if (planeLeftPixels >= startLeftPixels - 5)
+			planeLeftPixels = startLeftPixels - 6;
+		if (planeLeftPixels <= finishLeftPixels + 5)
+			planeLeftPixels = finishLeftPixels + 6;
+		var lineLength = (startLeftPixels - 6) - planeLeftPixels;
+		var lineStartLeft = planeLeftPixels + charPaddingLeft;
+		var lineStartTopMiddle = startTopPixels + charPaddingTop;
 		context.fillStyle = colours[2];
 		context.fillRect(lineStartLeft, lineStartTopMiddle - 5, lineLength, 1);
 		context.fillRect(lineStartLeft, lineStartTopMiddle + 5, lineLength, 1);
@@ -446,17 +377,22 @@ function drawLine(finishGateNo) {
  * @param {number} currentGateNo - The index of the gate which defines the target end position for the plane's drawing coordinates.
  */
 function setPlaneEndOfLine(currentGateNo) {
-	if (gateBearings[currentGateNo] == 0) {
-		planeTopPixels = gateTopPixels[currentGateNo] + 6
+
+	const segmentBearing = gates[currentGateNo - 1].bearing;
+	const finishTop = gates[currentGateNo - 1].pixels.top;
+	const finishLeft = gates[currentGateNo - 1].pixels.left;
+
+	if (segmentBearing == 0) {
+		planeTopPixels = finishTop + 6
 	}
-	else if (gateBearings[currentGateNo] == 90) {
-		planeLeftPixels = gateLeftPixels[currentGateNo] - 6
+	else if (segmentBearing == 90) {
+		planeLeftPixels = finishLeft - 6
 	}
-	else if (gateBearings[currentGateNo] == 180) {
-		planeTopPixels = gateTopPixels[currentGateNo] - 6
+	else if (segmentBearing == 180) {
+		planeTopPixels = finishTop - 6
 	}
-	else if (gateBearings[currentGateNo] == 270) {
-		planeLeftPixels = gateLeftPixels[currentGateNo] + 6
+	else if (segmentBearing == 270) {
+		planeLeftPixels = finishLeft + 6
 	}
 }
 
@@ -572,8 +508,8 @@ function getPlanePixelCoords(currentGateNo) {
 	var planeLatDeg = VarGet("A:PLANE LATITUDE", "Radians") * 180 / Math.PI; // Convert latitude from radians to degrees
 	var planeAltMetres = VarGet("A:PLANE ALTITUDE", "Feet") * metresInFoot; // Convert altitude from feet to metres
 
-	const pStart = new LatLon(gateLatitudes[currentGateNo], gateLongitudes[currentGateNo], gateAltitudes[currentGateNo]);
-	const pFinish = new LatLon(gateLatitudes[currentGateNo + 1], gateLongitudes[currentGateNo + 1], gateAltitudes[currentGateNo + 1]);
+	const pStart = new LatLon(gates[currentGateNo - 1].coordinates.latitude, gates[currentGateNo - 1].coordinates.longitude, gates[currentGateNo - 1].altitude);
+	const pFinish = new LatLon(gates[currentGateNo].coordinates.latitude, gates[currentGateNo].coordinates.longitude, gates[currentGateNo].altitude);
 	const pPlane = new LatLon(planeLatDeg, planeLonDeg, planeAltMetres);
 	const distanceFromLastGate = getProjectedProgressDistance(pStart, pFinish, pPlane)
 
@@ -582,9 +518,9 @@ function getPlanePixelCoords(currentGateNo) {
 	// Convert this ratio into pixels to determine the plane's position on the canvas segment.
 	var distanceProgressedPixels = Math.round(distanceProgressedRatio * segmentLengthPixels);
 
-	const segmentBearing = gateBearings[currentGateNo];
-	const startTop = gateTopPixels[currentGateNo];
-	const startLeft = gateLeftPixels[currentGateNo];
+	const segmentBearing = gates[currentGateNo - 1].bearing;
+	const startTop = gates[currentGateNo - 1].pixels.top;
+	const startLeft = gates[currentGateNo - 1].pixels.left;
 
 	// Update plane's pixel coordinates based on the gate bearing (segment orientation).
 	if (segmentBearing == 0 || segmentBearing == 180) {
@@ -659,20 +595,22 @@ function update() {
 		const distanceProgressedPixels = getPlanePixelCoords(currentGateNo);
 	}
 
+	const segmentBearing = gates[currentGateNo - 1].bearing;
+	const startTopPixels = gates[currentGateNo - 1].pixels.top;
+	const startLeftPixels = gates[currentGateNo - 1].pixels.left;
+
 	// Drawing logic when smoke is turned ON or is ON 
 	if (smokeHasToggled && smokeOn == 1) {
-		startTopPixels = gateTopPixels[currentGateNo];
-		startLeftPixels = gateLeftPixels[currentGateNo];
 		// Rotate cap for entry direction (180 degrees from gate bearing)
-		rotateSquareArray(endCap, curCap, (gateBearings[currentGateNo] + 180) % 360);
-		if (gateBearings[currentGateNo] == 0)
-			drawCap(startTopPixels - 11 + parsedCharPaddingTop, startLeftPixels - 5 + parsedCharPaddingLeft, curCap);
-		else if (gateBearings[currentGateNo] == 90)
-			drawCap(startTopPixels - 5 + parsedCharPaddingTop, startLeftPixels + parsedCharPaddingLeft, curCap);
-		else if (gateBearings[currentGateNo] == 180)
-			drawCap(startTopPixels + parsedCharPaddingTop, startLeftPixels - 5 + parsedCharPaddingLeft, curCap);
-		else if (gateBearings[currentGateNo] == 270)
-			drawCap(startTopPixels - 5 + parsedCharPaddingTop, startLeftPixels - 11 + parsedCharPaddingLeft, curCap);
+		rotateSquareArray(endCap, curCap, (segmentBearing + 180) % 360);
+		if (segmentBearing == 0)
+			drawCap(startTopPixels - 11 + charPaddingTop, startLeftPixels - 5 + charPaddingLeft, curCap);
+		else if (segmentBearing == 90)
+			drawCap(startTopPixels - 5 + charPaddingTop, startLeftPixels + charPaddingLeft, curCap);
+		else if (segmentBearing == 180)
+			drawCap(startTopPixels + charPaddingTop, startLeftPixels - 5 + charPaddingLeft, curCap);
+		else if (segmentBearing == 270)
+			drawCap(startTopPixels - 5 + charPaddingTop, startLeftPixels - 11 + charPaddingLeft, curCap);
 		smokeHasToggled = false; // Reset toggle flag
 	}
 	if (smokeOn == 1) {
@@ -685,18 +623,16 @@ function update() {
 		setPlaneEndOfLine(currentGateNo);
 		// Draw the final smoke line segment up to the gate
 		drawLine(currentGateNo);
-		startTopPixels = gateTopPixels[currentGateNo];
-		startLeftPixels = gateLeftPixels[currentGateNo];
 		// Rotate cap for exit direction (same as gate bearing)
-		rotateSquareArray(endCap, curCap, gateBearings[currentGateNo]);
-		if (gateBearings[currentGateNo] == 0)
-			drawCap(startTopPixels + parsedCharPaddingTop, startLeftPixels - 5 + parsedCharPaddingLeft, curCap);
-		else if (gateBearings[currentGateNo] == 90)
-			drawCap(startTopPixels - 5 + parsedCharPaddingTop, startLeftPixels - 11 + parsedCharPaddingLeft, curCap);
-		else if (gateBearings[currentGateNo] == 180)
-			drawCap(startTopPixels - 11 + parsedCharPaddingTop, startLeftPixels - 5 + parsedCharPaddingLeft, curCap);
-		else if (gateBearings[currentGateNo] == 270)
-			drawCap(startTopPixels - 5 + parsedCharPaddingTop, startLeftPixels + parsedCharPaddingLeft, curCap);
+		rotateSquareArray(endCap, curCap, segmentBearing);
+		if (segmentBearing == 0)
+			drawCap(startTopPixels + charPaddingTop, startLeftPixels - 5 + charPaddingLeft, curCap);
+		else if (segmentBearing == 90)
+			drawCap(startTopPixels - 5 + charPaddingTop, startLeftPixels - 11 + charPaddingLeft, curCap);
+		else if (segmentBearing == 180)
+			drawCap(startTopPixels - 11 + charPaddingTop, startLeftPixels - 5 + charPaddingLeft, curCap);
+		else if (segmentBearing == 270)
+			drawCap(startTopPixels - 5 + charPaddingTop, startLeftPixels + charPaddingLeft, curCap);
 		smokeHasToggled = false; // Reset toggle flag
 	}
 }

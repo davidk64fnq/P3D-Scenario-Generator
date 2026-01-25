@@ -3,9 +3,23 @@ using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Runways;
 using P3D_Scenario_Generator.Services;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace P3D_Scenario_Generator.SignWritingScenario
 {
+    // Child records to match CoordPair and PixelPosition JSDoc
+    public record CoordPairJS(double Latitude, double Longitude);
+    public record PixelPositionJS(double Left, double Top);
+
+    // Main record for serialization
+    public record GateJS(
+        double Altitude,
+        double Bearing,
+        CoordPairJS Coordinates,
+        PixelPositionJS Pixels
+    );
+
     /// <summary>
     /// Manages the overall setup and generation of a signwriting scenario within the simulator.
     /// This includes initializing character segment mappings, generating flight gates for the sign message,
@@ -31,7 +45,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
 
         /// <summary>
-        /// The gates comprising the message for the signwriting scenario. Methods for setting gates are in gates.cs
+        /// The gates comprising the message for the signwriting scenario. Methods for setting gates are in <see cref="SignGateGenerator"/>
         /// </summary>
         private readonly List<Gate> _gates = [];
 
@@ -166,42 +180,63 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         }
 
         /// <summary>
+        /// Gets the gates as a consolidated list of GateJS records, 
+        /// optimized for a single JSON serialization to the client-side JavaScript.
+        /// </summary>
+        /// <returns>A read-only list of GateJS records.</returns>
+        public IReadOnlyList<GateJS> GetGates()
+        {
+            // Projection from internal gate storage to the JavaScript-friendly Gate DTO
+            return _gates.Select(g => new GateJS(
+                Altitude: g.amsl * Constants.MetresInFoot,
+                Bearing: g.orientation,
+                Coordinates: new CoordPairJS(
+                    Latitude: g.lat,
+                    Longitude: g.lon
+                ),
+                Pixels: new PixelPositionJS(
+                    Left: g.leftPixels,
+                    Top: g.topPixels
+                )
+            )).ToList().AsReadOnly();
+        }
+
+        private static readonly JsonSerializerOptions _jsonOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            // Optional: useful if your JS doesn't handle nulls well
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        public string GetGatesJson()
+        {
+            var gates = GetGates(); // Your existing method returning IReadOnlyList<GateJS>
+            return JsonSerializer.Serialize(gates, _jsonOptions);
+        }
+
+        /// <summary>
         /// Prepares and writes the main sign writing JavaScript file,
         /// and copies necessary third-party Geodesy library files.
         /// </summary>
         public async Task<bool> SetSignWritingJS(ScenarioFormData formData)
         {
-            // --- 1. Prepare Gate Data Strings using LINQ ---
-            // Note: Maintaining the "0," prefix from the original logic
-            string topPixels = "0," + string.Join(",", _gates.Select(g => g.topPixels.ToString()));
-            string leftPixels = "0," + string.Join(",", _gates.Select(g => g.leftPixels.ToString()));
-            string bearings = "0," + string.Join(",", _gates.Select(g => g.orientation.ToString()));
-            string latitudes = "0," + string.Join(",", _gates.Select(g => g.lat.ToString()));
-            string longitudes = "0," + string.Join(",", _gates.Select(g => g.lon.ToString()));
-            string altitudes = "0," + string.Join(",", _gates.Select(g => g.amsl.ToString()));
+            string saveLocation = formData.ScenarioImageFolder;
 
-            // --- 2. Build Replacement Dictionary ---
+            // --- 1. Build Replacement Dictionary ---
             var replacements = new Dictionary<string, string>
             {
-                { "charPaddingLeftX", Constants.SignCharPaddingPixels.ToString() },
-                { "charPaddingTopX", Constants.SignCharPaddingPixels.ToString() },
-                { "canvasWidthX", formData.SignCanvasWidth.ToString() },
-                { "canvasHeightX", formData.SignCanvasHeight.ToString() },
-                { "consoleWidthX", formData.SignConsoleWidth.ToString() },
-                { "consoleHeightX", formData.SignConsoleHeight.ToString() },
-                { "windowHorizontalPaddingX", Constants.SignWindowHorizontalPaddingPixels.ToString() },
-                { "windowVerticalPaddingX", Constants.SignWindowVerticalPaddingPixels.ToString() },
-                
-                // Array-like strings (as prepared above)
-                { "gateTopPixelsX", topPixels },
-                { "gateLeftPixelsX", leftPixels },
-                { "gateBearingsX", bearings },
-                { "gateLatitudesX", latitudes },
-                { "gateLongitudesX", longitudes },
-                { "gateAltitudesX", altitudes }
+                { "charPaddingLeft", Constants.SignCharPaddingPixels.ToString() },
+                { "charPaddingTop", Constants.SignCharPaddingPixels.ToString() },
+                { "canvasWidth", formData.SignCanvasWidth.ToString() },
+                { "canvasHeight", formData.SignCanvasHeight.ToString() },
+                { "consoleWidth", formData.SignConsoleWidth.ToString() },
+                { "consoleHeight", formData.SignConsoleHeight.ToString() },
+                { "windowHorizontalPadding", Constants.SignWindowHorizontalPaddingPixels.ToString() },
+                { "windowVerticalPadding", Constants.SignWindowVerticalPaddingPixels.ToString() },
+                { "gates", GetGatesJson() }
             };
 
-            // --- 3. Write processed script file ---
+            // --- 2. Write processed script file ---
             bool mainJsSuccess = await _assetFileGenerator.WriteAssetFileAsync(
                 "Javascript.scriptsSignWriting.js",
                 "scriptsSignWriting.js",
@@ -211,7 +246,10 @@ namespace P3D_Scenario_Generator.SignWritingScenario
 
             if (!mainJsSuccess) return false;
 
-            // --- 4. Copy Geodesy library files ---
+            // Static JS File
+            if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.types.js", "types.js", saveLocation)) return false;
+
+            // --- 3. Copy Geodesy library files ---
             string geodesySaveDirectory = Path.Combine(formData.ScenarioImageFolder, "third-party", "geodesy");
 
             // Ensure directory exists (Directory.CreateDirectory is safe to call even if it exists)
