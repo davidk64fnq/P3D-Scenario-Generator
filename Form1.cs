@@ -29,11 +29,13 @@ namespace P3D_Scenario_Generator
 
         // --- LAYER 2: Core Services ---
         private readonly Logger _logger;
-        private readonly FileOps _fileOps;
+        private readonly FileOps _fileOps; 
+        private readonly CacheMetadataService _cacheMetadataService;
         private readonly CacheManager _cacheManager;
         private readonly HttpRoutines _httpRoutines;
         private readonly ScenarioFXML _scenarioFXML;
         private readonly RunwayLoader _runwayLoader;
+        private readonly SettingsManager _settingsManager;
 
         // --- LAYER 3: Specialized Utilities ---
         private readonly OSMTileCache _osmTileCache;
@@ -82,14 +84,29 @@ namespace P3D_Scenario_Generator
 
             // --- LAYER 2: Core Services (Fundamental Building Blocks) ---
             _logger = new(false, false, false, _formData);
-            _fileOps = new(_logger);
+            _settingsManager = new(_logger);
+            _fileOps = new(_logger); 
+            _cacheMetadataService = new();
+            _cacheMetadataService.OnMetadataChanged += () =>
+            {
+                // Use Invoke because downloads happen on background threads
+                if (this.IsHandleCreated)
+                {
+                    this.Invoke(new Action(() =>
+                    {
+                        var stats = _cacheMetadataService.GetStats();
+                        TextBoxSettingsCacheDailyTotal.Text = stats.DailyDownloadTotal.ToString();
+                        TextBoxSettingsCacheUsage.Text = stats.FormattedCacheUsage;
+                    }));
+                }
+            };
             _cacheManager = new(_logger);
             _httpRoutines = new(_fileOps, _logger, _httpClient);
             _scenarioFXML = new(_fileOps, _progressReporter);
             _runwayLoader = new(_fileOps, _cacheManager, _logger);
 
             // --- LAYER 3: Specialized Utilities (Single-purpose workers) ---
-            _osmTileCache = new(_fileOps, _httpRoutines, _progressReporter);
+            _osmTileCache = new(_fileOps, _httpRoutines, _progressReporter, _cacheMetadataService);
             _mapTileDownloader = new(_fileOps, _httpRoutines, _progressReporter, _osmTileCache);
             _assetFileGenerator = new(_logger, _fileOps, _progressReporter);
             _imageUtils = new(_logger, _fileOps, _progressReporter);
@@ -165,6 +182,19 @@ namespace P3D_Scenario_Generator
 
             // Remove the Task.Run wrapper and await the method directly
             await InitializeRunwayDataAsync();
+
+            _settingsManager.CaptureDefaults(TabPagePhotoTour.Controls);
+            _settingsManager.CaptureDefaults(TabPageSign.Controls);
+            _settingsManager.CaptureDefaults(TabPageCelestial.Controls);
+            _settingsManager.CaptureDefaults(TableLayoutPanelWikiURLWindowLocation.Controls);
+            _settingsManager.CaptureDefaults(TableLayoutPanelSettingsMapWindow.Controls);
+            _settingsManager.RestoreSettings(TabPagePhotoTour.Controls);
+            _settingsManager.RestoreSettings(TabPageSign.Controls);
+            _settingsManager.RestoreSettings(TabPageCelestial.Controls);
+            _settingsManager.RestoreSettings(TableLayoutPanelWikiURLWindowLocation.Controls);
+            _settingsManager.RestoreSettings(TextBoxSettingsOSMServerAPIkey);
+            _settingsManager.RestoreSettings(TableLayoutPanelSettingsFolderInfo.Controls);
+            _settingsManager.RestoreSettings(TableLayoutPanelSettingsMapWindow.Controls);
 
             Enabled = true; // Re-enable UI
         }
@@ -250,29 +280,19 @@ namespace P3D_Scenario_Generator
                 ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
             }
 
-            // Circuit tab
-            RestoreUserSettings(TabPageCircuit.Controls);
-
             // PhotoTour tab
             PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxPhotoTourPhotoAlignment);
-            RestoreUserSettings(TabPagePhotoTour.Controls);
 
             // Signwriting tab
             PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxSignAlignment);
-            RestoreUserSettings(TabPageSign.Controls);
 
             // Celestial Navigation tab
             PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxCelestialAlignment);
-            RestoreUserSettings(TabPageCelestial.Controls);
-
-            // Wikipedia Lists tab
-            RestoreUserSettings(TabPageWikiList.Controls);
 
             // Settings tab
             PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxSettingsMapAlignment);
             PopulateComboBoxWithEnum<MapWindowSizeOption>(ComboBoxSettingsMapWindowSize);
-            OSMTileCache.CheckCache();
-            RestoreUserSettings(TabPageSettings.Controls);
+            _osmTileCache.CheckCache();
         }
 
         /// <summary>
@@ -596,8 +616,6 @@ namespace P3D_Scenario_Generator
                     return;
                 }
 
-                await SaveSettingsAfterDoSpecificAsync();
-                await SaveUserSettings(TabPageSettings.Controls);
                 await _scenarioFXML.GenerateFXMLfileAsync(_formData);
                 await DeleteTempScenarioDirectory();
                 DisplayFinishMessage();
@@ -730,36 +748,6 @@ namespace P3D_Scenario_Generator
             finally
             {
                 Enabled = true;
-            }
-        }
-
-        /// <summary>
-        /// Saves user settings specific to the currently selected scenario type.
-        /// This method uses a switch statement to determine which tab page's controls
-        /// should have their settings persisted after a scenario operation.
-        /// </summary>
-        private async Task SaveSettingsAfterDoSpecificAsync()
-        {
-            ScenarioTypes currentScenarioType = _formData.ScenarioType;
-
-            switch (currentScenarioType)
-            {
-                case ScenarioTypes.Circuit:
-                    await SaveUserSettings(TabPageCircuit.Controls);
-                    break;
-                case ScenarioTypes.PhotoTour:
-                    await SaveUserSettings(TabPagePhotoTour.Controls);
-                    break;
-                case ScenarioTypes.SignWriting:
-                    await SaveUserSettings(TabPageSign.Controls);
-                    break;
-                case ScenarioTypes.Celestial:
-                    await SaveUserSettings(TabPageCelestial.Controls);
-                    break;
-                case ScenarioTypes.WikiList:
-                    await SaveUserSettings(TabPageWikiList.Controls);
-                    ClearWikiListSettingsFields();
-                    break;
             }
         }
 
@@ -1025,7 +1013,6 @@ namespace P3D_Scenario_Generator
             }
         }
 
-
         private void TextBoxGeneralLocationFilters_MouseEnter(object sender, EventArgs e)
         {
             TextBoxMouseEnterExpandTooltip(sender, e);
@@ -1093,9 +1080,7 @@ namespace P3D_Scenario_Generator
             }
         }
 
-
         #endregion
-
 
         #endregion
 
@@ -1742,43 +1727,8 @@ namespace P3D_Scenario_Generator
 
         #region Wikipedia Lists Tab
 
-        private void SetDefaultWikipediaParams()
+        private async void ButtonLoadWikiPage_Click(object sender, EventArgs e)
         {
-            _progressReporter?.Report("Using default Wikipedia list parameters.");
-
-            TextBoxWikiItemLinkColumn.Text = "1";
-            TextBoxWikiURLOffset.Text = "20";
-            TextBoxWikiURLWindowWidth.Text = "1920";
-            TextBoxWikiURLWindowHeight.Text = "1080";
-        }
-
-        /// <summary>
-        /// After saving all of the Wikipedia scenario related settings this method is called to clear the settings
-        /// relating to setting up the wiki tour. Otherwise the tour would get recreated on application load everytime.
-        /// </summary>
-        private static void ClearWikiListSettingsFields()
-        {
-            Properties.Settings.Default.ComboBoxWikiURL.Clear();
-            Properties.Settings.Default.ComboBoxWikiURLSelectedIndex = -1;
-            Properties.Settings.Default.TextBoxWikiItemLinkColumn = "1";
-            Properties.Settings.Default.ComboBoxWikiTableNames.Clear();
-            Properties.Settings.Default.ComboBoxWikiTableNamesSelectedIndex = -1;
-            Properties.Settings.Default.ComboBoxWikiRoute.Clear();
-            Properties.Settings.Default.ComboBoxWikiRouteSelectedIndex = -1;
-            Properties.Settings.Default.ComboBoxWikiStartingItem.Clear();
-            Properties.Settings.Default.ComboBoxWikiStartingItemSelectedIndex = -1;
-            Properties.Settings.Default.ComboBoxWikiFinishingItem.Clear();
-            Properties.Settings.Default.ComboBoxWikiFinishingItemSelectedIndex = -1;
-            Properties.Settings.Default.TextBoxWikiDistance = "";
-            Properties.Settings.Default.Save();
-        }
-
-        private async void ComboBoxWikiURL_TextChanged(object sender, EventArgs e)
-        {
-            if (!_isFormLoaded)
-            {
-                return;
-            }
 
             // 1. Capture UI control values while still on the UI thread
             string selectedWikiUrl = ComboBoxWikiURL.SelectedItem?.ToString();
@@ -1836,7 +1786,6 @@ namespace P3D_Scenario_Generator
             finally
             {
                 Enabled = true;
-                ComboBox_SelectedIndexChanged(sender, e);
             }
         }
 
@@ -1860,7 +1809,6 @@ namespace P3D_Scenario_Generator
                 _progressReporter.Report("Invalid column number. Please enter a positive integer.");
                 return;
             }
-            ComboBoxWikiURL_TextChanged(ComboBoxWikiURL, EventArgs.Empty);
         }
 
         private void ComboBoxWikiTableNames_SelectedIndexChanged(object sender, EventArgs e)
@@ -1870,7 +1818,7 @@ namespace P3D_Scenario_Generator
                 return;
             }
 
-            if (ComboBoxWikiURL.Items.Count == 0)
+            if (ComboBoxWikiURL.Items.Count == 0 || ComboBoxWikiTableNames.SelectedIndex < 0)
                 return;
             TextBoxWikiDistance.Text = "";
             if (ComboBoxWikiTableNames.Items.Count > 0)
@@ -1890,7 +1838,6 @@ namespace P3D_Scenario_Generator
                 List<string> clonedItemList = [.. itemList];
                 ComboBoxWikiFinishingItem.DataSource = clonedItemList;
                 ComboBoxWikiFinishingItem.SelectedIndex = ComboBoxWikiFinishingItem.Items.Count - 1;
-                ComboBox_SelectedIndexChanged(sender, e);
             }
         }
 
@@ -1910,7 +1857,6 @@ namespace P3D_Scenario_Generator
             {
                 TextBoxWikiDistance.Text = GetWikiDistance();
             }
-            ComboBox_SelectedIndexChanged(sender, e);
         }
 
         private string GetWikiDistance()
@@ -2227,33 +2173,36 @@ namespace P3D_Scenario_Generator
 
         private async void ButtonDefault_ClickAsync(object sender, EventArgs e)
         {
-            ScenarioTypes currentScenarioType = _formData.ScenarioType;
-            switch (currentScenarioType)
+            if (TabControlP3DSG.SelectedTab.Name == "TabPageCircuit")
             {
-                case ScenarioTypes.Circuit:
-                    await SetDefaultCircuitParamsAsync();
-                    break;
-                case ScenarioTypes.PhotoTour:
-                    SetDefaultPhotoTourParams();
-                    break;
-                case ScenarioTypes.SignWriting:
-                    await SetDefaultSignwritingParamsAsync();
-                    break;
-                case ScenarioTypes.Celestial:
-                    SetDefaultCelestialParams();
-                    break;
-                case ScenarioTypes.WikiList:
-                    SetDefaultWikipediaParams();
-                    break;
-                default:
-                    break;
+                string message = $"To set default circuit values, reselect the required aircraft variant on the General tab";
+                _progressReporter?.Report(message);
+                return;
             }
-            await GetValidatedScenarioFormData();
+
+            _settingsManager.RestoreActiveTab(
+                TabControlP3DSG,
+                TableLayoutPanelWikiURLWindowLocation,
+                TableLayoutPanelSettingsMapWindow
+            );
         }
 
         private void ButtonSaved_Click(object sender, EventArgs e)
         {
-            RestoreUserSettings(((Button)sender).Parent.Controls);
+            if (TabControlP3DSG.SelectedTab.Name == "TabPageCircuit")
+            {
+                string message = $"The application does not save user specified circuit values for each aircraft variant";
+                _progressReporter?.Report(message);
+                return;
+            }
+
+            _settingsManager.RestoreSettings(TabPagePhotoTour.Controls);
+            _settingsManager.RestoreSettings(TabPageSign.Controls);
+            _settingsManager.RestoreSettings(TabPageCelestial.Controls);
+            _settingsManager.RestoreSettings(TableLayoutPanelWikiURLWindowLocation.Controls);
+            _settingsManager.RestoreSettings(TextBoxSettingsOSMServerAPIkey);
+            _settingsManager.RestoreSettings(TableLayoutPanelSettingsFolderInfo.Controls);
+            _settingsManager.RestoreSettings(TableLayoutPanelSettingsMapWindow.Controls);
         }
 
         private void ComboBox_KeyDown(object sender, KeyEventArgs e)
@@ -2266,7 +2215,6 @@ namespace P3D_Scenario_Generator
                 {
                     ((ComboBox)sender).Items.Add(s);
                     ((ComboBox)sender).SelectedIndex = ((ComboBox)sender).Items.Count - 1;
-                    UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
                 }
             }
             else if (e.KeyCode == Keys.Delete)
@@ -2275,7 +2223,7 @@ namespace P3D_Scenario_Generator
 
                 // Use the helper to confirm the action. If the user doesn't confirm,
                 // return early and do nothing else.
-                if (!UIHelpers.ConfirmAction("Are you sure you want to delete this comboobx string?"))
+                if (!UIHelpers.ConfirmAction("Are you sure you want to delete this combobox string?"))
                 {
                     return;
                 }
@@ -2285,235 +2233,6 @@ namespace P3D_Scenario_Generator
                     ((ComboBox)sender).Items.Remove(s);
                     if (((ComboBox)sender).Items.Count > 0)
                         ((ComboBox)sender).SelectedIndex = 0;
-                    UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
-                }
-            }
-        }
-
-        private void ComboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            UpdateComboBoxSelectedIndex(((ComboBox)sender).Name, ((ComboBox)sender).SelectedIndex);
-        }
-
-        private static void UpdateComboBoxSelectedIndex(string comboBoxName, int selectedIndex)
-        {
-            Properties.Settings.Default[comboBoxName + "SelectedIndex"] = selectedIndex;
-            Properties.Settings.Default.Save();
-        }
-
-        /// <summary>
-        /// Recursively processes all controls to copy the associated user setting values into the control's properties.
-        /// Settings are retrieved by control.Name. For ComboBoxes, it restores items and SelectedIndex.
-        /// </summary>
-        /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
-        private async void RestoreUserSettings(Control.ControlCollection controlCollection)
-        {
-            foreach (Control control in controlCollection)
-            {
-                // Process child controls recursively first
-                if (control.Controls.Count > 0)
-                {
-                    RestoreUserSettings(control.Controls);
-                }
-
-                // Now process the current control
-                string settingName = control.Name; // Base setting name for the control
-
-                // Handle TextBox
-                if (control is TextBox textBox)
-                {
-                    try
-                    {
-                        object settingsValue = Properties.Settings.Default[settingName];
-
-                        if (settingsValue != null)
-                        {
-                            textBox.Text = settingsValue.ToString();
-                        }
-                        else
-                        {
-                            textBox.Text = string.Empty;
-                        }
-                    }
-                    catch (SettingsPropertyNotFoundException)
-                    {
-                        // Use Log.Info or Log.Warning, as not finding a setting isn't necessarily an error.
-                        // For example, if a new control is added but no setting for it yet.
-                        await _logger.InfoAsync($"RestoreUserSettings: Setting '{settingName}' not found for TextBox. Skipping.");
-                    }
-                    catch (InvalidCastException ex)
-                    {
-                        await _logger.ErrorAsync($"RestoreUserSettings: Type mismatch for TextBox setting '{settingName}'. Exception: {ex.Message}");
-                    }
-                    catch (Exception ex)
-                    {
-                        await _logger.ErrorAsync($"RestoreUserSettings: An unexpected error occurred for TextBox '{settingName}'. Exception: {ex.Message}", ex);
-                    }
-                }
-                // Handle ComboBox
-                else if (control is ComboBox comboBox)
-                {
-                    string itemsSettingName = settingName;
-                    string selectedIndexSettingName = settingName + "SelectedIndex";
-
-                    // Restore ComboBox Items (StringCollection)
-                    try
-                    {
-                        object itemsValue = Properties.Settings.Default[itemsSettingName];
-
-                        if (itemsValue is StringCollection savedItems && savedItems.Count > 0)
-                        {
-                            comboBox.Items.Clear();
-                            foreach (string item in savedItems)
-                            {
-                                comboBox.Items.Add(item);
-                            }
-                        }
-                    }
-                    catch (SettingsPropertyNotFoundException)
-                    {
-                        await _logger.InfoAsync($"RestoreUserSettings: Items setting '{itemsSettingName}' not found for ComboBox. Skipping items restoration.");
-                    }
-                    catch (InvalidCastException ex)
-                    {
-                        await _logger.ErrorAsync($"RestoreUserSettings: Type mismatch for ComboBox items setting '{itemsSettingName}'. Exception: {ex.Message}");
-                    }
-                    catch (Exception ex)
-                    {
-                        await _logger.ErrorAsync($"RestoreUserSettings: An unexpected error occurred for ComboBox items '{itemsSettingName}'. Exception: {ex.Message}", ex);
-                    }
-
-                    // Restore ComboBox SelectedIndex
-                    try
-                    {
-                        object selectedIndexValue = Properties.Settings.Default[selectedIndexSettingName];
-
-                        if (selectedIndexValue is int savedIndex)
-                        {
-                            if (savedIndex >= 0 && savedIndex < comboBox.Items.Count)
-                            {
-                                comboBox.SelectedIndex = savedIndex;
-                            }
-                            else if (comboBox.Items.Count > 0)
-                            {
-                                await _logger.WarningAsync($"RestoreUserSettings: Invalid saved SelectedIndex for '{selectedIndexSettingName}' ({savedIndex}). Defaulted to 0.");
-                            }
-                            else
-                            {
-                                comboBox.SelectedIndex = -1;
-                            }
-                        }
-                    }
-                    catch (SettingsPropertyNotFoundException)
-                    {
-                        await _logger.InfoAsync($"RestoreUserSettings: SelectedIndex setting '{selectedIndexSettingName}' not found for ComboBox. Skipping index restoration.");
-                    }
-                    catch (InvalidCastException ex)
-                    {
-                        await _logger.ErrorAsync($"RestoreUserSettings: Type mismatch for ComboBox SelectedIndex setting '{selectedIndexSettingName}'. Exception: {ex.Message}");
-                    }
-                    catch (Exception ex)
-                    {
-                        await _logger.ErrorAsync($"RestoreUserSettings: An unexpected error occurred for ComboBox SelectedIndex '{selectedIndexSettingName}'. Exception: {ex.Message}", ex);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Recursively processes all controls to copy their relevant property values into associated user setting values.
-        /// Settings are saved by control.Name. For ComboBoxes, it saves items and SelectedIndex.
-        /// All changes are saved to disk once at the end.
-        /// </summary>
-        /// <param name="controlCollection">The collection of controls to be processed, including all child control collections</param>
-        private async Task SaveUserSettings(Control.ControlCollection controlCollection)
-        {
-            // Flag to track if any settings were modified in this specific call of the method
-            bool settingsModifiedInThisCall = false;
-
-            foreach (Control control in controlCollection)
-            {
-                // Process child controls recursively first
-                if (control.Controls.Count > 0)
-                {
-                    await SaveUserSettings(control.Controls);
-                }
-
-                // Now process the current control
-                string settingName = control.Name;
-
-                // Handle TextBox
-                if (control is TextBox textBox)
-                {
-                    try
-                    {
-                        if (textBox.Text != "")
-                        {
-                            Properties.Settings.Default[settingName] = textBox.Text;
-                            settingsModifiedInThisCall = true;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        await _logger.ErrorAsync($"SaveUserSettings: Error saving TextBox '{settingName}'. Exception: {ex.Message}", ex);
-                    }
-                }
-                // Handle ComboBox
-                else if (control is ComboBox comboBox)
-                {
-                    string itemsSettingName = settingName;
-                    string selectedIndexSettingName = settingName + "SelectedIndex";
-
-                    // Save ComboBox Items (StringCollection)
-                    try
-                    {
-                        var newList = new StringCollection();
-                        foreach (object item in comboBox.Items)
-                        {
-                            newList.Add(item?.ToString() ?? string.Empty);
-                        }
-                        Properties.Settings.Default[itemsSettingName] = newList;
-                        settingsModifiedInThisCall = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        await _logger.ErrorAsync($"SaveUserSettings: Error saving ComboBox items for '{itemsSettingName}'. Exception: {ex.Message}", ex);
-                    }
-
-                    // Save ComboBox SelectedIndex
-                    try
-                    {
-                        Properties.Settings.Default[selectedIndexSettingName] = comboBox.SelectedIndex;
-                    }
-                    catch (Exception ex)
-                    {
-                        await _logger.ErrorAsync($"SaveUserSettings: Error saving ComboBox SelectedIndex for '{selectedIndexSettingName}'. Exception: {ex.Message}", ex);
-                    }
-                }
-            }
-
-            // Only save to disk and log if settings were actually modified in THIS call of the method
-            if (settingsModifiedInThisCall)
-            {
-                string collectionIdentifier = "Unknown Collection";
-
-                if (controlCollection.Count > 0)
-                {
-                    Control parentControl = controlCollection[0].Parent;
-                    if (parentControl != null)
-                    {
-                        collectionIdentifier = parentControl.Name;
-                    }
-                }
-
-                try
-                {
-                    Properties.Settings.Default.Save();
-                    await _logger.InfoAsync($"SaveUserSettings: {collectionIdentifier} settings saved successfully.");
-                }
-                catch (Exception ex)
-                {
-                    await _logger.ErrorAsync($"SaveUserSettings: Failed to save {collectionIdentifier} settings. Exception: {ex.Message}", ex);
                 }
             }
         }
@@ -2585,7 +2304,13 @@ namespace P3D_Scenario_Generator
                 await _aircraft.SaveAircraftVariantsAsync(_progressReporter);
 
                 // Save the user settings.
-                await SaveUserSettings(TabPageSettings.Controls);
+                await _settingsManager.SaveSettingsAsync(TabPagePhotoTour.Controls);
+                await _settingsManager.SaveSettingsAsync(TabPageSign.Controls);
+                await _settingsManager.SaveSettingsAsync(TabPageCelestial.Controls);
+                await _settingsManager.SaveSettingsAsync(TableLayoutPanelWikiURLWindowLocation.Controls);
+                await _settingsManager.SaveSettingsAsync(TextBoxSettingsOSMServerAPIkey);
+                await _settingsManager.SaveSettingsAsync(TableLayoutPanelSettingsFolderInfo.Controls);
+                await _settingsManager.SaveSettingsAsync(TableLayoutPanelSettingsMapWindow.Controls);
             }
             catch (Exception ex)
             {

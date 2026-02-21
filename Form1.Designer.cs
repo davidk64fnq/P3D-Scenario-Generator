@@ -122,7 +122,7 @@ namespace P3D_Scenario_Generator
             LabelWikiRoute = new Label();
             LabelWikiColumn = new Label();
             LabelWikiTableNames = new Label();
-            LabelWikiURL = new Label();
+            ButtonLoadWikiPage = new Button();
             GroupBoxWikipediaListWikiURLWindowLocation = new GroupBox();
             TableLayoutPanelWikipediaListWikiURLWindowLocation = new TableLayoutPanel();
             TextBoxWikiURLWindowHeight = new TextBox();
@@ -217,11 +217,11 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel15 = new TableLayoutPanel();
             ButtonHelp = new Button();
             TabPageSettings = new TabPage();
-            tableLayoutPanel23 = new TableLayoutPanel();
+            TableLayoutPanelSettings = new TableLayoutPanel();
             tableLayoutPanel24 = new TableLayoutPanel();
             GroupBoxSettingsFolderInfo = new GroupBox();
             TableLayoutPanelSettingsFolderInfo = new TableLayoutPanel();
-            tableLayoutPanel25 = new TableLayoutPanel();
+            TableLayoutPanelSettingsMap = new TableLayoutPanel();
             TabPageCelestial = new TabPage();
             tableLayoutPanel13 = new TableLayoutPanel();
             tableLayoutPanel18 = new TableLayoutPanel();
@@ -253,7 +253,7 @@ namespace P3D_Scenario_Generator
             TabPageWikiList = new TabPage();
             tableLayoutPanel20 = new TableLayoutPanel();
             tableLayoutPanel21 = new TableLayoutPanel();
-            tableLayoutPanel22 = new TableLayoutPanel();
+            TableLayoutPanelWikiURLWindowLocation = new TableLayoutPanel();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             errorProvider1 = new ErrorProvider(components);
@@ -289,11 +289,11 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel14.SuspendLayout();
             tableLayoutPanel15.SuspendLayout();
             TabPageSettings.SuspendLayout();
-            tableLayoutPanel23.SuspendLayout();
+            TableLayoutPanelSettings.SuspendLayout();
             tableLayoutPanel24.SuspendLayout();
             GroupBoxSettingsFolderInfo.SuspendLayout();
             TableLayoutPanelSettingsFolderInfo.SuspendLayout();
-            tableLayoutPanel25.SuspendLayout();
+            TableLayoutPanelSettingsMap.SuspendLayout();
             TabPageCelestial.SuspendLayout();
             tableLayoutPanel13.SuspendLayout();
             tableLayoutPanel18.SuspendLayout();
@@ -319,7 +319,7 @@ namespace P3D_Scenario_Generator
             TabPageWikiList.SuspendLayout();
             tableLayoutPanel20.SuspendLayout();
             tableLayoutPanel21.SuspendLayout();
-            tableLayoutPanel22.SuspendLayout();
+            TableLayoutPanelWikiURLWindowLocation.SuspendLayout();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)errorProvider1).BeginInit();
             SuspendLayout();
@@ -844,7 +844,7 @@ namespace P3D_Scenario_Generator
             ButtonPhotoTourSaved.Size = new Size(75, 23);
             ButtonPhotoTourSaved.TabIndex = 38;
             ButtonPhotoTourSaved.Text = "Saved";
-            toolTip1.SetToolTip(ButtonPhotoTourSaved, "Click to reset field values to those used for the last generated Photo Tour scenario.");
+            toolTip1.SetToolTip(ButtonPhotoTourSaved, "Click to reset field values for currently selected tab to those saved at completion of last program run.");
             ButtonPhotoTourSaved.UseVisualStyleBackColor = true;
             ButtonPhotoTourSaved.Click += ButtonSaved_Click;
             // 
@@ -1061,13 +1061,14 @@ namespace P3D_Scenario_Generator
             ComboBoxSignMessage.Anchor = AnchorStyles.None;
             ComboBoxSignMessage.DropDownWidth = 100;
             ComboBoxSignMessage.FormattingEnabled = true;
+            ComboBoxSignMessage.Items.AddRange(new object[] { "X" });
             ComboBoxSignMessage.Location = new Point(115, 5);
             ComboBoxSignMessage.Name = "ComboBoxSignMessage";
             ComboBoxSignMessage.Size = new Size(100, 23);
             ComboBoxSignMessage.TabIndex = 43;
             ComboBoxSignMessage.Tag = "";
+            ComboBoxSignMessage.Text = "X";
             toolTip1.SetToolTip(ComboBoxSignMessage, "The message you wish to write in the sky! Uppercase and lowercase alphabet characters accepted. Message length is restricted by sign window location settings.");
-            ComboBoxSignMessage.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
             ComboBoxSignMessage.KeyDown += ComboBox_KeyDown;
             ComboBoxSignMessage.Leave += ComboBoxSignMessage_Leave;
             // 
@@ -1311,8 +1312,8 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelWikipediaListParameters.Controls.Add(LabelWikiRoute, 0, 3);
             TableLayoutPanelWikipediaListParameters.Controls.Add(LabelWikiColumn, 0, 1);
             TableLayoutPanelWikipediaListParameters.Controls.Add(LabelWikiTableNames, 0, 2);
-            TableLayoutPanelWikipediaListParameters.Controls.Add(LabelWikiURL, 0, 0);
             TableLayoutPanelWikipediaListParameters.Controls.Add(TextBoxWikiDistance, 1, 6);
+            TableLayoutPanelWikipediaListParameters.Controls.Add(ButtonLoadWikiPage, 0, 0);
             TableLayoutPanelWikipediaListParameters.ImeMode = ImeMode.On;
             TableLayoutPanelWikipediaListParameters.Location = new Point(14, 28);
             TableLayoutPanelWikipediaListParameters.Name = "TableLayoutPanelWikipediaListParameters";
@@ -1338,7 +1339,6 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiRoute.Size = new Size(100, 23);
             ComboBoxWikiRoute.TabIndex = 44;
             toolTip1.SetToolTip(ComboBoxWikiRoute, "Proposed visit sequence for items in selected table (list) for the user supplied Wikipedia URL");
-            ComboBoxWikiRoute.SelectedIndexChanged += ComboBox_SelectedIndexChanged;
             // 
             // ComboBoxWikiTableNames
             // 
@@ -1359,13 +1359,13 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiURL.Anchor = AnchorStyles.None;
             ComboBoxWikiURL.DropDownWidth = 540;
             ComboBoxWikiURL.FormattingEnabled = true;
-            ComboBoxWikiURL.Items.AddRange(new object[] { "", "https://en.wikipedia.org/wiki/List_of_lighthouses_in_Hawaii" });
+            ComboBoxWikiURL.Items.AddRange(new object[] { "https://en.wikipedia.org/wiki/List_of_lighthouses_in_Hawaii" });
             ComboBoxWikiURL.Location = new Point(141, 3);
             ComboBoxWikiURL.Name = "ComboBoxWikiURL";
             ComboBoxWikiURL.Size = new Size(100, 23);
             ComboBoxWikiURL.TabIndex = 42;
+            ComboBoxWikiURL.Text = "https://en.wikipedia.org/wiki/List_of_lighthouses_in_Hawaii";
             toolTip1.SetToolTip(ComboBoxWikiURL, "The Wikipedia URL for the list or table you want to select a subset of items from. List or table needs a column containing a link to the individual items.");
-            ComboBoxWikiURL.SelectedIndexChanged += ComboBoxWikiURL_TextChanged;
             ComboBoxWikiURL.KeyDown += ComboBox_KeyDown;
             // 
             // TextBoxWikiItemLinkColumn
@@ -1380,7 +1380,6 @@ namespace P3D_Scenario_Generator
             TextBoxWikiItemLinkColumn.Text = "1";
             TextBoxWikiItemLinkColumn.TextAlign = HorizontalAlignment.Center;
             toolTip1.SetToolTip(TextBoxWikiItemLinkColumn, "The column in Wikipdeia URL table or lists containing the link to each item. Lefthand column is 1.");
-            TextBoxWikiItemLinkColumn.TextChanged += TextBoxWikiItemLinkColumn_TextChanged;
             // 
             // ComboBoxWikiFinishingItem
             // 
@@ -1463,16 +1462,16 @@ namespace P3D_Scenario_Generator
             LabelWikiTableNames.Text = "Table Names";
             toolTip1.SetToolTip(LabelWikiTableNames, "Useable tables (or lists) found in the user supplied Wikipedia URL.");
             // 
-            // LabelWikiURL
+            // ButtonLoadWikiPage
             // 
-            LabelWikiURL.Anchor = AnchorStyles.None;
-            LabelWikiURL.AutoSize = true;
-            LabelWikiURL.Location = new Point(22, 7);
-            LabelWikiURL.Name = "LabelWikiURL";
-            LabelWikiURL.Size = new Size(83, 15);
-            LabelWikiURL.TabIndex = 1;
-            LabelWikiURL.Text = "Wikipedia URL";
-            toolTip1.SetToolTip(LabelWikiURL, "The Wikipedia URL for the list or table you want to select a subset of items from. List or table needs a column containing a link to the individual items.");
+            ButtonLoadWikiPage.Anchor = AnchorStyles.None;
+            ButtonLoadWikiPage.Location = new Point(13, 3);
+            ButtonLoadWikiPage.Name = "ButtonLoadWikiPage";
+            ButtonLoadWikiPage.Size = new Size(101, 23);
+            ButtonLoadWikiPage.TabIndex = 45;
+            ButtonLoadWikiPage.Text = "Load Wiki Page";
+            ButtonLoadWikiPage.UseVisualStyleBackColor = true;
+            ButtonLoadWikiPage.Click += ButtonLoadWikiPage_Click;
             // 
             // GroupBoxWikipediaListWikiURLWindowLocation
             // 
@@ -2404,7 +2403,7 @@ namespace P3D_Scenario_Generator
             ButtonCircuitDefault.Size = new Size(75, 23);
             ButtonCircuitDefault.TabIndex = 11;
             ButtonCircuitDefault.Text = "Default";
-            toolTip1.SetToolTip(ButtonCircuitDefault, "Sets default parameters for currently selected scenario type, on that scenarios tab. Where appropriate uses currently selected aircraft parameters.");
+            toolTip1.SetToolTip(ButtonCircuitDefault, "Click to set default parameters for currently selected tab.");
             ButtonCircuitDefault.UseVisualStyleBackColor = true;
             ButtonCircuitDefault.Click += ButtonDefault_ClickAsync;
             // 
@@ -2844,7 +2843,7 @@ namespace P3D_Scenario_Generator
             // TabPageSettings
             // 
             TabPageSettings.BackColor = Color.FromArgb(64, 64, 64);
-            TabPageSettings.Controls.Add(tableLayoutPanel23);
+            TabPageSettings.Controls.Add(TableLayoutPanelSettings);
             TabPageSettings.Location = new Point(4, 24);
             TabPageSettings.Name = "TabPageSettings";
             TabPageSettings.Padding = new Padding(3);
@@ -2852,21 +2851,21 @@ namespace P3D_Scenario_Generator
             TabPageSettings.TabIndex = 5;
             TabPageSettings.Text = "Settings";
             // 
-            // tableLayoutPanel23
+            // TableLayoutPanelSettings
             // 
-            tableLayoutPanel23.Anchor = AnchorStyles.None;
-            tableLayoutPanel23.ColumnCount = 2;
-            tableLayoutPanel23.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel23.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel23.Controls.Add(tableLayoutPanel24, 0, 0);
-            tableLayoutPanel23.Controls.Add(tableLayoutPanel25, 1, 0);
-            tableLayoutPanel23.Location = new Point(0, 0);
-            tableLayoutPanel23.Margin = new Padding(0);
-            tableLayoutPanel23.Name = "tableLayoutPanel23";
-            tableLayoutPanel23.RowCount = 1;
-            tableLayoutPanel23.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel23.Size = new Size(812, 438);
-            tableLayoutPanel23.TabIndex = 0;
+            TableLayoutPanelSettings.Anchor = AnchorStyles.None;
+            TableLayoutPanelSettings.ColumnCount = 2;
+            TableLayoutPanelSettings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettings.Controls.Add(tableLayoutPanel24, 0, 0);
+            TableLayoutPanelSettings.Controls.Add(TableLayoutPanelSettingsMap, 1, 0);
+            TableLayoutPanelSettings.Location = new Point(0, 0);
+            TableLayoutPanelSettings.Margin = new Padding(0);
+            TableLayoutPanelSettings.Name = "TableLayoutPanelSettings";
+            TableLayoutPanelSettings.RowCount = 1;
+            TableLayoutPanelSettings.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettings.Size = new Size(812, 438);
+            TableLayoutPanelSettings.TabIndex = 0;
             // 
             // tableLayoutPanel24
             // 
@@ -2923,19 +2922,19 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelSettingsFolderInfo.Size = new Size(212, 90);
             TableLayoutPanelSettingsFolderInfo.TabIndex = 36;
             // 
-            // tableLayoutPanel25
+            // TableLayoutPanelSettingsMap
             // 
-            tableLayoutPanel25.Anchor = AnchorStyles.None;
-            tableLayoutPanel25.ColumnCount = 1;
-            tableLayoutPanel25.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel25.Controls.Add(GroupBoxSettingsMapWindow, 0, 0);
-            tableLayoutPanel25.Location = new Point(406, 19);
-            tableLayoutPanel25.Margin = new Padding(0);
-            tableLayoutPanel25.Name = "tableLayoutPanel25";
-            tableLayoutPanel25.RowCount = 1;
-            tableLayoutPanel25.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel25.Size = new Size(406, 400);
-            tableLayoutPanel25.TabIndex = 1;
+            TableLayoutPanelSettingsMap.Anchor = AnchorStyles.None;
+            TableLayoutPanelSettingsMap.ColumnCount = 1;
+            TableLayoutPanelSettingsMap.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettingsMap.Controls.Add(GroupBoxSettingsMapWindow, 0, 0);
+            TableLayoutPanelSettingsMap.Location = new Point(406, 19);
+            TableLayoutPanelSettingsMap.Margin = new Padding(0);
+            TableLayoutPanelSettingsMap.Name = "TableLayoutPanelSettingsMap";
+            TableLayoutPanelSettingsMap.RowCount = 1;
+            TableLayoutPanelSettingsMap.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettingsMap.Size = new Size(406, 400);
+            TableLayoutPanelSettingsMap.TabIndex = 1;
             // 
             // TabPageCelestial
             // 
@@ -3357,7 +3356,7 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel20.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel20.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanel20.Controls.Add(tableLayoutPanel21, 0, 0);
-            tableLayoutPanel20.Controls.Add(tableLayoutPanel22, 1, 0);
+            tableLayoutPanel20.Controls.Add(TableLayoutPanelWikiURLWindowLocation, 1, 0);
             tableLayoutPanel20.Location = new Point(0, 0);
             tableLayoutPanel20.Margin = new Padding(0);
             tableLayoutPanel20.Name = "tableLayoutPanel20";
@@ -3380,19 +3379,19 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel21.Size = new Size(406, 400);
             tableLayoutPanel21.TabIndex = 0;
             // 
-            // tableLayoutPanel22
+            // TableLayoutPanelWikiURLWindowLocation
             // 
-            tableLayoutPanel22.Anchor = AnchorStyles.None;
-            tableLayoutPanel22.ColumnCount = 1;
-            tableLayoutPanel22.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel22.Controls.Add(GroupBoxWikipediaListWikiURLWindowLocation, 0, 0);
-            tableLayoutPanel22.Location = new Point(406, 19);
-            tableLayoutPanel22.Margin = new Padding(0);
-            tableLayoutPanel22.Name = "tableLayoutPanel22";
-            tableLayoutPanel22.RowCount = 1;
-            tableLayoutPanel22.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel22.Size = new Size(406, 400);
-            tableLayoutPanel22.TabIndex = 1;
+            TableLayoutPanelWikiURLWindowLocation.Anchor = AnchorStyles.None;
+            TableLayoutPanelWikiURLWindowLocation.ColumnCount = 1;
+            TableLayoutPanelWikiURLWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelWikiURLWindowLocation.Controls.Add(GroupBoxWikipediaListWikiURLWindowLocation, 0, 0);
+            TableLayoutPanelWikiURLWindowLocation.Location = new Point(406, 19);
+            TableLayoutPanelWikiURLWindowLocation.Margin = new Padding(0);
+            TableLayoutPanelWikiURLWindowLocation.Name = "TableLayoutPanelWikiURLWindowLocation";
+            TableLayoutPanelWikiURLWindowLocation.RowCount = 1;
+            TableLayoutPanelWikiURLWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            TableLayoutPanelWikiURLWindowLocation.Size = new Size(406, 400);
+            TableLayoutPanelWikiURLWindowLocation.TabIndex = 1;
             // 
             // statusStrip1
             // 
@@ -3481,12 +3480,12 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel14.ResumeLayout(false);
             tableLayoutPanel15.ResumeLayout(false);
             TabPageSettings.ResumeLayout(false);
-            tableLayoutPanel23.ResumeLayout(false);
+            TableLayoutPanelSettings.ResumeLayout(false);
             tableLayoutPanel24.ResumeLayout(false);
             GroupBoxSettingsFolderInfo.ResumeLayout(false);
             TableLayoutPanelSettingsFolderInfo.ResumeLayout(false);
             TableLayoutPanelSettingsFolderInfo.PerformLayout();
-            tableLayoutPanel25.ResumeLayout(false);
+            TableLayoutPanelSettingsMap.ResumeLayout(false);
             TabPageCelestial.ResumeLayout(false);
             tableLayoutPanel13.ResumeLayout(false);
             tableLayoutPanel18.ResumeLayout(false);
@@ -3514,7 +3513,7 @@ namespace P3D_Scenario_Generator
             TabPageWikiList.ResumeLayout(false);
             tableLayoutPanel20.ResumeLayout(false);
             tableLayoutPanel21.ResumeLayout(false);
-            tableLayoutPanel22.ResumeLayout(false);
+            TableLayoutPanelWikiURLWindowLocation.ResumeLayout(false);
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)errorProvider1).EndInit();
@@ -3569,7 +3568,6 @@ namespace P3D_Scenario_Generator
         private Label label1;
         private TabControl TabControlP3DSG;
         private TabPage TabPageWikiList;
-        private Label LabelWikiURL;
         private Label LabelWikiTableNames;
         private Label LabelWikiColumn;
         private Label LabelWikiRoute;
@@ -3731,12 +3729,12 @@ namespace P3D_Scenario_Generator
         private TableLayoutPanel tableLayoutPanel19;
         private TableLayoutPanel tableLayoutPanel16;
         private TableLayoutPanel tableLayoutPanel17;
-        private TableLayoutPanel tableLayoutPanel23;
+        private TableLayoutPanel TableLayoutPanelSettings;
         private TableLayoutPanel tableLayoutPanel24;
-        private TableLayoutPanel tableLayoutPanel25;
+        private TableLayoutPanel TableLayoutPanelSettingsMap;
         private TableLayoutPanel tableLayoutPanel20;
         private TableLayoutPanel tableLayoutPanel21;
-        private TableLayoutPanel tableLayoutPanel22;
+        private TableLayoutPanel TableLayoutPanelWikiURLWindowLocation;
         private HelpProvider helpProvider1;
         private ListBox ListBoxGeneralRunwayResults;
         private Label label8;
@@ -3753,6 +3751,7 @@ namespace P3D_Scenario_Generator
         internal TextBox TextBoxCelestialMonitorNumber;
         private Label label36;
         internal ComboBox ComboBoxCelestialAlignment;
+        private Button ButtonLoadWikiPage;
     }
 }
 

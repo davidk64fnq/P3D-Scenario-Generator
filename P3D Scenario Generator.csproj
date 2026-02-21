@@ -1,15 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows7.0</TargetFramework>
-    <RootNamespace>P3D_Scenario_Generator</RootNamespace>
-    <UseWindowsForms>true</UseWindowsForms>
-	<UseRidGraph>true</UseRidGraph>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<ApplicationIcon>application.ico</ApplicationIcon>
-	<LangVersion>preview</LangVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows7.0</TargetFramework>
+		<RootNamespace>P3D_Scenario_Generator</RootNamespace>
+		<UseWindowsForms>true</UseWindowsForms>
+		<UseRidGraph>true</UseRidGraph>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ApplicationIcon>application.ico</ApplicationIcon>
+		<LangVersion>preview</LangVersion>
+		<SupportedOSPlatform>windows</SupportedOSPlatform>
+	</PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Parameters.cs" />
@@ -232,11 +233,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
     <Compile Update="Resource1.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -256,10 +252,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
     <None Update="Resources\Help\Help.chm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

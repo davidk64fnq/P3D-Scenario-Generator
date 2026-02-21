@@ -91,6 +91,10 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         /// </summary>
         public static readonly string appTitle = GetApplicationTitle();
 
+        // Use THIS for Folder Paths/Registry Keys. 
+        // It stays the same even if you rename the 'Assembly Title' later.
+        public static readonly string AppDataFolderName = "P3D_Scenario_Generator_Cache";
+
         private static string GetApplicationTitle()
         {
             // Retrieve the Assembly Title

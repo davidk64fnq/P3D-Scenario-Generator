@@ -91,6 +91,11 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             int lastRouteItem; // Track last item of route as it's built
             int itemVisitedCount; // Track how many items have been added to route as it's built
 
+            if (tableNo < 0)
+            {
+                return null;
+            }
+
             SetWikiTableCosts(tableNo, wikiTableCost);
 
             // Initialise route with first leg (handles special case where only one item)
