@@ -670,7 +670,7 @@ namespace P3D_Scenario_Generator
         private void DisplayErrorMessage()
         {
             Cursor.Current = Cursors.Default;
-            string message = $"An error occured creating the sceanrio files, see logs for details";
+            string message = $"An error occured creating the scenario files, see logs for details";
             _progressReporter?.Report(message);
         }
 
