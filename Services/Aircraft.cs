@@ -138,45 +138,75 @@ namespace P3D_Scenario_Generator.Services
 
             while ((currentLine = reader.ReadLine()) != null)
             {
-                currentLine = currentLine.Trim();
+                if (!TryExtractCfgKey(currentLine, out string key))
+                    continue;
 
-                // 1. Handle "title="
-                if (currentLine.StartsWith("title=", StringComparison.OrdinalIgnoreCase))
+                int equalsIndex = currentLine.IndexOf('=');
+                string rawValue = currentLine[(equalsIndex + 1)..];
+
+                switch (key)
                 {
-                    currentTitle = SanitizeCfgValue(currentLine, "title=");
-                }
+                    case "title":
+                        currentTitle = SanitizeCfgValue(rawValue);
+                        break;
 
-                // 2. Handle "texture="
-                if (currentLine.StartsWith("texture=", StringComparison.OrdinalIgnoreCase))
-                {
-                    string currentTexture = SanitizeCfgValue(currentLine, "texture=");
-
-                    // Case-insensitive comparison is essential here
-                    if (currentTexture.Equals(textureValue, StringComparison.OrdinalIgnoreCase))
-                        return currentTitle;
+                    case "texture":
+                        string currentTexture = SanitizeCfgValue(rawValue);
+                        if (currentTexture.Equals(textureValue, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return currentTitle;
+                        }
+                        break;
                 }
             }
             return "";
         }
 
         /// <summary>
-        /// Removes the key prefix, strips inline comments (; or //), 
-        /// and removes surrounding whitespace or quotes.
+        /// Extracts the key name from a raw configuration line, ignoring whitespace.
         /// </summary>
-        private static string SanitizeCfgValue(string line, string key)
+        /// <param name="line">The raw line read from the configuration file.</param>
+        /// <param name="key">The extracted key name in lowercase, or an empty string if no key is found.</param>
+        /// <returns><see langword="true"/> if a valid key-value delimiter was found; otherwise, <see langword="false"/>.</returns>
+        private static bool TryExtractCfgKey(string line, out string key)
         {
-            // Remove the "title=" or "texture=" part
-            string value = line[key.Length..];
+            key = "";
+            string trimmedLine = line.Trim();
 
+            // Ignore empty lines, section headers, or full-line comments early
+            if (string.IsNullOrEmpty(trimmedLine) ||
+                trimmedLine.StartsWith('[') ||
+                trimmedLine.StartsWith(';') ||
+                trimmedLine.StartsWith("//"))
+            {
+                return false;
+            }
+
+            int equalsIndex = trimmedLine.IndexOf('=');
+            if (equalsIndex == -1)
+            {
+                return false;
+            }
+
+            // Extract and clean the key portion
+            key = trimmedLine[..equalsIndex].Trim().ToLowerInvariant();
+            return true;
+        }
+
+        /// <summary>
+        /// Strips inline comments (; or //) and removes surrounding whitespace or quotes from a raw configuration value.
+        /// </summary>
+        private static string SanitizeCfgValue(string rawValue)
+        {
             // Strip inline comments (Flight Sim uses ';' primarily, but '//' appears in modern mods)
-            int commentIndex = value.IndexOfAny([';', '/']);
+            int commentIndex = rawValue.IndexOfAny([';', '/']);
             if (commentIndex != -1)
             {
-                value = value[..commentIndex];
+                rawValue = rawValue[..commentIndex];
             }
 
             // Final trim of whitespace and common wrapping characters like quotes
-            return value.Trim().Trim('"');
+            return rawValue.Trim().Trim('"');
         }
 
         /// <summary>
@@ -243,17 +273,14 @@ namespace P3D_Scenario_Generator.Services
             using StringReader reader = new(aircraftCFG);
             string currentLine;
 
-            const string targetKey = "cruise_speed=";
-
             while ((currentLine = reader.ReadLine()) != null)
             {
-                currentLine = currentLine.Trim();
-
-                // Case-insensitive check for the key
-                if (currentLine.StartsWith(targetKey, StringComparison.OrdinalIgnoreCase))
+                if (TryExtractCfgKey(currentLine, out string key) && key == "cruise_speed")
                 {
-                    // Reuse the sanitization logic to handle comments (// or ;) and quotes
-                    string cleanValue = SanitizeCfgValue(currentLine, targetKey);
+                    // Find the position of '=' in the original trimmed line to get the raw value safely
+                    int equalsIndex = currentLine.IndexOf('=');
+                    string rawValue = currentLine[(equalsIndex + 1)..];
+                    string cleanValue = SanitizeCfgValue(rawValue);
 
                     const double minCruiseSpeed = 0.0;
                     const double maxCruiseSpeed = Constants.PlausibleMaxCruiseSpeedKnots;
@@ -264,14 +291,13 @@ namespace P3D_Scenario_Generator.Services
                         minCruiseSpeed,
                         maxCruiseSpeed,
                         out double cruiseSpeedOut,
-                        out string _, // validationMessage unused here
+                        out string _,
                         "knots"))
                     {
                         return cruiseSpeedOut;
                     }
 
-                    // If found but failed to parse, we exit early with 0.0 per original logic
-                    return 0.0;
+                    return 0.0; // Early exit on failed parse per original logic
                 }
             }
 
