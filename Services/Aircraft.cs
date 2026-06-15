@@ -16,7 +16,6 @@ namespace P3D_Scenario_Generator.Services
     /// </remarks>
     /// <param name="log">The logging service instance.</param>
     /// <param name="cacheManager">The cache management service instance.</param>
-    /// <param name="fileOps">The file operations service instance.</param>
     internal class Aircraft(Logger log, CacheManager cacheManager)
     {
         private readonly Logger _log = log;
@@ -99,7 +98,7 @@ namespace P3D_Scenario_Generator.Services
                 // name of the aircraft variant texture
                 if (GetTextureValue(thumbnailPath) == "")
                 {
-                    MessageBox.Show($"Not a valid variant, please select from a texture folder containing a \".\"",
+                    MessageBox.Show($"Not a valid variant, please select from within a texture folder name containing a \".\"",
                         Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return "";
                 }
@@ -150,6 +149,9 @@ namespace P3D_Scenario_Generator.Services
                         currentTitle = SanitizeCfgValue(rawValue);
                         break;
 
+                    // EDGE CASE: Handles the default/fallback livery where 'texture=' is blank or empty.
+                    // If the user selected a thumbnail from the main folder, textureValue will be "".
+                    // Note: Assumes 'title' appears BEFORE 'texture' in the cfg section to avoid title bleeding.
                     case "texture":
                         string currentTexture = SanitizeCfgValue(rawValue);
                         if (currentTexture.Equals(textureValue, StringComparison.OrdinalIgnoreCase))
