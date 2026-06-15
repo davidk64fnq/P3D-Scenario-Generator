@@ -1189,22 +1189,22 @@ function updatePlotTab(fixHistory, plotDisplayConfig) {// 1. Context and Canvas 
 		const finalDistFeet = getDistance(lastFixCoord, currentDestCoord);
 		let finalBearingRad = getBearing(lastFixCoord, currentDestCoord);
 
+		// Apply magnetic variance
 		finalBearingRad -= planeStatus.magVarRad;
+	
+		// Convert to degrees and strictly normalize to a 0-359 degree circle
 		let finalBearingDeg = Math.floor(toDegrees(finalBearingRad));
+		finalBearingDeg = ((finalBearingDeg % 360) + 360) % 360;
 
-		let finalBearingString;
-		if (finalBearingDeg < 10) {
-			finalBearingString = "00" + finalBearingDeg;
-		}
-		else if (finalBearingDeg < 100) {
-			finalBearingString = "0" + finalBearingDeg;
-		}
-		else {
-			finalBearingString = String(finalBearingDeg);
-		}
+		// Modern 3-digit padding (e.g., 7 becomes "007")
+		const finalBearingString = String(finalBearingDeg).padStart(3, '0');
+	
+		// Round to the nearest whole nautical mile for accuracy
+		const finalDistNM = Math.round(finalDistFeet / feetInNauticalMile);
 
+		// Render to Canvas
 		plotContext.fillStyle = "red";
-		plotContext.fillText("Final Leg: " + finalBearingString + " (" + Math.floor(finalDistFeet / feetInNauticalMile) + "nm)", 70, windowH - 10);
+		plotContext.fillText("Final Leg: " + finalBearingString + " (" + finalDistNM + "nm)", 70, windowH - 10);
 
 		// Draw lines connecting the fixes
 		plotContext.strokeStyle = 'red';
