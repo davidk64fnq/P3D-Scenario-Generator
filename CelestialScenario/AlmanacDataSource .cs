@@ -10,7 +10,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// This includes extracting Aries GHA (Greenwich Hour Angle) and navigational star
     /// SHA (Sidereal Hour Angle) and Declination values for use in celestial navigation calculations.
     /// </summary>
-    internal class AlmanacDataSource(
+    public class AlmanacDataSource(
         Logger logger,
         FormProgressReporter progressReporter,
         HttpRoutines httpRoutines,

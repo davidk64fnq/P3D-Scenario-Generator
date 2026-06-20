@@ -14,49 +14,34 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// It also handles the creation and backup of the simulator's stars.dat file,
     /// and determines the geographical parameters for scenario setup.
     /// </summary>
-    public class CelestialNav
+    public class CelestialNav(
+        Logger logger,
+        FileOps fileOps,
+        FormProgressReporter progressReporter,
+        AlmanacDataSource almanacDataSource,
+        StarDataManager starDataManager,
+        SextantViewGenerator sextantViewGenerator,
+        StarsDatFileGenerator simulatorFileGenerator,
+        MapTileImageMaker mapTileImageMaker,
+        ScenarioXML scenarioXML,
+        ScenarioHTML scenarioHTML)
     {
-        private readonly Logger _logger;
-        private readonly FileOps _fileOps;
-        private readonly FormProgressReporter _progressReporter;
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
-        private readonly AlmanacDataSource _almanacDataSource;
-        private readonly StarDataManager _starDataManager;
-        private readonly SextantViewGenerator _sextantViewGenerator;
-        private readonly StarsDatFileGenerator _simulatorFileGenerator;
-        private readonly MapTileImageMaker _mapTileImageMaker;
-        private readonly ScenarioXML _xml;
-        private readonly ScenarioHTML _scenarioHTML;
-
-        public CelestialNav(
-            Logger logger,
-            FileOps fileOps,
-            FormProgressReporter progressReporter,
-            AlmanacDataSource almanacDataSource,
-            StarDataManager starDataManager,
-            SextantViewGenerator sextantViewGenerator,
-            StarsDatFileGenerator simulatorFileGenerator,
-            MapTileImageMaker mapTileImageMaker,
-            ScenarioXML scenarioXML,
-            ScenarioHTML scenarioHTML)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-            _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-
-            _almanacDataSource = almanacDataSource ?? throw new ArgumentNullException(nameof(almanacDataSource));
-            _starDataManager = starDataManager ?? throw new ArgumentNullException(nameof(starDataManager));
-            _sextantViewGenerator = sextantViewGenerator ?? throw new ArgumentNullException(nameof(sextantViewGenerator));
-            _simulatorFileGenerator = simulatorFileGenerator ?? throw new ArgumentNullException(nameof(simulatorFileGenerator));
-            _mapTileImageMaker = mapTileImageMaker ?? throw new ArgumentNullException(nameof(mapTileImageMaker));
-            _xml = scenarioXML ?? throw new ArgumentNullException(nameof(scenarioXML));
-            _scenarioHTML = scenarioHTML ?? throw new ArgumentNullException(nameof(scenarioHTML));
-        }
+        private readonly AlmanacDataSource _almanacDataSource = almanacDataSource ?? throw new ArgumentNullException(nameof(almanacDataSource));
+        private readonly StarDataManager _starDataManager = starDataManager ?? throw new ArgumentNullException(nameof(starDataManager));
+        private readonly SextantViewGenerator _sextantViewGenerator = sextantViewGenerator ?? throw new ArgumentNullException(nameof(sextantViewGenerator));
+        private readonly StarsDatFileGenerator _simulatorFileGenerator = simulatorFileGenerator ?? throw new ArgumentNullException(nameof(simulatorFileGenerator));
+        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker ?? throw new ArgumentNullException(nameof(mapTileImageMaker));
+        private readonly ScenarioXML _xml = scenarioXML ?? throw new ArgumentNullException(nameof(scenarioXML));
+        private readonly ScenarioHTML _scenarioHTML = scenarioHTML ?? throw new ArgumentNullException(nameof(scenarioHTML));
 
         internal async Task<bool> SetCelestialAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            if (formData == null) throw new ArgumentNullException(nameof(formData));
-            if (runwayManager == null) throw new ArgumentNullException(nameof(runwayManager));
+            ArgumentNullException.ThrowIfNull(formData);
+            ArgumentNullException.ThrowIfNull(runwayManager);
 
             formData.DestinationRunway = await runwayManager.Searcher.GetFilteredRandomRunwayAsync(formData);
             ScenarioLocationGenerator.SetMidairStartLocation(formData.CelestialMinDistance, formData.CelestialMaxDistance, formData.DestinationRunway,
