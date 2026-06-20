@@ -1,4 +1,4 @@
-﻿using CoordinateSharp;
+using CoordinateSharp;
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Runways;
@@ -13,44 +13,52 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// dynamic web content (HTML, JavaScript, CSS) for a celestial sextant display.
     /// It also handles the creation and backup of the simulator's stars.dat file,
     /// and determines the geographical parameters for scenario setup.
-    class CelestialNav(
-        Logger logger,
-        FileOps fileOps,
-        FormProgressReporter progressReporter,
-        AlmanacDataSource almanacDataSource,
-        StarDataManager starDataManager,
-        SextantViewGenerator sextantViewGenerator,
-        StarsDatFileGenerator simulatorFileGenerator,
-        MapTileImageMaker mapTileImageMaker,
-        ScenarioXML scenarioXML,
-        ScenarioHTML scenarioHTML)
+    /// </summary>
+    public class CelestialNav
     {
-        // Field assignments from the primary constructor
-        private readonly Logger _logger = logger;
-        private readonly FileOps _fileOps = fileOps;
-        private readonly FormProgressReporter _progressReporter = progressReporter;
+        private readonly Logger _logger;
+        private readonly FileOps _fileOps;
+        private readonly FormProgressReporter _progressReporter;
 
-        // Specialized workers injected from the Form (Composition Root)
-        private readonly AlmanacDataSource _almanacDataSource = almanacDataSource;
-        private readonly StarDataManager _starDataManager = starDataManager;
-        private readonly SextantViewGenerator _sextantViewGenerator = sextantViewGenerator;
-        private readonly StarsDatFileGenerator _simulatorFileGenerator = simulatorFileGenerator;
-        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
-        private readonly ScenarioXML _xml = scenarioXML;
-        private readonly ScenarioHTML _scenarioHTML = scenarioHTML;
+        private readonly AlmanacDataSource _almanacDataSource;
+        private readonly StarDataManager _starDataManager;
+        private readonly SextantViewGenerator _sextantViewGenerator;
+        private readonly StarsDatFileGenerator _simulatorFileGenerator;
+        private readonly MapTileImageMaker _mapTileImageMaker;
+        private readonly ScenarioXML _xml;
+        private readonly ScenarioHTML _scenarioHTML;
 
-        /// <summary>
-        /// Initializes the celestial navigation system for a new scenario.
-        /// This method sets a random destination runway, determines the celestial start location,
-        /// and then attempts to load almanac data, initialize star data, create star data files,
-        /// and set up the necessary HTML, JavaScript, and CSS for the celestial sextant display.
-        /// If all these steps are successful, it also updates the overview and location images.
-        /// </summary>
-        /// <returns>True if all celestial setup operations complete successfully; otherwise, false.</returns>
+        public CelestialNav(
+            Logger logger,
+            FileOps fileOps,
+            FormProgressReporter progressReporter,
+            AlmanacDataSource almanacDataSource,
+            StarDataManager starDataManager,
+            SextantViewGenerator sextantViewGenerator,
+            StarsDatFileGenerator simulatorFileGenerator,
+            MapTileImageMaker mapTileImageMaker,
+            ScenarioXML scenarioXML,
+            ScenarioHTML scenarioHTML)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+            _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+
+            _almanacDataSource = almanacDataSource ?? throw new ArgumentNullException(nameof(almanacDataSource));
+            _starDataManager = starDataManager ?? throw new ArgumentNullException(nameof(starDataManager));
+            _sextantViewGenerator = sextantViewGenerator ?? throw new ArgumentNullException(nameof(sextantViewGenerator));
+            _simulatorFileGenerator = simulatorFileGenerator ?? throw new ArgumentNullException(nameof(simulatorFileGenerator));
+            _mapTileImageMaker = mapTileImageMaker ?? throw new ArgumentNullException(nameof(mapTileImageMaker));
+            _xml = scenarioXML ?? throw new ArgumentNullException(nameof(scenarioXML));
+            _scenarioHTML = scenarioHTML ?? throw new ArgumentNullException(nameof(scenarioHTML));
+        }
+
         internal async Task<bool> SetCelestialAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            formData.DestinationRunway = await runwayManager.Searcher.GetFilteredRandomRunwayAsync(formData);
+            if (formData == null) throw new ArgumentNullException(nameof(formData));
+            if (runwayManager == null) throw new ArgumentNullException(nameof(runwayManager));
 
+            formData.DestinationRunway = await runwayManager.Searcher.GetFilteredRandomRunwayAsync(formData);
             ScenarioLocationGenerator.SetMidairStartLocation(formData.CelestialMinDistance, formData.CelestialMaxDistance, formData.DestinationRunway,
                 out double midairStartHdg, out double midairStartLat, out double midairStartLon, out double randomRadiusNM);
             formData.MidairStartHdgDegrees = midairStartHdg;
@@ -103,6 +111,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 await _logger.ErrorAsync("Failed to create location image during celestial setup.");
                 return false;
             }
+
             Overview overview = SetOverviewStruct(formData);
             if (!await _scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
             {
@@ -119,45 +128,21 @@ namespace P3D_Scenario_Generator.CelestialScenario
             return true;
         }
 
-        /// <summary>
-        /// Creates and returns an enumerable collection of <see cref="Coordinate"/> objects
-        /// representing the mid-air starting location and the destination runway's location.
-        /// This is intended for use in generating an overview map or display.
-        /// </summary>
-        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
-        /// the starting latitude/longitude and the runway's latitude/longitude.</returns>
         static internal IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
         {
-            IEnumerable<Coordinate> coordinates =
-            [
+            return [
                 new Coordinate(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees),    
                 new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon)     
             ];
-            return coordinates;
         }
 
-        /// <summary>
-        /// Creates and returns an enumerable collection containing a single <see cref="Coordinate"/> object
-        /// that represents the geographical location (latitude and longitude) of the destination runway.
-        /// This is typically used for pinpointing the primary target location.
-        /// </summary>
-        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
-        /// only the destination runway's latitude and longitude.</returns>
         static internal IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
         {
-            IEnumerable<Coordinate> coordinates =
-            [
+            return [
                 new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon)
             ];
-            return coordinates;
         }
 
-        /// <summary>
-        /// Calculates the great-circle distance between two geographic points
-        /// (midair starting latitude/longitude and destination latitude/longitude)
-        /// using the CalcDistance method from MathRoutines.
-        /// </summary>
-        /// <returns>The calculated celestial distance in nautical miles.</returns>
         static internal double GetCelestialDistance(ScenarioFormData formData)
         {
             return MathRoutines.CalcDistance(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees, formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon);
@@ -170,7 +155,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
             briefing += $" The scenario finishes at {formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) in ";
             briefing += $"{formData.DestinationRunway.City}, {formData.DestinationRunway.Country}.";
 
-            // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
             double duration = GetCelestialDistance(formData) / formData.AircraftCruiseSpeed * 60;
 
             Overview overview = new()
@@ -189,22 +173,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
             return overview;
         }
 
-        /// <summary>
-        /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
-        /// for the sextant window based on the specified alignment and monitor properties.
-        /// </summary>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
-        /// sextant window's desired alignment, offsets, monitor dimensions, and calculated window size.</param>
-        /// <returns>
-        /// A <see cref="T:System.String[]"/> array containing four elements in the order:
-        /// <list type="bullet">
-        /// <item><description>Window Width (string)</description></item>
-        /// <item><description>Window Height (string)</description></item>
-        /// <item><description>Horizontal Offset (string)</description></item>
-        /// <item><description>Vertical Offset (string)</description></item>
-        /// </list>
-        /// These parameters are suitable for configuring the sextant window's display.
-        /// </returns>
         static internal string[] GetSextantWindowParameters(ScenarioFormData formData)
         {
             return ScenarioXML.GetWindowParameters(Constants.SextantWindowWidth, Constants.SextantWindowHeight, formData.SextantAlignment,
@@ -221,34 +189,28 @@ namespace P3D_Scenario_Generator.CelestialScenario
             _xml.SetGoal("Goal01", overview.Objective);
             _xml.SetGoalResolutionAction("Goal01");
 
-            // Create sextant window object
             _xml.SetUIPanelWindow(1, "CelestialSextant", "False", "True", "images\\htmlCelestialSextant.html", "False", "True");
-            _xml.SetOpenWindowAction(1, "UIPanelWindow", "CelestialSextant", CelestialNav.GetSextantWindowParameters(formData), formData.SextantMonitorNumber.ToString());
+            _xml.SetOpenWindowAction(1, "UIPanelWindow", "CelestialSextant", GetSextantWindowParameters(formData), formData.SextantMonitorNumber.ToString());
             _xml.SetCloseWindowAction(1, "UIPanelWindow", "CelestialSextant");
 
-            // Create onscreen text object for displaying error message from sextant
             _xml.SetOnScreenText("CelestialErrorMessage01", "Star not in FOV", "Center", "0.000000,0.000000,0.000000,255.000000", "False", "White");
             _xml.SetObjectActivationAction(1, "OnScreenText", "CelestialErrorMessage", "DisplayCelestialErrorMessage", "True");
             _xml.SetObjectActivationAction(1, "OnScreenText", "CelestialErrorMessage", "HideCelestialErrorMessage", "False");
 
-            // Create timer trigger for hiding onscreen text sextant message after 10 seconds
             _xml.SetTimerTrigger("TimerTrigger01", 10.0, "False", "False");
             _xml.SetTimerTriggerAction("ObjectActivationAction", "HideCelestialErrorMessage01", "TimerTrigger01");
             _xml.SetObjectActivationAction(1, "TimerTrigger", "TimerTrigger", "ActTimerTrigger", "True");
 
-            // Create scenario variable which when set to 1.0 displays error message and activates trigger to hide message after 10 seconds
             _xml.SetScenarioVariable("CelestialErrorMessage01", "errorMsgVar", "0");
             _xml.SetScenarioVariableAction("ObjectActivationAction", "DisplayCelestialErrorMessage01", 0, "CelestialErrorMessage01");
             _xml.SetScenarioVariableAction("ObjectActivationAction", "ActTimerTrigger01", 0, "CelestialErrorMessage01");
             _xml.SetScenarioVariableTriggerValue(1.0, 0, "CelestialErrorMessage01");
 
-            // Create timer trigger to play audio introductions and open sextant window when scenario starts
             _xml.SetTimerTrigger("TimerTrigger02", 1.0, "False", "True");
             _xml.SetTimerTriggerAction("OpenWindowAction", "OpenCelestialSextant01", "TimerTrigger02");
             _xml.SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger02");
             _xml.SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger02");
 
-            // Create area landing trigger which does goal resolution - starts activated
             _xml.SetAreaLandingTrigger("AreaLandingTrigger01", "Any", "True");
             _xml.SetSphereArea($"SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
             string dwp = ScenarioXML.GetCoordinateWorldPosition(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon, formData.DestinationRunway.Altitude);
