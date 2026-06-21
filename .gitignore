@@ -364,3 +364,12 @@ FodyWeavers.xsd
 
 # Aider pair-programming session tracking files
 .aider*
+
+runways.xml
+/Resources/Help/Help.chm
+/Resources/Help/Help.chw
+/Resources/Help/Help.hhp
+/Resources/Help/Index.hhk
+/Resources/Help/Table of Contents.hhc
+/Resources/XML/runways.xml
+/Start-Aider-P3D.bat
