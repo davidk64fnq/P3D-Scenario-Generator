@@ -196,6 +196,9 @@ namespace P3D_Scenario_Generator
             _settingsManager.RestoreSettings(TableLayoutPanelSettingsFolderInfo.Controls);
             _settingsManager.RestoreSettings(TableLayoutPanelSettingsMapWindow.Controls);
 
+            // Clear progress bar message arising from restoring settings tab values
+            _progressReporter?.Report("");
+
             Enabled = true; // Re-enable UI
         }
 
