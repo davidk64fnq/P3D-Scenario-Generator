@@ -292,6 +292,9 @@ namespace P3D_Scenario_Generator
             // Celestial Navigation tab
             PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxCelestialAlignment);
 
+            // Wikipedia List tab
+            PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxWikiURLAlignment);
+
             // Settings tab
             PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxSettingsMapAlignment);
             PopulateComboBoxWithEnum<MapWindowSizeOption>(ComboBoxSettingsMapWindowSize);
