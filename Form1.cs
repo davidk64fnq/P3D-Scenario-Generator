@@ -546,7 +546,6 @@ namespace P3D_Scenario_Generator
 
         private async void ButtonRandRunway_Click(object sender, EventArgs e)
         {
-            // The method is now async to allow for the use of the await keyword.
             ValidateAndPopulateLocationFilters();
 
             // Await the asynchronous method to get the RunwayParams object.
@@ -3056,9 +3055,10 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                // Assign DisplayName and CruiseSpeed directly, as their validation is assumed to be handled
+                // Assign SimValue, DisplayName and CruiseSpeed directly, as their validation is assumed to be handled
                 // when the variant is initially read into the program in Aircraft.cs.
-                _formData.AircraftTitle = selectedAircraftVariant.DisplayName;
+                _formData.AircraftSimValue = selectedAircraftVariant.Title;
+                _formData.AircraftDisplayTitle = selectedAircraftVariant.DisplayName;
                 _formData.AircraftCruiseSpeed = selectedAircraftVariant.CruiseSpeed;
 
                 // Validate Aircraft Image Path (ThumbnailImagePath string from AircraftVariant)

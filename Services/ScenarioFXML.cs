@@ -1,5 +1,4 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Utilities;
 using System.Xml.Serialization;
 
@@ -70,7 +69,7 @@ namespace P3D_Scenario_Generator.Services
 			// Sim.0 section
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "Sim.0");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Sim");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.AircraftTitle}";
+			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.AircraftSimValue}";
 
             // Simvars.0 section
             sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");

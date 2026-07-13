@@ -333,7 +333,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
 
         public Overview SetOverviewStruct(ScenarioFormData formData)
         {
-            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
+            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftDisplayTitle}";
             briefing += " as you navigate from one Wikipedia list location to the next using IFR (I follow roads) ";
             briefing += "You'll take off, fly to a series of list locations, ";
             briefing += "and land at another airport. The scenario begins on runway ";
@@ -353,7 +353,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 Location = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}",
                 Difficulty = "Intermediate",
                 Duration = $"{string.Format("{0:0}", duration)} minutes",
-                Aircraft = $"{formData.AircraftTitle}",
+                Aircraft = $"{formData.AircraftDisplayTitle}",
                 Briefing = briefing,
                 Objective = objective,
                 Tips = "Do not, under any circumstances, fly over a 'Dead-end page.' The lack of outgoing links makes for treacherous, inescapable airspace."

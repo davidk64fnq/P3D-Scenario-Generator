@@ -136,7 +136,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         public static Overview SetOverviewStruct(ScenarioFormData formData)
         {
             string briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
-            briefing += $"as you test your navigation skills flying a {formData.AircraftTitle}.";
+            briefing += $"as you test your navigation skills flying a {formData.AircraftDisplayTitle}.";
             briefing += $" The scenario finishes at {formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) in ";
             briefing += $"{formData.DestinationRunway.City}, {formData.DestinationRunway.Country}.";
 
@@ -149,7 +149,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 Location = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}",
                 Difficulty = "Advanced",
                 Duration = $"{string.Format("{0:0}", duration)} minutes",
-                Aircraft = $"{formData.AircraftTitle}",
+                Aircraft = $"{formData.AircraftDisplayTitle}",
                 Briefing = briefing,
                 Objective = "Navigate using celestial navigation before landing at the destination airport (any runway)",
                 Tips = "Never go to bed mad. Stay up and fight."

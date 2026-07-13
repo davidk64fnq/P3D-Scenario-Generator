@@ -212,7 +212,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
             double duration = PhotoTourUtilities.GetPhotoTourDistance(photoLocations) / formData.AircraftCruiseSpeed * 60;
 
-            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
+            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftDisplayTitle}";
             briefing += " as you navigate from one photo location to the next using IFR (I follow roads) ";
             briefing += "You'll take off, fly to a series of photo locations, ";
             briefing += "and land at another airport. The scenario begins on runway ";
@@ -226,7 +226,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}",
                 Difficulty = "Intermediate",
                 Duration = $"{string.Format("{0:0}", duration)} minutes",
-                Aircraft = $"{formData.AircraftTitle}",
+                Aircraft = $"{formData.AircraftDisplayTitle}",
                 Briefing = briefing,
                 Objective = $"Take off and visit a series of photo locations before landing at {formData.DestinationRunway.IcaoName} (any runway)",
                 Tips = "Never do today what you can put off till tomorrow"

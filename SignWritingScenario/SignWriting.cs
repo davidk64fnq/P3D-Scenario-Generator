@@ -279,7 +279,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
 
         public Overview SetOverviewStruct(ScenarioFormData formData)
         {
-            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
+            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftDisplayTitle}";
             briefing += " as you take on the role of sign writer in the sky! ";
             briefing += "You'll take off, fly through a series of gates to spell out a message ";
             briefing += "and land again when you've finished. The scenario begins on runway ";
@@ -296,7 +296,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}",
                 Difficulty = "Advanced",
                 Duration = $"{string.Format("{0:0}", duration)} minutes",
-                Aircraft = $"{formData.AircraftTitle}",
+                Aircraft = $"{formData.AircraftDisplayTitle}",
                 Briefing = briefing,
                 Objective = "Take off and fly through a series of gates before landing on the same runway.",
                 Tips = "When life gives you lemons, squirt someone in the eye."

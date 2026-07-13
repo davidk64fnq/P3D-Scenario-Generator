@@ -168,7 +168,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
             double duration = ((formData.CircuitFinalLeg + formData.StartRunway.Len / Constants.FeetInNauticalMile + formData.CircuitUpwindLeg)
                 * 2 + formData.CircuitBaseLeg * 2) / formData.CircuitSpeed * 60;
 
-            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftTitle}";
+            string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftDisplayTitle}";
             briefing += " by doing that most fundamental of tasks, flying a circuit! ";
             briefing += "You'll take off, fly through eight gates as you complete a circuit, ";
             briefing += "and land back at the runway. The scenario begins on runway ";
@@ -182,7 +182,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
                 Location = $"{formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) {formData.StartRunway.City}, {formData.StartRunway.Country}",
                 Difficulty = "Beginner",
                 Duration = $"{string.Format("{0:0}", duration)} minutes",
-                Aircraft = $"{formData.AircraftTitle}",
+                Aircraft = $"{formData.AircraftDisplayTitle}",
                 Briefing = briefing,
                 Objective = "Take off and fly through the eight gates before landing on the same runway.",
                 Tips = "Each pair of gates marks the start and finish of a 90 degree turn. "

@@ -38,9 +38,14 @@ namespace P3D_Scenario_Generator.Models
         public string ScenarioTitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the title of the aircraft (sourced from Aircraft.cfg).
+        /// Gets or sets the display title of the aircraft (sourced from Aircraft.cfg unless user changes it in program ui).
         /// </summary>
-        public string AircraftTitle { get; set; }
+        public string AircraftDisplayTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sim vlaue of the aircraft (sourced from Aircraft.cfg).
+        /// </summary>
+        public string AircraftSimValue { get; set; }
 
         /// <summary>
         /// Gets or sets the cruise speed of the aircraft in knots (sourced from Aircraft.cfg).

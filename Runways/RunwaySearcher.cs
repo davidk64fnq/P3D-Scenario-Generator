@@ -243,24 +243,24 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>True if the runway meets the criteria, false otherwise.</returns>
         private static bool IsRunwayInFilteredLocation(RunwayParams runway, ScenarioFormData scenarioFormData)
         {
-            // A filter is considered a match if the list is null, empty,
-            // or contains the special "None" value.
-            bool countriesMatch = (scenarioFormData.LocationCountries == null ||
-                                   scenarioFormData.LocationCountries.Count == 0 ||
-                                   scenarioFormData.LocationCountries.Contains("None") ||
-                                   scenarioFormData.LocationCountries.Contains(runway.Country));
+            // Check if any filters are actually active
+            bool hasCountryFilter = scenarioFormData.LocationCountries?.Count > 0 && !scenarioFormData.LocationCountries.Contains("None");
+            bool hasStateFilter = scenarioFormData.LocationStates?.Count > 0 && !scenarioFormData.LocationStates.Contains("None");
+            bool hasCityFilter = scenarioFormData.LocationCities?.Count > 0 && !scenarioFormData.LocationCities.Contains("None");
 
-            bool statesMatch = (scenarioFormData.LocationStates == null ||
-                                 scenarioFormData.LocationStates.Count == 0 ||
-                                 scenarioFormData.LocationStates.Contains("None") ||
-                                 scenarioFormData.LocationStates.Contains(runway.State));
+            // If absolutely no filters are set, everything passes
+            if (!hasCountryFilter && !hasStateFilter && !hasCityFilter)
+            {
+                return true;
+            }
 
-            bool citiesMatch = (scenarioFormData.LocationCities == null ||
-                                 scenarioFormData.LocationCities.Count == 0 ||
-                                 scenarioFormData.LocationCities.Contains("None") ||
-                                 scenarioFormData.LocationCities.Contains(runway.City));
+            // Evaluate individual matches strictly (only true if the filter is active AND matches)
+            bool countryMatches = hasCountryFilter && scenarioFormData.LocationCountries.Contains(runway.Country);
+            bool stateMatches = hasStateFilter && scenarioFormData.LocationStates.Contains(runway.State);
+            bool cityMatches = hasCityFilter && scenarioFormData.LocationCities.Contains(runway.City);
 
-            return countriesMatch && statesMatch && citiesMatch;
+            // Combine with OR so an airport in California OR the UK is accepted
+            return countryMatches || stateMatches || cityMatches;
         }
 
         /// <summary>
