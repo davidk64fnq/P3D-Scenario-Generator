@@ -57,11 +57,6 @@
         public string Number { get; set; }
 
         /// <summary>
-        /// See <see cref="Id"/>, one of "None", "Left", "Right", "Center", or "Water". Used in setting the airport landing trigger for a scenario
-        /// </summary>
-        public string Designator { get; set; }
-
-        /// <summary>
         /// Runway length in feet
         /// </summary>
         public int Len { get; set; }
@@ -75,6 +70,19 @@
         /// Runway surface material
         /// </summary>
         public string Def { get; set; }
+
+        /// <summary>
+        /// See <see cref="Id"/>, one of "None", "Left", "Right", "Center", or "Water". Used in setting the airport landing trigger for a scenario
+        /// </summary>
+        public string Designator { get; set; }
+
+        /// <summary>
+        /// Helper property indicating whether this runway is a water surface/lane.
+        /// Evaluates both Designator ("Water") and Surface Definition ("WATER").
+        /// </summary>
+        public bool IsWaterRunway =>
+            string.Equals(Designator, "Water", StringComparison.OrdinalIgnoreCase) ||
+            (!string.IsNullOrEmpty(Def) && Def.Contains("WATER", StringComparison.OrdinalIgnoreCase));
 
         /// <summary>
         /// Runway threshold latitude
@@ -111,36 +119,6 @@
                 RunwaysIndex = RunwaysIndex
             };
             return clonedRunwayParams;
-        }
-
-        /// <summary>
-        /// Creates a full, shallow copy of the current <see cref="RunwayParams"/> object,
-        /// including all properties.
-        /// </summary>
-        /// <returns>A new <see cref="RunwayParams"/> object that is a complete copy of the current instance.</returns>
-        public RunwayParams FullClone()
-        {
-            return new RunwayParams
-            {
-                IcaoId = this.IcaoId,
-                IcaoName = this.IcaoName,
-                Country = this.Country,
-                State = this.State,
-                City = this.City,
-                AirportLon = this.AirportLon,
-                AirportLat = this.AirportLat,
-                Altitude = this.Altitude,
-                MagVar = this.MagVar,
-                Id = this.Id,
-                Number = this.Number,
-                Designator = this.Designator,
-                Len = this.Len,
-                Hdg = this.Hdg,
-                Def = this.Def,
-                ThresholdStartLat = this.ThresholdStartLat,
-                ThresholdStartLon = this.ThresholdStartLon,
-                RunwaysIndex = this.RunwaysIndex
-            };
         }
     }
 }

@@ -38,6 +38,11 @@ namespace P3D_Scenario_Generator.Models
         public string ScenarioTitle { get; set; }
 
         /// <summary>
+        /// Gets or sets the selected aircraft variant.
+        /// </summary>
+        public AircraftVariant SelectedAircraft { get; set; }
+
+        /// <summary>
         /// Gets or sets the display title of the aircraft (sourced from Aircraft.cfg unless user changes it in program ui).
         /// </summary>
         public string AircraftDisplayTitle { get; set; }

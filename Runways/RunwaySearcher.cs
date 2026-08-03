@@ -148,20 +148,6 @@ namespace P3D_Scenario_Generator.Runways
         }
 
         /// <summary>
-        /// Gets a single, randomly selected runway object from the complete list.
-        /// </summary>
-        public RunwayParams GetRandomRunway()
-        {
-            if (_allRunways == null || _allRunways.Count == 0)
-            {
-                return null;
-            }
-
-            int randomIndex = _random.Next(0, _allRunways.Count);
-            return _allRunways[randomIndex];
-        }
-
-        /// <summary>
         /// Gets a single runway object by its index in the internal list.
         /// Performs a bounds check to prevent an IndexOutOfRangeException.
         /// </summary>
@@ -185,7 +171,6 @@ namespace P3D_Scenario_Generator.Runways
             await _log.WarningAsync($"Attempted to access runway at index {index}, which is out of bounds (list size: {_allRunways.Count}).");
             return null;
         }
-
 
         /// <summary>
         /// Gets a sorted list of the country strings from the full list of runways.
@@ -236,30 +221,48 @@ namespace P3D_Scenario_Generator.Runways
         }
 
         /// <summary>
-        /// Helper method to check if a runway meets the location filter criteria.
+        /// Helper method to check if a runway meets location and surface capability criteria.
         /// </summary>
         /// <param name="runway">The runway to check.</param>
         /// <param name="scenarioFormData">The ScenarioFormData object with filter lists.</param>
         /// <returns>True if the runway meets the criteria, false otherwise.</returns>
         private static bool IsRunwayInFilteredLocation(RunwayParams runway, ScenarioFormData scenarioFormData)
         {
-            // Check if any filters are actually active
+            // --- 1. Aircraft Surface Filtering ---
+            var aircraft = scenarioFormData?.SelectedAircraft;
+            if (aircraft != null)
+            {
+                bool isWater = runway.IsWaterRunway;
+
+                // Aircraft with NO floats cannot use water runways
+                if (isWater && !aircraft.HasFloats)
+                {
+                    return false;
+                }
+
+                // Pure floatplanes (NO wheels/skids) cannot use land runways
+                if (!isWater && !aircraft.HasWheelsOrEquiv)
+                {
+                    return false;
+                }
+            }
+
+            // --- 2. Location Filtering ---
             bool hasCountryFilter = scenarioFormData.LocationCountries?.Count > 0 && !scenarioFormData.LocationCountries.Contains("None");
             bool hasStateFilter = scenarioFormData.LocationStates?.Count > 0 && !scenarioFormData.LocationStates.Contains("None");
             bool hasCityFilter = scenarioFormData.LocationCities?.Count > 0 && !scenarioFormData.LocationCities.Contains("None");
 
-            // If absolutely no filters are set, everything passes
+            // If no location filters active, accept
             if (!hasCountryFilter && !hasStateFilter && !hasCityFilter)
             {
                 return true;
             }
 
-            // Evaluate individual matches strictly (only true if the filter is active AND matches)
+            // Evaluate OR condition for location matches
             bool countryMatches = hasCountryFilter && scenarioFormData.LocationCountries.Contains(runway.Country);
             bool stateMatches = hasStateFilter && scenarioFormData.LocationStates.Contains(runway.State);
             bool cityMatches = hasCityFilter && scenarioFormData.LocationCities.Contains(runway.City);
 
-            // Combine with OR so an airport in California OR the UK is accepted
             return countryMatches || stateMatches || cityMatches;
         }
 

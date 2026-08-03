@@ -3062,12 +3062,15 @@ namespace P3D_Scenario_Generator
                 string message = "No aircraft variant has been selected. Please select an aircraft.";
                 errorProvider1.SetError(TextBoxGeneralAircraftValues, "No aircraft selected.");
                 _progressReporter?.Report(message);
+                _formData.SelectedAircraft = null; // Clear out any previous selection
                 isValid = false;
             }
             else
             {
-                // Assign SimValue, DisplayName and CruiseSpeed directly, as their validation is assumed to be handled
-                // when the variant is initially read into the program in Aircraft.cs.
+                // Store the full aircraft variant object so RunwaySearcher has access to HasFloats & HasWheelsOrEquiv
+                _formData.SelectedAircraft = selectedAircraftVariant;
+
+                // Assign individual properties for backward compatibility / direct form bindings
                 _formData.AircraftSimValue = selectedAircraftVariant.Title;
                 _formData.AircraftDisplayTitle = selectedAircraftVariant.DisplayName;
                 _formData.AircraftCruiseSpeed = selectedAircraftVariant.CruiseSpeed;
@@ -3085,6 +3088,7 @@ namespace P3D_Scenario_Generator
                     _formData.AircraftImagePath = selectedAircraftVariant.ThumbnailImagePath;
                 }
             }
+
             // Only clear the error on TextBoxGeneralAircraftValues if all checks in THIS method passed.
             // If any check fails, isValid will be false, and the error will remain.
             if (isValid)
