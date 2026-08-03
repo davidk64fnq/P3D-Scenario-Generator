@@ -1,19 +1,37 @@
 <!DOCTYPE HTML>
-<html>
-<head>
-	<script src="scriptsWikipediaItem.js"></script>
-	<style>
-		body {
-			background-color: rgb(240, 248, 255);
+<HTML>
+	<head>
+		<script src="scriptsWikipediaItem.js" defer=""></script>
+		<style>
+			html, body {
 			margin: 0;
 			padding: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgb(240, 248, 255); /* Outer panel background */
 			overflow: hidden;
-		}
-	</style>
-</head>
-<body>
-	<div id="content">
-		<object id="item-object" type="text/html" data="" height="heightXpx" width="widthXpx"></object>
-	</div>
-</body>
-</html>
+			}
+
+			/* Mobile viewport container centered inside your P3D window */
+			#viewport {
+			width: 480px;            /* Fixed mobile phone width */
+			height: 100%;            /* Fills 100% of available vertical space */
+			margin: 0 auto;          /* Centers horizontally */
+			background-color: #ffffff;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); /* Subtle shadow around frame */
+			}
+
+			/* Standard iframe filling the 480px viewport */
+			#item-iframe {
+			width: 100%;
+			height: 100%;
+			border: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="viewport">
+			<iframe id="item-iframe" src=""></iframe>
+		</div>
+	</body>
+</HTML>

@@ -58,22 +58,22 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="paddingMethod">The <see cref="PaddingMethod"/> used to determine how to calculate the next zoom level's bounding box.</param>
         /// <param name="boundingBox">The current <see cref="BoundingBox"/> to be used as a base for the calculation.</param>
         /// <returns><see langword="true"/> and next zoom bounding box if successfully determined; otherwise, <see langword="false"/> and null.</returns>
-        public async Task<(bool success, BoundingBox newBoundingBox)> GetNextZoomBoundingBoxAsync(PaddingMethod paddingMethod, BoundingBox boundingBox)
+        public async Task<(bool success, BoundingBox newBoundingBox)> GetNextZoomBoundingBoxAsync(PaddingMethod paddingMethod, BoundingBox boundingBox, int currentZoomLevel)
         {
             switch (paddingMethod)
             {
                 case PaddingMethod.NorthSouthWestEast:
-                    return await ZoomInNorthSouthWestEastAsync(boundingBox);
+                    return await ZoomInNorthSouthWestEastAsync(boundingBox, currentZoomLevel);
                 case PaddingMethod.WestEast:
-                    return await ZoomInWestEastAsync(boundingBox);
+                    return await ZoomInWestEastAsync(boundingBox, currentZoomLevel);
                 case PaddingMethod.NorthSouth:
-                    return await ZoomInNorthSouthAsync(boundingBox);
+                    return await ZoomInNorthSouthAsync(boundingBox, currentZoomLevel);
                 case PaddingMethod.North:
-                    return await ZoomInNorthAsync(boundingBox);
+                    return await ZoomInNorthAsync(boundingBox, currentZoomLevel);
                 case PaddingMethod.South:
-                    return await ZoomInSouthAsync(boundingBox);
+                    return await ZoomInSouthAsync(boundingBox, currentZoomLevel);
                 case PaddingMethod.None:
-                    return await ZoomInCentreAsync(boundingBox);
+                    return await ZoomInCentreAsync(boundingBox, currentZoomLevel);
                 default:
                     await _logger.ErrorAsync($"Unsupported padding method '{paddingMethod}'.");
                     BoundingBox newBoundingBox = new(); 
@@ -192,39 +192,55 @@ namespace P3D_Scenario_Generator.MapTiles
         /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with the unchanged bounding box from <see cref="PadNorthSouthWestEastAsync"/>. 
         /// </summary>
         /// <param name="boundingBox">The unchanged bounding box from <see cref="PadNorthSouthWestEastAsync"/>.</param>
+        /// <param name="currentZoomLevel">The current zoom level of the bounding box.</param>
         /// <returns><see langword="true"/> and next zoom bounding box if successfully determined; otherwise, <see langword="false"/> and null.</returns>
-        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInNorthSouthWestEastAsync(BoundingBox boundingBox) 
+        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInNorthSouthWestEastAsync(BoundingBox boundingBox, int currentZoomLevel)
         {
-            BoundingBox newBoundingBox = new(); 
+            BoundingBox newBoundingBox = new();
 
-            // The boundingBox parameter is 1 tile, newBoundingBox will be 4 tiles square. 
             try
             {
+                int nextZoomLevel = currentZoomLevel + 1;
+                int totalTiles = 1 << nextZoomLevel; // 2^nextZoomLevel
+                int maxTileIndex = totalTiles - 1;
+
+                // --- X-AXIS (Longitude: Wraps globally) ---
                 List<int> ewAxis = [];
-                // Add zoomed in west tile
-                ewAxis.Add(2 * boundingBox.XAxis[0] - 1); 
-                // Zoom in on existing tile
+
+                // West padding (wraps -1 to maxTileIndex)
+                int rawWest = 2 * boundingBox.XAxis[0] - 1;
+                ewAxis.Add((rawWest + totalTiles) % totalTiles);
+
+                // Existing tiles zoomed in
                 for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
                 {
-                    ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
-                    ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
+                    ewAxis.Add((2 * boundingBox.XAxis[xIndex]) % totalTiles);
+                    ewAxis.Add((2 * boundingBox.XAxis[xIndex] + 1) % totalTiles);
                 }
-                // Add zoomed in east tile
-                ewAxis.Add(2 * boundingBox.XAxis[^1] + 2);  
+
+                // East padding (wraps totalTiles to 0)
+                int rawEast = 2 * boundingBox.XAxis[^1] + 2;
+                ewAxis.Add(rawEast % totalTiles);
+
                 newBoundingBox.XAxis = ewAxis;
 
-                List<int> nsAxis = [];
-                // Add zoomed in north tile
-                nsAxis.Add(2 * boundingBox.YAxis[0] - 1); 
-                // Zoom in on existing tile
-                for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
+
+                // --- Y-AXIS (Latitude: Clamps at poles with shifted 4-tile window) ---
+                int startY = 2 * boundingBox.YAxis[0] - 1;
+
+                // Clamp to North Pole (Y = 0)
+                if (startY < 0)
                 {
-                    nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
-                    nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                    startY = 0; // Yields Y indices: {0, 1, 2, 3}
                 }
-                // Add zoomed in south tile
-                nsAxis.Add(2 * boundingBox.YAxis[^1] + 2); 
-                newBoundingBox.YAxis = nsAxis;
+                // Clamp to South Pole (Y = maxTileIndex)
+                else if (startY + 3 > maxTileIndex)
+                {
+                    startY = maxTileIndex - 3; // Yields Y indices ending at maxTileIndex
+                }
+
+                // Generate clean, non-duplicating 4-tile span
+                newBoundingBox.YAxis = [startY, startY + 1, startY + 2, startY + 3];
 
                 return (true, newBoundingBox);
             }
@@ -339,8 +355,9 @@ namespace P3D_Scenario_Generator.MapTiles
         /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with the unchanged bounding box from <see cref="PadWestEastAsync"/>. 
         /// </summary>
         /// <param name="boundingBox">The unchanged bounding box from <see cref="PadWestEastAsync"/>.</param>
+        /// <param name="currentZoomLevel">The current zoom level of the bounding box.</param>
         /// <returns><see langword="true"/> and next zoom bounding box if successfully determined; otherwise, <see langword="false"/> and null.</returns>
-        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInWestEastAsync(BoundingBox boundingBox) 
+        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInWestEastAsync(BoundingBox boundingBox, int currentZoomLevel) 
         {
             BoundingBox newBoundingBox = new(); 
 
@@ -348,9 +365,13 @@ namespace P3D_Scenario_Generator.MapTiles
 
             try
             {
+                int totalTilesAtNextZoom = 1 << (currentZoomLevel + 1);
+
                 List<int> ewAxis = [];
                 // Add zoomed in west tile
-                ewAxis.Add(2 * boundingBox.XAxis[0] - 1);
+                int rawWest = 2 * boundingBox.XAxis[0] - 1;
+                int wrappedWest = (rawWest + totalTilesAtNextZoom) % totalTilesAtNextZoom;
+                ewAxis.Add(wrappedWest);
                 // Zoom in on existing tile
                 for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
                 {
@@ -480,39 +501,46 @@ namespace P3D_Scenario_Generator.MapTiles
         }
 
         /// <summary>
-        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with the unchanged bounding box from <see cref="PadNorthSouthAsync"/>. 
+        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with the unchanged bounding box from <see cref="PadNorthSouthAsync"/>.
         /// </summary>
         /// <param name="boundingBox">The unchanged bounding box from <see cref="PadNorthSouthAsync"/>.</param>
+        /// <param name="currentZoomLevel">The current zoom level of the bounding box.</param>
         /// <returns><see langword="true"/> and next zoom bounding box if successfully determined; otherwise, <see langword="false"/> and null.</returns>
-        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInNorthSouthAsync(BoundingBox boundingBox) 
+        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInNorthSouthAsync(BoundingBox boundingBox, int currentZoomLevel)
         {
-            BoundingBox newBoundingBox = new(); 
+            BoundingBox newBoundingBox = new();
 
-            // The boundingBox parameter is 2 x 1 tiles, newBoundingBox will be 4 tiles square. 
-
+            // Input: 2 x 1 tiles -> Output: 4 x 4 tiles
             try
             {
+                int nextZoomLevel = currentZoomLevel + 1;
+                int totalXTiles = 1 << nextZoomLevel;
+                int maxYTileIndex = totalXTiles - 1;
+
+                // --- X-AXIS (Zoom in on existing 2 tiles to produce 4 tiles) ---
                 List<int> ewAxis = [];
-                // Zoom in on existing 2 tiles
                 for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
                 {
-                    ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
-                    ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
+                    ewAxis.Add((2 * boundingBox.XAxis[xIndex]) % totalXTiles);
+                    ewAxis.Add((2 * boundingBox.XAxis[xIndex] + 1) % totalXTiles);
                 }
                 newBoundingBox.XAxis = ewAxis;
 
-                List<int> nsAxis = [];
-                // Add zoomed in north tile
-                nsAxis.Add(2 * boundingBox.YAxis[0] - 1);
-                // Zoom in on existing tile
-                for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
+                // --- Y-AXIS (Zoom 1 tile + Pad North/South -> Shifted 4-tile window) ---
+                int startY = 2 * boundingBox.YAxis[0] - 1;
+
+                // Clamp to North Pole (Y = 0)
+                if (startY < 0)
                 {
-                    nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
-                    nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                    startY = 0; // Yields Y indices: {0, 1, 2, 3}
                 }
-                // Add zoomed in south tile
-                nsAxis.Add(2 * boundingBox.YAxis[^1] + 2);
-                newBoundingBox.YAxis = nsAxis;
+                // Clamp to South Pole (Y = maxYTileIndex)
+                else if (startY + 3 > maxYTileIndex)
+                {
+                    startY = maxYTileIndex - 3; // Yields Y indices ending at maxYTileIndex
+                }
+
+                newBoundingBox.YAxis = [startY, startY + 1, startY + 2, startY + 3];
 
                 return (true, newBoundingBox);
             }
@@ -597,38 +625,46 @@ namespace P3D_Scenario_Generator.MapTiles
         }
 
         /// <summary>
-        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with unchanged bounding box from <see cref="PadNorthAsync"/>. 
+        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with unchanged bounding box from <see cref="PadNorthAsync"/>.
         /// </summary>
         /// <param name="boundingBox">The unchanged bounding box from <see cref="PadNorthAsync"/>.</param>
+        /// <param name="currentZoomLevel">The current zoom level of the bounding box.</param>
         /// <returns><see langword="true"/> and next zoom bounding box if successfully determined; otherwise, <see langword="false"/> and null.</returns>
-        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInNorthAsync(BoundingBox boundingBox) 
+        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInNorthAsync(BoundingBox boundingBox, int currentZoomLevel)
         {
-            BoundingBox newBoundingBox = new(); 
+            BoundingBox newBoundingBox = new();
 
-            // The boundingBox parameter is 2 x 1 tiles, newBoundingBox will be 4 tiles square. 
-
+            // Input: 2 x 1 tiles -> Output: 4 x 4 tiles
             try
             {
+                int nextZoomLevel = currentZoomLevel + 1;
+                int totalXTiles = 1 << nextZoomLevel;
+                int maxYTileIndex = totalXTiles - 1;
+
+                // --- X-AXIS (Zoom in on existing 2 tiles to produce 4 tiles) ---
                 List<int> ewAxis = [];
-                // Zoom in on existing 2 tiles
                 for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
                 {
-                    ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
-                    ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
+                    ewAxis.Add((2 * boundingBox.XAxis[xIndex]) % totalXTiles);
+                    ewAxis.Add((2 * boundingBox.XAxis[xIndex] + 1) % totalXTiles);
                 }
                 newBoundingBox.XAxis = ewAxis;
 
-                List<int> nsAxis = [];
-                // Add 2 zoomed in north tiles 
-                nsAxis.Add(2 * boundingBox.YAxis[0] - 2); 
-                nsAxis.Add(2 * boundingBox.YAxis[0] - 1); 
-                // Zoom in on existing tile
-                for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
+                // --- Y-AXIS (Zoom 1 tile + Pad 2 tiles North) ---
+                int startY = 2 * boundingBox.YAxis[0] - 2;
+
+                // Clamp to North Pole (Y = 0)
+                if (startY < 0)
                 {
-                    nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
-                    nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                    startY = 0; // Yields Y indices: {0, 1, 2, 3}
                 }
-                newBoundingBox.YAxis = nsAxis;
+                // Defensive check for South boundary
+                else if (startY + 3 > maxYTileIndex)
+                {
+                    startY = maxYTileIndex - 3;
+                }
+
+                newBoundingBox.YAxis = [startY, startY + 1, startY + 2, startY + 3];
 
                 return (true, newBoundingBox);
             }
@@ -714,38 +750,46 @@ namespace P3D_Scenario_Generator.MapTiles
         }
 
         /// <summary>
-        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with unchanged bounding box from <see cref="PadSouthAsync"/>. 
+        /// Calculates the <see cref="BoundingBox"/> for next level of zoom starting with unchanged bounding box from <see cref="PadSouthAsync"/>.
         /// </summary>
         /// <param name="boundingBox">The unchanged bounding box from <see cref="PadSouthAsync"/>.</param>
+        /// <param name="currentZoomLevel">The current zoom level of the bounding box.</param>
         /// <returns><see langword="true"/> and next zoom bounding box if successfully determined; otherwise, <see langword="false"/> and null.</returns>
-        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInSouthAsync(BoundingBox boundingBox) 
+        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInSouthAsync(BoundingBox boundingBox, int currentZoomLevel)
         {
-            BoundingBox newBoundingBox = new(); 
+            BoundingBox newBoundingBox = new();
 
-            // The boundingBox parameter is 1 x 2 tiles, newBoundingBox will be 4 tiles square. 
-
+            // Input: 2 x 1 tiles -> Output: 4 x 4 tiles
             try
             {
+                int nextZoomLevel = currentZoomLevel + 1;
+                int totalXTiles = 1 << nextZoomLevel;
+                int maxYTileIndex = totalXTiles - 1;
+
+                // --- X-AXIS (Zoom in on existing 2 tiles to produce 4 tiles) ---
                 List<int> ewAxis = [];
-                // Zoom in on existing 2 tiles
                 for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
                 {
-                    ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
-                    ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
+                    ewAxis.Add((2 * boundingBox.XAxis[xIndex]) % totalXTiles);
+                    ewAxis.Add((2 * boundingBox.XAxis[xIndex] + 1) % totalXTiles);
                 }
                 newBoundingBox.XAxis = ewAxis;
 
-                List<int> nsAxis = [];
-                // Zoom in on existing tile
-                for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
+                // --- Y-AXIS (Zoom 1 tile + Pad 2 tiles South) ---
+                int startY = 2 * boundingBox.YAxis[0];
+
+                // Clamp to South Pole (Y = maxYTileIndex)
+                if (startY + 3 > maxYTileIndex)
                 {
-                    nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
-                    nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
+                    startY = maxYTileIndex - 3; // Shift window up to end at maxYTileIndex
                 }
-                // Add 2 zoomed in south tiles 
-                nsAxis.Add(2 * boundingBox.YAxis[^1] + 2); 
-                nsAxis.Add(2 * boundingBox.YAxis[^1] + 3); 
-                newBoundingBox.YAxis = nsAxis;
+                // Defensive check for North boundary
+                else if (startY < 0)
+                {
+                    startY = 0;
+                }
+
+                newBoundingBox.YAxis = [startY, startY + 1, startY + 2, startY + 3];
 
                 return (true, newBoundingBox);
             }
@@ -760,39 +804,34 @@ namespace P3D_Scenario_Generator.MapTiles
         /// Calculate the bounding box for next level of zoom.
         /// </summary>
         /// <param name="boundingBox">The input <see cref="BoundingBox"/>, remains unchanged.</param>
+        /// <param name="currentZoomLevel">The current zoom level of the bounding box.</param>
         /// <returns><see langword="true"/> and next zoom bounding box if successfully determined; otherwise, <see langword="false"/> and null.</returns>
-        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInCentreAsync(BoundingBox boundingBox) 
+        public async Task<(bool success, BoundingBox newBoundingBox)> ZoomInCentreAsync(BoundingBox boundingBox, int currentZoomLevel)
         {
-            BoundingBox newBoundingBox = new(); 
-
-            // The boundingBox parameter is 2 x 2 tiles, newBoundingBox will be 4 tiles square. 
+            BoundingBox newBoundingBox = new();
 
             try
             {
-                // Input validation
-                if (boundingBox == null || boundingBox.XAxis.Count == 0 || boundingBox.YAxis.Count == 0)
-                {
-                    await _logger.ErrorAsync("Input 'boundingBox' is null or empty. Cannot perform zoom in.");
-                    return (false, newBoundingBox);
-                }
+                int nextZoomLevel = currentZoomLevel + 1;
+                int totalXTiles = 1 << nextZoomLevel;
 
+                // 1. Zoom in on existing 2 X tiles (4 tiles output)
                 List<int> ewAxis = [];
-                // Zoom in on existing 2 tiles
                 for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
                 {
-                    ewAxis.Add(2 * boundingBox.XAxis[xIndex]);
-                    ewAxis.Add(2 * boundingBox.XAxis[xIndex] + 1);
+                    ewAxis.Add((2 * boundingBox.XAxis[xIndex]) % totalXTiles);
+                    ewAxis.Add((2 * boundingBox.XAxis[xIndex] + 1) % totalXTiles);
                 }
-                newBoundingBox.XAxis = ewAxis; // Assign to out parameter
+                newBoundingBox.XAxis = ewAxis;
 
+                // 2. Zoom in on existing 2 Y tiles (4 tiles output)
                 List<int> nsAxis = [];
-                // Zoom in on existing 2 tiles
                 for (int yIndex = 0; yIndex < boundingBox.YAxis.Count; yIndex++)
                 {
                     nsAxis.Add(2 * boundingBox.YAxis[yIndex]);
                     nsAxis.Add(2 * boundingBox.YAxis[yIndex] + 1);
                 }
-                newBoundingBox.YAxis = nsAxis; // Assign to out parameter
+                newBoundingBox.YAxis = nsAxis;
 
                 return (true, newBoundingBox);
             }

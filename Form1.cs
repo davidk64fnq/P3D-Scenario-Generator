@@ -29,7 +29,7 @@ namespace P3D_Scenario_Generator
 
         // --- LAYER 2: Core Services ---
         private readonly Logger _logger;
-        private readonly FileOps _fileOps; 
+        private readonly FileOps _fileOps;
         private readonly CacheMetadataService _cacheMetadataService;
         private readonly CacheManager _cacheManager;
         private readonly HttpRoutines _httpRoutines;
@@ -85,7 +85,7 @@ namespace P3D_Scenario_Generator
             // --- LAYER 2: Core Services (Fundamental Building Blocks) ---
             _logger = new(false, false, false, _formData);
             _settingsManager = new(_logger);
-            _fileOps = new(_logger); 
+            _fileOps = new(_logger);
             _cacheMetadataService = new();
             _cacheMetadataService.OnMetadataChanged += () =>
             {
@@ -294,6 +294,7 @@ namespace P3D_Scenario_Generator
 
             // Wikipedia List tab
             PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxWikiURLAlignment);
+            PopulateComboBoxWithEnum<CoordinateSource>(ComboBoxWikiCoordSource);
 
             // Settings tab
             PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxSettingsMapAlignment);
@@ -1739,6 +1740,7 @@ namespace P3D_Scenario_Generator
             string selectedWikiUrl = ComboBoxWikiURL.SelectedItem?.ToString();
             string wikiUrlText = ComboBoxWikiURL.Text;
             string columnNumberText = TextBoxWikiItemLinkColumn.Text;
+            CoordinateSource coordinateSource = GetEnumFromComboBoxDescription<CoordinateSource>(ComboBoxWikiCoordSource);
 
             // Perform initial validation of captured values
             if (string.IsNullOrEmpty(selectedWikiUrl))
@@ -1767,6 +1769,7 @@ namespace P3D_Scenario_Generator
                     return _wikiPageHtmlParser.PopulateWikiPageAsync(
                         selectedWikiUrl,
                         columnNo,
+                        coordinateSource,
                         _formData,
                         _progressReporter,
                         _wikipedia
@@ -1943,16 +1946,6 @@ namespace P3D_Scenario_Generator
         }
 
         private void TextBoxWikiURLMonitorHeight_Leave(object sender, EventArgs e)
-        {
-            if (!_isFormLoaded)
-            {
-                return;
-            }
-
-            ValidateWikiWindowSettingsGroup((Control)sender);
-        }
-
-        private void TextBoxWikiURLWindowWidth_Leave(object sender, EventArgs e)
         {
             if (!_isFormLoaded)
             {
@@ -2156,6 +2149,21 @@ namespace P3D_Scenario_Generator
         #endregion
 
         #region Utilities
+
+        private static TEnum GetEnumFromComboBoxDescription<TEnum>(ComboBox comboBox) where TEnum : struct, Enum
+        {
+            string selectedText = comboBox.SelectedItem?.ToString() ?? "";
+
+            foreach (TEnum enumValue in Enum.GetValues(typeof(TEnum)))
+            {
+                if (enumValue.GetDescription() == selectedText)
+                {
+                    return enumValue;
+                }
+            }
+
+            return default; // Fallback to first enum token if no match is found
+        }
 
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
@@ -3909,7 +3917,6 @@ namespace P3D_Scenario_Generator
             errorProvider1.SetError(ComboBoxWikiURLAlignment, "");
             errorProvider1.SetError(TextBoxWikiURLMonitorWidth, "");
             errorProvider1.SetError(TextBoxWikiURLMonitorHeight, "");
-            errorProvider1.SetError(TextBoxWikiURLWindowWidth, "");
             errorProvider1.SetError(TextBoxWikiURLWindowHeight, "");
             _progressReporter?.Report(""); // Clear previous group messages
 
@@ -3951,20 +3958,14 @@ namespace P3D_Scenario_Generator
                 value => _formData.WikiURLMonitorHeight = value);
 
             allValid &= ValidateAndSetInteger(
-                TextBoxWikiURLWindowWidth,
-                "Wiki Page Width",
-                Constants.MinMonitorWidthPixels,
-                Constants.MaxMonitorWidthPixels,
-                "pixels",
-                value => _formData.WikiURLWindowWidth = value);
-
-            allValid &= ValidateAndSetInteger(
                 TextBoxWikiURLWindowHeight,
                 "Wiki Page Height",
                 Constants.MinMonitorHeightPixels,
                 Constants.MaxMonitorHeightPixels,
                 "pixels",
                 value => _formData.WikiURLWindowHeight = value);
+
+            _formData.WikiURLWindowWidth = Constants.FixedWikiPageWidthPixels;
 
             // If any individual validation failed, return false immediately.
             // The specific error providers are already set.

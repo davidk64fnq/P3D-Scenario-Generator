@@ -153,43 +153,36 @@ namespace P3D_Scenario_Generator.Services
 			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
 		}
 
-		static public string FormatCoordXML(double dCoord, string sPosDir, string sNegDir, bool roundSeconds)
+        static public string FormatCoordXML(double dCoord, string sPosDir, string sNegDir, bool roundSeconds)
         {
-			double dDecimalPart, dMinutes, dSeconds, dLocalCoord;
-			string sCoordLine = "";
+            string sDirection = dCoord >= 0 ? sPosDir : sNegDir;
+            double absCoord = Math.Abs(dCoord);
 
-			if (dCoord > 0)
-            {
-				sCoordLine += sPosDir;
-				dLocalCoord = dCoord;
-            }
-            else
-            {
-				sCoordLine += sNegDir;
-				dLocalCoord = dCoord * -1;
-            }
-			// Degrees is integer part of raw coord
-			sCoordLine += $"{(int)dLocalCoord}° ";
-			// Minutes is decimal part of raw coord times 60
-			dDecimalPart = dLocalCoord - (int)dLocalCoord;
-			dMinutes = dDecimalPart * 60;
-			sCoordLine += $"{(int)dMinutes}' ";
-			// Seconds is decimal part of minutes times 60
-			dDecimalPart = dMinutes - (int)dMinutes;
-			dSeconds = dDecimalPart * 60;
-			// Round seconds
-			if (roundSeconds)
-            {
-				dSeconds = Math.Round(dSeconds);
-				if (dSeconds > 60)
-				{
-					dSeconds = 0;
-				}
-            }
-			sCoordLine += $"{dSeconds}\"";
+            int degrees = (int)absCoord;
+            double totalMinutes = (absCoord - degrees) * 60.0;
+            int minutes = (int)totalMinutes;
+            double seconds = (totalMinutes - minutes) * 60.0;
 
-			return sCoordLine;
-		}
+            if (roundSeconds)
+            {
+                seconds = Math.Round(seconds);
+                if (seconds >= 60.0)
+                {
+                    seconds = 0.0;
+                    minutes++;
+                    if (minutes >= 60)
+                    {
+                        minutes = 0;
+                        degrees++;
+                    }
+                }
+            }
+
+            // Format seconds cleanly without excessive decimal noise or trailing quotes
+            string sSeconds = roundSeconds ? $"{seconds:0}" : $"{seconds:0.00}";
+
+            return $"{sDirection}{degrees}° {minutes}' {sSeconds}";
+        }
 
         private static void WriteSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)
         {

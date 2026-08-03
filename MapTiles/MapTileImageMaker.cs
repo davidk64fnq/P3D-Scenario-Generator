@@ -99,7 +99,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Calculate next zoom level bounding box
-            (success, BoundingBox zoomInBoundingBox) = await _mapTilePadder.GetNextZoomBoundingBoxAsync(paddingMethod, boundingBox);
+            (success, BoundingBox zoomInBoundingBox) = await _mapTilePadder.GetNextZoomBoundingBoxAsync(paddingMethod, boundingBox, zoom);
             if (!success)
             {
                 await _logger.ErrorAsync($"Failed to calculate next zoom level bounding box for overview image.");
@@ -329,7 +329,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Calculate next zoom level bounding box
-            (success, BoundingBox zoomInBoundingBox) = await _mapTilePadder.GetNextZoomBoundingBoxAsync(paddingMethod, boundingBox);
+            (success, BoundingBox zoomInBoundingBox) = await _mapTilePadder.GetNextZoomBoundingBoxAsync(paddingMethod, boundingBox, zoom);
             if (!success)
             {
                 await _logger.ErrorAsync($"Failed to calculate next zoom level bounding box image LegRoute_{legNo:00}_zoom{legZoomLabel}.");
@@ -354,7 +354,7 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 // Calculate next zoom level bounding box
                 paddingMethod = PaddingMethod.None;
-                (success, nextBoundingBox) = await _mapTilePadder.GetNextZoomBoundingBoxAsync(paddingMethod, nextBoundingBox);
+                (success, nextBoundingBox) = await _mapTilePadder.GetNextZoomBoundingBoxAsync(paddingMethod, nextBoundingBox, zoom + inc);
                 if (!success)
                 {
                     await _logger.ErrorAsync($"Failed to calculate next zoom level bounding box image LegRoute_{legNo:00}_zoom{legZoomLabel}.");

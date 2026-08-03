@@ -745,9 +745,9 @@ namespace P3D_Scenario_Generator.WikipediaScenario
 
             // 2. Build itemURLsX
             var urlList = relevantTourItems
-                .Select(item => $"\"https://en.wikipedia.org{item.itemURL}\"")
+                .Select(item => $"\"{item.itemURL}\"")
                 .ToList();
-            urlList.Add($"\"https://en.wikipedia.org{lastItem.itemURL}\""); // Double last entry
+            urlList.Add($"\"{lastItem.itemURL}\""); // Double last entry
             string itemURLs = string.Join(", ", urlList);
 
             // 3. Build itemHREFsX

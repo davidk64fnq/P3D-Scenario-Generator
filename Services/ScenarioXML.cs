@@ -32,7 +32,7 @@ namespace P3D_Scenario_Generator.Services
         public void SetGoalResolutionAction(string search)
         {
             ObjectReference or = GetObjectReference("Goal", search);
-            List <ObjectReference> orList = new([or]);
+            List <ObjectReference> orList = [with([or])];
 			SimMissionGoalResolutionAction gra = new("Completed", search, new Goals(orList), GetGUID());
             if (_simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction != null)
                 _simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction.Add(gra);

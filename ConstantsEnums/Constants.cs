@@ -61,6 +61,17 @@ namespace P3D_Scenario_Generator.ConstantsEnums
     }
 
     /// <summary>
+    /// Where to source item page coordinates in Wikipedia List.
+    /// </summary>
+    public enum CoordinateSource
+    {
+        [Description("Item Page")]
+        ItemPage,
+        [Description("Table Column")]
+        TableColumn
+    }
+
+    /// <summary>
     /// Defines typical performance parameters and associated default circuit values for an aircraft category.
     /// </summary>
     internal record AircraftPerformanceProfile
@@ -615,6 +626,11 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         /// window fit on the monitor
         /// </summary>
         public const int WikiPageSizeEdgeMarginPixels = 50;
+
+        /// <summary>
+        /// Wikipedia page window is fixed width as the mobile phone version of page is loaded
+        /// </summary>
+        public const int FixedWikiPageWidthPixels = 500;
 
         #endregion
 

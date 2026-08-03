@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Services;
 using System.Web;
@@ -20,7 +21,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// </summary>
         /// <param name="wikiURL">User supplied Wikipedia URL</param>
         /// <param name="columnNo">User supplied column number of items in table</param>
-        public async Task<bool> PopulateWikiPageAsync(string wikiURL, int columnNo, ScenarioFormData formData, IProgress<string> progressReporter, Wikipedia wikipedia)
+        public async Task<bool> PopulateWikiPageAsync(string wikiURL, int columnNo, CoordinateSource coordinateSource, ScenarioFormData formData, IProgress<string> progressReporter, Wikipedia wikipedia)
         {
             // Report initial status when starting the overall operation
             progressReporter?.Report($"Fetching data from {wikiURL}, please wait...");
@@ -39,7 +40,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 return false; // Return false on failure to get HTML
             }
 
-            if (!GetNodeCollection(htmlDoc.DocumentNode, ref tables, tableSelection, true, formData))
+            if (!GetNodeCollection(htmlDoc.DocumentNode, ref tables, tableSelection, false, formData))
             {
                 progressReporter?.Report($"No relevant tables found at {wikiURL}.");
                 await _logger.WarningAsync($"No tables matching selection '{tableSelection}' found at {wikiURL}.");
@@ -57,7 +58,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 // Report progress for the current table
                 progressReporter?.Report($"Reading table {currentTableIndex} of {totalTables}, please wait...");
 
-                if (GetNodeCollection(table, ref rows, ".//tr", true, formData))
+                if (GetNodeCollection(table, ref rows, ".//tr", false, formData))
                 {
                     // You could add row-level progress here if needed, but it might be too chatty
                     // int totalRows = rows.Count;
@@ -66,9 +67,9 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                     foreach (var row in rows)
                     {
                         // currentRowIndex++;
-                        if (GetNodeCollection(row, ref cells, ".//th | .//td", true, formData) && cells.Count >= columnNo)
+                        if (GetNodeCollection(row, ref cells, ".//th | .//td", false, formData) && cells.Count >= columnNo)
                         {
-                            await ReadWikiCellAsync(cells[columnNo - 1], curTable, formData);
+                            await ReadWikiCellAsync(cells[columnNo - 1], curTable, formData, coordinateSource);
                         }
                     }
                 }
@@ -88,18 +89,25 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// Parses parent HtmlNode using specified selection string for collection of child HtmlNodes
         /// </summary>
         /// <param name="parentNode">The HtmlNode to be searched</param>
-        /// <param name="childNodeCollection">The collection of HtmlNodes resulting from selction string</param>
+        /// <param name="childNodeCollection">The collection of HtmlNodes resulting from selection string</param>
         /// <param name="selection">The string used to collect child HtmlNodes from the parent HtmlNode</param>
-        /// <returns></returns>
+        /// <param name="verbose">Whether to display a UI error dialog on failure</param>
+        /// <param name="formData">Form data context for the error dialog title</param>
+        /// <returns>True if nodes were found; false if the node collection is null.</returns>
         static internal bool GetNodeCollection(HtmlNode parentNode, ref HtmlNodeCollection childNodeCollection, string selection, bool verbose, ScenarioFormData formData)
         {
             childNodeCollection = parentNode.SelectNodes(selection);
-            if (childNodeCollection == null && verbose)
+
+            if (childNodeCollection == null)
             {
-                string errorMessage = $"Node collection failed for {selection}";
-                MessageBox.Show(errorMessage, $"{formData.ScenarioType}", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (verbose)
+                {
+                    string errorMessage = $"Node collection failed for {selection}";
+                    MessageBox.Show(errorMessage, $"{formData.ScenarioType}", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
                 return false;
             }
+
             return true;
         }
 
@@ -109,21 +117,49 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// </summary>
         /// <param name="cell">The cell in a table row containing item title and hyperlink</param>
         /// <param name="curTable">The current table being populated in <see cref="WikiPage"/></param>
-        public async Task ReadWikiCellAsync(HtmlNode cell, List<WikiItemParams> curTable, ScenarioFormData formData)
+        public async Task ReadWikiCellAsync(HtmlNode cell, List<WikiItemParams> curTable, ScenarioFormData formData, CoordinateSource coordinateSource)
         {
             WikiItemParams wikiItem = new();
             List<HtmlNode> cellDescendants = [.. cell.Descendants("a")];
             string title = "", link = "";
             if (cellDescendants.Count > 0)
             {
-                title = cellDescendants[0].GetAttributeValue("title", "");
-                link = cellDescendants[0].GetAttributeValue("href", "");
+                string visibleText = cellDescendants[0].InnerText?.Trim() ?? "";
+                title = !string.IsNullOrEmpty(visibleText)
+                        ? visibleText
+                        : cellDescendants[0].GetAttributeValue("title", "");
+                link = CleanWikiLinkURL(cellDescendants[0].GetAttributeValue("href", ""));
             }
             if (title != "" && link != "")
             {
                 wikiItem.title = HttpUtility.HtmlDecode(title);
-                wikiItem.itemURL = link;
-                if (await GetWikiItemCoordinatesAsync(wikiItem, formData))
+                wikiItem.itemURL = link; bool coordinatesFound = false;
+
+                // Choice 1: Look in the Table Row first
+                if (coordinateSource == CoordinateSource.TableColumn)
+                {
+                    var row = cell.Ancestors("tr").FirstOrDefault();
+                    HtmlNode latNode = row?.SelectSingleNode(".//span[@class='latitude']");
+                    HtmlNode lonNode = row?.SelectSingleNode(".//span[@class='longitude']");
+
+                    if (latNode != null && lonNode != null)
+                    {
+                        wikiItem.latitude = ConvertWikiCoOrd(latNode.InnerText);
+                        wikiItem.longitude = ConvertWikiCoOrd(lonNode.InnerText);
+                        coordinatesFound = true;
+                    }
+                }
+
+                // Choice 2: Look at the Target Item Page (or Fallback if Table was selected but empty)
+                if (!coordinatesFound)
+                {
+                    // If the link has a '#' fragment and we are forced to fetch the item page,
+                    // be aware it will fetch the generic parent page coordinates.
+                    coordinatesFound = await GetWikiItemCoordinatesAsync(wikiItem, formData);
+                }
+
+                // If we successfully resolved coordinates from either method, finalize the item
+                if (coordinatesFound)
                 {
                     wikiItem.hrefs = await GetWikiItemHREFsAsync(wikiItem);
                     curTable.Add(wikiItem);
@@ -139,7 +175,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <returns></returns>
         public async Task<bool> GetWikiItemCoordinatesAsync(WikiItemParams wikiItem, ScenarioFormData formData)
         {
-            var htmlDoc = await _httpRoutines.GetWebDocAsync($"https://en.wikipedia.org/{wikiItem.itemURL}");
+            var htmlDoc = await _httpRoutines.GetWebDocAsync(wikiItem.itemURL);
             HtmlNodeCollection spans = null;
             if (htmlDoc != null && GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='latitude']", false, formData))
             {
@@ -154,6 +190,30 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             return false;
         }
 
+        public static string CleanWikiLinkURL(string dirtyUrl)
+        {
+            if (string.IsNullOrWhiteSpace(dirtyUrl))
+            {
+                return string.Empty;
+            }
+
+            string cleanUrl = dirtyUrl.Trim();
+
+            if (cleanUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                cleanUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                return cleanUrl;
+            }
+
+            if (cleanUrl.StartsWith("//"))
+            {
+                return "https:" + cleanUrl;
+            }
+
+            // Prefix the standard domain for absolute/relative paths
+            return "https://en.wikipedia.org" + (cleanUrl.StartsWith('/') ? "" : "/") + cleanUrl;
+        }
+
         /// <summary>
         /// Retrieves any href="# links in the item. These are used to allow user to step through sections
         /// of the item page using joystick mapped buttons as an alternative to scrolling with a mouse.
@@ -161,7 +221,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <param name="wikiItem">The current row in table being populated in <see cref="WikiPage"/></param>
         public async Task<List<string>> GetWikiItemHREFsAsync(WikiItemParams wikiItem)
         {
-            var htmlDoc = await _httpRoutines.GetWebDocAsync($"https://en.wikipedia.org/{wikiItem.itemURL}");
+            var htmlDoc = await _httpRoutines.GetWebDocAsync(wikiItem.itemURL);
             string htmlDocContents = htmlDoc.Text;
             int indexSearchFrom = 0;
             string hrefTag = "href=\"#";
