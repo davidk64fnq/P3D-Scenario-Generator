@@ -959,30 +959,42 @@ namespace P3D_Scenario_Generator
         {
             if (e.KeyCode == Keys.Enter)
             {
-                // Alter locationFavourite instance in RunwayUIManager to reflect new name
-                string newFavouriteName = ((ComboBox)sender).Text;
-                string oldFavouriteName = _runwayManager.UiManager.UpdateLocationFavouriteName(newFavouriteName);
+                string newFavouriteName = ((ComboBox)sender).Text.Trim();
+                if (string.IsNullOrEmpty(newFavouriteName)) return;
 
-                // Create a new locationFavourite instance in RunwayUIManager using old name and all filters copied from current selected favourite
-                _runwayManager.UiManager.AddLocationFavourite(oldFavouriteName);
+                LocationFavourite currentFav = _runwayManager.UiManager.GetCurrentLocationFavourite();
 
-                // Refresh the ComboBoxGeneralLocationFavourites field list on form
+                // 1. Prevent renaming [All Locations] - create a new entry instead
+                if (currentFav.Name.Equals(RunwayUiManager.DefaultFavouriteName, StringComparison.OrdinalIgnoreCase))
+                {
+                    _runwayManager.UiManager.AddLocationFavourite(newFavouriteName);
+                }
+                else
+                {
+                    // Rename the existing custom favourite
+                    _runwayManager.UiManager.UpdateLocationFavouriteName(newFavouriteName);
+                }
+
+                // 2. Refresh the dropdown list
                 ComboBoxGeneralLocationFavourites.DataSource = _runwayManager.UiManager.GetLocationFavouriteNames();
 
-                // Set selected index for ComboBoxGeneralLocationFavourites
+                // 3. Select the new/renamed favourite
                 int newFavouriteIndex = ComboBoxGeneralLocationFavourites.Items.IndexOf(newFavouriteName);
-                ComboBoxGeneralLocationFavourites.SelectedIndex = newFavouriteIndex;
+                if (newFavouriteIndex != -1)
+                {
+                    ComboBoxGeneralLocationFavourites.SelectedIndex = newFavouriteIndex;
+                }
 
-                // Refresh Country/State/City fields on form
+                // 4. Refresh Country/State/City fields on form
                 LocationFavourite currentLocationFavourite = _runwayManager.UiManager.GetCurrentLocationFavourite();
                 ComboBoxGeneralLocationCountry.Text = currentLocationFavourite.Countries[0];
                 ComboBoxGeneralLocationState.Text = currentLocationFavourite.States[0];
                 ComboBoxGeneralLocationCity.Text = currentLocationFavourite.Cities[0];
 
-                // Refresh TextBoxGeneralLocationFilters field on form
+                // 5. Refresh TextBoxGeneralLocationFilters field on form
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
 
-                // The SaveLocationFavourites method was refactored. It is now called SaveLocationFavouritesAsync and must be awaited.
+                // 6. Save changes
                 await _runwayManager.UiManager.SaveLocationFavouritesAsync(null);
             }
             else if (e.KeyCode == Keys.Delete)
@@ -990,15 +1002,23 @@ namespace P3D_Scenario_Generator
                 // Don't delete a character
                 e.SuppressKeyPress = true;
 
-                // Use the helper to confirm the action. If the user doesn't confirm,
-                // return early and do nothing else.
+                // Delete locationFavourite instance in RunwayUIManager
+                string deleteFavouriteName = ((ComboBox)sender).Text;
+                
+                // 1. Guard against deleting the default template BEFORE prompting the user
+                if (string.IsNullOrWhiteSpace(deleteFavouriteName) ||
+                    deleteFavouriteName.Equals(RunwayUiManager.DefaultFavouriteName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                // 2. Only confirm deletion for valid, user-created favourites
                 if (!UIHelpers.ConfirmAction("Are you sure you want to delete this location favourite?"))
                 {
                     return;
                 }
 
                 // Delete locationFavourite instance in RunwayUIManager
-                string deleteFavouriteName = ((ComboBox)sender).Text;
                 string currentFavouriteName = _runwayManager.UiManager.DeleteLocationFavourite(deleteFavouriteName);
 
                 // Refresh the ComboBoxGeneralLocationFavourites field list on form
@@ -1016,6 +1036,9 @@ namespace P3D_Scenario_Generator
 
                 // Refresh TextBoxGeneralLocationFilters field on form
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
+
+                // Persist changes to file
+                await _runwayManager.UiManager.SaveLocationFavouritesAsync(null);
             }
         }
 
@@ -1056,32 +1079,29 @@ namespace P3D_Scenario_Generator
         /// <param name="e"></param>
         private async void ComboBoxGeneralLocation_KeyDown(object sender, KeyEventArgs e)
         {
-            string selectedItem = ((ComboBox)sender).SelectedItem.ToString();
-            string locationType;
+            ComboBox comboBox = (ComboBox)sender;
+            string selectedItem = comboBox.Text.Trim();
 
-            if (((ComboBox)sender).Name.Contains("Country"))
-                locationType = "Country";
-            else if (((ComboBox)sender).Name.Contains("State"))
-                locationType = "State";
-            else
-                locationType = "City";
+            // Guard against empty input
+            if (string.IsNullOrEmpty(selectedItem)) return;
+
+            string locationType = comboBox.Name.Contains("Country") ? "Country" :
+                                 comboBox.Name.Contains("State") ? "State" : "City";
 
             if (e.KeyCode == Keys.Enter)
             {
                 _runwayManager.UiManager.AddFilterValueToLocationFavourite(locationType, selectedItem);
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
-                ((ComboBox)sender).Text = _runwayManager.UiManager.GetLocationFavouriteDisplayFilterValue(locationType);
-                // The SaveLocationFavourites method was refactored and is now async.
-                // It's called SaveLocationFavouritesAsync and must be awaited.
+                comboBox.Text = _runwayManager.UiManager.GetLocationFavouriteDisplayFilterValue(locationType);
+
                 await _runwayManager.UiManager.SaveLocationFavouritesAsync(null);
             }
             else if (e.KeyCode == Keys.Delete)
             {
                 _runwayManager.UiManager.DeleteFilterValueFromLocationFavourite(locationType, selectedItem);
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
-                ((ComboBox)sender).Text = _runwayManager.UiManager.GetLocationFavouriteDisplayFilterValue(locationType);
-                // The SaveLocationFavourites method was refactored and is now async.
-                // It's called SaveLocationFavouritesAsync and must be awaited.
+                comboBox.Text = _runwayManager.UiManager.GetLocationFavouriteDisplayFilterValue(locationType);
+
                 await _runwayManager.UiManager.SaveLocationFavouritesAsync(null);
             }
         }

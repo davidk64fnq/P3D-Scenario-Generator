@@ -201,6 +201,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMonitorNumber = new TextBox();
             label36 = new Label();
             ComboBoxCelestialAlignment = new ComboBox();
+            ButtonRandomLocation = new Button();
             GroupBoxSignWritingParameters = new GroupBox();
             TableLayoutPanelSignWritingParameters = new TableLayoutPanel();
             GroupBoxSignWritingSignWindowLocation = new GroupBox();
@@ -211,7 +212,6 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelPhotoTourConstraints = new TableLayoutPanel();
             groupBox16 = new GroupBox();
             tableLayoutPanelLocationFilter = new TableLayoutPanel();
-            ButtonRandomLocation = new Button();
             TextBoxGeneralLocationFilters = new TextBox();
             TabPagePhotoTour = new TabPage();
             tableLayoutPanel6 = new TableLayoutPanel();
@@ -332,7 +332,7 @@ namespace P3D_Scenario_Generator
             ButtonGenerateScenario.Location = new Point(349, 485);
             ButtonGenerateScenario.Name = "ButtonGenerateScenario";
             ButtonGenerateScenario.Size = new Size(152, 43);
-            ButtonGenerateScenario.TabIndex = 1;
+            ButtonGenerateScenario.TabIndex = 3;
             ButtonGenerateScenario.Text = "Generate Scenario";
             ButtonGenerateScenario.UseVisualStyleBackColor = true;
             ButtonGenerateScenario.Click += ButtonGenerateScenario_Click;
@@ -844,7 +844,7 @@ namespace P3D_Scenario_Generator
             ButtonPhotoTourSaved.Location = new Point(109, 495);
             ButtonPhotoTourSaved.Name = "ButtonPhotoTourSaved";
             ButtonPhotoTourSaved.Size = new Size(75, 23);
-            ButtonPhotoTourSaved.TabIndex = 38;
+            ButtonPhotoTourSaved.TabIndex = 2;
             ButtonPhotoTourSaved.Text = "Saved";
             toolTip1.SetToolTip(ButtonPhotoTourSaved, "Click to reset field values for currently selected tab to those saved at completion of last program run.");
             ButtonPhotoTourSaved.UseVisualStyleBackColor = true;
@@ -1860,7 +1860,7 @@ namespace P3D_Scenario_Generator
             ListBoxGeneralRunwayResults.Location = new Point(115, 5);
             ListBoxGeneralRunwayResults.Name = "ListBoxGeneralRunwayResults";
             ListBoxGeneralRunwayResults.Size = new Size(100, 19);
-            ListBoxGeneralRunwayResults.TabIndex = 4;
+            ListBoxGeneralRunwayResults.TabIndex = 1;
             ListBoxGeneralRunwayResults.MouseMove += ListBoxGeneralRunwayResults_MouseMove;
             // 
             // groupBox13
@@ -2430,7 +2430,7 @@ namespace P3D_Scenario_Generator
             ButtonCircuitDefault.Location = new Point(16, 495);
             ButtonCircuitDefault.Name = "ButtonCircuitDefault";
             ButtonCircuitDefault.Size = new Size(75, 23);
-            ButtonCircuitDefault.TabIndex = 11;
+            ButtonCircuitDefault.TabIndex = 1;
             ButtonCircuitDefault.Text = "Default";
             toolTip1.SetToolTip(ButtonCircuitDefault, "Click to set default parameters for currently selected tab.");
             ButtonCircuitDefault.UseVisualStyleBackColor = true;
@@ -2561,6 +2561,18 @@ namespace P3D_Scenario_Generator
             ComboBoxCelestialAlignment.Text = "Top Right";
             toolTip1.SetToolTip(ComboBoxCelestialAlignment, "Default location of sextant window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.\r\n");
             ComboBoxCelestialAlignment.SelectedIndexChanged += ComboBoxCelestialAlignment_SelectedIndexChanged;
+            // 
+            // ButtonRandomLocation
+            // 
+            ButtonRandomLocation.Anchor = AnchorStyles.None;
+            ButtonRandomLocation.Location = new Point(9, 137);
+            ButtonRandomLocation.Name = "ButtonRandomLocation";
+            ButtonRandomLocation.Size = new Size(91, 23);
+            ButtonRandomLocation.TabIndex = 8;
+            ButtonRandomLocation.Text = "Random Favourite";
+            toolTip1.SetToolTip(ButtonRandomLocation, "Random Favourite:\r\nSelects a location favourite at random from your saved list.");
+            ButtonRandomLocation.UseVisualStyleBackColor = true;
+            ButtonRandomLocation.Click += ButtonRandomLocation_Click;
             // 
             // GroupBoxSignWritingParameters
             // 
@@ -2782,22 +2794,12 @@ namespace P3D_Scenario_Generator
             tableLayoutPanelLocationFilter.Size = new Size(220, 165);
             tableLayoutPanelLocationFilter.TabIndex = 36;
             // 
-            // ButtonRandomLocation
-            // 
-            ButtonRandomLocation.Anchor = AnchorStyles.None;
-            ButtonRandomLocation.Location = new Point(9, 137);
-            ButtonRandomLocation.Name = "ButtonRandomLocation";
-            ButtonRandomLocation.Size = new Size(91, 23);
-            ButtonRandomLocation.TabIndex = 8;
-            ButtonRandomLocation.Text = "Random Favourite";
-            ButtonRandomLocation.UseVisualStyleBackColor = true;
-            ButtonRandomLocation.Click += ButtonRandomLocation_Click;
-            // 
             // TextBoxGeneralLocationFilters
             // 
             TextBoxGeneralLocationFilters.Anchor = AnchorStyles.None;
             TextBoxGeneralLocationFilters.Location = new Point(115, 137);
             TextBoxGeneralLocationFilters.Name = "TextBoxGeneralLocationFilters";
+            TextBoxGeneralLocationFilters.ReadOnly = true;
             TextBoxGeneralLocationFilters.Size = new Size(100, 23);
             TextBoxGeneralLocationFilters.TabIndex = 9;
             TextBoxGeneralLocationFilters.Tag = "";
@@ -2864,7 +2866,7 @@ namespace P3D_Scenario_Generator
             ButtonHelp.Location = new Point(757, 7);
             ButtonHelp.Name = "ButtonHelp";
             ButtonHelp.Size = new Size(75, 23);
-            ButtonHelp.TabIndex = 2;
+            ButtonHelp.TabIndex = 4;
             ButtonHelp.Text = "Help";
             ButtonHelp.UseVisualStyleBackColor = true;
             ButtonHelp.Click += ButtonHelp_Click;
@@ -3346,6 +3348,7 @@ namespace P3D_Scenario_Generator
             TextBoxGeneralAircraftValues.Anchor = AnchorStyles.None;
             TextBoxGeneralAircraftValues.Location = new Point(115, 34);
             TextBoxGeneralAircraftValues.Name = "TextBoxGeneralAircraftValues";
+            TextBoxGeneralAircraftValues.ReadOnly = true;
             TextBoxGeneralAircraftValues.Size = new Size(100, 23);
             TextBoxGeneralAircraftValues.TabIndex = 3;
             TextBoxGeneralAircraftValues.Tag = "";

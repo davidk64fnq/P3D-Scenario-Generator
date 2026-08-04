@@ -29,6 +29,8 @@ namespace P3D_Scenario_Generator.Runways
             "LocationFavouritesJSON.txt"
         );
 
+        public const string DefaultFavouriteName = "[All Locations]";
+
         /// <summary>
         /// User created location favourites built from combinations of Country/State/City strings in "runways.xml" file
         /// </summary>
@@ -104,8 +106,9 @@ namespace P3D_Scenario_Generator.Runways
                     }
                     else
                     {
-                        LocationFavourites = [];
-                        return false;
+                        // If loading fails completely, fall back to the protected default
+                        LocationFavourites = [new LocationFavourite() { Name = DefaultFavouriteName }];
+                        CurrentLocationFavouriteIndex = 0;
                     }
                 }
                 catch (Exception ex)
@@ -120,6 +123,11 @@ namespace P3D_Scenario_Generator.Runways
 
             if (LocationFavourites.Count > 0)
             {
+                if (!LocationFavourites.Any(f => f.Name.Equals(DefaultFavouriteName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    LocationFavourites.Insert(0, new LocationFavourite() { Name = DefaultFavouriteName });
+                }
+
                 await _logger.InfoAsync($"Successfully loaded {LocationFavourites.Count} location favourites.");
                 progressReporter?.Report($"Location favourites loaded ({LocationFavourites.Count} entries).");
                 return true;
@@ -129,7 +137,7 @@ namespace P3D_Scenario_Generator.Runways
                 string warningMessage = "All attempts to load a valid list of location favourites failed. The list will be empty.";
                 await _logger.WarningAsync(warningMessage);
                 progressReporter?.Report(warningMessage);
-                LocationFavourites = [new LocationFavourite() { Name = "Default" }];
+                LocationFavourites = [new LocationFavourite() { Name = DefaultFavouriteName }];
                 CurrentLocationFavouriteIndex = 0;
                 return false;
             }
@@ -145,7 +153,7 @@ namespace P3D_Scenario_Generator.Runways
             if (LocationFavourites == null || LocationFavourites.Count == 0)
             {
                 string warningMessage = "Location favourites list is empty. Save operation aborted to prevent data loss.";
-                await _logger.WarningAsync(warningMessage).ConfigureAwait(false);
+                await _logger.WarningAsync(warningMessage);
                 progressReporter?.Report(warningMessage);
                 return;
             }
@@ -160,7 +168,7 @@ namespace P3D_Scenario_Generator.Runways
                 }
                 else
                 {
-                    await _logger.ErrorAsync("Failed to save location favourites.").ConfigureAwait(false);
+                    await _logger.ErrorAsync("Failed to save location favourites.");
                     progressReporter?.Report("ERROR: Failed to save location favourites. See log for details.");
                 }
             }
@@ -182,8 +190,9 @@ namespace P3D_Scenario_Generator.Runways
                 Name = name
             };
             LocationFavourites.Add(deepCopyFav);
-            if (LocationFavourites.Count == 1)
-                CurrentLocationFavouriteIndex = 0;
+
+            // Switch active index to the newly created favourite
+            CurrentLocationFavouriteIndex = LocationFavourites.Count - 1;
         }
 
         /// <summary>
@@ -193,6 +202,12 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>The name of the zero index <see cref="LocationFavourites"/> location favourite</returns>
         internal string DeleteLocationFavourite(string deleteLocationFavouriteName)
         {
+            // Block deletion of the permanent default
+            if (deleteLocationFavouriteName.Equals(DefaultFavouriteName, StringComparison.OrdinalIgnoreCase))
+            {
+                return LocationFavourites[CurrentLocationFavouriteIndex].Name;
+            }
+
             if (LocationFavourites.Count > 1)
             {
                 LocationFavourite deleteLocationFavourite = LocationFavourites.Find(favourite => favourite.Name == deleteLocationFavouriteName);
@@ -213,8 +228,16 @@ namespace P3D_Scenario_Generator.Runways
         internal string UpdateLocationFavouriteName(string newLocationFavouriteName)
         {
             string oldLocationFavouriteName = LocationFavourites[CurrentLocationFavouriteIndex].Name;
+
+            // Block renaming of the permanent default
+            if (oldLocationFavouriteName.Equals(DefaultFavouriteName, StringComparison.OrdinalIgnoreCase))
+            {
+                return oldLocationFavouriteName;
+            }
+
             if (LocationFavourites.FindAll(favourite => favourite.Name == newLocationFavouriteName).Count == 0)
                 LocationFavourites[CurrentLocationFavouriteIndex].Name = newLocationFavouriteName;
+
             return oldLocationFavouriteName;
         }
 
@@ -224,23 +247,35 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>Sorted list of the location favourite names.</returns>
         internal List<string> GetLocationFavouriteNames()
         {
-            List<string> locationFavouriteNames = [];
-            for (int i = 0; i < LocationFavourites.Count; i++)
-            {
-                locationFavouriteNames.Add(LocationFavourites[i].Name);
-            }
-            locationFavouriteNames.Sort();
-            return locationFavouriteNames;
+            if (LocationFavourites.Count == 0) return [];
+
+            // Capture the active item before sorting
+            LocationFavourite currentSelected = GetCurrentLocationFavourite();
+
+            // Sort the list
+            LocationFavourites = [.. LocationFavourites.OrderBy(f => f.Name)];
+
+            // Sync index back safely (default to 0 if IndexOf returns -1)
+            int newIndex = LocationFavourites.IndexOf(currentSelected);
+            CurrentLocationFavouriteIndex = Math.Max(0, newIndex);
+
+            return [.. LocationFavourites.Select(f => f.Name)];
         }
 
         /// <summary>
         /// Reset <see cref="CurrentLocationFavouriteIndex"/> to the instance of <see cref="LocationFavourite"/> with newFavouriteName
         /// </summary>
         /// <param name="newFavouriteName">The name of the new instance to be set as <see cref="CurrentLocationFavouriteIndex"/></param>
-        internal void ChangeCurrentLocationFavouriteIndex(string newFavouriteName)
+        internal void ChangeCurrentLocationFavouriteIndex(string name)
         {
-            LocationFavourite locationFavourite = LocationFavourites.Find(favourite => favourite.Name == newFavouriteName);
-            CurrentLocationFavouriteIndex = LocationFavourites.IndexOf(locationFavourite);
+            int index = LocationFavourites.FindIndex(f => f.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+            // Only update if the item actually exists.
+            // While typing a new name, retain the current valid index.
+            if (index != -1)
+            {
+                CurrentLocationFavouriteIndex = index;
+            }
         }
 
         /// <summary>
@@ -249,6 +284,11 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>The <see cref="CurrentLocationFavouriteIndex"/> instance in <see cref="LocationFavourites"/></returns>
         internal LocationFavourite GetCurrentLocationFavourite()
         {
+            // Safety fallback to prevent out-of-bounds crashes
+            if (CurrentLocationFavouriteIndex < 0 || CurrentLocationFavouriteIndex >= LocationFavourites.Count)
+            {
+                CurrentLocationFavouriteIndex = 0;
+            }
             return LocationFavourites[CurrentLocationFavouriteIndex];
         }
 
@@ -260,6 +300,12 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="locationValue">The filter string to be added.</param>
         internal void AddFilterValueToLocationFavourite(string locationType, string locationValue)
         {
+            // Do not allow adding country/state/city filters directly to the permanent global template
+            if (LocationFavourites[CurrentLocationFavouriteIndex].Name.Equals(DefaultFavouriteName, StringComparison.OrdinalIgnoreCase) && locationValue != "None")
+            {
+                return;
+            }
+
             if (locationValue == "None")
             {
                 ClearLocationFavouriteList(locationType);
@@ -311,15 +357,10 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>Country/State/City location filters combined into a single string.</returns>
         internal string SetTextBoxGeneralLocationFilters()
         {
-            string filters;
-            filters = "Countries = \"";
-            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[CurrentLocationFavouriteIndex].Countries);
-            filters += "\" \nStates = \"";
-            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[CurrentLocationFavouriteIndex].States);
-            filters += "\" \nCities = \"";
-            filters += SetTextBoxGeneralLocationFilter(LocationFavourites[CurrentLocationFavouriteIndex].Cities);
-            filters += "\"";
-            return filters;
+            var current = GetCurrentLocationFavourite();
+            return $"Countries = \"{SetTextBoxGeneralLocationFilter(current.Countries)}\" \n" +
+                   $"States = \"{SetTextBoxGeneralLocationFilter(current.States)}\" \n" +
+                   $"Cities = \"{SetTextBoxGeneralLocationFilter(current.Cities)}\"";
         }
 
         /// <summary>
@@ -394,12 +435,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>One of Country/State/City location filters combined into a single string.</returns>
         private static string SetTextBoxGeneralLocationFilter(List<string> locationFilterStrings)
         {
-            string filters = "";
-            foreach (string filterString in locationFilterStrings)
-                filters += $"{filterString}, ";
-            filters = filters.Trim();
-            filters = filters.Trim(',');
-            return filters;
+            return string.Join(", ", locationFilterStrings);
         }
 
         #endregion

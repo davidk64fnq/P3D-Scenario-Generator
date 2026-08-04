@@ -144,116 +144,68 @@
     <value>The default position of Wiki URL window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the Wiki URL Wiki URL window is positioned. Ignored if default position of Wiki URL window is centered.</value>
   </data>
   <data name="ComboBoxGeneralLocationFavourites.ToolTip" xml:space="preserve">
-    <value>Select the combination of Country, State and City filters to be used in identifying runways 
-for use in a scenario.
+    <value>Favourites Profile:
+• SELECT: Choose a saved location filter profile from the list.
+• CREATE / RENAME: Type a new name into the field and press Enter.
+• DELETE: Select a custom favourite and press Delete.
 
-To modify filters in current combination select the Country/State/City item in the respective 
-field and press "Enter" to add it or "Delete" to remove it from the combination favourite.
-
-To rename a favourite, type in the new name and press "Enter", this will rename the existing 
-favourite and create a new favourite with the old favourite name.
-
-To delete a favourite, press "Delete" with the "Favourites" field name selected.
-
-To see the currently selected favourite, mouseover the "Filters" field below.</value>
+NOTE: "[All Locations]" is the default global template (allows all airports) and cannot be deleted or renamed.</value>
   </data>
   <data name="label61.ToolTip" xml:space="preserve">
-    <value>Select the combination of Country, State and City filters to be used in identifying runways 
-for use in a scenario.
+    <value>Favourites Profile:
+• SELECT: Choose a saved location filter profile from the list.
+• CREATE / RENAME: Type a new name into the field and press Enter.
+• DELETE: Select a custom favourite and press Delete.
 
-To modify filters in current combination select the Country/State/City item in the respective 
-field and press "Enter" to add it or "Delete" to remove it from the combination favourite.
-
-To rename a favourite, type in the new name and press "Enter", this will rename the existing 
-favourite and create a new favourite with the old favourite name.
-
-To delete a favourite, press "Delete" with the "Favourites" field name selected.
-
-To see the currently selected favourite, mouseover the "Filters" field below.</value>
+NOTE: "[All Locations]" is the default global template (allows all airports) and cannot be deleted or renamed.</value>
   </data>
   <data name="ComboBoxGeneralLocationCity.ToolTip" xml:space="preserve">
-    <value>To add selected city to currently selected "Favourites" press "Enter"
-To delete selected city from currently selected "Favourites" press "Delete"
+    <value>City Filter:
+• ADD: Select a city and press Enter.
+• REMOVE: Select a city and press Delete.
+• CLEAR ALL: Select "None" and press Enter (allows all cities).
 
-Make sure you click with the mouse in the field or change the selection via the dropdown 
-to ensure the field is in focus.
-
-Selecting a city without then pressing enter or delete has no effect on the
-currently selected favourite. Scenarios are generated based ONLY on the filter values 
-in the currently selected favourite.
-
-Select "None" and press "Enter" to clear runway selection filters based on city in 
-currently selected favourite. </value>
+NOTE: Simply selecting an item without pressing Enter or Delete will not modify your favourite.</value>
   </data>
   <data name="ComboBoxGeneralLocationState.ToolTip" xml:space="preserve">
-    <value>To add selected state to currently selected "Favourites" press "Enter"
-To delete selected state from currently selected "Favourites" press "Delete"
+    <value>State Filter:
+• ADD: Select a state and press Enter.
+• REMOVE: Select a state and press Delete.
+• CLEAR ALL: Select "None" and press Enter (allows all states).
 
-Make sure you click with the mouse in the field or change the selection via the dropdown 
-to ensure the field is in focus.
-
-Selecting a state without then pressing enter or delete has no effect on the
-currently selected favourite. Scenarios are generated based ONLY on the filter values 
-in the currently selected favourite.
-
-Select "None" and press "Enter" to clear runway selection filters based on state in 
-currently selected favourite. </value>
+NOTE: Simply selecting an item without pressing Enter or Delete will not modify your favourite.</value>
   </data>
   <data name="ComboBoxGeneralLocationCountry.ToolTip" xml:space="preserve">
-    <value>To add selected country to currently selected "Favourites" press "Enter"
-To delete selected country from currently selected "Favourites" press "Delete"
+    <value>Country Filter:
+• ADD: Select a country and press Enter.
+• REMOVE: Select a country and press Delete.
+• CLEAR ALL: Select "None" and press Enter (allows all countries).
 
-Make sure you click with the mouse in the field or change the selection via the dropdown 
-to ensure the field is in focus.
-
-Selecting a country without then pressing enter or delete has no effect on the
-currently selected favourite. Scenarios are generated based ONLY on the filter values 
-in the currently selected favourite.
-
-Select "None" and press "Enter" to clear runway selection filters based on country in 
-currently selected favourite. </value>
+NOTE: Simply selecting an item without pressing Enter or Delete will not modify your favourite.</value>
   </data>
   <data name="label58.ToolTip" xml:space="preserve">
-    <value>To add selected state to currently selected "Favourites" press "Enter"
-To delete selected state from currently selected "Favourites" press "Delete"
+    <value>State Filter:
+• ADD: Select a state and press Enter.
+• REMOVE: Select a state and press Delete.
+• CLEAR ALL: Select "None" and press Enter (allows all states).
 
-Make sure you click with the mouse in the field or change the selection via the dropdown 
-to ensure the field is in focus.
-
-Selecting a state without then pressing enter or delete has no effect on the
-currently selected favourite. Scenarios are generated based ONLY on the filter values 
-in the currently selected favourite.
-
-Select "None" and press "Enter" to clear runway selection filters based on state  in 
-currently selected favourite. </value>
+NOTE: Simply selecting an item without pressing Enter or Delete will not modify your favourite.</value>
   </data>
   <data name="label59.ToolTip" xml:space="preserve">
-    <value>To add selected city to currently selected "Favourites" press "Enter"
-To delete selected city from currently selected "Favourites" press "Delete"
+    <value>City Filter:
+• ADD: Select a city and press Enter.
+• REMOVE: Select a city and press Delete.
+• CLEAR ALL: Select "None" and press Enter (allows all cities).
 
-Make sure you click with the mouse in the field or change the selection via the dropdown 
-to ensure the field is in focus.
-
-Selecting a city without then pressing enter or delete has no effect on the
-currently selected favourite. Scenarios are generated based ONLY on the filter values 
-in the currently selected favourite.
-
-Select "None" and press "Enter" to clear runway selection filters based on city in 
-currently selected favourite. </value>
+NOTE: Simply selecting an item without pressing Enter or Delete will not modify your favourite.</value>
   </data>
   <data name="label60.ToolTip" xml:space="preserve">
-    <value>To add selected country to currently selected "Favourites" press "Enter"
-To delete selected country from currently selected "Favourites" press "Delete"
+    <value>Country Filter:
+• ADD: Select a country and press Enter.
+• REMOVE: Select a country and press Delete.
+• CLEAR ALL: Select "None" and press Enter (allows all countries).
 
-Make sure you click with the mouse in the field or change the selection via the dropdown 
-to ensure the field is in focus.
-
-Selecting a country without then pressing enter or delete has no effect on the
-currently selected favourite. Scenarios are generated based ONLY on the filter values 
-in the currently selected favourite.
-
-Select "None" and press "Enter" to clear runway selection filters based on country in 
-currently selected favourite. </value>
+NOTE: Simply selecting an item without pressing Enter or Delete will not modify your favourite.</value>
   </data>
   <data name="label63.ToolTip" xml:space="preserve">
     <value>The default position of map window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the map window is positioned. Ignored if default position of map window is centered.</value>

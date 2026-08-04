@@ -1,7 +1,30 @@
+/* Base Page Styling */
 body {
-    margin: 20;
+    margin: 20px;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 13px;
+    color: #202020;
+    line-height: 1.5;
+    background-color: #ffffff;
 }
 
+/* Headings */
+h2 {
+    font-size: 1.4em;
+    color: #005a9c;
+    border-bottom: 2px solid #e5f1fb;
+    padding-bottom: 4px;
+    margin-top: 0;
+}
+
+h3 {
+    font-size: 1.15em;
+    color: #1a1a1a;
+    margin-top: 1.2em;
+    margin-bottom: 0.4em;
+}
+
+/* Images */
 img {
     max-width: 100%;
     height: auto;
@@ -9,10 +32,42 @@ img {
     margin: 10px 0;
 }
 
+/* Lists & Code */
+ol, ul {
+    padding-left: 20px;
+}
+
+li {
+    margin-bottom: 6px;
+}
+
+code {
+    font-family: Consolas, "Courier New", monospace;
+    background-color: #f3f3f3;
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid #e0e0e0;
+}
+
+/* Standard Keyboard Shortcut Tag (e.g. Enter, Delete) */
+kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #333;
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+    border-bottom-color: #bbb;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+}
+
 /* Style for a modern Windows Form button replication */
 kbd.winforms-btn {
     display: inline-block;
-    width: 120px;         /* Updated to match Constants.SimpleControlWidth */
+    width: 120px;         /* Matches Constants.SimpleControlWidth */
     height: 23px;         /* Matches Constants.SimpleControlHeight */
     line-height: 21px;    /* Vertically centers the text perfectly */
     text-align: center;
@@ -20,20 +75,22 @@ kbd.winforms-btn {
     /* Font matching standard WinForms system font */
     font-family: "Segoe UI", -apple-system, sans-serif;
     font-size: 12px;
+    font-weight: normal;
     color: #000000;
     
     /* Modern Windows Button Base: Light gray, subtle border, rounded corners */
     background: #fcfcfc;
     border: 1px solid #7a7a7a;
-    border-radius: 4px;   /* This will now render thanks to IE=edge */
+    border-radius: 4px;   /* Renders thanks to IE=edge */
+    box-shadow: none;
     
     /* Layout and smooth transition for the hover effect */
     cursor: default;
     user-select: none;
     vertical-align: middle;
-    margin: 5px 4px;      /* 5px top/bottom matches SimpleMarginValueTopBottom */
+    margin: 2px 4px;      /* Matches SimpleMarginValueTopBottom */
     padding: 0;
-    box-sizing: border-box; /* Forces border to stay inside the 120x23 bounds */
+    box-sizing: border-box; /* Forces border to stay inside 120x23 bounds */
 }
 
 /* Modern Windows Hover State: Lightish blue background, darkish blue outline */

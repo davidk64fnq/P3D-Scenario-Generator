@@ -1,14 +1,8 @@
 [
   {
-    "Name": "None",
-    "Countries": [
-      "None"
-    ],
-    "States": [
-      "None"
-    ],
-    "Cities": [
-      "None"
-    ]
+    "Name": "[All Locations]",
+    "Countries": [ "None" ],
+    "States": [ "None" ],
+    "Cities": [ "None" ]
   }
 ]
