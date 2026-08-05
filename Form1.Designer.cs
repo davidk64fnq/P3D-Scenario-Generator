@@ -148,7 +148,7 @@ namespace P3D_Scenario_Generator
             groupBox12 = new GroupBox();
             tableLayoutPanelRunwaySelection = new TableLayoutPanel();
             ButtonRandRunway = new Button();
-            ListBoxGeneralRunwayResults = new ListBox();
+            ComboBoxGeneralRunwayResults = new ComboBox();
             groupBox13 = new GroupBox();
             tableLayoutPanel9 = new TableLayoutPanel();
             ButtonRandomScenario = new Button();
@@ -1828,7 +1828,7 @@ namespace P3D_Scenario_Generator
             tableLayoutPanelRunwaySelection.Controls.Add(ButtonRandRunway, 0, 0);
             tableLayoutPanelRunwaySelection.Controls.Add(label1, 0, 1);
             tableLayoutPanelRunwaySelection.Controls.Add(TextBoxGeneralSearchRunway, 1, 1);
-            tableLayoutPanelRunwaySelection.Controls.Add(ListBoxGeneralRunwayResults, 1, 0);
+            tableLayoutPanelRunwaySelection.Controls.Add(ComboBoxGeneralRunwayResults, 1, 0);
             tableLayoutPanelRunwaySelection.ImeMode = ImeMode.On;
             tableLayoutPanelRunwaySelection.Location = new Point(10, 25);
             tableLayoutPanelRunwaySelection.Margin = new Padding(0);
@@ -1852,16 +1852,13 @@ namespace P3D_Scenario_Generator
             ButtonRandRunway.UseVisualStyleBackColor = true;
             ButtonRandRunway.Click += ButtonRandRunway_Click;
             // 
-            // ListBoxGeneralRunwayResults
+            // ComboBoxGeneralRunwayResults
             // 
-            ListBoxGeneralRunwayResults.Anchor = AnchorStyles.None;
-            ListBoxGeneralRunwayResults.FormattingEnabled = true;
-            ListBoxGeneralRunwayResults.ItemHeight = 15;
-            ListBoxGeneralRunwayResults.Location = new Point(115, 5);
-            ListBoxGeneralRunwayResults.Name = "ListBoxGeneralRunwayResults";
-            ListBoxGeneralRunwayResults.Size = new Size(100, 19);
-            ListBoxGeneralRunwayResults.TabIndex = 1;
-            ListBoxGeneralRunwayResults.MouseMove += ListBoxGeneralRunwayResults_MouseMove;
+            ComboBoxGeneralRunwayResults.FormattingEnabled = true;
+            ComboBoxGeneralRunwayResults.Location = new Point(113, 3);
+            ComboBoxGeneralRunwayResults.Name = "ComboBoxGeneralRunwayResults";
+            ComboBoxGeneralRunwayResults.Size = new Size(104, 23);
+            ComboBoxGeneralRunwayResults.TabIndex = 4;
             // 
             // groupBox13
             // 
@@ -1895,6 +1892,7 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel9.RowCount = 2;
             tableLayoutPanel9.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel9.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel9.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tableLayoutPanel9.Size = new Size(220, 66);
             tableLayoutPanel9.TabIndex = 36;
             // 
@@ -3768,7 +3766,6 @@ namespace P3D_Scenario_Generator
         private TableLayoutPanel tableLayoutPanel21;
         private TableLayoutPanel TableLayoutPanelWikiURLWindowLocation;
         private HelpProvider helpProvider1;
-        private ListBox ListBoxGeneralRunwayResults;
         private Label label8;
         private CheckBox CheckBoxCelestialUseStarsDat;
         private GroupBox GroupBoxCelestialNavigationSextant;
@@ -3786,6 +3783,7 @@ namespace P3D_Scenario_Generator
         private Button ButtonLoadWikiPage;
         internal ComboBox ComboBoxWikiCoordSource;
         private Label label39;
+        private ComboBox ComboBoxGeneralRunwayResults;
     }
 }
 

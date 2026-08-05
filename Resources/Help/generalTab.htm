@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta charset="utf-8"/>
+		<title>P3D Scenario Generator | General Tab</title>
+		<link rel="stylesheet" href="style.css"/>
+	</head>
+	<body>
+		<h2>General Tab</h2>
+		<p>
+			The <strong>General Tab</strong> serves as the primary configuration dashboard for P3D Scenario Generator. Settings configured here establish global rules, aircraft choices, departure airfields, and time of day for all generated scenario types.
+		</p>
+
+		<!-- LOCATION FILTER -->
+		<h3 id="locationFilter">Location Filter</h3>
+		<p>
+			The purpose of the <strong>Location Filter</strong> group is to define the geographical area in which a scenario is generated. For example, you might wish to generate a scenario using the Orbx True Earth Netherlands scenery. You would set up a favourite that filters by country for the Netherlands.
+		</p>
+		<p>
+			<strong>Important:</strong> The active location favourite acts as a global constraint across the entire application. Whenever a scenario is generated (including Circuits and Photo Tours) or a random runway is picked, the generator will strictly restrict its search to airports and runways matching your active location filters.
+		</p>
+		<p>
+			When editing filter values, first select an item from the <strong>Favourites</strong> combobox, then make changes to country, state, and city using the relevant dropdowns.
+		</p>
+
+		<h4>Favourites combobox</h4>
+		<p>
+			The application includes a default global profile named <strong>[All Locations]</strong>. Selecting this profile ensures no geographical restrictions are applied, searching all available scenery across the entire airport database.
+		</p>
+		<p>
+			Click the dropdown arrow next to <strong>Favourites</strong> and select an existing favourite from the list.
+		</p>
+		<p>
+			To <strong>create (copy)</strong> a new favourite: select an existing favourite (or <strong>[All Locations]</strong>), type the new name into the <strong>Favourites</strong> field, and press <kbd>Enter</kbd>. The new favourite will be created with its country, state, and city filters initialised to the values of the previously selected item.
+		</p>
+		<p>
+			To <strong>rename</strong> a favourite: select an existing favourite, type the new name and press <kbd>Enter</kbd>, then select the old name from the list and press <kbd>Delete</kbd>.
+		</p>
+		<p>
+			To <strong>delete</strong> a favourite: select an existing favourite and press <kbd>Delete</kbd>. A prompt will ask you to confirm the deletion.
+		</p>
+		<p>
+			<strong>Note:</strong> The default <strong>[All Locations]</strong> profile is protected and cannot be deleted or renamed.
+		</p>
+
+		<h4>Country, State, and City comboboxes</h4>
+		<p>
+			<em>Note: The following help is written in terms of Country, but applies equally to State and City.</em>
+		</p>
+		<p>
+			<strong>Understanding "None" in filters:</strong> Selecting <strong>"None"</strong> for Country, State, or City means <em>no restriction is applied</em> for that specific field. For example, if State is set to "Queensland" and Country is set to "None", the generator will match every airport in Queensland regardless of how its country metadata is tagged.
+		</p>
+		<p>
+			To <strong>add a country</strong> to the currently selected favourite: click the <strong>Country</strong> dropdown arrow, select the desired country, and press <kbd>Enter</kbd>. Alternatively, typing a letter will jump to the first country in the list beginning with that letter.
+		</p>
+		<p>
+			To <strong>delete a country</strong> from the currently selected favourite: click the <strong>Country</strong> dropdown arrow, select the country you wish to remove, and press <kbd>Delete</kbd>.
+		</p>
+		<p>
+			To <strong>clear ALL countries</strong> from the currently selected favourite: click the <strong>Country</strong> dropdown arrow, select the <strong>"None"</strong> entry (the first item in the list), and press <kbd>Enter</kbd>.
+		</p>
+		<p>
+			<strong>Note:</strong> Filter changes are only saved once the <kbd>Enter</kbd> or <kbd>Delete</kbd> key is pressed. Simply selecting an item in the list without pressing <kbd>Enter</kbd> or <kbd>Delete</kbd> will have no effect.
+		</p>
+
+		<h4>Random Favourite button</h4>
+		<p>
+			Click <kbd class="winforms-btn">Random</kbd> within the Location Filter group to randomly select a favourite from your saved location list.
+		</p>
+
+		<h4>Summary display field</h4>
+		<p>
+			Hover your mouse over the text box next to the <kbd class="winforms-btn">Random</kbd> button to see a summary tooltip of all countries, states, and cities included in the currently selected favourite.
+		</p>
+
+		<h4>Example Workflow</h4>
+		<p>
+			<strong>Scenario:</strong> You decide to create a favourite for your Orbx True Earth scenery regions so you can restrict scenario generation exclusively to those areas.
+		</p>
+		<ol type="1">
+			<li>
+				Select <strong>[All Locations]</strong> from the <strong>Favourites</strong> dropdown to start with a clean template.
+			</li>
+			<li>
+				Type the new name into the <strong>Favourites</strong> combobox and press <kbd>Enter</kbd> (e.g., <code>Orbx TE</code>).
+			</li>
+			<li>
+				Select the country <strong>"Netherlands"</strong> from the <strong>Country</strong> combobox and press <kbd>Enter</kbd>.
+			</li>
+			<li>
+				Select the country <strong>"United Kingdom"</strong> from the <strong>Country</strong> combobox and press <kbd>Enter</kbd>.
+			</li>
+			<li>
+				Select the states <strong>"Washington"</strong>, <strong>"California"</strong>, <strong>"Florida"</strong>, and <strong>"Oregon"</strong> from the <strong>State</strong> combobox, one at a time, pressing <kbd>Enter</kbd> after each.
+			</li>
+			<li>
+				Confirm the favourite has the correct filters by hovering over the summary field next to the <kbd class="winforms-btn">Random</kbd> button.
+			</li>
+		</ol>
+
+		<hr/>
+
+		<!-- DATE AND TIME -->
+		<h3 id="dateTime">Date and Time</h3>
+		<p>
+			The <strong>Date and Time</strong> group controls the environment lighting, solar angle, and seasonal conditions generated for your flight.
+		</p>
+
+		<h4>Date controls</h4>
+		<p>
+			Click <kbd class="winforms-btn">Random Date</kbd> to pick a randomly selected date across all four seasons. Alternatively, click the date picker field to specify an exact day, month, and year.
+		</p>
+
+		<h4>Time controls</h4>
+		<p>
+			Click <kbd class="winforms-btn">Random Time</kbd> to get a randomly selected flight time, experiencing conditions across all times of day—including dawn, dusk, and night. Alternatively, click the time picker field to set a specific local departure time.
+		</p>
+
+		<p>
+			<strong>Note:</strong> Prepar3D can occasionally render unexpected environment lighting for a selected time based on geographic solar calculations (for instance, a time specified for dawn may yield night lighting depending on location and season). If this occurs, simply adjust the time field in the generator and rebuild the scenario.
+		</p>
+
+		<hr/>
+
+		<!-- RUNWAY SELECTION -->
+		<h3 id="runwaySelection">Runway Selection</h3>
+		<p>
+			The <strong>Runway Selection</strong> group determines your starting airport and departure runway. Selected runways are displayed in the listbox to the right of the <kbd class="winforms-btn">Random</kbd> button, formatted as airport ICAO code followed by the runway identifier in parentheses (e.g., <code>EGLL (27L)</code>).
+		</p>
+		<p>
+			<em>Note: The generator deliberately omits city and geographical location details from the runway display to preserve the element of surprise when selecting a random airfield.</em>
+		</p>
+
+		<h4>Random button</h4>
+		<p>
+			Click <kbd class="winforms-btn">Random</kbd> to pick a random airport and runway. Selection is strictly constrained by your active <a href="#locationFilter">Location Filter</a>.
+		</p>
+		<p>
+			<strong>Surface Matching:</strong> Runway filtering automatically respects your selected aircraft's landing capability. Landplanes without floats will never generate water runways, and pure floatplanes (without wheels) will strictly match water landing sites. Amphibious aircraft with both gear types can utilize either surface.
+		</p>
+		<p>
+			<em>Tip: If you want to quickly pick a random runway for a region not currently saved in your favourites, simply create a temporary favourite profile (e.g., "Custom Search") and adjust its country/state/city values as needed.</em>
+		</p>
+
+		<h4>Search input field</h4>
+		<p>
+			Start typing an ICAO code, airport name, or runway designator into the <strong>Search</strong> text box to dynamically filter matching airfields.
+		</p>
+		<p>
+			<strong>Note:</strong> Search results strictly respect your active <a href="#locationFilter">Location Filter</a> and selected aircraft surface capabilities. To search across the entire global airport database without regional restrictions, select <strong>[All Locations]</strong> from the Location Filter profile dropdown.
+		</p>
+
+		<h4>Including Add-on Scenery Runways</h4>
+		<p>
+			By default, P3D Scenario Generator includes database entries corresponding to stock Prepar3D v5 airfields, generated using Pete and John Dowson's freeware <a href="http://fsuipc.com/" title="fsuipc.com" target="_blank">MakeRunways</a> utility (v5.131).
+		</p>
+		<p>
+			To scan and include your installed add-on scenery airfields:
+		</p>
+		<ol type="1">
+			<li>
+				Download <strong>MakeRunways</strong> and use its included <code>LorbySceneryExport</code> utility as outlined in <code>MakeRwys README.pdf</code>.
+			</li>
+			<li>
+				Generate an updated <code>runways.xml</code> file reflecting your simulator installation.
+			</li>
+			<li>
+				Copy the generated <code>runways.xml</code> file into your application user data folder at <code>%APPDATA%\P3D Scenario Generator\</code>. The generator will automatically detect this custom file and prioritize it over the default stock database.
+			</li>
+		</ol>
+
+		<p>
+			<strong>MakeRunways Tips &amp; Technical Notes:</strong>
+		</p>
+		<ul>
+			<li>
+				<strong>Command Execution (PowerShell Required):</strong> Always execute MakeRunways from <strong>Windows PowerShell</strong> (not Command Prompt) opened inside your main Prepar3D directory. Command Prompt misinterprets the <code>&gt;</code> character as a file redirection operator.
+			</li>
+			<li>
+				<strong>Recommended Command:</strong> Run <code>.\MakeRwys /&gt;0 /Water</code> to generate a complete database.
+				<ul>
+					<li>
+						<code>/&gt;0</code> – Forces MakeRunways to include short airstrips (bypassing the default 1,500m minimum length filter).
+					</li>
+					<li>
+						<code>/Water</code> – Scans and includes water landing sites, seaplane bases, and water runways.
+					</li>
+				</ul>
+			</li>
+			<li>
+				<strong>Scenery Activation:</strong> Ensure all add-on scenery packages are active inside Prepar3D prior to executing MakeRunways.
+			</li>
+			<li>
+				<strong>Database Maintenance:</strong> You must regenerate and copy <code>runways.xml</code> whenever you add or modify airport scenery in Prepar3D.
+			</li>
+			<li>
+				<strong>Airports Without Defined Runways:</strong> Stock P3D v5.4 contains 23,514 airports (56,145 total runways). Of these, 1,038 airfields contain no explicit runway data in the XML output. P3D Scenario Generator ignores these runway-less airfields because scenario generation requires valid runway coordinates. To include an omitted airfield, use Airport Design Editor (ADE) to add at least one defined runway BGL record.
+			</li>
+		</ul>
+
+		<hr/>
+
+		<!-- AIRCRAFT SELECTION -->
+		<h3 id="aircraftSelection">Aircraft Selection</h3>
+		<p>
+			The <strong>Aircraft Selection</strong> group defines which aircraft variant will be loaded into Prepar3D when the scenario starts.
+		</p>
+		<p>
+			<strong>Runway Compatibility:</strong> Your selected aircraft's landing configuration (wheels, floats, or amphibious) acts as a dynamic filter on the <a href="#runwaySelection">Runway Selection</a> group, ensuring random airfield picks always match your aircraft's surface capabilities.
+		</p>
+
+		<h4>Add Aircraft button</h4>
+		<p>
+			Click <kbd class="winforms-btn">Add Aircraft</kbd> to select an aircraft variant to add to your list of favourites:
+		</p>
+		<ol type="1">
+			<li>To select an aircraft variant, first navigate to the aircraft folder.</li>
+			<li>
+				For default aircraft, this will be a folder within the <code>SimObjects\Airplanes</code> directory (e.g., <code>SimObjects\Airplanes\Piper_J3Cub</code>) or <code>SimObjects\Rotorcraft</code> directory (e.g., <code>SimObjects\Rotorcraft\Robinson_R22</code>).
+			</li>
+			<li>
+				Open the <code>texture.X</code> folder of the variant you require (e.g., <code>SimObjects\Airplanes\Piper_J3Cub\Texture.1</code>). The folder name must end in <code>.X</code> where <em>X</em> is any string of characters; choosing a plain <code>texture</code> folder will not work.
+			</li>
+			<li>
+				Select the <code>thumbnail.jpg</code> file in that folder and click <strong>Open</strong>.
+			</li>
+			<li>
+				Confirm the chosen aircraft variant by hovering over the summary display field adjacent to the <kbd class="winforms-btn">Add Aircraft</kbd> button.
+			</li>
+		</ol>
+		<p>
+			<strong>Note:</strong> Add-on aircraft may be stored somewhere else on your PC. Simply navigate to the appropriate <code>texture.X</code> folder and select its <code>thumbnail.jpg</code> file.
+		</p>
+
+		<h4>Random Aircraft button</h4>
+		<p>
+			Click <kbd class="winforms-btn">Random</kbd> within the Aircraft Selection group to randomly pick one aircraft variant from your saved favourites list and set it as active.
+		</p>
+
+		<h4>Selected aircraft combobox</h4>
+		<p>
+			Click the dropdown arrow next to <strong>Selected Aircraft</strong> and choose an aircraft variant from the list to set it as active and automatically calculate its default <a href="circuit.htm">circuit parameters</a>.
+		</p>
+		<p>
+			To <strong>rename</strong> an aircraft variant: select the variant, type a new name directly into the text box, and press <kbd>Enter</kbd>.
+		</p>
+		<p>
+			To <strong>delete</strong> an aircraft variant: select an entry from the list and press <kbd>Delete</kbd>. A prompt will ask you to confirm removing the variant from your favourites list.
+		</p>
+
+		<h4>Aircraft summary display field</h4>
+		<p>
+			Displays a quick summary of key performance values and parameters for the currently selected aircraft variant.
+		</p>
+		<p>
+			<strong>Tip:</strong> Hover your mouse cursor over this text field to display an expanded pop-up tooltip containing the complete set of aircraft values.
+		</p>
+
+		<hr/>
+
+		<!-- SCENARIO SELECTION -->
+		<h3 id="scenarioSelection">Scenario Selection</h3>
+		<p>
+			The <strong>Scenario Selection</strong> group determines the preset scenario template used for generation and assigns the title and target folder name for the exported scenario package.
+		</p>
+
+		<h4>Scenario combobox</h4>
+		<p>
+			Click the dropdown arrow to select a scenario preset from the list. Unlike other dropdowns in the application, this list is selection-only and does not support inline renaming or deleting of entries.
+		</p>
+		<p>
+			Click <kbd class="winforms-btn">Random</kbd> within the Scenario Selection group to randomly choose a scenario preset from the available list.
+		</p>
+
+		<!-- SCENARIO SELECTION -->
+		<h3 id="scenarioSelection">Scenario Selection</h3>
+		<p>
+			The <strong>Scenario Selection</strong> group determines the preset scenario template used for generation and assigns the title and target folder name for the exported scenario package.
+		</p>
+
+		<h4>Scenario combobox</h4>
+		<p>
+			Click the dropdown arrow to select a scenario preset from the list. Unlike other dropdowns in the application, this list is selection-only and does not support inline renaming or deleting of entries.
+		</p>
+		<p>
+			Click <kbd class="winforms-btn">Random</kbd> within the Scenario Selection group to randomly choose a scenario preset from the available list.
+		</p>
+
+		<h4>Title text box</h4>
+		<p>
+			Type a unique name for your scenario into the <strong>Title</strong> text field. This title defines both the scenario display name inside Prepar3D's menu interface and the subfolder name where scenario files are saved on your drive.
+		</p>
+		<p>
+			<strong>Validation Rules &amp; Folder Checks:</strong>
+		</p>
+		<ul>
+			<li>
+				<strong>Valid Filename Required:</strong> The scenario title cannot be empty and must not contain illegal Windows filename characters (<code>\</code>, <code>/</code>, <code>:</code>, <code>*</code>, <code>?</code>, <code>"</code>, <code>&lt;</code>, <code>&gt;</code>, or <code>|</code>).
+			</li>
+			<li>
+				<strong>Existing Scenario Check:</strong> Before generation, the application checks your target Prepar3D scenario path (as configured on the <a href="settings.htm">Settings tab</a>). If a folder matching your proposed title already exists, validation will prevent generation. You must either enter a different scenario title or delete the existing folder (ensure Prepar3D is closed before attempting to delete folders).
+			</li>
+			<li>
+				<strong>Settings Prerequisite:</strong> A valid <strong>Scenario Base Folder</strong> must be configured on the <a href="settings.htm">Settings tab</a> for scenario title path validation to succeed.
+			</li>
+		</ul>
+
+		<hr/>
+
+		<!-- GLOBAL ACTIONS -->
+		<h3 id="globalActions">Global Actions</h3>
+		<p>
+			Located along the bottom of the application window, these buttons manage configuration session states, revert control values, and compile the final scenario files.
+		</p>
+
+		<h4>Default button</h4>
+		<p>
+			Click <kbd class="winforms-btn">Default</kbd> to reset controls on the currently active tab back to their original factory default values.
+		</p>
+		<p>
+			<strong>Circuit Tab Exception:</strong> The <kbd class="winforms-btn">Default</kbd> button cannot reset values directly while viewing the Circuit tab. To restore default circuit flight parameters for a given aircraft, simply re-select the desired variant from the <strong>Selected Aircraft</strong> dropdown in the <a href="#aircraftSelection">Aircraft Selection</a> group.
+		</p>
+
+		<h4>Saved button</h4>
+		<p>
+			Click <kbd class="winforms-btn">Saved</kbd> to reload your previously saved configuration profile, restoring custom control states across application tabs from the user settings file (<code>%APPDATA%\P3D Scenario Generator\ui_settings.json</code>).
+		</p>
+		<p>
+			<strong>Circuit Tab Exception:</strong> User-specified circuit parameters are managed dynamically per aircraft variant rather than persisted in the global UI settings cache. Clicking <kbd class="winforms-btn">Saved</kbd> while viewing the Circuit tab will display a status notification and leave current circuit values unchanged.
+		</p>
+
+		<h4>Generate Scenario button</h4>
+		<p>
+			Click <kbd class="winforms-btn">Generate Scenario</kbd> to validate all form inputs across active tabs and build the scenario package.
+		</p>
+		<p>
+			Before exporting, the generator verifies:
+		</p>
+		<ul>
+			<li>
+				The <a href="#scenarioSelection">Scenario Title</a> is valid and does not overwrite an existing scenario folder.
+			</li>
+			<li>
+				A valid <strong>Scenario Base Folder</strong> and <strong>P3D Installation Path</strong> are configured on the <a href="settings.htm">Settings tab</a>.
+			</li>
+			<li>
+				The active <a href="#locationFilter">Location Filter</a> and selected aircraft surface capabilities yield at least one matching airport/runway.
+			</li>
+		</ul>
+		<p>
+			Upon successful validation, all required scenario files are compiled and written directly into your Prepar3D scenario directory.
+		</p>
+	</body>
+</html>

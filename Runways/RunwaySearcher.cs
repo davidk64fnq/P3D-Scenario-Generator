@@ -31,6 +31,46 @@ namespace P3D_Scenario_Generator.Runways
         private static readonly Random _random = Random.Shared;
 
         /// <summary>
+        /// Searches runways matching a search query while respecting active location filters and aircraft capabilities.
+        /// </summary>
+        /// <param name="searchText">The raw text entered into the search box.</param>
+        /// <param name="scenarioFormData">The current form configuration payload.</param>
+        /// <returns>A list of matching RunwayParams objects.</returns>
+        public List<RunwayParams> SearchRunways(string searchText, ScenarioFormData scenarioFormData)
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                return [];
+            }
+
+            // Tokenize input (e.g. "ymba 10" -> ["ymba", "10"])
+            string[] searchTokens = searchText.Split([' ', '(', ')', '-', ','], StringSplitOptions.RemoveEmptyEntries);
+
+            if (searchTokens.Length == 0)
+            {
+                return [];
+            }
+
+            // Filter by Location + Aircraft Surface Capability, then ensure all search tokens match
+            return [.. _allRunways
+                .Where(runway => IsRunwayInFilteredLocation(runway, scenarioFormData))
+                .Where(runway =>
+                {
+                    // Match against ICAO ID and Runway Number/Designator
+                    string displayString = $"{runway.IcaoId} ({runway.Number}{runway.Designator})";
+                    return searchTokens.All(token => displayString.Contains(token, StringComparison.OrdinalIgnoreCase));
+                })];
+        }
+
+        /// <summary>
+        /// Returns all runways that meet active location filters and aircraft surface capability criteria.
+        /// </summary>
+        public List<RunwayParams> GetFilteredRunways(ScenarioFormData scenarioFormData)
+        {
+            return [.. _allRunways.Where(runway => IsRunwayInFilteredLocation(runway, scenarioFormData))];
+        }
+
+        /// <summary>
         /// Finds the nearest runway to a given point from the complete list,
         /// applying location filters dynamically using a k-d tree search.
         /// </summary>
@@ -226,7 +266,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="runway">The runway to check.</param>
         /// <param name="scenarioFormData">The ScenarioFormData object with filter lists.</param>
         /// <returns>True if the runway meets the criteria, false otherwise.</returns>
-        private static bool IsRunwayInFilteredLocation(RunwayParams runway, ScenarioFormData scenarioFormData)
+        public static bool IsRunwayInFilteredLocation(RunwayParams runway, ScenarioFormData scenarioFormData)
         {
             // --- 1. Aircraft Surface Filtering ---
             var aircraft = scenarioFormData?.SelectedAircraft;

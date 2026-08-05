@@ -525,26 +525,31 @@ namespace P3D_Scenario_Generator
 
             if (string.IsNullOrWhiteSpace(searchText))
             {
-                // If the search box is empty, clear the list box.
-                ListBoxGeneralRunwayResults.Items.Clear();
+                ComboBoxGeneralRunwayResults.Items.Clear();
                 return;
             }
 
-            // Filter the in-memory list based on the search text.
-            var filteredResults = _runwayUiManager.UILists.IcaoRunwayNumbers.Where(s => s.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+            // Delegate filtering and searching to the RunwaySearcher service
+            var matchedRunways = _runwayManager.Searcher.SearchRunways(searchText, _formData);
 
-            // Update the list box with the filtered results.
-            ListBoxGeneralRunwayResults.Items.Clear();
-            foreach (var item in filteredResults)
+            ComboBoxGeneralRunwayResults.BeginUpdate();
+            try
             {
-                ListBoxGeneralRunwayResults.Items.Add(item);
+                ComboBoxGeneralRunwayResults.Items.Clear();
+
+                foreach (var runway in matchedRunways)
+                {
+                    ComboBoxGeneralRunwayResults.Items.Add(RunwayUtils.FormatRunwayIcaoString(runway));
+                }
+
+                if (ComboBoxGeneralRunwayResults.Items.Count > 0)
+                {
+                    ComboBoxGeneralRunwayResults.SelectedIndex = 0;
+                }
             }
-
-            // Optional: Replicate the "first matching item" feature
-            // Select the first item in the list box if there are results.
-            if (ListBoxGeneralRunwayResults.Items.Count > 0)
+            finally
             {
-                ListBoxGeneralRunwayResults.SelectedIndex = 0;
+                ComboBoxGeneralRunwayResults.EndUpdate();
             }
         }
 
@@ -556,36 +561,22 @@ namespace P3D_Scenario_Generator
             RunwayParams randomRunway = await _runwayManager.Searcher.GetFilteredRandomRunwayAsync(_formData);
 
             // Clear the existing items in the ListBox before adding a new one.
-            ListBoxGeneralRunwayResults.Items.Clear();
+            ComboBoxGeneralRunwayResults.Items.Clear();
 
             // Check if a runway was found. The method returns null if no match exists.
             if (randomRunway != null)
             {
                 // Add the ICAO ID of the found runway to the list box.
                 // You can add more details from the randomRunway object here if needed.
-                ListBoxGeneralRunwayResults.Items.Add(RunwayUtils.FormatRunwayIcaoString(randomRunway));
+                ComboBoxGeneralRunwayResults.Items.Add(RunwayUtils.FormatRunwayIcaoString(randomRunway));
 
                 // Select the newly added item to make it visible.
-                ListBoxGeneralRunwayResults.SelectedIndex = 0;
+                ComboBoxGeneralRunwayResults.SelectedIndex = 0;
             }
             else
             {
                 // Display a message to the user if no runways were found.
-                ListBoxGeneralRunwayResults.Items.Add("No runway found matching the filters.");
-            }
-        }
-
-        private void ListBoxGeneralRunwayResults_MouseMove(object sender, MouseEventArgs e)
-        {
-            int index = ListBoxGeneralRunwayResults.IndexFromPoint(e.Location);
-            if (index != -1 && index < ListBoxGeneralRunwayResults.Items.Count)
-            {
-                string text = ListBoxGeneralRunwayResults.Items[index].ToString();
-                // Only update if the text changed to prevent flickering
-                if (toolTip1.GetToolTip(ListBoxGeneralRunwayResults) != text)
-                {
-                    toolTip1.SetToolTip(ListBoxGeneralRunwayResults, text);
-                }
+                ComboBoxGeneralRunwayResults.Items.Add("No runway found matching the filters.");
             }
         }
 
@@ -825,6 +816,8 @@ namespace P3D_Scenario_Generator
         {
             if (e.KeyCode == Keys.Enter)
             {
+                e.SuppressKeyPress = true; // Prevents the Windows error chime
+
                 // Alter aircraftVariant instance in Aircraft.cs to reflect new display name
                 string newDisplayName = ((ComboBox)sender).Text;
                 // The call is now on the instance variable `_aircraft`
@@ -848,15 +841,7 @@ namespace P3D_Scenario_Generator
             }
             else if (e.KeyCode == Keys.Delete)
             {
-                // Don't delete a character
-                e.SuppressKeyPress = true;
-
-                // Use the helper to confirm the action. If the user doesn't confirm,
-                // return early and do nothing else.
-                if (!UIHelpers.ConfirmAction("Are you sure you want to delete this aircraft variant?"))
-                {
-                    return;
-                }
+                e.SuppressKeyPress = true; // Suppress character deletion in editable ComboBox
 
                 if (((ComboBox)sender).Items.Count == 0)
                 {
@@ -864,43 +849,50 @@ namespace P3D_Scenario_Generator
                     return;
                 }
 
-                // Delete aircraftVariant instance in Aircraft.cs
+                if (!UIHelpers.ConfirmAction("Are you sure you want to delete this aircraft variant?"))
+                    return;
+
                 int oldIndex = _aircraft.CurrentAircraftVariantIndex;
                 string deleteDisplayName = ((ComboBox)sender).Text;
-                // The call is now on the instance variable `_aircraft`
+
+                // Delete from backend data model
                 _aircraft.DeleteAircraftVariant(deleteDisplayName);
 
-                // Refresh the ComboBoxGeneralAircraftSelection field list on form
-                // The call is now on the instance variable `_aircraft`
+                // Refresh UI data source
                 ComboBoxGeneralAircraftSelection.DataSource = _aircraft.GetAircraftVariantDisplayNames();
 
-                // Set selected index for ComboBoxGeneralAircraftSelection 
-                if (oldIndex != _aircraft.CurrentAircraftVariantIndex)
+                int itemCount = ComboBoxGeneralAircraftSelection.Items.Count;
+                if (itemCount > 0)
                 {
-                    if (oldIndex == 0 && ComboBoxGeneralAircraftSelection.Items.Count > 0)
-                        // There were 2 or more items and first in list was deleted 
-                        ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
-                    else if (ComboBoxGeneralAircraftSelection.Items.Count > 0)
-                        // There were two or more items so change to prior item in list
-                        ComboBoxGeneralAircraftSelection.SelectedIndex = oldIndex - 1;
-                    else
-                    {
-                        // There was one item in list (or no items)
-                        ComboBoxGeneralAircraftSelection.SelectedIndex = -1;
-                        ((ComboBox)sender).Text = "";
-                    }
+                    // Determine target index (maintain index if deleting top item, otherwise move to previous item)
+                    int targetIndex = (oldIndex == 0) ? 0 : Math.Max(0, oldIndex - 1);
+
+                    ComboBoxGeneralAircraftSelection.SelectedIndex = targetIndex;
+
+                    // Force explicit backend re-sync in case WinForms suppresses SelectedIndexChanged when index value doesn't shift
+                    string currentDisplayName = ComboBoxGeneralAircraftSelection.GetItemText(ComboBoxGeneralAircraftSelection.SelectedItem);
+                    _aircraft.ChangeCurrentAircraftVariantIndex(currentDisplayName);
+                }
+                else
+                {
+                    ComboBoxGeneralAircraftSelection.SelectedIndex = -1;
+                    ((ComboBox)sender).Text = "";
                 }
 
-                // Refresh TextBoxGeneralLocationFilters field on form
-                // The call is now on the instance variable `_aircraft`
+                // Refresh summary display values
                 TextBoxGeneralAircraftValues.Text = _aircraft.SetTextBoxGeneralAircraftValues();
             }
         }
 
         private async void ComboBoxGeneralAircraftSelection_SelectedIndexChangedAsync(object sender, EventArgs e)
         {
+            string selectedDisplayName = ((ComboBox)sender).Text;
+
+            if (string.IsNullOrWhiteSpace(selectedDisplayName))
+                return;
+
             // The call is now on the instance variable `_aircraft`
-            AircraftVariant aircraftVariant = _aircraft.AircraftVariants.Find(aircraft => aircraft.DisplayName == ((ComboBox)sender).Text);
+            AircraftVariant aircraftVariant = _aircraft.AircraftVariants.Find(aircraft => aircraft.DisplayName == selectedDisplayName);
 
             if (ValidateAndPopulateAircraftDetails(aircraftVariant))
             {
@@ -922,16 +914,10 @@ namespace P3D_Scenario_Generator
                 return;
             Random random = new();
             int randomAircraftIndex = random.Next(0, _aircraft.AircraftVariants.Count);
+
+            // Setting SelectedIndex triggers ComboBoxGeneralAircraftSelection_SelectedIndexChangedAsync,
+            // which automatically updates the backend index and refreshes the text box.
             ComboBoxGeneralAircraftSelection.SelectedIndex = randomAircraftIndex;
-
-            // Update CurrentAircraftVariantIndex in Aircraft.cs
-            string newDisplayName = ComboBoxGeneralAircraftSelection.Text;
-            // The call is now on the instance variable `_aircraft`
-            _aircraft.ChangeCurrentAircraftVariantIndex(newDisplayName);
-
-            // Refresh TextBoxGeneralAircraftValues field on form
-            // The call is now on the instance variable `_aircraft`
-            TextBoxGeneralAircraftValues.Text = _aircraft.SetTextBoxGeneralAircraftValues();
         }
 
         private void TextBoxGeneralAircraftValues_MouseEnter(object sender, EventArgs e)
@@ -1004,7 +990,7 @@ namespace P3D_Scenario_Generator
 
                 // Delete locationFavourite instance in RunwayUIManager
                 string deleteFavouriteName = ((ComboBox)sender).Text;
-                
+
                 // 1. Guard against deleting the default template BEFORE prompting the user
                 if (string.IsNullOrWhiteSpace(deleteFavouriteName) ||
                     deleteFavouriteName.Equals(RunwayUiManager.DefaultFavouriteName, StringComparison.OrdinalIgnoreCase))
@@ -2947,12 +2933,12 @@ namespace P3D_Scenario_Generator
 
             ValidateAndPopulateLocationFilters();
 
-            string selectedICAOandId = ListBoxGeneralRunwayResults.SelectedItem?.ToString();
+            string selectedICAOandId = ComboBoxGeneralRunwayResults.SelectedItem?.ToString();
             RunwayParams selectedRunway;
 
             if (!string.IsNullOrWhiteSpace(selectedICAOandId))
             {
-                RunwayUtils.ParseIcaoRunwayString(ListBoxGeneralRunwayResults.SelectedItem.ToString(), out string icaoId, out string runwayId, out string runwayDesignator);
+                RunwayUtils.ParseIcaoRunwayString(ComboBoxGeneralRunwayResults.SelectedItem.ToString(), out string icaoId, out string runwayId, out string runwayDesignator);
                 selectedRunway = _runwayManager.Searcher.GetRunwayByIcaoIdDesignator(icaoId, runwayId, runwayDesignator);
             }
             else
@@ -4240,5 +4226,6 @@ namespace P3D_Scenario_Generator
         }
 
         #endregion
+
     }
 }

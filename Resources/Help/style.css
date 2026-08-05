@@ -1,6 +1,7 @@
 /* Base Page Styling */
 body {
     margin: 20px;
+    padding-bottom: 100vh; /* Gives extra scroll space so bottom anchors reach the top */
     font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 13px;
     color: #202020;
@@ -10,7 +11,7 @@ body {
 
 /* Headings */
 h2 {
-    font-size: 1.4em;
+    font-size: 1.4em; 
     color: #005a9c;
     border-bottom: 2px solid #e5f1fb;
     padding-bottom: 4px;
@@ -24,12 +25,23 @@ h3 {
     margin-bottom: 0.4em;
 }
 
+/* Subheadings inside control groups */
+h4 {
+    font-size: 1.0em;
+    color: #333333;
+    margin-top: 1.1em;
+    margin-bottom: 0.3em;
+}
+
 /* Images */
 img {
     max-width: 100%;
     height: auto;
     display: block;
-    margin: 10px 0;
+    margin: 14px auto;             /* Centers the block image horizontally */
+    border: 1px solid #cccccc;      /* Adds the missing border */
+    border-radius: 4px;            /* Clean rounded corners */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle depth */
 }
 
 /* Lists & Code */

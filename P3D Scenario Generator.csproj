@@ -31,9 +31,7 @@
     <None Remove="Resources\CSS\style_load_flight.css" />
     <None Remove="Resources\Excel\Celestial Nav Stars.xlsx" />
     <None Remove="Resources\Excel\CelestialNavStars.xlsx" />
-    <None Remove="Resources\Help\aircraft.htm" />
     <None Remove="Resources\Help\circuit.htm" />
-    <None Remove="Resources\Help\dateTime.htm" />
     <None Remove="Resources\Help\images\circuitTab.jpg" />
     <None Remove="Resources\Help\images\introduction-objects.jpg" />
     <None Remove="Resources\Help\images\legRoute.jpg" />
@@ -46,12 +44,9 @@
     <None Remove="Resources\Help\images\sceanrioReset.jpg" />
     <None Remove="Resources\Help\images\scenarioLoadMenu.jpg" />
     <None Remove="Resources\Help\images\scenarioLoadScreen.jpg" />
-    <None Remove="Resources\Help\index.htm" />
     <None Remove="Resources\Help\introduction.htm" />
-    <None Remove="Resources\Help\locationFilter.htm" />
     <None Remove="Resources\Help\photoTour.htm" />
     <None Remove="Resources\Help\runway.htm" />
-    <None Remove="Resources\Help\scenario.htm" />
     <None Remove="Resources\Help\style.css" />
     <None Remove="Resources\HTML\CelestialSextant.html" />
     <None Remove="Resources\HTML\MissionBriefSource.htm" />
@@ -109,9 +104,6 @@
     <EmbeddedResource Include="Resources\CSS\style_kneeboard.css" />
     <EmbeddedResource Include="Resources\CSS\style_load_flight.css" />
     <EmbeddedResource Include="Resources\Excel\CelestialNavStars.xlsx" />
-    <EmbeddedResource Include="Resources\Help\aircraft.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\circuit.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -151,13 +143,10 @@
     <EmbeddedResource Include="Resources\Help\images\scenarioLoadScreen.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\index.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\introduction.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\locationFilter.htm">
+    <EmbeddedResource Include="Resources\Help\generalTab.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\folderInfo.htm">
@@ -169,13 +158,7 @@
     <EmbeddedResource Include="Resources\Help\runway.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\dateTime.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\mapTileCacheInfo.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\scenario.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\style.css">
