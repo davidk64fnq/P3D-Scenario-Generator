@@ -179,7 +179,9 @@
     <EmbeddedResource Include="Resources\Images\imgM.png" />
     <EmbeddedResource Include="Resources\Images\plotImage.jpg" />
     <EmbeddedResource Include="Resources\Images\signTabSegment22Font.jpg" />
-    <EmbeddedResource Include="Resources\Images\success-icon.png" />
+    <EmbeddedResource Include="Resources\Images\success-icon.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Javascript\scriptsCelestialAstroCalcs.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsCelestialSextant.js" />
     <EmbeddedResource Include="Resources\Javascript\scriptsMovingMap.js" />
@@ -194,7 +196,9 @@
     <EmbeddedResource Include="Resources\Sounds\ThruHoop.wav" />
     <EmbeddedResource Include="Resources\XML\runways.xml" />
     <EmbeddedResource Include="Resources\XML\source.fxml" />
-    <EmbeddedResource Include="Resources\Images\thumbnail.jpg" />
+    <Content Include="Resources\Images\thumbnail.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

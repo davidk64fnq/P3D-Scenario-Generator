@@ -21,6 +21,12 @@ namespace P3D_Scenario_Generator.Services
         /// When <see langword="false"/> (the default), every call to <see cref="Report(string)"/> will result in an immediate UI update.
         /// </summary>
         public bool IsThrottlingEnabled { get; set; } = false;
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether status reporting is temporarily suppressed.
+        /// When <see langword="true"/>, calls to <see cref="Report(string)"/> are ignored.
+        /// </summary>
+        public bool IsSuppressed { get; set; } = false;
 
         /// <summary>
         /// Reports a progress update, displaying the message on the status bar and logging it as Info.
@@ -28,7 +34,7 @@ namespace P3D_Scenario_Generator.Services
         /// <param name="value">The progress message to display and log.</param>
         public void Report(string value)
         {
-            if (value == null)
+            if (value == null || IsSuppressed)
             {
                 return;
             }

@@ -46,16 +46,19 @@ namespace P3D_Scenario_Generator.Services
         {
             AircraftVariant aircraftVariant = new();
 
-            string thumbnailPath = GetThumbnail(formData);
+            string selectedPath = GetThumbnail(formData);
 
-            if (thumbnailPath != "")
+            if (!string.IsNullOrEmpty(selectedPath))
             {
-                aircraftVariant.ThumbnailImagePath = thumbnailPath;
-                aircraftVariant.Title = await GetAircraftTitleAsync(thumbnailPath);
+                // 1. Determine a valid image path for UI display
+                aircraftVariant.ThumbnailImagePath = ResolveValidThumbnailPath(selectedPath);
+
+                // 2. Read config values using the selected path (works regardless of file extension)
+                aircraftVariant.Title = await GetAircraftTitleAsync(selectedPath);
                 aircraftVariant.DisplayName = aircraftVariant.Title;
-                aircraftVariant.CruiseSpeed = await GetAircraftCruiseSpeedAsync(thumbnailPath);
-                aircraftVariant.HasFloats = await GetAircraftFloatsStatusAsync(thumbnailPath);
-                aircraftVariant.HasWheelsOrEquiv = await GetAircraftWheelsStatusAsync(thumbnailPath);
+                aircraftVariant.CruiseSpeed = await GetAircraftCruiseSpeedAsync(selectedPath);
+                aircraftVariant.HasFloats = await GetAircraftFloatsStatusAsync(selectedPath);
+                aircraftVariant.HasWheelsOrEquiv = await GetAircraftWheelsStatusAsync(selectedPath);
 
                 if (AddAircraftVariant(aircraftVariant))
                 {
@@ -66,59 +69,114 @@ namespace P3D_Scenario_Generator.Services
         }
 
         /// <summary>
-        /// Prompts user to select an aircraft thumbnail.jpg file 
+        /// Ensures the assigned thumbnail path points to an image matching standard P3D thumbnail dimensions (2:1 ratio).
+        /// If a non-image file (.dds) or an image with incorrect dimensions is selected, scans the folder for a valid thumbnail,
+        /// falling back to default_thumbnail.jpg if none match.
+        /// </summary>
+        private static string ResolveValidThumbnailPath(string selectedPath)
+        {
+            // 1. If the explicitly selected file has correct thumbnail dimensions, use it immediately
+            if (FileOps.FileExists(selectedPath) && IsValidThumbnailDimensions(selectedPath))
+            {
+                return selectedPath;
+            }
+
+            // 2. Check if a standard thumbnail.jpg exists in the texture folder and has valid dimensions
+            string textureFolderPath = Path.GetDirectoryName(selectedPath)!;
+            string standardThumbnailPath = Path.Combine(textureFolderPath, "thumbnail.jpg");
+
+            if (FileOps.FileExists(standardThumbnailPath) && IsValidThumbnailDimensions(standardThumbnailPath))
+            {
+                return standardThumbnailPath;
+            }
+
+            // 3. Scan directory for any alternative .jpg / .png matching 2:1 dimensions
+            string[] candidateImages = [.. Directory.GetFiles(textureFolderPath, "*.*")
+                .Where(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                           f.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                           f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                           f.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase))];
+
+            foreach (string imagePath in candidateImages)
+            {
+                if (IsValidThumbnailDimensions(imagePath))
+                {
+                    return imagePath;
+                }
+            }
+
+            // 4. Fallback to generic image (guaranteed to be 256x128)
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Images", "thumbnail.jpg");
+        }
+
+        /// <summary>
+        /// Verifies if an image file matches standard Prepar3D thumbnail dimensions (2:1 aspect ratio).
+        /// Uses FileStream to avoid locking the image file on disk.
+        /// </summary>
+        private static bool IsValidThumbnailDimensions(string filePath)
+        {
+            try
+            {
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using var img = System.Drawing.Image.FromStream(stream, false, false);
+
+                // Standard P3D thumbnail ratio is 2:1 (e.g., 256x128 or 512x256)
+                double aspectRatio = (double)img.Width / img.Height;
+                bool hasCorrectRatio = Math.Abs(aspectRatio - 2.0) < 0.15;
+                bool isReasonableSize = img.Width <= 1024 && img.Height <= 512;
+
+                return hasCorrectRatio && isReasonableSize;
+            }
+            catch
+            {
+                return false; // If image loading fails, treat as invalid
+            }
+        }
+
+        /// <summary>
+        /// Prompts user to select an aircraft thumbnail or image file from within a texture folder.
         /// </summary>
         /// <param name="formData">The scenario form data containing paths like the P3D install directory.</param>
-        /// <returns>Full path including filename of selected thumbnail.jpg file or empty string</returns>
+        /// <returns>Full path including filename of selected image file or empty string.</returns>
         internal static string GetThumbnail(ScenarioFormData formData)
         {
-            // Prompt user to select an aircraft variant thumbnail image
+            // Prompt user to select an image file within a texture folder
             using OpenFileDialog openFileDialog1 = new()
             {
-                Title = "Select an aircraft thumbnail image file from within a \"texture.X\" folder (X could be any string), NOT a \"texture\" folder",
+                Title = "Select a thumbnail image or file from within a \"texture.X\" folder",
                 DefaultExt = "jpg",
-                Filter = "JPG files (*.jpg)|*.jpg|All files (*.*)|*.*",
+                Filter = "Image Files (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp|All files (*.*)|*.*",
                 FilterIndex = 1,
-                InitialDirectory = Path.Combine(formData.P3DProgramInstall, "SimObjects\\Airplanes"),
+                InitialDirectory = Path.Combine(formData.P3DProgramInstall, "SimObjects"),
                 RestoreDirectory = false
             };
 
-            // Check that the user has selected a non AI aircraft variant thumbnail image
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 string thumbnailPath = openFileDialog1.FileName;
-                // Check user has selected a file "thumbnail.jpg"
-                if (!Path.GetFileName(thumbnailPath).Equals("thumbnail.jpg", StringComparison.OrdinalIgnoreCase))
-                {
-                    MessageBox.Show("Please select a \"thumbnail.jpg\" file (case insensitive)", Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return "";
-                }
 
-                // Check the user hasn't selected from a "texture" folder instead of a "texture.X" folder where X is the 
-                // name of the aircraft variant texture
+                // Verify the selection is inside a "texture.X" folder (contains a period)
                 if (GetTextureValue(thumbnailPath) == "")
                 {
-                    MessageBox.Show($"Not a valid variant, please select from within a texture folder name containing a \".\"",
+                    MessageBox.Show("Not a valid variant. Please select an image file from within a texture folder name containing a \".\" (e.g., texture.1)",
                         Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return "";
                 }
 
-                // Check whether user has selected AI aircraft
-                string textureFolderPath = Path.GetDirectoryName(thumbnailPath);
-                string aircraftFolderPath = Path.GetDirectoryName(textureFolderPath);
+                // Check whether user has selected an AI aircraft (must contain a panel folder)
+                string textureFolderPath = Path.GetDirectoryName(thumbnailPath)!;
+                string aircraftFolderPath = Path.GetDirectoryName(textureFolderPath)!;
                 if (Directory.GetDirectories(aircraftFolderPath, "panel*").Length == 0)
                 {
-                    MessageBox.Show($"This is an AI aircraft, there is no panel folder in {aircraftFolderPath}",
+                    MessageBox.Show($"This is an AI aircraft; there is no panel folder in {aircraftFolderPath}",
                         Constants.appTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return "";
                 }
 
                 return openFileDialog1.FileName;
             }
-            else
-            {
-                return "";
-            }
+
+            return "";
         }
 
         /// <summary>

@@ -202,6 +202,12 @@ namespace P3D_Scenario_Generator
             label36 = new Label();
             ComboBoxCelestialAlignment = new ComboBox();
             ButtonRandomLocation = new Button();
+            ButtonRandomTime = new Button();
+            ButtonRandomDate = new Button();
+            GeneralDatePicker = new DateTimePicker();
+            GeneralTimePicker = new DateTimePicker();
+            ButtonRandomAircraft = new Button();
+            TextBoxGeneralAircraftValues = new TextBox();
             GroupBoxSignWritingParameters = new GroupBox();
             TableLayoutPanelSignWritingParameters = new TableLayoutPanel();
             GroupBoxSignWritingSignWindowLocation = new GroupBox();
@@ -243,14 +249,8 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel3 = new TableLayoutPanel();
             groupBox14 = new GroupBox();
             tableLayoutPanel10 = new TableLayoutPanel();
-            ButtonRandomTime = new Button();
-            ButtonRandomDate = new Button();
-            GeneralDatePicker = new DateTimePicker();
-            GeneralTimePicker = new DateTimePicker();
             groupBox15 = new GroupBox();
             tableLayoutPanel11 = new TableLayoutPanel();
-            ButtonRandomAircraft = new Button();
-            TextBoxGeneralAircraftValues = new TextBox();
             TabControlP3DSG = new TabControl();
             TabPageWikiList = new TabPage();
             tableLayoutPanel20 = new TableLayoutPanel();
@@ -329,11 +329,12 @@ namespace P3D_Scenario_Generator
             // ButtonGenerateScenario
             // 
             ButtonGenerateScenario.ImageAlign = ContentAlignment.BottomLeft;
-            ButtonGenerateScenario.Location = new Point(349, 485);
+            ButtonGenerateScenario.Location = new Point(349, 483);
             ButtonGenerateScenario.Name = "ButtonGenerateScenario";
             ButtonGenerateScenario.Size = new Size(152, 43);
             ButtonGenerateScenario.TabIndex = 3;
             ButtonGenerateScenario.Text = "Generate Scenario";
+            toolTip1.SetToolTip(ButtonGenerateScenario, "Generate Scenario:\r\nValidates inputs across all tabs and compiles the final scenario package directly into your Prepar3D directory.");
             ButtonGenerateScenario.UseVisualStyleBackColor = true;
             ButtonGenerateScenario.Click += ButtonGenerateScenario_Click;
             // 
@@ -479,7 +480,7 @@ namespace P3D_Scenario_Generator
             buttonGeneralAircraft.Size = new Size(100, 23);
             buttonGeneralAircraft.TabIndex = 2;
             buttonGeneralAircraft.Text = "Add Aircraft";
-            toolTip1.SetToolTip(buttonGeneralAircraft, "To add a new aircraft to the list of favourites choose the image of preferred aircraft variant");
+            toolTip1.SetToolTip(buttonGeneralAircraft, "Add Aircraft:\r\nSelect an image file (or any file via All Files) inside an aircraft variant's texture.X folder to add it to your favourites.");
             buttonGeneralAircraft.UseVisualStyleBackColor = true;
             buttonGeneralAircraft.Click += ButtonAddAircraft_ClickAsync;
             // 
@@ -843,10 +844,10 @@ namespace P3D_Scenario_Generator
             // 
             ButtonPhotoTourSaved.Location = new Point(109, 495);
             ButtonPhotoTourSaved.Name = "ButtonPhotoTourSaved";
-            ButtonPhotoTourSaved.Size = new Size(75, 23);
+            ButtonPhotoTourSaved.Size = new Size(100, 23);
             ButtonPhotoTourSaved.TabIndex = 2;
-            ButtonPhotoTourSaved.Text = "Saved";
-            toolTip1.SetToolTip(ButtonPhotoTourSaved, "Click to reset field values for currently selected tab to those saved at completion of last program run.");
+            ButtonPhotoTourSaved.Text = "Reload Profile";
+            toolTip1.SetToolTip(ButtonPhotoTourSaved, "Reload Profile:\r\nReloads your saved UI configuration profile from ui_settings.json.");
             ButtonPhotoTourSaved.UseVisualStyleBackColor = true;
             ButtonPhotoTourSaved.Click += ButtonSaved_Click;
             // 
@@ -1787,7 +1788,7 @@ namespace P3D_Scenario_Generator
             label1.TabIndex = 2;
             label1.Text = "Search";
             label1.TextAlign = ContentAlignment.MiddleCenter;
-            toolTip1.SetToolTip(label1, "Start typing an airport ICAO to find an airport");
+            toolTip1.SetToolTip(label1, "Search Input:\r\nType an ICAO code, airport name, or runway designator to dynamically filter available airfields.\r\n");
             // 
             // TextBoxGeneralSearchRunway
             // 
@@ -1798,7 +1799,7 @@ namespace P3D_Scenario_Generator
             TextBoxGeneralSearchRunway.Name = "TextBoxGeneralSearchRunway";
             TextBoxGeneralSearchRunway.Size = new Size(100, 23);
             TextBoxGeneralSearchRunway.TabIndex = 3;
-            toolTip1.SetToolTip(TextBoxGeneralSearchRunway, "Start typing an airport ICAO to find an airport");
+            toolTip1.SetToolTip(TextBoxGeneralSearchRunway, "Search Input:\r\nType an ICAO code, airport name, or runway designator to dynamically filter available airfields.");
             TextBoxGeneralSearchRunway.TextChanged += TextBoxSearchRunway_TextChanged;
             // 
             // groupBox12
@@ -1849,6 +1850,7 @@ namespace P3D_Scenario_Generator
             ButtonRandRunway.Size = new Size(100, 20);
             ButtonRandRunway.TabIndex = 0;
             ButtonRandRunway.Text = "Random Runway";
+            toolTip1.SetToolTip(ButtonRandRunway, "Random Runway:\r\nSelects a random airport and runway matching your active location filter and aircraft surface capabilities.");
             ButtonRandRunway.UseVisualStyleBackColor = true;
             ButtonRandRunway.Click += ButtonRandRunway_Click;
             // 
@@ -1859,6 +1861,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralRunwayResults.Name = "ComboBoxGeneralRunwayResults";
             ComboBoxGeneralRunwayResults.Size = new Size(104, 23);
             ComboBoxGeneralRunwayResults.TabIndex = 4;
+            toolTip1.SetToolTip(ComboBoxGeneralRunwayResults, "Runway List:\r\nSelect your starting airfield and runway (formatted as ICAO (Runway)). Filtered by active location and aircraft type.");
             // 
             // groupBox13
             // 
@@ -1904,6 +1907,7 @@ namespace P3D_Scenario_Generator
             ButtonRandomScenario.Size = new Size(91, 23);
             ButtonRandomScenario.TabIndex = 0;
             ButtonRandomScenario.Text = "Random Scenario";
+            toolTip1.SetToolTip(ButtonRandomScenario, "Random Scenario:\r\nSelects a scenario preset at random from the available template list.");
             ButtonRandomScenario.UseVisualStyleBackColor = true;
             ButtonRandomScenario.Click += ButtonRandomScenario_Click;
             // 
@@ -1915,7 +1919,7 @@ namespace P3D_Scenario_Generator
             TextBoxGeneralScenarioTitle.Size = new Size(100, 23);
             TextBoxGeneralScenarioTitle.TabIndex = 3;
             TextBoxGeneralScenarioTitle.Tag = "";
-            toolTip1.SetToolTip(TextBoxGeneralScenarioTitle, "Specify a valid filename for the sceanrio title.");
+            toolTip1.SetToolTip(TextBoxGeneralScenarioTitle, "Scenario Title:\r\nType a unique scenario title. Defines both the in-game Prepar3D menu name and the scenario folder name on disk.");
             TextBoxGeneralScenarioTitle.Leave += TextBoxGeneralScenarioTitle_Leave;
             // 
             // ComboBoxGeneralScenarioType
@@ -1932,7 +1936,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralScenarioType.Size = new Size(100, 23);
             ComboBoxGeneralScenarioType.TabIndex = 1;
             ComboBoxGeneralScenarioType.Tag = "";
-            toolTip1.SetToolTip(ComboBoxGeneralScenarioType, "The type of scenario required\r\n");
+            toolTip1.SetToolTip(ComboBoxGeneralScenarioType, "Scenario Preset:\r\nChoose the scenario preset template used to build the scenario package.");
             ComboBoxGeneralScenarioType.SelectedIndexChanged += ComboBoxGeneralScenarioType_SelectedIndexChanged;
             // 
             // label2
@@ -1944,7 +1948,7 @@ namespace P3D_Scenario_Generator
             label2.Size = new Size(30, 15);
             label2.TabIndex = 2;
             label2.Text = "Title";
-            toolTip1.SetToolTip(label2, "Specify an alphabetic characters title for the scenario");
+            toolTip1.SetToolTip(label2, "Scenario Title:\r\nType a unique scenario title. Defines both the in-game Prepar3D menu name and the scenario folder name on disk.\r\n");
             // 
             // ComboBoxGeneralAircraftSelection
             // 
@@ -1957,7 +1961,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralAircraftSelection.Size = new Size(100, 23);
             ComboBoxGeneralAircraftSelection.TabIndex = 1;
             ComboBoxGeneralAircraftSelection.Tag = "";
-            toolTip1.SetToolTip(ComboBoxGeneralAircraftSelection, "Choose an aircraft from the list of favourite aircraft to use in this scenario.\r\n\r\nTo change the display name of selected aircraft variant, type in the new name\r\nand press enter.");
+            toolTip1.SetToolTip(ComboBoxGeneralAircraftSelection, "Selected Aircraft:\r\n• SELECT: Choose an active aircraft variant from your favourites list.\r\n• RENAME: Type a new name into the field and press Enter.\r\n• DELETE: Select a variant and press Delete.");
             ComboBoxGeneralAircraftSelection.SelectedIndexChanged += ComboBoxGeneralAircraftSelection_SelectedIndexChangedAsync;
             ComboBoxGeneralAircraftSelection.KeyDown += ComboBoxGeneralAircraftSelection_KeyDown;
             // 
@@ -2429,10 +2433,10 @@ namespace P3D_Scenario_Generator
             ButtonCircuitDefault.Name = "ButtonCircuitDefault";
             ButtonCircuitDefault.Size = new Size(75, 23);
             ButtonCircuitDefault.TabIndex = 1;
-            ButtonCircuitDefault.Text = "Default";
-            toolTip1.SetToolTip(ButtonCircuitDefault, "Click to set default parameters for currently selected tab.");
+            ButtonCircuitDefault.Text = "Reset Tab";
+            toolTip1.SetToolTip(ButtonCircuitDefault, "Reset Tab:\r\nResets controls on the active tab to factory defaults. On the Circuit tab, recalculates baseline parameters for the active aircraft.");
             ButtonCircuitDefault.UseVisualStyleBackColor = true;
-            ButtonCircuitDefault.Click += ButtonDefault_ClickAsync;
+            ButtonCircuitDefault.Click += ButtonDefault_Click;
             // 
             // TextBoxCelestialMonitorHeight
             // 
@@ -2571,6 +2575,74 @@ namespace P3D_Scenario_Generator
             toolTip1.SetToolTip(ButtonRandomLocation, "Random Favourite:\r\nSelects a location favourite at random from your saved list.");
             ButtonRandomLocation.UseVisualStyleBackColor = true;
             ButtonRandomLocation.Click += ButtonRandomLocation_Click;
+            // 
+            // ButtonRandomTime
+            // 
+            ButtonRandomTime.Anchor = AnchorStyles.None;
+            ButtonRandomTime.Location = new Point(9, 34);
+            ButtonRandomTime.Name = "ButtonRandomTime";
+            ButtonRandomTime.Size = new Size(91, 23);
+            ButtonRandomTime.TabIndex = 2;
+            ButtonRandomTime.Text = "Random Time";
+            toolTip1.SetToolTip(ButtonRandomTime, "Random Time:\r\nPicks a random local departure time spanning dawn, day, dusk, and night.");
+            ButtonRandomTime.UseVisualStyleBackColor = true;
+            ButtonRandomTime.Click += ButtonRandomTime_Click;
+            // 
+            // ButtonRandomDate
+            // 
+            ButtonRandomDate.Anchor = AnchorStyles.None;
+            ButtonRandomDate.Location = new Point(9, 3);
+            ButtonRandomDate.Name = "ButtonRandomDate";
+            ButtonRandomDate.Size = new Size(91, 23);
+            ButtonRandomDate.TabIndex = 0;
+            ButtonRandomDate.Text = "Random Date";
+            toolTip1.SetToolTip(ButtonRandomDate, "Random Date:\r\nPicks a random departure date across all four seasons.");
+            ButtonRandomDate.UseVisualStyleBackColor = true;
+            ButtonRandomDate.Click += ButtonRandomDate_Click;
+            // 
+            // GeneralDatePicker
+            // 
+            GeneralDatePicker.Anchor = AnchorStyles.None;
+            GeneralDatePicker.Format = DateTimePickerFormat.Short;
+            GeneralDatePicker.Location = new Point(115, 3);
+            GeneralDatePicker.Name = "GeneralDatePicker";
+            GeneralDatePicker.Size = new Size(100, 23);
+            GeneralDatePicker.TabIndex = 1;
+            toolTip1.SetToolTip(GeneralDatePicker, "Date Picker:\r\nSelects a specific scenario departure date.");
+            // 
+            // GeneralTimePicker
+            // 
+            GeneralTimePicker.Anchor = AnchorStyles.None;
+            GeneralTimePicker.Format = DateTimePickerFormat.Time;
+            GeneralTimePicker.Location = new Point(115, 34);
+            GeneralTimePicker.Name = "GeneralTimePicker";
+            GeneralTimePicker.Size = new Size(100, 23);
+            GeneralTimePicker.TabIndex = 3;
+            toolTip1.SetToolTip(GeneralTimePicker, "Time Picker:\r\nSelects a specific local departure time.");
+            // 
+            // ButtonRandomAircraft
+            // 
+            ButtonRandomAircraft.Anchor = AnchorStyles.None;
+            ButtonRandomAircraft.Location = new Point(9, 3);
+            ButtonRandomAircraft.Name = "ButtonRandomAircraft";
+            ButtonRandomAircraft.Size = new Size(91, 23);
+            ButtonRandomAircraft.TabIndex = 0;
+            ButtonRandomAircraft.Text = "Random Aircraft";
+            toolTip1.SetToolTip(ButtonRandomAircraft, "Random Aircraft:\r\nSelects an aircraft variant at random from your saved favourites list.");
+            ButtonRandomAircraft.UseVisualStyleBackColor = true;
+            ButtonRandomAircraft.Click += ButtonRandomAircraft_Click;
+            // 
+            // TextBoxGeneralAircraftValues
+            // 
+            TextBoxGeneralAircraftValues.Anchor = AnchorStyles.None;
+            TextBoxGeneralAircraftValues.Location = new Point(115, 34);
+            TextBoxGeneralAircraftValues.Name = "TextBoxGeneralAircraftValues";
+            TextBoxGeneralAircraftValues.ReadOnly = true;
+            TextBoxGeneralAircraftValues.Size = new Size(100, 23);
+            TextBoxGeneralAircraftValues.TabIndex = 3;
+            TextBoxGeneralAircraftValues.Tag = "";
+            toolTip1.SetToolTip(TextBoxGeneralAircraftValues, "Aircraft Summary:\r\nDisplays key performance values for the active aircraft. Hover your mouse to view complete aircraft parameters.");
+            TextBoxGeneralAircraftValues.MouseEnter += TextBoxGeneralAircraftValues_MouseEnter;
             // 
             // GroupBoxSignWritingParameters
             // 
@@ -3255,46 +3327,6 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel10.Size = new Size(220, 61);
             tableLayoutPanel10.TabIndex = 36;
             // 
-            // ButtonRandomTime
-            // 
-            ButtonRandomTime.Anchor = AnchorStyles.None;
-            ButtonRandomTime.Location = new Point(9, 34);
-            ButtonRandomTime.Name = "ButtonRandomTime";
-            ButtonRandomTime.Size = new Size(91, 23);
-            ButtonRandomTime.TabIndex = 2;
-            ButtonRandomTime.Text = "Random Time";
-            ButtonRandomTime.UseVisualStyleBackColor = true;
-            ButtonRandomTime.Click += ButtonRandomTime_Click;
-            // 
-            // ButtonRandomDate
-            // 
-            ButtonRandomDate.Anchor = AnchorStyles.None;
-            ButtonRandomDate.Location = new Point(9, 3);
-            ButtonRandomDate.Name = "ButtonRandomDate";
-            ButtonRandomDate.Size = new Size(91, 23);
-            ButtonRandomDate.TabIndex = 0;
-            ButtonRandomDate.Text = "Random Date";
-            ButtonRandomDate.UseVisualStyleBackColor = true;
-            ButtonRandomDate.Click += ButtonRandomDate_Click;
-            // 
-            // GeneralDatePicker
-            // 
-            GeneralDatePicker.Anchor = AnchorStyles.None;
-            GeneralDatePicker.Format = DateTimePickerFormat.Short;
-            GeneralDatePicker.Location = new Point(115, 3);
-            GeneralDatePicker.Name = "GeneralDatePicker";
-            GeneralDatePicker.Size = new Size(100, 23);
-            GeneralDatePicker.TabIndex = 1;
-            // 
-            // GeneralTimePicker
-            // 
-            GeneralTimePicker.Anchor = AnchorStyles.None;
-            GeneralTimePicker.Format = DateTimePickerFormat.Time;
-            GeneralTimePicker.Location = new Point(115, 34);
-            GeneralTimePicker.Name = "GeneralTimePicker";
-            GeneralTimePicker.Size = new Size(100, 23);
-            GeneralTimePicker.TabIndex = 3;
-            // 
             // groupBox15
             // 
             groupBox15.Anchor = AnchorStyles.None;
@@ -3329,28 +3361,6 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanel11.Size = new Size(220, 61);
             tableLayoutPanel11.TabIndex = 36;
-            // 
-            // ButtonRandomAircraft
-            // 
-            ButtonRandomAircraft.Anchor = AnchorStyles.None;
-            ButtonRandomAircraft.Location = new Point(9, 3);
-            ButtonRandomAircraft.Name = "ButtonRandomAircraft";
-            ButtonRandomAircraft.Size = new Size(91, 23);
-            ButtonRandomAircraft.TabIndex = 0;
-            ButtonRandomAircraft.Text = "Random Aircraft";
-            ButtonRandomAircraft.UseVisualStyleBackColor = true;
-            ButtonRandomAircraft.Click += ButtonRandomAircraft_Click;
-            // 
-            // TextBoxGeneralAircraftValues
-            // 
-            TextBoxGeneralAircraftValues.Anchor = AnchorStyles.None;
-            TextBoxGeneralAircraftValues.Location = new Point(115, 34);
-            TextBoxGeneralAircraftValues.Name = "TextBoxGeneralAircraftValues";
-            TextBoxGeneralAircraftValues.ReadOnly = true;
-            TextBoxGeneralAircraftValues.Size = new Size(100, 23);
-            TextBoxGeneralAircraftValues.TabIndex = 3;
-            TextBoxGeneralAircraftValues.Tag = "";
-            TextBoxGeneralAircraftValues.MouseEnter += TextBoxGeneralAircraftValues_MouseEnter;
             // 
             // TabControlP3DSG
             // 

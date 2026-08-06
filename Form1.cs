@@ -896,14 +896,17 @@ namespace P3D_Scenario_Generator
 
             if (ValidateAndPopulateAircraftDetails(aircraftVariant))
             {
-                // The call is now on the instance variable `_aircraft`
                 _aircraft.ChangeCurrentAircraftVariantIndex(aircraftVariant.DisplayName);
-
-                // Refresh TextBoxGeneralLocationFilters field on form
-                // The call is now on the instance variable `_aircraft`
                 TextBoxGeneralAircraftValues.Text = _aircraft.SetTextBoxGeneralAircraftValues();
 
-                await SetDefaultCircuitParamsAsync();
+                // 1. Try to restore user-customized circuit values for this specific Title
+                bool restoredSavedSettings = _settingsManager.RestoreCircuitSettings(TabPageCircuit.Controls, aircraftVariant.Title);
+
+                // 2. Fallback: If no saved profile exists for this plane, auto-calculate defaults
+                if (!restoredSavedSettings)
+                {
+                    await SetDefaultCircuitParamsAsync();
+                }
             }
         }
 
@@ -2190,38 +2193,71 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private async void ButtonDefault_ClickAsync(object sender, EventArgs e)
+        private async void ButtonDefault_Click(object sender, EventArgs e)
         {
+            if (TabControlP3DSG.SelectedTab == null) return;
+
             if (TabControlP3DSG.SelectedTab.Name == "TabPageCircuit")
             {
-                string message = $"To set default circuit values, reselect the required aircraft variant on the General tab";
-                _progressReporter?.Report(message);
-                return;
-            }
+                AircraftVariant currentVariant = await _aircraft.GetCurrentVariantAsync();
 
-            _settingsManager.RestoreActiveTab(
-                TabControlP3DSG,
-                TableLayoutPanelWikiURLWindowLocation,
-                TableLayoutPanelSettingsMapWindow
-            );
+                if (currentVariant != null)
+                {
+                    await SetDefaultCircuitParamsAsync();
+                    _progressReporter?.Report($"Reset Circuit tab to default values for {currentVariant.DisplayName}.");
+                }
+                else
+                {
+                    _progressReporter?.Report("Cannot reset Circuit tab: No active aircraft variant selected.");
+                }
+            }
+            else
+            {
+                _settingsManager.RestoreActiveTab(
+                    TabControlP3DSG,
+                    TableLayoutPanelWikiURLWindowLocation,
+                    TableLayoutPanelSettingsMapWindow
+                );
+
+                _progressReporter?.Report($"Reset {TabControlP3DSG.SelectedTab.Text} tab to default values.");
+            }
         }
 
-        private void ButtonSaved_Click(object sender, EventArgs e)
+        private async void ButtonSaved_Click(object sender, EventArgs e)
         {
-            if (TabControlP3DSG.SelectedTab.Name == "TabPageCircuit")
+            _progressReporter?.Report("Reloading saved configuration profile...");
+            _progressReporter?.IsSuppressed = true;
+
+            try
             {
-                string message = $"The application does not save user specified circuit values for each aircraft variant";
-                _progressReporter?.Report(message);
-                return;
+                // Restore standard global tab settings
+                _settingsManager.RestoreSettings(TabPagePhotoTour.Controls);
+                _settingsManager.RestoreSettings(TabPageSign.Controls);
+                _settingsManager.RestoreSettings(TabPageCelestial.Controls);
+                _settingsManager.RestoreSettings(TableLayoutPanelWikiURLWindowLocation.Controls);
+                _settingsManager.RestoreSettings(TextBoxSettingsOSMServerAPIkey);
+                _settingsManager.RestoreSettings(TableLayoutPanelSettingsFolderInfo.Controls);
+                _settingsManager.RestoreSettings(TableLayoutPanelSettingsMapWindow.Controls);
+
+                // Restore per-aircraft Circuit settings keyed on Title
+                AircraftVariant currentVariant = await _aircraft.GetCurrentVariantAsync();
+                if (currentVariant != null && !string.IsNullOrWhiteSpace(currentVariant.Title))
+                {
+                    bool hasCustomSettings = _settingsManager.RestoreCircuitSettings(TabPageCircuit.Controls, currentVariant.Title);
+
+                    // Fallback to calculated defaults if the user hasn't saved custom parameters for this plane yet
+                    if (!hasCustomSettings)
+                    {
+                        await SetDefaultCircuitParamsAsync();
+                    }
+                }
+            }
+            finally
+            {
+                _progressReporter?.IsSuppressed = false;
             }
 
-            _settingsManager.RestoreSettings(TabPagePhotoTour.Controls);
-            _settingsManager.RestoreSettings(TabPageSign.Controls);
-            _settingsManager.RestoreSettings(TabPageCelestial.Controls);
-            _settingsManager.RestoreSettings(TableLayoutPanelWikiURLWindowLocation.Controls);
-            _settingsManager.RestoreSettings(TextBoxSettingsOSMServerAPIkey);
-            _settingsManager.RestoreSettings(TableLayoutPanelSettingsFolderInfo.Controls);
-            _settingsManager.RestoreSettings(TableLayoutPanelSettingsMapWindow.Controls);
+            _progressReporter?.Report("Configuration profile successfully loaded.");
         }
 
         private void ComboBox_KeyDown(object sender, KeyEventArgs e)
@@ -2330,6 +2366,13 @@ namespace P3D_Scenario_Generator
                 await _settingsManager.SaveSettingsAsync(TextBoxSettingsOSMServerAPIkey);
                 await _settingsManager.SaveSettingsAsync(TableLayoutPanelSettingsFolderInfo.Controls);
                 await _settingsManager.SaveSettingsAsync(TableLayoutPanelSettingsMapWindow.Controls);
+
+                // Save custom circuit settings for the active aircraft before exit
+                AircraftVariant currentVariant = await _aircraft.GetCurrentVariantAsync();
+                if (currentVariant != null && !string.IsNullOrWhiteSpace(currentVariant.Title))
+                {
+                    await _settingsManager.SaveCircuitSettingsAsync(TabPageCircuit.Controls, currentVariant.Title);
+                }
             }
             catch (Exception ex)
             {

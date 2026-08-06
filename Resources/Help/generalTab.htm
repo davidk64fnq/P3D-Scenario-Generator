@@ -204,7 +204,7 @@
 		<!-- AIRCRAFT SELECTION -->
 		<h3 id="aircraftSelection">Aircraft Selection</h3>
 		<p>
-			The <strong>Aircraft Selection</strong> group defines which aircraft variant will be loaded into Prepar3D when the scenario starts.
+			The <strong>Aircraft Selection</strong> group defines which aircraft variant (fixed-wing, rotorcraft, or glider) will be loaded into Prepar3D when the scenario starts.
 		</p>
 		<p>
 			<strong>Runway Compatibility:</strong> Your selected aircraft's landing configuration (wheels, floats, or amphibious) acts as a dynamic filter on the <a href="#runwaySelection">Runway Selection</a> group, ensuring random airfield picks always match your aircraft's surface capabilities.
@@ -215,22 +215,27 @@
 			Click <kbd class="winforms-btn">Add Aircraft</kbd> to select an aircraft variant to add to your list of favourites:
 		</p>
 		<ol type="1">
-			<li>To select an aircraft variant, first navigate to the aircraft folder.</li>
 			<li>
-				For default aircraft, this will be a folder within the <code>SimObjects\Airplanes</code> directory (e.g., <code>SimObjects\Airplanes\Piper_J3Cub</code>) or <code>SimObjects\Rotorcraft</code> directory (e.g., <code>SimObjects\Rotorcraft\Robinson_R22</code>).
+				Navigate to the desired aircraft or helicopter folder in your Prepar3D installation (e.g., <code>SimObjects\Airplanes\Piper_J3Cub</code> or <code>SimObjects\Rotorcraft\UH-60</code>).
 			</li>
 			<li>
-				Open the <code>texture.X</code> folder of the variant you require (e.g., <code>SimObjects\Airplanes\Piper_J3Cub\Texture.1</code>). The folder name must end in <code>.X</code> where <em>X</em> is any string of characters; choosing a plain <code>texture</code> folder will not work.
+				Open the target <code>texture.X</code> folder for the variant (e.g., <code>SimObjects\Airplanes\Piper_J3Cub\Texture.1</code>).
 			</li>
 			<li>
-				Select the <code>thumbnail.jpg</code> file in that folder and click <strong>Open</strong>.
+				Select the image file inside that folder (typically <code>thumbnail.jpg</code>) and click <strong>Open</strong>.
 			</li>
 			<li>
 				Confirm the chosen aircraft variant by hovering over the summary display field adjacent to the <kbd class="winforms-btn">Add Aircraft</kbd> button.
 			</li>
 		</ol>
 		<p>
-			<strong>Note:</strong> Add-on aircraft may be stored somewhere else on your PC. Simply navigate to the appropriate <code>texture.X</code> folder and select its <code>thumbnail.jpg</code> file.
+			<strong>Missing or Non-Standard Thumbnails:</strong> The file dialog defaults to displaying <strong>Image Files</strong> (<code>*.jpg</code>, <code>*.png</code>, <code>*.bmp</code>). If an aircraft folder lacks a standard image file or only contains DirectX textures (such as <code>.dds</code> files), change the file dialog filter to <strong>All Files (*.*)</strong> and select any file inside the <code>texture.X</code> folder.
+		</p>
+		<p>
+			The generator will parse the aircraft configuration from the parent folder. If no valid image matching standard thumbnail dimensions (2:1 aspect ratio) is located, a default generic thumbnail is automatically assigned.
+		</p>
+		<p>
+			<strong>Note:</strong> Add-on aircraft may be stored in alternate directories on your PC. Simply navigate to the appropriate <code>texture.X</code> folder and select any file within it.
 		</p>
 
 		<h4>Random Aircraft button</h4>
@@ -258,21 +263,7 @@
 		</p>
 
 		<hr/>
-
-		<!-- SCENARIO SELECTION -->
-		<h3 id="scenarioSelection">Scenario Selection</h3>
-		<p>
-			The <strong>Scenario Selection</strong> group determines the preset scenario template used for generation and assigns the title and target folder name for the exported scenario package.
-		</p>
-
-		<h4>Scenario combobox</h4>
-		<p>
-			Click the dropdown arrow to select a scenario preset from the list. Unlike other dropdowns in the application, this list is selection-only and does not support inline renaming or deleting of entries.
-		</p>
-		<p>
-			Click <kbd class="winforms-btn">Random</kbd> within the Scenario Selection group to randomly choose a scenario preset from the available list.
-		</p>
-
+		
 		<!-- SCENARIO SELECTION -->
 		<h3 id="scenarioSelection">Scenario Selection</h3>
 		<p>
@@ -314,20 +305,20 @@
 			Located along the bottom of the application window, these buttons manage configuration session states, revert control values, and compile the final scenario files.
 		</p>
 
-		<h4>Default button</h4>
+		<h4>Reset Tab button</h4>
 		<p>
-			Click <kbd class="winforms-btn">Default</kbd> to reset controls on the currently active tab back to their original factory default values.
+			Click <kbd class="winforms-btn">Reset Tab</kbd> to reset controls on the currently active tab back to their original factory default values.
 		</p>
 		<p>
-			<strong>Circuit Tab Exception:</strong> The <kbd class="winforms-btn">Default</kbd> button cannot reset values directly while viewing the Circuit tab. To restore default circuit flight parameters for a given aircraft, simply re-select the desired variant from the <strong>Selected Aircraft</strong> dropdown in the <a href="#aircraftSelection">Aircraft Selection</a> group.
+			<strong>Circuit Tab Behavior:</strong> When viewing the Circuit tab, clicking <kbd class="winforms-btn">Reset Tab</kbd> recalculates and restores standard baseline flight circuit parameters specifically tailored for the currently selected aircraft variant.
 		</p>
 
-		<h4>Saved button</h4>
+		<h4>Reload Profile button</h4>
 		<p>
-			Click <kbd class="winforms-btn">Saved</kbd> to reload your previously saved configuration profile, restoring custom control states across application tabs from the user settings file (<code>%APPDATA%\P3D Scenario Generator\ui_settings.json</code>).
+			Click <kbd class="winforms-btn">Reload Profile</kbd> to reload your previously saved configuration profile, restoring custom control states across application tabs from the user settings file (<code>%APPDATA%\P3D Scenario Generator\ui_settings.json</code>).
 		</p>
 		<p>
-			<strong>Circuit Tab Exception:</strong> User-specified circuit parameters are managed dynamically per aircraft variant rather than persisted in the global UI settings cache. Clicking <kbd class="winforms-btn">Saved</kbd> while viewing the Circuit tab will display a status notification and leave current circuit values unchanged.
+			<strong>Circuit Tab Behavior:</strong> Circuit parameters are restored specifically for the currently active aircraft variant, keyed on its unique aircraft title. If custom parameters have not yet been saved for the selected plane, standard calculated defaults are automatically applied as a fallback.
 		</p>
 
 		<h4>Generate Scenario button</h4>

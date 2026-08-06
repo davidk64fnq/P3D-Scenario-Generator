@@ -305,5 +305,70 @@ namespace P3D_Scenario_Generator.Services
         }
 
         #endregion
+
+        #region Per-Aircraft Circuit Settings
+
+        /// <summary>
+        /// Saves controls on the Circuit tab under a key scoped to the unique Aircraft Title.
+        /// </summary>
+        public async Task SaveCircuitSettingsAsync(Control.ControlCollection controls, string aircraftTitle)
+        {
+            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls == null) return;
+
+            string prefix = $"Circuit_{aircraftTitle.Trim()}_";
+            UpdateCacheWithPrefix(controls, prefix);
+            await CommitCacheToFileAsync();
+        }
+
+        /// <summary>
+        /// Restores Circuit tab controls for a specific aircraft title.
+        /// Returns true if saved custom parameters were found; false otherwise.
+        /// </summary>
+        public bool RestoreCircuitSettings(Control.ControlCollection controls, string aircraftTitle)
+        {
+            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls == null) return false;
+
+            string prefix = $"Circuit_{aircraftTitle.Trim()}_";
+            bool foundAnyKey = false;
+
+            foreach (Control control in controls)
+            {
+                if (control.Controls.Count > 0)
+                {
+                    if (RestoreCircuitSettings(control.Controls, aircraftTitle))
+                        foundAnyKey = true;
+                }
+
+                string key = prefix + control.Name;
+                if (_settingsCache.TryGetValue(key, out object value) && control is TextBox textBox)
+                {
+                    textBox.Text = value?.ToString() ?? "";
+                    foundAnyKey = true;
+                }
+            }
+
+            return foundAnyKey;
+        }
+
+        /// <summary>
+        /// Recursively iterates controls to populate the settings cache with prefixed keys.
+        /// </summary>
+        private void UpdateCacheWithPrefix(Control.ControlCollection controls, string prefix)
+        {
+            foreach (Control control in controls)
+            {
+                if (control.Controls.Count > 0)
+                {
+                    UpdateCacheWithPrefix(control.Controls, prefix);
+                }
+
+                if (control is TextBox textBox)
+                {
+                    _settingsCache[prefix + control.Name] = textBox.Text;
+                }
+            }
+        }
+
+        #endregion
     }
 }
