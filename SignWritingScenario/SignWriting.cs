@@ -250,10 +250,6 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.types.js", "types.js", saveLocation)) return false;
 
             // --- 3. Copy Geodesy library files ---
-            string geodesySaveDirectory = Path.Combine(formData.ScenarioImageFolder, "third-party", "geodesy");
-
-            // Ensure directory exists (Directory.CreateDirectory is safe to call even if it exists)
-            Directory.CreateDirectory(geodesySaveDirectory);
 
             string[] geodesyFiles = ["dms.js", "vector3d.js", "latlon-ellipsoidal.js"];
             string resourceNamePrefix = "Javascript.third_party.geodesy.";
@@ -261,7 +257,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             foreach (string fileName in geodesyFiles)
             {
                 string resourcePath = resourceNamePrefix + fileName;
-                string destinationPath = Path.Combine(geodesySaveDirectory, fileName);
+                string destinationPath = Path.Combine(saveLocation, fileName);
 
                 if (!await _assetFileGenerator.CopyAssetImageAsync(resourcePath, destinationPath))
                 {

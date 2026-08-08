@@ -8,9 +8,6 @@
  * @date 2025-07-19
 */
 
-// Import the necessary Geodesy classes.
-import LatLon from './third-party/geodesy/latlon-ellipsoidal.js';
-
 // #region Global declarations
 
 // #region JSDoc Global Variable Declarations (Injected by C#)
@@ -568,6 +565,7 @@ function getPlanePixelCoords(currentGateNo) {
  * <p>6. Scheduling itself for the next animation frame.</p>
  */
 function update() {
+
 	// Fetch real-time simulation variables
 	var currentGateNo = VarGet("S:currentGateNo", "NUMBER");
 	var smokeOn = VarGet("S:smokeOn", "NUMBER");
@@ -613,7 +611,7 @@ function update() {
 			drawCap(startTopPixels - 5 + charPaddingTop, startLeftPixels - 11 + charPaddingLeft, curCap);
 		smokeHasToggled = false; // Reset toggle flag
 	}
-	if (smokeOn == 1) {
+	if (smokeOn == 1 && currentGateNo < gates.length) {
 		drawLine(currentGateNo + 1); // Draw smoke line segment towards the next gate
 	}
 

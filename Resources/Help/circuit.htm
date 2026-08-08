@@ -1,15 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
+	<head>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <title>P3D Scenario Generator | Circuit</title>
+		<meta charset="utf-8"/>
+		<title>P3D Scenario Generator | Circuit Tab</title>
 		<link rel="stylesheet" href="style.css"/>
-    </head>
-    <body>
-        <h2>Circuit</h2>
-        <img src="images/circuitTab.jpg" alt="Circuit tab diagram showing arrangement of 8 gates" title="Circuit tab diagram showing arrangement of 8 gates"/>
-        <p>
-            The circuit is left-handed and consists of eight gates. Four pairs of gates mark the start and finish of four ninety degree turns from the initial runway heading. The gate positions for each turn are based on the nominated speed divided by 180. So a plane with a cruise speed of 90 knots is assigned a turn radius of 0.5 miles. The distance between gate pairs is set on the circuit tab. Three gate heights are configurable: gates 1, 3 to 6, and 8. Gates 3 to 6 are all set at the same specified height while the height of gates 2 and 7 are calculated by the program based on a steady climb(descent) between gates 1(6) and 3(8). This scenario commences on the runway threshold and requires the pilot to take off and fly through the eight gates in sequence before landing on the same runway and coming to a complete stop to end the scenario. The circuit tab allows you to customise the location of the four turns, the heights and planned cruising speed. The default button resets the values based on the "[Reference Speeds] cruise_speed" value from the selected "aircraft.cfg" file. <strong>Note:</strong> if you choose a random runway the generated circuit may include gates embedded in terrain if the airport happens to be in a hilly location!
-        </p>
-    </body>
+	</head>
+	<body>
+		<h2>Circuit Tab</h2>
+		<p>
+			The <strong>Circuit Tab</strong> allows you to configure a rectangular 8-gate flight circuit scenario tailored to the performance profile of your active aircraft. The scenario commences on the runway threshold and requires you to take off, fly through all eight spatial gates in numerical sequence, land back at the airfield within a 2 km trigger radius, and bring the aircraft to a complete stop to complete the scenario.
+		</p>
+
+		<p style="text-align: center;">
+			<img src="images/circuitTab.jpg" alt="Circuit tab diagram showing arrangement of 8 gates" title="Circuit tab diagram showing arrangement of 8 gates"/>
+		</p>
+
+		<hr/>
+
+		<!-- CIRCUIT GEOMETRY -->
+		<h3 id="circuitGeometry">Circuit Geometry &amp; Gate Layout</h3>
+		<p>
+			The generated circuit is a standard left-handed rectangular pattern defined by four pairs of gates marking the start and entry/exit of each 90-degree turn:
+		</p>
+		<ul>
+			<li>
+				<strong>Upwind &amp; Crosswind Leg (Gates 1 &amp; 2):</strong> Marks the climb-out from the departure runway and the transition turn onto crosswind.
+			</li>
+			<li>
+				<strong>Downwind Leg (Gates 3, 4, 5, &amp; 6):</strong> Defines entry onto downwind (Gates 3 &amp; 4) and exit toward base leg (Gates 5 &amp; 6).
+			</li>
+			<li>
+				<strong>Base Leg (Gates 7 &amp; 8):</strong> Controls the turn from downwind onto base and the turn onto final approach.
+			</li>
+		</ul>
+
+		<h4>Gate Height Interpolation</h4>
+		<p>
+			Gate altitudes are managed through three explicit user inputs:
+		</p>
+		<ul>
+			<li>
+				<strong>Gate 1:</strong> Initial climb target altitude after takeoff.
+			</li>
+			<li>
+				<strong>Gates 3 to 6:</strong> Set uniformly to the main circuit downwind cruising height.
+			</li>
+			<li>
+				<strong>Gate 8:</strong> Target altitude at the completion of the base turn onto final approach.
+			</li>
+		</ul>
+		<p>
+			<strong>Calculated Heights:</strong> The heights for intermediate turn gates are automatically interpolated by the program:
+		</p>
+		<ul>
+			<li>
+				<strong>Gate 2:</strong> Calculated based on a steady climb gradient between Gate 1 and Gate 3.
+			</li>
+			<li>
+				<strong>Gate 7:</strong> Calculated based on a steady descent gradient between Gate 6 and Gate 8.
+			</li>
+		</ul>
+
+		<hr/>
+
+		<!-- CIRCUIT PARAMETERS -->
+		<h3 id="circuitParameters">Circuit Parameters</h3>
+		<p>
+			The controls inside the <strong>Circuit Parameters</strong> group box allow you to fine-tune leg lengths, target altitudes, speed, and turn characteristics.
+		</p>
+
+		<h4>Upwind (miles)</h4>
+		<p>
+			Defines the distance (in nautical miles) from the runway threshold to the start of the crosswind turn (Gate 1). Accepts non-negative decimal values.
+		</p>
+
+		<h4>Crosswind / Base (miles)</h4>
+		<p>
+			Defines the straight-line distance (in nautical miles) for both the Crosswind (Gates 2–3) and Base (Gates 6–7) legs. Because the circuit is symmetrical, this single parameter controls both perpendicular legs to maintain a parallel downwind track. <em>(Note: The total lateral offset of the downwind leg from the runway centerline equals this distance plus two turn radii).</em>
+		</p>
+
+		<h4>Final (miles)</h4>
+		<p>
+			Defines the distance (in nautical miles) from the final turn (Gate 8) back to the landing runway threshold.
+		</p>
+
+		<h4>Height (Gate 1) (feet)</h4>
+		<p>
+			Target altitude in feet AGL at the first gate on upwind leg.
+		</p>
+
+		<h4>Ht. (Gates 3-6) (feet)</h4>
+		<p>
+			Target cruise altitude in feet AGL for the downwind leg gates (Gates 3, 4, 5, and 6).
+		</p>
+
+		<h4>Height (Gate 8) (feet)</h4>
+		<p>
+			Target altitude in feet AGL at Gate 8 prior to short final.
+		</p>
+
+		<h4>Speed (knots)</h4>
+		<p>
+			The planned circuit target airspeed in knots. This value directly scales turn radius calculations across all four turn pairs.
+		</p>
+
+		<h4>Turn Rate (minutes)</h4>
+		<p>
+			The time required (in minutes) to complete a standard 360-degree turn. The default value of <code>2.0</code> corresponds to a standard Rate 1 turn (2 minutes for 360 degrees, or 3 degrees per second).
+		</p>
+
+		<hr/>
+
+		<!-- AUTOMATIC CALCULATION & PROFILES -->
+		<h3 id="automaticCalculations">Automatic Calculation &amp; Profiles</h3>
+		<p>
+			When an aircraft variant is selected on the <a href="generalTab.htm#aircraftSelection">General Tab</a>, the application automatically matches the aircraft's rated cruise speed against built-in performance profiles to set optimal default circuit parameters:
+		</p>
+		<ul>
+			<li>
+				<strong>Default Leg Distances:</strong> When an aircraft is selected, initial recommended Upwind and Final leg distances (in nautical miles) are automatically calculated based on the aircraft's climb rate and cruise speed to ensure enough room to reach pattern altitude. Base leg distance defaults to a 30-second flight interval. You can freely overwrite any of these fields with your preferred over-ground nautical mile distances.
+			</li>
+			<li>
+				<strong>Fallback Profiles:</strong> If an aircraft's performance profile is not explicitly defined in the database, conservative standard defaults (1,000 ft pattern height, 500 ft upwind/base height, 1.25 nm upwind/final leg length) are applied automatically.
+			</li>
+		</ul>
+
+		<p>
+			<strong>Recalculating Defaults:</strong> Click <kbd class="winforms-btn">Reset Tab</kbd> at any time to recalculate and restore baseline parameters for the active aircraft.
+		</p>
+
+		<hr/>
+
+		<!-- SCENARIO COMPLETION & TERRAIN -->
+		<h3 id="scenarioCompletion">Landing Detection &amp; Terrain Advisory</h3>
+		<p>
+			<strong>Landing Trigger Zone:</strong> To ensure reliable goal resolution upon completing the circuit, the scenario defines a 2 km (2,000 m) spherical landing area centered on the destination airfield coordinates. Touchdown and coming to a complete stop anywhere within this 2 km zone will trigger scenario success.
+		</p>
+		<p>
+			<strong>Terrain Advisory:</strong> When picking a random runway or flying in mountainous areas, spatial placement of circuit gates relies strictly on runway orientation and calculated offsets. In hilly or mountainous terrain, generated gates may occasionally intersect elevated ground or be embedded within landforms.
+		</p>
+	</body>
 </html>

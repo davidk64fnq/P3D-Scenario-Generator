@@ -862,7 +862,7 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitSpeed.Tag = "";
             TextBoxCircuitSpeed.Text = "60";
             TextBoxCircuitSpeed.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitSpeed, "Cruise speed between gates 1 and 8 in knots");
+            toolTip1.SetToolTip(TextBoxCircuitSpeed, "Speed:\r\nEnter the target circuit airspeed in knots. Directly scales turn radius calculations across all four turn pairs.");
             TextBoxCircuitSpeed.Leave += TextBoxCircuitSpeed_Leave;
             // 
             // TextBoxCircuitTurnRate
@@ -876,7 +876,7 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitTurnRate.Tag = "";
             TextBoxCircuitTurnRate.Text = "2.0";
             TextBoxCircuitTurnRate.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitTurnRate, "360 degrees turn rate in minutes");
+            toolTip1.SetToolTip(TextBoxCircuitTurnRate, "Turn Rate:\r\nEnter the time in minutes required to complete a 360-degree turn. Defaults to 2.0 minutes for a standard Rate 1 turn.");
             TextBoxCircuitTurnRate.Leave += TextBoxCircuitTurnRate_Leave;
             // 
             // TextBoxCircuitHeightDown
@@ -890,7 +890,7 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitHeightDown.Tag = "";
             TextBoxCircuitHeightDown.Text = "1000";
             TextBoxCircuitHeightDown.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitHeightDown, "Height of circuit above runway in feet (gates 3 to 6)");
+            toolTip1.SetToolTip(TextBoxCircuitHeightDown, "Ht. (Gates 3-6):\r\nEnter the target cruise altitude in feet AGL for the downwind leg. Sets a uniform pattern height for Gates 3, 4, 5, and 6.");
             TextBoxCircuitHeightDown.Leave += TextBoxCircuitHeightDown_Leave;
             // 
             // TextBoxCircuitHeightUpwind
@@ -904,7 +904,7 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitHeightUpwind.Tag = "";
             TextBoxCircuitHeightUpwind.Text = "500";
             TextBoxCircuitHeightUpwind.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitHeightUpwind, "Height of circuit above runway in feet (gate 1)");
+            toolTip1.SetToolTip(TextBoxCircuitHeightUpwind, "Height (Gate 1):\r\nEnter the target altitude in feet AGL at Gate 1. Sets the initial climb-out height target after takeoff.");
             TextBoxCircuitHeightUpwind.Leave += TextBoxCircuitHeightUpwind_Leave;
             // 
             // TextBoxCircuitFinal
@@ -918,7 +918,7 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitFinal.Tag = "";
             TextBoxCircuitFinal.Text = "1";
             TextBoxCircuitFinal.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitFinal, "Distance between gate 8 and runway in miles");
+            toolTip1.SetToolTip(TextBoxCircuitFinal, "Final:\r\nEnter the final leg distance in nautical miles. Controls the distance from the final turn (Gate 8) back to the landing runway threshold.");
             TextBoxCircuitFinal.Leave += TextBoxCircuitFinal_Leave;
             // 
             // TextBoxCircuitBase
@@ -932,7 +932,7 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitBase.Tag = "";
             TextBoxCircuitBase.Text = "0.5";
             TextBoxCircuitBase.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitBase, "Distance between gates 2 and 3 (6 and 7) in miles");
+            toolTip1.SetToolTip(TextBoxCircuitBase, "Base:\r\nEnter the distance in nautical miles for the crosswind and base legs. Controls the straight-line distance between gate pairs 2–3 and 6–7 to keep the downwind track parallel.");
             TextBoxCircuitBase.Leave += TextBoxCircuitBase_Leave;
             // 
             // label28
@@ -944,7 +944,7 @@ namespace P3D_Scenario_Generator
             label28.Size = new Size(58, 15);
             label28.TabIndex = 14;
             label28.Text = "Turn Rate";
-            toolTip1.SetToolTip(label28, "360 degrees turn rate in minutes");
+            toolTip1.SetToolTip(label28, "Turn Rate:\r\nEnter the time in minutes required to complete a 360-degree turn. Defaults to 2.0 minutes for a standard Rate 1 turn.");
             // 
             // TextBoxCircuitHeightBase
             // 
@@ -957,7 +957,7 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitHeightBase.Tag = "";
             TextBoxCircuitHeightBase.Text = "500";
             TextBoxCircuitHeightBase.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitHeightBase, "Height of circuit above runway in feet (gate 8)");
+            toolTip1.SetToolTip(TextBoxCircuitHeightBase, "Height (Gate 8):\r\nEnter the target altitude in feet AGL at Gate 8. Sets the altitude target at the completion of the base turn prior to short final.");
             TextBoxCircuitHeightBase.Leave += TextBoxCircuitHeightBase_Leave;
             // 
             // label10
@@ -969,19 +969,19 @@ namespace P3D_Scenario_Generator
             label10.Size = new Size(87, 15);
             label10.TabIndex = 6;
             label10.Text = "Height (Gate 1)";
-            toolTip1.SetToolTip(label10, "Height of circuit above runway in feet (gate 1)");
+            toolTip1.SetToolTip(label10, "Height (Gate 1):\r\nEnter the target altitude in feet AGL at Gate 1. Sets the initial climb-out height target after takeoff.");
             // 
             // label3
             // 
             label3.Anchor = AnchorStyles.None;
             label3.AutoSize = true;
-            label3.Location = new Point(48, 37);
+            label3.Location = new Point(15, 37);
             label3.Name = "label3";
-            label3.Size = new Size(31, 15);
+            label3.Size = new Size(97, 15);
             label3.TabIndex = 2;
-            label3.Text = "Base";
+            label3.Text = "Crosswind / Base";
             label3.TextAlign = ContentAlignment.MiddleCenter;
-            toolTip1.SetToolTip(label3, "Distance between gates 2 and 3 (6 and 7) in miles");
+            toolTip1.SetToolTip(label3, "Base:\r\nEnter the distance in nautical miles for the crosswind and base legs. Controls the straight-line distance between gate pairs 2–3 and 6–7 to keep the downwind track parallel.");
             // 
             // label4
             // 
@@ -992,7 +992,7 @@ namespace P3D_Scenario_Generator
             label4.Size = new Size(32, 15);
             label4.TabIndex = 4;
             label4.Text = "Final";
-            toolTip1.SetToolTip(label4, "Distance between gate 8 and runway in miles");
+            toolTip1.SetToolTip(label4, "Final:\r\nEnter the final leg distance in nautical miles. Controls the distance from the final turn (Gate 8) back to the landing runway threshold.");
             // 
             // label5
             // 
@@ -1003,7 +1003,7 @@ namespace P3D_Scenario_Generator
             label5.Size = new Size(83, 15);
             label5.TabIndex = 8;
             label5.Text = "Ht. (Gates 3-6)";
-            toolTip1.SetToolTip(label5, "Height of circuit above runway in feet (gates 3 to 6)");
+            toolTip1.SetToolTip(label5, "Ht. (Gates 3-6):\r\nEnter the target cruise altitude in feet AGL for the downwind leg. Sets a uniform pattern height for Gates 3, 4, 5, and 6.");
             // 
             // label9
             // 
@@ -1014,7 +1014,7 @@ namespace P3D_Scenario_Generator
             label9.Size = new Size(87, 15);
             label9.TabIndex = 10;
             label9.Text = "Height (Gate 8)";
-            toolTip1.SetToolTip(label9, "Height of circuit above runway in feet (gate 8)");
+            toolTip1.SetToolTip(label9, "Height (Gate 8):\r\nEnter the target altitude in feet AGL at Gate 8. Sets the altitude target at the completion of the base turn prior to short final.");
             // 
             // TextBoxCircuitUpwind
             // 
@@ -1031,7 +1031,7 @@ namespace P3D_Scenario_Generator
             TextBoxCircuitUpwind.Tag = "";
             TextBoxCircuitUpwind.Text = "1";
             TextBoxCircuitUpwind.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCircuitUpwind, "Distance between runway and gate 1 in miles");
+            toolTip1.SetToolTip(TextBoxCircuitUpwind, "Upwind:\r\nEnter the upwind leg distance in nautical miles. Controls the distance from the runway threshold to the start of the crosswind turn (Gate 1).");
             TextBoxCircuitUpwind.Leave += TextBoxCircuitUpwind_Leave;
             // 
             // label6
@@ -1043,7 +1043,7 @@ namespace P3D_Scenario_Generator
             label6.Size = new Size(39, 15);
             label6.TabIndex = 12;
             label6.Text = "Speed";
-            toolTip1.SetToolTip(label6, "Cruise speed between gates 1 and 8 in knots");
+            toolTip1.SetToolTip(label6, "Speed:\r\nEnter the target circuit airspeed in knots. Directly scales turn radius calculations across all four turn pairs.");
             // 
             // label7
             // 
@@ -1056,7 +1056,7 @@ namespace P3D_Scenario_Generator
             label7.TabIndex = 0;
             label7.Text = "Upwind";
             label7.TextAlign = ContentAlignment.MiddleCenter;
-            toolTip1.SetToolTip(label7, "Distance between runway and gate 1 in miles");
+            toolTip1.SetToolTip(label7, "Upwind:\r\nEnter the upwind leg distance in nautical miles. Controls the distance from the runway threshold to the start of the crosswind turn (Gate 1).");
             // 
             // ComboBoxSignMessage
             // 

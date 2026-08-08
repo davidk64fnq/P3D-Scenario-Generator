@@ -7,9 +7,6 @@
 /* www.movable-type.co.uk/scripts/geodesy-library.html#latlon-ellipsoidal                         */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-import Dms      from './dms.js';
-import Vector3d from './vector3d.js';
-
 
 /**
  * A latitude/longitude point defines a geographic location on or above/below the earth’s surface,
@@ -435,4 +432,7 @@ class Cartesian extends Vector3d {
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-export { LatLonEllipsoidal as default, Cartesian, Vector3d, Dms };
+// Expose classes globally for non-module script loading
+window.LatLon = LatLonEllipsoidal;
+window.LatLonEllipsoidal = LatLonEllipsoidal;
+window.Cartesian = Cartesian;
