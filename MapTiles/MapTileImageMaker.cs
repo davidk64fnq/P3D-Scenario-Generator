@@ -139,9 +139,9 @@ namespace P3D_Scenario_Generator.MapTiles
                 return false;
             }
 
-            // Build list of OSM tiles at zoom 15 for all coordinates (the approx zoom to see airport on 1 x 1 map tile image)
+            // Build list of OSM tiles at zoom 4 for all coordinates (the approx zoom to see continent position on 1 x 1 map tile image)
             List<Tile> tiles = [];
-            int locationImageZoomLevel = 15;
+            int locationImageZoomLevel = 4;
             await _mapTileCalculator.SetOSMTilesForCoordinatesAsync(tiles, locationImageZoomLevel, coordinates);
 
             // Validate retrieved tiles
@@ -198,6 +198,13 @@ namespace P3D_Scenario_Generator.MapTiles
             {
                 await _logger.ErrorAsync($"Failed to copy image '{sourceFullPath}' to scenario images directory '{destinationFullPath}'.");
                 return false;
+            }
+
+            // Draw a regional location pin on chart_thumb.png
+            var primaryCoord = coordinates.FirstOrDefault();
+            if (primaryCoord != null)
+            {
+                await _imageUtils.DrawLocationMarkerAsync(destinationFullPath, primaryCoord, boundingBox, locationImageZoomLevel);
             }
 
             return true;
@@ -453,6 +460,14 @@ namespace P3D_Scenario_Generator.MapTiles
                 return (false, zoom, paddingMethod, boundingBox);
             }
 
+            // Add map attribution overlay before format conversion
+            string fullPathWithExt = $"{fullPathNoExt}.png";
+            if (!await _imageUtils.DrawAttributionAsync(fullPathWithExt))
+            {
+                await _logger.ErrorAsync($"Failed to draw attribution on image '{fullPathWithExt}'.");
+                return (false, zoom, paddingMethod, boundingBox);
+            }
+
             // Convert image format from png to jpg
             if (!await _imageUtils.ConvertImageformatAsync(fullPathNoExt, "png", "jpg"))
             {
@@ -504,6 +519,13 @@ namespace P3D_Scenario_Generator.MapTiles
             if (!await _mapTileMontager.MontageTilesAsync(nextBoundingBox, zoom, fullPathNoExt, formData))
             {
                 await _logger.ErrorAsync($"Failed to montage tiles for image '{fullPathNoExt}'.");
+                return false;
+            }
+
+            string fullPathWithExt = $"{fullPathNoExt}.png";
+            if (!await _imageUtils.DrawAttributionAsync(fullPathWithExt))
+            {
+                await _logger.ErrorAsync($"Failed to draw attribution on image '{fullPathWithExt}'.");
                 return false;
             }
 

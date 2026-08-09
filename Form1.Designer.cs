@@ -661,7 +661,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsCacheUsage.Tag = "";
             TextBoxSettingsCacheUsage.Text = "0";
             TextBoxSettingsCacheUsage.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSettingsCacheUsage, "Amount of memory used by cache.");
+            toolTip1.SetToolTip(TextBoxSettingsCacheUsage, "Cache Usage:\r\nDisplays the total local disk space consumed by cached map tile images saved in your user data directory.");
             // 
             // label41
             // 
@@ -672,7 +672,7 @@ namespace P3D_Scenario_Generator
             label41.Size = new Size(89, 15);
             label41.TabIndex = 30;
             label41.Text = "Server / API key";
-            toolTip1.SetToolTip(label41, "OSM tile server and API key if required, comma separated.");
+            toolTip1.SetToolTip(label41, resources.GetString("label41.ToolTip"));
             // 
             // label42
             // 
@@ -683,7 +683,7 @@ namespace P3D_Scenario_Generator
             label42.Size = new Size(75, 15);
             label42.TabIndex = 31;
             label42.Text = "Cache Usage";
-            toolTip1.SetToolTip(label42, "Amount of memory used by cache.");
+            toolTip1.SetToolTip(label42, "Cache Usage:\r\nDisplays the total local disk space consumed by cached map tile images saved in your user data directory.");
             // 
             // TextBoxSettingsCacheDailyTotal
             // 
@@ -697,7 +697,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsCacheDailyTotal.Tag = "0";
             TextBoxSettingsCacheDailyTotal.Text = "0";
             TextBoxSettingsCacheDailyTotal.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSettingsCacheDailyTotal, "The total number of tiles retrieved so far today for the current server API key pair.");
+            toolTip1.SetToolTip(TextBoxSettingsCacheDailyTotal, "Cache Daily Total:\r\nDisplays the total number of map tile requests performed during the current 24-hour cycle to help monitor usage against provider rate limits.");
             // 
             // label43
             // 
@@ -708,7 +708,7 @@ namespace P3D_Scenario_Generator
             label43.Size = new Size(98, 15);
             label43.TabIndex = 29;
             label43.Text = "Cache Daily Total";
-            toolTip1.SetToolTip(label43, "The total number of tiles retrieved so far today for the current server API key pair.");
+            toolTip1.SetToolTip(label43, "Cache Daily Total:\r\nDisplays the total number of map tile requests performed during the current 24-hour cycle to help monitor usage against provider rate limits.");
             // 
             // GroupBoxSettingsMapTileCacheInfo
             // 
@@ -756,7 +756,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsOSMServerAPIkey.Size = new Size(100, 23);
             TextBoxSettingsOSMServerAPIkey.TabIndex = 40;
             TextBoxSettingsOSMServerAPIkey.Tag = "";
-            toolTip1.SetToolTip(TextBoxSettingsOSMServerAPIkey, "Paste in your OSM Server API key. See help topic \"Settings / Map Tile Cache Info / Server API key\" for instructions on how to register with Rapid to obtain your free API key for use with this program.");
+            toolTip1.SetToolTip(TextBoxSettingsOSMServerAPIkey, resources.GetString("TextBoxSettingsOSMServerAPIkey.ToolTip"));
             TextBoxSettingsOSMServerAPIkey.Leave += TextBoxSettingsOSMServerAPIkey_Leave;
             TextBoxSettingsOSMServerAPIkey.MouseEnter += TextBoxSettingsOSMServerAPIkey_MouseEnter;
             // 
@@ -2082,7 +2082,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsP3DprogramData.Size = new Size(100, 23);
             TextBoxSettingsP3DprogramData.TabIndex = 46;
             TextBoxSettingsP3DprogramData.Tag = "";
-            toolTip1.SetToolTip(TextBoxSettingsP3DprogramData, "P3D Program Data folder path, typically e.g. \"C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\"");
+            toolTip1.SetToolTip(TextBoxSettingsP3DprogramData, resources.GetString("TextBoxSettingsP3DprogramData.ToolTip"));
             TextBoxSettingsP3DprogramData.MouseEnter += TextBoxSettingsP3DprogramData_MouseEnter;
             // 
             // GroupBoxSettingsMapWindow
@@ -2145,7 +2145,7 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsMapWindowSize.TabIndex = 45;
             ComboBoxSettingsMapWindowSize.Tag = "";
             ComboBoxSettingsMapWindowSize.Text = "512";
-            toolTip1.SetToolTip(ComboBoxSettingsMapWindowSize, "Size of the square map window in pixels.");
+            toolTip1.SetToolTip(ComboBoxSettingsMapWindowSize, resources.GetString("ComboBoxSettingsMapWindowSize.ToolTip"));
             ComboBoxSettingsMapWindowSize.SelectedIndexChanged += ComboBoxSettingsMapWindowSize_SelectedIndexChanged;
             // 
             // ComboBoxSettingsMapAlignment
@@ -2160,7 +2160,7 @@ namespace P3D_Scenario_Generator
             ComboBoxSettingsMapAlignment.TabIndex = 44;
             ComboBoxSettingsMapAlignment.Tag = "";
             ComboBoxSettingsMapAlignment.Text = "Top Left";
-            toolTip1.SetToolTip(ComboBoxSettingsMapAlignment, "Default location of map window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            toolTip1.SetToolTip(ComboBoxSettingsMapAlignment, "Alignment:\r\nSelects the screen anchor alignment for the map overlay window:\r\n• Top Left / Top Right\r\n• Bottom Left / Bottom Right\r\n• Centered");
             ComboBoxSettingsMapAlignment.SelectedIndexChanged += ComboBoxSettingsMapAlignment_SelectedIndexChanged;
             // 
             // label63
@@ -2172,7 +2172,7 @@ namespace P3D_Scenario_Generator
             label63.Size = new Size(39, 15);
             label63.TabIndex = 30;
             label63.Text = "Offset";
-            toolTip1.SetToolTip(label63, resources.GetString("label63.ToolTip"));
+            toolTip1.SetToolTip(label63, "Offset:\r\nSpecifies the margin padding (in pixels) applied between the map window edge and the target monitor screen border.");
             // 
             // TextBoxSettingsMapOffset
             // 
@@ -2185,7 +2185,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapOffset.Tag = "";
             TextBoxSettingsMapOffset.Text = "20";
             TextBoxSettingsMapOffset.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSettingsMapOffset, resources.GetString("TextBoxSettingsMapOffset.ToolTip"));
+            toolTip1.SetToolTip(TextBoxSettingsMapOffset, "Offset:\r\nSpecifies the margin padding (in pixels) applied between the map window edge and the target monitor screen border.");
             TextBoxSettingsMapOffset.Leave += TextBoxSettingsMapOffset_Leave;
             // 
             // label64
@@ -2197,7 +2197,7 @@ namespace P3D_Scenario_Generator
             label64.Size = new Size(63, 15);
             label64.TabIndex = 31;
             label64.Text = "Alignment";
-            toolTip1.SetToolTip(label64, "Default location of map window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            toolTip1.SetToolTip(label64, "Alignment:\r\nSelects the screen anchor alignment for the map overlay window:\r\n• Top Left / Top Right\r\n• Bottom Left / Bottom Right\r\n• Centered");
             // 
             // TextBoxSettingsMapMonitorNumber
             // 
@@ -2210,7 +2210,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapMonitorNumber.Tag = "";
             TextBoxSettingsMapMonitorNumber.Text = "0";
             TextBoxSettingsMapMonitorNumber.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSettingsMapMonitorNumber, "The default monitor that the map window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            toolTip1.SetToolTip(TextBoxSettingsMapMonitorNumber, "Monitor Number:\r\nSpecifies the Windows display index where the map overlay window will render (e.g., 0, 1, or 2).\r\n\r\nNOTE: Invalid or disconnected display indices automatically fall back to Monitor 0.");
             TextBoxSettingsMapMonitorNumber.Leave += TextBoxSettingsMapMonitorNumber_Leave;
             // 
             // label66
@@ -2222,7 +2222,7 @@ namespace P3D_Scenario_Generator
             label66.Size = new Size(97, 15);
             label66.TabIndex = 29;
             label66.Text = "Monitor Number";
-            toolTip1.SetToolTip(label66, "The default monitor that the map window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            toolTip1.SetToolTip(label66, "Monitor Number:\r\nSpecifies the Windows display index where the map overlay window will render (e.g., 0, 1, or 2).\r\n\r\nNOTE: Invalid or disconnected display indices automatically fall back to Monitor 0.");
             // 
             // label67
             // 
@@ -2233,7 +2233,7 @@ namespace P3D_Scenario_Generator
             label67.Size = new Size(85, 15);
             label67.TabIndex = 35;
             label67.Text = "Monitor Width";
-            toolTip1.SetToolTip(label67, "Resolution width in pixels of the monitor that map window will display on. ");
+            toolTip1.SetToolTip(label67, "Monitor Width:\r\nEnter the horizontal pixel resolution of your target display monitor (e.g., 1920).");
             // 
             // label68
             // 
@@ -2244,7 +2244,7 @@ namespace P3D_Scenario_Generator
             label68.Size = new Size(89, 15);
             label68.TabIndex = 36;
             label68.Text = "Monitor Height";
-            toolTip1.SetToolTip(label68, "Resolution height in pixels of the monitor that map window will display on. ");
+            toolTip1.SetToolTip(label68, "Monitor Height:\r\nEnter the vertical pixel resolution of your target display monitor (e.g., 1080).");
             // 
             // label69
             // 
@@ -2255,7 +2255,7 @@ namespace P3D_Scenario_Generator
             label69.Size = new Size(74, 15);
             label69.TabIndex = 21;
             label69.Text = "Window Size";
-            toolTip1.SetToolTip(label69, "Size of the square map window in pixels.");
+            toolTip1.SetToolTip(label69, resources.GetString("label69.ToolTip"));
             // 
             // TextBoxSettingsMapMonitorWidth
             // 
@@ -2268,7 +2268,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapMonitorWidth.Tag = "";
             TextBoxSettingsMapMonitorWidth.Text = "1920";
             TextBoxSettingsMapMonitorWidth.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSettingsMapMonitorWidth, "Resolution width in pixels of the monitor that map window will display on. ");
+            toolTip1.SetToolTip(TextBoxSettingsMapMonitorWidth, "Monitor Width:\r\nEnter the horizontal pixel resolution of your target display monitor (e.g., 1920).");
             TextBoxSettingsMapMonitorWidth.Leave += TextBoxSettingsMapMonitorWidth_Leave;
             // 
             // TextBoxSettingsMapMonitorHeight
@@ -2282,7 +2282,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsMapMonitorHeight.Tag = "";
             TextBoxSettingsMapMonitorHeight.Text = "1080";
             TextBoxSettingsMapMonitorHeight.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSettingsMapMonitorHeight, "Resolution height in pixels of the monitor that map window will display on. ");
+            toolTip1.SetToolTip(TextBoxSettingsMapMonitorHeight, "Monitor Height:\r\nEnter the vertical pixel resolution of your target display monitor (e.g., 1080).");
             TextBoxSettingsMapMonitorHeight.Leave += TextBoxSettingsMapMonitorHeight_Leave;
             // 
             // GroupBoxCelestialNavigationConstraints
@@ -2373,7 +2373,7 @@ namespace P3D_Scenario_Generator
             ButtonBrowseScenarioFolder.Size = new Size(100, 23);
             ButtonBrowseScenarioFolder.TabIndex = 47;
             ButtonBrowseScenarioFolder.Text = "Scenario Folder";
-            toolTip1.SetToolTip(ButtonBrowseScenarioFolder, "Click to choose folder where scenario folders generated by the program will be placed, e.g. \"C:\\Users\\david\\OneDrive\\Documents\\Prepar3D v5 Files\"\r\n");
+            toolTip1.SetToolTip(ButtonBrowseScenarioFolder, "Scenario Folder (Button & Text Box):\r\nClick to browse and select your primary Prepar3D scenario destination folder (e.g., C:\\Users\\<Username>\\Documents\\Prepar3D v5 Files).");
             ButtonBrowseScenarioFolder.UseVisualStyleBackColor = true;
             ButtonBrowseScenarioFolder.Click += ButtonBrowseScenarioFolder_Click;
             // 
@@ -2385,7 +2385,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsScenarioFolderBase.ReadOnly = true;
             TextBoxSettingsScenarioFolderBase.Size = new Size(100, 23);
             TextBoxSettingsScenarioFolderBase.TabIndex = 48;
-            toolTip1.SetToolTip(TextBoxSettingsScenarioFolderBase, "Folder where scenario folders generated by the program will be placed, e.g. \"C:\\Users\\david\\OneDrive\\Documents\\Prepar3D v5 Files\"");
+            toolTip1.SetToolTip(TextBoxSettingsScenarioFolderBase, "Scenario Folder (Button & Text Box):\r\nClick to browse and select your primary Prepar3D scenario destination folder (e.g., C:\\Users\\<Username>\\Documents\\Prepar3D v5 Files).");
             TextBoxSettingsScenarioFolderBase.MouseEnter += TextBoxSettingsScenarioFolderBase_MouseEnter;
             // 
             // TextBoxSettingsP3DprogramInstall
@@ -2398,7 +2398,7 @@ namespace P3D_Scenario_Generator
             TextBoxSettingsP3DprogramInstall.Size = new Size(100, 23);
             TextBoxSettingsP3DprogramInstall.TabIndex = 50;
             TextBoxSettingsP3DprogramInstall.Tag = "";
-            toolTip1.SetToolTip(TextBoxSettingsP3DprogramInstall, "P3D Program Install folder path, typically e.g. \"C:\\Program Files\\Lockheed Martin\\Prepar3D v5\"");
+            toolTip1.SetToolTip(TextBoxSettingsP3DprogramInstall, "P3D Install (Button & Text Box):\r\nClick to browse and select your main Prepar3D v5 root installation directory (e.g., C:\\Program Files\\Lockheed Martin\\Prepar3D v5).");
             TextBoxSettingsP3DprogramInstall.MouseEnter += TextBoxSettingsP3DprogramInstall_MouseEnter;
             // 
             // button1
@@ -2409,7 +2409,7 @@ namespace P3D_Scenario_Generator
             button1.Size = new Size(100, 23);
             button1.TabIndex = 51;
             button1.Text = "P3D Install";
-            toolTip1.SetToolTip(button1, "Click to choose P3D Program Install folder path, typically e.g. \"C:\\Program Files\\Lockheed Martin\\Prepar3D v5\"");
+            toolTip1.SetToolTip(button1, "P3D Install (Button & Text Box):\r\nClick to browse and select your main Prepar3D v5 root installation directory (e.g., C:\\Program Files\\Lockheed Martin\\Prepar3D v5).");
             button1.UseVisualStyleBackColor = true;
             button1.Click += ButtonBrowseP3DInstallFolder_Click;
             // 
@@ -2421,7 +2421,7 @@ namespace P3D_Scenario_Generator
             ButtonP3DDataFolderSelect.Size = new Size(100, 23);
             ButtonP3DDataFolderSelect.TabIndex = 52;
             ButtonP3DDataFolderSelect.Text = "P3D Data";
-            toolTip1.SetToolTip(ButtonP3DDataFolderSelect, "Click to choose P3D Program Data folder path, typically e.g. \"C:\\ProgramData\\Lockheed Martin\\Prepar3D v5\"");
+            toolTip1.SetToolTip(ButtonP3DDataFolderSelect, resources.GetString("ButtonP3DDataFolderSelect.ToolTip"));
             ButtonP3DDataFolderSelect.UseVisualStyleBackColor = true;
             ButtonP3DDataFolderSelect.Click += ButtonBrowseP3DDataFolder_Click;
             // 

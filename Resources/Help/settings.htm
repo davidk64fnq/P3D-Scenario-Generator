@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta charset="utf-8"/>
+		<title>P3D Scenario Generator | Settings Tab</title>
+		<link rel="stylesheet" href="style.css"/>
+	</head>
+	<body>
+		<h2>Settings Tab</h2>
+		<p>
+			The <strong>Settings Tab</strong> controls global directory paths, external map tile API access, and target display parameters for the in-game overlay map window. Proper configuration here is essential for scenario validation, add-on scenery database checks, and interactive map generation.
+		</p>
+
+		<!-- MAP TILE CACHE INFO -->
+		<h3 id="mapTileCacheInfo">Map Tile Cache Info</h3>
+		<p>
+			In-game briefing and map overlay graphics are constructed using map tiles downloaded from OpenStreetMap (OSM). Map data is free to use for non-commercial applications, but requires registering with a tile provider to obtain an API key before graphics can be generated.
+		</p>
+		<p>
+			<strong>Attribution &amp; Licensing:</strong> Map graphics rendered by this application contain data from OpenStreetMap and are used under the <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap Copyright" target="_blank">Open Database License (ODbL)</a>. All generated map overlay images incorporate mandatory <code>&#169; OpenStreetMap contributors</code> copyright notices.
+		</p>
+		<p>
+			<strong>Local Tile Cache:</strong> Downloaded map tiles are saved locally in a dedicated cache directory. Reusing cached tiles for future scenario builds eliminates redundant network downloads, accelerates map rendering, and keeps your usage well within provider API rate limits.
+		</p>
+
+		<h4>Server / API key</h4>
+		<p>
+			Users of this program are required to register with the free OpenStreetMap (OSM) map tile provider <a href="https://rapidapi.com/" title="rapidapi.com" target="_blank">Rapid</a> to obtain an API key. This key is used to access map tiles from the server. The program will not work without a valid API key.
+		</p>
+		<p>
+			Follow these instructions to register with the OSM map tile server, obtain your API key, and store it on the Settings tab:
+		</p>
+		<ol type="1">
+			<li>
+				Go to <a href="https://rapidapi.com" title="rapidapi.com" target="_blank">Rapid</a>.
+			</li>
+			<li>
+				Click on the <strong>Sign Up</strong> button in the top right corner and complete the registration process.
+			</li>
+			<li>Once registered, sign into the website.</li>
+			<li>
+				In the top search box labeled <em>"Search APIs"</em>, type <code>MapTiles</code> and press <kbd>Enter</kbd>.
+			</li>
+			<li>
+				Click on the result strictly titled <strong>MapTiles</strong> to open its API endpoint page.
+			</li>
+			<li>
+				Select any endpoint from the left-hand menu (e.g., <code>getStandardMapTile</code>).
+			</li>
+			<li>
+				Look at the <strong>Code Snippets</strong> panel on the right-hand side. Locate the line containing <code>'x-rapidapi-key: ...'</code>.
+			</li>
+			<li>
+				Use your mouse to highlight <strong>only</strong> the alphanumeric key string between the single quotes (or double-click the key text) and press <kbd>Ctrl</kbd> + <kbd>C</kbd> to copy it (e.g., <code>1234567890abcdef1234567890abcdef1234567890abcdef</code>). <em>Note: Do not click the copy icon on the code box, as this copies the entire cURL command.</em>
+			</li>
+			<li>
+				Click inside the <strong>Server / API key</strong> text field on the Settings tab of P3D Scenario Generator and paste your key. Validation occurs automatically when leaving the field.
+			</li>
+		</ol>
+		<p>
+			<strong>Tip:</strong> Hovering your mouse cursor over the <strong>Server / API key</strong> field will expand a pop-up tooltip showing the full key string.
+		</p>
+
+		<h4>Cache Daily Total display field</h4>
+		<p>
+			Displays the total number of map tile requests performed during the current 24-hour cycle. Use this counter to monitor tile usage against provider rate limits.
+		</p>
+
+		<h4>Cache Usage display field</h4>
+		<p>
+			Displays the total local disk space consumed by cached map tile images saved in your user data directory.
+		</p>
+
+		<hr/>
+
+		<!-- FOLDER INFO -->
+		<h3 id="folderInfo">Folder Info</h3>
+		<p>
+			The <strong>Folder Info</strong> group manages essential system paths for your Prepar3D environment, scenery data files, and exported scenarios.
+		</p>
+
+		<h4>P3D Install button &amp; text box</h4>
+		<p>
+			Click <kbd class="winforms-btn">P3D Install</kbd> to open a folder browser and select your main Prepar3D v5 root directory (e.g., <code>C:\Program Files\Lockheed Martin\Prepar3D v5</code>).
+		</p>
+
+		<h4>P3D Data button &amp; text box</h4>
+		<p>
+			Click <kbd class="winforms-btn">P3D Data</kbd> to browse and select your active Prepar3D ProgramData directory (e.g., <code>C:\ProgramData\Lockheed Martin\Prepar3D v5</code>). The generator uses this path to parse installed scenery layers and active add-on packages.
+		</p>
+
+		<h4>Scenario Folder button &amp; text box</h4>
+		<p>
+			Click <kbd class="winforms-btn">Scenario Folder</kbd> to select your primary Prepar3D scenario destination folder (e.g., <code>C:\Users\&lt;Username&gt;\Documents\Prepar3D v5 Files</code>).
+		</p>
+		<p>
+			<strong>Note:</strong> Valid path selection is required before generating scenarios. Hover your mouse over any folder text field to view an expanded tooltip displaying the complete uncropped path string.
+		</p>
+
+		<hr/>
+
+		<!-- MAP WINDOW SETTINGS -->
+		<h3 id="mapWindow">Map Window Settings</h3>
+		<p>
+			The <strong>Map Window</strong> group specifies position, monitor routing, and frame dimensions for the in-flight overlay map window across single or multi-monitor display setups.
+		</p>
+
+		<h4>Monitor Number text box</h4>
+		<p>
+			Specifies the system display index where the map or briefing overlay window will render (e.g., <code>0</code>, <code>1</code>, or <code>2</code>).
+		</p>
+		<ul>
+			<li>
+				<strong>Display Indexing vs. Physical Layout:</strong> Index numbers correspond to how Windows enumerates connected displays (typically starting at <code>0</code>), which does not always match physical ordering left-to-right or your designated "Primary" display. For instance, in a triple-monitor setup with your primary sim view centered, the far-left screen may be indexed as <code>0</code>, center as <code>1</code>, and right as <code>2</code>.
+			</li>
+			<li>
+				<strong>Mixed Display Layouts:</strong> Adding displays above or below (such as a laptop screen underneath a center monitor) can shift index order further (e.g., top row <code>0</code>, <code>1</code>, <code>3</code> and bottom screen <code>2</code>). Testing index numbers in test scenario builds helps confirm exact panel placement.
+			</li>
+			<li>
+				<strong>Safe Display Fallback:</strong> Setting the monitor index to <code>0</code> is always a safe baseline. If an invalid or disconnected monitor index is specified, the application automatically catches the error and renders the overlay safely on Monitor <code>0</code>.
+			</li>
+		</ul>
+
+		<h4>Offset text box</h4>
+		<p>
+			Specifies the margin padding (in pixels) applied between the map window edge and the monitor screen border.
+		</p>
+
+		<h4>Alignment combobox</h4>
+		<p>
+			Click the dropdown arrow to select screen anchor alignment for the map overlay (e.g., <code>Top Right</code>, <code>Top Left</code>, <code>Bottom Right</code>, <code>Bottom Left</code>, or <code>Centered</code>).
+		</p>
+
+		<h4>Monitor Width &amp; Monitor Height text boxes</h4>
+		<p>
+			Enter the pixel resolution dimensions of your target display monitor (e.g., <code>1920</code> Width by <code>1080</code> Height) to calculate exact screen coordinates.
+		</p>
+
+		<h4>Window Size combobox</h4>
+		<p>
+			Click the dropdown arrow to select the square display window size in pixels (<code>512</code> or <code>1024</code>).
+		</p>
+		<p>
+			<strong>Zoom Level Generation Linkage:</strong> This selection directly controls the resolution density and the number of progressive tile zoom levels generated for the moving map display:
+		</p>
+		<ul>
+			<li>
+				<strong>512 &#215; 512 Window:</strong> Generates <strong>3</strong> levels of zoom per flight leg (Zoom 1, 2, and 3).
+			</li>
+			<li>
+				<strong>1024 &#215; 1024 Window:</strong> Generates <strong>4</strong> levels of zoom per flight leg (Zoom 1, 2, 3, and 4), providing higher geographical resolution and broader spatial coverage.
+			</li>
+		</ul>
+		<p>
+			<strong>Validation Rules:</strong> Leaving any field or changing a dropdown selection within this group automatically runs validation checks to ensure coordinates stay within valid display screen boundaries.
+		</p>
+
+		<h4>Overlay Window Handling &amp; Operations</h4>
+		<ul>
+			<li>
+				<strong>Single-Monitor Real Estate:</strong> Running a single display—particularly at resolutions below 1920&#215;1080—will result in noticeable screen crowding when overlay windows are active.
+			</li>
+			<li>
+				<strong>Window Repositioning &amp; Dragging:</strong> Panels must be <strong>undocked</strong> (showing a standard Windows title bar) to be moved cleanly. If a panel is currently docked within the main flight view, right-click the panel and select <em>Undock Window</em>. Attempting to drag docked panels can cause the mouse cursor to stick to the panel frame during repositioning.
+			</li>
+			<li>
+				<strong>Iterative Layout Tuning:</strong> Because display arrangements vary greatly, generating a quick test scenario helps fine-tune your preferred monitor index, window alignment, and margin offsets for your exact cockpit setup.
+			</li>
+		</ul>
+
+		<hr/>
+
+		<!-- MOVING MAP DISPLAY & CONTROLS -->
+		<h3 id="movingMap">Moving Map Display &amp; Controls</h3>
+		<p>
+			The <strong>In-Game Moving Map</strong> provides dynamic position tracking, heading updates, and leg route overlays across selectable zoom levels during active scenarios (3 or 4 levels depending on your configured <strong>Window Size</strong>).
+		</p>
+
+		<h4>Interactive Viewport Controls</h4>
+		<ul>
+			<li>
+				<strong>Toggle Aircraft / Drag Mode:</strong> Click the <kbd class="winforms-btn">Toggle Plane</kbd> button on the map display to show or hide the aircraft symbol. Hiding the aircraft disables auto-tracking and unlocks manual panning, allowing you to click and drag across the map image.
+			</li>
+			<li>
+				<strong>Cycle Zoom Levels:</strong> Click the <kbd class="winforms-btn">Cycle Zoom</kbd> button to cycle the background chart through the generated tile zoom levels for the active flight leg (Zoom 1&#8211;3 for 512px windows, or Zoom 1&#8211;4 for 1024px windows).
+			</li>
+		</ul>
+
+		<h4>Hardware &amp; Cockpit Switch Bindings</h4>
+		<p>
+			In addition to the HTML buttons, moving map functions can be bound to physical cockpit switches, joystick buttons, or voice commands using mapped Prepar3D simulator variables:
+		</p>
+		<table border="1" cellpadding="6" cellspacing="0">
+			<thead>
+				<tr>
+					<th>Action</th>
+					<th>Simulator Variable</th>
+					<th>Function</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						<strong>Cycle Zoom</strong>
+					</td>
+					<td>
+						<code>A:ALTERNATE STATIC SOURCE OPEN</code>
+					</td>
+					<td>Toggling this switch state cycles through Zoom levels 1, 2, and 3.</td>
+				</tr>
+				<tr>
+					<td>
+						<strong>Toggle Aircraft Icon</strong>
+					</td>
+					<td>
+						<code>A:CABIN NO SMOKING ALERT SWITCH</code>
+					</td>
+					<td>Toggling this switch toggles aircraft visibility and toggles manual mouse-drag mode.</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<h4>Automated Tracking &amp; Navigation Operations</h4>
+		<ul>
+			<li>
+				<strong>Real-Time Tracking &amp; Rotation:</strong> When the aircraft icon is toggled visible, the map viewport automatically centers on your aircraft's spatial coordinates (<code>A:PLANE LATITUDE</code> / <code>A:PLANE LONGITUDE</code>) and rotates the symbol to match true heading (<code>A:PLANE HEADING DEGREES TRUE</code>).
+			</li>
+			<li>
+				<strong>Automatic Leg Transitions:</strong> As you progress through scenario waypoints, the display monitors your active leg index (<code>S:currentLegNo</code>) and automatically updates background chart graphics (<code>LegRoute_XX_zoomY.jpg</code>) without requiring manual map reloads.
+			</li>
+		</ul>
+
+		<hr/>
+
+		<!-- FILE & DATA STORAGE REFERENCE -->
+		<h3 id="fileStorageReference">Application Storage &amp; File Reference</h3>
+		<p>
+			Application configurations, runway spatial caches, system logs, and cached map tiles are stored locally on your system. Understanding these files makes it simple to back up user profiles, troubleshoot operational issues, or manage disk space.
+		</p>
+
+		<h4>
+			Data Directory Structure (<code>%APPDATA%\P3D Scenario Generator\</code>)
+		</h4>
+		<ul>
+			<li>
+				<strong>ui_settings.json &amp; ui_settings.json.bak:</strong> The primary application configuration profile and its automatic backup copy. Beyond system folder paths and RapidAPI credentials, this file persists control states for every scenario mode (Circuit, Photo Tour, Sign Writing, Celestial, Wiki List), multi-monitor overlay window positioning metrics, and dynamic, aircraft-specific circuit pattern profiles (such as speeds, leg lengths, and altitudes keyed to individual aircraft titles).
+			</li>
+			<li>
+				<strong>runways.xml:</strong> The master XML airport and runway database file. Placing a custom XML database here (such as one compiled using Pete Dowson's <em>MakeRunways</em>) overrides the built-in stock airport database to enable scenario builds at custom add-on airfields. For step-by-step instructions on generating and installing this file, see <a href="generalTab.htm#runwaySelection">General Tab: Including Add-on Scenery Runways</a>.
+			</li>
+			<li>
+				<strong>runways.cache:</strong> A binary cache file generated automatically on initial XML load. It stores the deserialized runway object structure alongside a spatial KD-tree index, drastically bypassing XML parsing overhead to accelerate application startup. Rebuilt automatically whenever <code>runways.xml</code> is updated or deleted.
+			</li>
+			<li>
+				<strong>AircraftVariantsJSON.txt:</strong> Stores user-configured aircraft profiles in JSON format. Each variant entry contains the internal simulator title (<code>Title</code>), friendly UI label (<code>DisplayName</code>), cruise speed in knots (<code>CruiseSpeed</code>), local image preview path (<code>ThumbnailImagePath</code>), and gear capability flags (<code>HasFloats</code> and <code>HasWheelsOrEquiv</code>). The generator parses these attributes to calculate estimated flight durations and filter suitable landing surfaces (water vs. hard runways). For details on adding, renaming, or deleting aircraft profiles in the UI, see <a href="generalTab.htm#aircraftSelection">General Tab: Aircraft Selection</a>.
+			</li>
+			<li>
+				<strong>LocationFavouritesJSON.txt:</strong> Stores user-defined geographic filter presets used on the General tab. Each preset entry contains a preset title (<code>Name</code>) alongside string arrays defining target <code>Countries</code>, <code>States</code>, and <code>Cities</code> (or set to <code>["None"]</code> to leave unconstrained). The scenario generator uses these region rules to filter valid departure airports and destination waypoints during generation. For instructions on creating and managing geographic filter presets in the UI, see <a href="generalTab.htm#locationFilter">General Tab: Location Filter</a>.
+			</li>
+			<li>
+				<strong>InfoLog.txt, WarningLog.txt &amp; ErrorLog.txt:</strong> Operational execution logs tracking application runtime events, status updates, non-fatal warnings, and detailed error stack traces for troubleshooting.
+			</li>
+			<li>
+				<strong>
+					Exported Scenarios (<code>&lt;Scenario Base Folder&gt;\&lt;Scenario Title&gt;\</code>):
+				</strong> Output destination designated in <strong>Folder Info</strong> settings containing compiled Prepar3D flight packages (<code>.fxml</code>, <code>.xml</code>) and map briefing graphics.
+			</li>
+		</ul>
+
+		<h4>
+			Tile Cache Directory (<code>%APPDATA%\P3D_Scenario_Generator_Cache\</code>)
+		</h4>
+		<ul>
+			<li>
+				<strong>
+					Zoom Level Folders (<code>\3\</code> through <code>\18\</code>):
+				</strong> Subdirectories organized by standard OpenStreetMap zoom levels containing tile grid image files (`.png`). Deleting these folders is completely safe and reclaims local disk space—missing tiles automatically re-download on future scenario builds.
+			</li>
+			<li>
+				<strong>cache_stats.json:</strong> Stores runtime cache analytics and daily tile request counters. The application parses this file to populate the <em>Cache Daily Total</em> and <em>Cache Usage</em> display fields on the Settings tab.
+			</li>
+		</ul>
+
+		<hr/>
+
+		<!-- GLOBAL ACTIONS -->
+		<h3 id="globalActions">Global Actions</h3>
+		<p>
+			Located along the bottom of the application window, these buttons manage configuration session states, revert control values, and compile the final scenario files.
+		</p>
+
+		<h4>Reset Tab button</h4>
+		<p>
+			Click <kbd class="winforms-btn">Reset Tab</kbd> to restore all path text fields, API values, and map window dimensions on this tab back to default factory settings.
+		</p>
+
+		<h4>Reload Profile button</h4>
+		<p>
+			Click <kbd class="winforms-btn">Reload Profile</kbd> to discard pending changes and reload saved system configuration values from <code>%APPDATA%\P3D Scenario Generator\ui_settings.json</code>.
+		</p>
+
+		<h4>Generate Scenario button</h4>
+		<p>
+			Click <kbd class="winforms-btn">Generate Scenario</kbd> to validate all form inputs across active tabs and build the scenario package.
+		</p>
+	</body>
+</html>

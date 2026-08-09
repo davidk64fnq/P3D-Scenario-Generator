@@ -315,5 +315,33 @@ namespace P3D_Scenario_Generator.MapTiles
             Coordinate c = new(latitudeRadians * 180.0 / Math.PI, xTile / n * 360.0 - 180.0);
             return c;
         }
+
+        /// <summary>
+        /// Calculates the X and Y pixel offset of a given coordinate relative to the top-left corner
+        /// of an unscaled tile montage defined by a BoundingBox at a specific zoom level.
+        /// </summary>
+        /// <param name="coord">The target geographic coordinate.</param>
+        /// <param name="box">The bounding box defining the tile assembly layout.</param>
+        /// <param name="zoom">The OSM zoom level.</param>
+        /// <returns>A tuple containing pixelX and pixelY offsets within the montage, or (-1, -1) if outside bounds.</returns>
+        public static (double pixelX, double pixelY) GetPixelCoordinates(Coordinate coord, BoundingBox box, int zoom)
+        {
+            Tile tile = new();
+            LonToTileX(coord.Longitude.DecimalDegree, zoom, tile);
+            LatToTileY(coord.Latitude.DecimalDegree, zoom, tile);
+
+            int xTileIndexInBox = box.XAxis.IndexOf(tile.XIndex);
+            int yTileIndexInBox = box.YAxis.IndexOf(tile.YIndex);
+
+            if (xTileIndexInBox < 0 || yTileIndexInBox < 0)
+            {
+                return (-1, -1);
+            }
+
+            double pixelX = (xTileIndexInBox * Constants.TileSizePixels) + tile.XOffset;
+            double pixelY = (yTileIndexInBox * Constants.TileSizePixels) + tile.YOffset;
+
+            return (pixelX, pixelY);
+        }
     }
 }

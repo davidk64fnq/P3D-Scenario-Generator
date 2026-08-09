@@ -140,5 +140,30 @@
 		<p>
 			<strong>Terrain Advisory:</strong> When picking a random runway or flying in mountainous areas, spatial placement of circuit gates relies strictly on runway orientation and calculated offsets. In hilly or mountainous terrain, generated gates may occasionally intersect elevated ground or be embedded within landforms.
 		</p>
+
+		<hr/>
+
+		<!-- GLOBAL ACTION BUTTONS -->
+		<h3 id="globalButtons">Action Buttons</h3>
+		<p>
+			Located at the bottom of the application interface, these controls execute actions for the active circuit configuration:
+		</p>
+		<ul>
+			<li>
+				<strong>
+					<kbd class="winforms-btn">Generate Scenario</kbd>:
+				</strong> Validates the current circuit configuration, constructs the spatial gate sequence relative to the selected runway, and exports the compiled Prepar3D flight package (<code>.fxml</code> and <code>.xml</code>) to your output directory.
+			</li>
+			<li>
+				<strong>
+					<kbd class="winforms-btn">Reload Profile</kbd>:
+				</strong> Re-loads saved aircraft-specific circuit parameters (speeds, altitudes, and leg lengths) directly from <code>ui_settings.json</code>, discarding any unsaved manual edits made on the tab without recalculating baseline defaults.
+			</li>
+			<li>
+				<strong>
+					<kbd class="winforms-btn">Reset Tab</kbd>:
+				</strong> Recalculates and restores recommended baseline circuit parameters derived from the active aircraft variant's performance characteristics.
+			</li>
+		</ul>
 	</body>
 </html>

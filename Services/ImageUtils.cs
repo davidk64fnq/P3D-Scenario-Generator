@@ -1,6 +1,7 @@
 ﻿using CoordinateSharp;
 using ImageMagick;
 using ImageMagick.Drawing;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.MapTiles;
 using P3D_Scenario_Generator.Models;
 using System.Text.RegularExpressions;
@@ -174,6 +175,9 @@ namespace P3D_Scenario_Generator.Services
                 // Apply all drawing instructions if at least one valid line was added
                 if (drawingSuccess)
                 {
+                    // Append OSM attribution overlay in the bottom-right corner
+                    AddOsmAttribution(drawables, width, height);
+
                     image.Draw(drawables);
                     image.Write(filePath);
                     return true;
@@ -520,6 +524,128 @@ namespace P3D_Scenario_Generator.Services
             catch (Exception ex)
             {
                 await _logger.ErrorAsync($"An unexpected error occurred while resizing '{fullPath}': {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Appends OpenStreetMap copyright attribution drawables to render a subtle badge in the bottom-right corner.
+        /// </summary>
+        private static void AddOsmAttribution(List<IDrawable> drawables, int imageWidth, int imageHeight)
+        {
+            const string attributionText = "© OpenStreetMap contributors";
+
+            int boxWidth = 175;
+            int boxHeight = 18;
+            int margin = 6;
+
+            int x1 = imageWidth - boxWidth - margin;
+            int y1 = imageHeight - boxHeight - margin;
+            int x2 = imageWidth - margin;
+            int y2 = imageHeight - margin;
+
+            // Semi-transparent white background box (#FFFFFF with ~80% alpha)
+            drawables.Add(new DrawableFillColor(new MagickColor("#FFFFFFCC")));
+            drawables.Add(new DrawableStrokeColor(MagickColors.Transparent));
+            drawables.Add(new DrawableRectangle(x1, y1, x2, y2));
+
+            // Attribution text
+            drawables.Add(new DrawableFont("Segoe UI"));
+            drawables.Add(new DrawableFontPointSize(11)); // Fixed: Capital 'S' in PointSize
+            drawables.Add(new DrawableFillColor(MagickColors.DarkSlateGray));
+            drawables.Add(new DrawableText(x1 + 6, y2 - 4, attributionText));
+        }
+
+        /// <summary>
+        /// Draws OpenStreetMap copyright attribution directly onto a target image file.
+        /// </summary>
+        /// <param name="filePath">The full path of the image file to annotate.</param>
+        /// <returns><see langword="true"/> if attribution was applied successfully; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> DrawAttributionAsync(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                await _logger.ErrorAsync($"Source image not found at '{filePath}'. Cannot draw attribution.");
+                return false;
+            }
+
+            try
+            {
+                using MagickImage image = new(filePath);
+                var drawables = new List<IDrawable>();
+
+                AddOsmAttribution(drawables, (int)image.Width, (int)image.Height);
+
+                image.Draw(drawables);
+                image.Write(filePath);
+                return true;
+            }
+            catch (MagickErrorException mex)
+            {
+                await _logger.ErrorAsync($"Magick.NET error while drawing attribution on '{filePath}': {mex.Message}", mex);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                await _logger.ErrorAsync($"An unexpected error occurred while drawing attribution on '{filePath}': {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Draws a high-visibility location marker dot onto a map thumbnail.
+        /// </summary>
+        public async Task<bool> DrawLocationMarkerAsync(string filePath, Coordinate coord, BoundingBox box, int zoom)
+        {
+            if (!File.Exists(filePath))
+            {
+                await _logger.ErrorAsync($"Source image not found at '{filePath}'. Cannot draw location marker.");
+                return false;
+            }
+
+            try
+            {
+                using MagickImage image = new(filePath);
+
+                // Calculate unscaled pixel position within the original bounding box tile assembly
+                (double rawX, double rawY) = MapTileCalculator.GetPixelCoordinates(coord, box, zoom);
+                if (rawX < 0 || rawY < 0)
+                {
+                    await _logger.WarningAsync($"Coordinate (Lat: {coord.Latitude.DecimalDegree}, Lon: {coord.Longitude.DecimalDegree}) falls outside the bounding box for '{filePath}'.");
+                    return false;
+                }
+
+                // Account for any post-montage image resizing (e.g. MakeSquare or 256x256 downsizing)
+                double unscaledWidth = box.XAxis.Count * Constants.TileSizePixels;
+                double unscaledHeight = box.YAxis.Count * Constants.TileSizePixels;
+
+                double scaleX = image.Width / unscaledWidth;
+                double scaleY = image.Height / unscaledHeight;
+
+                double pixelX = rawX * scaleX;
+                double pixelY = rawY * scaleY;
+
+                var drawables = new List<IDrawable>
+        {
+            // Outer white ring for contrast against land/water tiles
+            new DrawableFillColor(MagickColors.White),
+            new DrawableCircle(pixelX, pixelY, pixelX + 7, pixelY + 7),
+
+            // Inner red location dot
+            new DrawableFillColor(MagickColors.Red),
+            new DrawableCircle(pixelX, pixelY, pixelX + 4, pixelY + 4)
+        };
+
+                // Append OpenStreetMap copyright attribution badge
+                AddOsmAttribution(drawables, (int)image.Width, (int)image.Height);
+
+                image.Draw(drawables);
+                image.Write(filePath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _logger.ErrorAsync($"An error occurred while drawing location marker on '{filePath}': {ex.Message}", ex);
                 return false;
             }
         }
