@@ -11,17 +11,36 @@
 		<p>
 			Using <strong>SimDirector</strong> to create scenarios manually requires a significant investment of time and technical effort—it is certainly not for the faint-hearted! For example, the diagram below shows the complex web of triggers, actions, and object visualisations created in SimDirector for a generated Photo Tour scenario:
 		</p>
-
 		<p style="text-align: center;">
 			<img src="images/introduction-objects.jpg" alt="Example of objects created by P3D Scenario Generator for Photo Tour scenario" title="SimDirector Object Visualisation"/>
 		</p>
-
 		<p>
 			<strong>P3D Scenario Generator</strong> removes this complexity by automating file creation. Instead of wiring logic trees from scratch, you select a scenario type, location filters, an aircraft, and session-specific parameters. The generator builds the complete set of output files equivalent to a manually authored SimDirector scenario.
 		</p>
-
 		<p>
 			In <strong>Prepar3D</strong>, simply load the generated scenario just as you would any saved flight and start flying. To fly a new variation—such as at a different airfield or with updated weather and time conditions—return to the generator, adjust your parameters, and create a fresh scenario in seconds.
 		</p>
+		<p>
+			<strong>Prepar3D Version Compatibility:</strong> This application was developed and tested specifically for <strong>Prepar3D v5</strong>. While generated scenarios and in-game HTML map panels will likely function cleanly under <strong>v6</strong>, full compatibility with <strong>v4</strong> is less likely due to structural changes Lockheed Martin made to HTML panel rendering engines across major version releases.
+		</p>
+
+		<hr/>
+
+		<!-- ACKNOWLEDGEMENTS & MISSION DESIGN PHILOSOPHY -->
+		<h3 id="customMissionsVsTemplates">Hand-Crafted Scenarios vs. Procedural Generation</h3>
+		<p>
+			If you enjoy story-driven, deeply scripted flight experiences with custom event logic, explore the extensive scenario library created by <strong>Jörg</strong> at <a href="https://andi20.ch/p3d/indexE.html" title="Jörg's P3D Scenarios" target="_blank">andi20.ch</a>. Jörg designs and publishes a catalog of over 40 free, bilingual (German/English) scenarios for Prepar3D v4, v5, and v6.
+		</p>
+		<p>
+			Understanding the distinct design philosophies behind hand-crafted scenarios and automated scenario generators highlights how both approaches complement each other in Prepar3D:
+		</p>
+		<ul>
+			<li>
+				<strong>Bespoke Hand-Crafted Missions (e.g., Jörg's Scenarios):</strong> Meticulously constructed individual flights designed to deliver specific, highly scripted narratives. Features include tailored failure states (such as progressive oil leaks), interactive branching options, customized audio/visual callouts, selectable difficulty toggles (<em>"With Help / Without Help"</em>), and specialized routes ranging from mountain gliders and helicopter training to transatlantic Concorde flights.
+			</li>
+			<li>
+				<strong>Procedural Template Generator (P3D Scenario Generator):</strong> Employs algorithmic rules, spatial database parsing, and automated chart rendering to produce infinite scenario variations on demand. Rather than a single fixed narrative, it instantly builds dynamic, structured training missions (such as circuit patterns, photo tours, sign writing, celestial navigation legs, and Wikipedia landmark tours) at any airport or user-installed scenery layer globally.
+			</li>
+		</ul>
 	</body>
 </html>

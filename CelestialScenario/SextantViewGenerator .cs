@@ -83,7 +83,53 @@ namespace P3D_Scenario_Generator.CelestialScenario
             if (!await _assetFileGenerator.WriteAssetFileAsync("CSS.styleCelestialSextant.css", "styleCelestialSextant.css", saveLocation)) return false;
 
             // Binary Assets
-            return await _assetFileGenerator.CopyAssetImageAsync("Images.plotImage.jpg", Path.Combine(saveLocation, "plotImage.jpg"));
+            if (!await _assetFileGenerator.CopyAssetImageAsync("Images.plotImage.jpg", Path.Combine(saveLocation, "plotImage.jpg"))) return false;
+
+            // 3. Deploy Constellation BMPs to Images/Constellations subfolder
+            return await DeployConstellationImagesAsync(saveLocation, starDataManager);
+        }
+
+        /// <summary>
+        /// Copies required constellation BMP images into the scenario's Images/Constellations folder.
+        /// </summary>
+        private async Task<bool> DeployConstellationImagesAsync(string scenarioImageFolder, StarDataManager starDataManager)
+        {
+            string targetFolder = Path.Combine(scenarioImageFolder, "Constellations");
+
+            if (!Directory.Exists(targetFolder))
+            {
+                Directory.CreateDirectory(targetFolder);
+            }
+
+            // Materialize directly to List to bypass deferred LINQ execution in the debugger
+            var constellations = starDataManager.Stars
+                .Select(s => s.Constellation)
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            // Diagnostic logging if no constellations were parsed
+            if (constellations.Count == 0)
+            {
+                var sampleStar = starDataManager.Stars.Count > 0 ? starDataManager.Stars[0] : null;
+                await _logger.WarningAsync($"Constellation query returned 0 results. Total stars: {starDataManager.Stars.Count}. Sample Star Constellation value: '{sampleStar?.Constellation}'");
+                return false;
+            }
+
+            foreach (string constName in constellations)
+            {
+                string cleanName = constName.Replace(" ", "_") + ".bmp";
+                string resourceName = $"Images.Constellations.{cleanName}";
+                string destinationPath = Path.Combine(targetFolder, cleanName);
+
+                bool success = await _assetFileGenerator.CopyAssetImageAsync(resourceName, destinationPath);
+                if (!success)
+                {
+                    await _logger.WarningAsync($"Failed to deploy constellation image: '{cleanName}'. Resource: '{resourceName}'");
+                }
+            }
+
+            return true;
         }
 
         private List<NavStarData> PrepareNavStarCatalog(StarDataManager starDataManager)

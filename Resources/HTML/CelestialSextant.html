@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
-<html>	
+<HTML>	
 <head>
-    <link rel="stylesheet" href="styleCelestialSextant.css">
+	<link rel="stylesheet" href="styleCelestialSextant.css"></link>
     <style>
     </style>
 </head>
@@ -22,6 +22,7 @@
             <button type="button" onclick="toggleStarNamesWrapper()">Star Names</button>
             <button type="button" onclick="toggleConstellationLinesWrapper()">Constellation Lines</button>
             <button type="button" onclick="toggleConstellationNamesWrapper()">Constellation Names</button>
+			<button type="button" onclick="updateVisibleStarsTableWrapper()">Update Stars Table</button>
         </div>
         <div id="FIX">
             <button type="button" onclick="takeSightingWrapper()">Take Sighting</button>
@@ -85,21 +86,21 @@
             </tr>
             <tr>
                 <th>AP Latitude</th>
-                <td><input type="text" class="AP Lat" size="10"></td>
-                <td><input type="text" class="AP Lat" size="10"></td>
-                <td><input type="text" class="AP Lat" size="10"></td>
-                <td><input type="text" class="AP Lat" size="10"></td>
-                <td><input type="text" class="AP Lat" size="10"></td>
-                <td><input type="text" class="AP Lat" size="10"></td>
+                <td><input type="text" class="AP Lat" size="10"></input></td>
+                <td><input type="text" class="AP Lat" size="10"></input></td>
+                <td><input type="text" class="AP Lat" size="10"></input></td>
+                <td><input type="text" class="AP Lat" size="10"></input></td>
+                <td><input type="text" class="AP Lat" size="10"></input></td>
+                <td><input type="text" class="AP Lat" size="10"></input></td>
             </tr>
             <tr>
                 <th>AP Longitude</th>
-                <td><input type="text" class="AP Lon" size="10"></td>
-                <td><input type="text" class="AP Lon" size="10"></td>
-                <td><input type="text" class="AP Lon" size="10"></td>
-                <td><input type="text" class="AP Lon" size="10"></td>
-                <td><input type="text" class="AP Lon" size="10"></td>
-                <td><input type="text" class="AP Lon" size="10"></td>
+                <td><input type="text" class="AP Lon" size="10"></input></td>
+                <td><input type="text" class="AP Lon" size="10"></input></td>
+                <td><input type="text" class="AP Lon" size="10"></input></td>
+                <td><input type="text" class="AP Lon" size="10"></input></td>
+                <td><input type="text" class="AP Lon" size="10"></input></td>
+                <td><input type="text" class="AP Lon" size="10"></input></td>
             </tr>
         </table>
         <table>
@@ -222,16 +223,42 @@
         <img id="plane" src="aircraft.png" />
     </div>
 
-    <div id="Tables" class="tabcontent">
-        <!--
-        <p id="debug1"></p>
-        <p id="debug2"></p>
-        <p id="debug3"></p>
-                document.getElementById("debug1").innerHTML = " " + ;
-        -->
-    </div>
+	<div id="Tables" class="tabcontent" style="position: absolute; top: 45px; bottom: 0; left: 0; right: 0; overflow-y: auto; overflow-x: hidden; padding: 10px 0 10px 0; text-align: center;">
+
+		<!-- Table Container -->
+		<div id="visibleStarsContainer" style="width: 860px; margin: 0 auto 10px auto;">
+			<table id="visibleStarsTable" style="width: 860px; margin: 0 auto; border-collapse: collapse; text-align: center; table-layout: fixed;">
+				<thead>
+					<tr style="border-bottom: 2px solid #ccc; height: 32px;">
+						<th style="width: 100px;">SHA Index</th>
+						<th style="width: 200px;">Nav Star Name</th>
+						<th style="width: 240px;">Constellation</th>
+						<th style="width: 120px;">Bayer</th>
+						<th style="width: 100px;">Mag</th>
+					</tr>
+				</thead>
+				<tbody id="visibleStarsBody">
+					<tr>
+						<td colspan="5" style="text-align: center; padding: 12px;">
+							Click "Update Stars Table" on Star Chart to populate visible stars.
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<!-- Constellation Viewer -->
+		<div id="constellationViewer" style="width: 860px; margin: 0 auto 10px auto; background-color: #ffffff; border: 1px solid #d0d7de; border-radius: 4px; padding: 10px 0; text-align: center;">
+			<img id="constellationImg"
+				 src="Constellations/navstarchart.bmp"
+				 alt="Chart Display Area"
+				 style="max-width: 840px; width: auto; height: auto; display: block; margin: 0 auto; border: 0;" />
+		</div>
+
+	</div>
+	
     <script src="types.js"></script>
     <script src="scriptsCelestialAstroCalcs.js"></script>
     <script src="scriptsCelestialSextant.js"></script>
 </body>
-</html>
+</HTML>

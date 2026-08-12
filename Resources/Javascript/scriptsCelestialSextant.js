@@ -1250,6 +1250,99 @@ function updatePlotTab(fixHistory, plotDisplayConfig) {// 1. Context and Canvas 
 
 // #endregion
 
+// #region Table tab functions
+
+/**
+ * @summary Updates the visible stars DOM table based on current observer coordinates and sets the constellation display image.
+ * @returns {void}
+ */
+function updateVisibleStarsTableWrapper() {
+	const tableBody = document.getElementById("visibleStarsBody");
+	if (!tableBody) return;
+
+	const observerCoord = {
+		latitude: planeStatus.position.latitude,
+		longitude: planeStatus.position.longitude
+	};
+
+	const visibleStars = calcLocalStarPositions(observerCoord, sextantView, starCelestialCoords) || [];
+
+	const navStars = visibleStars.filter(star => {
+		if (!star || star.shaIndex === null || star.shaIndex === undefined || star.shaIndex === "") return false;
+		const shaNum = Number(star.shaIndex);
+		return !isNaN(shaNum) && shaNum > 0;
+	});
+
+	tableBody.innerHTML = "";
+
+	if (navStars.length === 0) {
+		tableBody.innerHTML = `
+			<tr>
+				<td colspan="5" style="text-align: center; padding: 12px;">
+					No navigation stars currently visible in FOV.
+				</td>
+			</tr>`;
+			
+		// Reset viewer to the master sky chart
+		const imgElem = document.getElementById("constellationImg");
+		if (imgElem) imgElem.src = "Constellations/navstarchart.bmp";
+		
+		return;
+	}
+
+	// Auto-select image for the first star entry in the table
+	const firstConstellation = navStars[0].constellationName;
+	if (firstConstellation && firstConstellation !== "—") {
+		changeConstellationImage(firstConstellation);
+	} else {
+		const imgElem = document.getElementById("constellationImg");
+		if (imgElem) imgElem.src = "Constellations/navstarchart.bmp";
+	}
+
+	for (let i = 0; i < navStars.length; i++) {
+		const star = navStars[i];
+		const row = document.createElement("tr");
+
+		const sha = star.shaIndex || "—";
+		const nav = star.navName || "—";
+		const constName = star.constellationName || "—";
+		const bayer = star.bayerDesignation || "—";
+		const mag = typeof star.visMag === "number" && !isNaN(star.visMag)
+			? star.visMag.toFixed(1)
+			: "—";
+
+		const constCellHtml = (star.constellationName && constName !== "—")
+			? `<a href="javascript:void(0);" onclick="changeConstellationImage('${star.constellationName}');" style="color: #0056b3; text-decoration: underline; cursor: pointer;">${constName}</a>`
+			: constName;
+
+		row.innerHTML = `
+			<td style="padding: 6px;">${sha}</td>
+			<td style="padding: 6px;">${nav}</td>
+			<td style="padding: 6px;">${constCellHtml}</td>
+			<td style="padding: 6px;">${bayer}</td>
+			<td style="padding: 6px;">${mag}</td>
+		`;
+
+		tableBody.appendChild(row);
+	}
+}
+
+/**
+ * @summary Updates the constellation chart image source element based on the provided constellation name.
+ * @param {string} constName - The target constellation name (e.g., "Canis Major").
+ * @returns {void}
+ */
+ function changeConstellationImage(constName) {
+    if (!constName || constName === "—") return;
+    const cleanName = constName.trim().replace(/ /g, "_");
+    const imgElem = document.getElementById("constellationImg");
+    if (imgElem) {
+        imgElem.src = "Constellations/" + cleanName + ".bmp";
+    }
+}
+
+// #endregion
+
 // #region Formatting utility functions
 
 /**

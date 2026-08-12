@@ -57,6 +57,83 @@
     <None Remove="Resources\HTML\WikipediaItem.html" />
     <None Remove="Resources\Images\aircraft.png" />
     <None Remove="Resources\Images\circuitTab.jpg" />
+    <None Remove="Resources\Images\Constellations\Andromeda.bmp" />
+    <None Remove="Resources\Images\Constellations\Andromeda.png" />
+    <None Remove="Resources\Images\Constellations\Aquila.bmp" />
+    <None Remove="Resources\Images\Constellations\Aquila.png" />
+    <None Remove="Resources\Images\Constellations\Aries.bmp" />
+    <None Remove="Resources\Images\Constellations\Aries.png" />
+    <None Remove="Resources\Images\Constellations\Auriga.bmp" />
+    <None Remove="Resources\Images\Constellations\Auriga.png" />
+    <None Remove="Resources\Images\Constellations\Bootes.bmp" />
+    <None Remove="Resources\Images\Constellations\Bootes.png" />
+    <None Remove="Resources\Images\Constellations\Canis_Major.bmp" />
+    <None Remove="Resources\Images\Constellations\Canis_Major.png" />
+    <None Remove="Resources\Images\Constellations\Canis_Minor.bmp" />
+    <None Remove="Resources\Images\Constellations\Canis_Minor.png" />
+    <None Remove="Resources\Images\Constellations\Carina.bmp" />
+    <None Remove="Resources\Images\Constellations\Carina.png" />
+    <None Remove="Resources\Images\Constellations\Cassiopeia.bmp" />
+    <None Remove="Resources\Images\Constellations\Cassiopeia.png" />
+    <None Remove="Resources\Images\Constellations\Centaurus.bmp" />
+    <None Remove="Resources\Images\Constellations\Centaurus.png" />
+    <None Remove="Resources\Images\Constellations\Cetus.bmp" />
+    <None Remove="Resources\Images\Constellations\Cetus.png" />
+    <None Remove="Resources\Images\Constellations\Corona_Borealis.bmp" />
+    <None Remove="Resources\Images\Constellations\Corona_Borealis.png" />
+    <None Remove="Resources\Images\Constellations\Corvus.bmp" />
+    <None Remove="Resources\Images\Constellations\Corvus.png" />
+    <None Remove="Resources\Images\Constellations\Crux.bmp" />
+    <None Remove="Resources\Images\Constellations\Crux.png" />
+    <None Remove="Resources\Images\Constellations\Cygnus.bmp" />
+    <None Remove="Resources\Images\Constellations\Cygnus.png" />
+    <None Remove="Resources\Images\Constellations\Draco.bmp" />
+    <None Remove="Resources\Images\Constellations\Draco.png" />
+    <None Remove="Resources\Images\Constellations\Eridanus.bmp" />
+    <None Remove="Resources\Images\Constellations\Eridanus.png" />
+    <None Remove="Resources\Images\Constellations\Gemini.bmp" />
+    <None Remove="Resources\Images\Constellations\Gemini.png" />
+    <None Remove="Resources\Images\Constellations\Grus.bmp" />
+    <None Remove="Resources\Images\Constellations\Grus.png" />
+    <None Remove="Resources\Images\Constellations\Hydra.bmp" />
+    <None Remove="Resources\Images\Constellations\Hydra.png" />
+    <None Remove="Resources\Images\Constellations\Leo.bmp" />
+    <None Remove="Resources\Images\Constellations\Leo.png" />
+    <None Remove="Resources\Images\Constellations\Libra.bmp" />
+    <None Remove="Resources\Images\Constellations\Libra.png" />
+    <None Remove="Resources\Images\Constellations\Lyra.bmp" />
+    <None Remove="Resources\Images\Constellations\Lyra.png" />
+    <None Remove="Resources\Images\Constellations\navstarchart.bmp" />
+    <None Remove="Resources\Images\Constellations\Ophiuchus.bmp" />
+    <None Remove="Resources\Images\Constellations\Ophiuchus.png" />
+    <None Remove="Resources\Images\Constellations\Orion.bmp" />
+    <None Remove="Resources\Images\Constellations\Orion.png" />
+    <None Remove="Resources\Images\Constellations\Pavo.bmp" />
+    <None Remove="Resources\Images\Constellations\Pavo.png" />
+    <None Remove="Resources\Images\Constellations\Pegasus.bmp" />
+    <None Remove="Resources\Images\Constellations\Pegasus.png" />
+    <None Remove="Resources\Images\Constellations\Perseus.bmp" />
+    <None Remove="Resources\Images\Constellations\Perseus.png" />
+    <None Remove="Resources\Images\Constellations\Phoenix.bmp" />
+    <None Remove="Resources\Images\Constellations\Phoenix.png" />
+    <None Remove="Resources\Images\Constellations\Picis_Austrinus.bmp" />
+    <None Remove="Resources\Images\Constellations\Picis_Austrinus.png" />
+    <None Remove="Resources\Images\Constellations\Sagittarius.bmp" />
+    <None Remove="Resources\Images\Constellations\Sagittarius.png" />
+    <None Remove="Resources\Images\Constellations\Scorpius.bmp" />
+    <None Remove="Resources\Images\Constellations\Scorpius.png" />
+    <None Remove="Resources\Images\Constellations\Taurus.bmp" />
+    <None Remove="Resources\Images\Constellations\Taurus.png" />
+    <None Remove="Resources\Images\Constellations\Triangulum_Australe.bmp" />
+    <None Remove="Resources\Images\Constellations\Triangulum_Australe.png" />
+    <None Remove="Resources\Images\Constellations\Ursa_Major.bmp" />
+    <None Remove="Resources\Images\Constellations\Ursa_Major.png" />
+    <None Remove="Resources\Images\Constellations\Ursa_Minor.bmp" />
+    <None Remove="Resources\Images\Constellations\Ursa_Minor.png" />
+    <None Remove="Resources\Images\Constellations\Vela.bmp" />
+    <None Remove="Resources\Images\Constellations\Vela.png" />
+    <None Remove="Resources\Images\Constellations\Virgo.bmp" />
+    <None Remove="Resources\Images\Constellations\Virgo.png" />
     <None Remove="Resources\Images\exit-icon.png" />
     <None Remove="Resources\Images\failure-icon.png" />
     <None Remove="Resources\Images\header.png" />
@@ -170,6 +247,123 @@
     <EmbeddedResource Include="Resources\HTML\MovingMap.html" />
     <EmbeddedResource Include="Resources\Images\aircraft.png" />
     <EmbeddedResource Include="Resources\Images\circuitTab.jpg" />
+    <EmbeddedResource Include="Resources\Images\Constellations\Andromeda.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Aquila.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Aries.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Auriga.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Bootes.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Canis_Major.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Canis_Minor.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Carina.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Cassiopeia.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Centaurus.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Cetus.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Corona_Borealis.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Corvus.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Crux.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Cygnus.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Draco.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Eridanus.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Gemini.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Grus.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Hydra.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Leo.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Libra.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Lyra.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\navstarchart.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Ophiuchus.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Orion.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Pavo.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Pegasus.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Perseus.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Phoenix.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Picis_Austrinus.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Sagittarius.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Scorpius.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Taurus.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Triangulum_Australe.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Ursa_Major.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Ursa_Minor.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Vela.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Images\Constellations\Virgo.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Images\exit-icon.png" />
     <EmbeddedResource Include="Resources\Images\failure-icon.png" />
     <EmbeddedResource Include="Resources\Images\header.png" />
