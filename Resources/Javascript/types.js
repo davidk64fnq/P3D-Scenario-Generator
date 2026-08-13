@@ -128,6 +128,18 @@
  * @property {string} constellationName - Full constellation name.
  */
 
+ /**
+ * @typedef {object} StarAltAzData
+ * @property {string} starCatalogId - Unique star ID.
+ * @property {string} navName - Navigation star name.
+ * @property {string} shaIndex - Official SHA index.
+ * @property {string} bayerDesignation - Bayer designation character.
+ * @property {string} constellationName - Full constellation name.
+ * @property {number} visMag - Visual Magnitude.
+ * @property {number} altDeg - Computed Altitude in degrees.
+ * @property {number} azDeg - Computed Azimuth in degrees.
+ */
+
 // #endregion
 
 // #region Signwriting Scenario

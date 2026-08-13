@@ -81,7 +81,7 @@ const windowH = 540;
 /**
  * @type {number} defaultFOV - Default field of view (degrees) for the visualization.
  */
-const defaultFOV = 45;
+const defaultFOV = 120;
 
 /**
  * @type {number} TWO_PI - Constant representing $2\pi$ (full circle in radians).
@@ -130,14 +130,16 @@ let lastDRUpdateTime = 0;
 
 // #region Sextant View State
 
+const initialFovV = defaultFOV * windowH / windowW;
+
 /** 
  * @type {SextantView} 
  */
 const sextantView = {
 	fovH: defaultFOV,
-	fovV: defaultFOV * windowH / windowW,
+	fovV: initialFovV,
 	azTrueDeg: 0, 
-	altDeg: 0,    
+	altDeg: initialFovV / 2, 
 	centerPixelY: windowH / 2
 };
 
@@ -166,6 +168,9 @@ const starDisplayConfig = {
 // #endregion
 
 // #region Plotting and Fix Calculation Variables
+
+/** @type {Array<StarAltAzData>} */
+let globalStarAltAzData = [];
 
 /**
  * @type {Array<{RA: number, DEC: number}>} starCelestialCoords - Fixed celestial coordinates (RA, DEC in Radians) 
@@ -279,17 +284,17 @@ plotBgImage.src = "plotImage.jpg";
 // 4. Loop Initialization Function
 
 /**
- * @summary Starts the stable Two-Tier Update System (rAF for fast display, setTimeout for slow calc).
+ * @summary Starts the stable Two-Tier Update System (rAF for fast display, background timer for slow calc).
  */
 function initializeApplicationLoops() {
-	// 1. Start the Fast Loop (Display) using the safe wrapper function
+	// 1. Calculate star Alt/Az immediately so Frame 1 has data ready
+	// (This also triggers the recurring 5-second setTimeout loop inside slowStarUpdate)
+	slowStarUpdate();
+
+	// 2. Start the Fast Display Loop (60 FPS)
 	window.requestAnimationFrame(function (timestamp) {
 		update(timestamp, planeStatus);
 	});
-
-	// 2. Start the Slow Loop (Heavy Star Calculation)
-	// You must ensure the slowStarUpdate function is defined and SLOW_UPDATE_MS is defined (e.g., 5000)
-	setTimeout(slowStarUpdate, SLOW_UPDATE_MS);
 }
 
 // #endregion
@@ -303,11 +308,7 @@ function slowStarUpdate() {
 	const currentPosition = planeStatus.position;
 
 	// 2. RUN THE HEAVY CALCULATION (This is the high-CPU work that caused the crash)
-	globalVisibleStarsData = calcLocalStarPositions(
-		currentPosition,
-		sextantView,
-		starCelestialCoords
-	);
+	globalStarAltAzData = calculateCatalogAltAz(planeStatus.position, starCelestialCoords);
 
 	// 3. Schedule the next heavy calculation
 	setTimeout(slowStarUpdate, SLOW_UPDATE_MS);
@@ -337,8 +338,9 @@ function update(timestamp, planeStatus) {
 	// --- 3. Input Handling ---
 	handleSextantInput(sextantView, inputControl);
 
-	// --- 4. Read the pre-calculated global data. This is very fast. ---
-	const visibleStarsData = globalVisibleStarsData;
+	// --- 4. Project cached star angles to current frame screen coordinates ---
+	const visibleStarsData = projectVisibleStars(globalStarAltAzData, sextantView);
+	globalVisibleStarsData = visibleStarsData; // Keep global updated for sight taking / tables
 
 	// Clear star map from last update
 	starContext.fillStyle = "black";
@@ -348,6 +350,7 @@ function update(timestamp, planeStatus) {
 	// Refresh information lines
 	setInfoLine(starContext, sextantView);
 	setHoLine(starContext, sextantView); 
+	setCrosshairs(starContext, windowW, windowH);
 
 	// Plot local position of stars and optionally information labels and lines
 	setConstellationLines(starContext, starDisplayConfig, visibleStarsData);
@@ -497,45 +500,24 @@ function setConstellationLines(starContext, displayConfig, visibleStarsData) {
 
 
 /**
- * Draws star icons on the canvas. The size and shape of the icon are determined
- * by the star's visual magnitude (visMag), with brighter stars appearing larger.
- * @param {CanvasRenderingContext2D} starContext - The 2D rendering context for the canvas. (Assumed parameter)
- * @param {Array<VisibleStarData>} visibleStarsData - The list of stars to draw.
- * */
+ * Draws star icons using filled circles centered on exact pixel coordinates.
+ * @param {CanvasRenderingContext2D} starContext
+ * @param {Array<VisibleStarData>} visibleStarsData
+ */
 function setStarIcons(starContext, visibleStarsData) {
-	starContext.fillStyle = "yellow";
+	starContext.fillStyle = "yellow"; // Or "black" depending on map theme
 
-	// Iterate over visibleStarsData, asserting the type for property access
-	for (const starData of /** @type {VisibleStarData[]} */ (visibleStarsData)) {
+	for (const starData of visibleStarsData) {
+		const mag = starData.visMag;
+		const x = starData.leftPixel;
+		const y = starData.topPixel;
 
-		// Extract properties using descriptive names
-		const curVisMag = starData.visMag;
-		const left = starData.leftPixel;
-		const top = starData.topPixel;
+		// Inverse linear scale: Mag -1.5 ~ 5.2px radius | Mag 4.0 ~ 1.2px radius
+		const radius = Math.max(0.8, 4.3 - (mag * 0.75));
 
-		// Icon size is based on magnitude (brighter stars get bigger icons)
-		// Magnitude <= 1.5 (Large Cross/Diamond)
-		if (curVisMag < 1.5) {
-			starContext.fillRect(left, top - 2, 1, 1);
-			starContext.fillRect(left - 1, top - 1, 3, 1);
-			starContext.fillRect(left - 2, top, 5, 1);
-			starContext.fillRect(left - 1, top + 1, 3, 1);
-			starContext.fillRect(left, top + 2, 1, 1);
-		}
-		// Magnitude < 2.3 (3x3 Square)
-		else if (curVisMag < 2.3) {
-			starContext.fillRect(left - 1, top - 1, 3, 3);
-		}
-		// Magnitude < 3 (Small Cross)
-		else if (curVisMag < 3) {
-			starContext.fillRect(left, top - 1, 1, 1);
-			starContext.fillRect(left - 1, top, 3, 1);
-			starContext.fillRect(left, top + 1, 1, 1);
-		}
-		// Magnitude >= 3 (Single Pixel)
-		else {
-			starContext.fillRect(left, top - 1, 1, 1);
-		}
+		starContext.beginPath();
+		starContext.arc(x, y, radius, 0, 2 * Math.PI);
+		starContext.fill();
 	}
 }
 
@@ -609,6 +591,40 @@ function setConstellationLabels(starContext, displayConfig, visibleStarsData) {
 			}
 		}
 	}
+}
+
+/**
+ * Draws subtle crosshairs at the exact center of the sextant viewport.
+ * Leaves a small central gap so point-source stars aren't obscured.
+ * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+ * @param {number} width - Canvas viewport width (windowW).
+ * @param {number} height - Canvas viewport height (windowH).
+ */
+function setCrosshairs(ctx, width, height) {
+	const centerX = width / 2;
+	const centerY = height / 2;
+	const armLength = 15; // Length of crosshair arms in pixels
+	const centerGap = 4;   // Center gap radius to avoid covering stars
+
+	ctx.save();
+	ctx.beginPath();
+	ctx.strokeStyle = "rgba(255, 255, 255, 0.35)"; // Subtle, translucent white
+	ctx.lineWidth = 1;
+
+	// Horizontal arms (Left & Right)
+	ctx.moveTo(centerX - armLength, centerY);
+	ctx.lineTo(centerX - centerGap, centerY);
+	ctx.moveTo(centerX + centerGap, centerY);
+	ctx.lineTo(centerX + armLength, centerY);
+
+	// Vertical arms (Top & Bottom)
+	ctx.moveTo(centerX, centerY - armLength);
+	ctx.lineTo(centerX, centerY - centerGap);
+	ctx.moveTo(centerX, centerY + centerGap);
+	ctx.lineTo(centerX, centerY + armLength);
+
+	ctx.stroke();
+	ctx.restore();
 }
 
 // #endregion Star Map Drawing Functions
@@ -1253,25 +1269,24 @@ function updatePlotTab(fixHistory, plotDisplayConfig) {// 1. Context and Canvas 
 // #region Table tab functions
 
 /**
- * @summary Updates the visible stars DOM table based on current observer coordinates and sets the constellation display image.
+ * @summary Updates the visible stars DOM table based on currently visible viewport stars and sets the constellation display image.
  * @returns {void}
  */
 function updateVisibleStarsTableWrapper() {
 	const tableBody = document.getElementById("visibleStarsBody");
 	if (!tableBody) return;
 
-	const observerCoord = {
-		latitude: planeStatus.position.latitude,
-		longitude: planeStatus.position.longitude
-	};
-
-	const visibleStars = calcLocalStarPositions(observerCoord, sextantView, starCelestialCoords) || [];
+	// Use globalVisibleStarsData directly—guaranteed 100% sync with canvas view
+	const visibleStars = globalVisibleStarsData || [];
 
 	const navStars = visibleStars.filter(star => {
 		if (!star || star.shaIndex === null || star.shaIndex === undefined || star.shaIndex === "") return false;
 		const shaNum = Number(star.shaIndex);
 		return !isNaN(shaNum) && shaNum > 0;
 	});
+
+	// Sort navigation stars by SHA Index for a clean almanac order
+	navStars.sort((a, b) => Number(a.shaIndex) - Number(b.shaIndex));
 
 	tableBody.innerHTML = "";
 
@@ -1616,183 +1631,94 @@ function handleSextantInput(viewState, inputFlags) {
 }
 
 /**
- * @summary Adjusts and clamps the fovH and fovV properties of the SextantView object based on input.
- * @param {number} alterFOV - The change in horizontal FOV requested.
- * @param {SextantView} viewState - The mutable state object for the sextant view.
- * @returns {void}
+ * Sets a new horizontal field of view while keeping the center of the sky stationary.
+ * @param {number} newFovH - Desired horizontal FOV in degrees (e.g., 120, 60, 30, 15).
+ * @param {SextantView} viewState - The mutable sextant view state object.
  */
-function adjustFOV(alterFOV, viewState) {
-	const MAX_HUMAN_FOV_H = 170;
-	const MAX_HUMAN_FOV_V = 130;
-	const ASPECT_RATIO = windowH / windowW;
-
-	if (alterFOV === 0) {
-		return;
-	}
-
-	// Read current fovH from state
-	let newFovH = viewState.fovH + alterFOV;
-
-	// 1. Enforce minimum FOV (H cannot be negative)
-	newFovH = Math.max(0, newFovH);
-
-	// 2. Calculate the maximum FOV H allowed by the vertical limit
-	// maxFovH_by_V = MAX_HUMAN_FOV_V / (windowH / windowW)
-	const maxFovH_by_V = MAX_HUMAN_FOV_V / ASPECT_RATIO;
-
-	// 3. The limiting factor is the smaller of MAX_HUMAN_FOV_H or maxFovH_by_V
-	const maxFovH = Math.min(MAX_HUMAN_FOV_H, maxFovH_by_V);
-
-	// 4. Clamp the new horizontal FOV to the final determined maximum
-	newFovH = Math.min(newFovH, maxFovH);
-
-	// 5. Update both Fovs in the state object (maintaining aspect ratio)
-	viewState.fovH = newFovH;
-	viewState.fovV = newFovH * ASPECT_RATIO; // Recalculate V based on the final H
-}
-
-/**
- * @summary Wrapper to call the refactored panFOV function, passing the required panAmount and the global InputControl state object.
- * @param {number} panAmount - The rate of change for the FOV (e.g., -5 or 5).
- */
-function panFOVWrapper(panAmount) {
-	panFOV(panAmount, inputControl);
-}
-
-/**
- * @summary Sets the value of the inputControl.fieldOfView property, which is used to continuously pan the Field of View (FOV).
- * @param {number} panAmount - The rate of change for the FOV (e.g., -5, 5, or 0).
- * @param {InputControl} inputFlags - The object containing input control flags.
- * @returns {void}
- */
-function panFOV(panAmount, inputFlags) {
-	inputFlags.fieldOfView = panAmount;
-}
-
-function freezeFOVWrapper() {
-	freezeFOV(inputControl);
-}
-
-/**
- * @summary Resets the inputControl.fieldOfView property to 0, stopping any continuous Field of View (FOV) panning.
- * @param {InputControl} inputFlags - The object containing input control flags.
- * @returns {void}
- */
-function freezeFOV(inputFlags) {
-	inputFlags.fieldOfView = 0;
-}
-
-function moveFOVresetWrapper() {
-	moveFOVreset(sextantView);
-}
-
-/**
- * @summary Resets the horizontal and vertical Fields of View (FOV) to the default setting in the viewState object.
- * @description The vertical FOV (fovV) is calculated based on the aspect ratio (windowH / windowW) to maintain visual consistency.
- * @param {SextantView} viewState - The mutable state object for the sextant view.
- * @returns {void}
- */
-function moveFOVreset(viewState) {
-	// 1. Reset horizontal FOV to the global default constant.
-	viewState.fovH = defaultFOV;
-
-	// 2. Calculate vertical FOV based on the horizontal FOV and the window's aspect ratio.
-	/** @type {number} */
+function setFOV(newFovH, viewState) {
 	const aspectRatio = windowH / windowW;
-	viewState.fovV = viewState.fovH * aspectRatio;
+
+	// 1. Preserve the current center altitude
+	const centerAlt = viewState.altDeg;
+
+	// 2. Calculate the new vertical FOV based on window aspect ratio
+	const newFovV = newFovH * aspectRatio;
+
+	// 3. Update viewState FOV properties
+	viewState.fovH = newFovH;
+	viewState.fovV = newFovV;
+
+	// 4. Clamp center altitude so bottom edge never drops below 0° and top edge never exceeds 90°
+	const minCenterAlt = newFovV / 2;
+	const maxCenterAlt = 90 - (newFovV / 2);
+
+	viewState.altDeg = Math.max(minCenterAlt, Math.min(maxCenterAlt, centerAlt));
 }
 
 /**
- * @summary Wrapper to call the refactored panAZ function, passing the required panAmount and the global InputControl state object.
- * @param {number} panAmount - The rate of change for the Azimuth (e.g., -1, 1, -5, or 5).
+ * Wrapper for FOV button click events.
+ * @param {number} newFovH - Target FOV in degrees.
  */
-function panAZWrapper(panAmount) {
-	panAZ(panAmount, inputControl);
+function setFOVWrapper(newFovH) {
+	setFOV(newFovH, sextantView);
 }
 
 /**
- * @summary Sets the value of inputFlags.azimuth, which is used to continuously pan the Azimuth (AZ) view.
- * @param {number} panAmount - The rate of change for the Azimuth (e.g., -1, 1, or 0).
- * @param {InputControl} inputFlags - The object containing input control flags.
- * @returns {void}
+ * @summary Adjusts the Sextant Azimuth (viewState.azTrueDeg) by a discrete degree step.
+ * @param {number} deltaDeg - Degrees to adjust (positive = right, negative = left).
+ * @param {SextantView} viewState - The mutable state object for the sextant view.
  */
-function panAZ(panAmount, inputFlags) {
-	inputFlags.azimuth = panAmount;
-}
-
-function freezeAZWrapper() {
-	freezeAZ(inputControl);
+function adjustAZ(deltaDeg, viewState) {
+	let newAz = viewState.azTrueDeg + deltaDeg;
+	// Normalize angle cleanly between 0 and 360 degrees
+	viewState.azTrueDeg = (newAz % 360 + 360) % 360;
 }
 
 /**
- * @summary Resets the inputFlags.azimuth property to 0, stopping any continuous Azimuth (AZ) panning.
- * @param {InputControl} inputFlags - The object containing input control flags.
- * @returns {void}
+ * @summary Wrapper to adjust Azimuth using global sextantView state.
+ * @param {number} deltaDeg - Degrees to adjust.
  */
-function freezeAZ(inputFlags) {
-	inputFlags.azimuth = 0;
+function adjustAZWrapper(deltaDeg) {
+	adjustAZ(deltaDeg, sextantView);
 }
 
+/**
+ * @summary Resets the Sextant Azimuth (viewState.azTrueDeg) to the plane's current True Heading.
+ * @param {SextantView} viewState - The mutable state object for the sextant view.
+ * @param {PlaneStatus} planeStatus - The plane's current navigational state.
+ */
+function moveAZreset(viewState, planeStatus) {
+	const trueHeadingDeg = Math.floor(toDegrees(planeStatus.headingTrueRad));
+	viewState.azTrueDeg = (trueHeadingDeg % 360 + 360) % 360;
+}
+
+/**
+ * @summary Wrapper to reset Azimuth to plane heading using global state.
+ */
 function moveAZresetWrapper() {
 	moveAZreset(sextantView, planeStatus);
 }
 
 /**
- * @summary Resets the Sextant Azimuth (viewState.azTrueDeg) to the plane's current **True Heading**.
- * @param {SextantView} viewState - The mutable state object for the sextant view.
- * @param {PlaneStatus} planeStatus - The plane's current navigational state. 
- * @returns {void}
+ * Adjusts Sextant Altitude while keeping the viewport bounded between Horizon (0°) and Zenith (90°).
+ * @param {number} deltaDeg - Degrees to adjust (+ / -).
+ * @param {SextantView} viewState - The mutable sextant view state object.
  */
-function moveAZreset(viewState, planeStatus) { 
-	// 1. Calculate the desired azimuth (True Heading (T) in Degrees)
-	const TRUE_HEADING_DEG = Math.floor(toDegrees(planeStatus.headingTrueRad));
+function adjustALT(deltaDeg, viewState) {
+	let newAlt = viewState.altDeg + deltaDeg;
 
-	// 2. Normalize the angle to be between 0 and 360 degrees.
-	viewState.azTrueDeg = (TRUE_HEADING_DEG % 360 + 360) % 360;
+	const minCenterAlt = viewState.fovV / 2;        // Horizon touches bottom edge
+	const maxCenterAlt = 90 - (viewState.fovV / 2); // Zenith touches top edge
+
+	viewState.altDeg = Math.max(minCenterAlt, Math.min(maxCenterAlt, newAlt));
 }
 
 /**
- * @summary Wrapper to call the refactored panALT function, passing the required panAmount and the global InputControl state object.
- * @param {number} panAmount - The rate of change for the Altitude (e.g., -1, 1, -5, or 5).
+ * @summary Wrapper to adjust Altitude using global sextantView state.
+ * @param {number} deltaDeg - Degrees to adjust.
  */
-function panALTWrapper(panAmount) {
-	panALT(panAmount, inputControl);
-}
-
-/**
- * @summary Sets the value of inputFlags.altitude, which is used to continuously pan the Altitude (ALT) view.
- * @param {number} panAmount - The rate of change for the Altitude (e.g., -1, 1, or 0).
- * @param {InputControl} inputFlags - The object containing input control flags.
- * @returns {void}
- */
-function panALT(panAmount, inputFlags) {
-	inputFlags.altitude = panAmount;
-}
-
-function freezeALTWrapper() {
-	freezeALT(inputControl);
-}
-
-/**
- * @summary Resets the inputFlags.altitude property to 0, stopping any continuous Altitude (ALT) panning.
- * @param {InputControl} inputFlags - The object containing input control flags.
- * @returns {void}
- */
-function freezeALT(inputFlags) {
-	inputFlags.altitude = 0;
-}
-
-function moveALTresetWrapper() {
-	moveALTreset(sextantView);
-}
-
-/**
- * @summary Resets the Sextant Altitude (viewState.altDeg) to 0 degrees, centering the view on the horizon.
- * @param {SextantView} viewState - The mutable state object for the sextant view.
- * @returns {void}
- */
-function moveALTreset(viewState) {
-	viewState.altDeg = 0;
+function adjustALTWrapper(deltaDeg) {
+	adjustALT(deltaDeg, sextantView);
 }
 
 /**

@@ -21,8 +21,8 @@
 	--reading-hover-background-color: purple;
 	/* Button group */
 	--button-group-line: 2px;
-	--button-group-margin: 5px;
-	--button-group-padding: 5px;
+	--button-group-margin: 2px;
+	--button-group-padding: 4px;
 	--button-group-radius: 8px;
 	/* Button */
 	--button-hover-text-color: white;
@@ -64,19 +64,43 @@ body {
 	padding: var(--button-group-padding);
 }
 
+/* Flexbox parent container for the bottom controls */
+.controls-row {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: space-between;
+	align-items: center;
+	padding: 2px 4px;
+	box-sizing: border-box;
+	width: 100%;
+}
+
+/* Common group container styles */
 #INFO, #FIX, #FOV, #AZ, #ALT, #Ho, #clearSightings, #plotFinalLeg {
 	border-radius: var(--button-group-radius);
-	display: inline-block;
-	margin: var(--button-group-margin);
 	padding: var(--button-group-padding);
 }
 
+/* Convert bottom control blocks into flex items so buttons sit side-by-side tightly */
+#FOV, #AZ, #ALT, #Ho {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	gap: 3px;
+	margin: var(--button-group-margin);
+}
+
 #INFO {
+	display: inline-block;
+	margin: var(--button-group-margin);
 	background-color: var(--info-background-color);
 	border: var(--button-group-line) solid var(--info-border-color);
 }
 
 #FIX, #clearSightings, #plotFinalLeg {
+	display: inline-block;
+	margin: var(--button-group-margin);
 	background-color: var(--fix-background-color);
 	border: var(--button-group-line) solid var(--fix-border-color);
 }
@@ -94,6 +118,8 @@ body {
 #INFO button, #FIX button, #FOV button, #AZ button, #ALT button, #Ho button, #clearSightings button, #plotFinalLeg button {
 	cursor: pointer;
 	border-radius: var(--button-radius);
+	padding: 2px 6px;
+	white-space: nowrap;
 }
 
 #INFO button {

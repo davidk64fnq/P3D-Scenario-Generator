@@ -186,6 +186,112 @@ function getHourAngle(LST, RA) {
 // #region Horizontal Coordinate Calculations (Altitude & Azimuth)
 
 /**
+ * Computes Altitude and Azimuth for all stars in the catalog for a given position.
+ * @param {CoordPair} position - Observer latitude and longitude in radians.
+ * @param {Array<{RA: number, DEC: number}>} starCoords - Precalculated RA/DEC in radians.
+ * @returns {Array<StarAltAzData>} Calculated Altitude and Azimuth for each star.
+ */
+function calculateCatalogAltAz(position, starCoords) {
+	const lstRad = getLocalSiderialTime(position.longitude);
+	const latRad = position.latitude;
+	const sinLat = Math.sin(latRad);
+	const cosLat = Math.cos(latRad);
+
+	/** @type {StarAltAzData[]} */
+	const altAzResults = [];
+
+	for (let i = 0; i < starCatalog.length; i++) {
+		const star = starCatalog[i];
+		const coords = starCoords[i];
+
+		const lhaRad = lstRad - coords.RA;
+		const sinDec = Math.sin(coords.DEC);
+		const cosDec = Math.cos(coords.DEC);
+
+		const sinAlt = sinLat * sinDec + cosLat * cosDec * Math.cos(lhaRad);
+		const altRad = Math.asin(sinAlt);
+		const altDeg = toDegrees(altRad);
+
+		const cosAlt = Math.cos(altRad);
+		const cosAz = (sinDec - sinLat * sinAlt) / (cosLat * cosAlt);
+		let azRad = Math.acos(Math.min(1, Math.max(-1, cosAz)));
+
+		if (Math.sin(lhaRad) > 0) {
+			azRad = (2 * Math.PI) - azRad;
+		}
+
+		altAzResults.push({
+			starCatalogId: star.CatalogID,
+			navName: star.NavName,
+			shaIndex: star.ShaIndex,
+			bayerDesignation: star.BayerDesignation,
+			constellationName: star.ConstellationName,
+			visMag: star.VisualMagnitude,
+			altDeg: altDeg,
+			azDeg: toDegrees(azRad)
+		});
+	}
+
+	return altAzResults;
+}
+
+/**
+ * Projects cached star Alt/Az coordinates into pixel X/Y coordinates based on current view.
+ * @param {Array<StarAltAzData>} altAzList - Precomputed Alt/Az celestial positions.
+ * @param {SextantView} viewState - Current sextant viewport state.
+ * @returns {Array<VisibleStarData>} Array of visible stars with screen pixel positions.
+ */
+function projectVisibleStars(altAzList, viewState) {
+	/** @type {VisibleStarData[]} */
+	const visibleStars = [];
+
+	const halfFovH = viewState.fovH / 2;
+	const fovV = viewState.fovV;
+	const screenCenterY = windowH / 2;
+
+	for (let i = 0; i < altAzList.length; i++) {
+		const star = altAzList[i];
+
+		// Relative Azimuth offset normalized to [-180, 180]
+		let dAz = star.azDeg - viewState.azTrueDeg;
+		if (dAz > 180) dAz -= 360;
+		if (dAz < -180) dAz += 360;
+
+		// Convert raw azimuth difference into true visual sky angle using cos(altitude)
+		const altRad = star.altDeg * (Math.PI / 180);
+		const dAzSky = dAz * Math.cos(altRad);
+
+		// Cull if outside horizontal FOV
+		if (Math.abs(dAzSky) > halfFovH) continue;
+
+		// Altitude offset relative to center altitude
+		const dAlt = star.altDeg - viewState.altDeg;
+
+		// Vertical pixel position relative to fixed screen center
+		const topPixel = screenCenterY - (dAlt / fovV) * windowH;
+
+		// Cull if off-screen vertically
+		if (topPixel < 0 || topPixel > windowH) continue;
+
+		// Horizontal pixel position using sky-angle offset
+		const leftPixel = (windowW / 2) + (dAzSky / viewState.fovH) * windowW;
+
+		visibleStars.push({
+			starCatalogId: star.starCatalogId,
+			visMag: star.visMag,
+			leftPixel: leftPixel,
+			topPixel: topPixel,
+			shaIndex: star.shaIndex,
+			navName: star.navName,
+			bayerDesignation: star.bayerDesignation,
+			constellationName: star.constellationName
+		});
+	}
+
+	return visibleStars;
+}
+
+/**
  * @summary Calculates the celestial body's Calculated Altitude (ALT or Hc) using the astronomical triangle formula.
  * @description All input angles (DEC, LAT, HA) are expected to be in Radians.
  * @param {number} DEC - The celestial body's Declination in Radians.
