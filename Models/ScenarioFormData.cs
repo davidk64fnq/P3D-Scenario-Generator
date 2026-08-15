@@ -79,7 +79,7 @@ namespace P3D_Scenario_Generator.Models
 
         /// <summary>
         /// Gets or sets the scenario start runway. This is variously set at the time user clicks "Generate Scenario", or by subsequent
-        /// scenario specific code, or may remain null e.g. Celestial scenario involves a mid air start.
+        /// scenario specific code.
         /// </summary>
         public RunwayParams StartRunway { get; set; }
 
@@ -304,21 +304,6 @@ namespace P3D_Scenario_Generator.Models
         /// Maximum run home from midair starting location to destination location in nautical miles.
         /// </summary>
         public double CelestialMaxDistance { get; set; }
-
-        /// <summary>
-        /// CelestialScenario scenario starts in mid air - this is the initial heading in degrees
-        /// </summary>
-        public double MidairStartHdgDegrees { get; set; }
-
-        /// <summary>
-        /// CelestialScenario scenario starts in mid air - this is the initial latitude in degrees
-        /// </summary>
-        public double MidairStartLatDegrees { get; set; }
-
-        /// <summary>
-        /// CelestialScenario scenario starts in mid air - this is the initial longitude in degrees
-        /// </summary>
-        public double MidairStartLonDegrees { get; set; }
 
         /// <summary>
         /// CelestialScenario scenario starts in mid air - this is the randomly set radius distance from midair start to destination airport in nautical miles

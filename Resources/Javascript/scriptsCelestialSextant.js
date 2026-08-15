@@ -81,7 +81,7 @@ const windowH = 540;
 /**
  * @type {number} defaultFOV - Default field of view (degrees) for the visualization.
  */
-const defaultFOV = 120;
+const defaultFOV = 100;
 
 /**
  * @type {number} TWO_PI - Constant representing $2\pi$ (full circle in radians).
@@ -376,23 +376,22 @@ function update(timestamp, planeStatus) {
 // #region Information Line functions
 
 /**
- * @summary Calculates the Observed Altitude (Ho) in degrees based on the pixel position 
- * of the observed line (sextantView.centerPixelY).
- * @description Correctly maps the vertical pixel coordinate (measured from the top, Y=0) 
- * to the altitude angle, where altitude increases as the line moves towards the top of the window.
- * @param {SextantView} viewState - The current state of the sextant view.
- * @returns {number} The observed altitude (Ho) in degrees.
+ * @summary Calculates Ho based on the displacement from the vertical center.
  */
 function getHoInDeg(viewState) {
+    // 1. Find the vertical center of the window (e.g., 270px)
+    const centerY = windowH / 2;
 
-	// 1. Calculate the distance in pixels from the BOTTOM of the window 
-	const distanceFromBottom = windowH - viewState.centerPixelY;
+    // 2. Calculate the pixel offset of the red line
+    // If centerPixelY is 0 (top), offset is +270 (Ho increases)
+    // If centerPixelY is 540 (bottom), offset is -270 (Ho decreases)
+    const pixelOffset = centerY - viewState.centerPixelY;
 
-	// 2. Normalize the distance (ratio of total height, 0 at bottom, 1 at top)
-	const normalizedHeight = distanceFromBottom / windowH;
+    // 3. Convert that pixel offset into degrees
+    const degOffset = (pixelOffset / windowH) * viewState.fovV;
 
-	// 3. Scale by the Vertical Field of View (fovV) and add the base elevation 
-	return (normalizedHeight * viewState.fovV) + viewState.altDeg;
+    // 4. Add the offset to the current viewport CENTER altitude
+    return viewState.altDeg + degOffset;
 }
 
 /**
@@ -678,53 +677,32 @@ function precalculateStarCoordinates() {
  * @returns {void}
  */
 function updateDeadReckoning(planeStatus, currentTimeStamp) {
-	// --- 1. Calculate Actual Time Elapsed (Δt) ---
-	const deltaTimeMS = currentTimeStamp - lastDRUpdateTime;
+    const deltaTimeMS = currentTimeStamp - lastDRUpdateTime;
+    const MAX_DELTA_MS = 250;
 
-	// Prevents issues if the frame rate drops significantly
-	const MAX_DELTA_MS = 250;
+    if (lastDRUpdateTime === 0 || deltaTimeMS > MAX_DELTA_MS) {
+        lastDRUpdateTime = currentTimeStamp;
+        return;
+    }
+    lastDRUpdateTime = currentTimeStamp;
 
-	// Ignore the first call or large jumps in time
-	if (lastDRUpdateTime === 0 || deltaTimeMS > MAX_DELTA_MS) {
-		lastDRUpdateTime = currentTimeStamp;
-		return;
-	}
+    // Ignore tiny movements/jitter while sitting on the runway
+    if (planeStatus.speedKnots < 5) return; 
 
-	// Update the tracker for the next frame
-	lastDRUpdateTime = currentTimeStamp;
+    const deltaTimeHours = deltaTimeMS / 3600000;
+    const NM_PER_RADIAN_LATITUDE = 3437.74677;
 
-	// --- 2. Use Δt for Calculation ---
-	const MS_PER_HOUR = 3600000;
-	const NM_PER_RADIAN_LATITUDE = 3437.74677;
+    const deltaDistanceNM = planeStatus.speedKnots * deltaTimeHours;
+    const deltaLatRad = (deltaDistanceNM * Math.cos(planeStatus.headingTrueRad)) / NM_PER_RADIAN_LATITUDE;
+    
+    // Protect against division by zero at the exact poles
+    let cosLat = Math.cos(currentDRCoord.latitude);
+    if (Math.abs(cosLat) < 0.0001) cosLat = 0.0001; 
 
-	// Convert time interval from milliseconds to hours (using calculated deltaTimeMS)
-	const deltaTimeHours = deltaTimeMS / MS_PER_HOUR;
+    const deltaLonRad = (deltaDistanceNM * Math.sin(planeStatus.headingTrueRad)) / (NM_PER_RADIAN_LATITUDE * cosLat);
 
-	/// --- Retrieve Live Data ---
-	const speedKnots = planeStatus.speedKnots;
-	const headingRadians = planeStatus.headingTrueRad;
-
-	// Calculate Distance Traveled (ΔD) in Nautical Miles (nm)
-	const deltaDistanceNM = speedKnots * deltaTimeHours;
-
-	// 3. Calculate Change in Latitude (ΔLat) and Departure (ΔDep) in nm
-	const deltaLatNM = deltaDistanceNM * Math.cos(headingRadians);
-	const deltaDepNM = deltaDistanceNM * Math.sin(headingRadians);
-
-	// 4. Convert Changes from nm to Radians
-
-	// ΔLat: 1 nm = 1 minute of latitude. Convert minutes to radians.
-	const deltaLatRad = deltaLatNM / NM_PER_RADIAN_LATITUDE;
-
-	// ΔLon: Change in Longitude depends on Latitude (parallel of latitude correction).
-	const deltaLonRad = deltaDepNM / (NM_PER_RADIAN_LATITUDE * Math.cos(currentDRCoord.latitude));
-
-	// 5. Update Global DR Position
-	currentDRCoord.latitude += deltaLatRad;
-	currentDRCoord.longitude += deltaLonRad;
-
-	// 6. Apply clamping to Longitude
-	currentDRCoord.longitude = clampLongitude(currentDRCoord.longitude);
+    currentDRCoord.latitude += deltaLatRad;
+    currentDRCoord.longitude = clampLongitude(currentDRCoord.longitude + deltaLonRad);
 }
 
 /**
@@ -881,82 +859,64 @@ function takeSightingWrapper() {
  * @returns {void}
  */
 function takeSighting(sightHistory, fixHistory) { 
-	// locate first empty Hs field
+    const HsArray = document.getElementsByClassName("Hs");
+    const selectStarNameArray = document.getElementsByClassName("starName");
+    const HcArray = document.getElementsByClassName("Hc");
+    const ZnArray = document.getElementsByClassName("Zn");
+    const interceptArray = document.getElementsByClassName("Intercept");
 
-	/** @type {HTMLCollectionOf<HTMLElement>} */
-	const HsArray = /** @type {HTMLCollectionOf<HTMLElement>} */(document.getElementsByClassName("Hs"));
+    let curIndex = -1;
+    for (let index = 0; index < HsArray.length; index++) {
+        if (HsArray[index].innerHTML === "" && selectStarNameArray[index].selectedIndex > 0) {
+            curIndex = index;
+            break;
+        }
+    }
 
-	let found = false;
-	let curIndex = -1;
+    if (curIndex !== -1) {
+        // 1. GET Ho (Observed Altitude) from the Red Line
+        const Ho = getHoInDeg(sextantView);
+        HsArray[curIndex].innerHTML = formatDMdecimal(Ho, 1);
 
-	// Explicitly cast the collection to HTMLSelectElement array to access '.options'
-	/** @type {HTMLCollectionOf<HTMLSelectElement>} */
-	const selectStarNameArray = /** @type {HTMLCollectionOf<HTMLSelectElement>} */(document.getElementsByClassName("starName"));
+        // 2. GET AP and TIME DATA
+        const observerDRPosition = currentDRCoord;
+        const LST = getLocalSiderialTime(observerDRPosition.longitude);
 
-	for (let index = 0; index < HsArray.length && found == false; index++) {
-		const hsElement = HsArray[index];
-		const starSelectElement = /** @type {HTMLSelectElement} */(selectStarNameArray[index]);
+        // 3. GET STAR DATA (Find RA/DEC from the catalog)
+        const selectedStarName = selectStarNameArray[curIndex].value;
+        const starIdx = starCatalog.findIndex(s => s.NavName === selectedStarName);
+        
+        if (starIdx === -1) return; // Star not found in catalog
 
-		if ((hsElement.innerHTML == "") && (starSelectElement.options[0].selected == false)) {
-			found = true;
-			curIndex = index;
-		}
-	}
+        const { RA, DEC } = starCelestialCoords[starIdx];
 
-	if (found) {
-		// Display sextant reading (unique to takeSighting)
-		const Hs = getHoInDeg(sextantView);
-		HsArray[curIndex].innerHTML = formatDMdecimal(Hs, 1);
+        // 4. CALCULATE NAVIGATIONAL Hc and Zn (The Astronomical Triangle)
+        const HA = getHourAngle(LST, RA);
+        const HcRad = getALT(DEC, observerDRPosition.latitude, HA);
+        const ZnRadValue = getAZ(DEC, HcRad, observerDRPosition.latitude, HA);
 
-		/** @type {CoordPair} */
-		const observerDRPosition = currentDRCoord; // Global access maintained
+        const HcDeg = toDegrees(HcRad);
+        const ZnDeg = toDegrees(ZnRadValue);
 
-		// Calc Hc and Zn
-		/** @type {VisibleStarData[]} */
-		const curStarData = calcLocalStarPositions(observerDRPosition, sextantView, starCelestialCoords);
+        // 5. POPULATE SIGHT REDUCTION TABLE
+        HcArray[curIndex].innerHTML = formatDMdecimal(HcDeg, 1);
+        ZnArray[curIndex].innerHTML = formatDMdecimal(ZnDeg, 1);
 
-		const selectedStarName = selectStarNameArray[curIndex].value;
-		const singleStarData = curStarData.find(starData => starData.navName === selectedStarName);
+        // 6. CALCULATE INTERCEPT
+        // Intercept = Ho - Hc. Positive = "Towards" star, Negative = "Away"
+        const intercept = (Ho - HcDeg) * 60; 
+        interceptArray[curIndex].innerHTML = intercept.toFixed(1) + "nm";
 
-		if (!singleStarData) {
-			// Error handling (Star not found in visible list)
-			VarSet("S:errorMsgVar", "NUMBER", 1);
-			HsArray[curIndex].innerHTML = "";
-			return;
-		}
+        // 7. RECORD FOR PLOTTING
+        const interceptPointCoord = calculateInterceptPoint(observerDRPosition, ZnDeg, intercept);
+        const interceptPointPixelsCoord = convertCoordToPixels(interceptPointCoord);
 
-		// The single star object is passed directly to calcHcZn.
-		/** @type {SightCalculationResult} */
-		const HcZn = calcHcZn(singleStarData, sextantView);
-
-		const HcRad = HcZn.HcRad;
-		const ZnRadValue = HcZn.ZnRad;
-
-		/** @type {HTMLCollectionOf<HTMLElement>} */
-		const HcArray = /** @type {HTMLCollectionOf<HTMLElement>} */(document.getElementsByClassName("Hc"));
-		HcArray[curIndex].innerHTML = formatDMdecimal(toDegrees(HcRad), 1);
-		/** @type {HTMLCollectionOf<HTMLElement>} */
-		const ZnArray = /** @type {HTMLCollectionOf<HTMLElement>} */(document.getElementsByClassName("Zn"));
-		ZnArray[curIndex].innerHTML = formatDMdecimal(toDegrees(ZnRadValue), 1);
-
-		// Calculate Intercept 
-		const intercept = (Hs - toDegrees(HcRad)) * 60;
-		/** @type {HTMLCollectionOf<HTMLElement>} */
-		const interceptArray = /** @type {HTMLCollectionOf<HTMLElement>} */(document.getElementsByClassName("Intercept"));
-		interceptArray[curIndex].innerHTML = intercept.toFixed(1) + "nm";
-
-		// Get coordinates of LOP and Zn line intersection (Intercept Point)
-		const interceptPointCoord = calculateInterceptPoint(observerDRPosition, toDegrees(ZnRadValue), intercept);
-		const interceptPointPixelsCoord = convertCoordToPixels(interceptPointCoord);
-
-		// Store the historical data in the new object structure
-		/** @type {SightingLOPData} */
-		const currentLOPData = {
-			ZnRad: ZnRadValue,
-			interceptPointCoord: interceptPointCoord,
-			interceptPointPixels: interceptPointPixelsCoord
-		};
-		sightHistory.push(currentLOPData);
+        const currentLOPData = {
+            ZnRad: ZnRadValue,
+            interceptPointCoord: interceptPointCoord,
+            interceptPointPixels: interceptPointPixelsCoord
+        };
+        sightHistory.push(currentLOPData);
 
 		// Get fix point and store as next assumed point
 		if (sightHistory.length % 3 === 0) {
@@ -1055,11 +1015,15 @@ function deleteLastSighting() {
 	if (latestIndex === 2 || latestIndex === 5) {
 		fixHistory.pop();
 		plotDisplayConfig.plotNeedsUpdate = 1;
+    
+		// REVERT DR Position to the previous successful fix
 		if (fixHistory.length >= 1) {
-			currentDRCoord = fixHistory[fixHistory.length - 1].fixPositionCoord
-		}
-		else {
-			currentDRCoord = destCoord;
+			// Use the last fix remaining in history
+			currentDRCoord.latitude = fixHistory[fixHistory.length - 1].fixPositionCoord.latitude;
+			currentDRCoord.longitude = fixHistory[fixHistory.length - 1].fixPositionCoord.longitude;
+		} else {
+			// If no fixes left, revert to the initial destination/starting point
+			currentDRCoord = { latitude: startCoord.latitude, longitude: startCoord.longitude };
 		}
 	}
 }
@@ -1173,17 +1137,32 @@ function updatePlotTab(fixHistory, plotDisplayConfig) {// 1. Context and Canvas 
 
 		// 2. Conditional Rendering
 		if (!isCurrentFixOutOfBounds) {
-			// Plot Cocked Hat Vertices (Green)
-			plotContext.fillStyle = "green";
-			for (let vertex of fixResult.cockedHatVerticesPixels) {
-				plotContext.fillRect(vertex.left - 1, vertex.top - 1, 3, 3);
-			}
+            
+            // Plot Cocked Hat Vertices (Green Dots)
+            plotContext.fillStyle = "#00FF00"; // Bright green
+            for (let vertex of fixResult.cockedHatVerticesPixels) {
+                plotContext.beginPath();
+                plotContext.arc(vertex.left, vertex.top, 1.5, 0, 2 * Math.PI);
+                plotContext.fill();
+            }
 
-			// Plot Centroid/Fix Position (Purple)
-			plotContext.fillStyle = "purple";
-			const fixPixel = fixResult.fixPositionPixels;
-			plotContext.fillRect(fixPixel.left - 1, fixPixel.top - 1, 3, 3);
-		}
+            // Plot Centroid/Fix Position (Purple Triangle or Circle)
+            const fixPixel = fixResult.fixPositionPixels;
+            
+            plotContext.strokeStyle = "#800080"; // Purple
+            plotContext.lineWidth = 1.5;
+            plotContext.beginPath();
+            
+            // Draw a small circle for the fix (looks like a chart marking)
+            plotContext.arc(fixPixel.left, fixPixel.top, 4, 0, 2 * Math.PI);
+            
+            // Optional: Draw a tiny cross inside the circle
+            plotContext.moveTo(fixPixel.left - 4, fixPixel.top);
+            plotContext.lineTo(fixPixel.left + 4, fixPixel.top);
+            plotContext.moveTo(fixPixel.left, fixPixel.top - 4);
+            plotContext.lineTo(fixPixel.left, fixPixel.top + 4);
+            
+            plotContext.stroke();
 		else {
 			// Only show warning for the most recent fix if it's the one off-screen
 			// Or keep it simple and show a general warning
@@ -1252,9 +1231,8 @@ function updatePlotTab(fixHistory, plotDisplayConfig) {// 1. Context and Canvas 
 		if (plane) {
 			// Update the style of the separate plane DOM element
 			plane.style.transform = "rotate(" + toDegrees(planeStatus.headingTrueRad) + "deg)";
-			// 99 is a hardcoded offset for the surrounding UI elements
-			plane.style.top = coordPixels.top - 15 + 99 + "px";
-			plane.style.left = coordPixels.left - 15 + "px";
+			plane.style.top = coordPixels.top + "px";
+			plane.style.left = coordPixels.left + "px";
 		}
 		// Draw a small red box on the canvas for the plane's position
 		plotContext.fillStyle = "red";
@@ -1630,29 +1608,29 @@ function handleSextantInput(viewState, inputFlags) {
 	}
 }
 
-/**
- * Sets a new horizontal field of view while keeping the center of the sky stationary.
- * @param {number} newFovH - Desired horizontal FOV in degrees (e.g., 120, 60, 30, 15).
- * @param {SextantView} viewState - The mutable sextant view state object.
- */
 function setFOV(newFovH, viewState) {
-	const aspectRatio = windowH / windowW;
+    const aspectRatio = windowH / windowW;
 
-	// 1. Preserve the current center altitude
-	const centerAlt = viewState.altDeg;
+    // 1. Calculate what altitude the user was actually LOOKING at (the Red Line)
+    // We use your existing getHoInDeg logic
+    const currentHo = getHoInDeg(viewState);
 
-	// 2. Calculate the new vertical FOV based on window aspect ratio
-	const newFovV = newFovH * aspectRatio;
+    // 2. Update FOV properties
+    const newFovV = newFovH * aspectRatio;
+    viewState.fovH = newFovH;
+    viewState.fovV = newFovV;
 
-	// 3. Update viewState FOV properties
-	viewState.fovH = newFovH;
-	viewState.fovV = newFovV;
+    // 3. IMPORTANT: Set the new viewport center to the OLD Ho 
+    // This keeps the star the user was measuring in the middle of the screen
+    let centerAlt = currentHo;
 
-	// 4. Clamp center altitude so bottom edge never drops below 0° and top edge never exceeds 90°
-	const minCenterAlt = newFovV / 2;
-	const maxCenterAlt = 90 - (newFovV / 2);
+    // 4. Reset the red line to the exact center of the screen
+    viewState.centerPixelY = Math.floor(windowH / 2);
 
-	viewState.altDeg = Math.max(minCenterAlt, Math.min(maxCenterAlt, centerAlt));
+    // 5. Apply your clamping logic to the new center
+    const minCenterAlt = newFovV / 2;
+    const maxCenterAlt = 90 - (newFovV / 2);
+    viewState.altDeg = Math.max(minCenterAlt, Math.min(maxCenterAlt, centerAlt));
 }
 
 /**

@@ -649,5 +649,61 @@ namespace P3D_Scenario_Generator.Services
                 return false;
             }
         }
+
+        /// <summary>
+        /// Crops an image at a specific pixel offset and resizes it to target dimensions, ignoring aspect ratio to force exact fit.
+        /// </summary>
+        public async Task<bool> CropAndResizePlotImageAsync(string sourcePath, string destPath, int cropX, int cropY, int cropW, int cropH, int targetW, int targetH)
+        {
+            try
+            {
+                using MagickImage image = new(sourcePath);
+
+                // Crop
+                IMagickGeometry cropGeo = new MagickGeometry(cropX, cropY, (uint)cropW, (uint)cropH);
+                image.Crop(cropGeo);
+                image.ResetPage();
+
+                // Resize exactly to target (960x540)
+                IMagickGeometry resizeGeo = new MagickGeometry((uint)targetW, (uint)targetH) { IgnoreAspectRatio = true };
+                image.Resize(resizeGeo);
+
+                image.Write(destPath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _logger.ErrorAsync($"Failed to crop and resize plotting image '{sourcePath}': {ex.Message}", ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Draws a visible target crosshair at the specified pixel coordinates.
+        /// </summary>
+        public async Task<bool> DrawPlottingDestinationMarkerAsync(string filePath, int pixelX, int pixelY)
+        {
+            try
+            {
+                using MagickImage image = new(filePath);
+                var drawables = new List<IDrawable>
+                {
+                    new DrawableStrokeColor(MagickColors.Red),
+                    new DrawableStrokeWidth(2),
+                    new DrawableFillColor(MagickColors.Transparent),
+                    new DrawableCircle(pixelX, pixelY, pixelX + 6, pixelY + 6),
+                    new DrawableLine(pixelX - 10, pixelY, pixelX + 10, pixelY),
+                    new DrawableLine(pixelX, pixelY - 10, pixelX, pixelY + 10)
+                };
+                image.Draw(drawables);
+                image.Write(filePath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _logger.ErrorAsync($"Failed to draw destination marker on '{filePath}': {ex.Message}", ex);
+                return false;
+            }
+        }
     }
 }

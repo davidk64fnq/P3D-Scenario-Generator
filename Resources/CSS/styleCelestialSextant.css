@@ -30,34 +30,52 @@
 	--button-radius: 5px;
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Lock the main window from scrolling */
+}
+
 body {
-	background-color: rgb(240, 248, 255);
-	height: 100%;
-	margin: 0;
-	padding: 0;
+    background-color: rgb(240, 248, 255);
+    display: flex;
+    flex-direction: column; /* Stack tab bar on top, tab content below */
+}
+
+/* Fixed Navigation Tab Header */
+.nav-tabs {
+    display: flex;
+    flex: 0 0 auto; /* Prevents tab bar from shrinking or scrolling */
+    width: 100%;
+    background-color: #555;
+    z-index: 100;
 }
 
 .tablink {
-	background-color: #555;
-	color: white;
-	float: left;
-	border: none;
-	outline: none;
-	cursor: pointer;
-	padding: 14px 16px;
-	font-size: 17px;
-	width: 25%;
+    flex: 1; /* Spreads the 4 buttons evenly (25% width each) */
+    background-color: #555;
+    color: white;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 12px 16px;
+    font-size: 17px;
+    text-align: center;
 }
 
 .tablink:hover {
-	background-color: #777;
+    background-color: #777;
 }
 
-/* Style the tab content (and add height:100% for full page content) */
+/* Scrollable Tab Content Container */
 .tabcontent {
-	display: none;
-	float: left;
-	height: 100%;
+    display: none;
+    flex: 1; /* Takes up all remaining vertical height */
+    overflow-y: auto; /* Enables internal vertical scrolling only */
+    overflow-x: hidden;
+    padding: 10px 0;
+    box-sizing: border-box;
 }
 
 #canvas {
@@ -199,4 +217,28 @@ th {
 
 #plane {
 	position: absolute;
+}
+
+#plotMapContainer {
+    position: relative; /* This is the magic key */
+    width: 960px;
+    height: 540px;
+    margin: 15px auto;  /* Centers the whole block and gives top padding */
+    border: 1px solid #666; /* Border goes on the container now */
+}
+
+#plottingCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#plane {
+    position: absolute;
+    display: none;
+    /* Adjust these based on the exact center of your aircraft.png image.
+       If your image is 30x30, then -15px centers it. */
+    margin-top: -15px; 
+    margin-left: -15px;
+    z-index: 10; /* Ensures the plane is drawn on top of the canvas */
 }

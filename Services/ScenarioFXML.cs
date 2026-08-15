@@ -97,60 +97,6 @@ namespace P3D_Scenario_Generator.Services
 			sectionIndex = fs.Section.FindIndex(s => s.Name == "ObjectFile");
 			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "File");
 			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.ScenarioTitle}";
-
-			if (formData.ScenarioType == ScenarioTypes.Celestial)
-            {
-				EditCelestialSourceFXML(simBaseDocument, formData);
-			}
-		}
-
-		// CelestialScenario scenario starts in air
-		static private void EditCelestialSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)
-		{
-			FlightSections fs;
-			fs = simBaseDocument.FlightSections;
-
-			// Simvars.0 section
-			int sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
-            int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
-
-            // The runway object to use for calculations. Use StartRunway if available, otherwise use DestinationRunway.
-            var selectedRunway = formData.StartRunway ?? formData.DestinationRunway;
-
-            // Convert format of runway heading from magnetic North nearest degree to plus/minus 180 degrees true North
-            double absTrueHdg = absTrueHdg = formData.MidairStartHdgDegrees + selectedRunway.MagVar;
-            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{MathRoutines.ConvertHeadingAbsoluteToRelative(absTrueHdg)}";
-            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
-            formattedLatitude = FormatCoordXML(formData.MidairStartLatDegrees, "N", "S", false);
-            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
-            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
-            formattedLongitude = FormatCoordXML(formData.MidairStartLonDegrees, "E", "W", false);
-            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
-            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "+2000";
-            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "AltitudeIsAGL");
-            fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
-            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "SimOnGround");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "False";
-
-			// Engine Parameters section
-			sectionIndex = fs.Section.FindIndex(s => s.Name == "Engine Parameters.1.0");
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Combustion");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "ThrottleLeverPct");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "1";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "PropellerLeverPct");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "1";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "MixtureLeverPct");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "1";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Pct Engine RPM");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "0.25";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "LeftMagneto");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "RightMagneto");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "GeneratorSwitch");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
 		}
 
         static public string FormatCoordXML(double dCoord, string sPosDir, string sNegDir, bool roundSeconds)

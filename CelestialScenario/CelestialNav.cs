@@ -43,13 +43,19 @@ namespace P3D_Scenario_Generator.CelestialScenario
             ArgumentNullException.ThrowIfNull(formData);
             ArgumentNullException.ThrowIfNull(runwayManager);
 
-            formData.DestinationRunway = await runwayManager.Searcher.GetFilteredRandomRunwayAsync(formData);
-            ScenarioLocationGenerator.SetMidairStartLocation(formData.CelestialMinDistance, formData.CelestialMaxDistance, formData.DestinationRunway,
-                out double midairStartHdg, out double midairStartLat, out double midairStartLon, out double randomRadiusNM);
-            formData.MidairStartHdgDegrees = midairStartHdg;
-            formData.MidairStartLatDegrees = midairStartLat;
-            formData.MidairStartLonDegrees = midairStartLon;
-            formData.RandomRadiusNM = randomRadiusNM;
+            var runwayPair = await runwayManager.Searcher.GetRandomRunwayPairAsync(
+            formData.CelestialMinDistance,
+            formData.CelestialMaxDistance,
+            formData);
+
+            if (runwayPair == null)
+            {
+                await _logger.ErrorAsync("Failed to find a valid Departure/Destination airport pair for Celestial Navigation.");
+                _progressReporter.Report("ERROR: Could not find valid airports matching filters and distance criteria.");
+                return false;
+            }
+            formData.StartRunway = runwayPair.Value.Departure;
+            formData.DestinationRunway = runwayPair.Value.Destination;
 
             if (!await _almanacDataSource.GetAlmanacDataAsync(formData))
             {
@@ -72,13 +78,22 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 }
             }
 
+            // Deconstruct the tuple directly into variables
+            var (success, northBound, eastBound, southBound, westBound) = await _mapTileImageMaker.CreatePlottingImageAsync(formData);
+            if (!success)
+            {
+                await _logger.ErrorAsync("Failed to create Plotting background image.");
+                return false;
+            }
+
             if (!await _sextantViewGenerator.SetCelestialSextantHtmlAsync(formData, _starDataManager))
             {
                 await _logger.ErrorAsync("Failed to set celestial sextant HTML during celestial setup.");
                 return false;
             }
 
-            if (!await _sextantViewGenerator.SetCelestialSextantAssetsAsync(formData, _starDataManager))
+            if (!await _sextantViewGenerator.SetCelestialSextantAssetsAsync(formData, _starDataManager,
+                northBound, eastBound, southBound, westBound))
             {
                 await _logger.ErrorAsync("Failed to set celestial sextant JavaScript during celestial setup.");
                 return false;
@@ -116,7 +131,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         static internal IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
         {
             return [
-                new Coordinate(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees),    
+                new Coordinate(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon),    
                 new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon)     
             ];
         }
@@ -130,7 +145,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
         static internal double GetCelestialDistance(ScenarioFormData formData)
         {
-            return MathRoutines.CalcDistance(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees, formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon);
+            return MathRoutines.CalcDistance(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon, formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon);
         }
 
         public static Overview SetOverviewStruct(ScenarioFormData formData)

@@ -383,77 +383,42 @@ function calcLocalStarPositions(observerPosition, viewState, starCelestialCoords
 
 	for (let starIndex = 0; starIndex < starCatalog.length; starIndex++) {
 
-		// 1. Fetch pre-calculated constant celestial coordinates (RA, DEC are in Radians)
-		const { RA, DEC } = starCelestialCoords[starIndex];
+		// 1. Calculate the raw Azimuth difference and normalize to [-180, 180]
+		let dAz = AZ_Deg - sexAZ;
+		if (dAz > 180) dAz -= 360;
+		if (dAz < -180) dAz += 360;
 
-		// 2. Calculate Local Hour Angle (HA) (LST is in Radians, HA is in Radians)
-		const HA = getHourAngle(LST, RA);
+		// 2. PROJECT the azimuth difference onto the "Sky Angle" 
+		// This is the critical step: dAz gets smaller as ALT gets higher.
+		const dAzSky = dAz * Math.cos(ALT_Rad); 
 
-		// --- Celestial to Horizontal Conversion ---
+		// 3. Horizontal Visibility Check
+		// Instead of comparing raw AZ_Deg, compare the projected dAzSky
+		const halfFovH = fovH / 2;
+		let isHorizontallyVisible = (Math.abs(dAzSky) <= halfFovH);
 
-		// 3. Calculate local Horizontal Coordinates (ALT & AZ) (Results are in Radians)
-		const ALT_Rad = getALT(DEC, latitude, HA);
-		const AZ_Rad = getAZ(DEC, ALT_Rad, latitude, HA);
-		const ALT_Deg = toDegrees(ALT_Rad);
-		const AZ_Deg = toDegrees(AZ_Rad);
+		// 4. Vertical Visibility Check (Centered logic)
+		const halfFovV = fovV / 2;
+		const isVerticallyVisible = (ALT_Deg >= sexALT - halfFovV) && (ALT_Deg <= sexALT + halfFovV);
 
-		// 4. Check if the star is within the sextant's FOV
-
-		// 4a. Vertical Altitude Check
-		const isVerticallyVisible = (ALT_Deg >= sexALT) && (ALT_Deg <= sexALT + fovV);
-		let isHorizontallyVisible = false;
-
-		if (isVerticallyVisible) {
-
-			// 4b. AZIMUTH FILTERING (Handling Zenith Instability)
-
-			if (ALT_Deg >= ZENITH_ALTITUDE_THRESHOLD_DEG) {
-				// Bypass: Star is near the zenith (ALT >= 85°). Horizontal visibility is guaranteed.
-				isHorizontallyVisible = true;
-
-			} else {
-				// Standard Check: Star is below the Zenith Zone, use Azimuth delta filtering.
-				const AZbearingDelta = getBearingDif(AZ_Deg, sexAZ);
-
-				if (AZbearingDelta <= fovH / 2) {
-					isHorizontallyVisible = true;
-				}
-			}
+		// 5. Special case: Near-Zenith stars are always horizontally visible 
+		if (ALT_Deg >= ZENITH_ALTITUDE_THRESHOLD_DEG) {
+			isHorizontallyVisible = true;
 		}
 
-		// Final check to proceed to pixel calculation
 		if (isVerticallyVisible && isHorizontallyVisible) {
+			// 6. Calculate Pixel Positions using the SAME dAzSky math used for filtering
+			const centerX = windowW / 2;
+			const centerY = windowH / 2;
 
-			// 5. Calculate Pixel Positions (The entire calculation uses DEGREES)
+			// Horizontal: Center + ratio of dAzSky to total FOVH
+			const left = centerX + (dAzSky / fovH) * windowW;
 
-			let finalRelativeAZ;
+			// Vertical: Center - offset from center altitude
+			const top = centerY - ((ALT_Deg - sexALT) / fovV) * windowH;
 
-			if (ALT_Deg >= ZENITH_ALTITUDE_THRESHOLD_DEG) {
-				// Star is near the zenith. Override horizontal position to the center of the FOV.
-				finalRelativeAZ = fovH / 2;
-
-			} else {
-				// Standard (Non-Zenith) Azimuth Calculation
-				// 5.1 Calculate the azimuth of the left edge of the FOV.
-				const fovHalf = fovH / 2;
-				const leftEdgeAZ = (sexAZ - fovHalf + 360) % 360;
-
-				// 5.2 Calculate the difference between the star's AZ and the left edge's AZ.
-				// This is the relative displacement from the left edge of the FOV.
-				finalRelativeAZ = (AZ_Deg - leftEdgeAZ + 360) % 360;
-			}
-
-			// Left pixel: relativeAZ / fovH gives the ratio across the horizontal FOV.
-			// windowW is assumed to be the global constant.
-			const left = Math.round(finalRelativeAZ / fovH * windowW);
-
-			// Top pixel: (sexALT + fovV - ALT_Deg) / fovV gives the ratio down the vertical FOV (from top).
-			// windowH is assumed to be the global constant.
-			const top = Math.round((sexALT + fovV - ALT_Deg) / fovV * windowH);
-
-			// 6. Update the list with star data and pixel position
 			/** @type {PixelPosition} */
-			const starPixelPosition = { left, top };
+			const starPixelPosition = { left: Math.round(left), top: Math.round(top) };
 			updatePtsList(localPtsList, starIndex, starPixelPosition);
 		}
 	}
@@ -544,44 +509,46 @@ function calcHcZn(starData, viewState) {
 
 /**
  * @summary Converts a latitude/longitude coordinate pair into pixel coordinates [left, top] for plotting.
- * @description Coordinates are mapped relative to the global plotBoundaries object (defining the map edges in radians) 
- * and window size (windowW, windowH).
- * @param {CoordPair} coord - An object containing {latitude, longitude} in radians.
- * @returns {PixelPosition} An object containing {left, top} pixel values.
+ * @description Uses Web Mercator projection mathematics to perfectly align plotted coordinates 
+ * with the OpenStreetMap background image.
  */
 function convertCoordToPixels(coord) {
-	// Input is CoordPair { latitude, longitude }
-	const lat = coord.latitude;
-	const lon = coord.longitude;
+    const lat = coord.latitude;
+    const lon = coord.longitude;
 
-	// Initialize pixel coordinates
-	let left;
-	let top;
+    const westEdge = plotBoundaries.west;
+    const eastEdge = plotBoundaries.east;
+    const northEdge = plotBoundaries.north;
+    const southEdge = plotBoundaries.south;
 
-	const westEdge = plotBoundaries.west;
-	const eastEdge = plotBoundaries.east;
-	const northEdge = plotBoundaries.north;
-	const southEdge = plotBoundaries.south;
+    // --- 1. Calculate Left Pixel (Longitude is linear in Mercator) ---
+    // Handle wrap-around just in case
+    let lonDelta = lon - westEdge;
+    if (lonDelta < 0) lonDelta += (2 * Math.PI);
+    let totalLon = eastEdge - westEdge;
+    if (totalLon <= 0) totalLon += (2 * Math.PI);
 
-	// --- 1. Calculate Left Pixel (Longitude Mapping) ---
-	if (lon >= westEdge && lon <= eastEdge) {
-		// Linear mapping: ratio of current position within map width, scaled by window width.
-		left = (lon - westEdge) / (eastEdge - westEdge) * windowW;
-	} else {
-		// If out of horizontal bounds, set to 0.
-		left = -1;
-	}
+    let left = (lonDelta / totalLon) * windowW;
 
-	// --- 2. Calculate Top Pixel (Latitude Mapping) ---
-	if (lat <= northEdge && lat >= southEdge) {
-		// Linear mapping: ratio of distance from North Edge (top), scaled by window height.
-		top = (northEdge - lat) / (northEdge - southEdge) * windowH;
-	} else {
-		// If out of vertical bounds, set to 0.
-		top = -1;
-	}
+    // --- 2. Calculate Top Pixel (Latitude requires Mercator Projection) ---
+    // Mercator Y formula: ln(tan(pi/4 + lat/2))
+    function latToMercatorY(latRad) {
+        return Math.log(Math.tan(Math.PI / 4 + latRad / 2));
+    }
 
-	return { left, top };
+    const northY = latToMercatorY(northEdge);
+    const southY = latToMercatorY(southEdge);
+    const pointY = latToMercatorY(lat);
+
+    // Map the point's Y position relative to the North/South bounds.
+    let top = (northY - pointY) / (northY - southY) * windowH;
+
+    // --- 3. Out of bounds check ---
+    if (left < 0 || left > windowW || top < 0 || top > windowH) {
+        return { left: -1, top: -1 };
+    }
+
+    return { left: Math.round(left), top: Math.round(top) };
 }
 
 // #endregion Sextant FOV and Display Utilities

@@ -52,7 +52,8 @@ namespace P3D_Scenario_Generator.CelestialScenario
             );
         }
 
-        public async Task<bool> SetCelestialSextantAssetsAsync(ScenarioFormData formData, StarDataManager starDataManager)
+        public async Task<bool> SetCelestialSextantAssetsAsync(ScenarioFormData formData, StarDataManager starDataManager,
+            double north, double east, double south, double west)
         {
             string saveLocation = formData.ScenarioImageFolder;
             await _logger.InfoAsync("Starting generation of Celestial Sextant web assets.");
@@ -63,7 +64,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 { "constellationLines", JsonSerializer.Serialize(starDataManager.StarLineConnections) },
                 { "starCatalog", JsonSerializer.Serialize(starDataManager.GetStarCatalog()) },
                 { "destCoord", $"{{ latitude: {formData.DestinationRunway.AirportLat.ToRadians()}, longitude: {formData.DestinationRunway.AirportLon.ToRadians()} }}" },
-                { "currentDRCoord", $"{{ latitude: {formData.DestinationRunway.AirportLat.ToRadians()}, longitude: {formData.DestinationRunway.AirportLon.ToRadians()} }}" },
+                { "currentDRCoord", $"{{ latitude: {formData.StartRunway.AirportLat.ToRadians()}, longitude: {formData.StartRunway.AirportLon.ToRadians()} }}" },
                 { "ariesGHAData", JsonSerializer.Serialize(new { Degrees = _almanacData.AriesGhaDeg, Minutes = _almanacData.AriesGhaMin }) },
                 { "navStarCatalog", JsonSerializer.Serialize(PrepareNavStarCatalog(starDataManager)) },
                 { "startDate", $"\"{formData.DatePickerValue:MM/dd/yyyy}\"" }
@@ -72,8 +73,8 @@ namespace P3D_Scenario_Generator.CelestialScenario
             // 2. Generate Files (Expanding is now just adding lines here)
 
             // Main JS with coordinate logic injected via the lambda
-            if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsCelestialSextant.js", "scriptsCelestialSextant.js", 
-                saveLocation, mainReplacements, c => SetCelestialMapEdges(formData, c))) return false;
+            if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsCelestialSextant.js", "scriptsCelestialSextant.js",
+                saveLocation, mainReplacements, c => SetCelestialMapEdges(c, north, east, south, west))) return false;
 
             // Static JS Files
             if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsCelestialAstroCalcs.js", "scriptsCelestialAstroCalcs.js", saveLocation)) return false;
@@ -81,9 +82,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
             // CSS File (Handled by the same helper)
             if (!await _assetFileGenerator.WriteAssetFileAsync("CSS.styleCelestialSextant.css", "styleCelestialSextant.css", saveLocation)) return false;
-
-            // Binary Assets
-            if (!await _assetFileGenerator.CopyAssetImageAsync("Images.plotImage.jpg", Path.Combine(saveLocation, "plotImage.jpg"))) return false;
 
             // 3. Deploy Constellation BMPs to Images/Constellations subfolder
             return await DeployConstellationImagesAsync(saveLocation, starDataManager);
@@ -150,40 +148,18 @@ namespace P3D_Scenario_Generator.CelestialScenario
             return list;
         }
 
-        /// <summary>
-        /// Calculates the map boundaries and performs in-place replacement on the JavaScript content,
-        /// consolidating the four edge variables into a single 'plotBoundaries' object.
-        /// </summary>
-        /// <param name="formData">The scenario data object containing the location and distance parameters.</param>
-        /// <param name="jsContent">The content of the scriptsCelestialSextant.js file.</param>
-        /// <returns>The modified JavaScript content with the consolidated plot boundaries injected.</returns>
-        private static string SetCelestialMapEdges(ScenarioFormData formData, string jsContent)
+        private static string SetCelestialMapEdges(string jsContent, double north, double east, double south, double west)
         {
-            const double mapMarginFactor = 1.1;
-            double distanceMetres = formData.RandomRadiusNM * mapMarginFactor * Constants.MetresInNauticalMile;
-
-            // Use MathRoutines (assumed to be available) to calculate the boundaries
-            MathRoutines.AdjCoords(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees, 0, distanceMetres, out double celestialImageNorth, out _);
-            MathRoutines.AdjCoords(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees, 90, distanceMetres, out _, out double celestialImageEast);
-            MathRoutines.AdjCoords(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees, 180, distanceMetres, out double celestialImageSouth, out _);
-            MathRoutines.AdjCoords(formData.MidairStartLatDegrees, formData.MidairStartLonDegrees, 270, distanceMetres, out _, out double celestialImageWest);
-
-            // 1. Create a C# object matching the JavaScript PlotArea structure (camelCase property names).
             var plotBoundariesObject = new
             {
-                north = ToRadians(celestialImageNorth),
-                east = ToRadians(celestialImageEast),
-                south = ToRadians(celestialImageSouth),
-                west = ToRadians(celestialImageWest)
+                north = ToRadians(north),
+                east = ToRadians(east),
+                south = ToRadians(south),
+                west = ToRadians(west)
             };
 
-            // 2. Serialize the object and prepare the injection string.
             string rawValue = JsonSerializer.Serialize(plotBoundariesObject);
-
-            // 3. Use the new helper to inject the consolidated object.
-            jsContent = AssetFileGenerator.ReplaceJsVariable(jsContent, "plotBoundaries", rawValue);
-
-            return jsContent;
+            return AssetFileGenerator.ReplaceJsVariable(jsContent, "plotBoundaries", rawValue);
         }
 
         /// <summary>

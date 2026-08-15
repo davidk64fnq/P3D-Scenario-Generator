@@ -582,6 +582,128 @@ namespace P3D_Scenario_Generator.MapTiles
             return true;
         }
 
+        /// <summary>
+        /// Creates a perfectly framed 16:9 map image (960x540) containing the start and destination airports,
+        /// and returns the exact geographical boundaries for JavaScript plotting.
+        /// </summary>
+        public async Task<(bool success, double north, double east, double south, double west)> CreatePlottingImageAsync(ScenarioFormData formData)
+        {
+            double startLat = formData.StartRunway.AirportLat;
+            double startLon = formData.StartRunway.AirportLon;
+            double destLat = formData.DestinationRunway.AirportLat;
+            double destLon = formData.DestinationRunway.AirportLon;
+
+            int zoom = Constants.MaxZoomLevel;
+            double targetW = 0, targetH = 0;
+            double minX = 0, minY = 0, maxX = 0, maxY = 0;
+
+            // 1. Find optimal zoom that fits both airports plus margin into a reasonable number of tiles
+            for (int z = Constants.MaxZoomLevel; z >= 2; z--)
+            {
+                double startX = LonToGlobalPixelX(startLon, z);
+                double startY = LatToGlobalPixelY(startLat, z);
+                double destX = LonToGlobalPixelX(destLon, z);
+                double destY = LatToGlobalPixelY(destLat, z);
+
+                minX = Math.Min(startX, destX);
+                maxX = Math.Max(startX, destX);
+                minY = Math.Min(startY, destY); // Y increases Southwards
+                maxY = Math.Max(startY, destY);
+
+                double deltaX = maxX - minX;
+                double deltaY = maxY - minY;
+
+                // Add 20% margin total
+                targetW = Math.Max(100, deltaX * 1.2);
+                targetH = Math.Max(100, deltaY * 1.2);
+
+                // Force exact 16:9 Aspect Ratio (960/540 = 1.7777...)
+                double targetRatio = 16.0 / 9.0;
+                double currentRatio = targetW / targetH;
+
+                if (currentRatio < targetRatio) targetW = targetH * targetRatio; // Too tall, widen it
+                else targetH = targetW / targetRatio;                            // Too wide, heighten it
+
+                // Stop iterating if the image will be under ~3000 pixels wide (approx 12 tiles)
+                if (targetW <= 3000 && targetH <= 3000)
+                {
+                    zoom = z;
+                    break;
+                }
+            }
+
+            // 2. Define the crop box in global pixels
+            double centerX = (minX + maxX) / 2.0;
+            double centerY = (minY + maxY) / 2.0;
+
+            double cropLeft = centerX - targetW / 2.0;
+            double cropTop = centerY - targetH / 2.0;
+            double cropRight = cropLeft + targetW;
+            double cropBottom = cropTop + targetH;
+
+            // 3. Define OSM tiles needed to cover this box
+            int startTileX = (int)Math.Floor(cropLeft / 256.0);
+            int endTileX = (int)Math.Floor(cropRight / 256.0);
+            int startTileY = (int)Math.Floor(cropTop / 256.0);
+            int endTileY = (int)Math.Floor(cropBottom / 256.0);
+
+            BoundingBox box = new();
+            int maxTiles = 1 << zoom;
+
+            // Add X tiles (Handling wrap around the Earth)
+            for (int x = startTileX; x <= endTileX; x++) box.XAxis.Add((x % maxTiles + maxTiles) % maxTiles);
+            // Add Y tiles (Clamped)
+            for (int y = startTileY; y <= endTileY; y++) if (y >= 0 && y < maxTiles) box.YAxis.Add(y);
+
+            if (box.XAxis.Count == 0 || box.YAxis.Count == 0) return (false, 0, 0, 0, 0);
+
+            // 4. Download and Montage
+            string tempFilePrefix = Path.Combine(formData.TempScenarioDirectory, "plot_raw");
+            if (!await _mapTileMontager.MontageTilesAsync(box, zoom, tempFilePrefix, formData)) return (false, 0, 0, 0, 0);
+
+            // 5. Calculate Crop offsets within the downloaded montage
+            double montageGlobalLeft = startTileX * 256.0;
+            double montageGlobalTop = startTileY * 256.0;
+
+            int cropOffsetX = (int)Math.Round(cropLeft - montageGlobalLeft);
+            int cropOffsetY = (int)Math.Round(cropTop - montageGlobalTop);
+
+            // 6. Crop & Resize
+            string rawMontagePath = $"{tempFilePrefix}.png";
+            string finalPath = Path.Combine(formData.ScenarioImageFolder, "plotImage.jpg");
+            if (!await _imageUtils.CropAndResizePlotImageAsync(rawMontagePath, finalPath, cropOffsetX, cropOffsetY, (int)targetW, (int)targetH, 960, 540))
+            {
+                return (false, 0, 0, 0, 0);
+            }
+
+            // 7. Draw the Destination Marker
+            double destPixelX = ((LonToGlobalPixelX(destLon, zoom) - cropLeft) / targetW) * 960.0;
+            double destPixelY = ((LatToGlobalPixelY(destLat, zoom) - cropTop) / targetH) * 540.0;
+            await _imageUtils.DrawPlottingDestinationMarkerAsync(finalPath, (int)Math.Round(destPixelX), (int)Math.Round(destPixelY));
+
+            // 8. Convert Pixel box corners back to accurate Lat/Lon for JS injection
+            double finalNorth = GlobalPixelYToLat(cropTop, zoom);
+            double finalSouth = GlobalPixelYToLat(cropBottom, zoom);
+            double finalWest = GlobalPixelXToLon(cropLeft, zoom);
+            double finalEast = GlobalPixelXToLon(cropRight, zoom);
+
+            return (true, finalNorth, finalEast, finalSouth, finalWest);
+        }
+
+        // --- Web Mercator Math Helpers ---
+        private static double LonToGlobalPixelX(double lon, int zoom) => ((lon + 180.0) / 360.0) * 256.0 * (1 << zoom);
+        private static double LatToGlobalPixelY(double lat, int zoom)
+        {
+            var latRad = lat * Math.PI / 180.0;
+            return ((1.0 - Math.Log(Math.Tan(latRad) + 1.0 / Math.Cos(latRad)) / Math.PI) / 2.0) * 256.0 * (1 << zoom);
+        }
+        private static double GlobalPixelXToLon(double x, int zoom) => (x / (256.0 * (1 << zoom))) * 360.0 - 180.0;
+        private static double GlobalPixelYToLat(double y, int zoom)
+        {
+            double n = Math.PI - 2.0 * Math.PI * y / (256.0 * (1 << zoom));
+            return 180.0 / Math.PI * Math.Atan(0.5 * (Math.Exp(n) - Math.Exp(-n)));
+        }
+
 
     }
 }

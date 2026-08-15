@@ -1,6 +1,7 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Services;
+using P3D_Scenario_Generator.Utilities;
 
 namespace P3D_Scenario_Generator.Runways
 {
@@ -381,6 +382,67 @@ namespace P3D_Scenario_Generator.Runways
         private static double GetDistanceSq(RunwayParams runway, double lat, double lon)
         {
             return Math.Pow(runway.AirportLat - lat, 2) + Math.Pow(runway.AirportLon - lon, 2);
+        }
+
+        /// <summary>
+        /// Finds a random pair of runways (Departure and Destination) that meet the location filters,
+        /// aircraft capabilities, and are separated by a distance within the specified min and max bounds.
+        /// </summary>
+        /// <param name="minDistanceNM">Minimum distance between the airports in nautical miles.</param>
+        /// <param name="maxDistanceNM">Maximum distance between the airports in nautical miles.</param>
+        /// <param name="scenarioFormData">The current form configuration payload for filtering.</param>
+        /// <returns>A tuple containing the Departure and Destination runways, or null if no valid pair is found.</returns>
+        public async Task<(RunwayParams Departure, RunwayParams Destination)?> GetRandomRunwayPairAsync(double minDistanceNM, double maxDistanceNM, ScenarioFormData scenarioFormData)
+        {
+            try
+            {
+                // 1. Get all runways that pass the basic location and aircraft filters
+                List<RunwayParams> validStartRunways = GetFilteredRunways(scenarioFormData);
+
+                if (validStartRunways.Count < 2)
+                {
+                    await _log.WarningAsync("Not enough filtered runways to form a departure/destination pair.");
+                    return null;
+                }
+
+                // 2. Shuffle the list to ensure randomness in our departure selection (Fisher-Yates shuffle)
+                int n = validStartRunways.Count;
+                while (n > 1)
+                {
+                    n--;
+                    int k = _random.Next(n + 1);
+                    // Use C# tuple deconstruction to swap values cleanly
+                    (validStartRunways[k], validStartRunways[n]) = (validStartRunways[n], validStartRunways[k]);
+                }
+
+                // 3. Iterate through the randomized valid runways and try to find a matching destination
+                foreach (var departureRunway in validStartRunways)
+                {
+                    // FindNearbyRunwayAsync already uses the KD-Tree to find a random runway 
+                    // in the distance annulus that passes the scenarioFormData filters!
+                    RunwayParams destinationRunway = await FindNearbyRunwayAsync(
+                        departureRunway.AirportLat,
+                        departureRunway.AirportLon,
+                        minDistanceNM,
+                        maxDistanceNM,
+                        scenarioFormData);
+
+                    // Ensure we found a destination and it isn't just a different runway at the EXACT same airport
+                    if (destinationRunway != null && !destinationRunway.IcaoId.Equals(departureRunway.IcaoId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        scenarioFormData.RandomRadiusNM = MathRoutines.CalcDistance(departureRunway.AirportLat, departureRunway.AirportLon, destinationRunway.AirportLat, destinationRunway.AirportLon);
+                        return (departureRunway, destinationRunway);
+                    }
+                }
+
+                await _log.WarningAsync($"Could not find any runway pair within {minDistanceNM} to {maxDistanceNM} NM matching the current filters.");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                await _log.ErrorAsync("An error occurred while finding a random runway pair.", ex);
+                return null;
+            }
         }
     }
 }
