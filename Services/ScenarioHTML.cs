@@ -234,11 +234,11 @@ namespace P3D_Scenario_Generator.Services
             }
 
             // Copy style files and other images
-            if (!await CopyResourceFileAsync("CSS.style_kneeboard.css", $"{formData.ScenarioFolder}\\style_kneeboard.css") ||
-                !await CopyResourceFileAsync("CSS.style_load_flight.css", $"{formData.ScenarioFolder}\\style_load_flight.css") ||
-                !await CopyResourceFileAsync("Sounds.ThruHoop.wav", $"{soundDirectoryPath}\\ThruHoop.wav") ||
-                !await CopyResourceFileAsync("Images.aircraft.png", $"{formData.ScenarioImageFolder}\\aircraft.png") ||
-                !await CopyResourceFileAsync("Images.header.png", $"{formData.ScenarioImageFolder}\\header.png"))
+            if (!await _fileOps.CopyResourceFileAsync("CSS.style_kneeboard.css", $"{formData.ScenarioFolder}\\style_kneeboard.css", _progressReporter) ||
+                !await _fileOps.CopyResourceFileAsync("CSS.style_load_flight.css", $"{formData.ScenarioFolder}\\style_load_flight.css", _progressReporter) ||
+                !await _fileOps.CopyResourceFileAsync("Sounds.ThruHoop.wav", $"{soundDirectoryPath}\\ThruHoop.wav", _progressReporter) ||
+                !await _fileOps.CopyResourceFileAsync("Images.aircraft.png", $"{formData.ScenarioImageFolder}\\aircraft.png", _progressReporter) ||
+                !await _fileOps.CopyResourceFileAsync("Images.header.png", $"{formData.ScenarioImageFolder}\\header.png", _progressReporter))
             {
                 return false;
             }
@@ -246,38 +246,6 @@ namespace P3D_Scenario_Generator.Services
             message = "All files copied successfully.";
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
-            return true;
-        }
-
-        /// <summary>
-        /// A helper method to copy a single file from an embedded resource to a destination path.
-        /// </summary>
-        /// <param name="resourceName">The name of the embedded resource.</param>
-        /// <param name="destinationPath">The full path to the destination file.</param>
-        /// <returns><see langword="true"/> if the file was copied successfully; otherwise, <see langword="false"/>.</returns>
-        private async Task<bool> CopyResourceFileAsync(string resourceName, string destinationPath)
-        {
-            var (success, resourceStream) = await _fileOps.TryGetResourceStreamAsync(resourceName, _progressReporter);
-            if (!success)
-            {
-                string errorMessage = $"Failed to get resource stream for '{resourceName}'.";
-                await _logger.ErrorAsync(errorMessage);
-                _progressReporter.Report($"ERROR: {errorMessage}");
-                return false;
-            }
-
-            using (resourceStream)
-            using (FileStream outputFileStream = new(destinationPath, FileMode.Create))
-            {
-                if (!await _fileOps.TryCopyStreamToStreamAsync(resourceStream, outputFileStream, _progressReporter))
-                {
-                    string errorMessage = $"Failed to copy resource '{resourceName}' to '{destinationPath}'.";
-                    await _logger.ErrorAsync(errorMessage);
-                    _progressReporter.Report($"ERROR: {errorMessage}");
-                    return false;
-                }
-            }
-
             return true;
         }
 

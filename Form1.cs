@@ -593,11 +593,11 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
         private void ButtonRandomScenario_Click(object sender, EventArgs e)
         {
-        //        Random random = new();
-        //        ComboBoxGeneralScenarioType.SelectedIndex = random.Next(0, ComboBoxGeneralScenarioType.Items.Count);
+                Random random = new();
+                ComboBoxGeneralScenarioType.SelectedIndex = random.Next(0, ComboBoxGeneralScenarioType.Items.Count);
 
-            Services.ProcessConstellationSvgs.CreatePNGs("C:\\Users\\david\\Documents\\Prepar3D v5 Files\\C1\\Images\\iau-constellations-svg", "C:\\Users\\david\\Documents\\Prepar3D v5 Files\\C1\\Images\\Constellations");
-            DisplayFinishMessage();
+        //    ProcessConstellationSvgs.CreatePNGs("C:\\Documents\\iau-constellations-svg", "C:\\Documents\\iau-constellations-bmp");
+        //    DisplayFinishMessage();
         }
 
         private async void ButtonGenerateScenario_Click(object sender, EventArgs e)

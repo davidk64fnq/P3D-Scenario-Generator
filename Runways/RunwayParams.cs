@@ -100,6 +100,11 @@
         public int RunwaysIndex { get; set; }
 
         /// <summary>
+        /// Indicates if the runway has any form of lighting (Edge, Center, Approach, or End).
+        /// </summary>
+        public bool HasLights { get; set; }
+
+        /// <summary>
         /// Clones the airport level runway information prior to reading in each runway for the current airport
         /// </summary>
         /// <returns>Cloned version of <see cref="RunwayParams"/></returns>
@@ -116,7 +121,8 @@
                 AirportLat = AirportLat,
                 Altitude = Altitude,
                 MagVar = MagVar,
-                RunwaysIndex = RunwaysIndex
+                RunwaysIndex = RunwaysIndex,
+                HasLights = false // Default to false, will be set when parsing the specific runway
             };
             return clonedRunwayParams;
         }

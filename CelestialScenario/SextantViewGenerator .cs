@@ -2,6 +2,7 @@
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.Utilities;
+using System.Globalization;
 using System.Text.Json;
 
 namespace P3D_Scenario_Generator.CelestialScenario
@@ -53,7 +54,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         }
 
         public async Task<bool> SetCelestialSextantAssetsAsync(ScenarioFormData formData, StarDataManager starDataManager,
-            double north, double east, double south, double west)
+    double north, double east, double south, double west)
         {
             string saveLocation = formData.ScenarioImageFolder;
             await _logger.InfoAsync("Starting generation of Celestial Sextant web assets.");
@@ -65,23 +66,39 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 { "starCatalog", JsonSerializer.Serialize(starDataManager.GetStarCatalog()) },
                 { "destCoord", $"{{ latitude: {formData.DestinationRunway.AirportLat.ToRadians()}, longitude: {formData.DestinationRunway.AirportLon.ToRadians()} }}" },
                 { "currentDRCoord", $"{{ latitude: {formData.StartRunway.AirportLat.ToRadians()}, longitude: {formData.StartRunway.AirportLon.ToRadians()} }}" },
+                { "startCoord", $"{{ latitude: {formData.StartRunway.AirportLat.ToRadians()}, longitude: {formData.StartRunway.AirportLon.ToRadians()} }}" },
                 { "ariesGHAData", JsonSerializer.Serialize(new { Degrees = _almanacData.AriesGhaDeg, Minutes = _almanacData.AriesGhaMin }) },
                 { "navStarCatalog", JsonSerializer.Serialize(PrepareNavStarCatalog(starDataManager)) },
                 { "startDate", $"\"{formData.DatePickerValue:MM/dd/yyyy}\"" }
             };
 
-            // 2. Generate Files (Expanding is now just adding lines here)
+            // 2. Generate Files
 
-            // Main JS with coordinate logic injected via the lambda
-            if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsCelestialSextant.js", "scriptsCelestialSextant.js",
-                saveLocation, mainReplacements, c => SetCelestialMapEdges(c, north, east, south, west))) return false;
+            double absTrueHdg = formData.StartRunway.Hdg + formData.StartRunway.MagVar;
+
+            // Main JS: Chain SetCelestialMapEdges and ReplaceJsObjectProperty in the customLogic lambda
+            if (!await _assetFileGenerator.WriteAssetFileAsync(
+                "Javascript.scriptsCelestialSextant.js",
+                "scriptsCelestialSextant.js",
+                saveLocation,
+                mainReplacements,
+                c =>
+                {
+                    string content = SetCelestialMapEdges(c, north, east, south, west);
+                    content = AssetFileGenerator.ReplaceJsObjectProperty(content, "azTrueDeg", absTrueHdg.ToString(CultureInfo.InvariantCulture));
+                    string startPosJson = $"{{ latitude: {formData.StartRunway.AirportLat.ToRadians()}, longitude: {formData.StartRunway.AirportLon.ToRadians()} }}";
+                    return AssetFileGenerator.ReplaceJsObjectBlock(content, "position", startPosJson);
+                })) return false;
 
             // Static JS Files
             if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsCelestialAstroCalcs.js", "scriptsCelestialAstroCalcs.js", saveLocation)) return false;
             if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.types.js", "types.js", saveLocation)) return false;
 
-            // CSS File (Handled by the same helper)
+            // CSS File
             if (!await _assetFileGenerator.WriteAssetFileAsync("CSS.styleCelestialSextant.css", "styleCelestialSextant.css", saveLocation)) return false;
+
+            // Audio Beacon Asset
+            if (!await _fileOps.CopyResourceFileAsync("Sounds.sonar_beep.wav", Path.Combine(saveLocation, "sonar_beep.wav"), _progressReporter)) return false;
 
             // 3. Deploy Constellation BMPs to Images/Constellations subfolder
             return await DeployConstellationImagesAsync(saveLocation, starDataManager);

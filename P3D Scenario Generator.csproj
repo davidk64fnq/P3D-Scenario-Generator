@@ -30,7 +30,6 @@
     <None Remove="Resources\CSS\style_kneeboard.css" />
     <None Remove="Resources\CSS\style_load_flight.css" />
     <None Remove="Resources\Excel\Celestial Nav Stars.xlsx" />
-    <None Remove="Resources\Excel\CelestialNavStars.xlsx" />
     <None Remove="Resources\Help\circuit.htm" />
     <None Remove="Resources\Help\images\circuitTab.jpg" />
     <None Remove="Resources\Help\images\introduction-objects.jpg" />
@@ -118,6 +117,7 @@
     <None Remove="Resources\Images\Constellations\Phoenix.png" />
     <None Remove="Resources\Images\Constellations\Picis_Austrinus.bmp" />
     <None Remove="Resources\Images\Constellations\Picis_Austrinus.png" />
+    <None Remove="Resources\Images\Constellations\Piscis_Austrinus.bmp" />
     <None Remove="Resources\Images\Constellations\Sagittarius.bmp" />
     <None Remove="Resources\Images\Constellations\Sagittarius.png" />
     <None Remove="Resources\Images\Constellations\Scorpius.bmp" />
@@ -150,7 +150,11 @@
     <None Remove="Resources\Javascript\third-party\geodesy\latlon-ellipsoidal.js" />
     <None Remove="Resources\Javascript\third-party\geodesy\vector3d.js" />
     <None Remove="Resources\Javascript\types.js" />
+    <None Remove="Resources\JSON\bsc5p_extra.json" />
+    <None Remove="Resources\JSON\skycultures_modern_iau_lines.json" />
+    <None Remove="Resources\JSON\stellarium_modern_iau_lines.json" />
     <None Remove="Resources\LocationFavouritesJSON.txt" />
+    <None Remove="Resources\Sounds\sonar_beep.wav" />
     <None Remove="Resources\Sounds\ThruHoop.wav" />
     <None Remove="Resources\XML\runways.xml" />
     <None Remove="Resources\XML\source.fxml" />
@@ -179,7 +183,6 @@
     <EmbeddedResource Include="Resources\CSS\styleMovingMap.css" />
     <EmbeddedResource Include="Resources\CSS\style_kneeboard.css" />
     <EmbeddedResource Include="Resources\CSS\style_load_flight.css" />
-    <EmbeddedResource Include="Resources\Excel\CelestialNavStars.xlsx" />
     <EmbeddedResource Include="Resources\Help\circuit.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
@@ -336,7 +339,7 @@
     <EmbeddedResource Include="Resources\Images\Constellations\Phoenix.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Images\Constellations\Picis_Austrinus.bmp">
+    <EmbeddedResource Include="Resources\Images\Constellations\Piscis_Austrinus.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Images\Constellations\Sagittarius.bmp">
@@ -381,6 +384,15 @@
     <EmbeddedResource Include="Resources\Javascript\third-party\geodesy\latlon-ellipsoidal.js" />
     <EmbeddedResource Include="Resources\Javascript\third-party\geodesy\vector3d.js" />
     <EmbeddedResource Include="Resources\Javascript\types.js" />
+    <EmbeddedResource Include="Resources\JSON\bsc5p_extra.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\JSON\stellarium_modern_iau_lines.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Sounds\sonar_beep.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Text\LocationFavouritesJSON.txt" />
     <EmbeddedResource Include="Resources\Sounds\ThruHoop.wav" />
     <EmbeddedResource Include="Resources\XML\runways.xml" />
@@ -431,6 +443,10 @@
     <None Update="Resources\Help\Help.chm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\Excel\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

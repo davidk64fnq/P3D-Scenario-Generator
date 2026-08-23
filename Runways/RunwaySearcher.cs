@@ -274,15 +274,15 @@ namespace P3D_Scenario_Generator.Runways
             if (aircraft != null)
             {
                 bool isWater = runway.IsWaterRunway;
+                if (isWater && !aircraft.HasFloats) return false;
+                if (!isWater && !aircraft.HasWheelsOrEquiv) return false;
+            }
 
-                // Aircraft with NO floats cannot use water runways
-                if (isWater && !aircraft.HasFloats)
-                {
-                    return false;
-                }
-
-                // Pure floatplanes (NO wheels/skids) cannot use land runways
-                if (!isWater && !aircraft.HasWheelsOrEquiv)
+            // --- 2. Night Lighting Filtering ---
+            // For Celestial Navigation (Night flights), the runway MUST have lights
+            if (scenarioFormData?.ScenarioType == ScenarioTypes.Celestial)
+            {
+                if (!runway.HasLights)
                 {
                     return false;
                 }

@@ -1,10 +1,18 @@
 ﻿using OfficeOpenXml;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Services;
+using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
-    // This record is used to map the internal Star object to the JSON structure 
-    // expected by the JavaScript's starCatalog array of objects.
+    #region External DTO Records
+
+    /// <summary>
+    /// Represents star record data used to map internal <see cref="Star"/> objects to the JSON structure 
+    /// expected by client-side JavaScript (<c>starCatalog</c> array of objects).
+    /// </summary>
     public record StarData(
         string ConstellationName,
         string CatalogID,
@@ -20,28 +28,297 @@ namespace P3D_Scenario_Generator.CelestialScenario
         double VisualMagnitude
     );
 
+    #endregion
+
     /// <summary>
-    /// Manages the loading, storage, and retrieval of star data from an embedded Excel resource.
-    /// It populates a list of all stars, identifies and organizes navigational stars,
-    /// and provides methods to access individual star properties.
+    /// Manages the loading, storage, and retrieval of star data from embedded JSON resources.
+    /// It populates a list of all catalog stars, identifies and organizes navigational stars,
+    /// and provides methods to access individual star properties and constellation line vectors.
     /// </summary>
     public sealed class StarDataManager(Logger logger, FileOps fileOps, FormProgressReporter progressReporter)
     {
+        #region Private Fields & Dependencies
+
         // Guard clauses to validate the constructor parameters.
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
-        // --- Star Data Accessors for JavaScript Injection ---
+        /// <summary>
+        /// Collection of all loaded celestial stars parsed from the embedded JSON star catalog.
+        /// </summary>
+        private readonly List<Star> _stars = [];
+
+        /// <summary>
+        /// List of recognized navigational star names, used in scenario HTML and JavaScript files.
+        /// </summary>
+        private readonly List<string> _navStarNames = [];
+
+        /// <summary>
+        /// Flattened list of star ID pairs ([Id1, Id2, Id3, Id4, ...]) used to draw constellation lines.
+        /// </summary>
+        private readonly List<string> _starLineConnections = [];
+
+        /// <summary>
+        /// Stores the total count of stars successfully loaded from the JSON catalog.
+        /// </summary>
+        private int _noStars = 0;
+
+        #endregion
+
+        #region Static Lookup Tables
+
+        /// <summary>
+        /// Lookup table mapping catalog line numbers to standard navigational star metadata.
+        /// </summary>
+        private static readonly Dictionary<string, (int StarNumber, string StarName, string Constellation)> NavStarLookup = new()
+        {
+            { "871", (7, "Acamar", "Eridanus") },
+            { "472", (5, "Achernar", "Eridanus") },
+            { "4730", (30, "Acrux", "Crux") },
+            { "2618", (19, "Adhara", "Canis Major") },
+            { "8425", (55, "Al Na'ir", "Grus") },
+            { "1457", (10, "Aldebaran", "Taurus") },
+            { "4905", (32, "Alioth", "Ursa Major") },
+            { "5191", (34, "Alkaid", "Ursa Major") },
+            { "1903", (15, "Alnilam", "Orion") },
+            { "3748", (25, "Alphard", "Hydra") },
+            { "5793", (41, "Alphecca", "Corona Borealis") },
+            { "15", (1, "Alpheratz", "Andromeda") },
+            { "7557", (51, "Altair", "Aquila") },
+            { "99", (2, "Ankaa", "Phoenix") },
+            { "6134", (42, "Antares", "Scorpius") },
+            { "5340", (37, "Arcturus", "Bootes") },
+            { "6217", (43, "Atria", "Triangulum Australe") },
+            { "3307", (22, "Avior", "Carina") },
+            { "1790", (13, "Bellatrix", "Orion") },
+            { "2061", (16, "Betelgeuse", "Orion") },
+            { "2326", (17, "Canopus", "Carina") },
+            { "1708", (12, "Capella", "Auriga") },
+            { "7924", (53, "Deneb", "Cygnus") },
+            { "4534", (28, "Denebola", "Leo") },
+            { "188", (4, "Diphda", "Cetus") },
+            { "4301", (27, "Dubhe", "Ursa Major") },
+            { "1791", (14, "Elnath", "Taurus") },
+            { "6705", (47, "Eltanin", "Draco") },
+            { "8308", (54, "Enif", "Pegasus") },
+            { "8728", (56, "Fomalhaut", "Piscis Austrinus") },
+            { "4763", (31, "Gacrux", "Crux") },
+            { "4662", (29, "Gienah", "Corvus") },
+            { "5267", (35, "Hadar", "Centaurus") },
+            { "617", (6, "Hamal", "Aries") },
+            { "6879", (48, "Kaus Australis", "Sagittarius") },
+            { "5563", (40, "Kochab", "Ursa Minor") },
+            { "8781", (57, "Markab", "Pegasus") },
+            { "911", (8, "Menkar", "Cetus") },
+            { "5288", (36, "Menkent", "Centaurus") },
+            { "3685", (24, "Miaplacidus", "Carina") },
+            { "1017", (9, "Mirfak", "Perseus") },
+            { "7121", (50, "Nunki", "Sagittarius") },
+            { "7790", (52, "Peacock", "Pavo") },
+            { "424", (0, "Polaris", "Ursa Minor") }, // 0 used as Polaris is unnumbered in the standard 1–57 sequence
+            { "2990", (21, "Pollux", "Gemini") },
+            { "2943", (20, "Procyon", "Canis Minor") },
+            { "6406", (44, "Sabik", "Ophiuchus") },
+            { "3982", (26, "Regulus", "Leo") },
+            { "1713", (11, "Rigel", "Orion") },
+            { "5459", (38, "Rigil Kentaurus", "Centaurus") },
+            { "6378", (44, "Sabik", "Ophiuchus") },
+            { "168", (3, "Schedar", "Cassiopeia") },
+            { "6527", (45, "Shaula", "Scorpius") },
+            { "2491", (18, "Sirius", "Canis Major") },
+            { "5056", (33, "Spica", "Virgo") },
+            { "3634", (23, "Suhail", "Vela") },
+            { "7001", (49, "Vega", "Lyra") },
+            { "5531", (39, "Zubenelgenubi", "Libra") }
+        };
+
+        /// <summary>
+        /// The 38 IAU constellation abbreviations that contain standard Navigational Stars.
+        /// </summary>
+        private static readonly HashSet<string> NavConstellationAbbreviations =
+        [
+            with(StringComparer.OrdinalIgnoreCase),
+            "And", "Aql", "Ari", "Aur", "Boo", "CMa", "CMi", "Car", "Cas",
+            "Cen", "Cet", "CrB", "Crv", "Cru", "Cyg", "Dra", "Eri", "Gem",
+            "Gru", "Hya", "Leo", "Lib", "Lyr", "Oph", "Ori", "Pav", "Peg",
+            "Per", "Phe", "PsA", "Sgr", "Sco", "Tau", "TrA", "UMa", "UMi",
+            "Vel", "Vir"
+        ];
+
+        /// <summary>
+        /// Maps the BSC5P 3-letter abbreviations to Unicode Greek characters.
+        /// </summary>
+        private static readonly Dictionary<string, string> GreekAlphabet = new(StringComparer.OrdinalIgnoreCase)
+        {
+            {"alp", "α"}, {"bet", "β"}, {"gam", "γ"}, {"del", "δ"}, {"eps", "ε"},
+            {"zet", "ζ"}, {"eta", "η"}, {"the", "θ"}, {"iot", "ι"}, {"kap", "κ"},
+            {"lam", "λ"}, {"mu", "μ"}, {"nu", "ν"}, {"xi", "ξ"}, {"omi", "ο"},
+            {"pi", "π"}, {"rho", "ρ"}, {"sig", "σ"}, {"tau", "τ"}, {"ups", "υ"},
+            {"phi", "φ"}, {"chi", "χ"}, {"psi", "ψ"}, {"ome", "ω"}
+        };
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// A read-only list of all loaded stars.
+        /// </summary>
+        public IReadOnlyList<Star> Stars => _stars.AsReadOnly();
+
+        /// <summary>
+        /// A read-only list of navigational star names.
+        /// </summary>
+        public IReadOnlyList<string> NavStarNames => _navStarNames.AsReadOnly();
+
+        /// <summary>
+        /// The total number of stars loaded into memory.
+        /// </summary>
+        public int NoStars => _noStars;
+
+        /// <summary>
+        /// Gets a flattened list of star ID pairs ([Id1, ConnectedId1, Id2, ConnectedId2, ...]) 
+        /// used to draw lines between stars in constellations.
+        /// </summary>
+        public IReadOnlyList<string> StarLineConnections => _starLineConnections.AsReadOnly();
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Asynchronously initializes the celestial star catalog by loading and parsing the expanded 
+        /// BSC5P JSON data from the application's embedded resources. It populates internal collections 
+        /// of stars and navigational names, parses precise astronomical coordinates, maps standard 
+        /// navigational stars, applies clean Greek Bayer designations, and triggers loading 
+        /// of Stellarium constellation line connections.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if the JSON catalog and constellation lines were successfully loaded 
+        /// and parsed; otherwise, <see langword="false"/>.
+        /// </returns>
+        public async Task<bool> InitStarsAsync()
+        {
+            await _logger.InfoAsync("Starting initialization of star data from JSON catalog.");
+            _progressReporter.Report("Initializing star data...");
+
+            _stars.Clear();
+            _navStarNames.Clear();
+            _noStars = 0;
+
+            string resourceName = "JSON.bsc5p_extra.json";
+
+            (bool success, Stream stream) = await _fileOps.TryGetResourceStreamAsync(resourceName, _progressReporter);
+            if (!success) return false;
+
+            try
+            {
+                List<Bsc5pJsonStar> rawStars;
+                using (stream)
+                {
+                    rawStars = await JsonSerializer.DeserializeAsync<List<Bsc5pJsonStar>>(stream);
+                }
+
+                // Keep track of Nav Stars we have already processed to prevent duplicate entries for binary components
+                HashSet<string> processedNavStars = [];
+
+                // Map Hipparcos ID (e.g., "424") to Harvard Revised catalog LineNumber (e.g., "1")
+                var hipToHrMap = new Dictionary<string, string>();
+
+                foreach (var rawStar in rawStars)
+                {
+                    // 1. Parse JSON coordinate properties
+                    _ = double.TryParse(rawStar.RaH, NumberStyles.Any, CultureInfo.InvariantCulture, out double raH);
+                    _ = double.TryParse(rawStar.RaM, NumberStyles.Any, CultureInfo.InvariantCulture, out double raM);
+                    _ = double.TryParse(rawStar.RaS, NumberStyles.Any, CultureInfo.InvariantCulture, out double raS);
+
+                    _ = double.TryParse(rawStar.DecD, NumberStyles.Any, CultureInfo.InvariantCulture, out double decD);
+                    _ = double.TryParse(rawStar.DecM, NumberStyles.Any, CultureInfo.InvariantCulture, out double decM);
+                    _ = double.TryParse(rawStar.DecS, NumberStyles.Any, CultureInfo.InvariantCulture, out double decS);
+
+                    // Parse Visual Magnitude; default to 6.0 (dim) if catalog value is omitted
+                    if (!double.TryParse(rawStar.VisualMagnitude, NumberStyles.Any, CultureInfo.InvariantCulture, out double visMag))
+                    {
+                        visMag = 6.0;
+                    }
+
+                    if (rawStar.DecSign == "-") decD *= -1;
+
+                    // 2. Identify Navigational Stars and their primary Constellations
+                    string starName = "";
+                    string constellationName = "";
+                    string starNumber = "";
+
+                    if (NavStarLookup.TryGetValue(rawStar.LineNumber, out var navData))
+                    {
+                        // Ensure we only process the primary component of a binary system
+                        if (!processedNavStars.Contains(navData.StarName))
+                        {
+                            starName = navData.StarName;
+                            constellationName = navData.Constellation;
+                            starNumber = navData.StarNumber.ToString();
+
+                            _navStarNames.Add(starName);
+                            processedNavStars.Add(starName); // Mark as processed
+                        }
+                    }
+
+                    // 3. Extract UI-friendly Greek letter (or empty string if not applicable)
+                    string cleanBayer = GetCleanBayerDesignation(rawStar.Bayer);
+
+                    // 4. Construct internal Star object
+                    _stars.Add(new Star(
+                        Constellation: constellationName,
+                        Id: rawStar.LineNumber,
+                        ConnectedId: "", // Line pairings are populated separately via LoadStellariumLinesAsync
+                        StarNumber: starNumber,
+                        StarName: starName,
+                        WikiLink: "",
+                        Bayer: cleanBayer,
+                        RaH: raH, RaM: raM, RaS: raS,
+                        DecD: decD, DecM: decM, DecS: decS,
+                        VisMag: visMag
+                    ));
+
+                    _noStars++;
+
+                    // 5. Index Hipparcos designation mapping for constellation line resolution
+                    if (rawStar.NamesAlt != null)
+                    {
+                        string hipEntry = rawStar.NamesAlt.FirstOrDefault(n => n.StartsWith("HIP ", StringComparison.OrdinalIgnoreCase));
+                        if (hipEntry != null)
+                        {
+                            string hipId = hipEntry.Replace("HIP ", "", StringComparison.OrdinalIgnoreCase).Trim();
+                            hipToHrMap[hipId] = rawStar.LineNumber;
+                        }
+                    }
+                }
+
+                _navStarNames.Sort();
+
+                // 6. Load Constellation Line vectors from Stellarium catalog
+                //   await LoadConstellationLinesAsync();
+                await LoadStellariumLinesAsync(hipToHrMap);
+
+                await _logger.InfoAsync($"Successfully initialized {_noStars} stars from JSON.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await _logger.ErrorAsync($"Failed to parse JSON star catalog: {ex.Message}");
+                return false;
+            }
+        }
 
         /// <summary>
         /// Gets the entire star catalog as a consolidated list of StarData records, 
-        /// optimized for a single JSON serialization to the client-side JavaScript.
+        /// optimized for a single JSON serialization to client-side JavaScript.
         /// </summary>
         /// <returns>A read-only list of StarData records.</returns>
         public IReadOnlyList<StarData> GetStarCatalog()
         {
-            // The mapping ensures that the property names match the JavaScript StarData typedef.
+            // The mapping ensures property names match the client-side JavaScript StarData typedef
             return _stars.Select(s => new StarData(
                 ConstellationName: s.Constellation,
                 CatalogID: s.Id,
@@ -58,175 +335,114 @@ namespace P3D_Scenario_Generator.CelestialScenario
             )).ToList().AsReadOnly();
         }
 
+        #endregion
+
+        #region Private Helper Methods
+
         /// <summary>
-        /// Gets a flattened list of star ID pairs ([Id1, ConnectedId1, Id2, ConnectedId2, ...]) 
-        /// used to draw lines between stars in constellations.
+        /// Parses the raw Bayer string from the star catalog entry.
+        /// If the star belongs to a navigational constellation, it extracts and returns just the base 
+        /// Greek Unicode character (e.g., "α", "β") to maintain a clean, uncluttered UI.
         /// </summary>
-        public IReadOnlyList<string> StarLineConnections
+        /// <param name="rawBayer">The raw Bayer string from the star catalog entry.</param>
+        /// <returns>The cleaned Greek character string, or an empty string if omitted or not applicable.</returns>
+        private static string GetCleanBayerDesignation(string rawBayer)
         {
-            get
+            if (string.IsNullOrWhiteSpace(rawBayer) || rawBayer.Length < 3) return "";
+
+            string constAbbrev = rawBayer[^3..].Trim();
+
+            if (!NavConstellationAbbreviations.Contains(constAbbrev)) return "";
+
+            string leftPart = rawBayer[..^3].Trim().ToLowerInvariant();
+
+            foreach (var kvp in GreekAlphabet)
             {
-                // Selects pairs of (Id, ConnectedId) where ConnectedId is not null or empty, 
-                // then flattens them into a single List<string> to match the typical JSON array format for JS drawing.
-                return _stars
-                    .Where(s => !string.IsNullOrEmpty(s.ConnectedId))
-                    .SelectMany(s => new[] { s.Id, s.ConnectedId })
-                    .ToList()
-                    .AsReadOnly();
+                if (leftPart.Contains(kvp.Key))
+                {
+                    // Return ONLY the base Greek letter (no Flamsteed numbers or superscripts)
+                    return kvp.Value;
+                }
             }
+
+            return "";
         }
 
         /// <summary>
-        /// Read in from embedded Excel resource and then written to "stars.dat"
+        /// Asynchronously loads and parses Stellarium constellation line definitions from JSON resources, 
+        /// mapping Hipparcos (HIP) vertex IDs back to internal catalog LineNumber (HR) IDs.
         /// </summary>
-        private readonly List<Star> _stars = [];
-
-        /// <summary>
-        /// Read in from embedded Excel resource and then written to scenario html and javascript files
-        /// </summary>
-        private readonly List<string> _navStarNames = [];
-
-        /// <summary>
-        /// Stores the number of stars read in from embedded Excel resource
-        /// </summary>
-        private int _noStars = 0;
-
-        /// <summary>
-        /// A read-only list of all stars.
-        /// </summary>
-        public IReadOnlyList<Star> Stars => _stars.AsReadOnly();
-
-        /// <summary>
-        /// A read-only list of navigational star names.
-        /// </summary>
-        public IReadOnlyList<string> NavStarNames => _navStarNames.AsReadOnly();
-
-        /// <summary>
-        /// The number of stars loaded.
-        /// </summary>
-        public int NoStars => _noStars;
-
-        /// <summary>
-        /// Initializes the star data from an embedded Excel resource.
-        /// </summary>
-        /// <returns><see langword="true"/> if the star data was successfully initialized; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> InitStarsAsync()
+        /// <param name="hipToHrMap">A dictionary mapping Hipparcos IDs to catalog LineNumber (HR) IDs.</param>
+        /// <returns><see langword="true"/> if loaded and mapped successfully; otherwise, <see langword="false"/>.</returns>
+        private async Task<bool> LoadStellariumLinesAsync(Dictionary<string, string> hipToHrMap)
         {
-            await _logger.InfoAsync("Starting initialization of star data from embedded Excel resource.");
-            _progressReporter.Report("Initializing star data...");
+            // 1. Read Stellarium JSON stream
+            (bool success, Stream stream) = await _fileOps.TryGetResourceStreamAsync("JSON.stellarium_modern_iau_lines.json", _progressReporter);
+            if (!success) return false;
 
-            // Set EPPlus license for non-commercial use.
-            // This should ideally be called once at application startup.
-            ExcelPackage.License.SetNonCommercialPersonal("David Kilpatrick");
-
-            _stars.Clear();
-            _navStarNames.Clear();
-            _noStars = 0;
-
-            string resourceName = "Excel.CelestialNavStars.xlsx";
-
-            // Attempt to get the embedded resource stream using FileOps
-            (bool success, Stream stream) = await _fileOps.TryGetResourceStreamAsync(resourceName, _progressReporter);
-            if (!success)
+            using (stream)
             {
-                await _logger.ErrorAsync($"Failed to load embedded resource: '{resourceName}'. Star data initialization failed.");
-                _progressReporter.Report($"ERROR: Failed to load '{resourceName}'.");
-                return false; // Error already logged by FileOps.TryGetResourceStream
-            }
+                var stellariumData = await JsonSerializer.DeserializeAsync<StellariumData>(stream);
+                if (stellariumData?.Constellations == null) return false;
 
-            try
-            {
-                using (stream)
-                using (ExcelPackage package = new(stream))
+                foreach (var constel in stellariumData.Constellations)
                 {
-                    // Assuming the relevant data is in the first worksheet (index 0)
-                    ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
-                    if (worksheet == null)
-                    {
-                        await _logger.ErrorAsync($"Worksheet not found in '{resourceName}'. Star data initialization failed.");
-                        _progressReporter.Report("ERROR: Star data worksheet not found in Excel file.");
-                        return false;
-                    }
+                    // Extract IAU 3-letter abbreviation from "CON modern_iau And" -> "And"
+                    string abbrev = constel.Id.Split(' ').LastOrDefault() ?? "";
 
-                    int index = 2; // Start from the second row (skip header row)
-                    while (worksheet.Cells[index, 1].Value != null)
+                    // Filter to Navigational Constellations only
+                    if (!NavConstellationAbbreviations.Contains(abbrev)) continue;
+
+                    foreach (var stroke in constel.Lines)
                     {
-                        try
+                        for (int i = 0; i < stroke.Count - 1; i++)
                         {
-                            string constellation = Convert.ToString(worksheet.Cells[index, 1].Value);
-                            string id = Convert.ToString(worksheet.Cells[index, 2].Value);
-                            string connectedId = Convert.ToString(worksheet.Cells[index, 3].Value);
-                            string starNumber = Convert.ToString(worksheet.Cells[index, 4].Value);
-                            string starName = Convert.ToString(worksheet.Cells[index, 5].Value);
-                            string wikiLink = Convert.ToString(worksheet.Cells[index, 6].Value);
-                            string bayer = Convert.ToString(worksheet.Cells[index, 7].Value);
-                            double raH = (double)worksheet.Cells[index, 8].Value;
-                            double raM = (double)worksheet.Cells[index, 9].Value;
-                            double raS = (double)worksheet.Cells[index, 10].Value;
-                            double decD = (double)worksheet.Cells[index, 11].Value;
-                            double decM = (double)worksheet.Cells[index, 12].Value;
-                            double decS = (double)worksheet.Cells[index, 13].Value;
-                            double visMag = (double)worksheet.Cells[index, 14].Value;
+                            string hip1 = stroke[i].ToString();
+                            string hip2 = stroke[i + 1].ToString();
 
-                            // Create a new Star object and add it to the list
-                            _stars.Add(new Star(
-                                constellation, id, connectedId, starNumber, starName,
-                                wikiLink, bayer,
-                                raH, raM, raS, decD, decM, decS, visMag
-                            ));
-
-                            // Add to navigational star names if starName value is present
-                            if (!string.IsNullOrEmpty(starName))
+                            // Map HIP IDs back to catalog LineNumbers (HR IDs)
+                            if (hipToHrMap.TryGetValue(hip1, out string hr1) &&
+                                hipToHrMap.TryGetValue(hip2, out string hr2))
                             {
-                                _navStarNames.Add(starName);
+                                _starLineConnections.Add(hr1);
+                                _starLineConnections.Add(hr2);
                             }
-
-                            _noStars++;
                         }
-                        catch (Exception rowEx)
-                        {
-                            string errorMessage = $"Error parsing star data at row {index} in '{resourceName}'. Details: {rowEx.Message}";
-                            await _logger.WarningAsync(errorMessage);
-                            _progressReporter.Report($"WARNING: {errorMessage}");
-                        }
-                        index++;
                     }
                 }
+            }
 
-                // Sort navigational star names after all stars have been processed
-                _navStarNames.Sort();
-                await _logger.InfoAsync($"Successfully initialized {_noStars} stars from '{resourceName}'.");
-                _progressReporter.Report($"Star data loaded: {_noStars} stars.");
-                return true;
-            }
-            catch (InvalidCastException ex)
-            {
-                await _logger.ErrorAsync($"Data type conversion error while reading '{resourceName}'. Check Excel data format. Details: {ex.Message}", ex);
-                _progressReporter.Report("ERROR: Data format issue in star data. See log for details.");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                await _logger.ErrorAsync($"An unexpected error occurred while processing '{resourceName}' for star data. Details: {ex.Message}", ex);
-                _progressReporter.Report("ERROR: Unexpected error during star data loading. See log for details.");
-                return false;
-            }
+            return true;
         }
+
+        #endregion
+
+        #region Internal DTO Records
 
         /// <summary>
-        /// Retrieves a Star object from the internal 'stars' array at the specified index.
+        /// DTO representing the root container for Stellarium skyculture JSON data.
         /// </summary>
-        /// <param name="index">The zero-based index of the Star to retrieve.</param>
-        /// <returns>The Star object located at the specified index.</returns>
-        public Star GetStar(int index)
-        {
-            if (index < 0 || index >= _stars.Count)
-            {
-                // You might want to handle this with an exception or a different return type.
-                // Throwing an exception is a common approach for out-of-bounds access.
-                throw new IndexOutOfRangeException($"Index {index} is out of bounds for the stars collection.");
-            }
-            return _stars[index];
-        }
+        public record StellariumData(
+            [property: JsonPropertyName("constellations")] List<StellariumConstellation> Constellations
+        );
+
+        /// <summary>
+        /// DTO representing individual constellation line definitions in Stellarium JSON format.
+        /// </summary>
+        public record StellariumConstellation(
+            [property: JsonPropertyName("id")] string Id,
+            [property: JsonPropertyName("lines")] List<List<int>> Lines,
+            [property: JsonPropertyName("common_name")] CommonName CommonName
+        );
+
+        /// <summary>
+        /// DTO representing common naming attributes for Stellarium constellations.
+        /// </summary>
+        public record CommonName(
+            [property: JsonPropertyName("english")] string English,
+            [property: JsonPropertyName("native")] string Native
+        );
+
+        #endregion
     }
 }

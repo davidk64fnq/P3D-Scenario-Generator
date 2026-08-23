@@ -31,6 +31,31 @@ namespace P3D_Scenario_Generator.Services
         }
 
         /// <summary>
+        /// Replaces the value of an object literal property (e.g., azTrueDeg: 0,)
+        /// preserving original formatting and trailing commas.
+        /// </summary>
+        internal static string ReplaceJsObjectProperty(string jsContent, string propName, string rawValue)
+        {
+            string pattern = $@"(^|\r?\n|\r)(\s*){Regex.Escape(propName)}\s*:\s*[^,\r\n]+([,\r\n])";
+            string replacement = $"$1$2{propName}: {rawValue}$3";
+
+            return Regex.Replace(jsContent, pattern, replacement, RegexOptions.Multiline);
+        }
+
+        /// <summary>
+        /// Replaces a nested object literal property (e.g., position: { latitude: 0, longitude: 0 })
+        /// preserving indentation and trailing syntax.
+        /// </summary>
+        internal static string ReplaceJsObjectBlock(string jsContent, string propName, string rawJson)
+        {
+            // Matches propName: { ... } across single or multiple lines
+            string pattern = $@"(^|\r?\n|\r)(\s*){Regex.Escape(propName)}\s*:\s*\{{[\s\S]*?\}}([,\r\n])";
+            string replacement = $"$1$2{propName}: {rawJson}$3";
+
+            return Regex.Replace(jsContent, pattern, replacement, RegexOptions.Multiline);
+        }
+
+        /// <summary>
         /// Orchestrates the workflow of reading an embedded resource, applying string or regex 
         /// replacements, executing optional custom logic, and writing the result to a physical file.
         /// </summary>

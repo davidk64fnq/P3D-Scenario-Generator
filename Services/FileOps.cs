@@ -244,6 +244,39 @@ namespace P3D_Scenario_Generator.Services
             }
         }
 
+        /// <summary>
+        /// A helper method to copy a single file from an embedded resource to a destination path.
+        /// </summary>
+        /// <param name="resourceName">The name of the embedded resource.</param>
+        /// <param name="destinationPath">The full path to the destination file.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns><see langword="true"/> if the file was copied successfully; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> CopyResourceFileAsync(string resourceName, string destinationPath, IProgress<string> progressReporter = null)
+        {
+            var (success, resourceStream) = await TryGetResourceStreamAsync(resourceName, progressReporter);
+            if (!success)
+            {
+                string errorMessage = $"FileOpsAsync.CopyResourceFileAsync: Failed to get resource stream for '{resourceName}'.";
+                await _logger.ErrorAsync(errorMessage);
+                progressReporter?.Report($"ERROR: {errorMessage}");
+                return false;
+            }
+
+            using (resourceStream)
+            using (FileStream outputFileStream = new(destinationPath, FileMode.Create))
+            {
+                if (!await TryCopyStreamToStreamAsync(resourceStream, outputFileStream, progressReporter))
+                {
+                    string errorMessage = $"FileOpsAsync.CopyResourceFileAsync: Failed to copy resource '{resourceName}' to '{destinationPath}'.";
+                    await _logger.ErrorAsync(errorMessage);
+                    progressReporter?.Report($"ERROR: {errorMessage}");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         #endregion
 
         #region Manipulation Operations

@@ -82,8 +82,23 @@ function clampLongitude(angleRad) {
 // #region Time and Celestial Mechanics
 
 /**
+ * @summary Safely attempts to fetch a simulation variable. Prevents crashes if C# injection is delayed.
+ */
+function safeVarGet(varName, unit) {
+    try {
+        if (typeof VarGet === 'function') {
+            let val = VarGet(varName, unit);
+            return (val === undefined || val === null || isNaN(val)) ? 0 : val;
+        }
+    } catch (e) {
+        // Silent fail if binding isn't ready
+    }
+    return 0;
+}
+
+/**
  * @summary Calculates the number of days elapsed since the J2000.0 epoch (January 1, 2000, 12:00 UT).
- * @description Relies on external global arrays (daysToBeginMth) and the VarGet function to fetch Zulu time components.
+ * @description Relies on external global arrays (daysToBeginMth) and the safeVarGet function to fetch Zulu time components.
  * @param {number} zuluTime - Current Universal Time in seconds since midnight (0-86399).
  * @returns {number} The Julian Day offset relative to J2000.0.
  */
@@ -93,9 +108,9 @@ function getJ2000Day(zuluTime) {
 	const YEAR_EPOCH = 2000;
 
 	// 1. Fetch current date components
-	const zuluDayOfMonth = VarGet("E:ZULU DAY OF MONTH", "Number");
-	const zuluMonth = VarGet("E:ZULU MONTH OF YEAR", "Number");
-	const zuluYear = VarGet("E:ZULU YEAR", "Number");
+	const zuluDayOfMonth = safeVarGet("E:ZULU DAY OF MONTH", "Number");
+	const zuluMonth = safeVarGet("E:ZULU MONTH OF YEAR", "Number");
+	const zuluYear = safeVarGet("E:ZULU YEAR", "Number");
 
 	// 2. Calculate time fraction of the current day
 	const dayFraction = zuluTime / SECONDS_PER_DAY;
@@ -134,7 +149,7 @@ function getLocalSiderialTime(longitude) {
 	const SECONDS_PER_HOUR = 3600;  // Conversion factor
 
 	// 1. Fetch time data and calculate required components
-	const zuluTime = VarGet("E:ZULU TIME", "Seconds");
+	const zuluTime = safeVarGet("E:ZULU TIME", "Seconds");
 	const j2000Days = getJ2000Day(zuluTime);
 	const UT_hours = zuluTime / SECONDS_PER_HOUR;
 
@@ -209,7 +224,8 @@ function calculateCatalogAltAz(position, starCoords) {
 		const cosDec = Math.cos(coords.DEC);
 
 		const sinAlt = sinLat * sinDec + cosLat * cosDec * Math.cos(lhaRad);
-		const altRad = Math.asin(sinAlt);
+		// Clamp between -1 and 1 before getting the arc sine
+		const altRad = Math.asin(Math.max(-1, Math.min(1, sinAlt)));
 		const altDeg = toDegrees(altRad);
 
 		const cosAlt = Math.cos(altRad);
@@ -351,78 +367,6 @@ function getAZ(DEC, ALT, LAT, HA) {
 	}
 
 	return AZ_rad;
-}
-
-/**
- * @summary Calculates the local Altitude (ALT) and Azimuth (AZ) for all stars and filters those visible within the sextant's FOV.
- * @description Visible stars' data, along with their pixel coordinates, are collected into the localPtsList array.
- * @param {CoordPair} observerPosition - Observer's position {latitude, longitude} in Radians.
- * @param {SextantView} viewState - The current state of the sextant view configuration (all in DEGREES).
- * @param {Array<{RA: number, DEC: number}>} starCelestialCoords - The fixed celestial coordinates for all stars. // NEW PARAM
- * @returns {Array<VisibleStarData>} The localPtsList array containing star data and pixel positions (now objects). 
- */
-function calcLocalStarPositions(observerPosition, viewState, starCelestialCoords) {
-
-	const latitude = observerPosition.latitude;
-	const longitude = observerPosition.longitude;
-
-	// Alias view state properties for cleaner calculations
-	const fovH = viewState.fovH;
-	const fovV = viewState.fovV;
-	const sexAZ = viewState.azTrueDeg; 
-	const sexALT = viewState.altDeg;   
-
-	// Define constants
-	const ZENITH_ALTITUDE_THRESHOLD_DEG = 85;
-
-	/** @type {Array<VisibleStarData>} */
-	const localPtsList = [];
-
-	// Calculate Local Sidereal Time (LST)
-	const LST = getLocalSiderialTime(longitude);
-
-	for (let starIndex = 0; starIndex < starCatalog.length; starIndex++) {
-
-		// 1. Calculate the raw Azimuth difference and normalize to [-180, 180]
-		let dAz = AZ_Deg - sexAZ;
-		if (dAz > 180) dAz -= 360;
-		if (dAz < -180) dAz += 360;
-
-		// 2. PROJECT the azimuth difference onto the "Sky Angle" 
-		// This is the critical step: dAz gets smaller as ALT gets higher.
-		const dAzSky = dAz * Math.cos(ALT_Rad); 
-
-		// 3. Horizontal Visibility Check
-		// Instead of comparing raw AZ_Deg, compare the projected dAzSky
-		const halfFovH = fovH / 2;
-		let isHorizontallyVisible = (Math.abs(dAzSky) <= halfFovH);
-
-		// 4. Vertical Visibility Check (Centered logic)
-		const halfFovV = fovV / 2;
-		const isVerticallyVisible = (ALT_Deg >= sexALT - halfFovV) && (ALT_Deg <= sexALT + halfFovV);
-
-		// 5. Special case: Near-Zenith stars are always horizontally visible 
-		if (ALT_Deg >= ZENITH_ALTITUDE_THRESHOLD_DEG) {
-			isHorizontallyVisible = true;
-		}
-
-		if (isVerticallyVisible && isHorizontallyVisible) {
-			// 6. Calculate Pixel Positions using the SAME dAzSky math used for filtering
-			const centerX = windowW / 2;
-			const centerY = windowH / 2;
-
-			// Horizontal: Center + ratio of dAzSky to total FOVH
-			const left = centerX + (dAzSky / fovH) * windowW;
-
-			// Vertical: Center - offset from center altitude
-			const top = centerY - ((ALT_Deg - sexALT) / fovV) * windowH;
-
-			/** @type {PixelPosition} */
-			const starPixelPosition = { left: Math.round(left), top: Math.round(top) };
-			updatePtsList(localPtsList, starIndex, starPixelPosition);
-		}
-	}
-	return localPtsList;
 }
 
 // #endregion Horizontal Coordinate Calculations (Altitude & Azimuth)

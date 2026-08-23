@@ -366,6 +366,18 @@ namespace P3D_Scenario_Generator.Runways
                             case "Lon":
                                 newRunway.ThresholdStartLon = reader.ReadElementContentAsDouble();
                                 break;
+                            case "EdgeLights":
+                            case "CenterLights":
+                            case "ApproachLights":
+                            case "EndLights":
+                                string lightValue = reader.ReadElementContentAsString();
+                                // If the value is anything other than "NONE" or "FALSE", the runway has lights!
+                                if (!string.Equals(lightValue, "NONE", StringComparison.OrdinalIgnoreCase) &&
+                                    !string.Equals(lightValue, "FALSE", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    newRunway.HasLights = true;
+                                }
+                                break;
                             default:
                                 reader.Skip();
                                 break;

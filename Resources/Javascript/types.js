@@ -86,7 +86,6 @@
  * @typedef {object} InputControl
  * @property {number} azimuth - Control variable for changing the sextant azimuth.
  * @property {number} altitude - Control variable for changing the sextant altitude.
- * @property {number} fieldOfView - Control variable for changing the field of view.
  */
 
 /**

@@ -50,7 +50,7 @@ namespace P3D_Scenario_Generator.Services
                 { "Pegasus", "Pegasus_IAU.svg" },
                 { "Perseus", "Perseus_IAU.svg" },
                 { "Phoenix", "Phoenix_IAU.svg" },
-                { "Picis Austrinus", "Piscis_Austrinus_IAU.svg" },
+                { "Piscis Austrinus", "Piscis_Austrinus_IAU.svg" },
                 { "Sagittarius", "Sagittarius_IAU.svg" },
                 { "Scorpius", "Scorpius_IAU.svg" },
                 { "Taurus", "Taurus_IAU.svg" },

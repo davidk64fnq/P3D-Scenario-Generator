@@ -48,9 +48,14 @@ const constellationLines = null;
 const destCoord = null;
 
 /** 
+ * @type {CoordPair} startCoord - The initial coordinate pair.
+ */
+let startCoord = null;
+
+/** 
  * @type {CoordPair} currentDRCoord - The current Dead Reckoning coordinate pair (Latitude and Longitude, both in radians), initialised to destination.
  */
-let currentDRCoord;
+let currentDRCoord = { latitude: 0, longitude: 0 };
 
 /** 
  * @type {string} startDate - The local date selected when scenario generated (mm/dd/yyyy).
@@ -148,8 +153,7 @@ const sextantView = {
  */
 const inputControl = {
 	azimuth: 0,
-	altitude: 0,
-	fieldOfView: 0
+	altitude: 0
 };
 
 // #endregion
@@ -176,7 +180,7 @@ let globalStarAltAzData = [];
  * @type {Array<{RA: number, DEC: number}>} starCelestialCoords - Fixed celestial coordinates (RA, DEC in Radians) 
  * for all stars. Calculated once at startup.
  */
-const starCelestialCoords = precalculateStarCoordinates();
+let starCelestialCoords = [];
 
 /**
  * @type {SightingLOPData[]} 
@@ -259,7 +263,15 @@ if (!plotCanvas) {
 	displayStatusMessage('ERROR', 'Failed to get 2D rendering plotContext for plotCanvas!');
 }
 
-// --- IMAGE LOADING ---
+// --- IMAGE LOADING AND FALLBACK ---
+
+let loopsInitialized = false;
+
+function safeInitLoops() {
+    if (loopsInitialized) return;
+    loopsInitialized = true;
+    initializeApplicationLoops();
+}
 
 // 5. Declare plotBgImage as const, initialized directly
 const plotBgImage = new Image();
@@ -267,19 +279,20 @@ const plotBgImage = new Image();
 // 1. Image Error Handler
 plotBgImage.onerror = () => {
 	displayStatusMessage('ERROR', "CRITICAL: Failed to load plotImage.jpg. Plotting tab will be blank.");
-
-	initializeApplicationLoops();
-	displayStatusMessage('INFO', 'Application started (with image error).');
+	safeInitLoops();
 };
 
 // 2. Image Success Handler
 plotBgImage.onload = () => {
-	displayStatusMessage('INFO', "Plotting background image loaded successfully. Starting application loops.");
-	initializeApplicationLoops();
+	displayStatusMessage('INFO', "Plotting background image loaded successfully.");
+	safeInitLoops();
 };
 
 // 3. Start Loading
 plotBgImage.src = "plotImage.jpg";
+
+// FALLBACK: If CEF drops the local file load events, force start anyway after 1.5 seconds.
+setTimeout(safeInitLoops, 1500);
 
 // 4. Loop Initialization Function
 
@@ -287,31 +300,44 @@ plotBgImage.src = "plotImage.jpg";
  * @summary Starts the stable Two-Tier Update System (rAF for fast display, background timer for slow calc).
  */
 function initializeApplicationLoops() {
-	// 1. Calculate star Alt/Az immediately so Frame 1 has data ready
-	// (This also triggers the recurring 5-second setTimeout loop inside slowStarUpdate)
-	slowStarUpdate();
-
-	// 2. Start the Fast Display Loop (60 FPS)
+	// 1. Start the Fast Display Loop FIRST. This guarantees that even if
+    // slowStarUpdate throws an error, the render loop continues and doesn't freeze the canvas.
 	window.requestAnimationFrame(function (timestamp) {
 		update(timestamp, planeStatus);
 	});
-}
 
-// #endregion
+    // 2. Calculate star Alt/Az immediately
+    try {
+	    slowStarUpdate();
+    } catch(e) {
+        console.error("Initial slow update failed:", e);
+        setTimeout(slowStarUpdate, SLOW_UPDATE_MS);
+    }
+}
 
 /**
  * Tier 1: Slow Loop (Heavy Calculation)
  * @summary Runs the full star calculation infrequently (e.g., every 5 seconds).
  */
 function slowStarUpdate() {
-	// 1. Get the latest stable position from the fast loop's update.
-	const currentPosition = planeStatus.position;
+    try {
+        // RACE CONDITION FIX: 
+        // If coords are empty, but C# has finally injected the catalog, calculate them now!
+        if (starCelestialCoords.length === 0 && starCatalog && starCatalog.length > 0) {
+            starCelestialCoords = precalculateStarCoordinates();
+        }
 
-	// 2. RUN THE HEAVY CALCULATION (This is the high-CPU work that caused the crash)
-	globalStarAltAzData = calculateCatalogAltAz(planeStatus.position, starCelestialCoords);
-
-	// 3. Schedule the next heavy calculation
-	setTimeout(slowStarUpdate, SLOW_UPDATE_MS);
+        // Only attempt the heavy AltAz math if we successfully generated the coordinates
+        if (starCelestialCoords.length > 0) {
+            const currentPosition = planeStatus.position;
+            globalStarAltAzData = calculateCatalogAltAz(planeStatus.position, starCelestialCoords);
+        }
+    } catch(e) {
+        // Silently catch errors so it doesn't break the rendering loop
+    }
+    
+    // Schedule the next heavy calculation
+    setTimeout(slowStarUpdate, SLOW_UPDATE_MS);
 }
 
 /**
@@ -323,44 +349,48 @@ function slowStarUpdate() {
  * sextant view, sight reduction data, and navigation plots.
  */
 function update(timestamp, planeStatus) {
-	// --- 1. Update Plane Status ---
-	planeStatus.headingTrueRad = VarGet("A:PLANE HEADING DEGREES TRUE", "Radians");
-	planeStatus.magVarRad = toRadians(VarGet("A:MAGVAR", "Degrees"));
-	planeStatus.position.longitude = VarGet("A:PLANE LONGITUDE", "Radians");
-	planeStatus.position.latitude = VarGet("A:PLANE LATITUDE", "Radians");
-	planeStatus.speedKnots = VarGet("A:GROUND VELOCITY", "Number");
+	try {
+		// --- 1. Update Plane Status ---
+		planeStatus.headingTrueRad = safeVarGet("A:PLANE HEADING DEGREES TRUE", "Radians");
+		planeStatus.magVarRad = toRadians(safeVarGet("A:MAGVAR", "Degrees"));
+		planeStatus.position.longitude = safeVarGet("A:PLANE LONGITUDE", "Radians");
+		planeStatus.position.latitude = safeVarGet("A:PLANE LATITUDE", "Radians");
+		planeStatus.speedKnots = safeVarGet("A:GROUND VELOCITY", "Number");
 
-	// --- 2. Dead Reckoning ---
-	if (fixHistory.length >= 1) {
-		updateDeadReckoning(planeStatus, timestamp);
-	}
+		// --- 2. Dead Reckoning ---
+		if (fixHistory.length >= 1) {
+			updateDeadReckoning(planeStatus, timestamp);
+		}
 
-	// --- 3. Input Handling ---
-	handleSextantInput(sextantView, inputControl);
+		// --- 3. Input Handling ---
+		handleSextantInput(sextantView, inputControl);
 
-	// --- 4. Project cached star angles to current frame screen coordinates ---
-	const visibleStarsData = projectVisibleStars(globalStarAltAzData, sextantView);
-	globalVisibleStarsData = visibleStarsData; // Keep global updated for sight taking / tables
+		// --- 4. Project cached star angles to current frame screen coordinates ---
+		const visibleStarsData = projectVisibleStars(globalStarAltAzData, sextantView);
+		globalVisibleStarsData = visibleStarsData; // Keep global updated for sight taking / tables
 
-	// Clear star map from last update
-	starContext.fillStyle = "black";
-	starContext.fillRect(0, 0, windowW, windowH);
+		// Clear star map from last update
+		starContext.fillStyle = "black";
+		starContext.fillRect(0, 0, windowW, windowH);
 
-	// --- 5. Display Updates ---
-	// Refresh information lines
-	setInfoLine(starContext, sextantView);
-	setHoLine(starContext, sextantView); 
-	setCrosshairs(starContext, windowW, windowH);
+		// --- 5. Display Updates ---
+		// Refresh information lines
+		setInfoLine(starContext, sextantView);
+		setHoLine(starContext, sextantView); 
+		setCrosshairs(starContext, windowW, windowH);
 
-	// Plot local position of stars and optionally information labels and lines
-	setConstellationLines(starContext, starDisplayConfig, visibleStarsData);
-	setConstellationLabels(starContext, starDisplayConfig, visibleStarsData);
-	setStarIcons(starContext, visibleStarsData)
-	setStarLabels(starContext, starDisplayConfig, visibleStarsData);
+		// Plot local position of stars and optionally information labels and lines
+		setConstellationLines(starContext, starDisplayConfig, visibleStarsData);
+		setConstellationLabels(starContext, starDisplayConfig, visibleStarsData);
+		setStarIcons(starContext, visibleStarsData)
+		setStarLabels(starContext, starDisplayConfig, visibleStarsData);
 
-	// --- 6. Tab Updates ---
-	updateSightReductionTab();
-	updatePlotTab(fixHistory, plotDisplayConfig);
+		// --- 6. Tab Updates ---
+		updateSightReductionTab();
+		updatePlotTab(fixHistory, plotDisplayConfig);
+	} catch (e) {
+        console.error("Update loop exception:", e);
+    }
 
 	// --- 7. Restart the loop (rAF) ---
 	// FIX: Use an anonymous function or bind to ensure planeStatus is passed 
@@ -372,6 +402,8 @@ function update(timestamp, planeStatus) {
 	//document.getElementById('debug1').innerHTML = "";
 	//document.getElementById('debug2').innerHTML = "";
 }
+
+// #endregion
 
 // #region Information Line functions
 
@@ -448,55 +480,43 @@ function setHoLine(starContext, viewState) {
 
 /**
  * @summary Draws lines between stars to visualize constellations if the drawConstellations flag is set.
- * @description Uses the global 'constellationLines' array and finds the coordinates of connected stars 
- * in 'visibleStarsData' (VisibleStarData[]) using an optimized lookup map.
+ * @description Uses the global 'constellationLines' array and finds coordinates of connected stars 
+ * in 'visibleStarsData' using an optimized lookup map.
  * @param {CanvasRenderingContext2D} starContext - The 2D rendering context for the canvas.
  * @param {StarDisplayConfig} displayConfig - The object containing display toggles.
  * @param {Array<VisibleStarData>} visibleStarsData - The list of stars to draw.
- * */
+ */
 function setConstellationLines(starContext, displayConfig, visibleStarsData) {
-	if (displayConfig.drawConstellations == 1) {
-		starContext.strokeStyle = "purple";
+	if (!displayConfig || displayConfig.drawConstellations !== 1) {
+		return;
+	}
 
-		// Create a map for O(1) lookups: Map<Star ID, {left, top}>
-		const starCoordsMap = new Map();
+	// Map catalog IDs directly to star object references (zero heap allocation)
+	const starCoordsMap = new Map();
+	for (let i = 0; i < visibleStarsData.length; i++) {
+		const star = visibleStarsData[i];
+		starCoordsMap.set(star.starCatalogId, star);
+	}
 
-		// Refactored Map Creation: Use object property names 
-		// visibleStarsData is assumed to be globally accessible
-		for (const starData of visibleStarsData) {
-			/** @type {VisibleStarData} */
-			const star = starData;
+	starContext.strokeStyle = "purple";
+	starContext.lineWidth = 1;
 
-			starCoordsMap.set(star.starCatalogId, {
-				left: star.leftPixel,
-				top: star.topPixel
-			});
-		}
+	// Begin path once to batch all segments into a single draw call
+	starContext.beginPath();
 
-		// constellationLines is assumed to be globally accessible
-		for (let linePt = 0; linePt < constellationLines.length; linePt += 2) {
-			const startId = constellationLines[linePt];
-			const finishId = constellationLines[linePt + 1];
+	for (let linePt = 0; linePt < constellationLines.length; linePt += 2) {
+		const startStar = starCoordsMap.get(constellationLines[linePt]);
+		const finishStar = starCoordsMap.get(constellationLines[linePt + 1]);
 
-			const startCoords = starCoordsMap.get(startId);
-			const finishCoords = starCoordsMap.get(finishId);
-
-			if (startCoords && finishCoords) {
-				const left1 = startCoords.left;
-				const top1 = startCoords.top;
-
-				const left2 = finishCoords.left;
-				const top2 = finishCoords.top;
-
-				starContext.beginPath();
-				starContext.moveTo(left1, top1);
-				starContext.lineTo(left2, top2);
-				starContext.stroke();
-			}
+		if (startStar && finishStar) {
+			starContext.moveTo(startStar.leftPixel, startStar.topPixel);
+			starContext.lineTo(finishStar.leftPixel, finishStar.topPixel);
 		}
 	}
-}
 
+	// Render all lines in one GPU pass
+	starContext.stroke();
+}
 
 /**
  * Draws star icons using filled circles centered on exact pixel coordinates.
@@ -504,9 +524,16 @@ function setConstellationLines(starContext, displayConfig, visibleStarsData) {
  * @param {Array<VisibleStarData>} visibleStarsData
  */
 function setStarIcons(starContext, visibleStarsData) {
-	starContext.fillStyle = "yellow"; // Or "black" depending on map theme
+	if (!visibleStarsData || visibleStarsData.length === 0) return;
 
-	for (const starData of visibleStarsData) {
+	starContext.fillStyle = "yellow"; // Or "black" depending on map theme
+	const TWO_PI = Math.PI * 2;
+
+	// Begin a single path to batch all star circles
+	starContext.beginPath();
+
+	for (let i = 0; i < visibleStarsData.length; i++) {
+		const starData = visibleStarsData[i];
 		const mag = starData.visMag;
 		const x = starData.leftPixel;
 		const y = starData.topPixel;
@@ -514,10 +541,13 @@ function setStarIcons(starContext, visibleStarsData) {
 		// Inverse linear scale: Mag -1.5 ~ 5.2px radius | Mag 4.0 ~ 1.2px radius
 		const radius = Math.max(0.8, 4.3 - (mag * 0.75));
 
-		starContext.beginPath();
-		starContext.arc(x, y, radius, 0, 2 * Math.PI);
-		starContext.fill();
+		// Move to the perimeter start point to create independent circular sub-paths
+		starContext.moveTo(x + radius, y);
+		starContext.arc(x, y, radius, 0, TWO_PI);
 	}
+
+	// Fill all stars in one GPU draw pass
+	starContext.fill();
 }
 
 /**
@@ -526,36 +556,29 @@ function setStarIcons(starContext, visibleStarsData) {
  * @param {CanvasRenderingContext2D} starContext - The 2D rendering context for the canvas.
  * @param {StarDisplayConfig} displayConfig - The object containing display toggles.
  * @param {Array<VisibleStarData>} visibleStarsData - The list of stars to draw.
- * */
+ */
 function setStarLabels(starContext, displayConfig, visibleStarsData) {
-	if (displayConfig.labelStars == 1) {
-		starContext.fillStyle = "red";
+	if (!displayConfig || displayConfig.labelStars !== 1 || !visibleStarsData) {
+		return;
+	}
 
-		// visibleStarsData is assumed to be globally accessible
-		for (const starData of /** @type {VisibleStarData[]} */ (visibleStarsData)) {
+	// Set canvas state once outside the loop
+	starContext.fillStyle = "red";
+	starContext.font = "11px sans-serif";
+	starContext.textAlign = "left";
+	starContext.textBaseline = "bottom";
 
-			const left = starData.leftPixel;
-			const top = starData.topPixel;
+	for (let i = 0; i < visibleStarsData.length; i++) {
+		const starData = visibleStarsData[i];
 
-			const curStarSHAIndex = starData.shaIndex;
-			const curStarName = starData.navName;
-			const curBayer = starData.bayerDesignation;
+		const shaIndex = starData.shaIndex;
+		const starLabel = (shaIndex && shaIndex.length > 0)
+			? `[${shaIndex}] ${starData.navName}`
+			: starData.bayerDesignation;
 
-			/** @type {string} */
-			let starLabel;
-
-			// Logic: Check if the SHA Index string is non-empty (i.e., it is a recognized navigational star).
-			if (curStarSHAIndex.length > 0) {
-				// Use SHA Index and Nav Name for bright, important stars
-				starLabel = "[" + curStarSHAIndex + "] " + curStarName;
-			}
-			else {
-				// Use Bayer Designation for fainter/non-navigational stars
-				starLabel = curBayer;
-			}
-
-			// Draw the label with a slight offset
-			starContext.fillText(starLabel, left + 5, top - 5);
+		// Skip draw call if no label is present
+		if (starLabel) {
+			starContext.fillText(starLabel, starData.leftPixel + 5, starData.topPixel - 5);
 		}
 	}
 }
@@ -566,28 +589,26 @@ function setStarLabels(starContext, displayConfig, visibleStarsData) {
  * @param {CanvasRenderingContext2D} starContext - The 2D rendering context for the canvas.
  * @param {StarDisplayConfig} displayConfig - The object containing display toggles.
  * @param {Array<VisibleStarData>} visibleStarsData - The list of stars to draw.
- * */
+ */
 function setConstellationLabels(starContext, displayConfig, visibleStarsData) {
-	if (displayConfig.labelConstellations == 1) {
-		starContext.fillStyle = "red";
+	if (!displayConfig || displayConfig.labelConstellations !== 1 || !visibleStarsData) {
+		return;
+	}
 
-		// visibleStarsData is assumed to be globally accessible
-		for (const starData of /** @type {VisibleStarData[]} */ (visibleStarsData)) {
+	// Set canvas text state once outside the loop
+	starContext.fillStyle = "red";
+	starContext.font = "11px sans-serif";
+	starContext.textAlign = "left";
+	starContext.textBaseline = "bottom";
 
-			// Use the descriptive property names
-			const left = starData.leftPixel;
-			const top = starData.topPixel;
+	for (let i = 0; i < visibleStarsData.length; i++) {
+		const starData = visibleStarsData[i];
+		const shaIndex = starData.shaIndex;
+		const constellation = starData.constellationName;
 
-			// The SHA index property is used for filtering bright/important stars
-			const curStarSHAIndex = starData.shaIndex;
-
-			// The full constellation name property
-			const curConstellation = starData.constellationName;
-
-			// Logic: Only display the constellation name next to bright/navigational stars.
-			if (curStarSHAIndex.length > 0) {
-				starContext.fillText(curConstellation, left + 5, top - 5);
-			}
+		// Only render if it's a navigational star with a valid constellation name
+		if (shaIndex && shaIndex.length > 0 && constellation) {
+			starContext.fillText(constellation, starData.leftPixel + 5, starData.topPixel - 5);
 		}
 	}
 }
@@ -643,11 +664,23 @@ function setCrosshairs(ctx, width, height) {
  */
 function precalculateStarCoordinates() {
 	/** @type {Array<{RA: number, DEC: number}>} */
-	const calculatedCoords = []; // 
+	const calculatedCoords = []; // // Safety check in case C# injection failed
+	if (!starCatalog || !Array.isArray(starCatalog)) {
+        console.error("starCatalog is null! C# injection failed.");
+        return calculatedCoords; 
+    }
 
 	// *** REFACTORED: Iterate over the consolidated starCatalog array ***
 	for (let i = 0; i < starCatalog.length; i++) {
 		const star = starCatalog[i];
+
+		// ADD SAFEFALLS: In case the injected JSON is missing properties
+        const rah = star.RaH || 0;
+        const ram = star.RaM || 0;
+        const ras = star.RaS || 0;
+        const decd = star.DecD || 0;
+        const decm = star.DecM || 0;
+        const decs = star.DecS || 0;
 
 		// Calculate RA in Radians
 		const RAhr = hmsToDecimal(star.RaH, star.RaM, star.RaS);
@@ -668,7 +701,7 @@ function precalculateStarCoordinates() {
  * @description This function performs a small-step calculation to advance the current DR position 
  * from the last known point using the actual time elapsed between rAF frames.
  * @global
- * @fires VarGet
+ * @fires safeVarGet
  * @param {PlaneStatus} planeStatus - The plane's current navigational state, used for speed and heading. 
  * @param {number} currentTimeStamp - The timestamp provided by requestAnimationFrame (in ms). 
  * @modifies {CoordPair} currentDRCoord The current Dead Reckoning coordinate pair (in Radians).
@@ -734,10 +767,10 @@ function populateSightDataRow(curIndex, starArray) {
 	const DecArray = /** @type {HTMLCollectionOf<HTMLElement>} */(document.getElementsByClassName("Dec"));
 
 	// --- 1. Get Time/Date Data ---
-	const dayOfMonth = VarGet("E:ZULU DAY OF MONTH", "Number");
-	const monthOfYear = VarGet("E:ZULU MONTH OF YEAR", "Number");
-	const year = VarGet("E:ZULU YEAR", "Number");
-	const time = VarGet("E:ZULU TIME", "Seconds");
+	const dayOfMonth = safeVarGet("E:ZULU DAY OF MONTH", "Number");
+	const monthOfYear = safeVarGet("E:ZULU MONTH OF YEAR", "Number");
+	const year = safeVarGet("E:ZULU YEAR", "Number");
+	const time = safeVarGet("E:ZULU TIME", "Seconds");
 	const currentDate = monthOfYear + "/" + dayOfMonth + "/" + year;
 	const dayIndexOffset = getElapsedDays(startDate, currentDate);
 	const hour = Math.floor(time / 3600);
@@ -782,7 +815,7 @@ function populateSightDataRow(curIndex, starArray) {
 		// Handle case where star name is not found (shouldn't happen if UI is populated correctly)
 		SHAincArray[curIndex].innerHTML = "---";
 		DecArray[curIndex].innerHTML = "---";
-		// Continue, but starSHA will be 0 below, leading to incorrect GHA total
+		return "No data";
 	}
 
 	// Get the consolidated star data object
@@ -831,11 +864,15 @@ function updateSightReductionTab() {
 
 	for (let index = 0; index < HsArray.length; index++) {
 
-		// Check if a star is selected AND the Hs field is empty
-		if ((starArray[index].options[0].selected == false) && (HsArray[index].innerHTML == "")) {
-
+		// Verify dropdown has options populated before checking selected state
+		if (
+			starArray[index] &&
+			starArray[index].options &&
+			starArray[index].options.length > 0 &&
+			starArray[index].options[0].selected === false && 
+			HsArray[index].innerHTML === ""
+		) {
 			curIndex = index;
-
 			populateSightDataRow(curIndex, starArray);
 		}
 	}
@@ -1163,6 +1200,7 @@ function updatePlotTab(fixHistory, plotDisplayConfig) {// 1. Context and Canvas 
             plotContext.lineTo(fixPixel.left, fixPixel.top + 4);
             
             plotContext.stroke();
+		}
 		else {
 			// Only show warning for the most recent fix if it's the one off-screen
 			// Or keep it simple and show a general warning
@@ -1571,7 +1609,7 @@ function getElapsedDays(startDate, currentdate) {
  * @summary Processes user input flags to update the sextant view state (viewState).
  * This function consolidates all view manipulation logic.
  * @param {SextantView} viewState - The mutable state object for the sextant view.
- * @param {InputControl} inputFlags - The object containing input control flags (azimuth, altitude, fov).
+ * @param {InputControl} inputFlags - The object containing input control flags (azimuth, altitude).
  * @returns {void}
  */
 function handleSextantInput(viewState, inputFlags) {
@@ -1579,7 +1617,6 @@ function handleSextantInput(viewState, inputFlags) {
 	// Alias movement deltas from the inputFlags object
 	const deltaAZ = inputFlags.azimuth;
 	const deltaALT = inputFlags.altitude;
-	const deltaFOV = inputFlags.fieldOfView;
 
 	// AZIMUTH (Horizontal Rotation)
 	if (deltaAZ !== 0) {
@@ -1599,12 +1636,6 @@ function handleSextantInput(viewState, inputFlags) {
 		if (viewState.altDeg > (90 - viewState.fovV)) {
 			viewState.altDeg = 90 - viewState.fovV;
 		}
-	}
-
-	// FIELD OF VIEW (FOV)
-	if (deltaFOV !== 0) {
-		// adjustFOV must be updated to accept the delta and the viewState
-		adjustFOV(deltaFOV, viewState);
 	}
 }
 
