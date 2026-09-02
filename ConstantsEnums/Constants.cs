@@ -228,6 +228,8 @@ namespace P3D_Scenario_Generator.ConstantsEnums
 
         public const int SextantWindowHeight = 755;
 
+        public const string RandomText = "Random";
+
         #endregion
 
         #region Form layout constants

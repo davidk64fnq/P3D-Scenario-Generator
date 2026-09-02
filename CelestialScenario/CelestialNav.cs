@@ -29,7 +29,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-
         private readonly AlmanacDataSource _almanacDataSource = almanacDataSource ?? throw new ArgumentNullException(nameof(almanacDataSource));
         private readonly StarDataManager _starDataManager = starDataManager ?? throw new ArgumentNullException(nameof(starDataManager));
         private readonly SextantViewGenerator _sextantViewGenerator = sextantViewGenerator ?? throw new ArgumentNullException(nameof(sextantViewGenerator));
@@ -43,19 +42,54 @@ namespace P3D_Scenario_Generator.CelestialScenario
             ArgumentNullException.ThrowIfNull(formData);
             ArgumentNullException.ThrowIfNull(runwayManager);
 
-            var runwayPair = await runwayManager.Searcher.GetRandomRunwayPairAsync(
-            formData.CelestialMinDistance,
-            formData.CelestialMaxDistance,
-            formData);
-
-            if (runwayPair == null)
+            // Case 1: Both runways are random - find a pair from scratch
+            if (formData.CelestialStartRunway == null && formData.CelestialDestinationRunway == null)
             {
-                await _logger.ErrorAsync("Failed to find a valid Departure/Destination airport pair for Celestial Navigation.");
-                _progressReporter.Report("ERROR: Could not find valid airports matching filters and distance criteria.");
-                return false;
+                var runwayPair = await runwayManager.Searcher.GetRandomRunwayPairAsync(
+                                    formData.CelestialMinDistance,
+                                    formData.CelestialMaxDistance,
+                                    formData);
+
+                if (runwayPair == null)
+                {
+                    await _logger.ErrorAsync("Failed to find a valid Departure/Destination airport pair for Celestial Navigation.");
+                    _progressReporter.Report("ERROR: Could not find valid airports matching filters and distance criteria.");
+                    return false;
+                }
+
+                formData.StartRunway = runwayPair.Value.Departure;
+                formData.DestinationRunway = runwayPair.Value.Destination;
             }
-            formData.StartRunway = runwayPair.Value.Departure;
-            formData.DestinationRunway = runwayPair.Value.Destination;
+            // Case 2: One runway is fixed, find a random match for the missing end
+            else if (formData.CelestialStartRunway == null || formData.CelestialDestinationRunway == null)
+            {
+                bool isStartNull = formData.CelestialStartRunway == null;
+                var fixedRunway = isStartNull ? formData.CelestialDestinationRunway : formData.CelestialStartRunway;
+                string targetType = isStartNull ? "Departure" : "Destination";
+
+                var foundRunway = await runwayManager.Searcher.FindNearbyRunwayAsync(
+                                    fixedRunway.AirportLat,
+                                    fixedRunway.AirportLon,
+                                    formData.CelestialMinDistance,
+                                    formData.CelestialMaxDistance,
+                                    formData);
+
+                if (foundRunway == null)
+                {
+                    await _logger.ErrorAsync($"Failed to find a valid {targetType} airport for Celestial Navigation.");
+                    _progressReporter.Report($"ERROR: Could not find valid {targetType} airport matching filters and distance criteria.");
+                    return false;
+                }
+
+                formData.StartRunway = isStartNull ? foundRunway : formData.CelestialStartRunway;
+                formData.DestinationRunway = isStartNull ? formData.CelestialDestinationRunway : foundRunway;
+            }
+            // Case 3: Both runways explicitly defined by user
+            else
+            {
+                formData.StartRunway = formData.CelestialStartRunway;
+                formData.DestinationRunway = formData.CelestialDestinationRunway;
+            }
 
             if (!await _almanacDataSource.GetAlmanacDataAsync(formData))
             {

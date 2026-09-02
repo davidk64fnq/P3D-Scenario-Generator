@@ -430,7 +430,6 @@ namespace P3D_Scenario_Generator.Runways
                     // Ensure we found a destination and it isn't just a different runway at the EXACT same airport
                     if (destinationRunway != null && !destinationRunway.IcaoId.Equals(departureRunway.IcaoId, StringComparison.OrdinalIgnoreCase))
                     {
-                        scenarioFormData.RandomRadiusNM = MathRoutines.CalcDistance(departureRunway.AirportLat, departureRunway.AirportLon, destinationRunway.AirportLat, destinationRunway.AirportLon);
                         return (departureRunway, destinationRunway);
                     }
                 }

@@ -196,6 +196,8 @@ namespace P3D_Scenario_Generator
             _settingsManager.RestoreSettings(TableLayoutPanelSettingsFolderInfo.Controls);
             _settingsManager.RestoreSettings(TableLayoutPanelSettingsMapWindow.Controls);
 
+            UpdateCelestialButtonLabels();
+
             // Clear progress bar message arising from restoring settings tab values
             _progressReporter?.Report("");
 
@@ -593,11 +595,11 @@ namespace P3D_Scenario_Generator
         /// <param name="e">An <see cref="EventArgs"/> that contains the event data.</param>
         private void ButtonRandomScenario_Click(object sender, EventArgs e)
         {
-                Random random = new();
-                ComboBoxGeneralScenarioType.SelectedIndex = random.Next(0, ComboBoxGeneralScenarioType.Items.Count);
+            Random random = new();
+            ComboBoxGeneralScenarioType.SelectedIndex = random.Next(0, ComboBoxGeneralScenarioType.Items.Count);
 
-        //    ProcessConstellationSvgs.CreatePNGs("C:\\Documents\\iau-constellations-svg", "C:\\Documents\\iau-constellations-bmp");
-        //    DisplayFinishMessage();
+            //    ProcessConstellationSvgs.CreatePNGs("C:\\Documents\\iau-constellations-svg", "C:\\Documents\\iau-constellations-bmp");
+            //    DisplayFinishMessage();
         }
 
         private async void ButtonGenerateScenario_Click(object sender, EventArgs e)
@@ -612,7 +614,6 @@ namespace P3D_Scenario_Generator
 
                 if (!success)
                 {
-                    DisplayErrorMessage();
                     return;
                 }
 
@@ -664,13 +665,6 @@ namespace P3D_Scenario_Generator
         {
             Cursor.Current = Cursors.WaitCursor;
             string message = $"Creating scenario files in \"{_formData.ScenarioFolderBase}\" - will confirm when complete";
-            _progressReporter?.Report(message);
-        }
-
-        private void DisplayErrorMessage()
-        {
-            Cursor.Current = Cursors.Default;
-            string message = $"An error occured creating the scenario files, see logs for details";
             _progressReporter?.Report(message);
         }
 
@@ -1682,15 +1676,6 @@ namespace P3D_Scenario_Generator
 
         #region Celestial Navigation Tab
 
-        private void SetDefaultCelestialParams()
-        {
-            _progressReporter?.Report("Using default celestial navigation parameters.");
-
-            TextBoxCelestialMinDist.Text = "20";
-            TextBoxCelestialMaxDist.Text = "30";
-            CheckBoxCelestialUseStarsDat.Checked = false;
-        }
-
         private void TextBoxCelestialMonitorNumber_Leave(object sender, EventArgs e)
         {
             if (!_isFormLoaded)
@@ -1739,6 +1724,78 @@ namespace P3D_Scenario_Generator
             }
 
             ValidateSextantWindowSettingsGroup((Control)sender);
+        }
+
+        private void UpdateCelestialButtonLabels()
+        {
+            // Sync Start button text
+            bool hasStartRunway = !string.IsNullOrWhiteSpace(TextBoxCelestialStart.Text) &&
+                                  !string.Equals(TextBoxCelestialStart.Text, Constants.RandomText, StringComparison.OrdinalIgnoreCase);
+
+            ButtonCelestialSetStart.Text = hasStartRunway ? "Clear Start" : "Set Start";
+
+            // Sync Destination button text
+            bool hasDestRunway = !string.IsNullOrWhiteSpace(TextBoxCelestialDestination.Text) &&
+                                 !string.Equals(TextBoxCelestialDestination.Text, Constants.RandomText, StringComparison.OrdinalIgnoreCase);
+
+            ButtonCelestialSetDestination.Text = hasDestRunway ? "Clear Destination" : "Set Destination";
+        }
+
+        private void ButtonCelestialSetStart_Click(object sender, EventArgs e)
+        {
+            // Clear any previous error on this control
+            errorProvider1.SetError(ButtonCelestialSetStart, string.Empty);
+
+            // Toggle Off: Reset back to Random if already set
+            if (TextBoxCelestialStart.Text != Constants.RandomText)
+            {
+                TextBoxCelestialStart.Text = Constants.RandomText;
+                ButtonCelestialSetStart.Text = "Set Start";
+                return;
+            }
+
+            // Toggle On: Attempt to retrieve selected text
+            string selectedRunway = ComboBoxGeneralRunwayResults.Text;
+
+            if (!string.IsNullOrWhiteSpace(selectedRunway))
+            {
+                TextBoxCelestialStart.Text = selectedRunway;
+                ButtonCelestialSetStart.Text = "Clear Start";
+            }
+            else
+            {
+                string message = "Please select a valid runway on the General tab before setting the celestial start runway.";
+                errorProvider1.SetError(ButtonCelestialSetStart, message);
+                _progressReporter?.Report(message);
+            }
+        }
+
+        private void ButtonCelestialSetDestination_Click(object sender, EventArgs e)
+        {
+            errorProvider1.SetError(ButtonCelestialSetDestination, string.Empty);
+
+            // Toggle Off: Reset back to Random if currently set
+            if (!string.Equals(TextBoxCelestialDestination.Text, Constants.RandomText, StringComparison.OrdinalIgnoreCase))
+            {
+                TextBoxCelestialDestination.Text = Constants.RandomText;
+                UpdateCelestialButtonLabels();
+                return;
+            }
+
+            // Toggle On: Attempt to retrieve selection from General tab
+            string selectedRunway = ComboBoxGeneralRunwayResults.Text;
+
+            if (!string.IsNullOrWhiteSpace(selectedRunway))
+            {
+                TextBoxCelestialDestination.Text = selectedRunway;
+                UpdateCelestialButtonLabels();
+            }
+            else
+            {
+                string message = "Please select a valid runway on the General tab before setting the celestial destination runway.";
+                errorProvider1.SetError(ButtonCelestialSetDestination, message);
+                _progressReporter?.Report(message);
+            }
         }
 
         #endregion
@@ -2196,7 +2253,7 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private async void ButtonDefault_Click(object sender, EventArgs e)
+        private async void ButtonResetTab_Click(object sender, EventArgs e)
         {
             if (TabControlP3DSG.SelectedTab == null) return;
 
@@ -2214,6 +2271,10 @@ namespace P3D_Scenario_Generator
                     _progressReporter?.Report("Cannot reset Circuit tab: No active aircraft variant selected.");
                 }
             }
+            else if (TabControlP3DSG.SelectedTab.Name == "TabPageCelestial")
+            {
+                UpdateCelestialButtonLabels();
+            }
             else
             {
                 _settingsManager.RestoreActiveTab(
@@ -2226,7 +2287,7 @@ namespace P3D_Scenario_Generator
             }
         }
 
-        private async void ButtonSaved_Click(object sender, EventArgs e)
+        private async void ButtonReloadProfile_Click(object sender, EventArgs e)
         {
             _progressReporter?.Report("Reloading saved configuration profile...");
             _progressReporter?.IsSuppressed = true;
@@ -2254,6 +2315,8 @@ namespace P3D_Scenario_Generator
                         await SetDefaultCircuitParamsAsync();
                     }
                 }
+
+                UpdateCelestialButtonLabels();
             }
             finally
             {
@@ -3763,23 +3826,43 @@ namespace P3D_Scenario_Generator
         {
             bool allValid = true;
 
-            // TextBoxCelestialMinDist
-            allValid &= ValidateAndSetDouble(
-                TextBoxCelestialMinDist,
-                "Minimum Celestial Distance",
-                0,
-                Constants.MilesInEarthCircumference,
-                "",
-                value => _formData.CelestialMinDistance = value);
+            // Assign parsed runways
+            _formData.CelestialStartRunway = ParseRunway(TextBoxCelestialStart.Text);
+            _formData.CelestialDestinationRunway = ParseRunway(TextBoxCelestialDestination.Text);
 
-            // TextBoxCelestialMaxDist
-            allValid &= ValidateAndSetDouble(
-                TextBoxCelestialMaxDist,
-                "Maximum Celestial Distance",
-                0,
-                Constants.MilesInEarthCircumference,
-                "",
-                value => _formData.CelestialMaxDistance = value);
+            // Validation: ensure at least one is present (if applicable) and they are different airports
+            if (_formData.CelestialStartRunway != null && _formData.CelestialDestinationRunway != null)
+            {
+                if (string.Equals(_formData.CelestialStartRunway.IcaoId,
+                                  _formData.CelestialDestinationRunway.IcaoId,
+                                  StringComparison.OrdinalIgnoreCase))
+                {
+                    string message = "Start and destination airports cannot be the same.";
+                    errorProvider1.SetError(TextBoxCelestialMinDist, message);
+                    _progressReporter?.Report(message);
+                    allValid = false;
+                }
+            }
+            else
+            {
+                // TextBoxCelestialMinDist
+                allValid &= ValidateAndSetDouble(
+                    TextBoxCelestialMinDist,
+                    "Minimum Celestial Distance",
+                    0,
+                    Constants.MilesInEarthCircumference,
+                    "",
+                    value => _formData.CelestialMinDistance = value);
+
+                // TextBoxCelestialMaxDist
+                allValid &= ValidateAndSetDouble(
+                    TextBoxCelestialMaxDist,
+                    "Maximum Celestial Distance",
+                    0,
+                    Constants.MilesInEarthCircumference,
+                    "",
+                    value => _formData.CelestialMaxDistance = value);
+            }
 
             if (_formData.CelestialMinDistance >= _formData.CelestialMaxDistance)
             {
@@ -3799,6 +3882,14 @@ namespace P3D_Scenario_Generator
             }
 
             return allValid;
+        }
+
+        RunwayParams ParseRunway(string inputText)
+        {
+            if (string.IsNullOrWhiteSpace(inputText)) return null;
+
+            RunwayUtils.ParseIcaoRunwayString(inputText, out string icaoId, out string runwayId, out string runwayDesignator);
+            return _runwayManager.Searcher.GetRunwayByIcaoIdDesignator(icaoId, runwayId, runwayDesignator);
         }
 
         /// <summary>
@@ -3874,23 +3965,15 @@ namespace P3D_Scenario_Generator
             // Calculate maximum possible offset for both dimensions relative to the "safe" monitor size, offset doesn't apply for centred alignment
             if (currentAlignment != WindowAlignment.Centered)
             {
-                int maxOffsetWidth = _formData.SextantMonitorWidth - Constants.SignSizeEdgeMarginPixels;
-                int maxOffsetHeight = _formData.SextantMonitorHeight - Constants.SignSizeEdgeMarginPixels;
+                int maxOffsetWidth = _formData.SextantMonitorWidth - Constants.SextantWindowWidth - Constants.SignSizeEdgeMarginPixels;
+                int maxOffsetHeight = _formData.SextantMonitorHeight - Constants.SextantWindowHeight - Constants.SignSizeEdgeMarginPixels;
 
-                if (_formData.SextantOffsetPixels >= maxOffsetWidth || _formData.SextantOffsetPixels >= maxOffsetHeight)
+                if (_formData.SextantOffsetPixels > maxOffsetWidth || _formData.SextantOffsetPixels > maxOffsetHeight)
                 {
-                    int maxWidth = _formData.SextantMonitorWidth - Constants.SignSizeEdgeMarginPixels;
-                    int maxHeight = _formData.SextantMonitorHeight - Constants.SignSizeEdgeMarginPixels;
-                    groupErrorMessage = $"Sextant Window offset ({_formData.SignOffsetPixels}px) exceeds maximum safe sextant dimension " +
-                                        $"{maxWidth}px * {maxHeight}px.";
+                    int maxOffset = Math.Min(maxOffsetWidth, maxOffsetHeight);
+                    groupErrorMessage = $"Sextant Window offset ({_formData.SignOffsetPixels}px) exceeds maximum safe value of " +
+                                        $"{maxOffset}px.";
                     groupValidationPassed = false;
-                }
-                else
-                {
-                    int maxWidth = _formData.SextantMonitorWidth - Constants.SignSizeEdgeMarginPixels - _formData.SextantOffsetPixels;
-                    int maxHeight = _formData.SextantMonitorHeight - Constants.SignSizeEdgeMarginPixels - _formData.SextantOffsetPixels;
-                    groupErrorMessage = $"This offset value ({_formData.SignOffsetPixels}px) allows a maximum safe sextant dimension of " +
-                                        $"{maxWidth}px * {maxHeight}px.";
                 }
             }
             else
@@ -4272,6 +4355,5 @@ namespace P3D_Scenario_Generator
         }
 
         #endregion
-
     }
 }

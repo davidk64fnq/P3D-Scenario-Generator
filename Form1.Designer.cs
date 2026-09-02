@@ -74,7 +74,7 @@ namespace P3D_Scenario_Generator
             label11 = new Label();
             TextBoxPhotoTourConstraintsMaxAttempts = new TextBox();
             label15 = new Label();
-            ButtonPhotoTourSaved = new Button();
+            ButtonReloadProfile = new Button();
             TextBoxCircuitSpeed = new TextBox();
             TextBoxCircuitTurnRate = new TextBox();
             TextBoxCircuitHeightDown = new TextBox();
@@ -182,15 +182,19 @@ namespace P3D_Scenario_Generator
             GroupBoxCelestialNavigationConstraints = new GroupBox();
             TableLayoutPanelCelestialNavigationConstraints = new TableLayoutPanel();
             label8 = new Label();
-            label25 = new Label();
-            label26 = new Label();
             CheckBoxCelestialUseStarsDat = new CheckBox();
+            label26 = new Label();
+            label25 = new Label();
+            ButtonCelestialSetStart = new Button();
+            ButtonCelestialSetDestination = new Button();
+            TextBoxCelestialStart = new TextBox();
+            TextBoxCelestialDestination = new TextBox();
             ButtonBrowseScenarioFolder = new Button();
             TextBoxSettingsScenarioFolderBase = new TextBox();
             TextBoxSettingsP3DprogramInstall = new TextBox();
             button1 = new Button();
             ButtonP3DDataFolderSelect = new Button();
-            ButtonCircuitDefault = new Button();
+            ButtonResetTab = new Button();
             TextBoxCelestialMonitorHeight = new TextBox();
             TextBoxCelestialMonitorWidth = new TextBox();
             label32 = new Label();
@@ -342,10 +346,10 @@ namespace P3D_Scenario_Generator
             // 
             TextBoxCelestialMinDist.AccessibleName = "Celestial: Minimum distance";
             TextBoxCelestialMinDist.Anchor = AnchorStyles.None;
-            TextBoxCelestialMinDist.Location = new Point(141, 3);
+            TextBoxCelestialMinDist.Location = new Point(141, 76);
             TextBoxCelestialMinDist.Name = "TextBoxCelestialMinDist";
             TextBoxCelestialMinDist.Size = new Size(100, 23);
-            TextBoxCelestialMinDist.TabIndex = 2;
+            TextBoxCelestialMinDist.TabIndex = 5;
             TextBoxCelestialMinDist.Tag = "";
             TextBoxCelestialMinDist.Text = "20";
             TextBoxCelestialMinDist.TextAlign = HorizontalAlignment.Center;
@@ -355,10 +359,10 @@ namespace P3D_Scenario_Generator
             // 
             TextBoxCelestialMaxDist.AccessibleName = "Celestial: Maximum distance";
             TextBoxCelestialMaxDist.Anchor = AnchorStyles.None;
-            TextBoxCelestialMaxDist.Location = new Point(141, 32);
+            TextBoxCelestialMaxDist.Location = new Point(141, 111);
             TextBoxCelestialMaxDist.Name = "TextBoxCelestialMaxDist";
             TextBoxCelestialMaxDist.Size = new Size(100, 23);
-            TextBoxCelestialMaxDist.TabIndex = 3;
+            TextBoxCelestialMaxDist.TabIndex = 7;
             TextBoxCelestialMaxDist.Tag = "";
             TextBoxCelestialMaxDist.Text = "30";
             TextBoxCelestialMaxDist.TextAlign = HorizontalAlignment.Center;
@@ -840,16 +844,16 @@ namespace P3D_Scenario_Generator
             label15.Text = "Max Attempts";
             toolTip1.SetToolTip(label15, "Maximum attempts to create a phototour using the current parameters before returning to user.\r\n");
             // 
-            // ButtonPhotoTourSaved
+            // ButtonReloadProfile
             // 
-            ButtonPhotoTourSaved.Location = new Point(109, 495);
-            ButtonPhotoTourSaved.Name = "ButtonPhotoTourSaved";
-            ButtonPhotoTourSaved.Size = new Size(100, 23);
-            ButtonPhotoTourSaved.TabIndex = 2;
-            ButtonPhotoTourSaved.Text = "Reload Profile";
-            toolTip1.SetToolTip(ButtonPhotoTourSaved, "Reload Profile:\r\nReloads your saved UI configuration profile from ui_settings.json.");
-            ButtonPhotoTourSaved.UseVisualStyleBackColor = true;
-            ButtonPhotoTourSaved.Click += ButtonSaved_Click;
+            ButtonReloadProfile.Location = new Point(109, 495);
+            ButtonReloadProfile.Name = "ButtonReloadProfile";
+            ButtonReloadProfile.Size = new Size(100, 23);
+            ButtonReloadProfile.TabIndex = 2;
+            ButtonReloadProfile.Text = "Reload Profile";
+            toolTip1.SetToolTip(ButtonReloadProfile, "Reload Profile:\r\nReloads your saved UI configuration profile from ui_settings.json.");
+            ButtonReloadProfile.UseVisualStyleBackColor = true;
+            ButtonReloadProfile.Click += ButtonReloadProfile_Click;
             // 
             // TextBoxCircuitSpeed
             // 
@@ -1293,7 +1297,7 @@ namespace P3D_Scenario_Generator
             GroupBoxWikipediaListParameters.Size = new Size(285, 338);
             GroupBoxWikipediaListParameters.TabIndex = 41;
             GroupBoxWikipediaListParameters.TabStop = false;
-            GroupBoxWikipediaListParameters.Text = "Parameters";
+            GroupBoxWikipediaListParameters.Text = "Wikipedia List Parameters";
             toolTip1.SetToolTip(GroupBoxWikipediaListParameters, "Parameters that define Wikipedia List");
             // 
             // TableLayoutPanelWikipediaListParameters
@@ -2290,12 +2294,12 @@ namespace P3D_Scenario_Generator
             GroupBoxCelestialNavigationConstraints.Anchor = AnchorStyles.None;
             GroupBoxCelestialNavigationConstraints.BackColor = Color.FromArgb(255, 192, 128);
             GroupBoxCelestialNavigationConstraints.Controls.Add(TableLayoutPanelCelestialNavigationConstraints);
-            GroupBoxCelestialNavigationConstraints.Location = new Point(60, 117);
+            GroupBoxCelestialNavigationConstraints.Location = new Point(60, 69);
             GroupBoxCelestialNavigationConstraints.Name = "GroupBoxCelestialNavigationConstraints";
-            GroupBoxCelestialNavigationConstraints.Size = new Size(285, 165);
+            GroupBoxCelestialNavigationConstraints.Size = new Size(285, 261);
             GroupBoxCelestialNavigationConstraints.TabIndex = 4;
             GroupBoxCelestialNavigationConstraints.TabStop = false;
-            GroupBoxCelestialNavigationConstraints.Text = "Constraints";
+            GroupBoxCelestialNavigationConstraints.Text = "Celestial Navigation Parameters";
             toolTip1.SetToolTip(GroupBoxCelestialNavigationConstraints, "Minimum and maximum distance range for random midair starting point from destination airport.");
             // 
             // TableLayoutPanelCelestialNavigationConstraints
@@ -2305,65 +2309,111 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelCelestialNavigationConstraints.ColumnCount = 2;
             TableLayoutPanelCelestialNavigationConstraints.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             TableLayoutPanelCelestialNavigationConstraints.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(label8, 0, 2);
-            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(label25, 0, 0);
-            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(TextBoxCelestialMaxDist, 1, 1);
-            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(TextBoxCelestialMinDist, 1, 0);
-            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(label26, 0, 1);
-            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(CheckBoxCelestialUseStarsDat, 1, 2);
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(label8, 0, 4);
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(CheckBoxCelestialUseStarsDat, 1, 4);
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(label26, 0, 3);
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(TextBoxCelestialMaxDist, 1, 3);
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(label25, 0, 2);
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(TextBoxCelestialMinDist, 1, 2);
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(ButtonCelestialSetStart, 0, 0);
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(ButtonCelestialSetDestination, 0, 1);
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(TextBoxCelestialStart, 1, 0);
+            TableLayoutPanelCelestialNavigationConstraints.Controls.Add(TextBoxCelestialDestination, 1, 1);
             TableLayoutPanelCelestialNavigationConstraints.ImeMode = ImeMode.On;
-            TableLayoutPanelCelestialNavigationConstraints.Location = new Point(15, 52);
+            TableLayoutPanelCelestialNavigationConstraints.Location = new Point(15, 43);
             TableLayoutPanelCelestialNavigationConstraints.Name = "TableLayoutPanelCelestialNavigationConstraints";
-            TableLayoutPanelCelestialNavigationConstraints.RowCount = 3;
-            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            TableLayoutPanelCelestialNavigationConstraints.Size = new Size(255, 87);
+            TableLayoutPanelCelestialNavigationConstraints.RowCount = 5;
+            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelCelestialNavigationConstraints.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelCelestialNavigationConstraints.Size = new Size(255, 175);
             TableLayoutPanelCelestialNavigationConstraints.TabIndex = 36;
             // 
             // label8
             // 
             label8.Anchor = AnchorStyles.None;
             label8.AutoSize = true;
-            label8.Location = new Point(5, 65);
+            label8.Location = new Point(5, 150);
             label8.Name = "label8";
             label8.Size = new Size(116, 15);
-            label8.TabIndex = 4;
+            label8.TabIndex = 8;
             label8.Text = "Use custom stars.dat";
             label8.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // label25
-            // 
-            label25.Anchor = AnchorStyles.None;
-            label25.AutoSize = true;
-            label25.Location = new Point(10, 7);
-            label25.Name = "label25";
-            label25.Size = new Size(107, 15);
-            label25.TabIndex = 0;
-            label25.Text = "Minimum distance";
-            label25.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // label26
-            // 
-            label26.Anchor = AnchorStyles.None;
-            label26.AutoSize = true;
-            label26.Location = new Point(9, 36);
-            label26.Name = "label26";
-            label26.Size = new Size(108, 15);
-            label26.TabIndex = 1;
-            label26.Text = "Maximum distance";
-            label26.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // CheckBoxCelestialUseStarsDat
             // 
             CheckBoxCelestialUseStarsDat.Anchor = AnchorStyles.None;
             CheckBoxCelestialUseStarsDat.AutoSize = true;
-            CheckBoxCelestialUseStarsDat.Location = new Point(169, 63);
+            CheckBoxCelestialUseStarsDat.Location = new Point(169, 148);
             CheckBoxCelestialUseStarsDat.Name = "CheckBoxCelestialUseStarsDat";
             CheckBoxCelestialUseStarsDat.Size = new Size(43, 19);
-            CheckBoxCelestialUseStarsDat.TabIndex = 5;
+            CheckBoxCelestialUseStarsDat.TabIndex = 9;
             CheckBoxCelestialUseStarsDat.Text = "Yes";
             CheckBoxCelestialUseStarsDat.UseVisualStyleBackColor = true;
+            // 
+            // label26
+            // 
+            label26.Anchor = AnchorStyles.None;
+            label26.AutoSize = true;
+            label26.Location = new Point(9, 115);
+            label26.Name = "label26";
+            label26.Size = new Size(108, 15);
+            label26.TabIndex = 6;
+            label26.Text = "Maximum distance";
+            label26.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // label25
+            // 
+            label25.Anchor = AnchorStyles.None;
+            label25.AutoSize = true;
+            label25.Location = new Point(10, 80);
+            label25.Name = "label25";
+            label25.Size = new Size(107, 15);
+            label25.TabIndex = 4;
+            label25.Text = "Minimum distance";
+            label25.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // ButtonCelestialSetStart
+            // 
+            ButtonCelestialSetStart.Anchor = AnchorStyles.None;
+            ButtonCelestialSetStart.Location = new Point(26, 6);
+            ButtonCelestialSetStart.Name = "ButtonCelestialSetStart";
+            ButtonCelestialSetStart.Size = new Size(75, 23);
+            ButtonCelestialSetStart.TabIndex = 0;
+            ButtonCelestialSetStart.Text = "Set Start";
+            ButtonCelestialSetStart.UseVisualStyleBackColor = true;
+            ButtonCelestialSetStart.Click += ButtonCelestialSetStart_Click;
+            // 
+            // ButtonCelestialSetDestination
+            // 
+            ButtonCelestialSetDestination.Anchor = AnchorStyles.None;
+            ButtonCelestialSetDestination.Location = new Point(15, 41);
+            ButtonCelestialSetDestination.Name = "ButtonCelestialSetDestination";
+            ButtonCelestialSetDestination.Size = new Size(96, 23);
+            ButtonCelestialSetDestination.TabIndex = 2;
+            ButtonCelestialSetDestination.Text = "Set Destination";
+            ButtonCelestialSetDestination.UseVisualStyleBackColor = true;
+            ButtonCelestialSetDestination.Click += ButtonCelestialSetDestination_Click;
+            // 
+            // TextBoxCelestialStart
+            // 
+            TextBoxCelestialStart.Anchor = AnchorStyles.None;
+            TextBoxCelestialStart.Location = new Point(141, 6);
+            TextBoxCelestialStart.Name = "TextBoxCelestialStart";
+            TextBoxCelestialStart.ReadOnly = true;
+            TextBoxCelestialStart.Size = new Size(100, 23);
+            TextBoxCelestialStart.TabIndex = 1;
+            // 
+            // TextBoxCelestialDestination
+            // 
+            TextBoxCelestialDestination.Anchor = AnchorStyles.None;
+            TextBoxCelestialDestination.Location = new Point(141, 41);
+            TextBoxCelestialDestination.Name = "TextBoxCelestialDestination";
+            TextBoxCelestialDestination.ReadOnly = true;
+            TextBoxCelestialDestination.Size = new Size(100, 23);
+            TextBoxCelestialDestination.TabIndex = 3;
             // 
             // ButtonBrowseScenarioFolder
             // 
@@ -2425,18 +2475,18 @@ namespace P3D_Scenario_Generator
             ButtonP3DDataFolderSelect.UseVisualStyleBackColor = true;
             ButtonP3DDataFolderSelect.Click += ButtonBrowseP3DDataFolder_Click;
             // 
-            // ButtonCircuitDefault
+            // ButtonResetTab
             // 
-            ButtonCircuitDefault.BackColor = Color.FromArgb(255, 192, 128);
-            ButtonCircuitDefault.ForeColor = SystemColors.ControlText;
-            ButtonCircuitDefault.Location = new Point(16, 495);
-            ButtonCircuitDefault.Name = "ButtonCircuitDefault";
-            ButtonCircuitDefault.Size = new Size(75, 23);
-            ButtonCircuitDefault.TabIndex = 1;
-            ButtonCircuitDefault.Text = "Reset Tab";
-            toolTip1.SetToolTip(ButtonCircuitDefault, "Reset Tab:\r\nResets controls on the active tab to factory defaults. On the Circuit tab, recalculates baseline parameters for the active aircraft.");
-            ButtonCircuitDefault.UseVisualStyleBackColor = true;
-            ButtonCircuitDefault.Click += ButtonDefault_Click;
+            ButtonResetTab.BackColor = Color.FromArgb(255, 192, 128);
+            ButtonResetTab.ForeColor = SystemColors.ControlText;
+            ButtonResetTab.Location = new Point(16, 495);
+            ButtonResetTab.Name = "ButtonResetTab";
+            ButtonResetTab.Size = new Size(75, 23);
+            ButtonResetTab.TabIndex = 1;
+            ButtonResetTab.Text = "Reset Tab";
+            toolTip1.SetToolTip(ButtonResetTab, "Reset Tab:\r\nResets controls on the active tab to factory defaults. On the Circuit tab, recalculates baseline parameters for the active aircraft.");
+            ButtonResetTab.UseVisualStyleBackColor = true;
+            ButtonResetTab.Click += ButtonResetTab_Click;
             // 
             // TextBoxCelestialMonitorHeight
             // 
@@ -2445,7 +2495,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMonitorHeight.Location = new Point(139, 116);
             TextBoxCelestialMonitorHeight.Name = "TextBoxCelestialMonitorHeight";
             TextBoxCelestialMonitorHeight.Size = new Size(100, 23);
-            TextBoxCelestialMonitorHeight.TabIndex = 39;
+            TextBoxCelestialMonitorHeight.TabIndex = 9;
             TextBoxCelestialMonitorHeight.Tag = "";
             TextBoxCelestialMonitorHeight.Text = "1080";
             TextBoxCelestialMonitorHeight.TextAlign = HorizontalAlignment.Center;
@@ -2459,7 +2509,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMonitorWidth.Location = new Point(139, 87);
             TextBoxCelestialMonitorWidth.Name = "TextBoxCelestialMonitorWidth";
             TextBoxCelestialMonitorWidth.Size = new Size(100, 23);
-            TextBoxCelestialMonitorWidth.TabIndex = 39;
+            TextBoxCelestialMonitorWidth.TabIndex = 7;
             TextBoxCelestialMonitorWidth.Tag = "";
             TextBoxCelestialMonitorWidth.Text = "1920";
             TextBoxCelestialMonitorWidth.TextAlign = HorizontalAlignment.Center;
@@ -2473,7 +2523,7 @@ namespace P3D_Scenario_Generator
             label32.Location = new Point(18, 120);
             label32.Name = "label32";
             label32.Size = new Size(89, 15);
-            label32.TabIndex = 39;
+            label32.TabIndex = 8;
             label32.Text = "Monitor Height";
             toolTip1.SetToolTip(label32, "Resolution height in pixels of the monitor that sextant window will display on.");
             // 
@@ -2484,7 +2534,7 @@ namespace P3D_Scenario_Generator
             label33.Location = new Point(20, 90);
             label33.Name = "label33";
             label33.Size = new Size(85, 15);
-            label33.TabIndex = 39;
+            label33.TabIndex = 6;
             label33.Text = "Monitor Width";
             toolTip1.SetToolTip(label33, "Resolution width in pixels of the monitor that sextant window will display on. ");
             // 
@@ -2495,7 +2545,7 @@ namespace P3D_Scenario_Generator
             label34.Location = new Point(43, 34);
             label34.Name = "label34";
             label34.Size = new Size(39, 15);
-            label34.TabIndex = 30;
+            label34.TabIndex = 2;
             label34.Text = "Offset";
             toolTip1.SetToolTip(label34, resources.GetString("label34.ToolTip"));
             // 
@@ -2506,7 +2556,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialOffset.Location = new Point(139, 31);
             TextBoxCelestialOffset.Name = "TextBoxCelestialOffset";
             TextBoxCelestialOffset.Size = new Size(100, 23);
-            TextBoxCelestialOffset.TabIndex = 33;
+            TextBoxCelestialOffset.TabIndex = 3;
             TextBoxCelestialOffset.Tag = "";
             TextBoxCelestialOffset.Text = "20";
             TextBoxCelestialOffset.TextAlign = HorizontalAlignment.Center;
@@ -2520,7 +2570,7 @@ namespace P3D_Scenario_Generator
             label35.Location = new Point(31, 62);
             label35.Name = "label35";
             label35.Size = new Size(63, 15);
-            label35.TabIndex = 31;
+            label35.TabIndex = 4;
             label35.Text = "Alignment";
             toolTip1.SetToolTip(label35, "Default location of sextant window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
             // 
@@ -2531,7 +2581,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMonitorNumber.Location = new Point(139, 3);
             TextBoxCelestialMonitorNumber.Name = "TextBoxCelestialMonitorNumber";
             TextBoxCelestialMonitorNumber.Size = new Size(100, 23);
-            TextBoxCelestialMonitorNumber.TabIndex = 32;
+            TextBoxCelestialMonitorNumber.TabIndex = 1;
             TextBoxCelestialMonitorNumber.Tag = "";
             TextBoxCelestialMonitorNumber.Text = "0";
             TextBoxCelestialMonitorNumber.TextAlign = HorizontalAlignment.Center;
@@ -2545,7 +2595,7 @@ namespace P3D_Scenario_Generator
             label36.Location = new Point(14, 6);
             label36.Name = "label36";
             label36.Size = new Size(97, 15);
-            label36.TabIndex = 29;
+            label36.TabIndex = 0;
             label36.Text = "Monitor Number";
             toolTip1.SetToolTip(label36, "The default monitor that the sextant window will display in. Experiment with values between 0 and the number of monitors minus 1.");
             // 
@@ -2558,7 +2608,7 @@ namespace P3D_Scenario_Generator
             ComboBoxCelestialAlignment.Location = new Point(139, 59);
             ComboBoxCelestialAlignment.Name = "ComboBoxCelestialAlignment";
             ComboBoxCelestialAlignment.Size = new Size(100, 23);
-            ComboBoxCelestialAlignment.TabIndex = 43;
+            ComboBoxCelestialAlignment.TabIndex = 5;
             ComboBoxCelestialAlignment.Tag = "";
             ComboBoxCelestialAlignment.Text = "Top Right";
             toolTip1.SetToolTip(ComboBoxCelestialAlignment, "Default location of sextant window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.\r\n");
@@ -2656,7 +2706,7 @@ namespace P3D_Scenario_Generator
             GroupBoxSignWritingParameters.Size = new Size(240, 200);
             GroupBoxSignWritingParameters.TabIndex = 38;
             GroupBoxSignWritingParameters.TabStop = false;
-            GroupBoxSignWritingParameters.Text = "Parameters";
+            GroupBoxSignWritingParameters.Text = "Sign Writing Parameters";
             // 
             // TableLayoutPanelSignWritingParameters
             // 
@@ -2782,7 +2832,7 @@ namespace P3D_Scenario_Generator
             GroupBoxPhotoTourConstraints.Size = new Size(285, 250);
             GroupBoxPhotoTourConstraints.TabIndex = 0;
             GroupBoxPhotoTourConstraints.TabStop = false;
-            GroupBoxPhotoTourConstraints.Text = "Constraints";
+            GroupBoxPhotoTourConstraints.Text = "Photo Tour Parameters";
             // 
             // TableLayoutPanelPhotoTourConstraints
             // 
@@ -3463,8 +3513,8 @@ namespace P3D_Scenario_Generator
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(844, 553);
-            Controls.Add(ButtonPhotoTourSaved);
-            Controls.Add(ButtonCircuitDefault);
+            Controls.Add(ButtonReloadProfile);
+            Controls.Add(ButtonResetTab);
             Controls.Add(statusStrip1);
             Controls.Add(ButtonHelp);
             Controls.Add(ButtonGenerateScenario);
@@ -3600,7 +3650,7 @@ namespace P3D_Scenario_Generator
         private Label label12;
         private Label label11;
         private TabPage TabPageCircuit;
-        private Button ButtonCircuitDefault;
+        private Button ButtonResetTab;
         private TabPage TabPageMenu;
         internal TextBox TextBoxGeneralScenarioTitle;
         private Button buttonGeneralAircraft;
@@ -3638,7 +3688,7 @@ namespace P3D_Scenario_Generator
         internal ComboBox ComboBoxPhotoTourPhotoAlignment;
         private TableLayoutPanel TableLayoutPanelPhotoTourConstraints;
         private GroupBox GroupBoxPhotoTourConstraints;
-        private Button ButtonPhotoTourSaved;
+        private Button ButtonReloadProfile;
         private TableLayoutPanel TableLayoutPanelCircuitParameters;
         private Label label7;
         private Label label6;
@@ -3794,6 +3844,10 @@ namespace P3D_Scenario_Generator
         internal ComboBox ComboBoxWikiCoordSource;
         private Label label39;
         private ComboBox ComboBoxGeneralRunwayResults;
+        private Button ButtonCelestialSetStart;
+        private Button ButtonCelestialSetDestination;
+        private TextBox TextBoxCelestialStart;
+        private TextBox TextBoxCelestialDestination;
     }
 }
 

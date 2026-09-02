@@ -296,19 +296,26 @@ namespace P3D_Scenario_Generator.Models
         #region Celestial Navigation Tab Data
 
         /// <summary>
-        /// Minimum run home from midair starting location to destination location in nautical miles.
+        /// Gets or sets the Celestial scenario start runway. This is variously set at the time user clicks "Generate Scenario", or by subsequent
+        /// scenario specific code.
+        /// </summary>
+        public RunwayParams CelestialStartRunway { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Celestial scenario destination runway. This is variously set at the time user clicks "Generate Scenario", or by subsequent
+        /// scenario specific code.
+        /// </summary>
+        public RunwayParams CelestialDestinationRunway { get; set; }
+
+        /// <summary>
+        /// Minimum run home from starting location to destination location in nautical miles.
         /// </summary>
         public double CelestialMinDistance { get; set; }
 
         /// <summary>
-        /// Maximum run home from midair starting location to destination location in nautical miles.
+        /// Maximum run home from starting location to destination location in nautical miles.
         /// </summary>
         public double CelestialMaxDistance { get; set; }
-
-        /// <summary>
-        /// CelestialScenario scenario starts in mid air - this is the randomly set radius distance from midair start to destination airport in nautical miles
-        /// </summary>
-        public double RandomRadiusNM { get; set; }
 
         /// <summary>
         /// User has option of using custom stars.dat file instead of default P3D depiction of stars in the simulator. Using custom aligns view outside plane

@@ -103,6 +103,11 @@ const HALF_PI = Math.PI / 2;
  */
 const SLOW_UPDATE_MS = 5000;
 
+/**
+ * @type {number} lastTableUpdateSimSecond - used to only update sighting tab every second to fox dropdown flicker.
+ */
+let lastTableUpdateSimSecond = -1;
+
 // #endregion
 
 // #region Plane/Mission Status
@@ -850,32 +855,38 @@ function populateSightDataRow(curIndex, starArray) {
  * Aries GHA, Star SHA, Total GHA, and Star Declination (Dec) for the next available sight.
  */
 function updateSightReductionTab() {
-	// Cast to HTMLSelectElement collection to access the '.options' property
-	/** @type {HTMLCollectionOf<HTMLSelectElement>} */
-	const starArray = /** @type {HTMLCollectionOf<HTMLSelectElement>} */(document.getElementsByClassName("starName"));
+    // 1. Get the current sim time in whole seconds
+    const currentSimSecond = Math.floor(safeVarGet("E:ZULU TIME", "Seconds"));
 
-	// Cast to HTMLElement collection to access the '.innerHTML' property
-	/** @type {HTMLCollectionOf<HTMLElement>} */
-	const HsArray = /** @type {HTMLCollectionOf<HTMLElement>} */(document.getElementsByClassName("Hs"));
+    // 2. Only proceed if the second has actually changed
+    // This reduces UI updates from 60 per second to 1 per second
+    if (currentSimSecond === lastTableUpdateSimSecond) {
+        return;
+    }
+    lastTableUpdateSimSecond = currentSimSecond;
 
-	// Variable to hold the index
-	/** @type {number} */
-	let curIndex = -1;
+    /** @type {HTMLCollectionOf<HTMLSelectElement>} */
+    const starArray = /** @type {HTMLCollectionOf<HTMLSelectElement>} */(document.getElementsByClassName("starName"));
+    /** @type {HTMLCollectionOf<HTMLElement>} */
+    const HsArray = /** @type {HTMLCollectionOf<HTMLElement>} */(document.getElementsByClassName("Hs"));
 
-	for (let index = 0; index < HsArray.length; index++) {
+    for (let index = 0; index < HsArray.length; index++) {
+        // If star selected but no sighting taken, update the row data
+        if (
+            starArray[index] &&
+            starArray[index].options &&
+            starArray[index].options.length > 0 &&
+            starArray[index].options[0].selected === false && 
+            HsArray[index].innerHTML === ""
+        ) {
+            // Additional safety: skip if the user is currently focused on this dropdown
+            if (document.activeElement === starArray[index]) {
+                continue;
+            }
 
-		// Verify dropdown has options populated before checking selected state
-		if (
-			starArray[index] &&
-			starArray[index].options &&
-			starArray[index].options.length > 0 &&
-			starArray[index].options[0].selected === false && 
-			HsArray[index].innerHTML === ""
-		) {
-			curIndex = index;
-			populateSightDataRow(curIndex, starArray);
-		}
-	}
+            populateSightDataRow(index, starArray);
+        }
+    }
 }
 
 /**
@@ -1731,6 +1742,23 @@ function adjustALTWrapper(deltaDeg) {
 }
 
 /**
+ * @summary Resets the Sextant Altitude so the bottom of the FOV sits on the Horizon (0°).
+ * @param {SextantView} viewState - The mutable state object for the sextant view.
+ */
+function moveALTreset(viewState) {
+    // Setting center altitude to exactly half of the vertical FOV 
+    // ensures the bottom edge of the viewport is at 0 degrees.
+    viewState.altDeg = viewState.fovV / 2;
+}
+
+/**
+ * @summary Wrapper to reset Altitude to the Horizon using global sextantView state.
+ */
+function moveALTresetWrapper() {
+    moveALTreset(sextantView);
+}
+
+/**
  * @summary Wrapper to call the refactored adjustHo function, passing the pixel adjustment amount and the global sextantView state object.
  * @param {number} adjustment - The change in pixel position (e.g., -50 for Ho +50, or +50 for Ho -50).
  */
@@ -1766,9 +1794,9 @@ function adjustHo(adjustment, viewState) {
 /**
  * @summary Wrapper to call the refactored moveHoReset function, passing the global sextantView state object.
  */
-function moveHoResetWrapper() {
+function moveHoresetWrapper() {
 	// Passes the global sextantView object
-	moveHoReset(sextantView);
+	moveHoreset(sextantView);
 }
 
 /**
@@ -1776,7 +1804,7 @@ function moveHoResetWrapper() {
  * @param {SextantView} viewState - The mutable state object for the sextant view.
  * @returns {void}
  */
-function moveHoReset(viewState) {
+function moveHoreset(viewState) {
 	viewState.centerPixelY = Math.floor(windowH / 2);
 }
 

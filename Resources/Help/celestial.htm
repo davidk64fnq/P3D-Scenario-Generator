@@ -1,18 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta charset="utf-8"/>
-		<title>P3D Scenario Generator | Celestial Navigation Tab</title>
-		<link rel="stylesheet" href="style.css"/>
-	</head>
-	<body>
-		<h2>Celestial Navigation Tab</h2>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta charset="utf-8" />
+	<title>P3D Scenario Generator | Celestial Navigation Tab</title>
+	<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+	<h2>Celestial Navigation Tab</h2>
+	<p>
+		The <strong>Celestial Navigation Tab</strong> allows you to configure long-range navigation scenarios that test your ability to fix your aircraft's position using a marine/aviation sextant, almanac data, and true astronomical star calculations.
+	</p>
+	<p>
+		<strong>Design Philosophy:</strong> The primary intent of this scenario type is to provide an immersive opportunity to <em>learn and recognize the navigational stars</em> and practice sextant position-fixing, rather than getting bogged down in the tedious manual arithmetic of sight reduction (such as looking up hourly Aries GHA tables, interpolating increments, and summing SHA values). The application automates those calculations entirely, leaving you free to focus on finding stars in the night sky and taking your sights.
+	</p>
 
-		https://github.com/Stellarium/stellarium/blob/master/skycultures/modern_iau/index.json
+	<hr />
 
-		https://github.com/frostoven/BSC5P-JSON/tree/primary
+	<!-- APP UI CONFIGURATION -->
+	<h3 id="appUiConfiguration">Application UI Configuration</h3>
+	<p>
+		The controls on the Celestial Navigation tab are divided into two main parameter groups: <strong>Celestial Navigation Parameters</strong> and <strong>Sextant Window Location</strong>.
+	</p>
 
-		https://archive.org/details/IauConstellationsSvg
-	</body>
+	<h4>Celestial Navigation Parameters Group</h4>
+	<ul>
+		<li>
+			<strong>Departure and Destination Selection:</strong>
+			This area allows you to define the start and end points of your navigation exercise.
+			<ul>
+				<li><strong>To Set a Specific Airport:</strong> First, go to the <strong>General Tab</strong> and perform a search to populate the "Runway Results" list. Select your desired airport/runway there, return to this tab, and click <kbd class="winforms-btn">Set Start</kbd> or <kbd class="winforms-btn">Set Destination</kbd>.</li>
+				<li><strong>To Use Random Airports:</strong> Click <kbd class="winforms-btn">Clear Start</kbd> or <kbd class="winforms-btn">Clear Destination</kbd>. The field will display "Random," and the generator will automatically select airports for you based on your distance constraints.</li>
+				<li><strong>Mixed Mode:</strong> You can fix one airport (e.g., your home base as the Departure) and leave the other as Random; the generator will find a suitable destination within the nautical mile range specified below.</li>
+			</ul>
+		</li>
+		<li>
+			<strong>Minimum distance / Maximum distance (nautical miles):</strong> Defines the acceptable range for the great-circle distance between the departure runway and destination airfield. These constraints are utilized whenever one or both airports are set to "Random." Longer distances provide ample flight time to perform multi-star sight reductions and establish consecutive navigational fixes.
+		</li>
+		<li>
+			<strong>Use custom stars.dat:</strong> When checked, the generator compiles a custom <code>stars.dat.P3DscenarioGenerator</code> file and saves it into your Prepar3D ProgramData folder. Because stock Prepar3D star brightness and catalog positions can occasionally differ from real-world nautical almanac data, using this custom file ensures the stars rendered visually by the simulator match the precise catalog coordinates used by the sextant calculation engine.
+		</li>
+	</ul>
+
+	<h4>Installing and Reverting the Custom `stars.dat` File</h4>
+	<p>
+		Because Prepar3D reads a single active <code>stars.dat</code> file at startup, the generator exports its custom file with a modified extension so it does not automatically overwrite your simulator's default file. To use it:
+	</p>
+	<ol type="1">
+		<li>
+			Navigate to your main Prepar3D data directory (e.g., <code>C:\ProgramData\Lockheed Martin\Prepar3D v5\</code>).
+		</li>
+		<li>
+			Locate the original simulator file named <code>stars.dat</code> and make a backup copy of it (e.g., rename it to <code>stars.dat.bak</code>).
+		</li>
+		<li>
+			Locate the generated file named <code>stars.dat.P3DscenarioGenerator</code> in that same directory.
+		</li>
+		<li>
+			Rename <code>stars.dat.P3DscenarioGenerator</code> to simply <code>stars.dat</code> (replacing the active file).
+		</li>
+		<li>
+			<strong>To Revert:</strong> Simply delete the modified <code>stars.dat</code> file and rename your backup <code>stars.dat.bak</code> back to <code>stars.dat</code>.
+		</li>
+	</ol>
+
+	<h4>Sextant Window Location Group</h4>
+	<p>
+		Configures the monitor index, positioning, and screen layout of the in-game sextant overlay window when launched inside Prepar3D. For a detailed explanation of multi-monitor indexing, window alignment options, and pixel offsets, see the <a href="settings.htm#mapWindow">Settings Tab: Map Window Settings</a> documentation.
+	</p>
+
+	<hr />
+
+	<!-- USING THE IN-SIM SEXTANT -->
+	<h3 id="usingTheSextant">Using the In-Sim Sextant</h3>
+	<p>
+		When the scenario launches in Prepar3D, the celestial sextant overlay window opens automatically. The panel features four interactive tabs: <strong>Star Chart</strong>, <strong>Sight Reduction</strong>, <strong>Plotting</strong>, and <strong>Tables</strong>.
+	</p>
+
+	<p>
+		<strong>Important Workflow Sequence:</strong> Before attempting to take a sighting on the Star Chart, you must first visit the <strong>Sight Reduction</strong> tab and select your target star in the dropdown menu for the active sight column. The application requires an active star selection to pull the correct Right Ascension and Declination for calculating the astronomical triangle (Hc and Zn) when you click <kbd class="html-btn btn-red">Take Sighting</kbd>.
+	</p>
+
+	<h4>1. Star Chart Tab</h4>
+	<p>
+		The Star Chart provides a live, interactive 960&#215;540 view of the night sky rendered from your aircraft's true heading and position.
+	</p>
+	<ul>
+		<li>
+			<strong>Display Toggles:</strong> Use the top button bar to toggle <kbd class="html-btn btn-green">Star Names</kbd>, <kbd class="html-btn btn-green">Constellation Lines</kbd>, and <kbd class="html-btn btn-green">Constellation Names</kbd> on or off. Click <kbd class="html-btn btn-green">Update Stars Table</kbd> to refresh the list of currently visible stars for the Tables tab.
+		</li>
+		<li>
+			<strong>Field of View (FOV) Controls:</strong> Use the FOV buttons (<kbd class="html-btn btn-blue">100°</kbd>, <kbd class="html-btn btn-blue">50°</kbd>, <kbd class="html-btn btn-blue">20°</kbd>, <kbd class="html-btn btn-blue">6°</kbd>) to zoom in or out. Use <kbd class="html-btn btn-blue">100°</kbd> for general sky searching and <kbd class="html-btn btn-blue">6°</kbd> for precise alignment during star sightings.
+		</li>
+		<li>
+			<strong>Azimuth (AZ) &amp; Altitude (ALT) Controls:</strong> Pan the camera view across the sky using <kbd class="html-btn btn-blue">-45°</kbd>, <kbd class="html-btn btn-blue">-1°</kbd>, <kbd class="html-btn btn-blue">+1°</kbd>, <kbd class="html-btn btn-blue">+45°</kbd> or <kbd class="html-btn btn-blue">+10°</kbd>, <kbd class="html-btn btn-blue">+1°</kbd>, <kbd class="html-btn btn-blue">-1°</kbd>, <kbd class="html-btn btn-blue">-10°</kbd>. The <kbd class="html-btn btn-blue">AZ</kbd> button resets the center bearing to your aircraft's current true heading, while the <kbd class="html-btn btn-blue">ALT</kbd> button aligns the bottom of your view with the horizon.
+		</li>
+		<li>
+			<strong>Observed Altitude (Ho) Adjustments:</strong> Use the pixel adjustment buttons (<kbd class="html-btn btn-purple">+1</kbd>, <kbd class="html-btn btn-purple">+10</kbd>, <kbd class="html-btn btn-purple">+50</kbd>, <kbd class="html-btn btn-purple">-50</kbd>, <kbd class="html-btn btn-purple">-10</kbd>, <kbd class="html-btn btn-purple">-1</kbd>) and <kbd class="html-btn btn-purple">Ho</kbd> reset button to move the horizontal red crosshair line until it bisects your target star.
+		</li>
+		<li>
+			<strong>Taking a Sighting:</strong> Once your target star is centered on the red crosshair line, click <kbd class="html-btn btn-red">Take Sighting</kbd>. The app records Ho, computes Hc/Zn, calculates the intercept, and logs the Line of Position (LOP).
+			<p>
+				<em>Note: If the star you selected on the worksheet is not currently within the sextant's field of view, the sighting will not be recorded, and a <strong style="color: #c0392b;">"Star not in FOV"</strong> warning will appear on your main Prepar3D screen. This usually indicates that the star has been misidentified or the sextant is not aimed correctly.</em>
+			</p>
+		</li>
+	</ul>
+
+	<h4>2. Sight Reduction Tab (Worksheets)</h4>
+	<p>
+		Displays a standard nautical sight reduction worksheet for up to 6 consecutive star sights.
+	</p>
+	<p>
+		<small><em><strong>Note on Star Selection:</strong> Due to the way the simulator's display engine handles real-time data updates, you may find that clicking a star selection dropdown causes it to close immediately, particularly after you have deleted a previous sighting. If this occurs, simply <strong>click the dropdown a second time</strong> to lock it open.</em></small>
+	</p>
+	<ul>
+		<li>
+			<strong>Star Selection:</strong> Select a navigational star from the dropdown list for each sight column. <em>(Remember to do this before taking your sight!)</em>
+		</li>
+		<li>
+			<strong>Automated Calculations:</strong> Assumed Position (AP), Universal Time (UT), Greenwich Hour Angle (GHA &#9800;) for Aries, GHA increments, Sidereal Hour Angle (SHA &#10017;), Total GHA, and Declination (Dec) are automatically populated by the app.
+		</li>
+		<li>
+			<strong>Intercept &amp; Azimuth:</strong> Computed Altitude (Hc), True Azimuth (Zn), and intercept distance (Toward/Away) are displayed at the bottom of each column.
+		</li>
+		<li>
+			<strong>Managing Sights:</strong> Use <kbd class="html-btn btn-red">Clear Sightings Display</kbd> to wipe the visual table display once a set of 6 is fully completed.
+		</li>
+		<li>
+			<strong>Deleting Sights:</strong> Use <kbd class="html-btn btn-red">Delete Last Sighting</kbd> to remove an erroneous entry.
+			<ul>
+				<li>If you delete the <strong>1st or 2nd</strong> sighting in a set, only that specific star data is removed.</li>
+				<li>If you delete the <strong>3rd</strong> sighting (which completes a fix), the application will also remove the associated "Cocked Hat" from the Plotting tab and automatically <strong>revert your Dead Reckoning position</strong> to the previous valid fix.</li>
+			</ul>
+		</li>
+	</ul>
+
+	<h4>3. Plotting Tab (Fixes &amp; LOPs)</h4>
+	<p>
+		The application automatically performs all sight reductions, line intersections, and map plotting over a generated OpenStreetMap (OSM) regional map montage centered on your flight path.
+	</p>
+	<ul>
+		<li>
+			<strong>Cocked Hat Fixes:</strong> Every 3 sights, the application intersects the individual lines of position to form a triangular "Cocked Hat" fix, plotting the vertices and the central estimated position (centroid) on the map.
+		</li>
+		<li>
+			<strong>Final Leg Guidance:</strong> Click <kbd class="html-btn btn-red">Show Leg Info</kbd> to display the true bearing and remaining nautical mile distance from your last fix to the destination airport.
+		</li>
+		<li>
+			<strong>Aircraft Tracking:</strong> Click <kbd class="html-btn btn-red">Show Plane</kbd> to render your aircraft's real-time position and heading vector directly onto the plotting map.
+		</li>
+	</ul>
+
+	<h4>4. Tables Tab (Almanac &amp; Star Charts)</h4>
+	<p>
+		Provides an almanac reference table listing all navigational stars currently visible within your field of view, sorted by SHA index. Clicking any constellation name in the table instantly loads its detailed historical star chart image (stored in the scenario's <code>Constellations/</code> subdirectory) into the viewer below for visual cross-referencing.
+	</p>
+
+	<hr />
+
+	<!-- STEP-BY-STEP SCENARIO WALKTHROUGH -->
+	<h3 id="scenarioWalkthrough">Step-by-Step Scenario Walkthrough</h3>
+	<p>
+		To establish a navigational fix, you must successfully take a set of <strong>3 star sights</strong>. Below are two sample workflows depending on your familiarity with celestial navigation and the night sky.
+	</p>
+
+	<h4>Approach A: The Beginner Workflow (Using the Visible Stars Table)</h4>
+	<p>
+		If you are still learning the star names and constellations, use this structured method to identify and shoot visible stars:
+	</p>
+	<ol type="1">
+		<li>
+			<strong>Route Setup:</strong> Choose whether to fly between specific airports using the <kbd class="winforms-btn">Set Start/Destination</kbd> buttons or leave them as "Random" for a surprise route.
+		</li>
+		<li>
+			<strong>Launch &amp; Cruise:</strong> Load the scenario in Prepar3D, take off, and establish a stable cruise heading. <em>(Note: If you used random airports, your initial navigation relies on your flight plan or compass heading until your first celestial fix is established).</em>
+		</li>
+		<li>
+			<strong>Check Visible Stars:</strong> Using the Sextant panel, switch to the <strong>Star Chart</strong> tab, frame a prominent part of the sky using <kbd class="html-btn btn-blue">100°</kbd> or <kbd class="html-btn btn-blue">50°</kbd> FOV and <kbd class="html-btn btn-blue">AZ</kbd>, <kbd class="html-btn btn-blue">ALT</kbd> buttons, then click <kbd class="html-btn btn-green">Update Stars Table</kbd>.
+		</li>
+		<li>
+			<strong>Review the Tables Tab:</strong> Switch to the <strong>Tables</strong> tab to view a list of all navigational stars currently visible in your viewport. Select your first star (e.g., <em>Vega</em>).
+		</li>
+		<li>
+			<strong>Select on Worksheet:</strong> Switch to the <strong>Sight Reduction</strong> tab (Sight #1) and select that star from the dropdown menu.
+		</li>
+		<li>
+			<strong>Sight the Star:</strong> Return to the <strong>Star Chart</strong> tab. Use the <kbd class="html-btn btn-blue">AZ</kbd> and <kbd class="html-btn btn-blue">ALT</kbd> buttons to bring the chosen star into your viewport.
+			<p>
+				<em>Note: Accuracy depends entirely on <strong>vertical alignment</strong>. While you do not need to center the star horizontally, you must use the Ho pixel adjustment buttons to ensure the horizontal red crosshair line precisely bisects the star before clicking <kbd class="html-btn btn-red">Take Sighting</kbd>.</em>
+			</p>
+		</li>
+		<li>
+			<strong>Shoot 2 More Stars:</strong> Pick two additional visible stars from the Tables tab, select them on the Sight Reduction worksheet one by one, center them on the Star Chart, and take your sights.
+		</li>
+		<li>
+			<p>
+				<strong>View Your Fix:</strong> Once Sight #3 is completed, switch to the <strong>Plotting</strong> tab to view your newly calculated triangular "Cocked Hat" fix and updated Dead Reckoning position.
+			</p>
+			<p>
+				<strong>What is a "Good" Fix?</strong> A high-quality fix forms a tight triangular "Cocked Hat" whose sides measure under 1 to 2 nautical miles across. If your triangle is enormous (e.g., 20nm wide), it usually indicates an incorrect Ho measurement on one of the stars or poor star geometry.
+			</p>
+		</li>
+	</ol>
+	<h4>Navigational Best Practices</h4>
+	<ul>
+		<li>
+			<strong>Pausing the Simulator:</strong> In a real aircraft, taking three consecutive sights takes several minutes while the plane moves. In Prepar3D, you can press the <kbd>P</kbd> key to pause the simulator while you reduce each sight on the worksheet, preventing excessive dead-reckoning drift between sightings.
+		</li>
+		<li>
+			<strong>Star Geometry:</strong> For the most accurate fix, try to select three stars whose azimuths (Zn) are well-separated around you—ideally forming a "tripod" roughly 120° apart—rather than three stars clustered in the same section of the sky.
+		</li>
+		<li>
+			<strong>Target Altitude:</strong> Ideally, choose stars whose altitudes are between <strong>15° and 65°</strong> above the horizon. Stars below 15° suffer from heavy atmospheric refraction errors, while stars above 65° introduce geometric errors when intersecting lines of position.
+		</li>
+	</ul>
+
+	<h4>Approach B: The Realistic Workflow (Pre-Planned Navigation)</h4>
+	<p>
+		This approach is designed for navigators who wish to simulate authentic long-range flight procedures, relying on pre-flight planning and star recognition rather than interactive UI labels or automated star charts.
+	</p>
+	<ol type="1">
+		<li>
+			<strong>Pre-Flight Briefing:</strong> After generating your scenario in the application, review the <code>Overview.htm</code> briefing. Identify your destination airport and note the total great-circle distance.
+		</li>
+		<li>
+			<strong>Mission Planning:</strong> Based on your aircraft's cruise speed and the scenario distance, determine your navigation intervals. For example, on a 4-hour flight, you might plan to establish a celestial fix every 60 minutes to monitor your track and ground speed.
+		</li>
+		<li>
+			<strong>Star Pre-Selection:</strong> Using your estimated Dead Reckoning (DR) position and Zulu time for each planned fix, refer to an Air Almanac or standard Nautical Almanac to identify the most suitable navigational stars. Aim for a set of three stars with altitudes between 15° and 65° and azimuths separated by approximately 120°.
+		</li>
+		<li>
+			<strong>Prepare the Worksheet:</strong> Once airborne and approaching your fix time, switch to the <strong>Sight Reduction</strong> tab and select your three pre-planned stars in the dropdown menus for Sights 1, 2, and 3.
+		</li>
+		<li>
+			<strong>Manual Star Identification:</strong> Switch to the <strong>Star Chart</strong> tab. Without enabling "Star Names" or "Constellation Lines," pan the sextant view to the expected azimuth and altitude for your first target. Use your knowledge of the night sky and constellation patterns to identify the star visually.
+		</li>
+		<li>
+			<strong>Sequential Sighting:</strong> Center each star on the <kbd class="html-btn btn-purple">Ho</kbd> line and click <kbd class="html-btn btn-red">Take Sighting</kbd>. Complete the three-star sequence efficiently (ideally within 5 minutes) to minimize the "cocked hat" error caused by aircraft movement between sights.
+		</li>
+		<li>
+			<strong>Navigation Review:</strong> Switch to the <strong>Plotting</strong> tab to compare your celestial fix against your intended flight path. Use the <kbd class="html-btn btn-blue">Show Leg Info</kbd> tool to calculate your final heading correction to the destination.
+		</li>
+	</ol>
+
+	<hr />
+
+	<!-- ACKNOWLEDGEMENTS & REFERENCES -->
+	<h3 id="celestialReferences">Astronomical &amp; Cartographic References</h3>
+	<p>
+		The astronomical calculation engines and catalog data powering this scenario draw upon open-source and standard astronomical resources:
+	</p>
+	<ul>
+		<li>
+			<strong>Star Catalog Data:</strong> Expanded Bright Star Catalogue (BSC5P) parsed from <a href="https://github.com/frostoven/BSC5P-JSON/tree/primary" title="BSC5P-JSON Repository" target="_blank">frostoven/BSC5P-JSON</a>.
+		</li>
+		<li>
+			<strong>Constellation Lines:</strong> Modern International Astronomical Union (IAU) constellation boundary and line vector definitions sourced from <a href="https://github.com/Stellarium/stellarium/blob/master/skycultures/modern_iau/index.json" title="Stellarium Skycultures" target="_blank">Stellarium Skycultures</a>.
+		</li>
+		<li>
+			<strong>Constellation Artwork:</strong> Historical constellation map illustrations sourced from the <a href="https://archive.org/details/IauConstellationsSvg" title="IAU Constellations SVG Archive" target="_blank">IAU Constellations SVG Archive</a> on Internet Archive.
+		</li>
+	</ul>
+</body>
 </html>
