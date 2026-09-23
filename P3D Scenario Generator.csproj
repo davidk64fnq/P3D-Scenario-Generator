@@ -33,16 +33,6 @@
     <None Remove="Resources\Help\circuit.htm" />
     <None Remove="Resources\Help\images\circuitTab.jpg" />
     <None Remove="Resources\Help\images\introduction-objects.jpg" />
-    <None Remove="Resources\Help\images\legRoute.jpg" />
-    <None Remove="Resources\Help\images\panelManagerMenu.jpg" />
-    <None Remove="Resources\Help\images\panelManagerWindow.jpg" />
-    <None Remove="Resources\Help\images\pic2map-nearest.jpg" />
-    <None Remove="Resources\Help\images\pic2map.jpg" />
-    <None Remove="Resources\Help\images\planeOnMarker.jpg" />
-    <None Remove="Resources\Help\images\save-location.jpg" />
-    <None Remove="Resources\Help\images\sceanrioReset.jpg" />
-    <None Remove="Resources\Help\images\scenarioLoadMenu.jpg" />
-    <None Remove="Resources\Help\images\scenarioLoadScreen.jpg" />
     <None Remove="Resources\Help\introduction.htm" />
     <None Remove="Resources\Help\photoTour.htm" />
     <None Remove="Resources\Help\signwriting.htm" />
@@ -191,36 +181,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\images\introduction-objects.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\legRoute.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\panelManagerMenu.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\panelManagerWindow.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\pic2map-nearest.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\pic2map.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\planeOnMarker.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\save-location.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\sceanrioReset.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\scenarioLoadMenu.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\scenarioLoadScreen.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\introduction.htm">
