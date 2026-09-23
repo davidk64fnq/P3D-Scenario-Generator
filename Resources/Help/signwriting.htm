@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta charset="utf-8" />
+	<title>P3D Scenario Generator | Sign Writing Tab</title>
+	<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+	<h2>Sign Writing Tab</h2>
+	<p>
+		The <strong>Sign Writing Tab</strong> enables you to configure precision aerobatic skywriting scenarios where you "write" words and messages in the sky above your chosen airfield. The generator translates your text into a sequence of three-dimensional flight gates (hoops). Flying through these gate pairs activates your aircraft's smoke trail, progressively drawing each letter stroke onto an interactive in-cockpit display.
+	</p>
+	<p>
+		<strong>Design Philosophy:</strong> Rather than relying solely on visual smoke trails that quickly drift and dissipate in the wind, Sign Writing scenarios feature an in-flight real-time digital canvas panel. Regardless of how the letters are tilted or flown in 3D space, this onboard display renders a clean, upright 2D representation of your message as each stroke is executed, complete with a live timestamped telemetry console.
+	</p>
+
+	<hr />
+
+	<!-- SIGNWRITING GEOMETRY & MECHANICS -->
+	<h3 id="signGeometry">Skywriting Geometry &amp; Gate Mechanics</h3>
+	<p>
+		Every character in your message is constructed using a standardized <strong>22-segment font grid</strong> (2 grid units wide by 4 grid units high). This geometry supports all 26 uppercase and lowercase letters of the English alphabet:
+	</p>
+	<ul>
+		<li>
+			<strong>Gate Pairs per Stroke:</strong> Each active line segment of a letter is bounded by two hoops: an <em>entry gate</em> (where smoke turns on) and an <em>exit gate</em> (where smoke turns off). Horizontal strokes are flown East or West (90° or 270°), while vertical strokes are aligned North or South (0° or 180°).
+		</li>
+		<li>
+			<strong>Sequential Gate Guidance:</strong> To prevent visual clutter, only the active stroke's hoops are displayed at any time. The active entry hoop is rendered in <strong style="color: #4f7942;">green</strong> and flagged with an in-sim Point of Interest (POI) marker. The target exit hoop is rendered in <strong style="color: #c0392b;">red</strong> to clearly indicate your required heading and terminus.
+		</li>
+		<li>
+			<strong>Automated Smoke Activation:</strong> Flying through the green entry hoop triggers an audible chime (<code>ThruHoop.wav</code>), toggles your smoke system <strong>ON</strong>, and draws a directional entry cap on the in-flight canvas. Passing through the red exit hoop toggles smoke <strong>OFF</strong>, seals the stroke with an exit cap, removes that segment's hoops, and activates the green entry hoop for the next stroke.
+		</li>
+		<li>
+			<strong>Canvas Depiction:</strong> The digital canvas overlay always displays the message upright as if viewed directly in front of you, regardless of whether the strokes were flown flat over the ground or pitched at an angle into the sky.
+		</li>
+	</ul>
+
+	<hr />
+
+	<!-- SIGN WRITING PARAMETERS -->
+	<h3 id="signWritingParameters">Sign Writing Parameters</h3>
+	<p>
+		The controls within the <strong>Sign Writing Parameters</strong> group define the text message and the spatial dimensions of the hoops placed in the simulator.
+	</p>
+
+	<h4>Message combobox</h4>
+	<p>
+		The text string to spell out in the sky.
+	</p>
+	<ul>
+		<li>
+			<strong>Alphabetic Characters Only:</strong> Accepts letters <code>A–Z</code> and <code>a–z</code>. Numbers, punctuation marks, and spaces are not supported.
+		</li>
+		<li>
+			<strong>Saving &amp; Deleting Presets:</strong> To save a new message to the list, type the text into the combobox and press <kbd>Enter</kbd>. To delete a saved message from the list, select it and press <kbd>Delete</kbd>.
+		</li>
+		<li>
+			<strong>Screen Space Validation:</strong> The maximum allowable number of characters is automatically bounded by your configured <a href="#signWindowLocation">Sign Window Location</a> settings. If a proposed message is too long to fit the in-game canvas and console on your target screen, validation will prevent generation.
+		</li>
+		<li>
+			<strong>Beginner Recommendation:</strong> Flying even a single letter requires maneuvering through multiple consecutive strokes and repositioning turns. It is strongly recommended to start with a <strong>single-letter message</strong> (such as <code>Z</code>, <code>L</code>, or <code>C</code>) before attempting multi-letter words.
+		</li>
+	</ul>
+
+	<h4>Tilt Angle (degrees)</h4>
+	<p>
+		Controls the pitch angle (from <code>0</code>° to <code>90</code>°) of the letter grid relative to the ground.
+	</p>
+	<ul>
+		<li>
+			<strong>0° Tilt (Flat / Level Flight):</strong> The entire message is laid out horizontally in a flat plane parallel to the Earth's surface. All gates share the exact same altitude, allowing you to fly every stroke in level cruise without changing pitch or vertical speed.
+		</li>
+		<li>
+			<strong>Intermediate Tilt (e.g., 10°–30°):</strong> The message is tilted upward relative to the horizon. Horizontal strokes remain level, while North-bound vertical strokes become steady climbs and South-bound strokes become steady descents, allowing the pattern to be viewed from the departure airfield.
+		</li>
+		<li>
+			<strong>90° Tilt (Perpendicular / Vertical Wall):</strong> The message stands completely vertical. At 90°, vertical strokes run straight up and down, requiring a helicopter or high-thrust aerobatic aircraft capable of sustained vertical climbs and descents.
+		</li>
+	</ul>
+
+	<h4>Gate Height (feet AMSL)</h4>
+	<p>
+		The base altitude in feet Above Mean Sea Level (AMSL) for the lowest gates in the message. This value is added to the airport's surveyed field elevation so the gates remain safely above runway level.
+	</p>
+
+	<h4>Segment Length (miles)</h4>
+	<p>
+		The straight-line flight distance (in nautical miles) between the entry and exit gates of a single stroke.
+	</p>
+	<ul>
+		<li>When an aircraft is selected on the General Tab, this defaults to a fractional minute of cruise flight (e.g., <code>0.5</code> miles for light trainers).</li>
+		<li>Longer lengths spread strokes out over several miles for faster aircraft; shorter lengths keep patterns compact for aerobatic biplanes.</li>
+	</ul>
+
+	<h4>Segment Radius (miles)</h4>
+	<p>
+		The turning clearance (in nautical miles) allocated at the ends of strokes to accommodate standard-rate turns between consecutive segments.
+	</p>
+	<ul>
+		<li>Defaults to approximately 0.1 minute of cruise flight based on your active aircraft variant.</li>
+		<li>Together with the segment length, this defines the total grid unit size: <code>GridUnit = SegmentLength + (2 &#215; SegmentRadius)</code>.</li>
+	</ul>
+
+	<hr />
+
+	<!-- SIGN WINDOW LOCATION -->
+	<h3 id="signWindowLocation">Sign Window Location Group</h3>
+	<p>
+		Configures the monitor index, positioning, alignment, and screen layout of the in-game signwriting overlay window when launched inside Prepar3D. The application uses these monitor dimensions and offsets to automatically calculate the maximum allowable message length and scale the real-time drawing canvas. For a detailed explanation of multi-monitor indexing, window alignment options, and pixel offsets, see the <a href="settings.htm#mapWindow">Settings Tab: Map Window Settings</a> documentation.
+	</p>
+
+	<hr />
+
+	<!-- IN-FLIGHT EXPERIENCE -->
+	<h3 id="inFlightExperience">In-Flight Operations &amp; Procedures</h3>
+	<p>
+		The scenario places your aircraft cold and dark on your chosen departure runway with the simulation paused.
+	</p>
+
+	<h4>1. Takeoff &amp; In-Flight Overlay</h4>
+	<p>
+		Unpausing the simulator begins the spoken text-to-speech mission briefing and opens the <strong>Sign Writing Panel</strong>, which contains:
+	</p>
+	<ul>
+		<li><strong>Digital Canvas:</strong> A black drawing display calibrated to your message. As you fly through gates, red smoke trails with crisp black outlines and directional caps appear in real time.</li>
+		<li><strong>Telemetry Console:</strong> A live timestamped log recording gate passage and smoke states (e.g., <code>[14:10:02] Smoke ON: Gate 1 triggered.</code>).</li>
+	</ul>
+
+	<h4>2. Flying the Hoops</h4>
+	<ol type="1">
+		<li>
+			<strong>Climb to Gate Altitude:</strong> Take off and climb toward the initial green entry hoop (Gate 1), which is flagged with an active in-sim Point of Interest (POI) marker.
+		</li>
+		<li>
+			<strong>Enter the Stroke:</strong> Fly through the green hoop on the designated heading. Passing through triggers an audio chime, turns your smoke on, and draws an entry cap on the HUD canvas.
+		</li>
+		<li>
+			<strong>Trace the Stroke:</strong> Maintain your heading and target vertical speed toward the red exit hoop (Gate 2). The HUD canvas continuously tracks your 3D spatial position relative to the segment vector, drawing the red smoke line in direct proportion to your forward progress.
+		</li>
+		<li>
+			<strong>Exit the Stroke:</strong> Fly through the red hoop to terminate the stroke. Smoke toggles off, the exit cap is stamped onto the HUD canvas, and the next segment's green entry hoop activates.
+		</li>
+		<li>
+			<strong>Repositioning Turns:</strong> Turn your aircraft to align with the next green hoop. The upcoming red exit hoop is visible ahead to assist you in planning your intercept turn.
+		</li>
+	</ol>
+
+	<h4>3. Landing &amp; Mission Completion</h4>
+	<p>
+		After you pass through the final gate of the last letter, the landing trigger activates. Return to your departure airfield, land, and bring the aircraft to a full stop within the 2 km airport boundary zone to complete the mission objective (<code>Goal01</code>) and close the overlay window.
+	</p>
+
+	<hr />
+
+	<!-- TERRAIN ADVISORY -->
+	<h3 id="terrainAdvisory">Terrain Advisory</h3>
+	<p>
+		<strong>Mountainous Terrain Warning:</strong> Sign writing gates are positioned along true cardinal bearings relative to your departure airport coordinates and field elevation. In mountainous or undulating terrain—especially when using large segment lengths or steep tilt angles—generated gates may occasionally intersect elevated ridgelines or hillsides. For best results, select airfields located in relatively flat terrain or increase the <strong>Gate Height</strong> setting to clear surrounding topography.
+	</p>
+
+	<hr />
+
+	<!-- GLOBAL ACTIONS -->
+	<h3 id="globalActions">Global Actions</h3>
+	<p>
+		The bottom buttons (<kbd class="winforms-btn">Reset Tab</kbd>, <kbd class="winforms-btn">Reload Profile</kbd>, and <kbd class="winforms-btn">Generate Scenario</kbd>) are persistent window controls (see <a href="generalTab.htm#globalActions">General Tab: Global Actions</a>):
+	</p>
+	<ul>
+		<li>
+			<strong><kbd class="winforms-btn">Reset Tab</kbd>:</strong> Dynamically recalculates baseline segment lengths, radii, and gate heights derived from the active aircraft variant's cruise speed.
+		</li>
+		<li>
+			<strong><kbd class="winforms-btn">Reload Profile</kbd>:</strong> Discards unsaved modifications and reloads your saved custom parameters for the active aircraft directly from <code>ui_settings.json</code>.
+		</li>
+		<li>
+			<strong><kbd class="winforms-btn">Generate Scenario</kbd>:</strong> Validates text length against screen bounds, generates the 3D gate array, compiles HTML5 vector scripts and audio triggers, and exports the flight package to Prepar3D.
+		</li>
+	</ul>
+</body>
+</html>

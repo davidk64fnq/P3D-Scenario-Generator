@@ -212,54 +212,54 @@ namespace P3D_Scenario_Generator
             GeneralTimePicker = new DateTimePicker();
             ButtonRandomAircraft = new Button();
             TextBoxGeneralAircraftValues = new TextBox();
-            GroupBoxSignWritingParameters = new GroupBox();
-            TableLayoutPanelSignWritingParameters = new TableLayoutPanel();
-            GroupBoxSignWritingSignWindowLocation = new GroupBox();
-            TableLayoutPanelSignWritingSignWindowLocation = new TableLayoutPanel();
-            GroupBoxPhotoTourPhotoWindowLocation = new GroupBox();
-            TableLayoutPanelPhotoTourPhotoWindowLocation = new TableLayoutPanel();
-            GroupBoxPhotoTourConstraints = new GroupBox();
-            TableLayoutPanelPhotoTourConstraints = new TableLayoutPanel();
+            TabControlP3DSG = new TabControl();
+            TabPageMenu = new TabPage();
+            tableLayoutPanel1 = new TableLayoutPanel();
+            tableLayoutPanel2 = new TableLayoutPanel();
             groupBox16 = new GroupBox();
             tableLayoutPanelLocationFilter = new TableLayoutPanel();
             TextBoxGeneralLocationFilters = new TextBox();
+            tableLayoutPanel3 = new TableLayoutPanel();
+            groupBox14 = new GroupBox();
+            tableLayoutPanel10 = new TableLayoutPanel();
+            groupBox15 = new GroupBox();
+            tableLayoutPanel11 = new TableLayoutPanel();
+            TabPageCircuit = new TabPage();
+            tableLayoutPanel4 = new TableLayoutPanel();
+            tableLayoutPanel5 = new TableLayoutPanel();
             TabPagePhotoTour = new TabPage();
             tableLayoutPanel6 = new TableLayoutPanel();
             tableLayoutPanel14 = new TableLayoutPanel();
+            GroupBoxPhotoTourConstraints = new GroupBox();
+            TableLayoutPanelPhotoTourConstraints = new TableLayoutPanel();
             tableLayoutPanel15 = new TableLayoutPanel();
-            ButtonHelp = new Button();
-            TabPageSettings = new TabPage();
-            TableLayoutPanelSettings = new TableLayoutPanel();
-            tableLayoutPanel24 = new TableLayoutPanel();
-            GroupBoxSettingsFolderInfo = new GroupBox();
-            TableLayoutPanelSettingsFolderInfo = new TableLayoutPanel();
-            TableLayoutPanelSettingsMap = new TableLayoutPanel();
+            GroupBoxPhotoTourPhotoWindowLocation = new GroupBox();
+            TableLayoutPanelPhotoTourPhotoWindowLocation = new TableLayoutPanel();
+            TabPageSign = new TabPage();
+            tableLayoutPanel7 = new TableLayoutPanel();
+            tableLayoutPanel16 = new TableLayoutPanel();
+            GroupBoxSignWritingParameters = new GroupBox();
+            TableLayoutPanelSignWritingParameters = new TableLayoutPanel();
+            tableLayoutPanel17 = new TableLayoutPanel();
+            GroupBoxSignWritingSignWindowLocation = new GroupBox();
+            TableLayoutPanelSignWritingSignWindowLocation = new TableLayoutPanel();
             TabPageCelestial = new TabPage();
             tableLayoutPanel13 = new TableLayoutPanel();
             tableLayoutPanel18 = new TableLayoutPanel();
             tableLayoutPanel19 = new TableLayoutPanel();
             GroupBoxCelestialNavigationSextant = new GroupBox();
             TableLayoutPanelCelestialNavigationSextant = new TableLayoutPanel();
-            TabPageSign = new TabPage();
-            tableLayoutPanel7 = new TableLayoutPanel();
-            tableLayoutPanel16 = new TableLayoutPanel();
-            tableLayoutPanel17 = new TableLayoutPanel();
-            TabPageCircuit = new TabPage();
-            tableLayoutPanel4 = new TableLayoutPanel();
-            tableLayoutPanel5 = new TableLayoutPanel();
-            TabPageMenu = new TabPage();
-            tableLayoutPanel1 = new TableLayoutPanel();
-            tableLayoutPanel2 = new TableLayoutPanel();
-            tableLayoutPanel3 = new TableLayoutPanel();
-            groupBox14 = new GroupBox();
-            tableLayoutPanel10 = new TableLayoutPanel();
-            groupBox15 = new GroupBox();
-            tableLayoutPanel11 = new TableLayoutPanel();
-            TabControlP3DSG = new TabControl();
             TabPageWikiList = new TabPage();
             tableLayoutPanel20 = new TableLayoutPanel();
             tableLayoutPanel21 = new TableLayoutPanel();
             TableLayoutPanelWikiURLWindowLocation = new TableLayoutPanel();
+            TabPageSettings = new TabPage();
+            TableLayoutPanelSettings = new TableLayoutPanel();
+            tableLayoutPanel24 = new TableLayoutPanel();
+            GroupBoxSettingsFolderInfo = new GroupBox();
+            TableLayoutPanelSettingsFolderInfo = new TableLayoutPanel();
+            TableLayoutPanelSettingsMap = new TableLayoutPanel();
+            ButtonHelp = new Button();
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             errorProvider1 = new ErrorProvider(components);
@@ -280,52 +280,52 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelSettingsMapWindow.SuspendLayout();
             GroupBoxCelestialNavigationConstraints.SuspendLayout();
             TableLayoutPanelCelestialNavigationConstraints.SuspendLayout();
-            GroupBoxSignWritingParameters.SuspendLayout();
-            TableLayoutPanelSignWritingParameters.SuspendLayout();
-            GroupBoxSignWritingSignWindowLocation.SuspendLayout();
-            TableLayoutPanelSignWritingSignWindowLocation.SuspendLayout();
-            GroupBoxPhotoTourPhotoWindowLocation.SuspendLayout();
-            TableLayoutPanelPhotoTourPhotoWindowLocation.SuspendLayout();
-            GroupBoxPhotoTourConstraints.SuspendLayout();
-            TableLayoutPanelPhotoTourConstraints.SuspendLayout();
+            TabControlP3DSG.SuspendLayout();
+            TabPageMenu.SuspendLayout();
+            tableLayoutPanel1.SuspendLayout();
+            tableLayoutPanel2.SuspendLayout();
             groupBox16.SuspendLayout();
             tableLayoutPanelLocationFilter.SuspendLayout();
+            tableLayoutPanel3.SuspendLayout();
+            groupBox14.SuspendLayout();
+            tableLayoutPanel10.SuspendLayout();
+            groupBox15.SuspendLayout();
+            tableLayoutPanel11.SuspendLayout();
+            TabPageCircuit.SuspendLayout();
+            tableLayoutPanel4.SuspendLayout();
+            tableLayoutPanel5.SuspendLayout();
             TabPagePhotoTour.SuspendLayout();
             tableLayoutPanel6.SuspendLayout();
             tableLayoutPanel14.SuspendLayout();
+            GroupBoxPhotoTourConstraints.SuspendLayout();
+            TableLayoutPanelPhotoTourConstraints.SuspendLayout();
             tableLayoutPanel15.SuspendLayout();
-            TabPageSettings.SuspendLayout();
-            TableLayoutPanelSettings.SuspendLayout();
-            tableLayoutPanel24.SuspendLayout();
-            GroupBoxSettingsFolderInfo.SuspendLayout();
-            TableLayoutPanelSettingsFolderInfo.SuspendLayout();
-            TableLayoutPanelSettingsMap.SuspendLayout();
+            GroupBoxPhotoTourPhotoWindowLocation.SuspendLayout();
+            TableLayoutPanelPhotoTourPhotoWindowLocation.SuspendLayout();
+            TabPageSign.SuspendLayout();
+            tableLayoutPanel7.SuspendLayout();
+            tableLayoutPanel16.SuspendLayout();
+            GroupBoxSignWritingParameters.SuspendLayout();
+            TableLayoutPanelSignWritingParameters.SuspendLayout();
+            tableLayoutPanel17.SuspendLayout();
+            GroupBoxSignWritingSignWindowLocation.SuspendLayout();
+            TableLayoutPanelSignWritingSignWindowLocation.SuspendLayout();
             TabPageCelestial.SuspendLayout();
             tableLayoutPanel13.SuspendLayout();
             tableLayoutPanel18.SuspendLayout();
             tableLayoutPanel19.SuspendLayout();
             GroupBoxCelestialNavigationSextant.SuspendLayout();
             TableLayoutPanelCelestialNavigationSextant.SuspendLayout();
-            TabPageSign.SuspendLayout();
-            tableLayoutPanel7.SuspendLayout();
-            tableLayoutPanel16.SuspendLayout();
-            tableLayoutPanel17.SuspendLayout();
-            TabPageCircuit.SuspendLayout();
-            tableLayoutPanel4.SuspendLayout();
-            tableLayoutPanel5.SuspendLayout();
-            TabPageMenu.SuspendLayout();
-            tableLayoutPanel1.SuspendLayout();
-            tableLayoutPanel2.SuspendLayout();
-            tableLayoutPanel3.SuspendLayout();
-            groupBox14.SuspendLayout();
-            tableLayoutPanel10.SuspendLayout();
-            groupBox15.SuspendLayout();
-            tableLayoutPanel11.SuspendLayout();
-            TabControlP3DSG.SuspendLayout();
             TabPageWikiList.SuspendLayout();
             tableLayoutPanel20.SuspendLayout();
             tableLayoutPanel21.SuspendLayout();
             TableLayoutPanelWikiURLWindowLocation.SuspendLayout();
+            TabPageSettings.SuspendLayout();
+            TableLayoutPanelSettings.SuspendLayout();
+            tableLayoutPanel24.SuspendLayout();
+            GroupBoxSettingsFolderInfo.SuspendLayout();
+            TableLayoutPanelSettingsFolderInfo.SuspendLayout();
+            TableLayoutPanelSettingsMap.SuspendLayout();
             statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)errorProvider1).BeginInit();
             SuspendLayout();
@@ -353,7 +353,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMinDist.Tag = "";
             TextBoxCelestialMinDist.Text = "20";
             TextBoxCelestialMinDist.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCelestialMinDist, "Min run home from starting position (miles)");
+            toolTip1.SetToolTip(TextBoxCelestialMinDist, "Minimum Distance:\r\nEnter the minimum great-circle distance (in nautical miles) permitted between the departure and destination airfields when random airport selection is active.");
             // 
             // TextBoxCelestialMaxDist
             // 
@@ -366,7 +366,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMaxDist.Tag = "";
             TextBoxCelestialMaxDist.Text = "30";
             TextBoxCelestialMaxDist.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCelestialMaxDist, "Max run home from starting position (miles)");
+            toolTip1.SetToolTip(TextBoxCelestialMaxDist, "Maximum Distance:\r\nEnter the maximum great-circle distance (in nautical miles) permitted between the departure and destination airfields when random airport selection is active.");
             // 
             // label19
             // 
@@ -377,7 +377,7 @@ namespace P3D_Scenario_Generator
             label19.Size = new Size(58, 15);
             label19.TabIndex = 2;
             label19.Text = "Tilt Angle";
-            toolTip1.SetToolTip(label19, "Tilt Angle in degrees from horizontal");
+            toolTip1.SetToolTip(label19, resources.GetString("label19.ToolTip"));
             // 
             // TextBoxSignGateHeight
             // 
@@ -386,11 +386,11 @@ namespace P3D_Scenario_Generator
             TextBoxSignGateHeight.Location = new Point(115, 71);
             TextBoxSignGateHeight.Name = "TextBoxSignGateHeight";
             TextBoxSignGateHeight.Size = new Size(100, 23);
-            TextBoxSignGateHeight.TabIndex = 10;
+            TextBoxSignGateHeight.TabIndex = 5;
             TextBoxSignGateHeight.Tag = "";
             TextBoxSignGateHeight.Text = "1000";
             TextBoxSignGateHeight.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSignGateHeight, "Above ground (feet)");
+            toolTip1.SetToolTip(TextBoxSignGateHeight, "Gate Height:\r\nEnter the base altitude (in feet AMSL) for the lowest gates in the pattern.\r\nAdded to the departure airport elevation to ensure clearance above ground.");
             TextBoxSignGateHeight.Leave += TextBoxSignGateHeight_Leave;
             // 
             // TextBoxSignSegmentLength
@@ -400,11 +400,11 @@ namespace P3D_Scenario_Generator
             TextBoxSignSegmentLength.Location = new Point(115, 104);
             TextBoxSignSegmentLength.Name = "TextBoxSignSegmentLength";
             TextBoxSignSegmentLength.Size = new Size(100, 23);
-            TextBoxSignSegmentLength.TabIndex = 13;
+            TextBoxSignSegmentLength.TabIndex = 7;
             TextBoxSignSegmentLength.Tag = "";
-            TextBoxSignSegmentLength.Text = "5000";
+            TextBoxSignSegmentLength.Text = "0.5";
             TextBoxSignSegmentLength.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSignSegmentLength, "The linear length, in feet, of a single straight segment that forms part of a character. Characters are defined by a grid that is four segments tall and two segments wide.");
+            toolTip1.SetToolTip(TextBoxSignSegmentLength, "Segment Length:\r\nEnter the straight-line distance (in nautical miles) for each letter stroke.\r\nDetermines the size of the letters. Defaults based on your aircraft's cruise speed.");
             TextBoxSignSegmentLength.Leave += TextBoxSignSegmentLength_Leave;
             // 
             // TextBoxSignSegmentRadius
@@ -414,11 +414,11 @@ namespace P3D_Scenario_Generator
             TextBoxSignSegmentRadius.Location = new Point(115, 137);
             TextBoxSignSegmentRadius.Name = "TextBoxSignSegmentRadius";
             TextBoxSignSegmentRadius.Size = new Size(100, 23);
-            TextBoxSignSegmentRadius.TabIndex = 14;
+            TextBoxSignSegmentRadius.TabIndex = 9;
             TextBoxSignSegmentRadius.Tag = "";
-            TextBoxSignSegmentRadius.Text = "500";
+            TextBoxSignSegmentRadius.Text = "0.1";
             TextBoxSignSegmentRadius.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSignSegmentRadius, "The radius, in feet, of the turn path executed when transitioning from the end of one character segment to the start of the next.");
+            toolTip1.SetToolTip(TextBoxSignSegmentRadius, "Segment Radius:\r\nEnter the turn radius allowance (in nautical miles) at stroke endpoints.\r\nAccommodates standard aircraft turn transitions between consecutive segments.");
             TextBoxSignSegmentRadius.Leave += TextBoxSignSegmentRadius_Leave;
             // 
             // TextBoxPhotoTourConstraintsMaxLegDist
@@ -432,7 +432,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourConstraintsMaxLegDist.Tag = "";
             TextBoxPhotoTourConstraintsMaxLegDist.Text = "10";
             TextBoxPhotoTourConstraintsMaxLegDist.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMaxLegDist, "Maximum leg distance in miles to next photo, must be greater than minimum leg distance.");
+            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMaxLegDist, resources.GetString("TextBoxPhotoTourConstraintsMaxLegDist.ToolTip"));
             TextBoxPhotoTourConstraintsMaxLegDist.Leave += TextBoxPhotoTourConstraintsMaxLegDist_Leave;
             // 
             // TextBoxPhotoTourConstraintsMinLegDist
@@ -446,7 +446,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourConstraintsMinLegDist.Tag = "";
             TextBoxPhotoTourConstraintsMinLegDist.Text = "3";
             TextBoxPhotoTourConstraintsMinLegDist.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMinLegDist, "Minimum leg distance in miles to next photo");
+            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMinLegDist, resources.GetString("TextBoxPhotoTourConstraintsMinLegDist.ToolTip"));
             TextBoxPhotoTourConstraintsMinLegDist.Leave += TextBoxPhotoTourConstraintsMinLegDist_Leave;
             // 
             // TextBoxPhotoTourConstraintsMaxBearingChange
@@ -460,7 +460,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourConstraintsMaxBearingChange.Tag = "";
             TextBoxPhotoTourConstraintsMaxBearingChange.Text = "135";
             TextBoxPhotoTourConstraintsMaxBearingChange.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMaxBearingChange, "Maximum bearing change left or right each leg in degrees");
+            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMaxBearingChange, resources.GetString("TextBoxPhotoTourConstraintsMaxBearingChange.ToolTip"));
             TextBoxPhotoTourConstraintsMaxBearingChange.Leave += TextBoxPhotoTourConstraintsMaxBearingChange_Leave;
             // 
             // TextBoxPhotoTourConstraintsHotspotRadius
@@ -473,7 +473,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourConstraintsHotspotRadius.Tag = "";
             TextBoxPhotoTourConstraintsHotspotRadius.Text = "1000";
             TextBoxPhotoTourConstraintsHotspotRadius.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsHotspotRadius, "Radius of photo hotspot location in metres");
+            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsHotspotRadius, resources.GetString("TextBoxPhotoTourConstraintsHotspotRadius.ToolTip"));
             TextBoxPhotoTourConstraintsHotspotRadius.Leave += TextBoxPhotoTourConstraintsHotspotRadius_Leave;
             // 
             // buttonGeneralAircraft
@@ -499,7 +499,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourConstraintsMaxNoLegs.Tag = "";
             TextBoxPhotoTourConstraintsMaxNoLegs.Text = "7";
             TextBoxPhotoTourConstraintsMaxNoLegs.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMaxNoLegs, "Maximum number of legs must between 2 and 18 inclusive and greater then or equal to minimum number of legs. Two legs would be starting airport to a single photo location then return to airport.\r\n");
+            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMaxNoLegs, "Max No. Legs:\r\nSets the upper limit for the total number of legs in the generated tour.\r\nNOTE: Higher values create longer cross-country flights visiting more photo waypoints.");
             TextBoxPhotoTourConstraintsMaxNoLegs.Leave += TextBoxPhotoTourConstraintsMaxNoLegs_Leave;
             // 
             // TextBoxPhotoTourConstraintsMinNoLegs
@@ -513,7 +513,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourConstraintsMinNoLegs.Tag = "";
             TextBoxPhotoTourConstraintsMinNoLegs.Text = "2";
             TextBoxPhotoTourConstraintsMinNoLegs.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMinNoLegs, "Minimum number of legs must between 2 and 18 inclusive and less than or equal to maximum number of legs. Two legs would be starting airport to a single photo location then return to airport.");
+            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMinNoLegs, resources.GetString("TextBoxPhotoTourConstraintsMinNoLegs.ToolTip"));
             TextBoxPhotoTourConstraintsMinNoLegs.Leave += TextBoxPhotoTourConstraintsMinNoLegs_Leave;
             // 
             // TextBoxPhotoTourPhotoOffset
@@ -527,7 +527,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoOffset.Tag = "";
             TextBoxPhotoTourPhotoOffset.Text = "20";
             TextBoxPhotoTourPhotoOffset.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourPhotoOffset, resources.GetString("TextBoxPhotoTourPhotoOffset.ToolTip"));
+            toolTip1.SetToolTip(TextBoxPhotoTourPhotoOffset, "Offset:\r\nSpecifies the margin padding (in pixels) applied between the photo window edge and the target monitor screen border.\r\n\r\n\r\n");
             TextBoxPhotoTourPhotoOffset.Leave += TextBoxPhotoTourPhotoOffset_Leave;
             // 
             // TextBoxPhotoTourPhotoMonitorNumber
@@ -541,7 +541,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoMonitorNumber.Tag = "";
             TextBoxPhotoTourPhotoMonitorNumber.Text = "0";
             TextBoxPhotoTourPhotoMonitorNumber.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorNumber, "The default monitor that the photo window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorNumber, "Monitor Number:\r\nSpecifies the Windows display index where the photo window will render (e.g., 0, 1, or 2).\r\n\r\nNOTE: Invalid or disconnected display indices automatically fall back to Monitor 0.\r\n\r\n\r\n");
             TextBoxPhotoTourPhotoMonitorNumber.Leave += TextBoxPhotoTourPhotoMonitorNumber_Leave;
             // 
             // TextBoxPhotoTourPhotoMonitorHeight
@@ -555,7 +555,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoMonitorHeight.Tag = "";
             TextBoxPhotoTourPhotoMonitorHeight.Text = "1080";
             TextBoxPhotoTourPhotoMonitorHeight.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorHeight, "Resolution height in pixels of the monitor that photo window will display on.\r\n");
+            toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorHeight, "Monitor Height:\r\nEnter the vertical pixel resolution of your target display monitor (e.g., 1080).\r\n\r\n");
             TextBoxPhotoTourPhotoMonitorHeight.Leave += TextBoxPhotoTourPhotoMonitorHeight_Leave;
             // 
             // TextBoxPhotoTourPhotoMonitorWidth
@@ -569,7 +569,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourPhotoMonitorWidth.Tag = "";
             TextBoxPhotoTourPhotoMonitorWidth.Text = "1920";
             TextBoxPhotoTourPhotoMonitorWidth.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorWidth, "Resolution width in pixels of the monitor that photo window will display on. ");
+            toolTip1.SetToolTip(TextBoxPhotoTourPhotoMonitorWidth, "Monitor Width:\r\nEnter the horizontal pixel resolution of your target display monitor (e.g., 1920).\r\n\r\n");
             TextBoxPhotoTourPhotoMonitorWidth.Leave += TextBoxPhotoTourPhotoMonitorWidth_Leave;
             // 
             // label38
@@ -581,7 +581,7 @@ namespace P3D_Scenario_Generator
             label38.Size = new Size(89, 15);
             label38.TabIndex = 8;
             label38.Text = "Monitor Height";
-            toolTip1.SetToolTip(label38, "Resolution height in pixels of the monitor that photo window will display on.");
+            toolTip1.SetToolTip(label38, "Monitor Height:\r\nEnter the vertical pixel resolution of your target display monitor (e.g., 1080).\r\n\r\n");
             // 
             // label37
             // 
@@ -592,7 +592,7 @@ namespace P3D_Scenario_Generator
             label37.Size = new Size(85, 15);
             label37.TabIndex = 6;
             label37.Text = "Monitor Width";
-            toolTip1.SetToolTip(label37, "Resolution width in pixels of the monitor that photo window will display on. ");
+            toolTip1.SetToolTip(label37, "Monitor Width:\r\nEnter the horizontal pixel resolution of your target display monitor (e.g., 1920).\r\n\r\n");
             // 
             // label30
             // 
@@ -603,7 +603,7 @@ namespace P3D_Scenario_Generator
             label30.Size = new Size(39, 15);
             label30.TabIndex = 2;
             label30.Text = "Offset";
-            toolTip1.SetToolTip(label30, resources.GetString("label30.ToolTip"));
+            toolTip1.SetToolTip(label30, "Offset:\r\nSpecifies the margin padding (in pixels) applied between the photo window edge and the target monitor screen border.\r\n\r\n");
             // 
             // label31
             // 
@@ -614,7 +614,7 @@ namespace P3D_Scenario_Generator
             label31.Size = new Size(63, 15);
             label31.TabIndex = 4;
             label31.Text = "Alignment";
-            toolTip1.SetToolTip(label31, "Default location of photo window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            toolTip1.SetToolTip(label31, "Alignment:\r\nSelects the screen anchor alignment for the photo window:\r\n• Top Left / Top Right\r\n• Bottom Left / Bottom Right\r\n• Centered\r\n\r\n\r\n\r\n");
             // 
             // label29
             // 
@@ -625,7 +625,7 @@ namespace P3D_Scenario_Generator
             label29.Size = new Size(97, 15);
             label29.TabIndex = 0;
             label29.Text = "Monitor Number";
-            toolTip1.SetToolTip(label29, "The default monitor that the photo window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            toolTip1.SetToolTip(label29, "Monitor Number:\r\nSpecifies the Windows display index where the photo window will render (e.g., 0, 1, or 2).\r\n\r\nNOTE: Invalid or disconnected display indices automatically fall back to Monitor 0.\r\n\r\n");
             // 
             // ComboBoxPhotoTourPhotoAlignment
             // 
@@ -639,7 +639,7 @@ namespace P3D_Scenario_Generator
             ComboBoxPhotoTourPhotoAlignment.TabIndex = 5;
             ComboBoxPhotoTourPhotoAlignment.Tag = "";
             ComboBoxPhotoTourPhotoAlignment.Text = "Top Right";
-            toolTip1.SetToolTip(ComboBoxPhotoTourPhotoAlignment, "Default location of photo window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            toolTip1.SetToolTip(ComboBoxPhotoTourPhotoAlignment, "Alignment:\r\nSelects the screen anchor alignment for the photo window:\r\n• Top Left / Top Right\r\n• Bottom Left / Bottom Right\r\n• Centered\r\n\r\n\r\n");
             ComboBoxPhotoTourPhotoAlignment.SelectedIndexChanged += ComboBoxPhotoTourPhotoAlignment_SelectedIndexChanged;
             // 
             // label18
@@ -651,7 +651,7 @@ namespace P3D_Scenario_Generator
             label18.Size = new Size(88, 15);
             label18.TabIndex = 10;
             label18.Text = "Hotspot Radius";
-            toolTip1.SetToolTip(label18, "Radius of photo hotspot location in metres");
+            toolTip1.SetToolTip(label18, resources.GetString("label18.ToolTip"));
             // 
             // TextBoxSettingsCacheUsage
             // 
@@ -767,13 +767,13 @@ namespace P3D_Scenario_Generator
             // label17
             // 
             label17.Anchor = AnchorStyles.None;
-            label17.Location = new Point(13, 123);
+            label17.Location = new Point(3, 123);
             label17.Name = "label17";
-            label17.Size = new Size(100, 23);
+            label17.Size = new Size(121, 23);
             label17.TabIndex = 8;
             label17.Text = "Max Bearing Change";
             label17.TextAlign = ContentAlignment.MiddleCenter;
-            toolTip1.SetToolTip(label17, "Maximum bearing change left or right each leg in degrees");
+            toolTip1.SetToolTip(label17, resources.GetString("label17.ToolTip"));
             // 
             // label14
             // 
@@ -784,7 +784,7 @@ namespace P3D_Scenario_Generator
             label14.Size = new Size(73, 15);
             label14.TabIndex = 0;
             label14.Text = "Min Leg Dist";
-            toolTip1.SetToolTip(label14, "Minimum leg distance in miles to next photo");
+            toolTip1.SetToolTip(label14, resources.GetString("label14.ToolTip"));
             // 
             // label13
             // 
@@ -795,7 +795,7 @@ namespace P3D_Scenario_Generator
             label13.Size = new Size(78, 15);
             label13.TabIndex = 6;
             label13.Text = "Max No. Legs";
-            toolTip1.SetToolTip(label13, "Maximum number of legs must between 2 and 18 inclusive and greater then or equal to minimum number of legs. Two legs would be starting airport to a single photo location then return to airport.");
+            toolTip1.SetToolTip(label13, "Max No. Legs:\r\nSets the upper limit for the total number of legs in the generated tour.\r\nNOTE: Higher values create longer cross-country flights visiting more photo waypoints.");
             // 
             // label12
             // 
@@ -806,7 +806,7 @@ namespace P3D_Scenario_Generator
             label12.Size = new Size(77, 15);
             label12.TabIndex = 4;
             label12.Text = "Min No. Legs";
-            toolTip1.SetToolTip(label12, "Minimum number of legs must between 2 and 18 inclusive and less than or equal to maximum number of legs. Two legs would be starting airport to a single photo location then return to airport.");
+            toolTip1.SetToolTip(label12, resources.GetString("label12.ToolTip"));
             // 
             // label11
             // 
@@ -817,7 +817,7 @@ namespace P3D_Scenario_Generator
             label11.Size = new Size(74, 15);
             label11.TabIndex = 2;
             label11.Text = "Max Leg Dist";
-            toolTip1.SetToolTip(label11, "Maximum leg distance in miles to next photo, must be greater than minimum leg distance.\r\n");
+            toolTip1.SetToolTip(label11, resources.GetString("label11.ToolTip"));
             // 
             // TextBoxPhotoTourConstraintsMaxAttempts
             // 
@@ -830,7 +830,7 @@ namespace P3D_Scenario_Generator
             TextBoxPhotoTourConstraintsMaxAttempts.Tag = "";
             TextBoxPhotoTourConstraintsMaxAttempts.Text = "100";
             TextBoxPhotoTourConstraintsMaxAttempts.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMaxAttempts, "Maximum attempts to create a phototour using the current parameters before returning to user.");
+            toolTip1.SetToolTip(TextBoxPhotoTourConstraintsMaxAttempts, resources.GetString("TextBoxPhotoTourConstraintsMaxAttempts.ToolTip"));
             TextBoxPhotoTourConstraintsMaxAttempts.Leave += TextBoxPhotoTourConstraintsMaxAttempts_Leave;
             // 
             // label15
@@ -842,7 +842,7 @@ namespace P3D_Scenario_Generator
             label15.Size = new Size(81, 15);
             label15.TabIndex = 12;
             label15.Text = "Max Attempts";
-            toolTip1.SetToolTip(label15, "Maximum attempts to create a phototour using the current parameters before returning to user.\r\n");
+            toolTip1.SetToolTip(label15, resources.GetString("label15.ToolTip"));
             // 
             // ButtonReloadProfile
             // 
@@ -1072,10 +1072,10 @@ namespace P3D_Scenario_Generator
             ComboBoxSignMessage.Location = new Point(115, 5);
             ComboBoxSignMessage.Name = "ComboBoxSignMessage";
             ComboBoxSignMessage.Size = new Size(100, 23);
-            ComboBoxSignMessage.TabIndex = 43;
+            ComboBoxSignMessage.TabIndex = 1;
             ComboBoxSignMessage.Tag = "";
             ComboBoxSignMessage.Text = "X";
-            toolTip1.SetToolTip(ComboBoxSignMessage, "The message you wish to write in the sky! Uppercase and lowercase alphabet characters accepted. Message length is restricted by sign window location settings.");
+            toolTip1.SetToolTip(ComboBoxSignMessage, resources.GetString("ComboBoxSignMessage.ToolTip"));
             ComboBoxSignMessage.KeyDown += ComboBox_KeyDown;
             ComboBoxSignMessage.Leave += ComboBoxSignMessage_Leave;
             // 
@@ -1090,7 +1090,7 @@ namespace P3D_Scenario_Generator
             TextBoxSignTilt.Tag = "";
             TextBoxSignTilt.Text = "10";
             TextBoxSignTilt.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSignTilt, "Tilt Angle in degrees from horizontal");
+            toolTip1.SetToolTip(TextBoxSignTilt, resources.GetString("TextBoxSignTilt.ToolTip"));
             TextBoxSignTilt.Leave += TextBoxSignTilt_Leave;
             // 
             // label16
@@ -1102,7 +1102,7 @@ namespace P3D_Scenario_Generator
             label16.TabIndex = 0;
             label16.Text = "Message";
             label16.TextAlign = ContentAlignment.MiddleCenter;
-            toolTip1.SetToolTip(label16, "The message you wish to write in the sky! Uppercase and lowercase alphabet characters accepted. Message length is restricted by sign window location settings.");
+            toolTip1.SetToolTip(label16, resources.GetString("label16.ToolTip"));
             // 
             // label24
             // 
@@ -1110,10 +1110,10 @@ namespace P3D_Scenario_Generator
             label24.Location = new Point(5, 137);
             label24.Name = "label24";
             label24.Size = new Size(100, 23);
-            label24.TabIndex = 12;
+            label24.TabIndex = 8;
             label24.Text = "Segment Radius";
             label24.TextAlign = ContentAlignment.MiddleCenter;
-            toolTip1.SetToolTip(label24, "The radius, in feet, of the turn path executed when transitioning from the end of one character segment to the start of the next.");
+            toolTip1.SetToolTip(label24, "Segment Radius:\r\nEnter the turn radius allowance (in nautical miles) at stroke endpoints.\r\nAccommodates standard aircraft turn transitions between consecutive segments.");
             // 
             // label23
             // 
@@ -1121,10 +1121,10 @@ namespace P3D_Scenario_Generator
             label23.Location = new Point(5, 104);
             label23.Name = "label23";
             label23.Size = new Size(100, 23);
-            label23.TabIndex = 11;
+            label23.TabIndex = 6;
             label23.Text = "Segment Length";
             label23.TextAlign = ContentAlignment.MiddleCenter;
-            toolTip1.SetToolTip(label23, "The linear length, in feet, of a single straight segment that forms part of a character. Characters are defined by a grid that is four segments tall and two segments wide.\r\n");
+            toolTip1.SetToolTip(label23, "Segment Length:\r\nEnter the straight-line distance (in nautical miles) for each letter stroke.\r\nDetermines the size of the letters. Defaults based on your aircraft's cruise speed.");
             // 
             // label22
             // 
@@ -1132,10 +1132,10 @@ namespace P3D_Scenario_Generator
             label22.Location = new Point(5, 71);
             label22.Name = "label22";
             label22.Size = new Size(100, 23);
-            label22.TabIndex = 9;
+            label22.TabIndex = 4;
             label22.Text = "Gate Height";
             label22.TextAlign = ContentAlignment.MiddleCenter;
-            toolTip1.SetToolTip(label22, "Above ground (feet)");
+            toolTip1.SetToolTip(label22, "Gate Height:\r\nEnter the base altitude (in feet AMSL) for the lowest gates in the pattern.\r\nAdded to the departure airport elevation to ensure clearance above ground.");
             // 
             // TextBoxSignMonitorHeight
             // 
@@ -1144,11 +1144,11 @@ namespace P3D_Scenario_Generator
             TextBoxSignMonitorHeight.Location = new Point(139, 116);
             TextBoxSignMonitorHeight.Name = "TextBoxSignMonitorHeight";
             TextBoxSignMonitorHeight.Size = new Size(100, 23);
-            TextBoxSignMonitorHeight.TabIndex = 39;
+            TextBoxSignMonitorHeight.TabIndex = 9;
             TextBoxSignMonitorHeight.Tag = "";
             TextBoxSignMonitorHeight.Text = "1080";
             TextBoxSignMonitorHeight.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSignMonitorHeight, "Resolution height in pixels of the monitor that sign window will display on.\r\n");
+            toolTip1.SetToolTip(TextBoxSignMonitorHeight, "Monitor Height:\r\nEnter the vertical pixel resolution of your target display monitor (e.g., 1080).\r\n\r\n\r\n");
             TextBoxSignMonitorHeight.Leave += TextBoxSignMonitorHeight_Leave;
             // 
             // TextBoxSignMonitorWidth
@@ -1158,11 +1158,11 @@ namespace P3D_Scenario_Generator
             TextBoxSignMonitorWidth.Location = new Point(139, 87);
             TextBoxSignMonitorWidth.Name = "TextBoxSignMonitorWidth";
             TextBoxSignMonitorWidth.Size = new Size(100, 23);
-            TextBoxSignMonitorWidth.TabIndex = 39;
+            TextBoxSignMonitorWidth.TabIndex = 7;
             TextBoxSignMonitorWidth.Tag = "";
             TextBoxSignMonitorWidth.Text = "1920";
             TextBoxSignMonitorWidth.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSignMonitorWidth, "Resolution width in pixels of the monitor that sign window will display on. \r\n");
+            toolTip1.SetToolTip(TextBoxSignMonitorWidth, "Monitor Width:\r\nEnter the horizontal pixel resolution of your target display monitor (e.g., 1920).\r\n\r\n\r\n");
             TextBoxSignMonitorWidth.Leave += TextBoxSignMonitorWidth_Leave;
             // 
             // label20
@@ -1172,9 +1172,9 @@ namespace P3D_Scenario_Generator
             label20.Location = new Point(18, 120);
             label20.Name = "label20";
             label20.Size = new Size(89, 15);
-            label20.TabIndex = 39;
+            label20.TabIndex = 8;
             label20.Text = "Monitor Height";
-            toolTip1.SetToolTip(label20, "Resolution height in pixels of the monitor that sign window will display on.");
+            toolTip1.SetToolTip(label20, "Monitor Height:\r\nEnter the vertical pixel resolution of your target display monitor (e.g., 1080).\r\n\r\n\r\n");
             // 
             // label21
             // 
@@ -1183,9 +1183,9 @@ namespace P3D_Scenario_Generator
             label21.Location = new Point(20, 90);
             label21.Name = "label21";
             label21.Size = new Size(85, 15);
-            label21.TabIndex = 39;
+            label21.TabIndex = 6;
             label21.Text = "Monitor Width";
-            toolTip1.SetToolTip(label21, "Resolution width in pixels of the monitor that sign window will display on. ");
+            toolTip1.SetToolTip(label21, "Monitor Width:\r\nEnter the horizontal pixel resolution of your target display monitor (e.g., 1920).\r\n\r\n\r\n");
             // 
             // label27
             // 
@@ -1194,9 +1194,9 @@ namespace P3D_Scenario_Generator
             label27.Location = new Point(43, 34);
             label27.Name = "label27";
             label27.Size = new Size(39, 15);
-            label27.TabIndex = 30;
+            label27.TabIndex = 2;
             label27.Text = "Offset";
-            toolTip1.SetToolTip(label27, resources.GetString("label27.ToolTip"));
+            toolTip1.SetToolTip(label27, "Offset:\r\nSpecifies the margin padding (in pixels) applied between the sign writing window edge and the target monitor screen border.\r\n\r\n\r\n");
             // 
             // TextBoxSignOffset
             // 
@@ -1205,11 +1205,11 @@ namespace P3D_Scenario_Generator
             TextBoxSignOffset.Location = new Point(139, 31);
             TextBoxSignOffset.Name = "TextBoxSignOffset";
             TextBoxSignOffset.Size = new Size(100, 23);
-            TextBoxSignOffset.TabIndex = 33;
+            TextBoxSignOffset.TabIndex = 3;
             TextBoxSignOffset.Tag = "";
             TextBoxSignOffset.Text = "20";
             TextBoxSignOffset.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSignOffset, resources.GetString("TextBoxSignOffset.ToolTip"));
+            toolTip1.SetToolTip(TextBoxSignOffset, "Offset:\r\nSpecifies the margin padding (in pixels) applied between the sign writing window edge and the target monitor screen border.\r\n\r\n\r\n\r\n");
             TextBoxSignOffset.Leave += TextBoxSignOffset_Leave;
             // 
             // label40
@@ -1219,9 +1219,9 @@ namespace P3D_Scenario_Generator
             label40.Location = new Point(31, 62);
             label40.Name = "label40";
             label40.Size = new Size(63, 15);
-            label40.TabIndex = 31;
+            label40.TabIndex = 4;
             label40.Text = "Alignment";
-            toolTip1.SetToolTip(label40, "Default location of sign window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            toolTip1.SetToolTip(label40, "Alignment:\r\nSelects the screen anchor alignment for the sign writing window:\r\n• Top Left / Top Right\r\n• Bottom Left / Bottom Right\r\n• Centered\r\n\r\n\r\n\r\n\r\n");
             // 
             // TextBoxSignMonitorNumber
             // 
@@ -1230,11 +1230,11 @@ namespace P3D_Scenario_Generator
             TextBoxSignMonitorNumber.Location = new Point(139, 3);
             TextBoxSignMonitorNumber.Name = "TextBoxSignMonitorNumber";
             TextBoxSignMonitorNumber.Size = new Size(100, 23);
-            TextBoxSignMonitorNumber.TabIndex = 32;
+            TextBoxSignMonitorNumber.TabIndex = 1;
             TextBoxSignMonitorNumber.Tag = "";
             TextBoxSignMonitorNumber.Text = "0";
             TextBoxSignMonitorNumber.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxSignMonitorNumber, "The default monitor that the sign window will display in. Experiment with values between 0 and the number of monitors minus 1.\r\n");
+            toolTip1.SetToolTip(TextBoxSignMonitorNumber, resources.GetString("TextBoxSignMonitorNumber.ToolTip"));
             TextBoxSignMonitorNumber.Leave += TextBoxSignMonitorNumber_Leave;
             // 
             // label44
@@ -1244,9 +1244,9 @@ namespace P3D_Scenario_Generator
             label44.Location = new Point(14, 6);
             label44.Name = "label44";
             label44.Size = new Size(97, 15);
-            label44.TabIndex = 29;
+            label44.TabIndex = 0;
             label44.Text = "Monitor Number";
-            toolTip1.SetToolTip(label44, "The default monitor that the sign window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            toolTip1.SetToolTip(label44, resources.GetString("label44.ToolTip"));
             // 
             // ComboBoxSignAlignment
             // 
@@ -1257,10 +1257,10 @@ namespace P3D_Scenario_Generator
             ComboBoxSignAlignment.Location = new Point(139, 59);
             ComboBoxSignAlignment.Name = "ComboBoxSignAlignment";
             ComboBoxSignAlignment.Size = new Size(100, 23);
-            ComboBoxSignAlignment.TabIndex = 43;
+            ComboBoxSignAlignment.TabIndex = 5;
             ComboBoxSignAlignment.Tag = "";
             ComboBoxSignAlignment.Text = "Top Right";
-            toolTip1.SetToolTip(ComboBoxSignAlignment, "Default location of sign window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.\r\n");
+            toolTip1.SetToolTip(ComboBoxSignAlignment, "Alignment:\r\nSelects the screen anchor alignment for the sign writing window:\r\n• Top Left / Top Right\r\n• Bottom Left / Bottom Right\r\n• Centered\r\n\r\n\r\n\r\n\r\n\r\n");
             ComboBoxSignAlignment.SelectedIndexChanged += ComboBoxSignAlignment_SelectedIndexChanged;
             // 
             // TextBoxWikiDistance
@@ -2341,6 +2341,7 @@ namespace P3D_Scenario_Generator
             label8.TabIndex = 8;
             label8.Text = "Use custom stars.dat";
             label8.TextAlign = ContentAlignment.MiddleCenter;
+            toolTip1.SetToolTip(label8, resources.GetString("label8.ToolTip"));
             // 
             // CheckBoxCelestialUseStarsDat
             // 
@@ -2351,6 +2352,7 @@ namespace P3D_Scenario_Generator
             CheckBoxCelestialUseStarsDat.Size = new Size(43, 19);
             CheckBoxCelestialUseStarsDat.TabIndex = 9;
             CheckBoxCelestialUseStarsDat.Text = "Yes";
+            toolTip1.SetToolTip(CheckBoxCelestialUseStarsDat, resources.GetString("CheckBoxCelestialUseStarsDat.ToolTip"));
             CheckBoxCelestialUseStarsDat.UseVisualStyleBackColor = true;
             // 
             // label26
@@ -2363,6 +2365,7 @@ namespace P3D_Scenario_Generator
             label26.TabIndex = 6;
             label26.Text = "Maximum distance";
             label26.TextAlign = ContentAlignment.MiddleCenter;
+            toolTip1.SetToolTip(label26, "Maximum Distance:\r\nEnter the maximum great-circle distance (in nautical miles) permitted between the departure and destination airfields when random airport selection is active.");
             // 
             // label25
             // 
@@ -2374,6 +2377,7 @@ namespace P3D_Scenario_Generator
             label25.TabIndex = 4;
             label25.Text = "Minimum distance";
             label25.TextAlign = ContentAlignment.MiddleCenter;
+            toolTip1.SetToolTip(label25, "Minimum Distance:\r\nEnter the minimum great-circle distance (in nautical miles) permitted between the departure and destination airfields when random airport selection is active.");
             // 
             // ButtonCelestialSetStart
             // 
@@ -2383,6 +2387,7 @@ namespace P3D_Scenario_Generator
             ButtonCelestialSetStart.Size = new Size(75, 23);
             ButtonCelestialSetStart.TabIndex = 0;
             ButtonCelestialSetStart.Text = "Set Start";
+            toolTip1.SetToolTip(ButtonCelestialSetStart, "Set / Clear Start:\r\nSets the departure airfield to the runway currently selected on the General tab, or clears it to \"Random\" to pick an airfield automatically.");
             ButtonCelestialSetStart.UseVisualStyleBackColor = true;
             ButtonCelestialSetStart.Click += ButtonCelestialSetStart_Click;
             // 
@@ -2394,6 +2399,7 @@ namespace P3D_Scenario_Generator
             ButtonCelestialSetDestination.Size = new Size(96, 23);
             ButtonCelestialSetDestination.TabIndex = 2;
             ButtonCelestialSetDestination.Text = "Set Destination";
+            toolTip1.SetToolTip(ButtonCelestialSetDestination, "Set / Clear Destination:\r\nSets the destination airfield to the runway currently selected on the General tab, or clears it to \"Random\" to pick an airfield within the specified distance range.");
             ButtonCelestialSetDestination.UseVisualStyleBackColor = true;
             ButtonCelestialSetDestination.Click += ButtonCelestialSetDestination_Click;
             // 
@@ -2405,6 +2411,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialStart.ReadOnly = true;
             TextBoxCelestialStart.Size = new Size(100, 23);
             TextBoxCelestialStart.TabIndex = 1;
+            toolTip1.SetToolTip(TextBoxCelestialStart, "Departure Airport:\r\nDisplays the selected departure airport and runway designator, or \"Random\" if unassigned.");
             // 
             // TextBoxCelestialDestination
             // 
@@ -2414,6 +2421,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialDestination.ReadOnly = true;
             TextBoxCelestialDestination.Size = new Size(100, 23);
             TextBoxCelestialDestination.TabIndex = 3;
+            toolTip1.SetToolTip(TextBoxCelestialDestination, "Destination Airport:\r\nDisplays the selected destination airport and runway designator, or \"Random\" if unassigned.");
             // 
             // ButtonBrowseScenarioFolder
             // 
@@ -2499,7 +2507,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMonitorHeight.Tag = "";
             TextBoxCelestialMonitorHeight.Text = "1080";
             TextBoxCelestialMonitorHeight.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCelestialMonitorHeight, "Resolution height in pixels of the monitor that sextant window will display on.\r\n");
+            toolTip1.SetToolTip(TextBoxCelestialMonitorHeight, "Monitor Height:\r\nEnter the vertical pixel resolution of your target display monitor (e.g., 1080).\r\n");
             TextBoxCelestialMonitorHeight.Leave += TextBoxCelestialMonitorHeight_Leave;
             // 
             // TextBoxCelestialMonitorWidth
@@ -2513,7 +2521,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMonitorWidth.Tag = "";
             TextBoxCelestialMonitorWidth.Text = "1920";
             TextBoxCelestialMonitorWidth.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCelestialMonitorWidth, "Resolution width in pixels of the monitor that sextant window will display on. \r\n");
+            toolTip1.SetToolTip(TextBoxCelestialMonitorWidth, "Monitor Width:\r\nEnter the horizontal pixel resolution of your target display monitor (e.g., 1920).\r\n");
             TextBoxCelestialMonitorWidth.Leave += TextBoxCelestialMonitorWidth_Leave;
             // 
             // label32
@@ -2525,7 +2533,7 @@ namespace P3D_Scenario_Generator
             label32.Size = new Size(89, 15);
             label32.TabIndex = 8;
             label32.Text = "Monitor Height";
-            toolTip1.SetToolTip(label32, "Resolution height in pixels of the monitor that sextant window will display on.");
+            toolTip1.SetToolTip(label32, "Monitor Height:\r\nEnter the vertical pixel resolution of your target display monitor (e.g., 1080).\r\n");
             // 
             // label33
             // 
@@ -2536,7 +2544,7 @@ namespace P3D_Scenario_Generator
             label33.Size = new Size(85, 15);
             label33.TabIndex = 6;
             label33.Text = "Monitor Width";
-            toolTip1.SetToolTip(label33, "Resolution width in pixels of the monitor that sextant window will display on. ");
+            toolTip1.SetToolTip(label33, "Monitor Width:\r\nEnter the horizontal pixel resolution of your target display monitor (e.g., 1920).\r\n");
             // 
             // label34
             // 
@@ -2547,7 +2555,7 @@ namespace P3D_Scenario_Generator
             label34.Size = new Size(39, 15);
             label34.TabIndex = 2;
             label34.Text = "Offset";
-            toolTip1.SetToolTip(label34, resources.GetString("label34.ToolTip"));
+            toolTip1.SetToolTip(label34, "Offset:\r\nSpecifies the margin padding (in pixels) applied between the sextant window edge and the target monitor screen border.\r\n");
             // 
             // TextBoxCelestialOffset
             // 
@@ -2560,7 +2568,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialOffset.Tag = "";
             TextBoxCelestialOffset.Text = "20";
             TextBoxCelestialOffset.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCelestialOffset, resources.GetString("TextBoxCelestialOffset.ToolTip"));
+            toolTip1.SetToolTip(TextBoxCelestialOffset, "Offset:\r\nSpecifies the margin padding (in pixels) applied between the sextant window edge and the target monitor screen border.\r\n");
             TextBoxCelestialOffset.Leave += TextBoxCelestialOffset_Leave;
             // 
             // label35
@@ -2572,7 +2580,7 @@ namespace P3D_Scenario_Generator
             label35.Size = new Size(63, 15);
             label35.TabIndex = 4;
             label35.Text = "Alignment";
-            toolTip1.SetToolTip(label35, "Default location of sextant window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            toolTip1.SetToolTip(label35, "Alignment:\r\nSelects the screen anchor alignment for the sextant window:\r\n• Top Left / Top Right\r\n• Bottom Left / Bottom Right\r\n• Centered\r\n");
             // 
             // TextBoxCelestialMonitorNumber
             // 
@@ -2585,7 +2593,7 @@ namespace P3D_Scenario_Generator
             TextBoxCelestialMonitorNumber.Tag = "";
             TextBoxCelestialMonitorNumber.Text = "0";
             TextBoxCelestialMonitorNumber.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxCelestialMonitorNumber, "The default monitor that the sextant window will display in. Experiment with values between 0 and the number of monitors minus 1.\r\n");
+            toolTip1.SetToolTip(TextBoxCelestialMonitorNumber, "Monitor Number:\r\nSpecifies the Windows display index where the sextant window will render (e.g., 0, 1, or 2).\r\n\r\nNOTE: Invalid or disconnected display indices automatically fall back to Monitor 0.\r\n");
             TextBoxCelestialMonitorNumber.Leave += TextBoxCelestialMonitorNumber_Leave;
             // 
             // label36
@@ -2597,7 +2605,7 @@ namespace P3D_Scenario_Generator
             label36.Size = new Size(97, 15);
             label36.TabIndex = 0;
             label36.Text = "Monitor Number";
-            toolTip1.SetToolTip(label36, "The default monitor that the sextant window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            toolTip1.SetToolTip(label36, "Monitor Number:\r\nSpecifies the Windows display index where the sextant window will render (e.g., 0, 1, or 2).\r\n\r\nNOTE: Invalid or disconnected display indices automatically fall back to Monitor 0.\r\n");
             // 
             // ComboBoxCelestialAlignment
             // 
@@ -2611,7 +2619,7 @@ namespace P3D_Scenario_Generator
             ComboBoxCelestialAlignment.TabIndex = 5;
             ComboBoxCelestialAlignment.Tag = "";
             ComboBoxCelestialAlignment.Text = "Top Right";
-            toolTip1.SetToolTip(ComboBoxCelestialAlignment, "Default location of sextant window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.\r\n");
+            toolTip1.SetToolTip(ComboBoxCelestialAlignment, "Alignment:\r\nSelects the screen anchor alignment for the sextant window:\r\n• Top Left / Top Right\r\n• Bottom Left / Bottom Right\r\n• Centered\r\n");
             ComboBoxCelestialAlignment.SelectedIndexChanged += ComboBoxCelestialAlignment_SelectedIndexChanged;
             // 
             // ButtonRandomLocation
@@ -2694,180 +2702,68 @@ namespace P3D_Scenario_Generator
             toolTip1.SetToolTip(TextBoxGeneralAircraftValues, "Aircraft Summary:\r\nDisplays key performance values for the active aircraft. Hover your mouse to view complete aircraft parameters.");
             TextBoxGeneralAircraftValues.MouseEnter += TextBoxGeneralAircraftValues_MouseEnter;
             // 
-            // GroupBoxSignWritingParameters
+            // TabControlP3DSG
             // 
-            GroupBoxSignWritingParameters.Anchor = AnchorStyles.None;
-            GroupBoxSignWritingParameters.BackColor = Color.FromArgb(255, 192, 128);
-            GroupBoxSignWritingParameters.Controls.Add(TableLayoutPanelSignWritingParameters);
-            GroupBoxSignWritingParameters.Location = new Point(83, 100);
-            GroupBoxSignWritingParameters.Margin = new Padding(0);
-            GroupBoxSignWritingParameters.Name = "GroupBoxSignWritingParameters";
-            GroupBoxSignWritingParameters.Padding = new Padding(0);
-            GroupBoxSignWritingParameters.Size = new Size(240, 200);
-            GroupBoxSignWritingParameters.TabIndex = 38;
-            GroupBoxSignWritingParameters.TabStop = false;
-            GroupBoxSignWritingParameters.Text = "Sign Writing Parameters";
+            TabControlP3DSG.Controls.Add(TabPageMenu);
+            TabControlP3DSG.Controls.Add(TabPageCircuit);
+            TabControlP3DSG.Controls.Add(TabPagePhotoTour);
+            TabControlP3DSG.Controls.Add(TabPageSign);
+            TabControlP3DSG.Controls.Add(TabPageCelestial);
+            TabControlP3DSG.Controls.Add(TabPageWikiList);
+            TabControlP3DSG.Controls.Add(TabPageSettings);
+            TabControlP3DSG.Location = new Point(12, 12);
+            TabControlP3DSG.Name = "TabControlP3DSG";
+            TabControlP3DSG.SelectedIndex = 0;
+            TabControlP3DSG.Size = new Size(820, 466);
+            TabControlP3DSG.TabIndex = 0;
+            toolTip1.SetToolTip(TabControlP3DSG, "Alignment:\r\nSelects the screen anchor alignment for the photo window:\r\n• Top Left / Top Right\r\n• Bottom Left / Bottom Right\r\n• Centered\r\n\r\n");
+            TabControlP3DSG.SelectedIndexChanged += TabControl_SelectedIndexChanged;
             // 
-            // TableLayoutPanelSignWritingParameters
+            // TabPageMenu
             // 
-            TableLayoutPanelSignWritingParameters.AccessibleName = "";
-            TableLayoutPanelSignWritingParameters.Anchor = AnchorStyles.None;
-            TableLayoutPanelSignWritingParameters.ColumnCount = 2;
-            TableLayoutPanelSignWritingParameters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSignWritingParameters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSignWritingParameters.Controls.Add(ComboBoxSignMessage, 1, 0);
-            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignSegmentRadius, 1, 4);
-            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignSegmentLength, 1, 3);
-            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignGateHeight, 1, 2);
-            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignTilt, 1, 1);
-            TableLayoutPanelSignWritingParameters.Controls.Add(label16, 0, 0);
-            TableLayoutPanelSignWritingParameters.Controls.Add(label24, 0, 4);
-            TableLayoutPanelSignWritingParameters.Controls.Add(label23, 0, 3);
-            TableLayoutPanelSignWritingParameters.Controls.Add(label22, 0, 2);
-            TableLayoutPanelSignWritingParameters.Controls.Add(label19, 0, 1);
-            TableLayoutPanelSignWritingParameters.ImeMode = ImeMode.On;
-            TableLayoutPanelSignWritingParameters.Location = new Point(10, 25);
-            TableLayoutPanelSignWritingParameters.Margin = new Padding(0);
-            TableLayoutPanelSignWritingParameters.Name = "TableLayoutPanelSignWritingParameters";
-            TableLayoutPanelSignWritingParameters.RowCount = 5;
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TableLayoutPanelSignWritingParameters.Size = new Size(220, 165);
-            TableLayoutPanelSignWritingParameters.TabIndex = 35;
+            TabPageMenu.BackColor = Color.FromArgb(64, 64, 64);
+            TabPageMenu.Controls.Add(tableLayoutPanel1);
+            TabPageMenu.Location = new Point(4, 24);
+            TabPageMenu.Margin = new Padding(0);
+            TabPageMenu.Name = "TabPageMenu";
+            TabPageMenu.Size = new Size(812, 438);
+            TabPageMenu.TabIndex = 6;
+            TabPageMenu.Text = "General";
             // 
-            // GroupBoxSignWritingSignWindowLocation
+            // tableLayoutPanel1
             // 
-            GroupBoxSignWritingSignWindowLocation.Anchor = AnchorStyles.None;
-            GroupBoxSignWritingSignWindowLocation.BackColor = Color.FromArgb(255, 192, 128);
-            GroupBoxSignWritingSignWindowLocation.Controls.Add(TableLayoutPanelSignWritingSignWindowLocation);
-            GroupBoxSignWritingSignWindowLocation.Location = new Point(60, 112);
-            GroupBoxSignWritingSignWindowLocation.Name = "GroupBoxSignWritingSignWindowLocation";
-            GroupBoxSignWritingSignWindowLocation.Size = new Size(286, 175);
-            GroupBoxSignWritingSignWindowLocation.TabIndex = 39;
-            GroupBoxSignWritingSignWindowLocation.TabStop = false;
-            GroupBoxSignWritingSignWindowLocation.Text = "Sign Window Location";
+            tableLayoutPanel1.Anchor = AnchorStyles.None;
+            tableLayoutPanel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            tableLayoutPanel1.ColumnCount = 2;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Controls.Add(tableLayoutPanel2, 0, 0);
+            tableLayoutPanel1.Controls.Add(tableLayoutPanel3, 1, 0);
+            tableLayoutPanel1.Location = new Point(0, 0);
+            tableLayoutPanel1.Margin = new Padding(0);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 1;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel1.Size = new Size(812, 438);
+            tableLayoutPanel1.TabIndex = 5;
             // 
-            // TableLayoutPanelSignWritingSignWindowLocation
+            // tableLayoutPanel2
             // 
-            TableLayoutPanelSignWritingSignWindowLocation.AccessibleName = "";
-            TableLayoutPanelSignWritingSignWindowLocation.Anchor = AnchorStyles.None;
-            TableLayoutPanelSignWritingSignWindowLocation.ColumnCount = 2;
-            TableLayoutPanelSignWritingSignWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSignWritingSignWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorHeight, 1, 4);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorWidth, 1, 3);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label20, 0, 4);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label21, 0, 3);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label27, 0, 1);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignOffset, 1, 1);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label40, 0, 2);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorNumber, 1, 0);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label44, 0, 0);
-            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(ComboBoxSignAlignment, 1, 2);
-            TableLayoutPanelSignWritingSignWindowLocation.ImeMode = ImeMode.On;
-            TableLayoutPanelSignWritingSignWindowLocation.Location = new Point(10, 25);
-            TableLayoutPanelSignWritingSignWindowLocation.Name = "TableLayoutPanelSignWritingSignWindowLocation";
-            TableLayoutPanelSignWritingSignWindowLocation.RowCount = 5;
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TableLayoutPanelSignWritingSignWindowLocation.Size = new Size(253, 143);
-            TableLayoutPanelSignWritingSignWindowLocation.TabIndex = 35;
-            // 
-            // GroupBoxPhotoTourPhotoWindowLocation
-            // 
-            GroupBoxPhotoTourPhotoWindowLocation.Anchor = AnchorStyles.None;
-            GroupBoxPhotoTourPhotoWindowLocation.BackColor = Color.FromArgb(255, 192, 128);
-            GroupBoxPhotoTourPhotoWindowLocation.Controls.Add(TableLayoutPanelPhotoTourPhotoWindowLocation);
-            GroupBoxPhotoTourPhotoWindowLocation.Location = new Point(60, 105);
-            GroupBoxPhotoTourPhotoWindowLocation.Name = "GroupBoxPhotoTourPhotoWindowLocation";
-            GroupBoxPhotoTourPhotoWindowLocation.Size = new Size(285, 190);
-            GroupBoxPhotoTourPhotoWindowLocation.TabIndex = 1;
-            GroupBoxPhotoTourPhotoWindowLocation.TabStop = false;
-            GroupBoxPhotoTourPhotoWindowLocation.Text = "Photo Window Location";
-            // 
-            // TableLayoutPanelPhotoTourPhotoWindowLocation
-            // 
-            TableLayoutPanelPhotoTourPhotoWindowLocation.AccessibleName = "";
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Anchor = AnchorStyles.None;
-            TableLayoutPanelPhotoTourPhotoWindowLocation.ColumnCount = 2;
-            TableLayoutPanelPhotoTourPhotoWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelPhotoTourPhotoWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoMonitorHeight, 1, 4);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoMonitorWidth, 1, 3);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label38, 0, 4);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label37, 0, 3);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label30, 0, 1);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoOffset, 1, 1);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label31, 0, 2);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoMonitorNumber, 1, 0);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label29, 0, 0);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(ComboBoxPhotoTourPhotoAlignment, 1, 2);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.ImeMode = ImeMode.On;
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Location = new Point(15, 25);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Name = "TableLayoutPanelPhotoTourPhotoWindowLocation";
-            TableLayoutPanelPhotoTourPhotoWindowLocation.RowCount = 5;
-            TableLayoutPanelPhotoTourPhotoWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourPhotoWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourPhotoWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourPhotoWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourPhotoWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourPhotoWindowLocation.Size = new Size(255, 150);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.TabIndex = 35;
-            // 
-            // GroupBoxPhotoTourConstraints
-            // 
-            GroupBoxPhotoTourConstraints.Anchor = AnchorStyles.None;
-            GroupBoxPhotoTourConstraints.BackColor = Color.FromArgb(255, 192, 128);
-            GroupBoxPhotoTourConstraints.Controls.Add(TableLayoutPanelPhotoTourConstraints);
-            GroupBoxPhotoTourConstraints.Location = new Point(60, 75);
-            GroupBoxPhotoTourConstraints.Name = "GroupBoxPhotoTourConstraints";
-            GroupBoxPhotoTourConstraints.Size = new Size(285, 250);
-            GroupBoxPhotoTourConstraints.TabIndex = 0;
-            GroupBoxPhotoTourConstraints.TabStop = false;
-            GroupBoxPhotoTourConstraints.Text = "Photo Tour Parameters";
-            // 
-            // TableLayoutPanelPhotoTourConstraints
-            // 
-            TableLayoutPanelPhotoTourConstraints.AccessibleName = "";
-            TableLayoutPanelPhotoTourConstraints.Anchor = AnchorStyles.None;
-            TableLayoutPanelPhotoTourConstraints.ColumnCount = 2;
-            TableLayoutPanelPhotoTourConstraints.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelPhotoTourConstraints.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMaxAttempts, 1, 6);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(label15, 0, 6);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(label14, 0, 0);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(label11, 0, 1);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(label12, 0, 2);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(label13, 0, 3);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(label17, 0, 4);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMinLegDist, 1, 0);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsHotspotRadius, 1, 5);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMaxLegDist, 1, 1);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(label18, 0, 5);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMaxBearingChange, 1, 4);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMinNoLegs, 1, 2);
-            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMaxNoLegs, 1, 3);
-            TableLayoutPanelPhotoTourConstraints.ImeMode = ImeMode.On;
-            TableLayoutPanelPhotoTourConstraints.Location = new Point(15, 25);
-            TableLayoutPanelPhotoTourConstraints.Name = "TableLayoutPanelPhotoTourConstraints";
-            TableLayoutPanelPhotoTourConstraints.RowCount = 7;
-            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelPhotoTourConstraints.Size = new Size(255, 210);
-            TableLayoutPanelPhotoTourConstraints.TabIndex = 35;
+            tableLayoutPanel2.Anchor = AnchorStyles.None;
+            tableLayoutPanel2.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            tableLayoutPanel2.ColumnCount = 1;
+            tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel2.Controls.Add(groupBox16, 0, 0);
+            tableLayoutPanel2.Controls.Add(groupBox12, 0, 1);
+            tableLayoutPanel2.Location = new Point(0, 19);
+            tableLayoutPanel2.Margin = new Padding(0);
+            tableLayoutPanel2.Name = "tableLayoutPanel2";
+            tableLayoutPanel2.RowCount = 2;
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel2.Size = new Size(406, 400);
+            tableLayoutPanel2.TabIndex = 0;
             // 
             // groupBox16
             // 
@@ -2925,6 +2821,135 @@ namespace P3D_Scenario_Generator
             TextBoxGeneralLocationFilters.Tag = "";
             TextBoxGeneralLocationFilters.MouseEnter += TextBoxGeneralLocationFilters_MouseEnter;
             // 
+            // tableLayoutPanel3
+            // 
+            tableLayoutPanel3.Anchor = AnchorStyles.None;
+            tableLayoutPanel3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            tableLayoutPanel3.ColumnCount = 1;
+            tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel3.Controls.Add(groupBox14, 0, 0);
+            tableLayoutPanel3.Controls.Add(groupBox13, 0, 2);
+            tableLayoutPanel3.Controls.Add(groupBox15, 0, 1);
+            tableLayoutPanel3.Location = new Point(406, 19);
+            tableLayoutPanel3.Margin = new Padding(0);
+            tableLayoutPanel3.Name = "tableLayoutPanel3";
+            tableLayoutPanel3.RowCount = 3;
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
+            tableLayoutPanel3.Size = new Size(406, 400);
+            tableLayoutPanel3.TabIndex = 1;
+            // 
+            // groupBox14
+            // 
+            groupBox14.Anchor = AnchorStyles.Top;
+            groupBox14.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox14.Controls.Add(tableLayoutPanel10);
+            groupBox14.Location = new Point(83, 0);
+            groupBox14.Margin = new Padding(0);
+            groupBox14.Name = "groupBox14";
+            groupBox14.Padding = new Padding(0);
+            groupBox14.Size = new Size(240, 101);
+            groupBox14.TabIndex = 2;
+            groupBox14.TabStop = false;
+            groupBox14.Text = "Date and Time";
+            // 
+            // tableLayoutPanel10
+            // 
+            tableLayoutPanel10.AccessibleName = "";
+            tableLayoutPanel10.Anchor = AnchorStyles.None;
+            tableLayoutPanel10.ColumnCount = 2;
+            tableLayoutPanel10.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel10.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel10.Controls.Add(ButtonRandomTime, 0, 1);
+            tableLayoutPanel10.Controls.Add(ButtonRandomDate, 0, 0);
+            tableLayoutPanel10.Controls.Add(GeneralDatePicker, 1, 0);
+            tableLayoutPanel10.Controls.Add(GeneralTimePicker, 1, 1);
+            tableLayoutPanel10.ImeMode = ImeMode.On;
+            tableLayoutPanel10.Location = new Point(10, 25);
+            tableLayoutPanel10.Margin = new Padding(0);
+            tableLayoutPanel10.Name = "tableLayoutPanel10";
+            tableLayoutPanel10.RowCount = 2;
+            tableLayoutPanel10.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel10.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel10.Size = new Size(220, 61);
+            tableLayoutPanel10.TabIndex = 36;
+            // 
+            // groupBox15
+            // 
+            groupBox15.Anchor = AnchorStyles.None;
+            groupBox15.BackColor = Color.FromArgb(255, 192, 128);
+            groupBox15.Controls.Add(tableLayoutPanel11);
+            groupBox15.Location = new Point(83, 149);
+            groupBox15.Margin = new Padding(0);
+            groupBox15.Name = "groupBox15";
+            groupBox15.Padding = new Padding(0);
+            groupBox15.Size = new Size(240, 101);
+            groupBox15.TabIndex = 3;
+            groupBox15.TabStop = false;
+            groupBox15.Text = "Aircraft Selection";
+            // 
+            // tableLayoutPanel11
+            // 
+            tableLayoutPanel11.AccessibleName = "";
+            tableLayoutPanel11.Anchor = AnchorStyles.None;
+            tableLayoutPanel11.ColumnCount = 2;
+            tableLayoutPanel11.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel11.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel11.Controls.Add(ButtonRandomAircraft, 0, 0);
+            tableLayoutPanel11.Controls.Add(ComboBoxGeneralAircraftSelection, 1, 0);
+            tableLayoutPanel11.Controls.Add(buttonGeneralAircraft, 0, 1);
+            tableLayoutPanel11.Controls.Add(TextBoxGeneralAircraftValues, 1, 1);
+            tableLayoutPanel11.ImeMode = ImeMode.On;
+            tableLayoutPanel11.Location = new Point(10, 25);
+            tableLayoutPanel11.Margin = new Padding(0);
+            tableLayoutPanel11.Name = "tableLayoutPanel11";
+            tableLayoutPanel11.RowCount = 2;
+            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel11.Size = new Size(220, 61);
+            tableLayoutPanel11.TabIndex = 36;
+            // 
+            // TabPageCircuit
+            // 
+            TabPageCircuit.BackColor = Color.FromArgb(64, 64, 64);
+            TabPageCircuit.Controls.Add(tableLayoutPanel4);
+            TabPageCircuit.Location = new Point(4, 24);
+            TabPageCircuit.Name = "TabPageCircuit";
+            TabPageCircuit.Padding = new Padding(3);
+            TabPageCircuit.Size = new Size(812, 438);
+            TabPageCircuit.TabIndex = 1;
+            TabPageCircuit.Text = "Circuit";
+            // 
+            // tableLayoutPanel4
+            // 
+            tableLayoutPanel4.Anchor = AnchorStyles.None;
+            tableLayoutPanel4.ColumnCount = 2;
+            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel4.Controls.Add(tableLayoutPanel5, 0, 0);
+            tableLayoutPanel4.Location = new Point(0, 0);
+            tableLayoutPanel4.Margin = new Padding(0);
+            tableLayoutPanel4.Name = "tableLayoutPanel4";
+            tableLayoutPanel4.RowCount = 1;
+            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel4.Size = new Size(812, 438);
+            tableLayoutPanel4.TabIndex = 0;
+            // 
+            // tableLayoutPanel5
+            // 
+            tableLayoutPanel5.Anchor = AnchorStyles.None;
+            tableLayoutPanel5.ColumnCount = 1;
+            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel5.Controls.Add(GroupBoxCircuitParameters, 0, 0);
+            tableLayoutPanel5.Location = new Point(0, 19);
+            tableLayoutPanel5.Margin = new Padding(0);
+            tableLayoutPanel5.Name = "tableLayoutPanel5";
+            tableLayoutPanel5.RowCount = 1;
+            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel5.Size = new Size(406, 400);
+            tableLayoutPanel5.TabIndex = 43;
+            // 
             // TabPagePhotoTour
             // 
             TabPagePhotoTour.BackColor = Color.FromArgb(64, 64, 64);
@@ -2967,6 +2992,53 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel14.Size = new Size(406, 400);
             tableLayoutPanel14.TabIndex = 0;
             // 
+            // GroupBoxPhotoTourConstraints
+            // 
+            GroupBoxPhotoTourConstraints.Anchor = AnchorStyles.None;
+            GroupBoxPhotoTourConstraints.BackColor = Color.FromArgb(255, 192, 128);
+            GroupBoxPhotoTourConstraints.Controls.Add(TableLayoutPanelPhotoTourConstraints);
+            GroupBoxPhotoTourConstraints.Location = new Point(60, 75);
+            GroupBoxPhotoTourConstraints.Name = "GroupBoxPhotoTourConstraints";
+            GroupBoxPhotoTourConstraints.Size = new Size(285, 250);
+            GroupBoxPhotoTourConstraints.TabIndex = 0;
+            GroupBoxPhotoTourConstraints.TabStop = false;
+            GroupBoxPhotoTourConstraints.Text = "Photo Tour Parameters";
+            // 
+            // TableLayoutPanelPhotoTourConstraints
+            // 
+            TableLayoutPanelPhotoTourConstraints.AccessibleName = "";
+            TableLayoutPanelPhotoTourConstraints.Anchor = AnchorStyles.None;
+            TableLayoutPanelPhotoTourConstraints.ColumnCount = 2;
+            TableLayoutPanelPhotoTourConstraints.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelPhotoTourConstraints.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMaxAttempts, 1, 6);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(label15, 0, 6);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(label14, 0, 0);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(label11, 0, 1);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(label12, 0, 2);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(label13, 0, 3);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(label17, 0, 4);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMinLegDist, 1, 0);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsHotspotRadius, 1, 5);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMaxLegDist, 1, 1);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(label18, 0, 5);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMaxBearingChange, 1, 4);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMinNoLegs, 1, 2);
+            TableLayoutPanelPhotoTourConstraints.Controls.Add(TextBoxPhotoTourConstraintsMaxNoLegs, 1, 3);
+            TableLayoutPanelPhotoTourConstraints.ImeMode = ImeMode.On;
+            TableLayoutPanelPhotoTourConstraints.Location = new Point(15, 25);
+            TableLayoutPanelPhotoTourConstraints.Name = "TableLayoutPanelPhotoTourConstraints";
+            TableLayoutPanelPhotoTourConstraints.RowCount = 7;
+            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourConstraints.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourConstraints.Size = new Size(255, 210);
+            TableLayoutPanelPhotoTourConstraints.TabIndex = 35;
+            // 
             // tableLayoutPanel15
             // 
             tableLayoutPanel15.Anchor = AnchorStyles.None;
@@ -2981,111 +3053,187 @@ namespace P3D_Scenario_Generator
             tableLayoutPanel15.Size = new Size(406, 400);
             tableLayoutPanel15.TabIndex = 1;
             // 
-            // ButtonHelp
+            // GroupBoxPhotoTourPhotoWindowLocation
             // 
-            ButtonHelp.Location = new Point(757, 7);
-            ButtonHelp.Name = "ButtonHelp";
-            ButtonHelp.Size = new Size(75, 23);
-            ButtonHelp.TabIndex = 4;
-            ButtonHelp.Text = "Help";
-            ButtonHelp.UseVisualStyleBackColor = true;
-            ButtonHelp.Click += ButtonHelp_Click;
+            GroupBoxPhotoTourPhotoWindowLocation.Anchor = AnchorStyles.None;
+            GroupBoxPhotoTourPhotoWindowLocation.BackColor = Color.FromArgb(255, 192, 128);
+            GroupBoxPhotoTourPhotoWindowLocation.Controls.Add(TableLayoutPanelPhotoTourPhotoWindowLocation);
+            GroupBoxPhotoTourPhotoWindowLocation.Location = new Point(60, 105);
+            GroupBoxPhotoTourPhotoWindowLocation.Name = "GroupBoxPhotoTourPhotoWindowLocation";
+            GroupBoxPhotoTourPhotoWindowLocation.Size = new Size(285, 190);
+            GroupBoxPhotoTourPhotoWindowLocation.TabIndex = 1;
+            GroupBoxPhotoTourPhotoWindowLocation.TabStop = false;
+            GroupBoxPhotoTourPhotoWindowLocation.Text = "Photo Window Location";
             // 
-            // TabPageSettings
+            // TableLayoutPanelPhotoTourPhotoWindowLocation
             // 
-            TabPageSettings.BackColor = Color.FromArgb(64, 64, 64);
-            TabPageSettings.Controls.Add(TableLayoutPanelSettings);
-            TabPageSettings.Location = new Point(4, 24);
-            TabPageSettings.Name = "TabPageSettings";
-            TabPageSettings.Padding = new Padding(3);
-            TabPageSettings.Size = new Size(812, 438);
-            TabPageSettings.TabIndex = 5;
-            TabPageSettings.Text = "Settings";
+            TableLayoutPanelPhotoTourPhotoWindowLocation.AccessibleName = "";
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Anchor = AnchorStyles.None;
+            TableLayoutPanelPhotoTourPhotoWindowLocation.ColumnCount = 2;
+            TableLayoutPanelPhotoTourPhotoWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelPhotoTourPhotoWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoMonitorHeight, 1, 4);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoMonitorWidth, 1, 3);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label38, 0, 4);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label37, 0, 3);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label30, 0, 1);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoOffset, 1, 1);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label31, 0, 2);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(TextBoxPhotoTourPhotoMonitorNumber, 1, 0);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(label29, 0, 0);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Controls.Add(ComboBoxPhotoTourPhotoAlignment, 1, 2);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.ImeMode = ImeMode.On;
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Location = new Point(15, 25);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Name = "TableLayoutPanelPhotoTourPhotoWindowLocation";
+            TableLayoutPanelPhotoTourPhotoWindowLocation.RowCount = 5;
+            TableLayoutPanelPhotoTourPhotoWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourPhotoWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourPhotoWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourPhotoWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourPhotoWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelPhotoTourPhotoWindowLocation.Size = new Size(255, 150);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.TabIndex = 35;
             // 
-            // TableLayoutPanelSettings
+            // TabPageSign
             // 
-            TableLayoutPanelSettings.Anchor = AnchorStyles.None;
-            TableLayoutPanelSettings.ColumnCount = 2;
-            TableLayoutPanelSettings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSettings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSettings.Controls.Add(tableLayoutPanel24, 0, 0);
-            TableLayoutPanelSettings.Controls.Add(TableLayoutPanelSettingsMap, 1, 0);
-            TableLayoutPanelSettings.Location = new Point(0, 0);
-            TableLayoutPanelSettings.Margin = new Padding(0);
-            TableLayoutPanelSettings.Name = "TableLayoutPanelSettings";
-            TableLayoutPanelSettings.RowCount = 1;
-            TableLayoutPanelSettings.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSettings.Size = new Size(812, 438);
-            TableLayoutPanelSettings.TabIndex = 0;
+            TabPageSign.BackColor = Color.FromArgb(64, 64, 64);
+            TabPageSign.Controls.Add(tableLayoutPanel7);
+            TabPageSign.Location = new Point(4, 24);
+            TabPageSign.Name = "TabPageSign";
+            TabPageSign.Size = new Size(812, 438);
+            TabPageSign.TabIndex = 3;
+            TabPageSign.Text = "Sign Writing";
             // 
-            // tableLayoutPanel24
+            // tableLayoutPanel7
             // 
-            tableLayoutPanel24.Anchor = AnchorStyles.None;
-            tableLayoutPanel24.ColumnCount = 1;
-            tableLayoutPanel24.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel24.Controls.Add(GroupBoxSettingsMapTileCacheInfo, 0, 0);
-            tableLayoutPanel24.Controls.Add(GroupBoxSettingsFolderInfo, 0, 1);
-            tableLayoutPanel24.Location = new Point(0, 19);
-            tableLayoutPanel24.Margin = new Padding(0);
-            tableLayoutPanel24.Name = "tableLayoutPanel24";
-            tableLayoutPanel24.RowCount = 2;
-            tableLayoutPanel24.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel24.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel24.Size = new Size(406, 400);
-            tableLayoutPanel24.TabIndex = 0;
+            tableLayoutPanel7.Anchor = AnchorStyles.None;
+            tableLayoutPanel7.ColumnCount = 2;
+            tableLayoutPanel7.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel7.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel7.Controls.Add(tableLayoutPanel16, 0, 0);
+            tableLayoutPanel7.Controls.Add(tableLayoutPanel17, 1, 0);
+            tableLayoutPanel7.Location = new Point(0, 0);
+            tableLayoutPanel7.Margin = new Padding(0);
+            tableLayoutPanel7.Name = "tableLayoutPanel7";
+            tableLayoutPanel7.RowCount = 1;
+            tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel7.Size = new Size(812, 438);
+            tableLayoutPanel7.TabIndex = 0;
             // 
-            // GroupBoxSettingsFolderInfo
+            // tableLayoutPanel16
             // 
-            GroupBoxSettingsFolderInfo.Anchor = AnchorStyles.Bottom;
-            GroupBoxSettingsFolderInfo.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            GroupBoxSettingsFolderInfo.BackColor = Color.FromArgb(255, 192, 128);
-            GroupBoxSettingsFolderInfo.Controls.Add(TableLayoutPanelSettingsFolderInfo);
-            GroupBoxSettingsFolderInfo.Location = new Point(60, 267);
-            GroupBoxSettingsFolderInfo.Name = "GroupBoxSettingsFolderInfo";
-            GroupBoxSettingsFolderInfo.Padding = new Padding(0);
-            GroupBoxSettingsFolderInfo.Size = new Size(285, 130);
-            GroupBoxSettingsFolderInfo.TabIndex = 2;
-            GroupBoxSettingsFolderInfo.TabStop = false;
-            GroupBoxSettingsFolderInfo.Text = "Folder Info";
+            tableLayoutPanel16.Anchor = AnchorStyles.None;
+            tableLayoutPanel16.ColumnCount = 1;
+            tableLayoutPanel16.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel16.Controls.Add(GroupBoxSignWritingParameters, 0, 0);
+            tableLayoutPanel16.Location = new Point(0, 19);
+            tableLayoutPanel16.Margin = new Padding(0);
+            tableLayoutPanel16.Name = "tableLayoutPanel16";
+            tableLayoutPanel16.RowCount = 1;
+            tableLayoutPanel16.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel16.Size = new Size(406, 400);
+            tableLayoutPanel16.TabIndex = 0;
             // 
-            // TableLayoutPanelSettingsFolderInfo
+            // GroupBoxSignWritingParameters
             // 
-            TableLayoutPanelSettingsFolderInfo.AccessibleName = "";
-            TableLayoutPanelSettingsFolderInfo.Anchor = AnchorStyles.None;
-            TableLayoutPanelSettingsFolderInfo.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            TableLayoutPanelSettingsFolderInfo.ColumnCount = 2;
-            TableLayoutPanelSettingsFolderInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSettingsFolderInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSettingsFolderInfo.Controls.Add(button1, 0, 0);
-            TableLayoutPanelSettingsFolderInfo.Controls.Add(ButtonBrowseScenarioFolder, 0, 2);
-            TableLayoutPanelSettingsFolderInfo.Controls.Add(TextBoxSettingsP3DprogramInstall, 1, 0);
-            TableLayoutPanelSettingsFolderInfo.Controls.Add(TextBoxSettingsP3DprogramData, 1, 1);
-            TableLayoutPanelSettingsFolderInfo.Controls.Add(TextBoxSettingsScenarioFolderBase, 1, 2);
-            TableLayoutPanelSettingsFolderInfo.Controls.Add(ButtonP3DDataFolderSelect, 0, 1);
-            TableLayoutPanelSettingsFolderInfo.ImeMode = ImeMode.On;
-            TableLayoutPanelSettingsFolderInfo.Location = new Point(14, 24);
-            TableLayoutPanelSettingsFolderInfo.Name = "TableLayoutPanelSettingsFolderInfo";
-            TableLayoutPanelSettingsFolderInfo.RowCount = 3;
-            TableLayoutPanelSettingsFolderInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelSettingsFolderInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelSettingsFolderInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            TableLayoutPanelSettingsFolderInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            TableLayoutPanelSettingsFolderInfo.Size = new Size(212, 90);
-            TableLayoutPanelSettingsFolderInfo.TabIndex = 36;
+            GroupBoxSignWritingParameters.Anchor = AnchorStyles.None;
+            GroupBoxSignWritingParameters.BackColor = Color.FromArgb(255, 192, 128);
+            GroupBoxSignWritingParameters.Controls.Add(TableLayoutPanelSignWritingParameters);
+            GroupBoxSignWritingParameters.Location = new Point(83, 100);
+            GroupBoxSignWritingParameters.Margin = new Padding(0);
+            GroupBoxSignWritingParameters.Name = "GroupBoxSignWritingParameters";
+            GroupBoxSignWritingParameters.Padding = new Padding(0);
+            GroupBoxSignWritingParameters.Size = new Size(240, 200);
+            GroupBoxSignWritingParameters.TabIndex = 38;
+            GroupBoxSignWritingParameters.TabStop = false;
+            GroupBoxSignWritingParameters.Text = "Sign Writing Parameters";
             // 
-            // TableLayoutPanelSettingsMap
+            // TableLayoutPanelSignWritingParameters
             // 
-            TableLayoutPanelSettingsMap.Anchor = AnchorStyles.None;
-            TableLayoutPanelSettingsMap.ColumnCount = 1;
-            TableLayoutPanelSettingsMap.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSettingsMap.Controls.Add(GroupBoxSettingsMapWindow, 0, 0);
-            TableLayoutPanelSettingsMap.Location = new Point(406, 19);
-            TableLayoutPanelSettingsMap.Margin = new Padding(0);
-            TableLayoutPanelSettingsMap.Name = "TableLayoutPanelSettingsMap";
-            TableLayoutPanelSettingsMap.RowCount = 1;
-            TableLayoutPanelSettingsMap.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            TableLayoutPanelSettingsMap.Size = new Size(406, 400);
-            TableLayoutPanelSettingsMap.TabIndex = 1;
+            TableLayoutPanelSignWritingParameters.AccessibleName = "";
+            TableLayoutPanelSignWritingParameters.Anchor = AnchorStyles.None;
+            TableLayoutPanelSignWritingParameters.ColumnCount = 2;
+            TableLayoutPanelSignWritingParameters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSignWritingParameters.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSignWritingParameters.Controls.Add(ComboBoxSignMessage, 1, 0);
+            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignSegmentRadius, 1, 4);
+            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignSegmentLength, 1, 3);
+            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignGateHeight, 1, 2);
+            TableLayoutPanelSignWritingParameters.Controls.Add(TextBoxSignTilt, 1, 1);
+            TableLayoutPanelSignWritingParameters.Controls.Add(label16, 0, 0);
+            TableLayoutPanelSignWritingParameters.Controls.Add(label24, 0, 4);
+            TableLayoutPanelSignWritingParameters.Controls.Add(label23, 0, 3);
+            TableLayoutPanelSignWritingParameters.Controls.Add(label22, 0, 2);
+            TableLayoutPanelSignWritingParameters.Controls.Add(label19, 0, 1);
+            TableLayoutPanelSignWritingParameters.ImeMode = ImeMode.On;
+            TableLayoutPanelSignWritingParameters.Location = new Point(10, 25);
+            TableLayoutPanelSignWritingParameters.Margin = new Padding(0);
+            TableLayoutPanelSignWritingParameters.Name = "TableLayoutPanelSignWritingParameters";
+            TableLayoutPanelSignWritingParameters.RowCount = 5;
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingParameters.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TableLayoutPanelSignWritingParameters.Size = new Size(220, 165);
+            TableLayoutPanelSignWritingParameters.TabIndex = 35;
+            // 
+            // tableLayoutPanel17
+            // 
+            tableLayoutPanel17.Anchor = AnchorStyles.None;
+            tableLayoutPanel17.ColumnCount = 1;
+            tableLayoutPanel17.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel17.Controls.Add(GroupBoxSignWritingSignWindowLocation, 0, 0);
+            tableLayoutPanel17.Location = new Point(406, 19);
+            tableLayoutPanel17.Margin = new Padding(0);
+            tableLayoutPanel17.Name = "tableLayoutPanel17";
+            tableLayoutPanel17.RowCount = 1;
+            tableLayoutPanel17.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel17.Size = new Size(406, 400);
+            tableLayoutPanel17.TabIndex = 1;
+            // 
+            // GroupBoxSignWritingSignWindowLocation
+            // 
+            GroupBoxSignWritingSignWindowLocation.Anchor = AnchorStyles.None;
+            GroupBoxSignWritingSignWindowLocation.BackColor = Color.FromArgb(255, 192, 128);
+            GroupBoxSignWritingSignWindowLocation.Controls.Add(TableLayoutPanelSignWritingSignWindowLocation);
+            GroupBoxSignWritingSignWindowLocation.Location = new Point(60, 112);
+            GroupBoxSignWritingSignWindowLocation.Name = "GroupBoxSignWritingSignWindowLocation";
+            GroupBoxSignWritingSignWindowLocation.Size = new Size(286, 175);
+            GroupBoxSignWritingSignWindowLocation.TabIndex = 39;
+            GroupBoxSignWritingSignWindowLocation.TabStop = false;
+            GroupBoxSignWritingSignWindowLocation.Text = "Sign Window Location";
+            // 
+            // TableLayoutPanelSignWritingSignWindowLocation
+            // 
+            TableLayoutPanelSignWritingSignWindowLocation.AccessibleName = "";
+            TableLayoutPanelSignWritingSignWindowLocation.Anchor = AnchorStyles.None;
+            TableLayoutPanelSignWritingSignWindowLocation.ColumnCount = 2;
+            TableLayoutPanelSignWritingSignWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSignWritingSignWindowLocation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorHeight, 1, 4);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorWidth, 1, 3);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label20, 0, 4);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label21, 0, 3);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label27, 0, 1);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignOffset, 1, 1);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label40, 0, 2);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(TextBoxSignMonitorNumber, 1, 0);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(label44, 0, 0);
+            TableLayoutPanelSignWritingSignWindowLocation.Controls.Add(ComboBoxSignAlignment, 1, 2);
+            TableLayoutPanelSignWritingSignWindowLocation.ImeMode = ImeMode.On;
+            TableLayoutPanelSignWritingSignWindowLocation.Location = new Point(10, 25);
+            TableLayoutPanelSignWritingSignWindowLocation.Name = "TableLayoutPanelSignWritingSignWindowLocation";
+            TableLayoutPanelSignWritingSignWindowLocation.RowCount = 5;
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TableLayoutPanelSignWritingSignWindowLocation.Size = new Size(253, 143);
+            TableLayoutPanelSignWritingSignWindowLocation.TabIndex = 35;
             // 
             // TabPageCelestial
             // 
@@ -3183,251 +3331,6 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelCelestialNavigationSextant.Size = new Size(253, 143);
             TableLayoutPanelCelestialNavigationSextant.TabIndex = 35;
             // 
-            // TabPageSign
-            // 
-            TabPageSign.BackColor = Color.FromArgb(64, 64, 64);
-            TabPageSign.Controls.Add(tableLayoutPanel7);
-            TabPageSign.Location = new Point(4, 24);
-            TabPageSign.Name = "TabPageSign";
-            TabPageSign.Size = new Size(812, 438);
-            TabPageSign.TabIndex = 3;
-            TabPageSign.Text = "Sign Writing";
-            // 
-            // tableLayoutPanel7
-            // 
-            tableLayoutPanel7.Anchor = AnchorStyles.None;
-            tableLayoutPanel7.ColumnCount = 2;
-            tableLayoutPanel7.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel7.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel7.Controls.Add(tableLayoutPanel16, 0, 0);
-            tableLayoutPanel7.Controls.Add(tableLayoutPanel17, 1, 0);
-            tableLayoutPanel7.Location = new Point(0, 0);
-            tableLayoutPanel7.Margin = new Padding(0);
-            tableLayoutPanel7.Name = "tableLayoutPanel7";
-            tableLayoutPanel7.RowCount = 1;
-            tableLayoutPanel7.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel7.Size = new Size(812, 438);
-            tableLayoutPanel7.TabIndex = 0;
-            // 
-            // tableLayoutPanel16
-            // 
-            tableLayoutPanel16.Anchor = AnchorStyles.None;
-            tableLayoutPanel16.ColumnCount = 1;
-            tableLayoutPanel16.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel16.Controls.Add(GroupBoxSignWritingParameters, 0, 0);
-            tableLayoutPanel16.Location = new Point(0, 19);
-            tableLayoutPanel16.Margin = new Padding(0);
-            tableLayoutPanel16.Name = "tableLayoutPanel16";
-            tableLayoutPanel16.RowCount = 1;
-            tableLayoutPanel16.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel16.Size = new Size(406, 400);
-            tableLayoutPanel16.TabIndex = 0;
-            // 
-            // tableLayoutPanel17
-            // 
-            tableLayoutPanel17.Anchor = AnchorStyles.None;
-            tableLayoutPanel17.ColumnCount = 1;
-            tableLayoutPanel17.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel17.Controls.Add(GroupBoxSignWritingSignWindowLocation, 0, 0);
-            tableLayoutPanel17.Location = new Point(406, 19);
-            tableLayoutPanel17.Margin = new Padding(0);
-            tableLayoutPanel17.Name = "tableLayoutPanel17";
-            tableLayoutPanel17.RowCount = 1;
-            tableLayoutPanel17.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel17.Size = new Size(406, 400);
-            tableLayoutPanel17.TabIndex = 1;
-            // 
-            // TabPageCircuit
-            // 
-            TabPageCircuit.BackColor = Color.FromArgb(64, 64, 64);
-            TabPageCircuit.Controls.Add(tableLayoutPanel4);
-            TabPageCircuit.Location = new Point(4, 24);
-            TabPageCircuit.Name = "TabPageCircuit";
-            TabPageCircuit.Padding = new Padding(3);
-            TabPageCircuit.Size = new Size(812, 438);
-            TabPageCircuit.TabIndex = 1;
-            TabPageCircuit.Text = "Circuit";
-            // 
-            // tableLayoutPanel4
-            // 
-            tableLayoutPanel4.Anchor = AnchorStyles.None;
-            tableLayoutPanel4.ColumnCount = 2;
-            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel4.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel4.Controls.Add(tableLayoutPanel5, 0, 0);
-            tableLayoutPanel4.Location = new Point(0, 0);
-            tableLayoutPanel4.Margin = new Padding(0);
-            tableLayoutPanel4.Name = "tableLayoutPanel4";
-            tableLayoutPanel4.RowCount = 1;
-            tableLayoutPanel4.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel4.Size = new Size(812, 438);
-            tableLayoutPanel4.TabIndex = 0;
-            // 
-            // tableLayoutPanel5
-            // 
-            tableLayoutPanel5.Anchor = AnchorStyles.None;
-            tableLayoutPanel5.ColumnCount = 1;
-            tableLayoutPanel5.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel5.Controls.Add(GroupBoxCircuitParameters, 0, 0);
-            tableLayoutPanel5.Location = new Point(0, 19);
-            tableLayoutPanel5.Margin = new Padding(0);
-            tableLayoutPanel5.Name = "tableLayoutPanel5";
-            tableLayoutPanel5.RowCount = 1;
-            tableLayoutPanel5.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel5.Size = new Size(406, 400);
-            tableLayoutPanel5.TabIndex = 43;
-            // 
-            // TabPageMenu
-            // 
-            TabPageMenu.BackColor = Color.FromArgb(64, 64, 64);
-            TabPageMenu.Controls.Add(tableLayoutPanel1);
-            TabPageMenu.Location = new Point(4, 24);
-            TabPageMenu.Margin = new Padding(0);
-            TabPageMenu.Name = "TabPageMenu";
-            TabPageMenu.Size = new Size(812, 438);
-            TabPageMenu.TabIndex = 6;
-            TabPageMenu.Text = "General";
-            // 
-            // tableLayoutPanel1
-            // 
-            tableLayoutPanel1.Anchor = AnchorStyles.None;
-            tableLayoutPanel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            tableLayoutPanel1.ColumnCount = 2;
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Controls.Add(tableLayoutPanel2, 0, 0);
-            tableLayoutPanel1.Controls.Add(tableLayoutPanel3, 1, 0);
-            tableLayoutPanel1.Location = new Point(0, 0);
-            tableLayoutPanel1.Margin = new Padding(0);
-            tableLayoutPanel1.Name = "tableLayoutPanel1";
-            tableLayoutPanel1.RowCount = 1;
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel1.Size = new Size(812, 438);
-            tableLayoutPanel1.TabIndex = 5;
-            // 
-            // tableLayoutPanel2
-            // 
-            tableLayoutPanel2.Anchor = AnchorStyles.None;
-            tableLayoutPanel2.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            tableLayoutPanel2.ColumnCount = 1;
-            tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel2.Controls.Add(groupBox16, 0, 0);
-            tableLayoutPanel2.Controls.Add(groupBox12, 0, 1);
-            tableLayoutPanel2.Location = new Point(0, 19);
-            tableLayoutPanel2.Margin = new Padding(0);
-            tableLayoutPanel2.Name = "tableLayoutPanel2";
-            tableLayoutPanel2.RowCount = 2;
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel2.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel2.Size = new Size(406, 400);
-            tableLayoutPanel2.TabIndex = 0;
-            // 
-            // tableLayoutPanel3
-            // 
-            tableLayoutPanel3.Anchor = AnchorStyles.None;
-            tableLayoutPanel3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            tableLayoutPanel3.ColumnCount = 1;
-            tableLayoutPanel3.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            tableLayoutPanel3.Controls.Add(groupBox14, 0, 0);
-            tableLayoutPanel3.Controls.Add(groupBox13, 0, 2);
-            tableLayoutPanel3.Controls.Add(groupBox15, 0, 1);
-            tableLayoutPanel3.Location = new Point(406, 19);
-            tableLayoutPanel3.Margin = new Padding(0);
-            tableLayoutPanel3.Name = "tableLayoutPanel3";
-            tableLayoutPanel3.RowCount = 3;
-            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanel3.RowStyles.Add(new RowStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanel3.Size = new Size(406, 400);
-            tableLayoutPanel3.TabIndex = 1;
-            // 
-            // groupBox14
-            // 
-            groupBox14.Anchor = AnchorStyles.Top;
-            groupBox14.BackColor = Color.FromArgb(255, 192, 128);
-            groupBox14.Controls.Add(tableLayoutPanel10);
-            groupBox14.Location = new Point(83, 0);
-            groupBox14.Margin = new Padding(0);
-            groupBox14.Name = "groupBox14";
-            groupBox14.Padding = new Padding(0);
-            groupBox14.Size = new Size(240, 101);
-            groupBox14.TabIndex = 2;
-            groupBox14.TabStop = false;
-            groupBox14.Text = "Date and Time";
-            // 
-            // tableLayoutPanel10
-            // 
-            tableLayoutPanel10.AccessibleName = "";
-            tableLayoutPanel10.Anchor = AnchorStyles.None;
-            tableLayoutPanel10.ColumnCount = 2;
-            tableLayoutPanel10.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel10.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel10.Controls.Add(ButtonRandomTime, 0, 1);
-            tableLayoutPanel10.Controls.Add(ButtonRandomDate, 0, 0);
-            tableLayoutPanel10.Controls.Add(GeneralDatePicker, 1, 0);
-            tableLayoutPanel10.Controls.Add(GeneralTimePicker, 1, 1);
-            tableLayoutPanel10.ImeMode = ImeMode.On;
-            tableLayoutPanel10.Location = new Point(10, 25);
-            tableLayoutPanel10.Margin = new Padding(0);
-            tableLayoutPanel10.Name = "tableLayoutPanel10";
-            tableLayoutPanel10.RowCount = 2;
-            tableLayoutPanel10.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel10.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel10.Size = new Size(220, 61);
-            tableLayoutPanel10.TabIndex = 36;
-            // 
-            // groupBox15
-            // 
-            groupBox15.Anchor = AnchorStyles.None;
-            groupBox15.BackColor = Color.FromArgb(255, 192, 128);
-            groupBox15.Controls.Add(tableLayoutPanel11);
-            groupBox15.Location = new Point(83, 149);
-            groupBox15.Margin = new Padding(0);
-            groupBox15.Name = "groupBox15";
-            groupBox15.Padding = new Padding(0);
-            groupBox15.Size = new Size(240, 101);
-            groupBox15.TabIndex = 3;
-            groupBox15.TabStop = false;
-            groupBox15.Text = "Aircraft Selection";
-            // 
-            // tableLayoutPanel11
-            // 
-            tableLayoutPanel11.AccessibleName = "";
-            tableLayoutPanel11.Anchor = AnchorStyles.None;
-            tableLayoutPanel11.ColumnCount = 2;
-            tableLayoutPanel11.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel11.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanel11.Controls.Add(ButtonRandomAircraft, 0, 0);
-            tableLayoutPanel11.Controls.Add(ComboBoxGeneralAircraftSelection, 1, 0);
-            tableLayoutPanel11.Controls.Add(buttonGeneralAircraft, 0, 1);
-            tableLayoutPanel11.Controls.Add(TextBoxGeneralAircraftValues, 1, 1);
-            tableLayoutPanel11.ImeMode = ImeMode.On;
-            tableLayoutPanel11.Location = new Point(10, 25);
-            tableLayoutPanel11.Margin = new Padding(0);
-            tableLayoutPanel11.Name = "tableLayoutPanel11";
-            tableLayoutPanel11.RowCount = 2;
-            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel11.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanel11.Size = new Size(220, 61);
-            tableLayoutPanel11.TabIndex = 36;
-            // 
-            // TabControlP3DSG
-            // 
-            TabControlP3DSG.Controls.Add(TabPageMenu);
-            TabControlP3DSG.Controls.Add(TabPageCircuit);
-            TabControlP3DSG.Controls.Add(TabPagePhotoTour);
-            TabControlP3DSG.Controls.Add(TabPageSign);
-            TabControlP3DSG.Controls.Add(TabPageCelestial);
-            TabControlP3DSG.Controls.Add(TabPageWikiList);
-            TabControlP3DSG.Controls.Add(TabPageSettings);
-            TabControlP3DSG.Location = new Point(12, 12);
-            TabControlP3DSG.Name = "TabControlP3DSG";
-            TabControlP3DSG.SelectedIndex = 0;
-            TabControlP3DSG.Size = new Size(820, 466);
-            TabControlP3DSG.TabIndex = 0;
-            TabControlP3DSG.SelectedIndexChanged += TabControl_SelectedIndexChanged;
-            // 
             // TabPageWikiList
             // 
             TabPageWikiList.BackColor = Color.FromArgb(64, 64, 64);
@@ -3482,6 +3385,112 @@ namespace P3D_Scenario_Generator
             TableLayoutPanelWikiURLWindowLocation.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             TableLayoutPanelWikiURLWindowLocation.Size = new Size(406, 400);
             TableLayoutPanelWikiURLWindowLocation.TabIndex = 1;
+            // 
+            // TabPageSettings
+            // 
+            TabPageSettings.BackColor = Color.FromArgb(64, 64, 64);
+            TabPageSettings.Controls.Add(TableLayoutPanelSettings);
+            TabPageSettings.Location = new Point(4, 24);
+            TabPageSettings.Name = "TabPageSettings";
+            TabPageSettings.Padding = new Padding(3);
+            TabPageSettings.Size = new Size(812, 438);
+            TabPageSettings.TabIndex = 5;
+            TabPageSettings.Text = "Settings";
+            // 
+            // TableLayoutPanelSettings
+            // 
+            TableLayoutPanelSettings.Anchor = AnchorStyles.None;
+            TableLayoutPanelSettings.ColumnCount = 2;
+            TableLayoutPanelSettings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettings.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettings.Controls.Add(tableLayoutPanel24, 0, 0);
+            TableLayoutPanelSettings.Controls.Add(TableLayoutPanelSettingsMap, 1, 0);
+            TableLayoutPanelSettings.Location = new Point(0, 0);
+            TableLayoutPanelSettings.Margin = new Padding(0);
+            TableLayoutPanelSettings.Name = "TableLayoutPanelSettings";
+            TableLayoutPanelSettings.RowCount = 1;
+            TableLayoutPanelSettings.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettings.Size = new Size(812, 438);
+            TableLayoutPanelSettings.TabIndex = 0;
+            // 
+            // tableLayoutPanel24
+            // 
+            tableLayoutPanel24.Anchor = AnchorStyles.None;
+            tableLayoutPanel24.ColumnCount = 1;
+            tableLayoutPanel24.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanel24.Controls.Add(GroupBoxSettingsMapTileCacheInfo, 0, 0);
+            tableLayoutPanel24.Controls.Add(GroupBoxSettingsFolderInfo, 0, 1);
+            tableLayoutPanel24.Location = new Point(0, 19);
+            tableLayoutPanel24.Margin = new Padding(0);
+            tableLayoutPanel24.Name = "tableLayoutPanel24";
+            tableLayoutPanel24.RowCount = 2;
+            tableLayoutPanel24.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel24.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanel24.Size = new Size(406, 400);
+            tableLayoutPanel24.TabIndex = 0;
+            // 
+            // GroupBoxSettingsFolderInfo
+            // 
+            GroupBoxSettingsFolderInfo.Anchor = AnchorStyles.Bottom;
+            GroupBoxSettingsFolderInfo.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            GroupBoxSettingsFolderInfo.BackColor = Color.FromArgb(255, 192, 128);
+            GroupBoxSettingsFolderInfo.Controls.Add(TableLayoutPanelSettingsFolderInfo);
+            GroupBoxSettingsFolderInfo.Location = new Point(60, 267);
+            GroupBoxSettingsFolderInfo.Name = "GroupBoxSettingsFolderInfo";
+            GroupBoxSettingsFolderInfo.Padding = new Padding(0);
+            GroupBoxSettingsFolderInfo.Size = new Size(285, 130);
+            GroupBoxSettingsFolderInfo.TabIndex = 2;
+            GroupBoxSettingsFolderInfo.TabStop = false;
+            GroupBoxSettingsFolderInfo.Text = "Folder Info";
+            // 
+            // TableLayoutPanelSettingsFolderInfo
+            // 
+            TableLayoutPanelSettingsFolderInfo.AccessibleName = "";
+            TableLayoutPanelSettingsFolderInfo.Anchor = AnchorStyles.None;
+            TableLayoutPanelSettingsFolderInfo.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            TableLayoutPanelSettingsFolderInfo.ColumnCount = 2;
+            TableLayoutPanelSettingsFolderInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettingsFolderInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettingsFolderInfo.Controls.Add(button1, 0, 0);
+            TableLayoutPanelSettingsFolderInfo.Controls.Add(ButtonBrowseScenarioFolder, 0, 2);
+            TableLayoutPanelSettingsFolderInfo.Controls.Add(TextBoxSettingsP3DprogramInstall, 1, 0);
+            TableLayoutPanelSettingsFolderInfo.Controls.Add(TextBoxSettingsP3DprogramData, 1, 1);
+            TableLayoutPanelSettingsFolderInfo.Controls.Add(TextBoxSettingsScenarioFolderBase, 1, 2);
+            TableLayoutPanelSettingsFolderInfo.Controls.Add(ButtonP3DDataFolderSelect, 0, 1);
+            TableLayoutPanelSettingsFolderInfo.ImeMode = ImeMode.On;
+            TableLayoutPanelSettingsFolderInfo.Location = new Point(14, 24);
+            TableLayoutPanelSettingsFolderInfo.Name = "TableLayoutPanelSettingsFolderInfo";
+            TableLayoutPanelSettingsFolderInfo.RowCount = 3;
+            TableLayoutPanelSettingsFolderInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelSettingsFolderInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelSettingsFolderInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            TableLayoutPanelSettingsFolderInfo.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            TableLayoutPanelSettingsFolderInfo.Size = new Size(212, 90);
+            TableLayoutPanelSettingsFolderInfo.TabIndex = 36;
+            // 
+            // TableLayoutPanelSettingsMap
+            // 
+            TableLayoutPanelSettingsMap.Anchor = AnchorStyles.None;
+            TableLayoutPanelSettingsMap.ColumnCount = 1;
+            TableLayoutPanelSettingsMap.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettingsMap.Controls.Add(GroupBoxSettingsMapWindow, 0, 0);
+            TableLayoutPanelSettingsMap.Location = new Point(406, 19);
+            TableLayoutPanelSettingsMap.Margin = new Padding(0);
+            TableLayoutPanelSettingsMap.Name = "TableLayoutPanelSettingsMap";
+            TableLayoutPanelSettingsMap.RowCount = 1;
+            TableLayoutPanelSettingsMap.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            TableLayoutPanelSettingsMap.Size = new Size(406, 400);
+            TableLayoutPanelSettingsMap.TabIndex = 1;
+            // 
+            // ButtonHelp
+            // 
+            ButtonHelp.Location = new Point(757, 7);
+            ButtonHelp.Name = "ButtonHelp";
+            ButtonHelp.Size = new Size(75, 23);
+            ButtonHelp.TabIndex = 4;
+            ButtonHelp.Text = "Help";
+            ButtonHelp.UseVisualStyleBackColor = true;
+            ButtonHelp.Click += ButtonHelp_Click;
             // 
             // statusStrip1
             // 
@@ -3550,32 +3559,42 @@ namespace P3D_Scenario_Generator
             GroupBoxCelestialNavigationConstraints.ResumeLayout(false);
             TableLayoutPanelCelestialNavigationConstraints.ResumeLayout(false);
             TableLayoutPanelCelestialNavigationConstraints.PerformLayout();
-            GroupBoxSignWritingParameters.ResumeLayout(false);
-            TableLayoutPanelSignWritingParameters.ResumeLayout(false);
-            TableLayoutPanelSignWritingParameters.PerformLayout();
-            GroupBoxSignWritingSignWindowLocation.ResumeLayout(false);
-            TableLayoutPanelSignWritingSignWindowLocation.ResumeLayout(false);
-            TableLayoutPanelSignWritingSignWindowLocation.PerformLayout();
-            GroupBoxPhotoTourPhotoWindowLocation.ResumeLayout(false);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.ResumeLayout(false);
-            TableLayoutPanelPhotoTourPhotoWindowLocation.PerformLayout();
-            GroupBoxPhotoTourConstraints.ResumeLayout(false);
-            TableLayoutPanelPhotoTourConstraints.ResumeLayout(false);
-            TableLayoutPanelPhotoTourConstraints.PerformLayout();
+            TabControlP3DSG.ResumeLayout(false);
+            TabPageMenu.ResumeLayout(false);
+            tableLayoutPanel1.ResumeLayout(false);
+            tableLayoutPanel2.ResumeLayout(false);
             groupBox16.ResumeLayout(false);
             tableLayoutPanelLocationFilter.ResumeLayout(false);
             tableLayoutPanelLocationFilter.PerformLayout();
+            tableLayoutPanel3.ResumeLayout(false);
+            groupBox14.ResumeLayout(false);
+            tableLayoutPanel10.ResumeLayout(false);
+            groupBox15.ResumeLayout(false);
+            tableLayoutPanel11.ResumeLayout(false);
+            tableLayoutPanel11.PerformLayout();
+            TabPageCircuit.ResumeLayout(false);
+            tableLayoutPanel4.ResumeLayout(false);
+            tableLayoutPanel5.ResumeLayout(false);
             TabPagePhotoTour.ResumeLayout(false);
             tableLayoutPanel6.ResumeLayout(false);
             tableLayoutPanel14.ResumeLayout(false);
+            GroupBoxPhotoTourConstraints.ResumeLayout(false);
+            TableLayoutPanelPhotoTourConstraints.ResumeLayout(false);
+            TableLayoutPanelPhotoTourConstraints.PerformLayout();
             tableLayoutPanel15.ResumeLayout(false);
-            TabPageSettings.ResumeLayout(false);
-            TableLayoutPanelSettings.ResumeLayout(false);
-            tableLayoutPanel24.ResumeLayout(false);
-            GroupBoxSettingsFolderInfo.ResumeLayout(false);
-            TableLayoutPanelSettingsFolderInfo.ResumeLayout(false);
-            TableLayoutPanelSettingsFolderInfo.PerformLayout();
-            TableLayoutPanelSettingsMap.ResumeLayout(false);
+            GroupBoxPhotoTourPhotoWindowLocation.ResumeLayout(false);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.ResumeLayout(false);
+            TableLayoutPanelPhotoTourPhotoWindowLocation.PerformLayout();
+            TabPageSign.ResumeLayout(false);
+            tableLayoutPanel7.ResumeLayout(false);
+            tableLayoutPanel16.ResumeLayout(false);
+            GroupBoxSignWritingParameters.ResumeLayout(false);
+            TableLayoutPanelSignWritingParameters.ResumeLayout(false);
+            TableLayoutPanelSignWritingParameters.PerformLayout();
+            tableLayoutPanel17.ResumeLayout(false);
+            GroupBoxSignWritingSignWindowLocation.ResumeLayout(false);
+            TableLayoutPanelSignWritingSignWindowLocation.ResumeLayout(false);
+            TableLayoutPanelSignWritingSignWindowLocation.PerformLayout();
             TabPageCelestial.ResumeLayout(false);
             tableLayoutPanel13.ResumeLayout(false);
             tableLayoutPanel18.ResumeLayout(false);
@@ -3583,27 +3602,17 @@ namespace P3D_Scenario_Generator
             GroupBoxCelestialNavigationSextant.ResumeLayout(false);
             TableLayoutPanelCelestialNavigationSextant.ResumeLayout(false);
             TableLayoutPanelCelestialNavigationSextant.PerformLayout();
-            TabPageSign.ResumeLayout(false);
-            tableLayoutPanel7.ResumeLayout(false);
-            tableLayoutPanel16.ResumeLayout(false);
-            tableLayoutPanel17.ResumeLayout(false);
-            TabPageCircuit.ResumeLayout(false);
-            tableLayoutPanel4.ResumeLayout(false);
-            tableLayoutPanel5.ResumeLayout(false);
-            TabPageMenu.ResumeLayout(false);
-            tableLayoutPanel1.ResumeLayout(false);
-            tableLayoutPanel2.ResumeLayout(false);
-            tableLayoutPanel3.ResumeLayout(false);
-            groupBox14.ResumeLayout(false);
-            tableLayoutPanel10.ResumeLayout(false);
-            groupBox15.ResumeLayout(false);
-            tableLayoutPanel11.ResumeLayout(false);
-            tableLayoutPanel11.PerformLayout();
-            TabControlP3DSG.ResumeLayout(false);
             TabPageWikiList.ResumeLayout(false);
             tableLayoutPanel20.ResumeLayout(false);
             tableLayoutPanel21.ResumeLayout(false);
             TableLayoutPanelWikiURLWindowLocation.ResumeLayout(false);
+            TabPageSettings.ResumeLayout(false);
+            TableLayoutPanelSettings.ResumeLayout(false);
+            tableLayoutPanel24.ResumeLayout(false);
+            GroupBoxSettingsFolderInfo.ResumeLayout(false);
+            TableLayoutPanelSettingsFolderInfo.ResumeLayout(false);
+            TableLayoutPanelSettingsFolderInfo.PerformLayout();
+            TableLayoutPanelSettingsMap.ResumeLayout(false);
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)errorProvider1).EndInit();

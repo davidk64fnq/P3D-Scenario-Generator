@@ -45,7 +45,7 @@
     <None Remove="Resources\Help\images\scenarioLoadScreen.jpg" />
     <None Remove="Resources\Help\introduction.htm" />
     <None Remove="Resources\Help\photoTour.htm" />
-    <None Remove="Resources\Help\runway.htm" />
+    <None Remove="Resources\Help\signwriting.htm" />
     <None Remove="Resources\Help\style.css" />
     <None Remove="Resources\HTML\CelestialSextant.html" />
     <None Remove="Resources\HTML\MissionBriefSource.htm" />
@@ -231,10 +231,10 @@
     <EmbeddedResource Include="Resources\Help\photoTour.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\runway.htm">
+    <EmbeddedResource Include="Resources\Help\settings.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\settings.htm">
+    <EmbeddedResource Include="Resources\Help\signwriting.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\style.css">

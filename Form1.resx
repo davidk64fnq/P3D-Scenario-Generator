@@ -120,12 +120,42 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
-  <data name="TextBoxPhotoTourPhotoOffset.ToolTip" xml:space="preserve">
-    <value>The default position of photo window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the photo window is positioned. Ignored if default position of photo window is centered.
-</value>
+  <data name="label19.ToolTip" xml:space="preserve">
+    <value>Tilt Angle:
+Enter the pitch angle of the letter pattern relative to the ground (0–90°):
+• 0° = Flown completely flat and level with the ground
+• 10–30° = Slanted upward toward the airfield for spectator viewing
+• 90° = Flown straight up and down (vertical climbs and descents)</value>
   </data>
-  <data name="label30.ToolTip" xml:space="preserve">
-    <value>The default position of photo window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the photo window is positioned. Ignored if default position of photo window is centered.</value>
+  <data name="TextBoxPhotoTourConstraintsMaxLegDist.ToolTip" xml:space="preserve">
+    <value>Max Leg Dist:
+Specifies the maximum acceptable distance (in nautical miles) for each individual leg of the tour.
+NOTE: Defines the search radius for candidate waypoints and destination airfields. Must be greater than Min Leg Dist.</value>
+  </data>
+  <data name="TextBoxPhotoTourConstraintsMinLegDist.ToolTip" xml:space="preserve">
+    <value>Min Leg Dist:
+Specifies the minimum acceptable distance (in nautical miles) for each individual leg of the tour.
+NOTE: Must be strictly less than Max Leg Dist. Applies to airport-to-photo, photo-to-photo, and photo-to-destination legs.</value>
+  </data>
+  <data name="TextBoxPhotoTourConstraintsMaxBearingChange.ToolTip" xml:space="preserve">
+    <value>Max Bearing Change:
+Sets the maximum allowable turn angle (in degrees) between consecutive legs to prevent sharp reversals or backtracking.
+NOTE: Automatically bypassed when generating 2-leg (single photo) tours to allow direct round-trips or steep turns.</value>
+  </data>
+  <data name="TextBoxPhotoTourConstraintsHotspotRadius.ToolTip" xml:space="preserve">
+    <value>Hotspot Radius:
+Specifies the trigger detection radius (in meters) of the cylinder placed over each photo waypoint.
+NOTE: Penetrating this zone sounds the arrival chime, pops up the photo viewer window, and advances the moving map to the next leg.</value>
+  </data>
+  <data name="TextBoxPhotoTourConstraintsMinNoLegs.ToolTip" xml:space="preserve">
+    <value>Min No. Legs:
+Sets the lower limit for the total number of legs in the generated tour.
+NOTE: Total leg count includes departure and destination legs (e.g., 2 legs = Departure → 1 Photo → Destination). Must be less than or equal to Max No. Legs.</value>
+  </data>
+  <data name="label18.ToolTip" xml:space="preserve">
+    <value>Hotspot Radius:
+Specifies the trigger detection radius (in meters) of the cylinder placed over each photo waypoint.
+NOTE: Penetrating this zone sounds the arrival chime, pops up the photo viewer window, and advances the moving map to the next leg.</value>
   </data>
   <data name="label41.ToolTip" xml:space="preserve">
     <value>Server / API key:
@@ -139,14 +169,79 @@ Enter your RapidAPI MapTiles key string here. Required to download OpenStreetMap
 
 NOTE: Hover over this field to expand a pop-up displaying the full key string.</value>
   </data>
+  <data name="label17.ToolTip" xml:space="preserve">
+    <value>Max Bearing Change:
+Sets the maximum allowable turn angle (in degrees) between consecutive legs to prevent sharp reversals or backtracking.
+NOTE: Automatically bypassed when generating 2-leg (single photo) tours to allow direct round-trips or steep turns.</value>
+  </data>
+  <data name="label14.ToolTip" xml:space="preserve">
+    <value>Min Leg Dist:
+Specifies the minimum acceptable distance (in nautical miles) for each individual leg of the tour.
+NOTE: Must be strictly less than Max Leg Dist. Applies to airport-to-photo, photo-to-photo, and photo-to-destination legs.</value>
+  </data>
+  <data name="label12.ToolTip" xml:space="preserve">
+    <value>Min No. Legs:
+Sets the lower limit for the total number of legs in the generated tour.
+NOTE: Total leg count includes departure and destination legs (e.g., 2 legs = Departure → 1 Photo → Destination). Must be less than or equal to Max No. Legs.</value>
+  </data>
+  <data name="label11.ToolTip" xml:space="preserve">
+    <value>Max Leg Dist:
+Specifies the maximum acceptable distance (in nautical miles) for each individual leg of the tour.
+NOTE: Defines the search radius for candidate waypoints and destination airfields. Must be greater than Min Leg Dist.</value>
+  </data>
+  <data name="TextBoxPhotoTourConstraintsMaxAttempts.ToolTip" xml:space="preserve">
+    <value>Max Attempts:
+Sets the maximum number of search cycles the generator will attempt before stopping if a valid sequence of photos and airfields cannot be resolved.
+NOTE: Increase this value when generating tours in remote areas or under restrictive Location Filters.</value>
+  </data>
+  <data name="label15.ToolTip" xml:space="preserve">
+    <value>Max Attempts:
+Sets the maximum number of search cycles the generator will attempt before stopping if a valid sequence of photos and airfields cannot be resolved.
+NOTE: Increase this value when generating tours in remote areas or under restrictive Location Filters.</value>
+  </data>
   <metadata name="helpProvider1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>359, 17</value>
   </metadata>
-  <data name="label27.ToolTip" xml:space="preserve">
-    <value>The default position of sign window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the sign window is positioned. Ignored if default position of sign window is centered.</value>
+  <data name="ComboBoxSignMessage.ToolTip" xml:space="preserve">
+    <value>Message:
+Enter or select the text message to spell in the sky:
+• Alphabetic letters only (A–Z, a–z)
+• Press Enter to save a new message to the list
+• Press Delete to remove a selected message
+• Maximum length is limited by available screen space</value>
   </data>
-  <data name="TextBoxSignOffset.ToolTip" xml:space="preserve">
-    <value>The default position of sign window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the sign window is positioned. Ignored if default position of sign window is centered.
+  <data name="TextBoxSignTilt.ToolTip" xml:space="preserve">
+    <value>Tilt Angle:
+Enter the pitch angle of the letter pattern relative to the ground (0–90°):
+• 0° = Flown completely flat and level with the ground
+• 10–30° = Slanted upward toward the airfield for spectator viewing
+• 90° = Flown straight up and down (vertical climbs and descents)</value>
+  </data>
+  <data name="label16.ToolTip" xml:space="preserve">
+    <value>Message:
+Enter or select the text message to spell in the sky:
+• Alphabetic letters only (A–Z, a–z)
+• Press Enter to save a new message to the list
+• Press Delete to remove a selected message
+• Maximum length is limited by available screen space</value>
+  </data>
+  <data name="TextBoxSignMonitorNumber.ToolTip" xml:space="preserve">
+    <value>Monitor Number:
+Specifies the Windows display index where the sign writing window will render (e.g., 0, 1, or 2).
+
+NOTE: Invalid or disconnected display indices automatically fall back to Monitor 0.
+
+
+
+</value>
+  </data>
+  <data name="label44.ToolTip" xml:space="preserve">
+    <value>Monitor Number:
+Specifies the Windows display index where the sign writing window will render (e.g., 0, 1, or 2).
+
+NOTE: Invalid or disconnected display indices automatically fall back to Monitor 0.
+
+
 </value>
   </data>
   <data name="label53.ToolTip" xml:space="preserve">
@@ -235,16 +330,17 @@ Selects the square pixel dimensions and zoom detail for the map window:
 • 512: Generates 3 zoom levels per flight leg (Zoom 1–3).
 • 1024: Generates 4 zoom levels per flight leg (Zoom 1–4) for higher spatial coverage.</value>
   </data>
+  <data name="label8.ToolTip" xml:space="preserve">
+    <value>Use Custom stars.dat:
+Exports a custom star catalog file (stars.dat.P3DscenarioGenerator) to your Prepar3D ProgramData folder to ensure in-sim star visual positions match the sextant calculation engine.</value>
+  </data>
+  <data name="CheckBoxCelestialUseStarsDat.ToolTip" xml:space="preserve">
+    <value>Use Custom stars.dat:
+Exports a custom star catalog file (stars.dat.P3DscenarioGenerator) to your Prepar3D ProgramData folder to ensure in-sim star visual positions match the sextant calculation engine.</value>
+  </data>
   <data name="ButtonP3DDataFolderSelect.ToolTip" xml:space="preserve">
     <value>P3D Data (Button &amp; Text Box):
 Click to browse and select your active Prepar3D ProgramData directory (e.g., C:\ProgramData\Lockheed Martin\Prepar3D v5). Used to parse installed scenery layers and add-on packages.</value>
-  </data>
-  <data name="label34.ToolTip" xml:space="preserve">
-    <value>The default position of sextant window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the sextant window is positioned. Ignored if default position of sextant window is centered.</value>
-  </data>
-  <data name="TextBoxCelestialOffset.ToolTip" xml:space="preserve">
-    <value>The default position of sextant window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the sextant window is positioned. Ignored if default position of sextant window is centered.
-</value>
   </data>
   <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>115, 17</value>

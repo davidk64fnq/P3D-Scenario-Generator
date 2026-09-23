@@ -1,62 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <title>P3D Scenario Generator | Photo Tour</title>
-		<link rel="stylesheet" href="style.css"/>
-    </head>
-	<body>
-		<h2>Photo Tour</h2>
-		<h3>Introduction</h3>
-		<p>
-			The photo tour scenario has you start and finish at an airport with visits along the way to locations where photos have been taken. The only thing common to the photos is that they were taken in the same geographical area. As you reach each location a window opens displaying the photo and a second window displays a map view of the region encompassing the current and next location. The photos are sourced from the <a href="https://www.pic2map.com/" title="pic2map.com" target="_blank">Pic2Map</a> website. The leg route images are sourced from <a href="https://docs.microsoft.com/en-us/bingmaps/rest-services/imagery/get-a-static-map" title="docs.microsoft.com/en-us/bingmaps/rest-services/imagery/get-a-static-map" target="_blank">Bing Maps</a>. The idea of the scenario is to give you a purpose for taking a random flight, to see what photo was taken at each location and uploaded to Pic2Map by some anomynous user. By default the map displays an icon representing your aircraft but you can choose to hide the icon to add a degree of complexity in navigating to each new photo location.
-		</p>
-		<h3>Quick Start</h3>
-		<p>Follow these steps to generate and fly your first Photo Tour scenario.</p>
-		<ol>
-			<li>Start the P3D Scenario Generator program.</li>
-			<li>
-				Click on "Photo Tour" in the list of scenario types. <strong>Note:</strong> this will gray out the runway selection inputs as this scenario only supports a random starting location.
-			</li>
-			<li>Click on the "aircraft.cfg" button to choose the aircraft you will fly.</li>
-			<li>Type in a scenario title.</li>
-			<li>For this first photo tour flight leave the scenario parameters set at the default values on the "Photo Tour" tab.</li>
-			<li>Click on "Generate Scenario" and wait patiently for the program to generate your photo tour flight files.</li>
-			<li>Once the program confirms the photo tour flight is ready to fly, start Prepar3D and choose the flight scenario title you assigned to this photo tour.</li>
-			<li>Your aircraft will be positioned at the runway threshold of the photo tour starting airport, cold and dark, the simulator will be paused.</li>
-			<li>Unpause the simulator and listen to the introductory comments while starting your aircraft and preparing for takeoff.</li>
-			<li>You will notice a window displaying a map. On the map are two blue markers, one showing the starting airport, the other the location where the first randon photo of the photo tour was taken.</li>
-			<li>At the starting airport you will see a black outline of an aircraft. During the photo tour this will move on the map showing your position. If at some point you want to stop seeing the plane icon, press the "Hide Plane" button, to see the plane icon again, press the "Show Plane" button.</li>
-			<li>By default the map uses Bing aerial imagery with a roads overlay. Two other options are available, Aerial with no roads overlay, and a road map. These can be selected by pressing the button corresponding to the map type you require.</li>
-			<li>Take off and fly to the first photo location indicated by the blue marker with a "1" on it. Once you get close enough to the marker, the current map window will close and you will see a window open showing the random photo that was taken at this location. A second window showing the next leg of the photo tour also opens but is initially hidden underneath the photo window. </li>
-			<li>
-				If you are having difficulty getting the photo and next map leg windows to trigger be sure that you are lining up the middle of the aircraft fuselage icon (behind the wings) with the point of the "V" at the bottom of the blue marker on the map as shown in the diagram below. <strong>Note:</strong> the plane can be heading in any direction as long as those two reference points coincide.
-			</li>
-			<img src="images/planeOnMarker.jpg" alt="Image showing plane on marker in leg route map" title="Image showing plane on marker in leg route map"/>
-				<li>Drag the photo window to another part of your screen or right click on the window to choose the "Close Window" pop-up menu option. This will reveal the new map window and allow you to start navigating to the next photo tour photo location marked with a "2".</li>
-				<li>
-					Continue flying from one photo location to the next until you have seen all the photos in the photo tour. The last map window will show a blue marker with a CIAO code on it. This is the airport you must land on and come to a stop in order to complete the scenario. <strong>Note:</strong> sometimes the photo tour starts and finishes at the same airport.
-				</li>
-			</ol>
-		<h3>Scenario Parameters</h3>
-		<p>
-			These are the steps taken by P3D Scenario Generator in attempting to generate a photo tour. Knowledge of these steps will aid in understanding the scenario parameters available and the likely effect of modifying them on the time it takes for P3D Scenario Generator to find a photo tour that conforms to the selected parameters.
-		</p>
-		<ol>
-			<li>Request a random photo from Pic2Map.</li>
-			<li>Find the nearest airport and continue if distance of first leg is between "Min Leg Dist" and "Max Leg Dist".</li>
-			<li>Find a new photo location and continue if distance of next leg is between "Min Leg Dist" and "Max Leg Dist" and the required bearing change is less than "Max Bearing Change".</li>
-			<li>Keep looking for new photo locations until the number of legs in the route is between "Min No. Legs" and "Max No. Legs" or a new photo location that meets the parameters can't be located.</li>
-			<li>Find the nearest airport and continue if distance of last leg is between "Min Leg Dist" and "Max Leg Dist" and the required bearing change is less than "Max Bearing Change".</li>
-			<li>
-				Attempt to source Bing images for the leg routes. <strong>Note:</strong> having found a set of photos on Pic2Map that meet the selected scenario parameters the process can still fail if Bing imagery cannot be obtained. Not all geographical areas have suitable imagery for the leg routes.
-			</li>
-		</ol>
-		<p>
-			From this description of the steps taken you will discern the impact of changing the default scenario parameters. For example setting a smaller "Max Bearing Change" will mean P3D Scenario Generator takes longer to find a suitable photo tour. Increasing the "Max Leg Distance" will mean P3D Scenario Generator takes less time to find a suitable photo tour. The default scenario parameters usually find a suitable photo tour in order of magnitude several minutes.
-		</p>
-		<p>
-			The size of the map is a configurable parameter as well as the radius of the hotspot in Prepar3D that triggers the photo and next leg route windows to open. There is no visual indication within Prepar3D of where the photo location is. If you set yourself the task of triggering the photo without having the plane silhouette displayed on the map and in addition you have configured a small radius for the hotspot then it can be quite tricky. As a last resort you may decide to enter slew mode in Prepar3D to hit the trigger point. <strong>Note:</strong> with the default parameters a pixel on the map is order of magnitude 100 feet across.
-		</p>
-	</body>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta charset="utf-8" />
+	<title>P3D Scenario Generator | Photo Tour Tab</title>
+	<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+	<h2>Photo Tour Tab</h2>
+	<p>
+		The <strong>Photo Tour Tab</strong> configures automated, multi-leg visual discovery flights. In a Photo Tour scenario, you depart from an airfield, navigate visually through a series of geographic waypoints where real-world photos were taken and shared to <a href="https://www.pic2map.com/" title="pic2map.com" target="_blank">Pic2Map</a>, and conclude with a landing at a destination airport.
+	</p>
+	<p>
+		<strong>Design Philosophy:</strong> Photo Tours are designed around low-and-slow visual flight rules ("IFR – I Follow Roads"). As you navigate from one photo coordinate to the next using terrain features, highways, and the moving map overlay, entering each location's trigger zone sounds an audio chime, displays the photo taken at that spot, and advances the moving map to the next leg.
+	</p>
+
+	<hr />
+
+	<!-- SCENARIO GENERATION LOGIC -->
+	<h3 id="generationLogic">How Photo Tours Are Built</h3>
+	<p>
+		Because Photo Tours construct an interconnected journey around real-world geolocated images, airfield selection is automated algorithmically rather than chosen manually on the General tab. However, <strong>both the departure and destination airports are strictly constrained by your active <a href="generalTab.htm#locationFilter">Location Filter</a></strong>:
+	</p>
+	<ol type="1">
+		<li>
+			<strong>Seed Photo &amp; Departure Airfield:</strong> The generator queries Pic2Map for a random geolocated photo. It then searches the airport database for a valid departure runway located within your configured <strong>Min Leg Dist</strong> and <strong>Max Leg Dist</strong> from that photo that also matches your active <strong>Location Filter</strong> (Country, State, City).
+		</li>
+		<li>
+			<strong>Leg Chaining:</strong> From the current photo, the generator inspects adjacent photo candidates, selecting an unvisited photo that satisfies distance bounds and your <strong>Max Bearing</strong> turn limits.
+		</li>
+		<li>
+			<strong>Tour Length Verification:</strong> Chaining continues until the tour reaches a leg count between <strong>Min No. Legs</strong> and <strong>Max No. Legs</strong>.
+		</li>
+		<li>
+			<strong>Destination Airfield:</strong> Once the final photo waypoint is established, the generator searches for a suitable arrival airfield within leg distance range that satisfies your active <strong>Location Filter</strong>.
+		</li>
+		<li>
+			<strong>Asset Compilation:</strong> All waypoint photos are downloaded and automatically resized to fit your configured photo display window. Route charts showing the active leg line over OpenStreetMap (OSM) tiles and mission scripts are compiled into the flight package.
+		</li>
+	</ol>
+
+	<hr />
+
+	<!-- PHOTO TOUR PARAMETERS -->
+	<h3 id="photoTourParameters">Photo Tour Parameters</h3>
+	<p>
+		The <strong>Photo Tour Parameters</strong> group defines the geometric constraints, distance thresholds, and search budgets used by the route-finding algorithm.
+	</p>
+
+	<h4>Min Leg Dist &amp; Max Leg Dist text boxes</h4>
+	<p>
+		Specifies the minimum and maximum acceptable distance (in nautical miles) for each individual leg of the tour (defaults: <code>3</code> nm minimum, <code>10</code> nm maximum).
+	</p>
+	<ul>
+		<li>
+			Applies to the initial hop from the departure runway to the first photo, all intermediate legs between photos, and the final hop from the last photo to the destination airport.
+		</li>
+		<li>
+			<strong>Validation:</strong> The minimum leg distance must be strictly less than the maximum leg distance. Shorter distances produce compact tours ideal for light aircraft; larger values allow faster aircraft to cover broader regions.
+		</li>
+	</ul>
+
+	<h4>Min No. Legs &amp; Max No. Legs text boxes</h4>
+	<p>
+		Defines the lower and upper bounds for the total number of legs in the generated tour (defaults: <code>2</code> min, <code>7</code> max).
+	</p>
+	<ul>
+		<li>
+			The total leg count includes the departure leg, intermediate photo hops, and the landing approach leg. For example, a setting of <code>2</code> legs produces a single-photo tour: Departure Airport &rarr; Photo &rarr; Destination Airport.
+		</li>
+		<li>
+			<strong>Validation:</strong> Minimum legs cannot exceed maximum legs. Setting a higher minimum creates longer flights with more photo waypoints, but may require more search attempts in sparsely photographed regions.
+		</li>
+	</ul>
+
+	<h4>Max Bearing text box</h4>
+	<p>
+		Sets the maximum allowable course change (in degrees) between consecutive legs (default: <code>135</code>°).
+	</p>
+	<ul>
+		<li>
+			This constraint prevents multi-leg tours from doubling back or producing erratic hairpin reversals, ensuring a natural, forward-progressing cross-country flight path.
+		</li>
+		<li>
+			<strong>Two-Leg Exemption:</strong> If the tour consists of exactly <strong>2 legs</strong> (a single photo visit between departure and arrival), the maximum bearing limit is <strong>not applied</strong>. This bypass makes it significantly easier to generate single-photo flights where the inbound and outbound headings may require a sharp turn or direct return.
+		</li>
+	</ul>
+
+	<h4>Hotspot Radius text box</h4>
+	<p>
+		Specifies the detection radius (in meters) of the three-dimensional cylinder trigger placed over each photo waypoint (default: <code>1000</code> meters).
+	</p>
+	<ul>
+		<li>
+			When your aircraft penetrates this cylinder, the simulator triggers an audio chime (<code>ThruHoop.wav</code>), opens the photo viewer window, and advances the scenario leg counter (<code>currentLegNo</code>).
+		</li>
+		<li>
+			Tighter radii (e.g., <code>500</code> m) demand precise visual navigation directly over the photo site. Larger radii (e.g., <code>1500</code>–<code>2000</code> m) offer a more relaxed touring experience.
+		</li>
+	</ul>
+
+	<h4>Max Attempts text box</h4>
+	<p>
+		Sets the maximum number of full search attempts the generator will make before stopping if a valid sequence of photos cannot be resolved (default: <code>100</code>).
+	</p>
+	<p>
+		If the algorithm picks a seed photo in a remote area without nearby matching airports or adjacent photos meeting your distance/bearing constraints, it discards that chain and retries with a fresh seed photo. Increasing this value gives the generator more opportunities to find tours in challenging regions or restrictive location filters.
+	</p>
+
+	<hr />
+
+	<!-- PHOTO WINDOW LOCATION -->
+	<h3 id="photoWindowLocation">Photo Window Location</h3>
+	<p>
+		Configures the monitor index, screen alignment, and margin offsets for the in-game photo viewer window when triggered during flight. For a detailed explanation of multi-monitor indexing, window alignment modes, and pixel offset calculations, see the <a href="settings.htm#mapWindow">Settings Tab: Map Window Settings</a> documentation.
+	</p>
+	<p>
+		<em>Note: The settings in this group govern only the pop-up photo viewer window. Display positioning and dimensions for the moving map overlay window are configured independently on the <a href="settings.htm#mapWindow">Settings Tab</a>.</em>
+	</p>
+
+	<h4>Automated Image Dimension Scaling</h4>
+	<p>
+		During scenario generation, each downloaded photo is analyzed against your target monitor dimensions and margin offsets:
+	</p>
+	<ul>
+		<li>
+			If a photo's raw pixel dimensions exceed the safe viewing boundaries (calculated from monitor size minus margins and offsets), the generator automatically downscales the image while strictly preserving its original aspect ratio.
+		</li>
+		<li>
+			This ensures that photo popups never overlap multiple displays, clip outside screen edges, or exceed your intended panel real estate.
+		</li>
+	</ul>
+
+	<hr />
+
+	<!-- IN-FLIGHT EXPERIENCE -->
+	<h3 id="inFlightExperience">In-Flight Operations &amp; Procedures</h3>
+	<p>
+		Once generated, the scenario loads directly into Prepar3D with automated event triggers, custom audio, and interactive tracking.
+	</p>
+
+	<h4>Pre-Flight &amp; Departure</h4>
+	<ol type="1">
+		<li>
+			<strong>Initial Position:</strong> Your aircraft is positioned cold and dark at the departure runway threshold with the simulator paused.
+		</li>
+		<li>
+			<strong>Briefing Audio:</strong> Unpausing the simulation triggers spoken text-to-speech audio introducing your flight, followed by the automatic opening of the in-game <strong>Moving Map</strong> overlay.
+		</li>
+		<li>
+			<strong>Moving Map Display:</strong> The map display opens centered on the first leg, showing your aircraft's spatial position and a line drawn from your departure airport to the first photo waypoint. For detailed instructions on map viewport panning, zoom cycling, and hardware switch bindings, see <a href="settings.htm#movingMap">Settings Tab: Moving Map Display &amp; Controls</a>.
+		</li>
+	</ol>
+
+	<h4>En Route Navigation &amp; Waypoint Arrival</h4>
+	<ul>
+		<li>
+			<strong>Visual Tracking:</strong> Fly toward the destination of the active leg following roads, terrain landmarks, and the route line drawn across the OpenStreetMap chart.
+		</li>
+		<li>
+			<strong>Triggering Waypoints:</strong> When your aircraft enters the waypoint's hotspot cylinder, you will hear a confirmation chime (<code>ThruHoop.wav</code>).
+		</li>
+		<li>
+			<strong>Viewing the Photo:</strong> The photo window opens automatically displaying the image taken at that coordinate. When your moving map and photo window are configured to use different screen alignments (e.g., Top Left for map, Top Right for photos) or separate monitors, both windows display cleanly side-by-side without overlapping.
+		</li>
+		<li>
+			<strong>Automatic Leg Progression:</strong> As the waypoint triggers, the moving map automatically updates its route line to guide you along the next leg toward the subsequent photo or destination airfield.
+		</li>
+	</ul>
+
+	<h4>Final Leg &amp; Mission Completion</h4>
+	<p>
+		After reaching the final photo waypoint, the moving map draws a line directly toward your destination airport. Land on any active runway at the airfield and bring your aircraft to a complete stop to resolve the mission objective (<code>Goal01</code>) and close all active overlays.
+	</p>
+
+	<hr />
+
+	<!-- GLOBAL ACTIONS -->
+	<h3 id="globalActions">Global Actions</h3>
+	<p>
+		The bottom buttons (<kbd class="winforms-btn">Reset Tab</kbd>, <kbd class="winforms-btn">Reload Profile</kbd>, and <kbd class="winforms-btn">Generate Scenario</kbd>) are persistent controls documented under <a href="generalTab.htm#globalActions">General Tab: Global Actions</a>.
+	</p>
+	<p>
+		When generating a Photo Tour scenario, the following tab-specific validations must also pass:
+	</p>
+	<ul>
+		<li><strong>Min Leg Dist</strong> must be strictly less than <strong>Max Leg Dist</strong>.</li>
+		<li><strong>Min No. Legs</strong> must be less than or equal to <strong>Max No. Legs</strong>.</li>
+		<li>A valid RapidAPI key must be configured on the <a href="settings.htm#mapTileCacheInfo">Settings Tab</a> to download OpenStreetMap route tiles.</li>
+	</ul>
+</body>
 </html>

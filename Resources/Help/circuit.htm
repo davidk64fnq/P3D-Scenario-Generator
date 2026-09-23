@@ -13,10 +13,10 @@
 		</p>
 
 		<p style="text-align: center;">
-			<img src="images/circuitTab.jpg" alt="Circuit tab diagram showing arrangement of 8 gates" title="Circuit tab diagram showing arrangement of 8 gates"/>
+			<img src="images/circuitTab.jpg" alt="Circuit tab diagram showing arrangement of 8 gates" title="Circuit tab diagram showing arrangement of 8 gates" />
 		</p>
 
-		<hr/>
+		<hr />
 
 		<!-- CIRCUIT GEOMETRY -->
 		<h3 id="circuitGeometry">Circuit Geometry &amp; Gate Layout</h3>
@@ -62,7 +62,7 @@
 			</li>
 		</ul>
 
-		<hr/>
+		<hr />
 
 		<!-- CIRCUIT PARAMETERS -->
 		<h3 id="circuitParameters">Circuit Parameters</h3>
@@ -110,7 +110,7 @@
 			The time required (in minutes) to complete a standard 360-degree turn. The default value of <code>2.0</code> corresponds to a standard Rate 1 turn (2 minutes for 360 degrees, or 3 degrees per second).
 		</p>
 
-		<hr/>
+		<hr />
 
 		<!-- AUTOMATIC CALCULATION & PROFILES -->
 		<h3 id="automaticCalculations">Automatic Calculation &amp; Profiles</h3>
@@ -130,7 +130,7 @@
 			<strong>Recalculating Defaults:</strong> Click <kbd class="winforms-btn">Reset Tab</kbd> at any time to recalculate and restore baseline parameters for the active aircraft.
 		</p>
 
-		<hr/>
+		<hr />
 
 		<!-- SCENARIO COMPLETION & TERRAIN -->
 		<h3 id="scenarioCompletion">Landing Detection &amp; Terrain Advisory</h3>
@@ -141,28 +141,22 @@
 			<strong>Terrain Advisory:</strong> When picking a random runway or flying in mountainous areas, spatial placement of circuit gates relies strictly on runway orientation and calculated offsets. In hilly or mountainous terrain, generated gates may occasionally intersect elevated ground or be embedded within landforms.
 		</p>
 
-		<hr/>
+		<hr />
 
-		<!-- GLOBAL ACTION BUTTONS -->
-		<h3 id="globalButtons">Global Actions</h3>
+		<!-- GLOBAL ACTIONS -->
+		<h3 id="globalActions">Global Actions</h3>
 		<p>
-			Located at the bottom of the application interface, these controls execute actions for the active circuit configuration:
+			The buttons along the bottom of the window control global actions (see <a href="generalTab.htm#globalActions">General Tab: Global Actions</a> for full details). On the Circuit Tab, these buttons have specialized behavior tailored to your aircraft:
 		</p>
 		<ul>
 			<li>
-				<strong>
-					<kbd class="winforms-btn">Generate Scenario</kbd>:
-				</strong> Validates the current circuit configuration, constructs the spatial gate sequence relative to the selected runway, and exports the compiled Prepar3D flight package (<code>.fxml</code> and <code>.xml</code>) to your output directory.
+				<strong><kbd class="winforms-btn">Reset Tab</kbd>:</strong> Recalculates and restores baseline circuit parameters derived from the active aircraft variant's cruise speed and climb profile.
 			</li>
 			<li>
-				<strong>
-					<kbd class="winforms-btn">Reload Profile</kbd>:
-				</strong> Re-loads saved aircraft-specific circuit parameters (speeds, altitudes, and leg lengths) directly from <code>ui_settings.json</code>, discarding any unsaved manual edits made on the tab without recalculating baseline defaults.
+				<strong><kbd class="winforms-btn">Reload Profile</kbd>:</strong> Re-loads previously saved custom circuit parameters for the active aircraft directly from <code>ui_settings.json</code> without recalculating defaults.
 			</li>
 			<li>
-				<strong>
-					<kbd class="winforms-btn">Reset Tab</kbd>:
-				</strong> Recalculates and restores recommended baseline circuit parameters derived from the active aircraft variant's performance characteristics.
+				<strong><kbd class="winforms-btn">Generate Scenario</kbd>:</strong> Validates the gate geometry, places spatial gates along the runway pattern, and compiles the scenario package.
 			</li>
 		</ul>
 	</body>

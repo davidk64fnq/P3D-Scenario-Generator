@@ -88,7 +88,6 @@ namespace P3D_Scenario_Generator.Services
                 if (layoutWiki != null) RestoreDefaults(layoutWiki.Controls);
             }
             else if (tabName == "TabPagePhotoTour" ||
-                     tabName == "TabPageSign" ||
                      tabName == "TabPageCelestial")
             {
                 RestoreDefaults(tabControl.SelectedTab.Controls);
@@ -349,6 +348,42 @@ namespace P3D_Scenario_Generator.Services
 
             return foundAnyKey;
         }
+
+        public async Task SaveSignSettingsAsync(Control.ControlCollection controls, string aircraftTitle)
+        {
+            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls == null) return;
+
+            string prefix = $"Sign_{aircraftTitle.Trim()}_";
+            UpdateCacheWithPrefix(controls, prefix);
+            await CommitCacheToFileAsync();
+        }
+
+        public bool RestoreSignSettings(Control.ControlCollection controls, string aircraftTitle)
+        {
+            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls == null) return false;
+
+            string prefix = $"Sign_{aircraftTitle.Trim()}_";
+            bool foundAnyKey = false;
+
+            foreach (Control control in controls)
+            {
+                if (control.Controls.Count > 0)
+                {
+                    if (RestoreSignSettings(control.Controls, aircraftTitle))
+                        foundAnyKey = true;
+                }
+
+                string key = prefix + control.Name;
+                if (_settingsCache.TryGetValue(key, out object value) && control is TextBox textBox)
+                {
+                    textBox.Text = value?.ToString() ?? "";
+                    foundAnyKey = true;
+                }
+            }
+
+            return foundAnyKey;
+        }
+
 
         /// <summary>
         /// Recursively iterates controls to populate the settings cache with prefixed keys.

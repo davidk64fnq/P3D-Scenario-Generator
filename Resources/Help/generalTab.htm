@@ -99,7 +99,7 @@
 			</li>
 		</ol>
 
-		<hr/>
+		<hr />
 
 		<!-- DATE AND TIME -->
 		<h3 id="dateTime">Date and Time</h3>
@@ -121,7 +121,7 @@
 			<strong>Note:</strong> Prepar3D can occasionally render unexpected environment lighting for a selected time based on geographic solar calculations (for instance, a time specified for dawn may yield night lighting depending on location and season). If this occurs, simply adjust the time field in the generator and rebuild the scenario.
 		</p>
 
-		<hr/>
+		<hr />
 
 		<!-- RUNWAY SELECTION -->
 		<h3 id="runwaySelection">Runway Selection</h3>
@@ -199,7 +199,7 @@
 			</li>
 		</ul>
 
-		<hr/>
+		<hr />
 
 		<!-- AIRCRAFT SELECTION -->
 		<h3 id="aircraftSelection">Aircraft Selection</h3>
@@ -262,8 +262,8 @@
 			<strong>Tip:</strong> Hover your mouse cursor over this text field to display an expanded pop-up tooltip containing the complete set of aircraft values.
 		</p>
 
-		<hr/>
-		
+		<hr />
+
 		<!-- SCENARIO SELECTION -->
 		<h3 id="scenarioSelection">Scenario Selection</h3>
 		<p>
@@ -297,50 +297,39 @@
 			</li>
 		</ul>
 
-		<hr/>
+		<hr />
 
 		<!-- GLOBAL ACTIONS -->
 		<h3 id="globalActions">Global Actions</h3>
 		<p>
-			Located along the bottom of the application window, these buttons manage configuration session states, revert control values, and compile the final scenario files.
+			The persistent action buttons located along the bottom of the application window remain accessible across all tabs:
 		</p>
 
-		<h4>Reset Tab button</h4>
+		<h4>Reset Tab</h4>
 		<p>
-			Click <kbd class="winforms-btn">Reset Tab</kbd> to reset controls on the currently active tab back to their original factory default values.
+			Restores settings on the currently selected tab to their original defaults.
 		</p>
 		<p>
-			<strong>Circuit Tab Behavior:</strong> When viewing the Circuit tab, clicking <kbd class="winforms-btn">Reset Tab</kbd> recalculates and restores standard baseline flight circuit parameters specifically tailored for the currently selected aircraft variant.
-		</p>
-
-		<h4>Reload Profile button</h4>
-		<p>
-			Click <kbd class="winforms-btn">Reload Profile</kbd> to reload your previously saved configuration profile, restoring custom control states across application tabs from the user settings file (<code>%APPDATA%\P3D Scenario Generator\ui_settings.json</code>).
-		</p>
-		<p>
-			<strong>Circuit Tab Behavior:</strong> Circuit parameters are restored specifically for the currently active aircraft variant, keyed on its unique aircraft title. If custom parameters have not yet been saved for the selected plane, standard calculated defaults are automatically applied as a fallback.
+			<em>Note: When viewing the <a href="circuit.htm#circuitParameters">Circuit Tab</a>, clicking <strong>Reset Tab</strong> dynamically recalculates recommended speeds, pattern heights, and leg distances based on the active aircraft's cruise and climb specifications rather than applying generic static values.</em>
 		</p>
 
-		<h4>Generate Scenario button</h4>
+		<h4>Reload Profile</h4>
 		<p>
-			Click <kbd class="winforms-btn">Generate Scenario</kbd> to validate all form inputs across active tabs and build the scenario package.
+			Discards any unsaved UI changes on the active tab and reloads the saved configuration from <code>%APPDATA%\P3D Scenario Generator\ui_settings.json</code>. On the Circuit Tab, this reloads the saved custom parameters for the active aircraft without recalculating baseline values.
+		</p>
+
+		<h4>Generate Scenario</h4>
+		<p>
+			Validates all settings across tabs, builds the flight files (<code>.fxml</code>, <code>.xml</code>, briefings, and charts), and copies the completed scenario package to your Prepar3D scenarios folder.
 		</p>
 		<p>
-			Before exporting, the generator verifies:
+			Before generating, the application verifies:
 		</p>
 		<ul>
-			<li>
-				The <a href="#scenarioSelection">Scenario Title</a> is valid and does not overwrite an existing scenario folder.
-			</li>
-			<li>
-				A valid <strong>Scenario Base Folder</strong> and <strong>P3D Installation Path</strong> are configured on the <a href="settings.htm">Settings tab</a>.
-			</li>
-			<li>
-				The active <a href="#locationFilter">Location Filter</a> and selected aircraft surface capabilities yield at least one matching airport/runway.
-			</li>
+			<li>A valid <strong>Scenario Title</strong> has been entered and no folder with that name already exists.</li>
+			<li>Valid <strong>P3D Install</strong>, <strong>P3D Data</strong>, and <strong>Scenario Base Folder</strong> paths are set on the <a href="settings.htm#folderInfo">Settings Tab</a>.</li>
+			<li>At least one valid runway matching your aircraft landing surface capabilities is available within the active <a href="#locationFilter">Location Filter</a>.</li>
+			<li>Any scenario-specific constraints on the active tab (such as leg distance bounds or API key requirements) pass validation.</li>
 		</ul>
-		<p>
-			Upon successful validation, all required scenario files are compiled and written directly into your Prepar3D scenario directory.
-		</p>
 	</body>
 </html>

@@ -896,13 +896,18 @@ namespace P3D_Scenario_Generator
                 _aircraft.ChangeCurrentAircraftVariantIndex(aircraftVariant.DisplayName);
                 TextBoxGeneralAircraftValues.Text = _aircraft.SetTextBoxGeneralAircraftValues();
 
-                // 1. Try to restore user-customized circuit values for this specific Title
-                bool restoredSavedSettings = _settingsManager.RestoreCircuitSettings(TabPageCircuit.Controls, aircraftVariant.Title);
-
-                // 2. Fallback: If no saved profile exists for this plane, auto-calculate defaults
-                if (!restoredSavedSettings)
+                // 1. Circuit settings
+                bool restoredSavedCircuit = _settingsManager.RestoreCircuitSettings(TabPageCircuit.Controls, aircraftVariant.Title);
+                if (!restoredSavedCircuit)
                 {
                     await SetDefaultCircuitParamsAsync();
+                }
+
+                // 2. Sign Writing settings
+                bool restoredSavedSign = _settingsManager.RestoreSignSettings(TabPageSign.Controls, aircraftVariant.Title);
+                if (!restoredSavedSign)
+                {
+                    await SetDefaultSignwritingParamsAsync();
                 }
             }
         }
@@ -1519,11 +1524,13 @@ namespace P3D_Scenario_Generator
                 TextBoxSignTilt.Text = "10";
                 TextBoxSignGateHeight.Text = profile.CircuitHeightFeet.ToString();
 
-                // Calculate segment length based on cruise speed (Distance = Speed * 1 minute / 60)
-                TextBoxSignSegmentLength.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed / Constants.MinutesInAnHour);
+                // 1 minute of cruise speed converted to feet
+                double segmentLengthFeet = (aircraftVariant.CruiseSpeed / Constants.MinutesInAnHour) * 0.5;
+                TextBoxSignSegmentLength.Text = string.Format("{0:0.00}", segmentLengthFeet);
 
-                // Calculate segment radius based on a portion (0.1 minute) of cruise time
-                TextBoxSignSegmentRadius.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 0.1 / Constants.MinutesInAnHour);
+                // 0.1 minute of cruise speed converted to feet
+                double segmentRadiusFeet = (aircraftVariant.CruiseSpeed * 0.1 / Constants.MinutesInAnHour);
+                TextBoxSignSegmentRadius.Text = string.Format("{0:0.00}", segmentRadiusFeet);
 
                 TextBoxSignOffset.Text = "20";
                 TextBoxSignMonitorWidth.Text = "1920";
@@ -1538,11 +1545,11 @@ namespace P3D_Scenario_Generator
                 // Use a standard default height
                 TextBoxSignGateHeight.Text = "1000";
 
-                // Calculate segment length using cruise speed and a hardcoded time (1 minute)
-                TextBoxSignSegmentLength.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed / Constants.MinutesInAnHour);
+                // 1.0 minute of cruise speed in nautical miles (clean decimal)
+                TextBoxSignSegmentLength.Text = string.Format("{0:0.1}", aircraftVariant.CruiseSpeed / Constants.MinutesInAnHour);
 
-                // Calculate segment radius using cruise speed and a hardcoded time (0.1 minute)
-                TextBoxSignSegmentRadius.Text = string.Format("{0:0.0}", aircraftVariant.CruiseSpeed * 0.1 / Constants.MinutesInAnHour);
+                // 0.1 minute of cruise speed in nautical miles
+                TextBoxSignSegmentRadius.Text = string.Format("{0:0.2}", aircraftVariant.CruiseSpeed * 0.1 / Constants.MinutesInAnHour);
 
                 TextBoxSignOffset.Text = "20";
                 TextBoxSignMonitorWidth.Text = "1920";
@@ -2271,6 +2278,20 @@ namespace P3D_Scenario_Generator
                     _progressReporter?.Report("Cannot reset Circuit tab: No active aircraft variant selected.");
                 }
             }
+            else if (TabControlP3DSG.SelectedTab.Name == "TabPageSign")
+            {
+                AircraftVariant currentVariant = await _aircraft.GetCurrentVariantAsync();
+
+                if (currentVariant != null)
+                {
+                    await SetDefaultSignwritingParamsAsync();
+                    _progressReporter?.Report($"Reset Sign tab to default values for {currentVariant.DisplayName}.");
+                }
+                else
+                {
+                    _progressReporter?.Report("Cannot reset Sign tab: No active aircraft variant selected.");
+                }
+            }
             else if (TabControlP3DSG.SelectedTab.Name == "TabPageCelestial")
             {
                 UpdateCelestialButtonLabels();
@@ -2438,6 +2459,7 @@ namespace P3D_Scenario_Generator
                 if (currentVariant != null && !string.IsNullOrWhiteSpace(currentVariant.Title))
                 {
                     await _settingsManager.SaveCircuitSettingsAsync(TabPageCircuit.Controls, currentVariant.Title);
+                    await _settingsManager.SaveSignSettingsAsync(TabPageCircuit.Controls, currentVariant.Title);
                 }
             }
             catch (Exception ex)
@@ -3561,18 +3583,18 @@ namespace P3D_Scenario_Generator
                 TextBoxSignSegmentLength,
                 "Sign Segment Length",
                 0, // Minimum length cannot be negative
-                Constants.FeetInEarthCircumference / 12, // A single character is 2 wide x 4 high in segments, and gate calculations start at latitude 0, longitude 0
+                Constants.FeetInEarthCircumference / 12 * Constants.FeetInNauticalMile, // A single character is 2 wide x 4 high in segments, and gate calculations start at latitude 0, longitude 0
                 "",
-                value => _formData.SignSegmentLengthFeet = value);
+                value => _formData.SignSegmentLengthFeet = value * Constants.FeetInNauticalMile);
 
             // SignSegmentRadius 
             allValid &= ValidateAndSetDouble(
                 TextBoxSignSegmentRadius,
                 "Sign Segment Radius",
                 0, // Minimum radius cannot be negative
-                Constants.FeetInEarthCircumference / 24, // With turn being half maximum segment length
+                Constants.FeetInEarthCircumference / 24 * Constants.FeetInNauticalMile, // With turn being half maximum segment length
                 "",
-                value => _formData.SignSegmentRadiusFeet = value);
+                value => _formData.SignSegmentRadiusFeet = value * Constants.FeetInNauticalMile);
 
             // Derived Grid Unit Size
             _formData.SignGridUnitSizeFeet = _formData.SignSegmentRadiusFeet + _formData.SignSegmentLengthFeet + _formData.SignSegmentRadiusFeet;
