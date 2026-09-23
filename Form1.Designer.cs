@@ -1271,9 +1271,9 @@ namespace P3D_Scenario_Generator
             TextBoxWikiDistance.Location = new Point(141, 213);
             TextBoxWikiDistance.Name = "TextBoxWikiDistance";
             TextBoxWikiDistance.Size = new Size(100, 23);
-            TextBoxWikiDistance.TabIndex = 18;
+            TextBoxWikiDistance.TabIndex = 15;
             TextBoxWikiDistance.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiDistance, "Distance for Wikipedia Tour in miles based on selected start and finish");
+            toolTip1.SetToolTip(TextBoxWikiDistance, "Distance:\r\nDisplays the total flight distance (in miles) along the planned tour from your selected Start Item to Finish Item.");
             // 
             // LabelWikiDistance
             // 
@@ -1283,9 +1283,9 @@ namespace P3D_Scenario_Generator
             LabelWikiDistance.Location = new Point(37, 217);
             LabelWikiDistance.Name = "LabelWikiDistance";
             LabelWikiDistance.Size = new Size(52, 15);
-            LabelWikiDistance.TabIndex = 17;
+            LabelWikiDistance.TabIndex = 14;
             LabelWikiDistance.Text = "Distance";
-            toolTip1.SetToolTip(LabelWikiDistance, "Distance for Wikipedia Tour in miles based on selected start and finish");
+            toolTip1.SetToolTip(LabelWikiDistance, "Distance:\r\nDisplays the total flight distance (in miles) along the planned tour from your selected Start Item to Finish Item.");
             // 
             // GroupBoxWikipediaListParameters
             // 
@@ -1347,9 +1347,9 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiCoordSource.Location = new Point(141, 63);
             ComboBoxWikiCoordSource.Name = "ComboBoxWikiCoordSource";
             ComboBoxWikiCoordSource.Size = new Size(100, 23);
-            ComboBoxWikiCoordSource.TabIndex = 47;
+            ComboBoxWikiCoordSource.TabIndex = 5;
             ComboBoxWikiCoordSource.Text = "Item Page";
-            toolTip1.SetToolTip(ComboBoxWikiCoordSource, "Whether to use coordinates specified in the table or those in each separate item page.");
+            toolTip1.SetToolTip(ComboBoxWikiCoordSource, resources.GetString("ComboBoxWikiCoordSource.ToolTip"));
             // 
             // label39
             // 
@@ -1358,9 +1358,9 @@ namespace P3D_Scenario_Generator
             label39.Location = new Point(11, 67);
             label39.Name = "label39";
             label39.Size = new Size(105, 15);
-            label39.TabIndex = 46;
+            label39.TabIndex = 4;
             label39.Text = "Coordinate Source";
-            toolTip1.SetToolTip(label39, "Useable tables (or lists) found in the user supplied Wikipedia URL.");
+            toolTip1.SetToolTip(label39, resources.GetString("label39.ToolTip"));
             // 
             // ComboBoxWikiURL
             // 
@@ -1372,9 +1372,9 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiURL.Location = new Point(141, 3);
             ComboBoxWikiURL.Name = "ComboBoxWikiURL";
             ComboBoxWikiURL.Size = new Size(100, 23);
-            ComboBoxWikiURL.TabIndex = 42;
+            ComboBoxWikiURL.TabIndex = 1;
             ComboBoxWikiURL.Text = "https://en.wikipedia.org/wiki/List_of_lighthouses_in_Hawaii";
-            toolTip1.SetToolTip(ComboBoxWikiURL, "The Wikipedia URL for the list or table you want to select a subset of items from. List or table needs a column containing a link to the individual items.");
+            toolTip1.SetToolTip(ComboBoxWikiURL, "URL:\r\nThe full web address of a Wikipedia article containing one or more sortable data tables (e.g., https://en.wikipedia.org/wiki/List_of_lighthouses_in_England).");
             ComboBoxWikiURL.KeyDown += ComboBox_KeyDown;
             // 
             // TextBoxWikiItemLinkColumn
@@ -1384,11 +1384,11 @@ namespace P3D_Scenario_Generator
             TextBoxWikiItemLinkColumn.Location = new Point(141, 33);
             TextBoxWikiItemLinkColumn.Name = "TextBoxWikiItemLinkColumn";
             TextBoxWikiItemLinkColumn.Size = new Size(100, 23);
-            TextBoxWikiItemLinkColumn.TabIndex = 19;
+            TextBoxWikiItemLinkColumn.TabIndex = 3;
             TextBoxWikiItemLinkColumn.Tag = "";
             TextBoxWikiItemLinkColumn.Text = "1";
             TextBoxWikiItemLinkColumn.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiItemLinkColumn, "The column in Wikipdeia URL table or lists containing the link to each item. Lefthand column is 1.");
+            toolTip1.SetToolTip(TextBoxWikiItemLinkColumn, "Item Link Column:\r\nThe 1-based column number in the Wikipedia table containing the landmark name and hyperlink (typically 1 or 2).\r\n\r\nMust be a positive integer greater than zero.");
             // 
             // LabelWikiColumn
             // 
@@ -1397,9 +1397,9 @@ namespace P3D_Scenario_Generator
             LabelWikiColumn.Location = new Point(12, 37);
             LabelWikiColumn.Name = "LabelWikiColumn";
             LabelWikiColumn.Size = new Size(102, 15);
-            LabelWikiColumn.TabIndex = 6;
+            LabelWikiColumn.TabIndex = 2;
             LabelWikiColumn.Text = "Item Link Column";
-            toolTip1.SetToolTip(LabelWikiColumn, "The column in Wikipdeia URL table or lists containing the link to each item. Lefthand column is 1.\r\n");
+            toolTip1.SetToolTip(LabelWikiColumn, "Item Link Column:\r\nThe 1-based column number in the Wikipedia table containing the landmark name and hyperlink (typically 1 or 2).\r\n\r\nMust be a positive integer greater than zero.");
             // 
             // ButtonLoadWikiPage
             // 
@@ -1407,8 +1407,9 @@ namespace P3D_Scenario_Generator
             ButtonLoadWikiPage.Location = new Point(13, 3);
             ButtonLoadWikiPage.Name = "ButtonLoadWikiPage";
             ButtonLoadWikiPage.Size = new Size(101, 23);
-            ButtonLoadWikiPage.TabIndex = 45;
+            ButtonLoadWikiPage.TabIndex = 0;
             ButtonLoadWikiPage.Text = "Load Wiki Page";
+            toolTip1.SetToolTip(ButtonLoadWikiPage, "Load Wiki Page:\r\nFetches and parses the target Wikipedia article at the specified URL.\r\n\r\nScans the page HTML for sortable data tables and extracts landmark items, hyperlinks, and coordinates.");
             ButtonLoadWikiPage.UseVisualStyleBackColor = true;
             ButtonLoadWikiPage.Click += ButtonLoadWikiPage_Click;
             // 
@@ -1421,8 +1422,8 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiFinishingItem.Location = new Point(141, 183);
             ComboBoxWikiFinishingItem.Name = "ComboBoxWikiFinishingItem";
             ComboBoxWikiFinishingItem.Size = new Size(100, 23);
-            ComboBoxWikiFinishingItem.TabIndex = 16;
-            toolTip1.SetToolTip(ComboBoxWikiFinishingItem, "Finishing item from Visit Sequence for subset to be visited");
+            ComboBoxWikiFinishingItem.TabIndex = 13;
+            toolTip1.SetToolTip(ComboBoxWikiFinishingItem, "Finish Item:\r\nSelects the final Wikipedia landmark on your tour.\r\n\r\nThe generator will automatically assign your destination airport to the nearest suitable runway to this location.");
             ComboBoxWikiFinishingItem.SelectedIndexChanged += ComboBoxWikiStartingItem_SelectedIndexChanged;
             // 
             // ComboBoxWikiStartingItem
@@ -1434,8 +1435,8 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiStartingItem.Location = new Point(141, 153);
             ComboBoxWikiStartingItem.Name = "ComboBoxWikiStartingItem";
             ComboBoxWikiStartingItem.Size = new Size(100, 23);
-            ComboBoxWikiStartingItem.TabIndex = 14;
-            toolTip1.SetToolTip(ComboBoxWikiStartingItem, "Starting item from Visit Sequence for subset to be visited");
+            ComboBoxWikiStartingItem.TabIndex = 11;
+            toolTip1.SetToolTip(ComboBoxWikiStartingItem, "Start Item:\r\nSelects the first Wikipedia landmark you wish to visit.\r\n\r\nThe generator will automatically assign your departure airport to the nearest suitable runway to this location.");
             ComboBoxWikiStartingItem.SelectedIndexChanged += ComboBoxWikiStartingItem_SelectedIndexChanged;
             // 
             // ComboBoxWikiRoute
@@ -1447,8 +1448,8 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiRoute.Location = new Point(141, 123);
             ComboBoxWikiRoute.Name = "ComboBoxWikiRoute";
             ComboBoxWikiRoute.Size = new Size(100, 23);
-            ComboBoxWikiRoute.TabIndex = 44;
-            toolTip1.SetToolTip(ComboBoxWikiRoute, "Proposed visit sequence for items in selected table (list) for the user supplied Wikipedia URL");
+            ComboBoxWikiRoute.TabIndex = 9;
+            toolTip1.SetToolTip(ComboBoxWikiRoute, resources.GetString("ComboBoxWikiRoute.ToolTip"));
             // 
             // ComboBoxWikiTableNames
             // 
@@ -1459,8 +1460,8 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiTableNames.Location = new Point(141, 93);
             ComboBoxWikiTableNames.Name = "ComboBoxWikiTableNames";
             ComboBoxWikiTableNames.Size = new Size(100, 23);
-            ComboBoxWikiTableNames.TabIndex = 43;
-            toolTip1.SetToolTip(ComboBoxWikiTableNames, "Useable tables (or lists) found in the user supplied Wikipedia URL.");
+            ComboBoxWikiTableNames.TabIndex = 7;
+            toolTip1.SetToolTip(ComboBoxWikiTableNames, "Table Names:\r\nSelects which table from the parsed Wikipedia article to use for the tour.\r\n\r\nDisplays the first landmark, last landmark, and total item count for each detected table.");
             ComboBoxWikiTableNames.SelectedIndexChanged += ComboBoxWikiTableNames_SelectedIndexChanged;
             // 
             // LabelWikiFinishingItem
@@ -1470,9 +1471,9 @@ namespace P3D_Scenario_Generator
             LabelWikiFinishingItem.Location = new Point(31, 187);
             LabelWikiFinishingItem.Name = "LabelWikiFinishingItem";
             LabelWikiFinishingItem.Size = new Size(65, 15);
-            LabelWikiFinishingItem.TabIndex = 15;
+            LabelWikiFinishingItem.TabIndex = 12;
             LabelWikiFinishingItem.Text = "Finish Item";
-            toolTip1.SetToolTip(LabelWikiFinishingItem, "Finishing item from Visit Sequence for subset to be visited");
+            toolTip1.SetToolTip(LabelWikiFinishingItem, "Finish Item:\r\nSelects the final Wikipedia landmark on your tour.\r\n\r\nThe generator will automatically assign your destination airport to the nearest suitable runway to this location.");
             // 
             // LabelWikiStartItem
             // 
@@ -1481,9 +1482,9 @@ namespace P3D_Scenario_Generator
             LabelWikiStartItem.Location = new Point(34, 157);
             LabelWikiStartItem.Name = "LabelWikiStartItem";
             LabelWikiStartItem.Size = new Size(58, 15);
-            LabelWikiStartItem.TabIndex = 13;
+            LabelWikiStartItem.TabIndex = 10;
             LabelWikiStartItem.Text = "Start Item";
-            toolTip1.SetToolTip(LabelWikiStartItem, "Starting item from Visit Sequence for subset to be visited");
+            toolTip1.SetToolTip(LabelWikiStartItem, "Start Item:\r\nSelects the first Wikipedia landmark you wish to visit.\r\n\r\nThe generator will automatically assign your departure airport to the nearest suitable runway to this location.");
             // 
             // LabelWikiRoute
             // 
@@ -1492,9 +1493,9 @@ namespace P3D_Scenario_Generator
             LabelWikiRoute.Location = new Point(22, 127);
             LabelWikiRoute.Name = "LabelWikiRoute";
             LabelWikiRoute.Size = new Size(83, 15);
-            LabelWikiRoute.TabIndex = 9;
+            LabelWikiRoute.TabIndex = 8;
             LabelWikiRoute.Text = "Visit Sequence";
-            toolTip1.SetToolTip(LabelWikiRoute, "Proposed visit sequence for items in selected table (list) for the user supplied Wikipedia URL");
+            toolTip1.SetToolTip(LabelWikiRoute, resources.GetString("LabelWikiRoute.ToolTip"));
             // 
             // LabelWikiTableNames
             // 
@@ -1503,9 +1504,9 @@ namespace P3D_Scenario_Generator
             LabelWikiTableNames.Location = new Point(26, 97);
             LabelWikiTableNames.Name = "LabelWikiTableNames";
             LabelWikiTableNames.Size = new Size(75, 15);
-            LabelWikiTableNames.TabIndex = 2;
+            LabelWikiTableNames.TabIndex = 6;
             LabelWikiTableNames.Text = "Table Names";
-            toolTip1.SetToolTip(LabelWikiTableNames, "Useable tables (or lists) found in the user supplied Wikipedia URL.");
+            toolTip1.SetToolTip(LabelWikiTableNames, "Table Names:\r\nSelects which table from the parsed Wikipedia article to use for the tour.\r\n\r\nDisplays the first landmark, last landmark, and total item count for each detected table.");
             // 
             // GroupBoxWikipediaListWikiURLWindowLocation
             // 
@@ -1562,11 +1563,11 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLWindowHeight.Location = new Point(141, 183);
             TextBoxWikiURLWindowHeight.Name = "TextBoxWikiURLWindowHeight";
             TextBoxWikiURLWindowHeight.Size = new Size(100, 23);
-            TextBoxWikiURLWindowHeight.TabIndex = 47;
+            TextBoxWikiURLWindowHeight.TabIndex = 13;
             TextBoxWikiURLWindowHeight.Tag = "";
             TextBoxWikiURLWindowHeight.Text = "1024";
             TextBoxWikiURLWindowHeight.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiURLWindowHeight, "Resolution height in pixels of the Wiki URL window.");
+            toolTip1.SetToolTip(TextBoxWikiURLWindowHeight, "Window Height:\r\nSpecifies the vertical height of the in-game Wikipedia browser window in pixels (e.g., 1024).\r\n\r\nMust fit within your target monitor height minus border margins and screen offsets.");
             TextBoxWikiURLWindowHeight.Leave += TextBoxWikiURLWindowHeight_Leave;
             // 
             // TextBoxWikiURLWindowWidth
@@ -1577,11 +1578,11 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLWindowWidth.Location = new Point(141, 153);
             TextBoxWikiURLWindowWidth.Name = "TextBoxWikiURLWindowWidth";
             TextBoxWikiURLWindowWidth.Size = new Size(100, 23);
-            TextBoxWikiURLWindowWidth.TabIndex = 46;
+            TextBoxWikiURLWindowWidth.TabIndex = 11;
             TextBoxWikiURLWindowWidth.Tag = "";
             TextBoxWikiURLWindowWidth.Text = "500";
             TextBoxWikiURLWindowWidth.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiURLWindowWidth, "Resolution width in pixels of the Wiki URL window. ");
+            toolTip1.SetToolTip(TextBoxWikiURLWindowWidth, resources.GetString("TextBoxWikiURLWindowWidth.ToolTip"));
             // 
             // label56
             // 
@@ -1590,9 +1591,9 @@ namespace P3D_Scenario_Generator
             label56.Location = new Point(20, 157);
             label56.Name = "label56";
             label56.Size = new Size(86, 15);
-            label56.TabIndex = 44;
+            label56.TabIndex = 10;
             label56.Text = "Window Width";
-            toolTip1.SetToolTip(label56, "Resolution width in pixels of the Wiki URL window. ");
+            toolTip1.SetToolTip(label56, resources.GetString("label56.ToolTip"));
             // 
             // TextBoxWikiURLMonitorHeight
             // 
@@ -1601,11 +1602,11 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorHeight.Location = new Point(141, 123);
             TextBoxWikiURLMonitorHeight.Name = "TextBoxWikiURLMonitorHeight";
             TextBoxWikiURLMonitorHeight.Size = new Size(100, 23);
-            TextBoxWikiURLMonitorHeight.TabIndex = 39;
+            TextBoxWikiURLMonitorHeight.TabIndex = 9;
             TextBoxWikiURLMonitorHeight.Tag = "";
             TextBoxWikiURLMonitorHeight.Text = "1080";
             TextBoxWikiURLMonitorHeight.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiURLMonitorHeight, "Resolution height in pixels of the monitor that Wiki URL window will display on.");
+            toolTip1.SetToolTip(TextBoxWikiURLMonitorHeight, "Monitor Height:\r\nEnter the vertical pixel resolution of your target display monitor (e.g., 1080).\r\n\r\n");
             TextBoxWikiURLMonitorHeight.Leave += TextBoxWikiURLMonitorHeight_Leave;
             // 
             // TextBoxWikiURLMonitorWidth
@@ -1615,11 +1616,11 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorWidth.Location = new Point(141, 93);
             TextBoxWikiURLMonitorWidth.Name = "TextBoxWikiURLMonitorWidth";
             TextBoxWikiURLMonitorWidth.Size = new Size(100, 23);
-            TextBoxWikiURLMonitorWidth.TabIndex = 39;
+            TextBoxWikiURLMonitorWidth.TabIndex = 7;
             TextBoxWikiURLMonitorWidth.Tag = "";
             TextBoxWikiURLMonitorWidth.Text = "1920";
             TextBoxWikiURLMonitorWidth.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiURLMonitorWidth, "Resolution width in pixels of the monitor that Wiki URL window will display on. ");
+            toolTip1.SetToolTip(TextBoxWikiURLMonitorWidth, "Monitor Width:\r\nEnter the horizontal pixel resolution of your target display monitor (e.g., 1920).\r\n\r\n");
             TextBoxWikiURLMonitorWidth.Leave += TextBoxWikiURLMonitorWidth_Leave;
             // 
             // label51
@@ -1629,9 +1630,9 @@ namespace P3D_Scenario_Generator
             label51.Location = new Point(19, 127);
             label51.Name = "label51";
             label51.Size = new Size(89, 15);
-            label51.TabIndex = 39;
+            label51.TabIndex = 8;
             label51.Text = "Monitor Height";
-            toolTip1.SetToolTip(label51, "Resolution height in pixels of the monitor that Wiki URL window will display on.");
+            toolTip1.SetToolTip(label51, "Monitor Height:\r\nEnter the vertical pixel resolution of your target display monitor (e.g., 1080).\r\n\r\n");
             // 
             // label52
             // 
@@ -1640,9 +1641,9 @@ namespace P3D_Scenario_Generator
             label52.Location = new Point(21, 97);
             label52.Name = "label52";
             label52.Size = new Size(85, 15);
-            label52.TabIndex = 39;
+            label52.TabIndex = 6;
             label52.Text = "Monitor Width";
-            toolTip1.SetToolTip(label52, "Resolution width in pixels of the monitor that Wiki URL window will display on. ");
+            toolTip1.SetToolTip(label52, "Monitor Width:\r\nEnter the horizontal pixel resolution of your target display monitor (e.g., 1920).\r\n\r\n");
             // 
             // label53
             // 
@@ -1651,9 +1652,9 @@ namespace P3D_Scenario_Generator
             label53.Location = new Point(44, 37);
             label53.Name = "label53";
             label53.Size = new Size(39, 15);
-            label53.TabIndex = 30;
+            label53.TabIndex = 2;
             label53.Text = "Offset";
-            toolTip1.SetToolTip(label53, resources.GetString("label53.ToolTip"));
+            toolTip1.SetToolTip(label53, "Offset:\r\nSpecifies the margin padding (in pixels) applied between the Wiki URL window edge and the target monitor screen border.\r\n\r\n");
             // 
             // TextBoxWikiURLOffset
             // 
@@ -1662,11 +1663,11 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLOffset.Location = new Point(141, 33);
             TextBoxWikiURLOffset.Name = "TextBoxWikiURLOffset";
             TextBoxWikiURLOffset.Size = new Size(100, 23);
-            TextBoxWikiURLOffset.TabIndex = 33;
+            TextBoxWikiURLOffset.TabIndex = 3;
             TextBoxWikiURLOffset.Tag = "";
             TextBoxWikiURLOffset.Text = "20";
             TextBoxWikiURLOffset.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiURLOffset, resources.GetString("TextBoxWikiURLOffset.ToolTip"));
+            toolTip1.SetToolTip(TextBoxWikiURLOffset, "Offset:\r\nSpecifies the margin padding (in pixels) applied between the Wiki URL window edge and the target monitor screen border.\r\n\r\n\r\n");
             TextBoxWikiURLOffset.Leave += TextBoxWikiURLOffset_Leave;
             // 
             // label54
@@ -1676,9 +1677,9 @@ namespace P3D_Scenario_Generator
             label54.Location = new Point(32, 67);
             label54.Name = "label54";
             label54.Size = new Size(63, 15);
-            label54.TabIndex = 31;
+            label54.TabIndex = 4;
             label54.Text = "Alignment";
-            toolTip1.SetToolTip(label54, "Default location of Wiki URL window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            toolTip1.SetToolTip(label54, "Alignment:\r\nSelects the screen anchor alignment for the Wiki URL window:\r\n• Top Left / Top Right\r\n• Bottom Left / Bottom Right\r\n• Centered\r\n\r\n");
             // 
             // TextBoxWikiURLMonitorNumber
             // 
@@ -1687,11 +1688,11 @@ namespace P3D_Scenario_Generator
             TextBoxWikiURLMonitorNumber.Location = new Point(141, 3);
             TextBoxWikiURLMonitorNumber.Name = "TextBoxWikiURLMonitorNumber";
             TextBoxWikiURLMonitorNumber.Size = new Size(100, 23);
-            TextBoxWikiURLMonitorNumber.TabIndex = 32;
+            TextBoxWikiURLMonitorNumber.TabIndex = 1;
             TextBoxWikiURLMonitorNumber.Tag = "";
             TextBoxWikiURLMonitorNumber.Text = "0";
             TextBoxWikiURLMonitorNumber.TextAlign = HorizontalAlignment.Center;
-            toolTip1.SetToolTip(TextBoxWikiURLMonitorNumber, "The default monitor that the Wiki URL window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            toolTip1.SetToolTip(TextBoxWikiURLMonitorNumber, resources.GetString("TextBoxWikiURLMonitorNumber.ToolTip"));
             TextBoxWikiURLMonitorNumber.Leave += TextBoxWikiURLMonitorNumber_Leave;
             // 
             // label55
@@ -1701,9 +1702,9 @@ namespace P3D_Scenario_Generator
             label55.Location = new Point(15, 7);
             label55.Name = "label55";
             label55.Size = new Size(97, 15);
-            label55.TabIndex = 29;
+            label55.TabIndex = 0;
             label55.Text = "Monitor Number";
-            toolTip1.SetToolTip(label55, "The default monitor that the Wiki URL window will display in. Experiment with values between 0 and the number of monitors minus 1.");
+            toolTip1.SetToolTip(label55, resources.GetString("label55.ToolTip"));
             // 
             // ComboBoxWikiURLAlignment
             // 
@@ -1714,10 +1715,10 @@ namespace P3D_Scenario_Generator
             ComboBoxWikiURLAlignment.Location = new Point(141, 63);
             ComboBoxWikiURLAlignment.Name = "ComboBoxWikiURLAlignment";
             ComboBoxWikiURLAlignment.Size = new Size(100, 23);
-            ComboBoxWikiURLAlignment.TabIndex = 43;
+            ComboBoxWikiURLAlignment.TabIndex = 5;
             ComboBoxWikiURLAlignment.Tag = "";
             ComboBoxWikiURLAlignment.Text = "Top Right";
-            toolTip1.SetToolTip(ComboBoxWikiURLAlignment, "Default location of Wiki URL window in chosen monitor. Distance from corner of monitor governed by \"Offset\" value.");
+            toolTip1.SetToolTip(ComboBoxWikiURLAlignment, "Alignment:\r\nSelects the screen anchor alignment for the Wiki URL window:\r\n• Top Left / Top Right\r\n• Bottom Left / Bottom Right\r\n• Centered\r\n\r\n\r\n");
             ComboBoxWikiURLAlignment.Leave += ComboBoxWikiURLAlignment_Leave;
             // 
             // label57
@@ -1727,9 +1728,9 @@ namespace P3D_Scenario_Generator
             label57.Location = new Point(18, 187);
             label57.Name = "label57";
             label57.Size = new Size(90, 15);
-            label57.TabIndex = 45;
+            label57.TabIndex = 12;
             label57.Text = "Window Height";
-            toolTip1.SetToolTip(label57, "Resolution height in pixels of the Wiki URL window.");
+            toolTip1.SetToolTip(label57, "Window Height:\r\nSpecifies the vertical height of the in-game Wikipedia browser window in pixels (e.g., 1024).\r\n\r\nMust fit within your target monitor height minus border margins and screen offsets.");
             // 
             // GroupBoxCircuitParameters
             // 

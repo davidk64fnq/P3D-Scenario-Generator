@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta charset="utf-8" />
+	<title>P3D Scenario Generator | Wikipedia List Tab</title>
+	<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+	<h2>Wikipedia List Tab</h2>
+	<p>
+		The <strong>Wikipedia List Tab</strong> enables you to generate visual exploration tours based on geographic tables curated on Wikipedia (such as lists of lighthouses, castles, historic battlefields, mountain passes, UNESCO World Heritage sites, or tall structures).
+	</p>
+	<p>
+		<strong>Design Philosophy:</strong> Wikipedia List scenarios combine low-altitude visual navigation ("IFR – I Follow Roads") with rich historical and geographical discovery. As you navigate from one landmark to the next using terrain references and the moving map overlay, flying through each landmark's proximity boundary automatically opens an in-cockpit mobile encyclopedia browser displaying the live Wikipedia article for that exact site.
+	</p>
+
+	<hr />
+
+	<!-- WIKIPEDIA LIST PARAMETERS -->
+	<h3 id="wikiListParameters">Wikipedia List Parameters</h3>
+	<p>
+		The controls within the <strong>Wikipedia List Parameters</strong> group handle scraping web data, extracting geographic coordinates, sequencing points of interest into an efficient flight path, and choosing your tour segment.
+	</p>
+
+	<h4>Load Wiki Page button &amp; URL Combobox</h4>
+	<p>
+		Paste or select the full URL of a Wikipedia article containing one or more sortable data tables (e.g., <code>https://en.wikipedia.org/wiki/List_of_lighthouses_in_England</code>).
+	</p>
+	<ul>
+		<li>
+			Click <kbd class="winforms-btn">Load Wiki Page</kbd> to fetch and parse the page. The application uses an HTML parser to identify all standard tables marked with the <code>wikitable</code> or <code>sortable</code> classes.
+		</li>
+		<li>
+			<strong>Progress Reporting:</strong> Parsing status and table read counts are reported in the status bar at the bottom of the window while the page is downloaded and analyzed.
+		</li>
+	</ul>
+
+	<h4>Item Link Column</h4>
+	<p>
+		Specifies the 1-based column number in the target Wikipedia table that contains the hyperlink and title of each item (default: <code>1</code>).
+	</p>
+	<ul>
+		<li>
+			In most Wikipedia list tables, the subject name and link reside in the first column (<code>1</code>) or second column (<code>2</code>).
+		</li>
+		<li>
+			Must be a positive integer greater than zero.
+		</li>
+	</ul>
+
+	<h4>Coordinate Source Combobox</h4>
+	<p>
+		Determines where the generator extracts latitude and longitude coordinates for each entry:
+	</p>
+	<ul>
+		<li>
+			<strong>Item Page:</strong> The generator queries each landmark's individual Wikipedia article link and extracts coordinates from the standard geographic coordinate tags located in the top-right corner of the page. This is the recommended option for tables that do not list explicit coordinates in their main rows.
+		</li>
+		<li>
+			<strong>Table Column:</strong> The generator searches directly within the table row for embedded latitude and longitude span tags. If coordinates cannot be located within the row, the parser automatically falls back to scraping the destination item page.
+		</li>
+	</ul>
+
+	<h4>Table Names Combobox</h4>
+	<p>
+		Once a page is loaded, this dropdown is populated with summary descriptors of every detected table on the page, showing the first item, last item, and total row count (e.g., <code>Lizard Lighthouse ... St Bees Lighthouse (48 items)</code>). Selecting a table triggers the route sequencing algorithm.
+	</p>
+
+	<h4>Visit Sequence Combobox</h4>
+	<p>
+		Displays an automatically sequenced flight path that connects all items in the selected table using a nearest-neighbor distance algorithm. Each leg displays the start item number, end item number, and inter-leg distance in miles (e.g., <code>[0] Lizard Point ... [1] St Anthony Head (14 miles)</code>).
+	</p>
+
+	<h4>Start Item &amp; Finish Item Comboboxes</h4>
+	<p>
+		Allows you to define a specific subset of the overall table route to fly rather than flying the entire list:
+	</p>
+	<ul>
+		<li>
+			<strong>Start Item:</strong> Select the first Wikipedia landmark you wish to visit.
+		</li>
+		<li>
+			<strong>Finish Item:</strong> Select the final landmark of your tour.
+		</li>
+		<li>
+			<strong>Automatic Reordering:</strong> If you select a Start Item that appears after the Finish Item in the sequence, the application automatically swaps them to maintain a logical forward flight path.
+		</li>
+		<li>
+			<strong>Single-Item Tours:</strong> Setting the Start Item and Finish Item to the same landmark creates a single-visit tour: Departure Airfield &rarr; Landmark &rarr; Arrival Airfield.
+		</li>
+	</ul>
+
+	<h4>Distance Display Field</h4>
+	<p>
+		Displays the cumulative flight distance (in miles) along the planned route between your chosen Start Item and Finish Item.
+	</p>
+
+	<hr />
+
+	<!-- WIKI URL WINDOW LOCATION -->
+	<h3 id="wikiWindowLocation">Wiki URL Window Location</h3>
+	<p>
+		Configures the display monitor, window position, screen margins, and vertical dimensions of the in-game Wikipedia article viewer panel.
+	</p>
+	<p>
+		<em>Note: For a detailed explanation of multi-monitor indexing, window alignment anchors, and pixel margin offsets, see the <a href="settings.htm#mapWindow">Settings Tab: Map Window Settings</a> documentation.</em>
+	</p>
+
+	<h4>Monitor Number text box</h4>
+	<p>
+		Specifies the zero-based display index (e.g., <code>0</code>, <code>1</code>, <code>2</code>) where the Wikipedia viewer overlay will appear.
+	</p>
+
+	<h4>Offset text box</h4>
+	<p>
+		Defines the pixel margin padding between the edge of the monitor and the Wikipedia panel frame.
+	</p>
+
+	<h4>Alignment combobox</h4>
+	<p>
+		Sets the screen anchor position (e.g., <code>Top Right</code>, <code>Top Left</code>, <code>Bottom Right</code>, <code>Bottom Left</code>, or <code>Centered</code>).
+	</p>
+
+	<h4>Monitor Width &amp; Monitor Height text boxes</h4>
+	<p>
+		Enter the pixel resolution of your target display monitor (e.g., <code>1920</code> &#215; <code>1080</code>) to compute boundary offsets.
+	</p>
+
+	<h4>Window Width &amp; Window Height</h4>
+	<ul>
+		<li>
+			<strong>Window Width (Fixed):</strong> Displayed as a fixed width (<code>500</code> pixels). The internal mobile container renders at a standardized <code>480px</code> viewport width, perfectly matching mobile reading dimensions.
+		</li>
+		<li>
+			<strong>Window Height:</strong> Defines the vertical height of the panel in pixels (e.g., <code>1024</code>). Must stay within safe monitor height bounds minus screen offsets.
+		</li>
+	</ul>
+
+	<hr />
+
+	<!-- SCENARIO GENERATION LOGIC -->
+	<h3 id="generationLogic">How Wikipedia Tours Are Built</h3>
+	<p>
+		When compiling the scenario, the application links your selected landmarks to the nearest physical airfields and generates in-flight tracking assets:
+	</p>
+	<ol type="1">
+		<li>
+			<strong>Airport Selection:</strong>
+			<ul>
+				<li><strong>Departure Airfield:</strong> The generator queries the airport database to find the nearest valid runway to your chosen <strong>Start Item</strong>.</li>
+				<li><strong>Destination Airfield:</strong> The generator queries the database for the nearest valid runway to your chosen <strong>Finish Item</strong>.</li>
+				<li><em>Note: Start and destination runways automatically match the landing gear capabilities (land vs. water) of your active aircraft variant.</em></li>
+			</ul>
+		</li>
+		<li>
+			<strong>Route &amp; Chart Generation:</strong>
+			The complete flight path (Departure Airfield &rarr; Landmarks &rarr; Destination Airfield) is compiled. OpenStreetMap (OSM) map tiles are downloaded and stitched together to produce an overview briefing chart and progressive multi-zoom leg route images.
+		</li>
+		<li>
+			<strong>Trigger Placement:</strong>
+			A cylindrical proximity trigger (radius: 300 meters, vertical ceiling: 18,520 meters / ~60,000 ft) is centered directly over each landmark coordinate.
+		</li>
+		<li>
+			<strong>Mobile Article Optimization:</strong>
+			The scenario script automatically converts desktop Wikipedia URLs into optimized mobile endpoints (<code>https://en.m.wikipedia.org/...useformat=mobile</code>). This ensures articles format cleanly in single-column layout inside the Prepar3D HTML overlay panel without horizontal scrolling.
+		</li>
+	</ol>
+
+	<hr />
+
+	<!-- IN-FLIGHT EXPERIENCE -->
+	<h3 id="inFlightExperience">In-Flight Operations &amp; Procedures</h3>
+	<p>
+		The scenario places your aircraft at the departure runway threshold with the simulation paused.
+	</p>
+
+	<h4>Pre-Flight &amp; Departure</h4>
+	<ol type="1">
+		<li>
+			<strong>Unpause:</strong> Unpausing the simulation triggers spoken text-to-speech mission audio reviewing your route, distance, and flight objectives.
+		</li>
+		<li>
+			<strong>Moving Map:</strong> The in-game moving map overlay opens automatically on Leg 1, showing your aircraft and a route line connecting your departure runway to the first Wikipedia landmark.
+		</li>
+	</ol>
+
+	<h4>En Route Navigation &amp; Triggering Landmarks</h4>
+	<ul>
+		<li>
+			<strong>Visual Navigation:</strong> Follow prominent roads, rivers, coastlines, and your moving map display toward the landmark coordinate.
+		</li>
+		<li>
+			<strong>Reaching the Landmark:</strong> When your aircraft enters the 300-meter cylinder trigger above the landmark:
+			<ul>
+				<li>The <strong>Wikipedia Viewer</strong> panel opens (or updates if already open), instantly loading the mobile Wikipedia article for that landmark.</li>
+				<li>The scenario variable (<code>currentLegNo</code>) increments automatically.</li>
+				<li>The in-flight <strong>Moving Map</strong> updates to show the route line connecting to the next landmark.</li>
+			</ul>
+		</li>
+		<li>
+			<strong>Reading in Flight:</strong> Review the history, architecture, or geographic facts of the site as you circle or fly overhead.
+		</li>
+	</ul>
+
+	<h4>Arrival &amp; Mission Completion</h4>
+	<p>
+		After passing the final Wikipedia landmark, the moving map guides you on the final leg toward your destination airfield. Land on any active runway and come to a complete stop within the 2 km airfield boundary zone to achieve goal resolution (<code>Goal01</code>) and close all active panels.
+	</p>
+
+	<hr />
+
+	<!-- GLOBAL ACTIONS -->
+	<h3 id="globalActions">Global Actions</h3>
+	<p>
+		The bottom buttons (<kbd class="winforms-btn">Reset Tab</kbd>, <kbd class="winforms-btn">Reload Profile</kbd>, and <kbd class="winforms-btn">Generate Scenario</kbd>) are persistent window controls (see <a href="generalTab.htm#globalActions">General Tab: Global Actions</a>):
+	</p>
+	<ul>
+		<li>
+			<strong><kbd class="winforms-btn">Reset Tab</kbd>:</strong> Resets the tab fields and clears any active Wikipedia page data.
+		</li>
+		<li>
+			<strong><kbd class="winforms-btn">Reload Profile</kbd>:</strong> Reloads saved window positioning parameters and cached settings from <code>ui_settings.json</code>.
+		</li>
+		<li>
+			<strong><kbd class="winforms-btn">Generate Scenario</kbd>:</strong> Validates the tour selection, finds matching departure and destination airfields, downloads OpenStreetMap route tiles, compiles scenario XML/HTML assets, and exports the flight package to Prepar3D.
+		</li>
+	</ul>
+</body>
+</html>

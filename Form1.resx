@@ -120,6 +120,9 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <data name="label19.ToolTip" xml:space="preserve">
     <value>Tilt Angle:
 Enter the pitch angle of the letter pattern relative to the ground (0–90°):
@@ -244,11 +247,58 @@ NOTE: Invalid or disconnected display indices automatically fall back to Monitor
 
 </value>
   </data>
-  <data name="label53.ToolTip" xml:space="preserve">
-    <value>The default position of Wiki URL window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the Wiki URL Wiki URL window is positioned. Ignored if default position of Wiki URL window is centered.</value>
+  <data name="ComboBoxWikiCoordSource.ToolTip" xml:space="preserve">
+    <value>Coordinate Source:
+Determines where geographic coordinates (latitude and longitude) are retrieved:
+• Item Page – Queries each landmark's individual Wikipedia article.
+• Table Column – Reads coordinates directly from the table row (falls back to Item Page if missing).</value>
   </data>
-  <data name="TextBoxWikiURLOffset.ToolTip" xml:space="preserve">
-    <value>The default position of Wiki URL window in pixels on chosen monitor. A value from 0 to 20 indicating how close to the specified corner of the monitor the Wiki URL Wiki URL window is positioned. Ignored if default position of Wiki URL window is centered.</value>
+  <data name="label39.ToolTip" xml:space="preserve">
+    <value>Coordinate Source:
+Determines where geographic coordinates (latitude and longitude) are retrieved:
+• Item Page – Queries each landmark's individual Wikipedia article.
+• Table Column – Reads coordinates directly from the table row (falls back to Item Page if missing).</value>
+  </data>
+  <data name="ComboBoxWikiRoute.ToolTip" xml:space="preserve">
+    <value>Visit Sequence:
+Displays the flight sequence connecting all items in the selected table, ordered using a nearest-neighbor distance algorithm.
+
+Shows the item indices, landmark titles, and distance between consecutive stops.</value>
+  </data>
+  <data name="LabelWikiRoute.ToolTip" xml:space="preserve">
+    <value>Visit Sequence:
+Displays the flight sequence connecting all items in the selected table, ordered using a nearest-neighbor distance algorithm.
+
+Shows the item indices, landmark titles, and distance between consecutive stops.</value>
+  </data>
+  <data name="TextBoxWikiURLWindowWidth.ToolTip" xml:space="preserve">
+    <value>Window Width:
+Displays the fixed width of the in-game Wikipedia browser window (500 pixels).
+
+LOCKED: Fixed to host a standardized 480px mobile viewport so Wikipedia articles render cleanly in a single-column layout without horizontal scrolling.</value>
+  </data>
+  <data name="label56.ToolTip" xml:space="preserve">
+    <value>Window Width:
+Displays the fixed width of the in-game Wikipedia browser window (500 pixels).
+
+LOCKED: Fixed to host a standardized 480px mobile viewport so Wikipedia articles render cleanly in a single-column layout without horizontal scrolling.</value>
+  </data>
+  <data name="TextBoxWikiURLMonitorNumber.ToolTip" xml:space="preserve">
+    <value>Monitor Number:
+Specifies the Windows display index where the Wiki URL window will render (e.g., 0, 1, or 2).
+
+NOTE: Invalid or disconnected display indices automatically fall back to Monitor 0.
+
+
+</value>
+  </data>
+  <data name="label55.ToolTip" xml:space="preserve">
+    <value>Monitor Number:
+Specifies the Windows display index where the Wiki URL window will render (e.g., 0, 1, or 2).
+
+NOTE: Invalid or disconnected display indices automatically fall back to Monitor 0.
+
+</value>
   </data>
   <data name="ComboBoxGeneralLocationFavourites.ToolTip" xml:space="preserve">
     <value>Favourites Profile:
@@ -3155,4 +3205,7 @@ Click to browse and select your active Prepar3D ProgramData directory (e.g., C:\
         rkJggg==
 </value>
   </data>
+  <metadata name="helpProvider1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>359, 17</value>
+  </metadata>
 </root>

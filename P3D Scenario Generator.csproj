@@ -47,6 +47,7 @@
     <None Remove="Resources\Help\photoTour.htm" />
     <None Remove="Resources\Help\signwriting.htm" />
     <None Remove="Resources\Help\style.css" />
+    <None Remove="Resources\Help\wikipediaList.htm" />
     <None Remove="Resources\HTML\CelestialSextant.html" />
     <None Remove="Resources\HTML\MissionBriefSource.htm" />
     <None Remove="Resources\HTML\MovingMap.html" />
@@ -238,6 +239,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\style.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\wikipediaList.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\HTML\CelestialSextant.html" />
