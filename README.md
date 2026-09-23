@@ -21,9 +21,13 @@ Instead of authoring complex mission logic trees manually inside SimDirector, **
 1. **Simulator:** Lockheed Martin **Prepar3D v5** (v5.4 recommended).
 2. **Runtime:** [.NET Desktop Runtime](https://dotnet.microsoft.com/download) (if running the standalone build).
 3. **Map Tile API Key (Required for Moving Maps & Tours):**
-   * Register for a free account at [RapidAPI](https://rapidapi.com/).
-   * Subscribe to the free **MapTiles** API endpoint.
-   * Copy your `x-rapidapi-key` and paste it into the **Settings** tab under **Server / API key**.
+   * Generated scenarios download and stitch OpenStreetMap tiles for in-game briefings and moving map displays.
+   * A free API key from **RapidAPI** is required:
+     1. Sign up for a free account at [RapidAPI](https://rapidapi.com/).
+     2. In the top search bar, search for **MapTiles**.
+     3. Select any endpoint (e.g., `getStandardMapTile`) and copy your alphanumeric key from the code snippet box (`'x-rapidapi-key: ...'`).
+     4. Open **P3D Scenario Generator**, switch to the **Settings** tab, and paste the key into the **Server / API key** field.
+   * *(Full step-by-step instructions with tips are also available inside the app under **Settings Tab Help**).*
 4. **Airports Database:**
    * Includes a stock P3D v5 runway database by default.
    * Add-on scenery runways can be imported using Pete & John Dowson's `MakeRunways` utility.
