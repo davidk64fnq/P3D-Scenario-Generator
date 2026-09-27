@@ -23,7 +23,7 @@ namespace P3D_Scenario_Generator.Runways
         private readonly List<RunwayParams> _allRunways = data?.Runways ?? [];
 
         // We ensure _kdTreeRoot is never null to prevent NullReferenceExceptions.
-        private readonly KDNode _kdTreeRoot = data?.RunwayTreeRoot ?? new KDNode();
+        private readonly KDNode? _kdTreeRoot = data?.RunwayTreeRoot;
 
         // The ILog interface for logging errors and other messages.
         private readonly Logger _log = log;
@@ -79,11 +79,11 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="targetLon">The longitude of the target point.</param>
         /// <param name="scenarioFormData">The DTO containing location filters.</param>
         /// <returns>The nearest runway that meets the filter criteria, or null if no match is found.</returns>
-        public async Task<RunwayParams> FindNearestRunwayAsync(double targetLat, double targetLon, ScenarioFormData scenarioFormData)
+        public async Task<RunwayParams?> FindNearestRunwayAsync(double targetLat, double targetLon, ScenarioFormData scenarioFormData)
         {
             try
             {
-                RunwayParams best = null;
+                RunwayParams? best = null;
                 double bestDistSq = double.MaxValue;
                 FindNearestRecursive(_kdTreeRoot, targetLat, targetLon, runway => IsRunwayInFilteredLocation(runway, scenarioFormData), 0, ref best, ref bestDistSq);
                 return best;
@@ -106,7 +106,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="maxDist">The maximum distance the runway can be from the target point in nautical miles.</param>
         /// <param name="scenarioFormData">The DTO containing location filters.</param>
         /// <returns>A runway that meets the distance and filter criteria, or null if no match is found.</returns>
-        public async Task<RunwayParams> FindNearbyRunwayAsync(double targetLat, double targetLon, double minDist, double maxDist, ScenarioFormData scenarioFormData)
+        public async Task<RunwayParams?> FindNearbyRunwayAsync(double targetLat, double targetLon, double minDist, double maxDist, ScenarioFormData scenarioFormData)
         {
             try
             {
@@ -135,7 +135,7 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         /// <param name="scenarioFormData">The DTO containing location filters to apply.</param>
         /// <returns>A randomly selected RunwayParams object that meets the filter criteria, or null if no matching runways are found.</returns>
-        public async Task<RunwayParams> GetFilteredRandomRunwayAsync(ScenarioFormData scenarioFormData)
+        public async Task<RunwayParams?> GetFilteredRandomRunwayAsync(ScenarioFormData scenarioFormData)
         {
             try
             {
@@ -174,14 +174,13 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="runwayId">The ID of the runway (e.g., "14", "26").</param>
         /// <param name="runwayDesignator">The designator of the runway (e.g., "Left", "Centre").</param>
         /// <returns>The matching RunwayParams object, or null if not found.</returns>
-        public RunwayParams GetRunwayByIcaoIdDesignator(string icaoId, string runwayId, string runwayDesignator)
+        public RunwayParams? GetRunwayByIcaoIdDesignator(string icaoId, string runwayId, string runwayDesignator)
         {
             if (string.IsNullOrEmpty(icaoId) || string.IsNullOrEmpty(runwayId) || _allRunways == null)
             {
                 return null;
             }
 
-            // Using LINQ's FirstOrDefault for a clean search.
             return _allRunways.FirstOrDefault(r =>
                 r.IcaoId.Equals(icaoId, StringComparison.OrdinalIgnoreCase) &&
                 r.Number.Equals(runwayId, StringComparison.OrdinalIgnoreCase) &&
@@ -194,11 +193,10 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         /// <param name="index">The zero-based index of the runway to retrieve.</param>
         /// <returns>The RunwayParams object at the specified index, or null if the index is out of bounds.</returns>
-        public async Task<RunwayParams> GetRunwayByIndexAsync(int index)
+        public async Task<RunwayParams?> GetRunwayByIndexAsync(int index)
         {
             if (index >= 0 && index < _allRunways.Count)
             {
-                // Use a LINQ query to find the first runway where the RunwaysIndex property matches.
                 var result = _allRunways.FirstOrDefault(r => r.RunwaysIndex == index);
 
                 if (result == null)
@@ -206,7 +204,7 @@ namespace P3D_Scenario_Generator.Runways
                     await _log.WarningAsync($"Could not find runway with RunwaysIndex of {index}.");
                 }
 
-                return result; ;
+                return result;
             }
 
             await _log.WarningAsync($"Attempted to access runway at index {index}, which is out of bounds (list size: {_allRunways.Count}).");
@@ -288,10 +286,10 @@ namespace P3D_Scenario_Generator.Runways
                 }
             }
 
-            // --- 2. Location Filtering ---
-            bool hasCountryFilter = scenarioFormData.LocationCountries?.Count > 0 && !scenarioFormData.LocationCountries.Contains("None");
-            bool hasStateFilter = scenarioFormData.LocationStates?.Count > 0 && !scenarioFormData.LocationStates.Contains("None");
-            bool hasCityFilter = scenarioFormData.LocationCities?.Count > 0 && !scenarioFormData.LocationCities.Contains("None");
+            // --- 3. Location Filtering ---
+            bool hasCountryFilter = scenarioFormData?.LocationCountries?.Count > 0 && !scenarioFormData.LocationCountries.Contains("None");
+            bool hasStateFilter = scenarioFormData?.LocationStates?.Count > 0 && !scenarioFormData.LocationStates.Contains("None");
+            bool hasCityFilter = scenarioFormData?.LocationCities?.Count > 0 && !scenarioFormData.LocationCities.Contains("None");
 
             // If no location filters active, accept
             if (!hasCountryFilter && !hasStateFilter && !hasCityFilter)
@@ -300,9 +298,9 @@ namespace P3D_Scenario_Generator.Runways
             }
 
             // Evaluate OR condition for location matches
-            bool countryMatches = hasCountryFilter && scenarioFormData.LocationCountries.Contains(runway.Country);
-            bool stateMatches = hasStateFilter && scenarioFormData.LocationStates.Contains(runway.State);
-            bool cityMatches = hasCityFilter && scenarioFormData.LocationCities.Contains(runway.City);
+            bool countryMatches = hasCountryFilter && scenarioFormData!.LocationCountries.Contains(runway.Country);
+            bool stateMatches = hasStateFilter && scenarioFormData!.LocationStates.Contains(runway.State);
+            bool cityMatches = hasCityFilter && scenarioFormData!.LocationCities.Contains(runway.City);
 
             return countryMatches || stateMatches || cityMatches;
         }
@@ -310,7 +308,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <summary>
         /// Finds the nearest runway to a given point using a k-d tree.
         /// </summary>
-        private static void FindNearestRecursive(KDNode node, double lat, double lon, Func<RunwayParams, bool> filter, int depth, ref RunwayParams best, ref double bestDistSq)
+        private static void FindNearestRecursive(KDNode? node, double lat, double lon, Func<RunwayParams, bool> filter, int depth, ref RunwayParams? best, ref double bestDistSq)
         {
             if (node == null)
             {
@@ -327,8 +325,8 @@ namespace P3D_Scenario_Generator.Runways
 
             int axis = depth % 2;
             double axisDist = (axis == 0) ? (lat - node.Runway.AirportLat) : (lon - node.Runway.AirportLon);
-            KDNode nearNode = (axisDist < 0) ? node.Left : node.Right;
-            KDNode farNode = (axisDist < 0) ? node.Right : node.Left;
+            KDNode? nearNode = (axisDist < 0) ? node.Left : node.Right;
+            KDNode? farNode = (axisDist < 0) ? node.Right : node.Left;
 
             FindNearestRecursive(nearNode, lat, lon, filter, depth + 1, ref best, ref bestDistSq);
 
@@ -341,7 +339,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <summary>
         /// Finds all runways within a specified distance range using a k-d tree.
         /// </summary>
-        private static void FindInRangeRecursive(KDNode node, double lat, double lon, double minSq, double maxSq, Func<RunwayParams, bool> filter, int depth, List<RunwayParams> results)
+        private static void FindInRangeRecursive(KDNode? node, double lat, double lon, double minSq, double maxSq, Func<RunwayParams, bool> filter, int depth, List<RunwayParams> results)
         {
             if (node == null)
             {
@@ -411,23 +409,19 @@ namespace P3D_Scenario_Generator.Runways
                 {
                     n--;
                     int k = _random.Next(n + 1);
-                    // Use C# tuple deconstruction to swap values cleanly
                     (validStartRunways[k], validStartRunways[n]) = (validStartRunways[n], validStartRunways[k]);
                 }
 
                 // 3. Iterate through the randomized valid runways and try to find a matching destination
                 foreach (var departureRunway in validStartRunways)
                 {
-                    // FindNearbyRunwayAsync already uses the KD-Tree to find a random runway 
-                    // in the distance annulus that passes the scenarioFormData filters!
-                    RunwayParams destinationRunway = await FindNearbyRunwayAsync(
+                    RunwayParams? destinationRunway = await FindNearbyRunwayAsync(
                         departureRunway.AirportLat,
                         departureRunway.AirportLon,
                         minDistanceNM,
                         maxDistanceNM,
                         scenarioFormData);
 
-                    // Ensure we found a destination and it isn't just a different runway at the EXACT same airport
                     if (destinationRunway != null && !destinationRunway.IcaoId.Equals(departureRunway.IcaoId, StringComparison.OrdinalIgnoreCase))
                     {
                         return (departureRunway, destinationRunway);

@@ -58,7 +58,7 @@ namespace P3D_Scenario_Generator.Services
         /// <param name="filePath">The full path of the file to read from.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>A task that returns a tuple containing a boolean indicating success and the deserialized object if successful; otherwise, the default value for <typeparamref name="T"/>.</returns>
-        public async Task<(bool success, T data)> TryDeserializeFromFileAsync<T>(string filePath, CancellationToken cancellationToken = default)
+        public async Task<(bool success, T? data)> TryDeserializeFromFileAsync<T>(string filePath, CancellationToken cancellationToken = default)
         {
             if (!File.Exists(filePath))
             {
@@ -70,7 +70,14 @@ namespace P3D_Scenario_Generator.Services
             {
                 // Use the async version of file open for better performance.
                 await using FileStream openStream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true);
-                T data = await JsonSerializer.DeserializeAsync<T>(openStream, _serializerOptions, cancellationToken);
+                T? data = await JsonSerializer.DeserializeAsync<T>(openStream, _serializerOptions, cancellationToken);
+
+                if (data is null)
+                {
+                    await _log.WarningAsync($"File '{filePath}' deserialized to null.");
+                    return (false, default);
+                }
+
                 await _log.InfoAsync($"Successfully deserialized data from file '{filePath}'.");
                 return (true, data);
             }

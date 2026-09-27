@@ -116,7 +116,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             { "1017", (9, "Mirfak", "Perseus") },
             { "7121", (50, "Nunki", "Sagittarius") },
             { "7790", (52, "Peacock", "Pavo") },
-            { "424", (0, "Polaris", "Ursa Minor") }, // 0 used as Polaris is unnumbered in the standard 1–57 sequence
+            { "424", (0, "Polaris", "Ursa Minor") },
             { "2990", (21, "Pollux", "Gemini") },
             { "2943", (20, "Procyon", "Canis Minor") },
             { "6406", (44, "Sabik", "Ophiuchus") },
@@ -187,17 +187,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
         #region Public Methods
 
-        /// <summary>
-        /// Asynchronously initializes the celestial star catalog by loading and parsing the expanded 
-        /// BSC5P JSON data from the application's embedded resources. It populates internal collections 
-        /// of stars and navigational names, parses precise astronomical coordinates, maps standard 
-        /// navigational stars, applies clean Greek Bayer designations, and triggers loading 
-        /// of Stellarium constellation line connections.
-        /// </summary>
-        /// <returns>
-        /// <see langword="true"/> if the JSON catalog and constellation lines were successfully loaded 
-        /// and parsed; otherwise, <see langword="false"/>.
-        /// </returns>
         public async Task<bool> InitStarsAsync()
         {
             await _logger.InfoAsync("Starting initialization of star data from JSON catalog.");
@@ -209,15 +198,21 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
             string resourceName = "JSON.bsc5p_extra.json";
 
-            (bool success, Stream stream) = await _fileOps.TryGetResourceStreamAsync(resourceName, _progressReporter);
-            if (!success) return false;
+            var (success, stream) = await _fileOps.TryGetResourceStreamAsync(resourceName, _progressReporter);
+            if (!success || stream is null) return false;
 
             try
             {
-                List<Bsc5pJsonStar> rawStars;
+                List<Bsc5pJsonStar>? rawStars;
                 using (stream)
                 {
                     rawStars = await JsonSerializer.DeserializeAsync<List<Bsc5pJsonStar>>(stream);
+                }
+
+                if (rawStars is null)
+                {
+                    await _logger.ErrorAsync("Failed to deserialize star catalog (deserialized to null).");
+                    return false;
                 }
 
                 // Keep track of Nav Stars we have already processed to prevent duplicate entries for binary components
@@ -260,7 +255,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                             starNumber = navData.StarNumber.ToString();
 
                             _navStarNames.Add(starName);
-                            processedNavStars.Add(starName); // Mark as processed
+                            processedNavStars.Add(starName);
                         }
                     }
 
@@ -271,7 +266,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                     _stars.Add(new Star(
                         Constellation: constellationName,
                         Id: rawStar.LineNumber,
-                        ConnectedId: "", // Line pairings are populated separately via LoadStellariumLinesAsync
+                        ConnectedId: "",
                         StarNumber: starNumber,
                         StarName: starName,
                         WikiLink: "",
@@ -286,7 +281,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                     // 5. Index Hipparcos designation mapping for constellation line resolution
                     if (rawStar.NamesAlt != null)
                     {
-                        string hipEntry = rawStar.NamesAlt.FirstOrDefault(n => n.StartsWith("HIP ", StringComparison.OrdinalIgnoreCase));
+                        string? hipEntry = rawStar.NamesAlt.FirstOrDefault(n => n.StartsWith("HIP ", StringComparison.OrdinalIgnoreCase));
                         if (hipEntry != null)
                         {
                             string hipId = hipEntry.Replace("HIP ", "", StringComparison.OrdinalIgnoreCase).Trim();
@@ -298,7 +293,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 _navStarNames.Sort();
 
                 // 6. Load Constellation Line vectors from Stellarium catalog
-                //   await LoadConstellationLinesAsync();
                 await LoadStellariumLinesAsync(hipToHrMap);
 
                 await _logger.InfoAsync($"Successfully initialized {_noStars} stars from JSON.");
@@ -311,14 +305,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
             }
         }
 
-        /// <summary>
-        /// Gets the entire star catalog as a consolidated list of StarData records, 
-        /// optimized for a single JSON serialization to client-side JavaScript.
-        /// </summary>
-        /// <returns>A read-only list of StarData records.</returns>
+
         public IReadOnlyList<StarData> GetStarCatalog()
         {
-            // The mapping ensures property names match the client-side JavaScript StarData typedef
             return _stars.Select(s => new StarData(
                 ConstellationName: s.Constellation,
                 CatalogID: s.Id,
@@ -339,13 +328,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
         #region Private Helper Methods
 
-        /// <summary>
-        /// Parses the raw Bayer string from the star catalog entry.
-        /// If the star belongs to a navigational constellation, it extracts and returns just the base 
-        /// Greek Unicode character (e.g., "α", "β") to maintain a clean, uncluttered UI.
-        /// </summary>
-        /// <param name="rawBayer">The raw Bayer string from the star catalog entry.</param>
-        /// <returns>The cleaned Greek character string, or an empty string if omitted or not applicable.</returns>
         private static string GetCleanBayerDesignation(string rawBayer)
         {
             if (string.IsNullOrWhiteSpace(rawBayer) || rawBayer.Length < 3) return "";
@@ -360,7 +342,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
             {
                 if (leftPart.Contains(kvp.Key))
                 {
-                    // Return ONLY the base Greek letter (no Flamsteed numbers or superscripts)
                     return kvp.Value;
                 }
             }
@@ -368,17 +349,10 @@ namespace P3D_Scenario_Generator.CelestialScenario
             return "";
         }
 
-        /// <summary>
-        /// Asynchronously loads and parses Stellarium constellation line definitions from JSON resources, 
-        /// mapping Hipparcos (HIP) vertex IDs back to internal catalog LineNumber (HR) IDs.
-        /// </summary>
-        /// <param name="hipToHrMap">A dictionary mapping Hipparcos IDs to catalog LineNumber (HR) IDs.</param>
-        /// <returns><see langword="true"/> if loaded and mapped successfully; otherwise, <see langword="false"/>.</returns>
         private async Task<bool> LoadStellariumLinesAsync(Dictionary<string, string> hipToHrMap)
         {
-            // 1. Read Stellarium JSON stream
-            (bool success, Stream stream) = await _fileOps.TryGetResourceStreamAsync("JSON.stellarium_modern_iau_lines.json", _progressReporter);
-            if (!success) return false;
+            var (success, stream) = await _fileOps.TryGetResourceStreamAsync("JSON.stellarium_modern_iau_lines.json", _progressReporter);
+            if (!success || stream is null) return false;
 
             using (stream)
             {
@@ -387,10 +361,8 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
                 foreach (var constel in stellariumData.Constellations)
                 {
-                    // Extract IAU 3-letter abbreviation from "CON modern_iau And" -> "And"
                     string abbrev = constel.Id.Split(' ').LastOrDefault() ?? "";
 
-                    // Filter to Navigational Constellations only
                     if (!NavConstellationAbbreviations.Contains(abbrev)) continue;
 
                     foreach (var stroke in constel.Lines)
@@ -401,8 +373,9 @@ namespace P3D_Scenario_Generator.CelestialScenario
                             string hip2 = stroke[i + 1].ToString();
 
                             // Map HIP IDs back to catalog LineNumbers (HR IDs)
-                            if (hipToHrMap.TryGetValue(hip1, out string hr1) &&
-                                hipToHrMap.TryGetValue(hip2, out string hr2))
+                            if (hipToHrMap.TryGetValue(hip1, out string? hr1) &&
+                                hipToHrMap.TryGetValue(hip2, out string? hr2) &&
+                                hr1 != null && hr2 != null)
                             {
                                 _starLineConnections.Add(hr1);
                                 _starLineConnections.Add(hr2);
@@ -419,25 +392,16 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
         #region Internal DTO Records
 
-        /// <summary>
-        /// DTO representing the root container for Stellarium skyculture JSON data.
-        /// </summary>
         public record StellariumData(
             [property: JsonPropertyName("constellations")] List<StellariumConstellation> Constellations
         );
 
-        /// <summary>
-        /// DTO representing individual constellation line definitions in Stellarium JSON format.
-        /// </summary>
         public record StellariumConstellation(
             [property: JsonPropertyName("id")] string Id,
             [property: JsonPropertyName("lines")] List<List<int>> Lines,
             [property: JsonPropertyName("common_name")] CommonName CommonName
         );
 
-        /// <summary>
-        /// DTO representing common naming attributes for Stellarium constellations.
-        /// </summary>
         public record CommonName(
             [property: JsonPropertyName("english")] string English,
             [property: JsonPropertyName("native")] string Native

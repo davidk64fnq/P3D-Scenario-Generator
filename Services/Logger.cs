@@ -15,7 +15,7 @@ namespace P3D_Scenario_Generator.Services
         private readonly string _errorLogFilePath;
         private readonly string _infoLogFilePath;
         private readonly string _warningLogFilePath;
-        private readonly ScenarioFormData _formData;
+        private readonly ScenarioFormData? _formData;
 
         /// <summary>
         /// Gets or sets a value indicating whether to include the date in the log entry.
@@ -47,7 +47,7 @@ namespace P3D_Scenario_Generator.Services
         /// <param name="includeTime">A boolean to control whether to include the time.</param>
         /// <param name="includeLevel">A boolean to control whether to include the log level.</param>
         /// <param name="formData">The ScenarioFormData instance containing the base paths.</param>
-        public Logger(bool includeDate, bool includeTime, bool includeLevel, ScenarioFormData formData)
+        public Logger(bool includeDate, bool includeTime, bool includeLevel, ScenarioFormData? formData = null)
         {
             IncludeDate = includeDate;
             IncludeTime = includeTime;
@@ -97,7 +97,7 @@ namespace P3D_Scenario_Generator.Services
         }
 
         /// <inheritdoc/>
-        public async Task ErrorAsync(string message, Exception ex = null, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
+        public async Task ErrorAsync(string message, Exception? ex = null, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
             string prefix = GetLogPrefix(callerName, callerFilePath);
             string timestamp = GetTimestamp();
@@ -193,9 +193,14 @@ namespace P3D_Scenario_Generator.Services
         /// <returns>The modified string with prefixes replaced, or the original string if no match is found.</returns>
         private string ProcessPath(string message)
         {
-            // Check if _formData is null to prevent errors.
-            if (_formData.P3DProgramInstall == null || _formData.P3DProgramData == null || _formData.ScenarioFolderBase == null ||
-                _formData.ScenarioFolder == null || _formData.ScenarioImageFolder == null || _formData.TempScenarioDirectory == null)
+            // Check if _formData itself is null to prevent errors.
+            if (_formData == null ||
+                _formData.P3DProgramInstall == null ||
+                _formData.P3DProgramData == null ||
+                _formData.ScenarioFolderBase == null ||
+                _formData.ScenarioFolder == null ||
+                _formData.ScenarioImageFolder == null ||
+                _formData.TempScenarioDirectory == null)
             {
                 return message;
             }

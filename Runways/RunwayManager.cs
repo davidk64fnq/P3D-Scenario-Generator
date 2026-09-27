@@ -5,8 +5,8 @@ namespace P3D_Scenario_Generator.Runways
     public class RunwayManager(RunwayLoader loader)
     {
         private readonly RunwayLoader _loader = loader;
-        private RunwaySearcher _searcher;
-        private RunwayUiManager _uiManager;
+        private RunwaySearcher _searcher = default!;
+        private RunwayUiManager _uiManager = default!;
 
         /// <summary>
         /// Gets the searcher instance.
@@ -29,7 +29,7 @@ namespace P3D_Scenario_Generator.Runways
         public async Task<bool> InitializeAsync(FormProgressReporter progressReporter, Logger log, CacheManager cacheManager, FileOps fileOps)
         {
             // Pass the cancellationToken to the LoadRunwaysAsync method.
-            RunwayData data = await _loader.LoadRunwaysAsync(progressReporter);
+            RunwayData? data = await _loader.LoadRunwaysAsync(progressReporter);
 
             if (data == null)
             {
@@ -46,6 +46,5 @@ namespace P3D_Scenario_Generator.Runways
 
             return true;
         }
-
     }
 }

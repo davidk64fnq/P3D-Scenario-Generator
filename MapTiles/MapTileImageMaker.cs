@@ -39,16 +39,14 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <returns><see langword="true"/> if the overview image was successfully created; otherwise, <see langword="false"/>.</returns>
         public async Task<bool> CreateOverviewImageAsync(IEnumerable<Coordinate> coordinates, ScenarioFormData formData)
         {
-            bool success;
-
             if (coordinates == null || !coordinates.Any())
             {
                 await _logger.ErrorAsync("Input coordinates list is null or empty. Cannot create overview image.");
                 return false;
             }
 
-            (success, int zoom) = await _mapTileCalculator.GetOptimalZoomLevelAsync(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor, Constants.MaxZoomLevel);
-            if (!success)
+            var (zoomSuccess, zoom) = await _mapTileCalculator.GetOptimalZoomLevelAsync(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor, Constants.MaxZoomLevel);
+            if (!zoomSuccess)
             {
                 await _logger.ErrorAsync("Failed to determine optimal zoom level. See previous logs for details.");
                 return false;
@@ -66,8 +64,8 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Build list of x axis and y axis tile numbers that make up montage of tiles to cover set of coordinates
-            (success, BoundingBox boundingBox) = await _boundingBoxCalculator.GetBoundingBoxAsync(tiles, zoom);
-            if (!success)
+            var (boxSuccess, boundingBox) = await _boundingBoxCalculator.GetBoundingBoxAsync(tiles, zoom);
+            if (!boxSuccess || boundingBox is null)
             {
                 await _logger.ErrorAsync($"Failed to calculate bounding box at zoom {zoom}.");
                 return false;
@@ -82,8 +80,8 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Extend montage of tiles to make the image square (if it isn't already)
-            (success, PaddingMethod paddingMethod) = await MakeSquareAsync(boundingBox, fullPathNoExt, zoom, formData);
-            if (!success)
+            var (squareSuccess, paddingMethod) = await MakeSquareAsync(boundingBox, fullPathNoExt, zoom, formData);
+            if (!squareSuccess)
             {
                 await _logger.ErrorAsync($"Failed to make image '{fullPathNoExt}' square.");
                 return false;
@@ -99,8 +97,8 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Calculate next zoom level bounding box
-            (success, BoundingBox zoomInBoundingBox) = await _mapTilePadder.GetNextZoomBoundingBoxAsync(paddingMethod, boundingBox, zoom);
-            if (!success)
+            var (nextBoxSuccess, zoomInBoundingBox) = await _mapTilePadder.GetNextZoomBoundingBoxAsync(paddingMethod, boundingBox, zoom);
+            if (!nextBoxSuccess || zoomInBoundingBox is null)
             {
                 await _logger.ErrorAsync($"Failed to calculate next zoom level bounding box for overview image.");
                 return false;
@@ -130,8 +128,6 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <returns>True if the location image was successfully created, false otherwise.</returns>
         public async Task<bool> CreateLocationImageAsync(IEnumerable<Coordinate> coordinates, ScenarioFormData formData)
         {
-            bool success;
-
             // Input validation for coordinates
             if (coordinates == null || !coordinates.Any())
             {
@@ -152,8 +148,8 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Build list of x axis and y axis tile numbers that make up montage of tiles to cover set of coordinates
-            (success, BoundingBox boundingBox) = await _boundingBoxCalculator.GetBoundingBoxAsync(tiles, locationImageZoomLevel);
-            if (!success) 
+            var (boxSuccess, boundingBox) = await _boundingBoxCalculator.GetBoundingBoxAsync(tiles, locationImageZoomLevel);
+            if (!boxSuccess || boundingBox is null)
             {
                 await _logger.ErrorAsync($"Failed to calculate bounding box at zoom {locationImageZoomLevel}.");
                 return false;
@@ -172,8 +168,8 @@ namespace P3D_Scenario_Generator.MapTiles
             if (boundingBox.XAxis.Count != 1 || boundingBox.YAxis.Count != 1)
             {
                 // Attempt to make the image square.
-                (success, _) = await MakeSquareAsync(boundingBox, fullPathNoExt, locationImageZoomLevel, formData);
-                if (success) 
+                var (squareSuccess, _) = await MakeSquareAsync(boundingBox, fullPathNoExt, locationImageZoomLevel, formData);
+                if (squareSuccess)
                 {
                     // ONLY if MakeSquare succeeds, then attempt to resize to the final 1x1 target size.
                     if (!await _imageUtils.ResizeAsync($"{fullPathNoExt}.png", Constants.TileSizePixels, Constants.TileSizePixels))
@@ -390,19 +386,17 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="coordinates">A collection of geographical coordinates defining the flight leg route.</param>
         /// <param name="legNo">The sequential number of the current flight leg.</param>
         /// <param name="legZoomLabel">A label identifying the specific zoom level for this leg image (e.g., "zoom1").</param>
-        /// <param name="zoom">When this method returns, contains the determined optimal zoom level used for the image.</param>
-        /// <param name="paddingMethod">When this method returns, indicates the <see cref="PaddingMethod"/> applied to make the image square.</param>
-        /// <param name="boundingBox">When this method returns, contains the <see cref="BoundingBox"/> of the generated image after any padding.</param>
         /// <param name="formData">Scenario-specific data, including temporary directories.</param>
-        /// <returns><see langword="true"/> and tupple (zoom, paddingMethod, boundingBox) if the initial leg route image was successfully created; otherwise, <see langword="false"/>.</returns>
-        public async Task<(bool success, int zoom, PaddingMethod paddingMethod, BoundingBox boundingBox)> SetFirstZoomLegImageAsync(IEnumerable<Coordinate> coordinates, 
-            int legNo, int legZoomLabel, ScenarioFormData formData)
+        /// <returns><see langword="true"/> and tuple (zoom, paddingMethod, boundingBox) if the initial leg route image was successfully created; otherwise, <see langword="false"/>.</returns>
+        public async Task<(bool success, int zoom, PaddingMethod paddingMethod, BoundingBox boundingBox)> SetFirstZoomLegImageAsync(
+            IEnumerable<Coordinate> coordinates,
+            int legNo,
+            int legZoomLabel,
+            ScenarioFormData formData)
         {
-            int zoom = 0; // Default value for out parameter
-            PaddingMethod paddingMethod = PaddingMethod.None; // Default value for out parameter
-            BoundingBox boundingBox = new(); // Initialize the bounding box
-
-            bool success;
+            int zoom = 0;
+            PaddingMethod paddingMethod = PaddingMethod.None;
+            BoundingBox boundingBox = new();
 
             // Input validation for coordinates
             if (coordinates == null || !coordinates.Any())
@@ -417,13 +411,13 @@ namespace P3D_Scenario_Generator.MapTiles
                 maxZoomLevel = 15;
             }
 
-            (success, zoom) = await _mapTileCalculator.GetOptimalZoomLevelAsync(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor, maxZoomLevel);
-            if (!success)
+            var (zoomSuccess, optimalZoom) = await _mapTileCalculator.GetOptimalZoomLevelAsync(coordinates, Constants.DoubleTileFactor, Constants.DoubleTileFactor, maxZoomLevel);
+            if (!zoomSuccess)
             {
-                // GetOptimalZoomLevel already logs specific errors internally.
                 await _logger.ErrorAsync("Failed to determine optimal zoom level. See previous logs for details.");
                 return (false, zoom, paddingMethod, boundingBox);
             }
+            zoom = optimalZoom;
 
             // Build list of OSM tiles at required zoom for all coordinates
             List<Tile> tiles = [];
@@ -437,12 +431,13 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Build list of x axis and y axis tile numbers that make up montage of tiles to cover set of coordinates
-            (success, boundingBox) = await _boundingBoxCalculator.GetBoundingBoxAsync(tiles, zoom);
-            if (!success)
+            var (boxSuccess, calculatedBox) = await _boundingBoxCalculator.GetBoundingBoxAsync(tiles, zoom);
+            if (!boxSuccess || calculatedBox is null)
             {
                 await _logger.ErrorAsync($"Failed to calculate bounding box at zoom {zoom}.");
                 return (false, zoom, paddingMethod, boundingBox);
             }
+            boundingBox = calculatedBox;
 
             // Create montage of tiles in temp folder
             string fullPathNoExt = Path.Combine(formData.TempScenarioDirectory, $"LegRoute_{legNo:00}_zoom{legZoomLabel}");
@@ -453,12 +448,13 @@ namespace P3D_Scenario_Generator.MapTiles
             }
 
             // Extend montage of tiles to make the image square (if it isn't already)
-            (success, paddingMethod) = await MakeSquareAsync(boundingBox, fullPathNoExt, zoom, formData);
-            if (!success)
+            var (squareSuccess, squarePaddingMethod) = await MakeSquareAsync(boundingBox, fullPathNoExt, zoom, formData);
+            if (!squareSuccess)
             {
                 await _logger.ErrorAsync($"Failed to make image '{fullPathNoExt}' square.");
                 return (false, zoom, paddingMethod, boundingBox);
             }
+            paddingMethod = squarePaddingMethod;
 
             // Add map attribution overlay before format conversion
             string fullPathWithExt = $"{fullPathNoExt}.png";
@@ -566,16 +562,16 @@ namespace P3D_Scenario_Generator.MapTiles
 
             // Get the lat/lon coordinates of top left corner of bounding box
             c = MapTileCalculator.TileNoToLatLon(boundingBox.XAxis[0], boundingBox.YAxis[0], zoom);
-            mapData.north = c.Latitude;
-            mapData.west = c.Longitude;
+            mapData.North = c.Latitude;
+            mapData.West = c.Longitude;
 
             // Get the lat/lon coordinates of top left corner of tile immediately below and right of bottom right corner of bounding box
             c = MapTileCalculator.TileNoToLatLon(boundingBox.XAxis[^1] + 1, boundingBox.YAxis[^1] + 1, zoom);
-            mapData.south = c.Latitude;
-            mapData.east = c.Longitude;
+            mapData.South = c.Latitude;
+            mapData.East = c.Longitude;
 
             // Store item coordinates
-            mapData.items = [.. coordinates];
+            mapData.Items = [.. coordinates];
 
             formData.OSMmapData.Add(mapData);
 

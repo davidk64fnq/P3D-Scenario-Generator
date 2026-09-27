@@ -2,6 +2,7 @@
 using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Services;
+using System.Diagnostics.CodeAnalysis;
 using System.Web;
 
 namespace P3D_Scenario_Generator.WikipediaScenario
@@ -21,26 +22,23 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// </summary>
         /// <param name="wikiURL">User supplied Wikipedia URL</param>
         /// <param name="columnNo">User supplied column number of items in table</param>
-        public async Task<bool> PopulateWikiPageAsync(string wikiURL, int columnNo, CoordinateSource coordinateSource, ScenarioFormData formData, IProgress<string> progressReporter, Wikipedia wikipedia)
+        public async Task<bool> PopulateWikiPageAsync(string wikiURL, int columnNo, CoordinateSource coordinateSource, ScenarioFormData formData, IProgress<string>? progressReporter, Wikipedia wikipedia)
         {
             // Report initial status when starting the overall operation
             progressReporter?.Report($"Fetching data from {wikiURL}, please wait...");
 
             wikipedia.WikiPage = [];
-            HtmlAgilityPack.HtmlDocument htmlDoc = await _httpRoutines.GetWebDocAsync(wikiURL);
-            HtmlNodeCollection tables = null;
-            HtmlNodeCollection rows = null;
-            HtmlNodeCollection cells = null;
+            HtmlAgilityPack.HtmlDocument? htmlDoc = await _httpRoutines.GetWebDocAsync(wikiURL);
             string tableSelection = "//table[contains(@class, 'sortable wikitable') or contains(@class, 'wikitable sortable') or contains(@class, 'wikitable')]";
 
-            if (htmlDoc == null)
+            if (htmlDoc?.DocumentNode == null)
             {
                 progressReporter?.Report($"Failed to retrieve HTML document from {wikiURL}.");
                 await _logger.ErrorAsync($"Failed to retrieve HTML document from {wikiURL}");
                 return false; // Return false on failure to get HTML
             }
 
-            if (!GetNodeCollection(htmlDoc.DocumentNode, ref tables, tableSelection, false, formData))
+            if (!GetNodeCollection(htmlDoc.DocumentNode, out HtmlNodeCollection? tables, tableSelection, false, formData))
             {
                 progressReporter?.Report($"No relevant tables found at {wikiURL}.");
                 await _logger.WarningAsync($"No tables matching selection '{tableSelection}' found at {wikiURL}.");
@@ -58,16 +56,11 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 // Report progress for the current table
                 progressReporter?.Report($"Reading table {currentTableIndex} of {totalTables}, please wait...");
 
-                if (GetNodeCollection(table, ref rows, ".//tr", false, formData))
+                if (GetNodeCollection(table, out HtmlNodeCollection? rows, ".//tr", false, formData))
                 {
-                    // You could add row-level progress here if needed, but it might be too chatty
-                    // int totalRows = rows.Count;
-                    // int currentRowIndex = 0;
-
                     foreach (var row in rows)
                     {
-                        // currentRowIndex++;
-                        if (GetNodeCollection(row, ref cells, ".//th | .//td", false, formData) && cells.Count >= columnNo)
+                        if (GetNodeCollection(row, out HtmlNodeCollection? cells, ".//th | .//td", false, formData) && cells.Count >= columnNo)
                         {
                             await ReadWikiCellAsync(cells[columnNo - 1], curTable, formData, coordinateSource);
                         }
@@ -94,7 +87,12 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <param name="verbose">Whether to display a UI error dialog on failure</param>
         /// <param name="formData">Form data context for the error dialog title</param>
         /// <returns>True if nodes were found; false if the node collection is null.</returns>
-        static internal bool GetNodeCollection(HtmlNode parentNode, ref HtmlNodeCollection childNodeCollection, string selection, bool verbose, ScenarioFormData formData)
+        static internal bool GetNodeCollection(
+            HtmlNode parentNode,
+            [NotNullWhen(true)] out HtmlNodeCollection? childNodeCollection,
+            string selection,
+            bool verbose,
+            ScenarioFormData formData)
         {
             childNodeCollection = parentNode.SelectNodes(selection);
 
@@ -133,14 +131,15 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             if (title != "" && link != "")
             {
                 wikiItem.title = HttpUtility.HtmlDecode(title);
-                wikiItem.itemURL = link; bool coordinatesFound = false;
+                wikiItem.itemURL = link;
+                bool coordinatesFound = false;
 
                 // Choice 1: Look in the Table Row first
                 if (coordinateSource == CoordinateSource.TableColumn)
                 {
                     var row = cell.Ancestors("tr").FirstOrDefault();
-                    HtmlNode latNode = row?.SelectSingleNode(".//span[@class='latitude']");
-                    HtmlNode lonNode = row?.SelectSingleNode(".//span[@class='longitude']");
+                    HtmlNode? latNode = row?.SelectSingleNode(".//span[@class='latitude']");
+                    HtmlNode? lonNode = row?.SelectSingleNode(".//span[@class='longitude']");
 
                     if (latNode != null && lonNode != null)
                     {
@@ -153,8 +152,6 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 // Choice 2: Look at the Target Item Page (or Fallback if Table was selected but empty)
                 if (!coordinatesFound)
                 {
-                    // If the link has a '#' fragment and we are forced to fetch the item page,
-                    // be aware it will fetch the generic parent page coordinates.
                     coordinatesFound = await GetWikiItemCoordinatesAsync(wikiItem, formData);
                 }
 
@@ -172,20 +169,18 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// and retrieves them for storage in a table in <see cref="WikiPage"/>.
         /// </summary>
         /// <param name="wikiItem">The current row in table being populated in <see cref="WikiPage"/></param>
-        /// <returns></returns>
         public async Task<bool> GetWikiItemCoordinatesAsync(WikiItemParams wikiItem, ScenarioFormData formData)
         {
             var htmlDoc = await _httpRoutines.GetWebDocAsync(wikiItem.itemURL);
-            HtmlNodeCollection spans = null;
-            if (htmlDoc != null && GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='latitude']", false, formData))
+            if (htmlDoc?.DocumentNode != null &&
+                GetNodeCollection(htmlDoc.DocumentNode, out HtmlNodeCollection? latSpans, ".//span[@class='latitude']", false, formData) &&
+                latSpans.Count > 0 &&
+                GetNodeCollection(htmlDoc.DocumentNode, out HtmlNodeCollection? lonSpans, ".//span[@class='longitude']", false, formData) &&
+                lonSpans.Count > 0)
             {
-                if (spans != null && spans.Count > 0)
-                {
-                    wikiItem.latitude = ConvertWikiCoOrd(spans[0].InnerText);
-                    GetNodeCollection(htmlDoc.DocumentNode, ref spans, ".//span[@class='longitude']", false, formData);
-                    wikiItem.longitude = ConvertWikiCoOrd(spans[0].InnerText);
-                    return true;
-                }
+                wikiItem.latitude = ConvertWikiCoOrd(latSpans[0].InnerText);
+                wikiItem.longitude = ConvertWikiCoOrd(lonSpans[0].InnerText);
+                return true;
             }
             return false;
         }
@@ -222,6 +217,11 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         public async Task<List<string>> GetWikiItemHREFsAsync(WikiItemParams wikiItem)
         {
             var htmlDoc = await _httpRoutines.GetWebDocAsync(wikiItem.itemURL);
+            if (htmlDoc?.Text == null)
+            {
+                return [];
+            }
+
             string htmlDocContents = htmlDoc.Text;
             int indexSearchFrom = 0;
             string hrefTag = "href=\"#";
@@ -231,6 +231,10 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             {
                 int indexHREFvalueStart = indexHREFtagStart + hrefTag.Length;
                 int indexHREFvalueFinish = htmlDocContents.IndexOf('\"', indexHREFvalueStart);
+                if (indexHREFvalueFinish < 0)
+                {
+                    break;
+                }
                 string hrefValue = htmlDocContents[indexHREFvalueStart..indexHREFvalueFinish];
                 if (hrefValue.Length > 0 && !hrefValue.Contains("cite", StringComparison.OrdinalIgnoreCase))
                 {
@@ -249,17 +253,28 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <returns>CoordinateSharp package format readable string</returns>
         static internal string ConvertWikiCoOrd(string wikiCoOrd)
         {
+            if (string.IsNullOrWhiteSpace(wikiCoOrd))
+            {
+                return string.Empty;
+            }
+
             // Insert space after degree symbol
             int degPos = wikiCoOrd.IndexOf('°');
-            wikiCoOrd = wikiCoOrd.Insert(degPos + 1, " ");
+            if (degPos >= 0)
+            {
+                wikiCoOrd = wikiCoOrd.Insert(degPos + 1, " ");
+            }
 
             // Insert space after minute symbol
-            int minPos = degPos + 2;
-            while (char.IsDigit(wikiCoOrd[minPos]) || wikiCoOrd[minPos] == '.')
+            int minPos = degPos >= 0 ? degPos + 2 : 0;
+            while (minPos < wikiCoOrd.Length && (char.IsDigit(wikiCoOrd[minPos]) || wikiCoOrd[minPos] == '.'))
             {
                 minPos++;
             }
-            wikiCoOrd = wikiCoOrd.Insert(minPos + 1, " ");
+            if (minPos < wikiCoOrd.Length)
+            {
+                wikiCoOrd = wikiCoOrd.Insert(minPos + 1, " ");
+            }
 
             // Copy last char N/S/E/W to front with space after it
             char final = wikiCoOrd[^1];

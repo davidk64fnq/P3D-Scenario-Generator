@@ -31,7 +31,7 @@ namespace P3D_Scenario_Generator.Services
         /// Occurs whenever the cache metadata is successfully saved to disk.
         /// Use this in Form1.cs to trigger UI updates safely across threads.
         /// </summary>
-        public event Action OnMetadataChanged;
+        public event Action? OnMetadataChanged;
 
         public CacheMetadataService()
         {

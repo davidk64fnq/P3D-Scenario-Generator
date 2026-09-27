@@ -1,4 +1,5 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
+using System.Diagnostics.CodeAnalysis;
 
 namespace P3D_Scenario_Generator.Services
 {
@@ -75,10 +76,10 @@ namespace P3D_Scenario_Generator.Services
             double minValue,
             double maxValue,
             out double doubleOut,
-            out string errorMessage,
-            string units = "") 
+            [NotNullWhen(false)] out string? errorMessage,
+            string units = "")
         {
-            errorMessage = null; // Initialize error message
+            errorMessage = null; // Valid now because errorMessage is string?
 
             if (!double.TryParse(valueStringIn, out doubleOut))
             {
@@ -116,10 +117,10 @@ namespace P3D_Scenario_Generator.Services
             int minValue,
             int maxValue,
             out int intOut,
-            out string errorMessage,
+            [NotNullWhen(false)] out string? errorMessage,
             string units = "")
         {
-            errorMessage = null; // Initialize error message
+            errorMessage = null; // Valid now because errorMessage is string?
 
             if (!int.TryParse(valueStringIn, out intOut))
             {

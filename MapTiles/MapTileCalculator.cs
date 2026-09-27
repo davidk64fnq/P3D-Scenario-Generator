@@ -35,14 +35,14 @@ namespace P3D_Scenario_Generator.MapTiles
             IEnumerable<Coordinate> coordinates,
             int tilesWidth,
             int tilesHeight,
-            int maxAllowedZoom) 
+            int maxAllowedZoom)
         {
-            int optimalZoomLevel = 0; 
+            int optimalZoomLevel = 0;
 
             if (coordinates == null || !coordinates.Any())
             {
                 await _logger.ErrorAsync("Input coordinates list is null or empty.");
-                return (false, optimalZoomLevel); 
+                return (false, optimalZoomLevel);
             }
 
             // Store the last successfully calculated zoom level
@@ -63,15 +63,15 @@ namespace P3D_Scenario_Generator.MapTiles
                 if (!success)
                 {
                     await _logger.ErrorAsync($"SetOSMTilesForCoordinates failed to process all coordinates for zoom level {zoom}. Aborting optimal zoom calculation.");
-                    optimalZoomLevel = 0; 
-                    return (false, optimalZoomLevel); 
+                    optimalZoomLevel = 0;
+                    return (false, optimalZoomLevel);
                 }
 
-                (success, BoundingBox boundingBox) = await _boundingBoxCalculator.GetBoundingBoxAsync(tempTiles, zoom);
-                if (!success)
+                var (boxSuccess, boundingBox) = await _boundingBoxCalculator.GetBoundingBoxAsync(tempTiles, zoom);
+                if (!boxSuccess || boundingBox is null)
                 {
                     await _logger.ErrorAsync($"Failed to calculate bounding box for zoom level {zoom}. Aborting optimal zoom calculation.");
-                    return (false, optimalZoomLevel); 
+                    return (false, optimalZoomLevel);
                 }
 
                 if (boundingBox.XAxis.Count > tilesWidth || boundingBox.YAxis.Count > tilesHeight)

@@ -21,7 +21,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="tiles">A list of OSM tile references and their associated coordinate.</param>
         /// <param name="zoom">The zoom level required for the bounding box.</param>
         /// <returns>A tuple containing a boolean indicating success and the resulting <see cref="BoundingBox"/>.</returns>
-        public async Task<(bool success, BoundingBox boundingBox)> GetBoundingBoxAsync(List<Tile> tiles, int zoom)
+        public async Task<(bool success, BoundingBox? boundingBox)> GetBoundingBoxAsync(List<Tile> tiles, int zoom)
         {
             try
             {

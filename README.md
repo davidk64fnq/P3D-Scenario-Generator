@@ -19,7 +19,7 @@ Instead of authoring complex mission logic trees manually inside SimDirector, **
 ## 🛠️ Prerequisites & Setup
 
 1. **Simulator:** Lockheed Martin **Prepar3D v5** (v5.4 recommended).
-2. **Runtime:** None required (the release build is fully self-contained).
+2. **Runtime:** None required. (.NET 8 Desktop Runtime is fully self-contained and bundled inside the application folder, so no separate .NET installation is needed).
 3. **Folder Paths (Configured on the Settings tab):**
    * **P3D Install:** Main Prepar3D v5 root folder (e.g., `C:\Program Files\Lockheed Martin\Prepar3D v5`).
    * **P3D Data:** Prepar3D ProgramData folder (e.g., `C:\ProgramData\Lockheed Martin\Prepar3D v5`).

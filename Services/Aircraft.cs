@@ -190,7 +190,7 @@ namespace P3D_Scenario_Generator.Services
             string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
 
             using StringReader reader = new(aircraftCFG);
-            string currentLine;
+            string? currentLine;
             string currentTitle = "";
 
             while ((currentLine = reader.ReadLine()) != null)
@@ -278,16 +278,25 @@ namespace P3D_Scenario_Generator.Services
         /// <returns>Text string containing contents of aircraft.cfg file (or equivalent) otherwise empty string</returns>
         internal async Task<string> GetAircraftCFGAsync(string thumbnailPath)
         {
-            string textureFolderPath = Path.GetDirectoryName(thumbnailPath);
-            string aircraftFolderPath = Path.GetDirectoryName(textureFolderPath);
+            string? textureFolderPath = Path.GetDirectoryName(thumbnailPath);
+            string? aircraftFolderPath = Path.GetDirectoryName(textureFolderPath);
 
-            if (FileOps.FileExists($"{aircraftFolderPath}\\aircraft.cfg"))
+            if (string.IsNullOrEmpty(aircraftFolderPath))
             {
-                return FileOps.ReadAllText($"{aircraftFolderPath}\\aircraft.cfg");
+                await _log.ErrorAsync($"Unable to resolve aircraft folder from path '{thumbnailPath}'.");
+                return "";
             }
-            else if (FileOps.FileExists($"{aircraftFolderPath}\\sim.cfg"))
+
+            string aircraftCfg = Path.Combine(aircraftFolderPath, "aircraft.cfg");
+            string simCfg = Path.Combine(aircraftFolderPath, "sim.cfg");
+
+            if (FileOps.FileExists(aircraftCfg))
             {
-                return FileOps.ReadAllText($"{aircraftFolderPath}\\sim.cfg");
+                return FileOps.ReadAllText(aircraftCfg);
+            }
+            else if (FileOps.FileExists(simCfg))
+            {
+                return FileOps.ReadAllText(simCfg);
             }
             else
             {
@@ -306,17 +315,17 @@ namespace P3D_Scenario_Generator.Services
         /// <returns>The texture value</returns>
         internal static string GetTextureValue(string thumbnailPath)
         {
-            // Get full path of texture folder that contains user selected aircraft variant thumbnail image
-            string textureFolderPath = Path.GetDirectoryName(thumbnailPath);
+            string? textureFolderPath = Path.GetDirectoryName(thumbnailPath);
+            if (string.IsNullOrEmpty(textureFolderPath))
+                return "";
 
-            // Get the texture folder
-            string textureFolder = Path.GetFileName(textureFolderPath);
+            string? textureFolder = Path.GetFileName(textureFolderPath);
+            if (string.IsNullOrEmpty(textureFolder))
+                return "";
 
-            // Split on '.' on assumption all P3D texture folders contain the period character i.e. "texture.X"
             string[] splitOnPeriod = textureFolder.Split('.');
 
-            // 2nd string is the X in "texture=X" within relevant section of aircraft.cfg
-            if (splitOnPeriod.Length == 1)
+            if (splitOnPeriod.Length <= 1)
                 return "";
             else
                 return splitOnPeriod[1];
@@ -331,7 +340,7 @@ namespace P3D_Scenario_Generator.Services
         {
             string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
-            string currentLine;
+            string? currentLine;
 
             while ((currentLine = reader.ReadLine()) != null)
             {
@@ -351,7 +360,7 @@ namespace P3D_Scenario_Generator.Services
                         minCruiseSpeed,
                         maxCruiseSpeed,
                         out double cruiseSpeedOut,
-                        out string _,
+                        out _,
                         "knots"))
                     {
                         return cruiseSpeedOut;
@@ -373,7 +382,7 @@ namespace P3D_Scenario_Generator.Services
         {
             string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
-            string currentLine;
+            string? currentLine;
             bool hasFloats = false;
             bool hasSkis = false;
 
@@ -431,7 +440,7 @@ namespace P3D_Scenario_Generator.Services
         {
             string aircraftCFG = await GetAircraftCFGAsync(thumbnailPath);
             using StringReader reader = new(aircraftCFG);
-            string currentLine;
+            string? currentLine;
 
             while ((currentLine = reader.ReadLine()) != null)
             {
@@ -518,7 +527,7 @@ namespace P3D_Scenario_Generator.Services
         /// <param name="displayName">The display name of the new instance to be set as <see cref="CurrentAircraftVariantIndex"/></param>
         internal void ChangeCurrentAircraftVariantIndex(string displayName)
         {
-            AircraftVariant aircraftVariant = AircraftVariants.Find(aircraft => aircraft.DisplayName == displayName);
+            AircraftVariant? aircraftVariant = AircraftVariants.Find(aircraft => aircraft.DisplayName == displayName);
             if (aircraftVariant != null)
                 CurrentAircraftVariantIndex = AircraftVariants.IndexOf(aircraftVariant);
         }
@@ -533,7 +542,7 @@ namespace P3D_Scenario_Generator.Services
         {
             if (AircraftVariants != null && AircraftVariants.Count > 0)
             {
-                AircraftVariant aircraftVariant = AircraftVariants.Find(aircraft => aircraft.DisplayName == displayName);
+                AircraftVariant? aircraftVariant = AircraftVariants.Find(aircraft => aircraft.DisplayName == displayName);
                 if (aircraftVariant != null)
                 {
                     // Do the deletion
@@ -620,7 +629,7 @@ namespace P3D_Scenario_Generator.Services
         /// Handles cases where no variant is selected or the index is invalid.
         /// </summary>
         /// <returns>The selected AircraftVariant, or null if no valid variant is currently selected.</returns>
-        public async Task<AircraftVariant> GetCurrentVariantAsync()
+        public async Task<AircraftVariant?> GetCurrentVariantAsync()
         {
             if (AircraftVariants == null || CurrentAircraftVariantIndex < 0 || CurrentAircraftVariantIndex >= AircraftVariants.Count)
             {
@@ -688,7 +697,7 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
         /// <returns>A <see cref="Task{TResult}"/> that returns <see langword="true"/> if aircraft variants were successfully loaded, <see langword="false"/> otherwise.</returns>
-        internal async Task<bool> LoadAircraftVariantsAsync(IProgress<string> progressReporter = null)
+        internal async Task<bool> LoadAircraftVariantsAsync(IProgress<string>? progressReporter = null)
         {
             AircraftVariants = [];
 
@@ -696,13 +705,11 @@ namespace P3D_Scenario_Generator.Services
                                                    AppDomain.CurrentDomain.FriendlyName);
             string filePath = Path.Combine(appDataDirectory, "AircraftVariantsJSON.txt");
 
-            // First, try to load from the local file using the asynchronous CacheManager.
             await _log.InfoAsync($"Attempting to load aircraft variants from local file: {filePath}");
 
-            // We await the deserialization, which returns a tuple with a success boolean and the data.
             var (success, loadedVariants) = await _cacheManager.TryDeserializeFromFileAsync<List<AircraftVariant>>(filePath);
 
-            if (success)
+            if (success && loadedVariants != null)
             {
                 AircraftVariants = loadedVariants;
                 await _log.InfoAsync($"Successfully loaded {AircraftVariants.Count} aircraft variants from local file.");

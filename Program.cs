@@ -17,15 +17,17 @@ namespace P3D_Scenario_Generator
             // Set up a global exception handler for non-UI thread exceptions.
             AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
             {
-                Exception ex = (Exception)e.ExceptionObject;
+                Exception? ex = e.ExceptionObject as Exception;
                 Task logTask = logger.ErrorAsync($"An unhandled exception occurred in a background thread.", ex);
 
-                // Set the flag to prevent the Form_FormClosing event from looping.
-                // This assumes your main form has this flag, which you will need to add.
-                ((Form)Application.OpenForms[0]).SetIsShuttingDown(true);
+                if (Application.OpenForms.Count > 0 && Application.OpenForms[0] is Form mainForm)
+                {
+                    // Set the flag to prevent the Form_FormClosing event from looping.
+                    mainForm.SetIsShuttingDown(true);
 
-                // Report the error to the UI before exiting.
-                ((Form)Application.OpenForms[0]).GetProgressReporter().Report($"ERROR: Unhandled exception. See log for details.");
+                    // Report the error to the UI before exiting.
+                    mainForm.GetProgressReporter()?.Report($"ERROR: Unhandled exception. See log for details.");
+                }
 
                 // Exit the application gracefully.
                 Application.Exit();
@@ -36,11 +38,14 @@ namespace P3D_Scenario_Generator
             {
                 Task logTask = logger.ErrorAsync($"A UI thread exception occurred.", e.Exception);
 
-                // Set the flag to prevent the Form_FormClosing event from looping.
-                ((Form)Application.OpenForms[0]).SetIsShuttingDown(true);
+                if (Application.OpenForms.Count > 0 && Application.OpenForms[0] is Form mainForm)
+                {
+                    // Set the flag to prevent the Form_FormClosing event from looping.
+                    mainForm.SetIsShuttingDown(true);
 
-                // Report the error to the UI before exiting.
-                ((Form)Application.OpenForms[0]).GetProgressReporter().Report($"ERROR: Unhandled exception. See log for details.");
+                    // Report the error to the UI before exiting.
+                    mainForm.GetProgressReporter()?.Report($"ERROR: Unhandled exception. See log for details.");
+                }
 
                 // Exit the application gracefully.
                 Application.Exit();

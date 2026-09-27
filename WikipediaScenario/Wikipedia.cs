@@ -6,7 +6,6 @@ using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.WikipediaScenario
 {
-
     /// <summary>
     /// Provides routines for the Wikipedia scenario type
     /// </summary>
@@ -44,12 +43,12 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <summary>
         /// Table(s) of items scraped from user supplied Wikipedia URL
         /// </summary>
-        internal List<List<WikiItemParams>> WikiPage { get; set; }
+        internal List<List<WikiItemParams>> WikiPage { get; set; } = [];
 
         /// <summary>
         /// List of user selected Wikipedia items
         /// </summary>
-        internal List<WikiItemParams> WikiTour { get; private set; } 
+        internal List<WikiItemParams> WikiTour { get; private set; } = [];
 
         #region Form routines - populate UI, list of tables and route for selected table including all valid items
 
@@ -68,7 +67,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 {
                     tableDesc = $"{WikiPage[tableNo][0].title} (one item)";
                 }
-                else 
+                else
                 {
                     tableDesc = $"{WikiPage[tableNo][0].title} ... {WikiPage[tableNo][^1].title} ({WikiPage[tableNo].Count} items)";
                 }
@@ -84,17 +83,17 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <returns>List of route leg summary strings</returns>
         internal List<string> CreateWikiTableRoute(int tableNo)
         {
+            if (tableNo < 0 || tableNo >= WikiPage.Count || WikiPage[tableNo].Count == 0)
+            {
+                return [];
+            }
+
             int[,] wikiTableCost = new int[WikiPage[tableNo].Count, WikiPage[tableNo].Count]; // Matrix of distances between items in miles
             List<string> route = []; // Route leg summary strings
             bool[] itemsVisited = new bool[WikiPage[tableNo].Count]; // Track addition of items to route as it's built
             int firstRouteItem = 0; // Track first item of route as it's built
             int lastRouteItem; // Track last item of route as it's built
             int itemVisitedCount; // Track how many items have been added to route as it's built
-
-            if (tableNo < 0)
-            {
-                return null;
-            }
 
             SetWikiTableCosts(tableNo, wikiTableCost);
 
@@ -111,13 +110,13 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 int nearestToSecondRouteItem = GetNearesetWikiItem(lastRouteItem, wikiTableCost, itemsVisited);
                 if (wikiTableCost[firstRouteItem, nearestToFirstRouteItem] <= wikiTableCost[lastRouteItem, nearestToSecondRouteItem])
                 {
-                    AddLegToRoute(route, tableNo, wikiTableCost, 0, nearestToFirstRouteItem, firstRouteItem, itemsVisited, 
+                    AddLegToRoute(route, tableNo, wikiTableCost, 0, nearestToFirstRouteItem, firstRouteItem, itemsVisited,
                         nearestToFirstRouteItem, ref itemVisitedCount);
                     firstRouteItem = nearestToFirstRouteItem;
                 }
                 else
                 {
-                    AddLegToRoute(route, tableNo, wikiTableCost, itemVisitedCount, lastRouteItem, nearestToSecondRouteItem, 
+                    AddLegToRoute(route, tableNo, wikiTableCost, itemVisitedCount, lastRouteItem, nearestToSecondRouteItem,
                         itemsVisited, nearestToSecondRouteItem, ref itemVisitedCount);
                     lastRouteItem = nearestToSecondRouteItem;
                 }
@@ -139,7 +138,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <param name="itemsVisited">Tracks addition of items to route as it's built</param>
         /// <param name="newItem">Will be either the startItem or finishItem depending on which end of route</param>
         /// <param name="itemVisitedCount">Tracks how many items have been added to route as it's built</param>
-        internal void AddLegToRoute(List<string> route, int tableNo, int[,] wikiTableCost, int insertionPt, 
+        internal void AddLegToRoute(List<string> route, int tableNo, int[,] wikiTableCost, int insertionPt,
             int startItem, int finishItem, bool[] itemsVisited, int newItem, ref int itemVisitedCount)
         {
             if (insertionPt > route.Count - 1)
@@ -169,7 +168,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             int nearestWikiItem = 0;
             for (int itemIndex = 0; itemIndex < itemsVisited.Length; itemIndex++)
             {
-                if (itemIndex != curItem && wikiTableCost[curItem, itemIndex] < minDistance && itemsVisited[itemIndex] == false)
+                if (itemIndex != curItem && wikiTableCost[curItem, itemIndex] < minDistance && !itemsVisited[itemIndex])
                 {
                     minDistance = wikiTableCost[curItem, itemIndex];
                     nearestWikiItem = itemIndex;
@@ -270,24 +269,41 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             return true;
         }
 
-
         /// <summary>
         /// Finds and inserts/appends wiki tour start and finish airports. Adjusts <see cref="WikiDistance"/>
         /// to include airport legs
         /// </summary>
         internal async Task SetWikiAirports(ScenarioFormData formData, RunwayManager runwayManager)
         {
+            if (WikiTour.Count == 0) return;
+
             Coordinate coordFirstItem = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
-            WikiTour.Insert(0, await GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble(), formData, runwayManager));
-            Coordinate coordStartAirport = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
-            WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
-            formData.StartRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(WikiTour[0].airportIndex);
+            WikiItemParams? startAirport = await GetNearestAirport(coordFirstItem.Latitude.ToDouble(), coordFirstItem.Longitude.ToDouble(), formData, runwayManager);
+            if (startAirport != null)
+            {
+                WikiTour.Insert(0, startAirport);
+                Coordinate coordStartAirport = Coordinate.Parse($"{WikiTour[0].latitude} {WikiTour[0].longitude}");
+                WikiDistance += (int)coordFirstItem.Get_Distance_From_Coordinate(coordStartAirport).Miles;
+                var startRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(WikiTour[0].airportIndex);
+                if (startRunway != null)
+                {
+                    formData.StartRunway = startRunway;
+                }
+            }
 
             Coordinate coordLastItem = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
-            WikiTour.Add(await GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble(), formData, runwayManager));
-            Coordinate coordFinishAirport = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
-            WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
-            formData.DestinationRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(WikiTour[^1].airportIndex);
+            WikiItemParams? finishAirport = await GetNearestAirport(coordLastItem.Latitude.ToDouble(), coordLastItem.Longitude.ToDouble(), formData, runwayManager);
+            if (finishAirport != null)
+            {
+                WikiTour.Add(finishAirport);
+                Coordinate coordFinishAirport = Coordinate.Parse($"{WikiTour[^1].latitude} {WikiTour[^1].longitude}");
+                WikiDistance += (int)coordLastItem.Get_Distance_From_Coordinate(coordFinishAirport).Miles;
+                var destRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(WikiTour[^1].airportIndex);
+                if (destRunway != null)
+                {
+                    formData.DestinationRunway = destRunway;
+                }
+            }
         }
 
         /// <summary>
@@ -297,22 +313,24 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <param name="queryLat">The wiki item latitude</param>
         /// <param name="queryLon">The wiki item longitude</param>
         /// <returns></returns>
-        static internal async Task<WikiItemParams> GetNearestAirport(double queryLat, double queryLon, ScenarioFormData formData, RunwayManager runwayManager)
+        static internal async Task<WikiItemParams?> GetNearestAirport(double queryLat, double queryLon, ScenarioFormData formData, RunwayManager runwayManager)
         {
-            WikiItemParams wikiItemParams = new();
-            // The FindNearestRunway method is now asynchronous and must be awaited.
-            // The calling method's signature must also be updated to async and return Task.
-            RunwayParams nearestAirport = await runwayManager.Searcher.FindNearestRunwayAsync(queryLat, queryLon, formData);
+            RunwayParams? nearestAirport = await runwayManager.Searcher.FindNearestRunwayAsync(queryLat, queryLon, formData);
             if (nearestAirport == null)
+            {
                 return null;
-            wikiItemParams.airportICAO = nearestAirport.IcaoId;
-            wikiItemParams.airportID = nearestAirport.Id;
-            wikiItemParams.latitude = nearestAirport.AirportLat.ToString();
-            wikiItemParams.longitude = nearestAirport.AirportLon.ToString();
-            wikiItemParams.airportIndex = nearestAirport.RunwaysIndex;
+            }
+
+            WikiItemParams wikiItemParams = new()
+            {
+                airportICAO = nearestAirport.IcaoId,
+                airportID = nearestAirport.Id,
+                latitude = nearestAirport.AirportLat.ToString(),
+                longitude = nearestAirport.AirportLon.ToString(),
+                airportIndex = nearestAirport.RunwaysIndex
+            };
             return wikiItemParams;
         }
-
 
         /// <summary>
         /// Finds OSM tile numbers and offsets for a <see cref="WikiTour"/> (all items plus airports, or a pair of items)
@@ -327,7 +345,6 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             for (int itemNo = startItemIndex; itemNo <= finishItemIndex; itemNo++)
             {
                 zoom += 1; // to stop ide warning of unused zoom parameter
-                           //        tiles.Add(MapTileCalculator.GetOSMtile(WikiTour[itemNo].longitude, WikiTour[itemNo].latitude, zoom));
             }
         }
 
@@ -367,16 +384,8 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// representing the geographical locations (latitude and longitude) for all entries
         /// in the provided list of Wikipedia and airport parameters.
         /// </summary>
-        /// <param name="wikiTour">A list of <see cref="WikiItemParams"/> objects,
-        /// where each object contains latitude and longitude information for a Wikipedia list item.</param>
-        /// <returns>
-        /// An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
-        /// the latitude and longitude for each location in the input list.
-        /// </returns>
         public static IEnumerable<Coordinate> SetOverviewCoords(List<WikiItemParams> wikiTour)
         {
-            // The Select method iterates over each Wikipedia list item/airport in the wikiTour
-            // and projects it into a new 'Coordinate' object using the location's lat and lon.
             return wikiTour.Select(wikiItem => new Coordinate(CoordinatePart.Parse(wikiItem.latitude).DecimalDegree, CoordinatePart.Parse(wikiItem.longitude).DecimalDegree));
         }
 
@@ -384,10 +393,6 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// Creates and returns an enumerable collection containing a single <see cref="Coordinate"/> object
         /// that represents the geographical location (latitude and longitude) of the start runway.
         /// </summary>
-        /// <returns>
-        /// An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
-        /// only the start runway's latitude and longitude.
-        /// </returns>
         public static IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
         {
             IEnumerable<Coordinate> coordinates =
@@ -400,16 +405,7 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <summary>
         /// Creates and returns an enumerable collection of two <see cref="Coordinate"/> objects
         /// representing a specific segment of the Wikipedia List's route.
-        /// The segment starts from the Wikipedia list item at the given index and ends at the next item in the sequence.
         /// </summary>
-        /// <param name="wikiTour">A list of <see cref="WikiItemParams"/> objects,
-        /// representing the ordered locations (Wikipedia list items) along the tour.</param>
-        /// <param name="index">The zero-based index of the starting Wikipedia list item in the <paramref name="wikiTour"/> list
-        /// for which the route segment is to be generated.</param>
-        /// <returns>
-        /// An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
-        /// the latitude and longitude of the Wikipedia list item at <paramref name="index"/> and the item at <paramref name="index"/> + 1.
-        /// </returns>
         public static IEnumerable<Coordinate> SetRouteCoords(List<WikiItemParams> wikiTour, int index)
         {
             IEnumerable<Coordinate> coordinates =
@@ -447,8 +443,10 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <returns>True if this case applies</returns>
         internal bool PopulateWikiTourOneItem(ScenarioFormData formData)
         {
-            int tourStartItemNo = GetWikiRouteLegFirstItemNo(formData.WikiURLTourStartItem.ToString());
-            int tourFinishItemNo = GetWikiRouteLegFirstItemNo(formData.WikiURLTourFinishItem.ToString());
+            string startItemStr = formData.WikiURLTourStartItem?.ToString() ?? string.Empty;
+            string finishItemStr = formData.WikiURLTourFinishItem?.ToString() ?? string.Empty;
+            int tourStartItemNo = GetWikiRouteLegFirstItemNo(startItemStr);
+            int tourFinishItemNo = GetWikiRouteLegFirstItemNo(finishItemStr);
             if (tourStartItemNo == tourFinishItemNo)
             {
                 WikiTour.Add(SetWikiItem(formData.WikiURLTableNo, tourStartItemNo));
@@ -464,17 +462,18 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <returns>True if this case applies</returns>
         internal bool PopulateWikiTourMultipleItems(ScenarioFormData formData)
         {
-            int tourStartItemNo = GetWikiRouteLegFirstItemNo(formData.WikiURLTourStartItem.ToString());
-            int tourFinishItemNo = GetWikiRouteLegFirstItemNo(formData.WikiURLTourFinishItem.ToString());
+            string startItemStr = formData.WikiURLTourStartItem?.ToString() ?? string.Empty;
+            string finishItemStr = formData.WikiURLTourFinishItem?.ToString() ?? string.Empty;
+            int tourStartItemNo = GetWikiRouteLegFirstItemNo(startItemStr);
+            int tourFinishItemNo = GetWikiRouteLegFirstItemNo(finishItemStr);
             int legStartItemNo, legFinishItemNo, startLegNo = 0;
-            var routeLegs = formData.WikiURLRoute.GetEnumerator();
 
             // Find tourStartItemNo in route
             for (int legNo = 0; legNo < formData.WikiURLRoute.Count; legNo++)
             {
-                routeLegs.MoveNext();
-                legStartItemNo = GetWikiRouteLegFirstItemNo(routeLegs.Current.ToString());
-                legFinishItemNo = GetWikiRouteLegLastItemNo(routeLegs.Current.ToString());
+                string routeLegStr = formData.WikiURLRoute[legNo]?.ToString() ?? string.Empty;
+                legStartItemNo = GetWikiRouteLegFirstItemNo(routeLegStr);
+                legFinishItemNo = GetWikiRouteLegLastItemNo(routeLegStr);
                 if (tourStartItemNo == legStartItemNo)
                 {
                     WikiTour.Add(SetWikiItem(formData.WikiURLTableNo, tourStartItemNo));
@@ -491,9 +490,9 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             // Add legStartItemNo's until tourFinishItemNo == legFinishItemNo then add legFinishItemNo
             for (int legNo = startLegNo; legNo < formData.WikiURLRoute.Count; legNo++)
             {
-                routeLegs.MoveNext();
-                legStartItemNo = GetWikiRouteLegFirstItemNo(routeLegs.Current.ToString());
-                legFinishItemNo = GetWikiRouteLegLastItemNo(routeLegs.Current.ToString());
+                string routeLegStr = formData.WikiURLRoute[legNo]?.ToString() ?? string.Empty;
+                legStartItemNo = GetWikiRouteLegFirstItemNo(routeLegStr);
+                legFinishItemNo = GetWikiRouteLegLastItemNo(routeLegStr);
                 WikiTour.Add(SetWikiItem(formData.WikiURLTableNo, legStartItemNo));
                 if (tourFinishItemNo == legFinishItemNo)
                 {
@@ -511,10 +510,19 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <returns>Start item number of route leg</returns>
         static internal int GetWikiRouteLegFirstItemNo(string routeLeg)
         {
-            int stringBegin, stringEnd;
-            stringBegin = routeLeg.IndexOf('[') + 1;
-            stringEnd = routeLeg.IndexOf(']');
-            return int.Parse(routeLeg[stringBegin..stringEnd]);
+            if (string.IsNullOrWhiteSpace(routeLeg))
+            {
+                return 0;
+            }
+
+            int stringBegin = routeLeg.IndexOf('[') + 1;
+            int stringEnd = routeLeg.IndexOf(']');
+            if (stringBegin <= 0 || stringEnd <= stringBegin)
+            {
+                return 0;
+            }
+
+            return int.TryParse(routeLeg[stringBegin..stringEnd], out int result) ? result : 0;
         }
 
         /// <summary>
@@ -524,9 +532,20 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         /// <returns>Finish item number of route leg</returns>
         static internal int GetWikiRouteLegLastItemNo(string routeLeg)
         {
-            int stringBegin, stringEnd;
-            stringBegin = routeLeg.IndexOf("...") + 4;
-            stringEnd = routeLeg.LastIndexOf('(') - 1;
+            if (string.IsNullOrWhiteSpace(routeLeg))
+            {
+                return 0;
+            }
+
+            int dotsIndex = routeLeg.IndexOf("...");
+            int parenIndex = routeLeg.LastIndexOf('(');
+            if (dotsIndex < 0 || parenIndex <= dotsIndex + 4)
+            {
+                return 0;
+            }
+
+            int stringBegin = dotsIndex + 4;
+            int stringEnd = parenIndex - 1;
             return GetWikiRouteLegFirstItemNo(routeLeg[stringBegin..stringEnd]);
         }
 
@@ -645,48 +664,15 @@ namespace P3D_Scenario_Generator.WikipediaScenario
             _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAreaLandingTrigger", WikiCount - 2, "ProximityTrigger");
         }
 
-        /// <summary>
-        /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
-        /// for the map window based on the specified alignment and monitor properties.
-        /// </summary>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
-        /// map window's desired alignment, offsets, monitor dimensions, and calculated window size.</param>
-        /// <returns>
-        /// A <see cref="T:System.String[]"/> array containing four elements in the order:
-        /// <list type="bullet">
-        /// <item><description>Window Width (string)</description></item>
-        /// <item><description>Window Height (string)</description></item>
-        /// <item><description>Horizontal Offset (string)</description></item>
-        /// <item><description>Vertical Offset (string)</description></item>
-        /// </list>
-        /// These parameters are suitable for configuring the map window's display.
-        /// </returns>
         static internal string[] GetMapWindowParameters(ScenarioFormData formData)
         {
-            // Dimensions
             int mapWindowWidth = (int)formData.MapWindowSize;
             int mapWindowHeight = (int)formData.MapWindowSize;
 
             return ScenarioXML.GetWindowParameters(mapWindowWidth, mapWindowHeight, formData.MapAlignment,
-            formData.MapMonitorWidth, formData.MapMonitorHeight, formData.MapOffset);
+                formData.MapMonitorWidth, formData.MapMonitorHeight, formData.MapOffset);
         }
 
-        /// <summary>
-        /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
-        /// for the Wiki URL window based on the specified alignment and monitor properties.
-        /// </summary>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
-        /// Wiki UR window's desired alignment, offsets, monitor dimensions, and calculated window size.</param>
-        /// <returns>
-        /// A <see cref="T:System.String[]"/> array containing four elements in the order:
-        /// <list type="bullet">
-        /// <item><description>Window Width (string)</description></item>
-        /// <item><description>Window Height (string)</description></item>
-        /// <item><description>Horizontal Offset (string)</description></item>
-        /// <item><description>Vertical Offset (string)</description></item>
-        /// </list>
-        /// These parameters are suitable for configuring the Wiki URL window's display.
-        /// </returns>
         static internal string[] GetWikiURLWindowParameters(ScenarioFormData formData)
         {
             return ScenarioXML.GetWindowParameters(formData.WikiURLWindowWidth, formData.WikiURLWindowHeight, formData.WikiURLAlignment,
@@ -727,53 +713,45 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                 resourceName: "HTML.WikipediaItem.html",
                 fileName: "WikipediaItem.html",
                 saveLocation: formData.ScenarioImageFolder,
-                replacements: null, // We use customLogic instead of the JS variable regex
+                replacements: null,
                 customLogic: ApplyHtmlReplacements
             );
         }
 
         public async Task<bool> SetWikiTourJSAsync(ScenarioFormData formData)
         {
-            // 1. Prepare Data using LINQ
-            // Original logic skips index 0, goes to Count - 1, and doubles the last entry.
             var relevantTourItems = WikiTour.Skip(1).Take(WikiCount - 2).ToList();
 
-            // Ensure we have items to process
             if (relevantTourItems.Count == 0) return false;
 
             var lastItem = relevantTourItems.Last();
 
-            // 2. Build itemURLsX
             var urlList = relevantTourItems
                 .Select(item => $"\"{item.itemURL}\"")
                 .ToList();
-            urlList.Add($"\"{lastItem.itemURL}\""); // Double last entry
+            urlList.Add($"\"{lastItem.itemURL}\"");
             string itemURLs = string.Join(", ", urlList);
 
-            // 3. Build itemHREFsX
             var hrefList = relevantTourItems
                 .Select(item => FormatHrefsForJs(item.hrefs))
                 .ToList();
-            hrefList.Add(FormatHrefsForJs(lastItem.hrefs)); // Double last entry
+            hrefList.Add(FormatHrefsForJs(lastItem.hrefs));
             string itemHREFs = string.Join(", ", hrefList);
 
-            // 4. Create Replacements Dictionary
             var replacements = new Dictionary<string, string>
             {
                 { "itemURLsX", $"[{itemURLs}]" },
                 { "itemHREFsX", $"[{itemHREFs}]" }
             };
 
-            // 5. Delegate to AssetFileGenerator
             return await _assetFileGenerator.WriteAssetFileAsync(
-                resourceName: "Javascript.scriptsWikipediaItem.js", 
+                resourceName: "Javascript.scriptsWikipediaItem.js",
                 fileName: "scriptsWikipediaItem.js",
                 saveLocation: formData.ScenarioImageFolder,
                 replacements: replacements
             );
 
-            // Local function to handle the nested array formatting (IDE0039 compliant)
-            static string FormatHrefsForJs(List<string> hrefs)
+            static string FormatHrefsForJs(List<string>? hrefs)
             {
                 if (hrefs == null || hrefs.Count == 0) return "[]";
                 return "[" + string.Join(", ", hrefs.Select(h => $"\"{h}\"")) + "]";

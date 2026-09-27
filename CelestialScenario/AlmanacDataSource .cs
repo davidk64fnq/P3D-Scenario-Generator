@@ -1,10 +1,10 @@
-﻿using P3D_Scenario_Generator.ConstantsEnums;
+﻿using System.Diagnostics.CodeAnalysis;
+using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Models;
 using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
-
     /// <summary>
     /// Manages the acquisition, parsing, and storage of celestial almanac data from a web-based source.
     /// This includes extracting Aries GHA (Greenwich Hour Angle) and navigational star
@@ -15,7 +15,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         FormProgressReporter progressReporter,
         HttpRoutines httpRoutines,
         AlmanacData almanacData,
-        ParsingHelpers parsingHelpers) 
+        ParsingHelpers parsingHelpers)
     {
         private readonly Logger _logger = logger;
         private readonly FormProgressReporter _progressReporter = progressReporter;
@@ -35,7 +35,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
 
-            string almanacDataHtml = await DownloadAlmanacAsync(formData);
+            string? almanacDataHtml = await DownloadAlmanacAsync(formData);
 
             if (almanacDataHtml is null)
             {
@@ -60,7 +60,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// </summary>
         /// <param name="formData">The scenario form data, used to calculate the date range.</param>
         /// <returns>The webpage outerHTML containing the almanac data, or <see langword="null"/> if the download fails.</returns>
-        internal async Task<string> DownloadAlmanacAsync(ScenarioFormData formData)
+        internal async Task<string?> DownloadAlmanacAsync(ScenarioFormData formData)
         {
             DateTime startDate = new(formData.DatePickerValue.Year, formData.DatePickerValue.Month, formData.DatePickerValue.Day,
                 formData.TimePickerValue.Hour, formData.TimePickerValue.Minute, formData.TimePickerValue.Second, DateTimeKind.Local);
@@ -78,7 +78,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
             // Access OuterHtml only if the document is not null.
             return htmlDoc.DocumentNode.OuterHtml;
         }
-
 
         /// <summary>
         /// Extract the Aries GHA degrees and minutes data values for each hour of the three days
@@ -147,13 +146,13 @@ namespace P3D_Scenario_Generator.CelestialScenario
             string[] almanacDataRows = almanacDataHtml.Split("\n");
             foreach (string starName in starNames)
             {
-                if (!GetStarDataLine(almanacDataRows, starName, out string starDataLine))
+                if (!GetStarDataLine(almanacDataRows, starName, out string? starDataLine))
                 {
                     await _logger.ErrorAsync($"Unable to locate exactly one line of data for star name \"{starName}\" in almanac data.");
                     return false;
                 }
 
-                string[] starDataValues = await GetStarDataValuesAsync(starDataLine);
+                string[]? starDataValues = await GetStarDataValuesAsync(starDataLine);
                 if (starDataValues is null)
                 {
                     await _logger.ErrorAsync($"Unable to locate the star data values for star name \"{starName}\" in almanac data.");
@@ -183,7 +182,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// </summary>
         /// <param name="almanacDataHtml">The complete raw almanac data as a single string.</param>
         /// <returns>An array of strings containing the Aries GHA data block, or <see langword="null"/> if the block cannot be identified.</returns>
-        internal async Task<string[]> GetAriesGHAdataBlockAsync(string almanacDataHtml)
+        internal async Task<string[]?> GetAriesGHAdataBlockAsync(string almanacDataHtml)
         {
             bool success;
 
@@ -295,7 +294,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// <see langword="true"/> if exactly one line containing the specified star's data is found;
         /// <see langword="false"/> if no lines are found, or if multiple lines for the same star are found (indicating ambiguity).
         /// </returns>
-        static internal bool GetStarDataLine(string[] almanacDataRows, string starName, out string starDataLine)
+        static internal bool GetStarDataLine(string[] almanacDataRows, string starName, [NotNullWhen(true)] out string? starDataLine)
         {
             var matchingLines = almanacDataRows
                 .Select(line => new { Line = line, ExtractedName = ExtractStarName(line) })
@@ -318,7 +317,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// </summary>
         /// <param name="starDataLine">The raw string line containing star data.</param>
         /// <returns>An array of strings containing SHA and Declination values, or <see langword="null"/> if the line is malformed.</returns>
-        internal async Task<string[]> GetStarDataValuesAsync(string starDataLine)
+        internal async Task<string[]?> GetStarDataValuesAsync(string starDataLine)
         {
             const int ExpectedMinPipeParts = 2; // Expecting 3 pipes, resulting in 4 parts for all but Pollux which is 1 pipe and 2 parts
             const int LastPipeSegmentMinLength = 12; // Minimum length for last segment before stripping
@@ -390,7 +389,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 const int starDECminutesIndex = 3;
 
                 (success, _almanacData.starsDECd[starIndex]) = await _parsingHelpers.TryParseDegreesAsync(starDataValues[starDECdegreesIndex][1..], $"{starName} Dec"); // Exclude N or S character
-                if (!success) 
+                if (!success)
                     return false;
                 if (starDataValues[starDECsignIndex][0] == 'S')
                     _almanacData.starsDECd[starIndex] *= -1;
@@ -405,7 +404,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 const int starDECminutesIndex = 4;
 
                 (success, _almanacData.starsDECd[starIndex]) = await _parsingHelpers.TryParseDegreesAsync(starDataValues[starDECdegreesIndex], $"{starName} Dec"); // Exclude N or S character
-                if (!success) 
+                if (!success)
                     return false;
                 if (starDataValues[starDECsignIndex][0] == 'S')
                     _almanacData.starsDECd[starIndex] *= -1;
@@ -423,7 +422,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// </summary>
         /// <param name="line">The input string line from which to extract the star name.</param>
         /// <returns>The extracted star name if found and valid; otherwise, returns <see langword="null"/>.</returns>
-        static internal string ExtractStarName(string line)
+        static internal string? ExtractStarName(string line)
         {
             // Find the last occurrence of "| "
             int lastPipeIndex = line.LastIndexOf("| ");

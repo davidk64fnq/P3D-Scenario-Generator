@@ -163,7 +163,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// a finish airport is the required distance range from the last photo location.
         /// </summary>
         /// <returns>True if a complete photo tour was successfully created; otherwise, false.</returns>
-        internal async Task<bool> SetRandomPhotoTour(ScenarioFormData formData, RunwayManager runwayManager, IProgress<string> progressReporter = null)
+        internal async Task<bool> SetRandomPhotoTour(ScenarioFormData formData, RunwayManager runwayManager, IProgress<string>? progressReporter = null)
         {
             int maxOverallAttempts = formData.PhotoTourMaxSearchAttempts;
             int currentOverallAttempt = 0;
@@ -227,6 +227,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             return tourSuccessfullyFormed;
         }
 
+
         /// <summary>
         /// Downloads a random photo page from pic2map site and tries to find nearby airport within
         /// the required distance range. If found adds the starting airport and first photo to the photo tour.
@@ -234,7 +235,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <returns>True if first leg created</returns>
         internal async Task<SetLegResult> SetFirstLeg(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            PhotoLocParams airportLocation;
+            PhotoLocParams? airportLocation;
             string pic2mapHtmlSaveLocation = $"{formData.TempScenarioDirectory}\\random_pic2map.html";
             PhotoLocations.Clear();
 
@@ -268,8 +269,15 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             {
                 return SetLegResult.NoAirportFound;
             }
+
             formData.RunwayIndex = airportLocation.airportIndex;
-            formData.StartRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
+            var startRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
+            if (startRunway == null)
+            {
+                await _logger.ErrorAsync($"SetFirstLeg: Runway not found for index {formData.RunwayIndex}.");
+                return SetLegResult.NoAirportFound;
+            }
+            formData.StartRunway = startRunway;
             airportLocation.forwardBearing = MathRoutines.GetReciprocalHeading(airportLocation.forwardBearing);
             PhotoLocations.Add(airportLocation);
             PhotoLocations.Add(photoLocation);
@@ -285,10 +293,10 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <param name="formData">The scenario form data</param>
         /// <param name="runwayManager">The runway manager instance</param>
         /// <returns></returns>
-        internal static async Task<PhotoLocParams> GetNearbyAirport(double queryLat, double queryLon, ScenarioFormData formData, RunwayManager runwayManager)
+        internal static async Task<PhotoLocParams?> GetNearbyAirport(double queryLat, double queryLon, ScenarioFormData formData, RunwayManager runwayManager)
         {
             PhotoLocParams photoLocationParams = new();
-            RunwayParams nearbyAirport = await runwayManager.Searcher.FindNearbyRunwayAsync(queryLat, queryLon, formData.PhotoTourMinLegDist, formData.PhotoTourMaxLegDist, formData);
+            RunwayParams? nearbyAirport = await runwayManager.Searcher.FindNearbyRunwayAsync(queryLat, queryLon, formData.PhotoTourMinLegDist, formData.PhotoTourMaxLegDist, formData);
             if (nearbyAirport == null)
                 return null;
             photoLocationParams.legId = nearbyAirport.IcaoId;
@@ -427,7 +435,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <returns>SetLegResult indicating success or type of failure.</returns>
         internal async Task<SetLegResult> SetLastLeg(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            PhotoLocParams airportLocation;
+            PhotoLocParams? airportLocation;
 
             if (PhotoLocations == null || PhotoLocations.Count == 0)
             {
@@ -445,7 +453,13 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
             if (airportLocation != null)
             {
-                formData.DestinationRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(airportLocation.airportIndex);
+                var destRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(airportLocation.airportIndex);
+                if (destRunway == null)
+                {
+                    await _logger.ErrorAsync($"SetLastLeg: Destination runway not found for index {airportLocation.airportIndex}.");
+                    return SetLegResult.NoAirportFound;
+                }
+                formData.DestinationRunway = destRunway;
                 PhotoLocations.Add(airportLocation);
                 PhotoCount = PhotoLocations.Count;
                 if (await _photoTourUtilities.GetPhotos(PhotoLocations, formData))

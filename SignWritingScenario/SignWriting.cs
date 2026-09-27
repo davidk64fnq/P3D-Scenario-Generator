@@ -56,11 +56,18 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         /// </summary>
         public async Task<bool> SetSignWritingAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            // Scenario starts and finishes at user selected airport
-            // The GetRunwayByIndex method is now asynchronous and must be awaited.
-            // The calling method's signature must be updated to async and return Task.
-            formData.StartRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
-            formData.DestinationRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
+            // Scenario starts and finishes at user-selected airport
+            var runway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
+            if (runway is null)
+            {
+                string errorMsg = $"Runway not found for index {formData.RunwayIndex}.";
+                await _logger.ErrorAsync(errorMsg);
+                _progressReporter.Report($"ERROR: {errorMsg}");
+                return false;
+            }
+
+            formData.StartRunway = runway;
+            formData.DestinationRunway = runway;
 
             string message = "Setting sign writing gates.";
             await _logger.InfoAsync(message);

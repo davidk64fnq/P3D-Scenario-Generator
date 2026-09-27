@@ -30,27 +30,27 @@ namespace P3D_Scenario_Generator.Models
         /// <summary>
         /// Used to derive Hours, Minutes, Seconds
         /// </summary>
-        public DateTime TimePickerValue { get; set; } 
+        public DateTime TimePickerValue { get; set; }
 
         /// <summary>
         /// Gets or sets the title of the scenario.
         /// </summary>
-        public string ScenarioTitle { get; set; }
+        public string ScenarioTitle { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the selected aircraft variant.
         /// </summary>
-        public AircraftVariant SelectedAircraft { get; set; }
+        public AircraftVariant? SelectedAircraft { get; set; }
 
         /// <summary>
         /// Gets or sets the display title of the aircraft (sourced from Aircraft.cfg unless user changes it in program ui).
         /// </summary>
-        public string AircraftDisplayTitle { get; set; }
+        public string AircraftDisplayTitle { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the sim vlaue of the aircraft (sourced from Aircraft.cfg).
         /// </summary>
-        public string AircraftSimValue { get; set; }
+        public string AircraftSimValue { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the cruise speed of the aircraft in knots (sourced from Aircraft.cfg).
@@ -60,34 +60,34 @@ namespace P3D_Scenario_Generator.Models
         /// <summary>
         /// Gets or sets the aircraft thumbnail image location (located in aircraft Texture Folder).
         /// </summary>
-        public string AircraftImagePath { get; set; }
+        public string AircraftImagePath { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the user selected list of candidate countries that the scenario is to occur in.
         /// </summary>
-        public List<string> LocationCountries { get; set; }
+        public List<string> LocationCountries { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the user selected list of candidate states that the scenario is to occur in.
         /// </summary>
-        public List<string> LocationStates { get; set; }
+        public List<string> LocationStates { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the user selected list of candidate cities that the scenario is to occur in.
         /// </summary>
-        public List<string> LocationCities { get; set; }
+        public List<string> LocationCities { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the scenario start runway. This is variously set at the time user clicks "Generate Scenario", or by subsequent
         /// scenario specific code.
         /// </summary>
-        public RunwayParams StartRunway { get; set; }
+        public RunwayParams StartRunway { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the scenario destination runway. This is variously set at the time user clicks "Generate Scenario", or by subsequent
         /// scenario specific code.
         /// </summary>
-        public RunwayParams DestinationRunway { get; set; }
+        public RunwayParams DestinationRunway { get; set; } = default!;
 
         #endregion
 
@@ -206,7 +206,7 @@ namespace P3D_Scenario_Generator.Models
         /// <summary>
         /// The message to be written, consisting of uppercase and lower case characters plus spaces
         /// </summary>
-        public string SignMessage { get; set; }
+        public string SignMessage { get; set; } = string.Empty;
 
         /// <summary>
         /// The message can be tilted in the plane of the vertical segments from 0degree flat to 90 degrees vertical.
@@ -299,13 +299,13 @@ namespace P3D_Scenario_Generator.Models
         /// Gets or sets the Celestial scenario start runway. This is variously set at the time user clicks "Generate Scenario", or by subsequent
         /// scenario specific code.
         /// </summary>
-        public RunwayParams CelestialStartRunway { get; set; }
+        public RunwayParams? CelestialStartRunway { get; set; }
 
         /// <summary>
         /// Gets or sets the Celestial scenario destination runway. This is variously set at the time user clicks "Generate Scenario", or by subsequent
         /// scenario specific code.
         /// </summary>
-        public RunwayParams CelestialDestinationRunway { get; set; }
+        public RunwayParams? CelestialDestinationRunway { get; set; }
 
         /// <summary>
         /// Minimum run home from starting location to destination location in nautical miles.
@@ -360,17 +360,17 @@ namespace P3D_Scenario_Generator.Models
         /// <summary>
         /// List of legs making up the route for the selected table on Wiki page the tour will be built from.
         /// </summary>
-        public ComboBox.ObjectCollection WikiURLRoute { get; set; }
+        public ComboBox.ObjectCollection WikiURLRoute { get; set; } = default!;
 
         /// <summary>
         /// User selected start leg from the route for the selected table on Wiki page the tour will be built from.
         /// </summary>
-        public object WikiURLTourStartItem { get; set; }
+        public object? WikiURLTourStartItem { get; set; }
 
         /// <summary>
         /// User selected finish leg from the route for the selected table on Wiki page the tour will be built from.
         /// </summary>
-        public object WikiURLTourFinishItem { get; set; }
+        public object? WikiURLTourFinishItem { get; set; }
 
         /// <summary>
         /// Distance of the route in nautical miles for the selected table on Wiki page the tour will be built from.
@@ -419,22 +419,22 @@ namespace P3D_Scenario_Generator.Models
         /// <summary>
         /// OSM Server API key
         /// </summary>
-        public string CacheServerAPIkey { get; set; }
+        public string CacheServerAPIkey { get; set; } = string.Empty;
 
         /// <summary>
         /// P3D Program Data folder path 
         /// </summary>
-        public string P3DProgramInstall { get; set; }
+        public string P3DProgramInstall { get; set; } = string.Empty;
 
         /// <summary>
         /// P3D Program Install folder path 
         /// </summary>
-        public string P3DProgramData { get; set; }
+        public string P3DProgramData { get; set; } = string.Empty;
 
         /// <summary>
         /// Location where generated scenarios are stored. Usually e.g. "Prepar3D v5 Files"
         /// </summary>
-        public string ScenarioFolderBase { get; set; }
+        public string ScenarioFolderBase { get; set; } = string.Empty;
 
         /// <summary>
         /// Reference integer for the monitor that map window is to be displayed in initially. Values from 0 to the number of 
@@ -474,17 +474,17 @@ namespace P3D_Scenario_Generator.Models
         /// <summary>
         /// Lat/Lon boundaries for each OSM montage leg image
         /// </summary>
-        public List<MapData> OSMmapData { get; set; }
+        public List<MapData> OSMmapData { get; set; } = [];
 
         /// <summary>
         /// Location of scenario folder.
         /// </summary>
-        public string ScenarioFolder { get; set; }
+        public string ScenarioFolder { get; set; } = string.Empty;
 
         /// <summary>
         /// Location of images folder for the scenario.
         /// </summary>
-        public string ScenarioImageFolder { get; set; }
+        public string ScenarioImageFolder { get; set; } = string.Empty;
 
         /// <summary>
         /// Season corresponding to selected scenario date.
@@ -494,7 +494,7 @@ namespace P3D_Scenario_Generator.Models
         /// <summary>
         /// Used to store all temporary files created during scenario generation.
         /// </summary>
-        public string TempScenarioDirectory { get; set; }
+        public string TempScenarioDirectory { get; set; } = string.Empty;
 
         #endregion
     }

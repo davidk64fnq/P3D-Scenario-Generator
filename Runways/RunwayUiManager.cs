@@ -50,7 +50,7 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
         /// <returns>A task that returns <see langword="true"/> if location favourites were successfully loaded, <see langword="false"/> otherwise.</returns>
-        internal async Task<bool> LoadLocationFavouritesAsync(IProgress<string> progressReporter = null)
+        internal async Task<bool> LoadLocationFavouritesAsync(IProgress<string>? progressReporter = null)
         {
             // Initialize LocationFavourites to an empty list to prevent NullReferenceException on failure.
             LocationFavourites = [];
@@ -62,7 +62,7 @@ namespace P3D_Scenario_Generator.Runways
                 await _logger.InfoAsync($"Attempting to load location favourites from local file: {_favouritesFilePath}");
                 var (success, data) = await _cacheManager.TryDeserializeFromFileAsync<List<LocationFavourite>>(_favouritesFilePath);
 
-                if (success)
+                if (success && data != null)
                 {
                     LocationFavourites = data;
                 }
@@ -94,14 +94,22 @@ namespace P3D_Scenario_Generator.Runways
             {
                 try
                 {
-                    // Assuming FileOps and embedded resource logic are elsewhere.
-                    (bool success, Stream resourceStream) = await _fileOps.TryGetResourceStreamAsync("Text.LocationFavouritesJSON.txt", progressReporter);
-                    if (success)
+                    (bool success, Stream? resourceStream) = await _fileOps.TryGetResourceStreamAsync("Text.LocationFavouritesJSON.txt", progressReporter);
+                    if (success && resourceStream != null)
                     {
                         using (resourceStream)
                         {
-                            LocationFavourites = System.Text.Json.JsonSerializer.Deserialize<List<LocationFavourite>>(resourceStream);
-                            await _logger.InfoAsync("Successfully loaded location favourites from embedded resource.");
+                            var deserialized = System.Text.Json.JsonSerializer.Deserialize<List<LocationFavourite>>(resourceStream);
+                            if (deserialized != null)
+                            {
+                                LocationFavourites = deserialized;
+                                await _logger.InfoAsync("Successfully loaded location favourites from embedded resource.");
+                            }
+                            else
+                            {
+                                LocationFavourites = [new LocationFavourite() { Name = DefaultFavouriteName }];
+                                CurrentLocationFavouriteIndex = 0;
+                            }
                         }
                     }
                     else
@@ -120,10 +128,9 @@ namespace P3D_Scenario_Generator.Runways
                     return false;
                 }
             }
-
-            if (LocationFavourites.Count > 0)
+            if (LocationFavourites != null && LocationFavourites.Count > 0)
             {
-                if (!LocationFavourites.Any(f => f.Name.Equals(DefaultFavouriteName, StringComparison.OrdinalIgnoreCase)))
+                if (!LocationFavourites.Any(f => string.Equals(f?.Name, DefaultFavouriteName, StringComparison.OrdinalIgnoreCase)))
                 {
                     LocationFavourites.Insert(0, new LocationFavourite() { Name = DefaultFavouriteName });
                 }
@@ -148,7 +155,7 @@ namespace P3D_Scenario_Generator.Runways
         /// The save operation is skipped if the list is empty to prevent overwriting a valid file.
         /// </summary>
         /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
-        internal async Task SaveLocationFavouritesAsync(IProgress<string> progressReporter)
+        internal async Task SaveLocationFavouritesAsync(IProgress<string>? progressReporter = null)
         {
             if (LocationFavourites == null || LocationFavourites.Count == 0)
             {
@@ -210,7 +217,7 @@ namespace P3D_Scenario_Generator.Runways
 
             if (LocationFavourites.Count > 1)
             {
-                LocationFavourite deleteLocationFavourite = LocationFavourites.Find(favourite => favourite.Name == deleteLocationFavouriteName);
+                LocationFavourite? deleteLocationFavourite = LocationFavourites.Find(favourite => string.Equals(favourite.Name, deleteLocationFavouriteName, StringComparison.OrdinalIgnoreCase));
                 if (deleteLocationFavourite != null)
                 {
                     LocationFavourites.Remove(deleteLocationFavourite);

@@ -22,9 +22,9 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="url">The URL of the HTML document to retrieve.</param>
         /// <returns>An HtmlAgilityPack.HtmlDocument object if successful; otherwise, null.</returns>
-        public async Task<HtmlDocument> GetWebDocAsync(string url)
+        public async Task<HtmlDocument?> GetWebDocAsync(string url)
         {
-            HtmlDocument htmlDoc = null;
+            HtmlDocument? htmlDoc = null;
             try
             {
                 HtmlWeb web = new();
@@ -45,7 +45,7 @@ namespace P3D_Scenario_Generator.Services
         /// <returns>True if the web document was successfully retrieved and saved; otherwise, false.</returns>
         public async Task<bool> GetWebDocAsync(string url, string saveFile)
         {
-            HtmlDocument htmlDoc;
+            HtmlDocument? htmlDoc;
             try
             {
                 htmlDoc = await GetWebDocAsync(url);
@@ -88,7 +88,7 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="filePath">The full path to the local HTML file.</param>
         /// <returns>An HtmlAgilityPack.HtmlDocument object if successful; otherwise, null.</returns>
-        public async Task<HtmlDocument> GetHtmlDocumentFromFileAsync(string filePath)
+        public async Task<HtmlDocument?> GetHtmlDocumentFromFileAsync(string filePath)
         {
             // Use the injected _fileOps to check for file existence
             if (!FileOps.FileExists(filePath))
@@ -100,9 +100,8 @@ namespace P3D_Scenario_Generator.Services
             HtmlDocument htmlDoc = new();
             try
             {
-                // Corrected approach: read the file content as a string first, then load into HtmlDocument
                 var (success, content) = await _fileOps.TryReadAllTextAsync(filePath, null);
-                if (success)
+                if (success && content != null)
                 {
                     htmlDoc.LoadHtml(content);
                 }
@@ -227,14 +226,14 @@ namespace P3D_Scenario_Generator.Services
         /// <param name="node">The parent HTML node to start the search from.</param>
         /// <param name="xpath">The XPath expression to select the target node.</param>
         /// <returns>The InnerText of the selected node, or null if the node is not found.</returns>
-        public static string SelectSingleNodeInnerText(HtmlNode node, string xpath)
+        public static string? SelectSingleNodeInnerText(HtmlNode? node, string xpath)
         {
             if (node == null)
             {
                 return null;
             }
 
-            HtmlNode selectedNode = node.SelectSingleNode(xpath);
+            HtmlNode? selectedNode = node.SelectSingleNode(xpath);
 
             if (selectedNode != null)
             {

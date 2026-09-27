@@ -66,16 +66,16 @@ namespace P3D_Scenario_Generator.Services
         /// <param name="customLogic">An optional delegate for advanced content manipulation after standard replacements.</param>
         /// <returns>True if the asset was successfully read, processed, and written; otherwise, false.</returns>
         internal async Task<bool> WriteAssetFileAsync(
-            string resourceName,
-            string fileName,
-            string saveLocation,
-            Dictionary<string, string> replacements = null,
-            Func<string, string> customLogic = null)
+    string resourceName,
+    string fileName,
+    string saveLocation,
+    Dictionary<string, string>? replacements = null,
+    Func<string, string>? customLogic = null)
         {
             string outputPath = Path.Combine(saveLocation, fileName);
 
-            (bool success, string content) = await _fileOps.TryReadAllTextFromResourceAsync(resourceName, _progressReporter);
-            if (!success)
+            (bool success, string? content) = await _fileOps.TryReadAllTextFromResourceAsync(resourceName, _progressReporter);
+            if (!success || content == null)
             {
                 await _logger.ErrorAsync($"Resource missing: {resourceName}");
                 return false;
@@ -113,7 +113,7 @@ namespace P3D_Scenario_Generator.Services
         internal async Task<bool> CopyAssetImageAsync(string resourceName, string outputPath)
         {
             var (success, stream) = await _fileOps.TryGetResourceStreamAsync(resourceName, _progressReporter);
-            if (!success) return false;
+            if (!success || stream is null) return false;
 
             using (stream)
             {
@@ -130,10 +130,10 @@ namespace P3D_Scenario_Generator.Services
             // We wrap these in [] so they are treated as arrays in JS
             var replacements = new Dictionary<string, string>
             {
-                { "mapNorthX", $"[{string.Join(", ", mapData.Select(m => m.north.ToDouble().ToString()))}]" },
-                { "mapEastX",  $"[{string.Join(", ", mapData.Select(m => m.east.ToDouble().ToString()))}]"  },
-                { "mapSouthX", $"[{string.Join(", ", mapData.Select(m => m.south.ToDouble().ToString()))}]" },
-                { "mapWestX",  $"[{string.Join(", ", mapData.Select(m => m.west.ToDouble().ToString()))}]"  }
+                { "mapNorthX", $"[{string.Join(", ", mapData.Select(m => m.North.ToDouble().ToString()))}]" },
+                { "mapEastX",  $"[{string.Join(", ", mapData.Select(m => m.East.ToDouble().ToString()))}]"  },
+                { "mapSouthX", $"[{string.Join(", ", mapData.Select(m => m.South.ToDouble().ToString()))}]" },
+                { "mapWestX",  $"[{string.Join(", ", mapData.Select(m => m.West.ToDouble().ToString()))}]"  }
             };
 
             // 3. Handle Resolution-specific values
@@ -157,7 +157,6 @@ namespace P3D_Scenario_Generator.Services
             }
 
             // 4. Delegate to the generic writer
-            // Ensure the resource name matches your project folder structure (e.g., Javascript.scriptsMovingMap.js)
             return await WriteAssetFileAsync(
                 "Javascript.scriptsMovingMap.js",
                 "scriptsMovingMap.js",

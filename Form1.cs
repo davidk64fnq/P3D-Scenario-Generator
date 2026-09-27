@@ -51,7 +51,7 @@ namespace P3D_Scenario_Generator
         private readonly WikiPageHtmlParser _wikiPageHtmlParser;
         private readonly RunwayManager _runwayManager;
         private readonly Aircraft _aircraft;
-        private RunwayUiManager _runwayUiManager;
+        private RunwayUiManager? _runwayUiManager = null!;
         private readonly ScenarioHTML _scenarioHTML;
 
         // --- LAYER 4: Composite Services ---
@@ -256,12 +256,14 @@ namespace P3D_Scenario_Generator
         /// <returns>
         /// The populated <see cref="RunwayUiManager"/> instance if the data was loaded successfully; otherwise, <see langword="null"/>.
         /// </returns>
-        private async Task<RunwayUiManager> GetRunwaysAsync(FormProgressReporter progressReporter)
+        private async Task<RunwayUiManager?> GetRunwaysAsync(FormProgressReporter progressReporter)
         {
-            bool success = await _runwayManager.InitializeAsync(progressReporter, _logger, _cacheManager, _fileOps);
+            if (!await _runwayManager.InitializeAsync(progressReporter, _logger, _cacheManager, _fileOps))
+            {
+                return null;
+            }
 
-            // Return the UiManager if successful, otherwise null.
-            return success ? _runwayManager.UiManager : null;
+            return _runwayManager.UiManager;
         }
 
         /// <summary>
@@ -323,7 +325,7 @@ namespace P3D_Scenario_Generator
         private async Task<bool> PostInitializeComponentAsync()
         {
             // Find the single TabControl on the form
-            TabControl mainTabControl = Controls.OfType<TabControl>().FirstOrDefault();
+            TabControl? mainTabControl = Controls.OfType<TabControl>().FirstOrDefault();
             if (mainTabControl == null)
             {
                 await _logger.ErrorAsync("PostInitializeComponent: No TabControl found on the form.");
@@ -334,7 +336,7 @@ namespace P3D_Scenario_Generator
             foreach (TabPage tabPage in mainTabControl.TabPages)
             {
                 // parentTableLayoutPanel settings
-                TableLayoutPanel parentTableLayoutPanel = tabPage.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
+                TableLayoutPanel? parentTableLayoutPanel = tabPage.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
                 if (parentTableLayoutPanel == null)
                 {
                     await _logger.ErrorAsync($"PostInitializeComponent: No parent TableLayoutPanel found on TabPage: {tabPage.Name}");
@@ -366,7 +368,7 @@ namespace P3D_Scenario_Generator
                         groupBox.AutoSize = false;
 
                         // leafTableLayoutPanel row count
-                        TableLayoutPanel leafTableLayoutPanel = groupBox.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
+                        TableLayoutPanel? leafTableLayoutPanel = groupBox.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
                         if (leafTableLayoutPanel == null)
                         {
                             await _logger.ErrorAsync($"PostInitializeComponent: No leaf TableLayoutPanel found in GroupBox: {groupBox.Name}");
@@ -439,17 +441,10 @@ namespace P3D_Scenario_Generator
             return true;
         }
 
-        /// <summary>
-        /// Handles the <see cref="ToolTip.Popup"/> event for <c>ToolTip1</c>.
-        /// This method prevents the standard ToolTip from displaying if the associated control
-        /// has an active error message from <see cref="ErrorProvider"/>.
-        /// </summary>
-        /// <param name="sender">The source of the event, typically the ToolTip control.</param>
-        /// <param name="e">A <see cref="PopupEventArgs"/> that contains the event data.</param>
-        private void ToolTip1_Popup(object sender, PopupEventArgs e)
+        private void ToolTip1_Popup(object? sender, PopupEventArgs e)
         {
-            // If the associated control has an error, cancel the display of the standard ToolTip.
-            if (!string.IsNullOrEmpty(errorProvider1.GetError(e.AssociatedControl)))
+            // If the associated control exists and has an error, cancel the display of the standard ToolTip.
+            if (e.AssociatedControl is not null && !string.IsNullOrEmpty(errorProvider1.GetError(e.AssociatedControl)))
             {
                 e.Cancel = true;
             }
@@ -560,7 +555,7 @@ namespace P3D_Scenario_Generator
             ValidateAndPopulateLocationFilters();
 
             // Await the asynchronous method to get the RunwayParams object.
-            RunwayParams randomRunway = await _runwayManager.Searcher.GetFilteredRandomRunwayAsync(_formData);
+            RunwayParams? randomRunway = await _runwayManager.Searcher.GetFilteredRandomRunwayAsync(_formData);
 
             // Clear the existing items in the ListBox before adding a new one.
             ComboBoxGeneralRunwayResults.Items.Clear();
@@ -867,8 +862,11 @@ namespace P3D_Scenario_Generator
                     ComboBoxGeneralAircraftSelection.SelectedIndex = targetIndex;
 
                     // Force explicit backend re-sync in case WinForms suppresses SelectedIndexChanged when index value doesn't shift
-                    string currentDisplayName = ComboBoxGeneralAircraftSelection.GetItemText(ComboBoxGeneralAircraftSelection.SelectedItem);
-                    _aircraft.ChangeCurrentAircraftVariantIndex(currentDisplayName);
+                    string? currentDisplayName = ComboBoxGeneralAircraftSelection.GetItemText(ComboBoxGeneralAircraftSelection.SelectedItem);
+                    if (!string.IsNullOrEmpty(currentDisplayName))
+                    {
+                        _aircraft.ChangeCurrentAircraftVariantIndex(currentDisplayName);
+                    }
                 }
                 else
                 {
@@ -889,9 +887,9 @@ namespace P3D_Scenario_Generator
                 return;
 
             // The call is now on the instance variable `_aircraft`
-            AircraftVariant aircraftVariant = _aircraft.AircraftVariants.Find(aircraft => aircraft.DisplayName == selectedDisplayName);
+            AircraftVariant? aircraftVariant = _aircraft.AircraftVariants.Find(aircraft => aircraft.DisplayName == selectedDisplayName);
 
-            if (ValidateAndPopulateAircraftDetails(aircraftVariant))
+            if (aircraftVariant is not null && ValidateAndPopulateAircraftDetails(aircraftVariant))
             {
                 _aircraft.ChangeCurrentAircraftVariantIndex(aircraftVariant.DisplayName);
                 TextBoxGeneralAircraftValues.Text = _aircraft.SetTextBoxGeneralAircraftValues();
@@ -986,7 +984,7 @@ namespace P3D_Scenario_Generator
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
 
                 // 6. Save changes
-                await _runwayManager.UiManager.SaveLocationFavouritesAsync(null);
+                await _runwayManager.UiManager.SaveLocationFavouritesAsync();
             }
             else if (e.KeyCode == Keys.Delete)
             {
@@ -1009,7 +1007,7 @@ namespace P3D_Scenario_Generator
                     return;
                 }
 
-                // Delete locationFavourite instance in RunwayUIManager
+                // Delete locationFavourite instance in RunwayUiManager
                 string currentFavouriteName = _runwayManager.UiManager.DeleteLocationFavourite(deleteFavouriteName);
 
                 // Refresh the ComboBoxGeneralLocationFavourites field list on form
@@ -1029,7 +1027,7 @@ namespace P3D_Scenario_Generator
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
 
                 // Persist changes to file
-                await _runwayManager.UiManager.SaveLocationFavouritesAsync(null);
+                await _runwayManager.UiManager.SaveLocationFavouritesAsync();
             }
         }
 
@@ -1085,7 +1083,7 @@ namespace P3D_Scenario_Generator
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
                 comboBox.Text = _runwayManager.UiManager.GetLocationFavouriteDisplayFilterValue(locationType);
 
-                await _runwayManager.UiManager.SaveLocationFavouritesAsync(null);
+                await _runwayManager.UiManager.SaveLocationFavouritesAsync();
             }
             else if (e.KeyCode == Keys.Delete)
             {
@@ -1093,7 +1091,7 @@ namespace P3D_Scenario_Generator
                 TextBoxGeneralLocationFilters.Text = _runwayManager.UiManager.SetTextBoxGeneralLocationFilters();
                 comboBox.Text = _runwayManager.UiManager.GetLocationFavouriteDisplayFilterValue(locationType);
 
-                await _runwayManager.UiManager.SaveLocationFavouritesAsync(null);
+                await _runwayManager.UiManager.SaveLocationFavouritesAsync();
             }
         }
 
@@ -1109,7 +1107,7 @@ namespace P3D_Scenario_Generator
         private async Task SetDefaultCircuitParamsAsync()
         {
             // Await the asynchronous call to get the current variant.
-            AircraftVariant aircraftVariant = await _aircraft.GetCurrentVariantAsync();
+            AircraftVariant? aircraftVariant = await _aircraft.GetCurrentVariantAsync();
 
             // === 1. GUARD CLAUSE: Exit immediately if the aircraft variant is not available. ===
             if (aircraftVariant == null)
@@ -1500,7 +1498,7 @@ namespace P3D_Scenario_Generator
         private async Task SetDefaultSignwritingParamsAsync()
         {
             // Await the asynchronous call to get the current variant.
-            AircraftVariant aircraftVariant = await _aircraft.GetCurrentVariantAsync();
+            AircraftVariant? aircraftVariant = await _aircraft.GetCurrentVariantAsync();
 
             // === 1. GUARD CLAUSE: Exit immediately if the aircraft variant is not available. ===
             if (aircraftVariant == null)
@@ -1813,7 +1811,7 @@ namespace P3D_Scenario_Generator
         {
 
             // 1. Capture UI control values while still on the UI thread
-            string selectedWikiUrl = ComboBoxWikiURL.SelectedItem?.ToString();
+            string? selectedWikiUrl = ComboBoxWikiURL.SelectedItem?.ToString();
             string wikiUrlText = ComboBoxWikiURL.Text;
             string columnNumberText = TextBoxWikiItemLinkColumn.Text;
             CoordinateSource coordinateSource = GetEnumFromComboBoxDescription<CoordinateSource>(ComboBoxWikiCoordSource);
@@ -1911,12 +1909,17 @@ namespace P3D_Scenario_Generator
                 List<string> itemList = [];
                 for (int index = 0; index < ComboBoxWikiRoute.Items.Count; index++)
                 {
-                    itemList.Add(GetWikiRouteLegFirstItem(ComboBoxWikiRoute.Items[index].ToString()));
+                    string route = ComboBoxWikiRoute.Items[index]?.ToString() ?? string.Empty;
+                    itemList.Add(GetWikiRouteLegFirstItem(route));
                 }
-                if (!itemList.Contains(GetWikiRouteLegLastItem(ComboBoxWikiRoute.Items[^1].ToString())))
+
+                string lastRoute = ComboBoxWikiRoute.Items[^1]?.ToString() ?? string.Empty;
+                string lastItem = GetWikiRouteLegLastItem(lastRoute);
+                if (!itemList.Contains(lastItem))
                 {
-                    itemList.Add(GetWikiRouteLegLastItem(ComboBoxWikiRoute.Items[^1].ToString()));
+                    itemList.Add(lastItem);
                 }
+
                 ComboBoxWikiStartingItem.DataSource = itemList;
                 ComboBoxWikiStartingItem.SelectedIndex = 0;
                 List<string> clonedItemList = [.. itemList];
@@ -1954,13 +1957,21 @@ namespace P3D_Scenario_Generator
             {
                 return "0 miles";
             }
-            int distStrStart, distStrFinish, legDistance, routeDistance = 0;
+            int distStrStart, distStrFinish, routeDistance = 0;
             for (int legNo = ComboBoxWikiStartingItem.SelectedIndex + 1; legNo <= ComboBoxWikiFinishingItem.SelectedIndex; legNo++)
             {
-                distStrStart = ComboBoxWikiRoute.Items[legNo - 1].ToString().LastIndexOf('(') + 1;
-                distStrFinish = ComboBoxWikiRoute.Items[legNo - 1].ToString().IndexOf(" miles)");
-                legDistance = int.Parse(ComboBoxWikiRoute.Items[legNo - 1].ToString()[distStrStart..distStrFinish]);
-                routeDistance += legDistance;
+                string legText = ComboBoxWikiRoute.Items[legNo - 1]?.ToString() ?? string.Empty;
+
+                distStrStart = legText.LastIndexOf('(') + 1;
+                distStrFinish = legText.IndexOf(" miles)");
+
+                if (distStrStart > 0 && distStrFinish > distStrStart)
+                {
+                    if (int.TryParse(legText[distStrStart..distStrFinish], out int legDistance))
+                    {
+                        routeDistance += legDistance;
+                    }
+                }
             }
             return routeDistance.ToString() + " miles";
         }
@@ -2244,19 +2255,39 @@ namespace P3D_Scenario_Generator
         private void ButtonHelp_Click(object sender, EventArgs e)
         {
             // Define the path to the CHM file relative to the application's executable directory.
-            // Assuming the CHM file is located in a 'Resources/Help' folder in the output directory.
             string chmFilePath = Path.Combine(Application.StartupPath, "Resources", "Help", "Help.chm");
 
             // Check if the file exists before attempting to open it.
             if (File.Exists(chmFilePath))
             {
+                // Programmatically unblock the file if it inherited Mark of the Web from the downloaded ZIP
+                UnblockFile(chmFilePath);
+
                 // Open the CHM file.
                 Help.ShowHelp(this, chmFilePath);
             }
             else
             {
-                // Handle the case where the CHM file is not found (optional)
                 MessageBox.Show("Help file not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Removes the Windows 'Mark of the Web' (Zone.Identifier) alternate data stream from the file.
+        /// </summary>
+        private static void UnblockFile(string filePath)
+        {
+            try
+            {
+                string zoneIdentifierPath = $"{filePath}:Zone.Identifier";
+                if (File.Exists(zoneIdentifierPath))
+                {
+                    File.Delete(zoneIdentifierPath);
+                }
+            }
+            catch
+            {
+                // Fail quietly if file permissions prevent deleting the stream
             }
         }
 
@@ -2266,7 +2297,7 @@ namespace P3D_Scenario_Generator
 
             if (TabControlP3DSG.SelectedTab.Name == "TabPageCircuit")
             {
-                AircraftVariant currentVariant = await _aircraft.GetCurrentVariantAsync();
+                AircraftVariant? currentVariant = await _aircraft.GetCurrentVariantAsync();
 
                 if (currentVariant != null)
                 {
@@ -2280,7 +2311,7 @@ namespace P3D_Scenario_Generator
             }
             else if (TabControlP3DSG.SelectedTab.Name == "TabPageSign")
             {
-                AircraftVariant currentVariant = await _aircraft.GetCurrentVariantAsync();
+                AircraftVariant? currentVariant = await _aircraft.GetCurrentVariantAsync();
 
                 if (currentVariant != null)
                 {
@@ -2325,7 +2356,7 @@ namespace P3D_Scenario_Generator
                 _settingsManager.RestoreSettings(TableLayoutPanelSettingsMapWindow.Controls);
 
                 // Restore per-aircraft Circuit settings keyed on Title
-                AircraftVariant currentVariant = await _aircraft.GetCurrentVariantAsync();
+                AircraftVariant? currentVariant = await _aircraft.GetCurrentVariantAsync();
                 if (currentVariant != null && !string.IsNullOrWhiteSpace(currentVariant.Title))
                 {
                     bool hasCustomSettings = _settingsManager.RestoreCircuitSettings(TabPageCircuit.Controls, currentVariant.Title);
@@ -2406,7 +2437,7 @@ namespace P3D_Scenario_Generator
             if (control is TextBox && control.Name == fieldName)
             {
                 fieldValue = control.Text;
-                accessibleName = control.AccessibleName;
+                accessibleName = control.AccessibleName ?? string.Empty;
             }
         }
 
@@ -2455,7 +2486,7 @@ namespace P3D_Scenario_Generator
                 await _settingsManager.SaveSettingsAsync(TableLayoutPanelSettingsMapWindow.Controls);
 
                 // Save custom circuit settings for the active aircraft before exit
-                AircraftVariant currentVariant = await _aircraft.GetCurrentVariantAsync();
+                AircraftVariant? currentVariant = await _aircraft.GetCurrentVariantAsync();
                 if (currentVariant != null && !string.IsNullOrWhiteSpace(currentVariant.Title))
                 {
                     await _settingsManager.SaveCircuitSettingsAsync(TabPageCircuit.Controls, currentVariant.Title);
@@ -2571,7 +2602,7 @@ namespace P3D_Scenario_Generator
                 {
                     Directory.Delete(_formData.TempScenarioDirectory, true); // 'true' for recursive delete
                     await _logger.InfoAsync($"Temporary directory deleted: {_formData.TempScenarioDirectory}");
-                    _formData.TempScenarioDirectory = null; // Clear the path after deletion
+                    _formData.TempScenarioDirectory = string.Empty; // Clear the path after deletion
                 }
                 catch (UnauthorizedAccessException ex)
                 {
@@ -2760,6 +2791,7 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Validates the OSM Server API Key field and populates the <see cref="ScenarioFormData.CacheServerAPIkey"/> property.
+        /// Checks if the path is not empty and if the directory exists.
         /// Sets an error message via <see cref="ErrorProvider"/> and reports progress if validation fails.
         /// </summary>
         /// <returns><see langword="true"/> if the API key is valid; otherwise, <see langword="false"/>.</returns>
@@ -2906,13 +2938,13 @@ namespace P3D_Scenario_Generator
         }
 
         /// <summary>
-        /// Validates the group of map window settings (monitor number, offset, alignment, width, height, window size).
+        /// Validates the group of map window settings (monitor number, offset, alignment, width, height).
         /// Performs individual validation for each control and then checks interdependencies.
         /// Reports errors via ErrorProvider for specific controls and _progressReporter for general messages.
         /// </summary>
         /// <param name="triggeringControl">The control that initiated this validation, or null if called from a general validation.</param>
         /// <returns>True if all map window settings are valid individually and as a group; otherwise, false.</returns>
-        private bool ValidateMapWindowSettingsGroup(Control triggeringControl)
+        private bool ValidateMapWindowSettingsGroup(Control? triggeringControl = null)
         {
             bool allValid = true;
             string groupErrorMessage = ""; // To accumulate group-level errors
@@ -3038,7 +3070,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="selectedAircraftVariant">The currently selected AircraftVariant object.</param>
         /// <returns>True if all General tab data is valid; otherwise, false.</returns>
-        private async Task<bool> PopulateAndValidateGeneralTabData(AircraftVariant selectedAircraftVariant)
+        private async Task<bool> PopulateAndValidateGeneralTabData(AircraftVariant? selectedAircraftVariant)
         {
             bool allValid = true;
 
@@ -3064,18 +3096,27 @@ namespace P3D_Scenario_Generator
 
             ValidateAndPopulateLocationFilters();
 
-            string selectedICAOandId = ComboBoxGeneralRunwayResults.SelectedItem?.ToString();
-            RunwayParams selectedRunway;
+            string? selectedICAOandId = ComboBoxGeneralRunwayResults.SelectedItem?.ToString();
+            RunwayParams? selectedRunway;
 
             if (!string.IsNullOrWhiteSpace(selectedICAOandId))
             {
-                RunwayUtils.ParseIcaoRunwayString(ComboBoxGeneralRunwayResults.SelectedItem.ToString(), out string icaoId, out string runwayId, out string runwayDesignator);
+                RunwayUtils.ParseIcaoRunwayString(selectedICAOandId, out string icaoId, out string runwayId, out string runwayDesignator);
                 selectedRunway = _runwayManager.Searcher.GetRunwayByIcaoIdDesignator(icaoId, runwayId, runwayDesignator);
             }
             else
             {
                 selectedRunway = await _runwayManager.Searcher.GetFilteredRandomRunwayAsync(_formData);
             }
+
+            if (selectedRunway is null)
+            {
+                string message = "No valid runway found matching current filters or selection.";
+                await _logger.ErrorAsync(message);
+                _progressReporter?.Report($"ERROR: {message}");
+                return false;
+            }
+
             _formData.RunwayIndex = selectedRunway.RunwaysIndex;
 
             if (!ValidateAndSetEnum<ScenarioTypes>(
@@ -3130,21 +3171,10 @@ namespace P3D_Scenario_Generator
             else
             {
                 errorProvider1.SetError(TextBoxGeneralScenarioTitle, "");
-                string proposedSaveFolder = Path.Combine(_formData.ScenarioFolderBase, scenarioTitle);
-
-                if (Directory.Exists(proposedSaveFolder))
-                {
-                    string message = $"Scenario exists: '{proposedSaveFolder}'. Delete folder (close P3D) or pick a new title.";
-                    errorProvider1.SetError(TextBoxGeneralScenarioTitle, message);
-                    _progressReporter?.Report(message);
-                    isValid = false;
-                }
-                else
-                {
-                    _progressReporter?.Report("");
-                    _formData.ScenarioTitle = scenarioTitle;
-                }
+                _progressReporter?.Report("");
+                _formData.ScenarioTitle = scenarioTitle;
             }
+
             return isValid;
         }
 
@@ -3188,7 +3218,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="selectedAircraftVariant">The currently selected AircraftVariant object.</param>
         /// <returns>True if aircraft details are valid; otherwise, false.</returns>
-        private bool ValidateAndPopulateAircraftDetails(AircraftVariant selectedAircraftVariant)
+        private bool ValidateAndPopulateAircraftDetails(AircraftVariant? selectedAircraftVariant)
         {
             bool isValid = true;
             // Clear any previous errors on the combined aircraft values textbox before new validation
@@ -3357,7 +3387,7 @@ namespace P3D_Scenario_Generator
             allValid &= ValidateAndSetInteger(
                 TextBoxPhotoTourConstraintsMinNoLegs,
                 "Minimum PhotoTour Number of Legs",
-                Constants.PhotoMinNumberLegs,
+                2,
                 Constants.PhotoMaxNearby,
                 "",
                 value => _formData.PhotoTourMinNoLegs = value);
@@ -3366,7 +3396,7 @@ namespace P3D_Scenario_Generator
             allValid &= ValidateAndSetInteger(
                 TextBoxPhotoTourConstraintsMaxNoLegs,
                 "Maximum PhotoTour Number of Legs",
-                Constants.PhotoMinNumberLegs,
+                2,
                 Constants.PhotoMaxNearby,
                 "",
                 value => _formData.PhotoTourMaxNoLegs = value);
@@ -3419,7 +3449,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="triggeringControl">The control that initiated this validation, or null if called from a general validation.</param>
         /// <returns>True if all photo window settings are valid individually and as a group; otherwise, false.</returns>
-        private bool ValidatePhotoWindowSettingsGroup(Control triggeringControl)
+        private bool ValidatePhotoWindowSettingsGroup(Control? triggeringControl = null)
         {
             bool allValid = true;
             string groupErrorMessage = ""; // To accumulate group-level errors
@@ -3484,19 +3514,17 @@ namespace P3D_Scenario_Generator
             bool groupValidationPassed = true;
 
             // Calculate maximum possible offset for both dimensions relative to the "safe" monitor size, offset doesn't apply for centred alignment
-            int maxOffsetWidth;
-            int maxOffsetHeight;
             if (currentAlignment != WindowAlignment.Centered)
             {
-                maxOffsetWidth = _formData.PhotoTourPhotoMonitorWidth - Constants.PhotoSizeEdgeMarginPixels;
-                maxOffsetHeight = _formData.PhotoTourPhotoMonitorHeight - Constants.PhotoSizeEdgeMarginPixels;
+                int maxOffsetWidth = _formData.PhotoTourPhotoMonitorWidth - Constants.PhotoSizeEdgeMarginPixels;
+                int maxOffsetHeight = _formData.PhotoTourPhotoMonitorHeight - Constants.PhotoSizeEdgeMarginPixels;
 
                 if (_formData.PhotoTourPhotoOffset >= maxOffsetWidth || _formData.PhotoTourPhotoOffset >= maxOffsetHeight)
                 {
                     int maxWidth = _formData.PhotoTourPhotoMonitorWidth - Constants.PhotoSizeEdgeMarginPixels;
                     int maxHeight = _formData.PhotoTourPhotoMonitorHeight - Constants.PhotoSizeEdgeMarginPixels;
                     groupErrorMessage = $"Photo Window offset ({_formData.PhotoTourPhotoOffset}px) exceeds maximum safe photo dimension " +
-                        $"{maxWidth}px * {maxHeight}px.";
+                                        $"{maxWidth}px * {maxHeight}px.";
                     groupValidationPassed = false;
                 }
                 else
@@ -3504,7 +3532,7 @@ namespace P3D_Scenario_Generator
                     int maxWidth = _formData.PhotoTourPhotoMonitorWidth - Constants.PhotoSizeEdgeMarginPixels - _formData.PhotoTourPhotoOffset;
                     int maxHeight = _formData.PhotoTourPhotoMonitorHeight - Constants.PhotoSizeEdgeMarginPixels - _formData.PhotoTourPhotoOffset;
                     groupErrorMessage = $"This offset value ({_formData.PhotoTourPhotoOffset}px) allows a maximum safe photo dimension of " +
-                        $"{maxWidth}px * {maxHeight}px.";
+                                        $"{maxWidth}px * {maxHeight}px.";
                 }
             }
             else
@@ -3564,18 +3592,18 @@ namespace P3D_Scenario_Generator
             allValid &= ValidateAndSetDouble(
                 TextBoxSignTilt,
                 "Sign Tilt Angle",
-                0, // Assuming a reasonable range for tilt angle
-                Constants.SignMaxTiltAngleDegrees,
-                "",
+                0, // Assuming a minimum tilt angle of 0 degrees
+                Constants.SignMaxTiltAngleDegrees, // Assuming this constant exists for max tilt
+                "degrees",
                 value => _formData.SignTiltAngleDegrees = value);
 
             // SignGateHeight
             allValid &= ValidateAndSetDouble(
                 TextBoxSignGateHeight,
                 "Sign Gate Height",
-                0, // Assuming minimum height cannot be negative
+                0, // Minimum height cannot be negative
                 Constants.FeetInRadiusOfEarth, // Using a very large upper bound, adjust if a specific max exists
-                "",
+                "feet AMSL",
                 value => _formData.SignGateHeightFeet = value);
 
             // SignSegmentLength 
@@ -3609,7 +3637,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="triggeringControl">The control that initiated this validation, or null if called from a general validation.</param>
         /// <returns>True if all sign writing window settings are valid individually and as a group; otherwise, false.</returns>
-        private bool ValidateSignWindowSettingsGroup(Control triggeringControl)
+        private bool ValidateSignWindowSettingsGroup(Control? triggeringControl = null)
         {
             bool allValid = true;
             string groupErrorMessage = ""; // To accumulate group-level errors
@@ -3906,7 +3934,7 @@ namespace P3D_Scenario_Generator
             return allValid;
         }
 
-        RunwayParams ParseRunway(string inputText)
+        RunwayParams? ParseRunway(string? inputText)
         {
             if (string.IsNullOrWhiteSpace(inputText)) return null;
 
@@ -3921,7 +3949,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="triggeringControl">The control that initiated this validation, or null if called from a general validation.</param>
         /// <returns>True if all sextant window settings are valid individually and as a group; otherwise, false.</returns>
-        private bool ValidateSextantWindowSettingsGroup(Control triggeringControl)
+        private bool ValidateSextantWindowSettingsGroup(Control? triggeringControl = null)
         {
             bool allValid = true;
             string groupErrorMessage = ""; // To accumulate group-level errors
@@ -4035,10 +4063,10 @@ namespace P3D_Scenario_Generator
             _formData.WikiURLRoute = ComboBoxWikiRoute.Items;
 
             // ComboBoxWikiStartingItem
-            _formData.WikiURLTourStartItem = ComboBoxWikiStartingItem.SelectedItem;
+            _formData.WikiURLTourStartItem = ComboBoxWikiStartingItem.SelectedItem!;
 
             // ComboBoxWikiFinishItem
-            _formData.WikiURLTourFinishItem = ComboBoxWikiFinishingItem.SelectedItem;
+            _formData.WikiURLTourFinishItem = ComboBoxWikiFinishingItem.SelectedItem!;
 
             // TextBoxWikiDistance
             string distanceText = TextBoxWikiDistance.Text;
@@ -4067,7 +4095,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <param name="triggeringControl">The control that initiated this validation, or null if called from a general validation.</param>
         /// <returns>True if all photo window settings are valid individually and as a group; otherwise, false.</returns>
-        private bool ValidateWikiWindowSettingsGroup(Control triggeringControl)
+        private bool ValidateWikiWindowSettingsGroup(Control? triggeringControl = null)
         {
             bool allValid = true;
             string groupErrorMessage = ""; // To accumulate group-level errors
@@ -4214,7 +4242,7 @@ namespace P3D_Scenario_Generator
                 minValue,
                 maxValue,
                 out int parsedValue,
-                out string validationMessage,
+                out string? validationMessage,
                 units))
             {
                 errorProvider1.SetError(textBox, validationMessage);
@@ -4259,7 +4287,7 @@ namespace P3D_Scenario_Generator
                 minValue,
                 maxValue,
                 out double parsedValue,
-                out string validationMessage,
+                out string? validationMessage,
                 units))
             {
                 errorProvider1.SetError(textBox, validationMessage);

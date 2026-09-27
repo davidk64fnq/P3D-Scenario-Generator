@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace P3D_Scenario_Generator.Runways
 {
-
     /// <summary>
     /// Represents a compass heading used as a special runway ID.
     /// </summary>
@@ -14,7 +14,6 @@ namespace P3D_Scenario_Generator.Runways
     /// <param name="FullName">The full name, e.g., "Northwest-Southeast".</param>
     /// <param name="AbbrName">The abbreviated name, e.g., "NW-SE".</param>
     public record RunwayCompassId(string Code, string FullName, string AbbrName);
-
 
     /// <summary>
     /// A static utility class that provides a lookup map for the predefined runway compass IDs.
@@ -47,7 +46,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="code">The runway code to look up (e.g., "37").</param>
         /// <param name="compassId">When this method returns, contains the RunwayCompassId if the lookup was successful; otherwise, null.</param>
         /// <returns><c>true</c> if the compass ID was found; otherwise, <c>false</c>.</returns>
-        public static bool TryGetCompassId(string code, out RunwayCompassId compassId)
+        public static bool TryGetCompassId(string code, [NotNullWhen(true)] out RunwayCompassId? compassId)
         {
             return _runwayCompassIds.TryGetValue(code, out compassId);
         }

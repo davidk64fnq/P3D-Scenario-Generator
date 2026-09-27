@@ -9,12 +9,12 @@
         /// <summary>
         /// The title of the aircraft variant as recorded in the relevant variant [fltsim.?] section of an aircraft.cfg file
         /// </summary>
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         /// <summary>
         /// The user editable name of the aircraft variant for display purposes on General tab of form
         /// </summary>
-        public string DisplayName { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// The cruise speed in knots of the aircraft variant as recorded in the aircraft.cfg file
@@ -24,7 +24,7 @@
         /// <summary>
         /// Full path including filename of selected thumbnail.jpg file or empty string
         /// </summary>
-        public string ThumbnailImagePath { get; set; }
+        public string ThumbnailImagePath { get; set; } = string.Empty;
 
         /// <summary>
         /// Whether the aircraft has floats, used to exclude takeoff/landing for water runways if selected aircraft doesn't have floats

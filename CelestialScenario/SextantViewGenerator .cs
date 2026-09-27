@@ -48,7 +48,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 resourceName: "HTML.CelestialSextant.html",
                 fileName: "htmlCelestialSextant.html",
                 saveLocation: formData.ScenarioImageFolder,
-                replacements: null, // No JS variable assignments to replace
+                replacements: [], // No JS variable assignments to replace
                 customLogic: ApplyStarOptions
             );
         }

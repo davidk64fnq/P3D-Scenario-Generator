@@ -87,7 +87,7 @@ namespace P3D_Scenario_Generator.Services
             _progressReporter.Report($"INFO: {message}");
 
             var (success, overviewHtml) = await _fileOps.TryReadAllTextFromResourceAsync(resourceName, _progressReporter);
-            if (!success)
+            if (!success || overviewHtml == null)
             {
                 message = $"Failed to get HTML template from resource '{resourceName}'. HTML generation failed.";
                 await _logger.ErrorAsync(message);
@@ -123,7 +123,7 @@ namespace P3D_Scenario_Generator.Services
             _progressReporter.Report($"INFO: {message}");
 
             var (success, missionBriefHtml) = await _fileOps.TryReadAllTextFromResourceAsync(resourceName, _progressReporter);
-            if (!success)
+            if (!success || missionBriefHtml == null)
             {
                 message = $"Failed to get HTML template from resource '{resourceName}'. HTML generation failed.";
                 await _logger.ErrorAsync(message);
@@ -157,15 +157,15 @@ namespace P3D_Scenario_Generator.Services
         {
             return new MissionBrief()
             {
-                title = overview.Title,
-                h1 = overview.Title,
-                h2Location = overview.Location,
-                h2Difficulty = overview.Difficulty,
-                h2Duration = overview.Duration,
-                h2Aircraft = overview.Aircraft,
-                pBriefing = overview.Briefing,
-                liObjective = overview.Objective,
-                h2Tips = overview.Tips
+                title = overview.Title ?? "",
+                h1 = overview.Title ?? "",
+                h2Location = overview.Location ?? "",
+                h2Difficulty = overview.Difficulty ?? "",
+                h2Duration = overview.Duration ?? "",
+                h2Aircraft = overview.Aircraft ?? "",
+                pBriefing = overview.Briefing ?? "",
+                liObjective = overview.Objective ?? "",
+                h2Tips = overview.Tips ?? ""
             };
         }
 
@@ -183,8 +183,6 @@ namespace P3D_Scenario_Generator.Services
             // Copy selected aircraft thumbnail image, or default if not provided
             string aircraftImageSource = formData.AircraftImagePath;
             string aircraftImageDest = $"{formData.ScenarioImageFolder}\\Overview_01.jpg";
-            bool success;
-            Stream resourceStream;
 
             if (FileOps.FileExists(aircraftImageSource))
             {
@@ -200,8 +198,8 @@ namespace P3D_Scenario_Generator.Services
             }
             else
             {
-                (success, resourceStream) = await _fileOps.TryGetResourceStreamAsync("Images.thumbnail.jpg", _progressReporter);
-                if (success)
+                (bool success, Stream? resourceStream) = await _fileOps.TryGetResourceStreamAsync("Images.thumbnail.jpg", _progressReporter);
+                if (success && resourceStream != null)
                 {
                     using (resourceStream)
                     using (FileStream outputFileStream = new(aircraftImageDest, FileMode.Create))

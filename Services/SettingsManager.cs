@@ -17,8 +17,8 @@ namespace P3D_Scenario_Generator.Services
     {
         private readonly string _settingsFilePath;
         private readonly string _backupFilePath;
-        private Dictionary<string, object> _settingsCache;
-        private readonly Dictionary<string, object> _designerDefaults;
+        private Dictionary<string, object?> _settingsCache;
+        private readonly Dictionary<string, object?> _designerDefaults;
         private readonly Logger _logger;
 
         public SettingsManager(Logger logger)
@@ -138,7 +138,7 @@ namespace P3D_Scenario_Generator.Services
                         TryRestoreFromBackup();
                         return;
                     }
-                    _settingsCache = JsonConvert.DeserializeObject<Dictionary<string, object>>(json) ?? [];
+                    _settingsCache = JsonConvert.DeserializeObject<Dictionary<string, object?>>(json) ?? [];
                 }
                 else
                 {
@@ -158,7 +158,7 @@ namespace P3D_Scenario_Generator.Services
                 try
                 {
                     string json = File.ReadAllText(_backupFilePath);
-                    _settingsCache = JsonConvert.DeserializeObject<Dictionary<string, object>>(json) ?? [];
+                    _settingsCache = JsonConvert.DeserializeObject<Dictionary<string, object?>>(json) ?? [];
                 }
                 catch
                 {
@@ -228,8 +228,7 @@ namespace P3D_Scenario_Generator.Services
 
             if (control.Controls.Count > 0) RestoreSettings(control.Controls);
 
-            // CA1854: Prefer 'TryGetValue' over 'ContainsKey' followed by the indexer
-            if (!_settingsCache.TryGetValue(control.Name, out object value)) return;
+            if (!_settingsCache.TryGetValue(control.Name, out object? value)) return;
 
             try
             {
@@ -250,7 +249,7 @@ namespace P3D_Scenario_Generator.Services
                     }
 
                     string indexKey = control.Name + "SelectedIndex";
-                    if (_settingsCache.TryGetValue(indexKey, out object indexValue))
+                    if (_settingsCache.TryGetValue(indexKey, out object? indexValue) && indexValue != null)
                     {
                         int idx = Convert.ToInt32(indexValue);
                         if (idx >= -1 && idx < comboBox.Items.Count)
@@ -288,7 +287,10 @@ namespace P3D_Scenario_Generator.Services
             else if (control is ComboBox comboBox)
             {
                 var items = new List<string>();
-                foreach (var item in comboBox.Items) items.Add(item.ToString());
+                foreach (var item in comboBox.Items)
+                {
+                    items.Add(item?.ToString() ?? string.Empty);
+                }
                 _settingsCache[control.Name] = items;
                 _settingsCache[control.Name + "SelectedIndex"] = comboBox.SelectedIndex;
             }
@@ -339,7 +341,7 @@ namespace P3D_Scenario_Generator.Services
                 }
 
                 string key = prefix + control.Name;
-                if (_settingsCache.TryGetValue(key, out object value) && control is TextBox textBox)
+                if (_settingsCache.TryGetValue(key, out object? value) && control is TextBox textBox)
                 {
                     textBox.Text = value?.ToString() ?? "";
                     foundAnyKey = true;
@@ -374,7 +376,7 @@ namespace P3D_Scenario_Generator.Services
                 }
 
                 string key = prefix + control.Name;
-                if (_settingsCache.TryGetValue(key, out object value) && control is TextBox textBox)
+                if (_settingsCache.TryGetValue(key, out object? value) && control is TextBox textBox)
                 {
                     textBox.Text = value?.ToString() ?? "";
                     foundAnyKey = true;
@@ -383,7 +385,6 @@ namespace P3D_Scenario_Generator.Services
 
             return foundAnyKey;
         }
-
 
         /// <summary>
         /// Recursively iterates controls to populate the settings cache with prefixed keys.

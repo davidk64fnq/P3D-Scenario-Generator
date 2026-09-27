@@ -140,19 +140,19 @@ namespace P3D_Scenario_Generator.Services
                 drawables.Add(fillColor);
 
                 // Check if there are enough points to draw a route (at least two)
-                if (mapData.items == null || mapData.items.Count < 2)
+                if (mapData.Items == null || mapData.Items.Count < 2)
                 {
-                    await logger.WarningAsync($"Image '{fileName}' (Leg {legNo}) has insufficient coordinate items ({mapData.items?.Count ?? 0}) to draw a route.");
+                    await logger.WarningAsync($"Image '{fileName}' (Leg {legNo}) has insufficient coordinate items ({mapData.Items?.Count ?? 0}) to draw a route.");
                     return false;
                 }
 
                 bool drawingSuccess = false;
 
                 // Iterate from the first item up to the second-to-last item
-                for (int i = 0; i < mapData.items.Count - 1; i++)
+                for (int i = 0; i < mapData.Items.Count - 1; i++)
                 {
-                    Coordinate startCoord = mapData.items[i];
-                    Coordinate finishCoord = mapData.items[i + 1];
+                    Coordinate startCoord = mapData.Items[i];
+                    Coordinate finishCoord = mapData.Items[i + 1];
 
                     // Calculate Start Point pixels
                     var (successStart, startX, startY) = CalculatePixelCoords(width, height, mapData, startCoord);
@@ -213,10 +213,10 @@ namespace P3D_Scenario_Generator.Services
             try
             {
                 // 1. Get Geographical Bounds
-                double northLat = mapData.north.ToDouble();
-                double southLat = mapData.south.ToDouble();
-                double westLon = mapData.west.ToDouble();
-                double eastLon = mapData.east.ToDouble();
+                double northLat = mapData.North.ToDouble();
+                double southLat = mapData.South.ToDouble();
+                double westLon = mapData.West.ToDouble();
+                double eastLon = mapData.East.ToDouble();
 
                 // The point we want to plot 
                 double itemLat = coordinate.Latitude.ToDouble();
@@ -314,16 +314,16 @@ namespace P3D_Scenario_Generator.Services
             string iconPngResourcePath = $"Images.{iconName}.png"; // Full resource name for the icon
 
             await _logger.InfoAsync($"Starting image generation for scenario load image: '{outputFileNameNoExt}'.");
-            _progressReporter.Report($"INFO: Generating scenario image: {outputFileNameNoExt}...");
+            _progressReporter?.Report($"INFO: Generating scenario image: {outputFileNameNoExt}...");
             bool success;
             try
             {
                 // 1. Get the base image stream from embedded resources
-                (success, Stream baseImageStream) = await _fileOps.TryGetResourceStreamAsync(BaseImageResourcePath, _progressReporter);
-                if (!success)
+                (success, Stream? baseImageStream) = await _fileOps.TryGetResourceStreamAsync(BaseImageResourcePath, _progressReporter);
+                if (!success || baseImageStream == null)
                 {
                     await _logger.ErrorAsync($"Failed to get resource stream for base image '{BaseImageResourcePath}'.");
-                    _progressReporter.Report($"ERROR: Missing base image resource.");
+                    _progressReporter?.Report($"ERROR: Missing base image resource.");
                     return false;
                 }
 
@@ -345,8 +345,8 @@ namespace P3D_Scenario_Generator.Services
                     await _logger.InfoAsync($"Annotated scenario type '{formData.ScenarioType}' on image.");
 
                     // 2. Get the icon stream from embedded resources
-                    (success, Stream iconStream) = await _fileOps.TryGetResourceStreamAsync(iconPngResourcePath, _progressReporter);
-                    if (!success)
+                    (success, Stream? iconStream) = await _fileOps.TryGetResourceStreamAsync(iconPngResourcePath, _progressReporter);
+                    if (!success || iconStream == null)
                     {
                         await _logger.WarningAsync($"Could not get resource stream for icon '{iconPngResourcePath}'. Proceeding without icon.");
                         // Do not return false here, as the base image with text might still be useful.
@@ -374,7 +374,7 @@ namespace P3D_Scenario_Generator.Services
                         if (!success)
                         {
                             await _logger.ErrorAsync($"Failed to write final PNG image to '{outputPngPath}'.");
-                            _progressReporter.Report($"ERROR: Failed to save image '{outputFileNameNoExt}.png'.");
+                            _progressReporter?.Report($"ERROR: Failed to save image '{outputFileNameNoExt}.png'.");
                             return false;
                         }
                     }
@@ -386,7 +386,7 @@ namespace P3D_Scenario_Generator.Services
                 if (!success)
                 {
                     await _logger.ErrorAsync($"Failed to convert image '{outputFileNameNoExt}.png' to BMP.");
-                    _progressReporter.Report($"ERROR: Failed to convert image to BMP.");
+                    _progressReporter?.Report($"ERROR: Failed to convert image to BMP.");
                     return false;
                 }
                 await _logger.InfoAsync($"Successfully converted image '{outputFileNameNoExt}.png' to BMP.");
@@ -396,14 +396,14 @@ namespace P3D_Scenario_Generator.Services
             catch (MagickErrorException mex)
             {
                 await _logger.ErrorAsync($"Magick.NET error for '{outputFileNameNoExt}': {mex.Message}", mex);
-                _progressReporter.Report($"ERROR: Image processing failed. See log.");
+                _progressReporter?.Report($"ERROR: Image processing failed. See log.");
                 return false;
             }
             catch (Exception ex)
             {
                 // Catch any other unexpected errors not handled by FileOps or Magick.NET specific catches
                 await _logger.ErrorAsync($"An unexpected error occurred for '{outputFileNameNoExt}': {ex.Message}", ex);
-                _progressReporter.Report($"ERROR: Unexpected image generation error. See log.");
+                _progressReporter?.Report($"ERROR: Unexpected image generation error. See log.");
                 return false;
             }
         }

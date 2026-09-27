@@ -11,12 +11,12 @@
         /// <summary>
         /// The complete list of runways loaded from the data source.
         /// </summary>
-        public List<RunwayParams> Runways { get; set; }
+        public List<RunwayParams> Runways { get; set; } = [];
 
         /// <summary>
         /// The root node of the KD-tree, built from the Runways list for fast spatial queries.
         /// </summary>
-        public KDNode RunwayTreeRoot { get; set; }
+        public KDNode? RunwayTreeRoot { get; set; }
     }
 
     /// <summary>
@@ -28,17 +28,17 @@
         /// <summary>
         /// The runway data associated with this node.
         /// </summary>
-        public RunwayParams Runway { get; set; }
+        public RunwayParams Runway { get; set; } = default!;
 
         /// <summary>
         /// The left child node of the KD-tree.
         /// </summary>
-        public KDNode Left { get; set; }
+        public KDNode? Left { get; set; }
 
         /// <summary>
         /// The right child node of the KD-tree.
         /// </summary>
-        public KDNode Right { get; set; }
+        public KDNode? Right { get; set; }
 
         /// <summary>
         /// The axis used for splitting at this node (0 for latitude, 1 for longitude).

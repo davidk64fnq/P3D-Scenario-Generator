@@ -108,24 +108,44 @@ namespace P3D_Scenario_Generator.ConstantsEnums
 
         private static string GetApplicationTitle()
         {
-            // Retrieve the Assembly Title
-            string title = Assembly.GetEntryAssembly()
-                                   .GetCustomAttributes(typeof(AssemblyTitleAttribute), false)
-                                   .OfType<AssemblyTitleAttribute>()
-                                   .FirstOrDefault()
-                                   ?.Title;
+            Assembly? entryAssembly = Assembly.GetEntryAssembly();
 
-            // If AssemblyTitle is not set, fallback to Product Name or simply the executable name
-            if (string.IsNullOrEmpty(title))
+            if (entryAssembly is not null)
             {
-                title = Assembly.GetEntryAssembly()
-                                .GetCustomAttributes(typeof(AssemblyProductAttribute), false)
-                                .OfType<AssemblyProductAttribute>()
-                                .FirstOrDefault()
-                                ?.Product ?? Assembly.GetEntryAssembly().GetName().Name;
+                // 1. Retrieve the Assembly Title
+                string? title = entryAssembly
+                    .GetCustomAttributes(typeof(AssemblyTitleAttribute), false)
+                    .OfType<AssemblyTitleAttribute>()
+                    .FirstOrDefault()
+                    ?.Title;
+
+                if (!string.IsNullOrEmpty(title))
+                {
+                    return title;
+                }
+
+                // 2. Fallback to Assembly Product Name
+                string? product = entryAssembly
+                    .GetCustomAttributes(typeof(AssemblyProductAttribute), false)
+                    .OfType<AssemblyProductAttribute>()
+                    .FirstOrDefault()
+                    ?.Product;
+
+                if (!string.IsNullOrEmpty(product))
+                {
+                    return product;
+                }
+
+                // 3. Fallback to Executable / Assembly Name
+                string? name = entryAssembly.GetName().Name;
+                if (!string.IsNullOrEmpty(name))
+                {
+                    return name;
+                }
             }
 
-            return title;
+            // Ultimate fallback if executed in an environment where entry assembly isn't resolvable
+            return "P3D Scenario Generator";
         }
 
         #region Aircraft performance profiles

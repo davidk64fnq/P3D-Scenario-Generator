@@ -31,8 +31,8 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// <returns>A <see cref="SetLegResult"/> indicating the outcome of the operation.</returns>
         public async Task<SetLegResult> ExtractPhotoParamsAsync(string pic2mapHtmlSaveLocation, PhotoLocParams photoLocation)
         {
-            // CORRECTED: Use the injected _httpRoutines instance and the async method.
-            HtmlDocument htmlDoc = await _httpRoutines.GetHtmlDocumentFromFileAsync(pic2mapHtmlSaveLocation);
+            // CORRECTED: Type as nullable HtmlDocument?
+            HtmlDocument? htmlDoc = await _httpRoutines.GetHtmlDocumentFromFileAsync(pic2mapHtmlSaveLocation);
             if (htmlDoc == null)
             {
                 await _log.ErrorAsync($"Failed to get HTML document from file: {pic2mapHtmlSaveLocation}");
@@ -42,7 +42,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             // Extract photo URL from the HTML document
             string photoURLSelection = $"//meta[@property='og:image']";
             var (urlSuccess, photoURL) = await _htmlParser.SelectSingleNodeGetAttributeValueAsync(htmlDoc, photoURLSelection, "content");
-            if (!urlSuccess)
+            if (!urlSuccess || string.IsNullOrEmpty(photoURL))
             {
                 await _log.ErrorAsync($"ExtractPhotoParamsAsync: Could not find photo URL in HTML document at {pic2mapHtmlSaveLocation}");
                 return SetLegResult.HtmlParsingFailed;
@@ -53,7 +53,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             // Extract location from the HTML document
             string locationSelection = $"//meta[@name='Description']";
             var (locationSuccess, location) = await _htmlParser.SelectSingleNodeGetAttributeValueAsync(htmlDoc, locationSelection, "content");
-            if (!locationSuccess)
+            if (!locationSuccess || location == null)
             {
                 await _log.ErrorAsync($"ExtractPhotoParamsAsync: Could not find location in HTML document at {pic2mapHtmlSaveLocation}");
                 return SetLegResult.HtmlParsingFailed;
@@ -64,7 +64,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             string latitudeSelection = "//div[@id='gpsinformation']/following-sibling::ul[@class='details'][1]/li/div[@class='dbox']/span[@class='dtab' " +
                                        "and text()='Latitude:']/following-sibling::span[@class='dvalue']";
             var (latitudeSuccess, latitudeString) = await _htmlParser.SelectSingleNodeInnerTextAsync(htmlDoc, latitudeSelection);
-            if (!latitudeSuccess)
+            if (!latitudeSuccess || string.IsNullOrEmpty(latitudeString))
             {
                 await _log.ErrorAsync($"ExtractPhotoParamsAsync: Could not find latitude in HTML document at {pic2mapHtmlSaveLocation}");
                 return SetLegResult.HtmlParsingFailed;
@@ -79,7 +79,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             string longitudeSelection = "//div[@id='gpsinformation']/following-sibling::ul[@class='details'][1]/li/div[@class='dbox']/span[@class='dtab' " +
                                         "and text()='Longitude:']/following-sibling::span[@class='dvalue']";
             var (longitudeSuccess, longitudeString) = await _htmlParser.SelectSingleNodeInnerTextAsync(htmlDoc, longitudeSelection);
-            if (!longitudeSuccess)
+            if (!longitudeSuccess || string.IsNullOrEmpty(longitudeString))
             {
                 await _log.ErrorAsync($"ExtractPhotoParamsAsync: Could not find longitude in HTML document at {pic2mapHtmlSaveLocation}");
                 return SetLegResult.HtmlParsingFailed;

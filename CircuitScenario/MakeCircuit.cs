@@ -52,8 +52,17 @@ namespace P3D_Scenario_Generator.CircuitScenario
             ArgumentNullException.ThrowIfNull(formData);
             ArgumentNullException.ThrowIfNull(runwayManager);
 
-            formData.StartRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
-            formData.DestinationRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
+            RunwayParams? selectedRunway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
+            if (selectedRunway is null)
+            {
+                string notFoundMessage = $"Failed to find runway with index {formData.RunwayIndex}.";
+                await _logger.ErrorAsync(notFoundMessage);
+                _progressReporter.Report($"ERROR: {notFoundMessage}");
+                return false;
+            }
+
+            formData.StartRunway = selectedRunway;
+            formData.DestinationRunway = selectedRunway;
 
             string message = "Setting circuit gates.";
             await _logger.InfoAsync(message);

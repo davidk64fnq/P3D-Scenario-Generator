@@ -10,16 +10,14 @@ namespace P3D_Scenario_Generator.Services
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         private static readonly string fxmlFilename = "source.fxml";
-        private static object formattedLatitude;
-        private static object formattedLongitude;
 
         public async Task GenerateFXMLfileAsync(ScenarioFormData formData)
-		{
-			(bool success, SimBaseDocument simBaseDocument) = await TryReadSourceFXMLAsync(_progressReporter);
-			if (!success)
-			{
-				return;
-			}
+        {
+            (bool success, SimBaseDocument? simBaseDocument) = await TryReadSourceFXMLAsync(_progressReporter);
+            if (!success || simBaseDocument == null)
+            {
+                return;
+            }
             EditSourceFXML(simBaseDocument, formData);
             WriteSourceFXML(simBaseDocument, formData);
         }
@@ -29,77 +27,82 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="progressReporter">IProgress<string> for reporting progress or errors to the UI.</param>
         /// <returns><see langword="true"/> and simBaseDocument if the document was successfully deserialized; otherwise, <see langword="false"/>.</returns>
-        public async Task<(bool success, SimBaseDocument simBaseDocument)> TryReadSourceFXMLAsync(IProgress<string> progressReporter)
+        public async Task<(bool success, SimBaseDocument? simBaseDocument)> TryReadSourceFXMLAsync(IProgress<string> progressReporter)
         {
             string resourceName = $"XML.{fxmlFilename}";
 
-			(bool success, SimBaseDocument simBaseDocument) = await _fileOps.TryDeserializeXmlFromResourceAsync<SimBaseDocument>(resourceName, progressReporter);
-			if (!success)
-			{
-				return (false, null);
-			}
+            (bool success, SimBaseDocument? simBaseDocument) = await _fileOps.TryDeserializeXmlFromResourceAsync<SimBaseDocument>(resourceName, progressReporter);
+            if (!success || simBaseDocument == null)
+            {
+                return (false, null);
+            }
             return (true, simBaseDocument);
         }
 
-		static private void EditSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)
-		{
-			FlightSections fs;
-			fs = simBaseDocument.FlightSections;
+        private static void EditSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)
+        {
+            FlightSections fs = simBaseDocument.FlightSections;
 
-			// Main section
-			int sectionIndex = fs.Section.FindIndex(s => s.Name == "Main");
-			int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Title");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.ScenarioTitle}";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Description");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Constants.appTitle} - {formData.ScenarioType}";
+            // Main section
+            int sectionIndex = fs.Section.FindIndex(s => s.Name == "Main");
+            int propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Title");
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.ScenarioTitle}";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Description");
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{Constants.appTitle} - {formData.ScenarioType}";
 
-			// DateTimeSeason section
-			sectionIndex = fs.Section.FindIndex(s => s.Name == "DateTimeSeason");
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Season");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.Season}";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Year");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.DatePickerValue.Year}";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Day");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.DatePickerValue.DayOfYear}";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Hours");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.TimePickerValue.Hour}";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Minutes");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.TimePickerValue.Minute}";
+            // DateTimeSeason section
+            sectionIndex = fs.Section.FindIndex(s => s.Name == "DateTimeSeason");
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Season");
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.Season}";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Year");
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.DatePickerValue.Year}";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Day");
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.DatePickerValue.DayOfYear}";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Hours");
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.TimePickerValue.Hour}";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Minutes");
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.TimePickerValue.Minute}";
 
-			// Sim.0 section
-			sectionIndex = fs.Section.FindIndex(s => s.Name == "Sim.0");
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Sim");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.AircraftSimValue}";
+            // Sim.0 section
+            sectionIndex = fs.Section.FindIndex(s => s.Name == "Sim.0");
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Sim");
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.AircraftSimValue}";
 
             // Simvars.0 section
             sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
 
             // The runway object to use for calculations. Use StartRunway if available, otherwise use DestinationRunway.
             var selectedRunway = formData.StartRunway ?? formData.DestinationRunway;
+            if (selectedRunway == null)
+            {
+                return;
+            }
 
             // Convert format of runway heading from magnetic North nearest degree to plus/minus 180 degrees true North
             double absTrueHdg = selectedRunway.Hdg + selectedRunway.MagVar;
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{MathRoutines.ConvertHeadingAbsoluteToRelative(absTrueHdg)}";
 
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Latitude");
-            formattedLatitude = FormatCoordXML(selectedRunway.ThresholdStartLat, "N", "S", false);
+            string formattedLatitude = FormatCoordXML(selectedRunway.ThresholdStartLat, "N", "S", false);
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLatitude}";
+
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Longitude");
-            formattedLongitude = FormatCoordXML(selectedRunway.ThresholdStartLon, "E", "W", false);
+            string formattedLongitude = FormatCoordXML(selectedRunway.ThresholdStartLon, "E", "W", false);
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formattedLongitude}";
+
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Altitude");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "+0";
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "SimOnGround");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
+            fs.Section[sectionIndex].Property[propertyIndex].Value = "+0";
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "SimOnGround");
+            fs.Section[sectionIndex].Property[propertyIndex].Value = "True";
 
-			// ObjectFile section
-			sectionIndex = fs.Section.FindIndex(s => s.Name == "ObjectFile");
-			propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "File");
-			fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.ScenarioTitle}";
-		}
+            // ObjectFile section
+            sectionIndex = fs.Section.FindIndex(s => s.Name == "ObjectFile");
+            propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "File");
+            fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.ScenarioTitle}";
+        }
 
-        static public string FormatCoordXML(double dCoord, string sPosDir, string sNegDir, bool roundSeconds)
+        public static string FormatCoordXML(double dCoord, string sPosDir, string sNegDir, bool roundSeconds)
         {
             string sDirection = dCoord >= 0 ? sPosDir : sNegDir;
             double absCoord = Math.Abs(dCoord);
@@ -145,66 +148,61 @@ namespace P3D_Scenario_Generator.Services
             using StreamWriter writer = new(filePath);
             xmlSerializer.Serialize(writer, simBaseDocument, ns);
         }
-
     }
 
     #region Simbase.Document class definitions
 
     [XmlRoot(ElementName = "Property")]
-	public class Property
-	{
+    public class Property
+    {
+        [XmlAttribute(AttributeName = "Name")]
+        public string Name { get; set; } = string.Empty;
 
-		[XmlAttribute(AttributeName = "Name")]
-		public string Name { get; set; }
-
-		[XmlAttribute(AttributeName = "Value")]
-		public string Value { get; set; }
+        [XmlAttribute(AttributeName = "Value")]
+        public string Value { get; set; } = string.Empty;
     }
 
-	[XmlRoot(ElementName = "Section")]
-	public class Section
-	{
+    [XmlRoot(ElementName = "Section")]
+    public class Section
+    {
+        [XmlElement(ElementName = "Property")]
+        public List<Property> Property { get; set; } = [];
 
-		[XmlElement(ElementName = "Property")]
-		public List<Property> Property { get; set; }
+        [XmlAttribute(AttributeName = "Name")]
+        public string Name { get; set; } = string.Empty;
+    }
 
-		[XmlAttribute(AttributeName = "Name")]
-		public string Name { get; set; }
-	}
+    [XmlRoot(ElementName = "Flight.Sections")]
+    public class FlightSections
+    {
+        [XmlElement(ElementName = "Section")]
+        public List<Section> Section { get; set; } = [];
+    }
 
-	[XmlRoot(ElementName = "Flight.Sections")]
-	public class FlightSections
-	{
+    [XmlRoot(ElementName = "SimBase.Document")]
+    public class SimBaseDocument
+    {
+        [XmlElement(ElementName = "Descr")]
+        public string Descr { get; set; } = string.Empty;
 
-		[XmlElement(ElementName = "Section")]
-		public List<Section> Section { get; set; }
-	}
+        [XmlElement(ElementName = "Filename")]
+        public string Filename { get; set; } = string.Empty;
 
-	[XmlRoot(ElementName = "SimBase.Document")]
-	public class SimBaseDocument
-	{
+        [XmlElement(ElementName = "Flight.Sections")]
+        public FlightSections FlightSections { get; set; } = new();
 
-		[XmlElement(ElementName = "Descr")]
-		public string Descr { get; set; }
+        [XmlAttribute(AttributeName = "Type")]
+        public string Type { get; set; } = string.Empty;
 
-		[XmlElement(ElementName = "Filename")]
-		public string Filename { get; set; }
+        [XmlAttribute(AttributeName = "version")]
+        public double Version { get; set; }
 
-		[XmlElement(ElementName = "Flight.Sections")]
-		public FlightSections FlightSections { get; set; }
+        [XmlAttribute(AttributeName = "id")]
+        public string Id { get; set; } = string.Empty;
 
-		[XmlAttribute(AttributeName = "Type")]
-		public string Type { get; set; }
-
-		[XmlAttribute(AttributeName = "version")]
-		public double Version { get; set; }
-
-		[XmlAttribute(AttributeName = "id")]
-		public string Id { get; set; }
-
-		[XmlText]
-		public string Text { get; set; }
-	}
+        [XmlText]
+        public string Text { get; set; } = string.Empty;
+    }
 
     #endregion
 }

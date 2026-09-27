@@ -8,17 +8,17 @@
         /// <summary>
         /// URL of photo this leg travels to
         /// </summary>
-        public string photoURL;
+        public string photoURL = string.Empty;
 
         /// <summary>
         /// Unique id string used by pic2map for each photo
         /// </summary>
-        public string legId;
+        public string legId = string.Empty;
 
         /// <summary>
         /// Only used for start and destination airport instances
         /// </summary>
-        public string airportICAO;
+        public string airportICAO = string.Empty;
 
         /// <summary>
         /// Only used for start and destination airport instances
@@ -28,7 +28,7 @@
         /// <summary>
         /// Used to filter on location string for starting photo in tour
         /// </summary>
-        public string location;
+        public string location = string.Empty;
 
         /// <summary>
         /// Distance from this instance location to next location in photo tour

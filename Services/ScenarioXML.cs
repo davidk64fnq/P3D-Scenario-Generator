@@ -5,39 +5,48 @@ namespace P3D_Scenario_Generator.Services
 {
     public class ScenarioXML()
     {
-        private readonly SimBaseDocumentXML _simBaseDocumentXML = new();
+        private readonly SimBaseDocumentXML _simBaseDocumentXML = new()
+        {
+            WorldBaseFlight = new WorldBaseFlight()
+        };
+
+        private WorldBaseFlight Flight => _simBaseDocumentXML.WorldBaseFlight ??= new WorldBaseFlight();
 
         #region Actions
 
         public void SetAreaLandingTriggerAction(string objName, string orSearch, string tSearch)
         {
             ObjectReference or = GetObjectReference(objName, orSearch);
-            int idIndex;
-            idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger.FindIndex(o => o.Descr == tSearch);
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Actions != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Actions.ObjectReference.Add(or);
+            if (Flight.SimMissionAreaLandingTrigger == null) return;
+
+            int idIndex = Flight.SimMissionAreaLandingTrigger.FindIndex(o => o.Descr == tSearch);
+            if (idIndex < 0) return;
+
+            var trigger = Flight.SimMissionAreaLandingTrigger[idIndex];
+            if (trigger.Actions?.ObjectReference != null)
+                trigger.Actions.ObjectReference.Add(or);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Actions = new Actions([or]);
+                trigger.Actions = new Actions([or]);
         }
 
         public void SetDialogAction(string descr, string text, string delay, string soundType)
         {
             SimMissionDialogAction da = new(descr, text, delay, soundType, GetGUID());
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionDialogAction != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionDialogAction.Add(da);
+            if (Flight.SimMissionDialogAction != null)
+                Flight.SimMissionDialogAction.Add(da);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionDialogAction = [da];
+                Flight.SimMissionDialogAction = [da];
         }
 
         public void SetGoalResolutionAction(string search)
         {
             ObjectReference or = GetObjectReference("Goal", search);
-            List <ObjectReference> orList = [with([or])];
-			SimMissionGoalResolutionAction gra = new("Completed", search, new Goals(orList), GetGUID());
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction.Add(gra);
+            List<ObjectReference> orList = [or];
+            SimMissionGoalResolutionAction gra = new("Completed", search, new Goals(orList), GetGUID());
+            if (Flight.SimMissionGoalResolutionAction != null)
+                Flight.SimMissionGoalResolutionAction.Add(gra);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction = [gra];
+                Flight.SimMissionGoalResolutionAction = [gra];
         }
 
         public void SetObjectActivationAction(int index, string objName, string search, string descr, string newObjectState)
@@ -45,22 +54,22 @@ namespace P3D_Scenario_Generator.Services
             search = $"{search}{index:00}";
             descr = $"{descr}{index:00}";
             ObjectReference or = GetObjectReference(objName, search);
-			ObjectReferenceList orList = new([or]);
-			SimMissionObjectActivationAction oaa = new(descr, orList, GetGUID(), newObjectState);
-			if (_simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction != null )
-				_simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.Add(oaa);
+            ObjectReferenceList orList = new([or]);
+            SimMissionObjectActivationAction oaa = new(descr, orList, GetGUID(), newObjectState);
+            if (Flight.SimMissionObjectActivationAction != null)
+                Flight.SimMissionObjectActivationAction.Add(oaa);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction = [oaa];
+                Flight.SimMissionObjectActivationAction = [oaa];
         }
 
         public void SetOneShotSoundAction(int index, string descr, string soundFile)
         {
             descr = $"{descr}{index:00}";
             SimMissionOneShotSoundAction ossa = new(descr, soundFile, GetGUID());
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionOneShotSoundAction != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionOneShotSoundAction.Add(ossa);
+            if (Flight.SimMissionOneShotSoundAction != null)
+                Flight.SimMissionOneShotSoundAction.Add(ossa);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionOneShotSoundAction = [ossa];
+                Flight.SimMissionOneShotSoundAction = [ossa];
         }
 
         public void SetPOIactivationAction(int index, string objName, string search, string descr, string newObjectState)
@@ -69,11 +78,11 @@ namespace P3D_Scenario_Generator.Services
             descr = $"{descr}{index:00}";
             ObjectReference or = GetObjectReference(objName, search);
             ObjectReferenceList orList = new([or]);
-			SimMissionPointOfInterestActivationAction paa = new(descr, orList, GetGUID(), newObjectState);
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction.Add(paa);
+            SimMissionPointOfInterestActivationAction paa = new(descr, orList, GetGUID(), newObjectState);
+            if (Flight.SimMissionPointOfInterestActivationAction != null)
+                Flight.SimMissionPointOfInterestActivationAction.Add(paa);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction = [paa];
+                Flight.SimMissionPointOfInterestActivationAction = [paa];
         }
 
         public void SetScriptActions(string[] scripts)
@@ -82,17 +91,11 @@ namespace P3D_Scenario_Generator.Services
 
             for (int index = 0; index < scripts.Length; index++)
             {
-                // Use an interpolated string with math for the ID
                 string actionName = $"ScriptAction{index + 1:D2}";
-
-                saList.Add(new SimMissionScriptAction(
-                    actionName,
-                    scripts[index],
-                    GetGUID()
-                ));
+                saList.Add(new SimMissionScriptAction(actionName, scripts[index], GetGUID()));
             }
 
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction = saList;
+            Flight.SimMissionScriptAction = saList;
         }
 
         #endregion
@@ -101,38 +104,41 @@ namespace P3D_Scenario_Generator.Services
 
         public void SetAirportLandingTrigger(string descr, string landingType, string activated, string airportIdent)
         {
-            // Initialize the trigger using property initializers instead of a constructor
             SimMissionAirportLandingTrigger alt = new()
             {
                 Descr = descr,
                 LandingType = landingType,
                 Activated = activated,
-                Actions = new Actions([]), // Shortened list initialization
+                Actions = new Actions([]),
                 InstanceId = GetGUID(),
                 AirportIdent = airportIdent,
                 RunwayFilter = null
             };
 
-            // Using C# 12 null-coalescing assignment for cleaner list management
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger ??= [];
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.Add(alt);
+            Flight.SimMissionAirportLandingTrigger ??= [];
+            Flight.SimMissionAirportLandingTrigger.Add(alt);
         }
 
         public void SetAirportLandingTriggerAction(string objName, string orSearch, string tSearch)
         {
             ObjectReference or = GetObjectReference(objName, orSearch);
-            int idIndex;
-            idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.FindIndex(o => o.Descr == tSearch);
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].Actions != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].Actions.ObjectReference.Add(or);
+            if (Flight.SimMissionAirportLandingTrigger == null) return;
+
+            int idIndex = Flight.SimMissionAirportLandingTrigger.FindIndex(o => o.Descr == tSearch);
+            if (idIndex < 0) return;
+
+            var trigger = Flight.SimMissionAirportLandingTrigger[idIndex];
+            if (trigger.Actions?.ObjectReference != null)
+                trigger.Actions.ObjectReference.Add(or);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].Actions = new Actions([or]);
+                trigger.Actions = new Actions([or]);
         }
+
 
         public void SetDisabledTrafficAirports(string airportIdent)
         {
             SimMissionDisabledTrafficAirports dta = new(airportIdent);
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionDisabledTrafficAirports = dta;
+            Flight.SimMissionDisabledTrafficAirports = dta;
         }
 
         #endregion
@@ -143,28 +149,28 @@ namespace P3D_Scenario_Generator.Services
         {
             descr = $"{descr}{index:00}";
             SimMissionCylinderArea ca = new(descr, orientation, radius, height, drawStyle, new AttachedWorldPosition(), GetGUID());
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea.Add(ca);
+            if (Flight.SimMissionCylinderArea != null)
+                Flight.SimMissionCylinderArea.Add(ca);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea = [ca];
+                Flight.SimMissionCylinderArea = [ca];
         }
 
         public void SetRectangleArea(string descr, string orientation, string length, string width, string height)
         {
             SimMissionRectangleArea ra = new(descr, orientation, length, width, height, new AttachedWorldPosition(), GetGUID());
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.Add(ra);
+            if (Flight.SimMissionRectangleArea != null)
+                Flight.SimMissionRectangleArea.Add(ra);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea = [ra];
+                Flight.SimMissionRectangleArea = [ra];
         }
 
         public void SetSphereArea(string descr, string areaRadius)
         {
             SimMissionSphereArea sa = new(descr, areaRadius, new AttachedWorldPosition(), GetGUID());
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea.Add(sa);
+            if (Flight.SimMissionSphereArea != null)
+                Flight.SimMissionSphereArea.Add(sa);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea = [sa];
+                Flight.SimMissionSphereArea = [sa];
         }
 
         public void SetAttachedWorldPosition(string objName, string search, AttachedWorldPosition wp)
@@ -173,16 +179,19 @@ namespace P3D_Scenario_Generator.Services
             switch (objName)
             {
                 case "CylinderArea":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea.FindIndex(o => o.Descr == search);
-                    _simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea[idIndex].AttachedWorldPosition = wp;
+                    if (Flight.SimMissionCylinderArea == null) break;
+                    idIndex = Flight.SimMissionCylinderArea.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) Flight.SimMissionCylinderArea[idIndex].AttachedWorldPosition = wp;
                     break;
                 case "RectangleArea":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.FindIndex(o => o.Descr == search);
-                    _simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea[idIndex].AttachedWorldPosition = wp;
+                    if (Flight.SimMissionRectangleArea == null) break;
+                    idIndex = Flight.SimMissionRectangleArea.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) Flight.SimMissionRectangleArea[idIndex].AttachedWorldPosition = wp;
                     break;
                 case "SphereArea":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea.FindIndex(o => o.Descr == search);
-                    _simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea[idIndex].AttachedWorldPosition = wp;
+                    if (Flight.SimMissionSphereArea == null) break;
+                    idIndex = Flight.SimMissionSphereArea.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) Flight.SimMissionSphereArea[idIndex].AttachedWorldPosition = wp;
                     break;
                 default:
                     break;
@@ -191,19 +200,15 @@ namespace P3D_Scenario_Generator.Services
 
         #endregion
 
-        #region Entities
-
-        #endregion
-
         #region Goals
 
         public void SetGoal(string descr, string text)
         {
             SimMissionGoal g = new(descr, text, GetGUID());
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionGoal != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionGoal.Add(g);
+            if (Flight.SimMissionGoal != null)
+                Flight.SimMissionGoal.Add(g);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionGoal = [g];
+                Flight.SimMissionGoal = [g];
         }
 
         #endregion
@@ -217,88 +222,109 @@ namespace P3D_Scenario_Generator.Services
             switch (objName)
             {
                 case "AirportLandingTrigger":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionAirportLandingTrigger[idIndex].InstanceId);
+                    if (Flight.SimMissionAirportLandingTrigger == null) break;
+                    idIndex = Flight.SimMissionAirportLandingTrigger.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionAirportLandingTrigger[idIndex].InstanceId);
                     break;
                 case "AreaLandingTrigger":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].InstanceId);
+                    if (Flight.SimMissionAreaLandingTrigger == null) break;
+                    idIndex = Flight.SimMissionAreaLandingTrigger.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionAreaLandingTrigger[idIndex].InstanceId);
                     break;
                 case "CloseWindowAction":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionCloseWindowAction.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionCloseWindowAction[idIndex].InstanceId);
+                    if (Flight.SimMissionCloseWindowAction == null) break;
+                    idIndex = Flight.SimMissionCloseWindowAction.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionCloseWindowAction[idIndex].InstanceId);
                     break;
                 case "CylinderArea":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionCylinderArea[idIndex].InstanceId);
+                    if (Flight.SimMissionCylinderArea == null) break;
+                    idIndex = Flight.SimMissionCylinderArea.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionCylinderArea[idIndex].InstanceId);
                     break;
                 case "DialogAction":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionDialogAction.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionDialogAction[idIndex].InstanceId);
+                    if (Flight.SimMissionDialogAction == null) break;
+                    idIndex = Flight.SimMissionDialogAction.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionDialogAction[idIndex].InstanceId);
                     break;
                 case "Goal":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionGoal.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionGoal[idIndex].InstanceId);
+                    if (Flight.SimMissionGoal == null) break;
+                    idIndex = Flight.SimMissionGoal.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionGoal[idIndex].InstanceId);
                     break;
                 case "GoalResolutionAction":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionGoalResolutionAction[idIndex].InstanceId);
+                    if (Flight.SimMissionGoalResolutionAction == null) break;
+                    idIndex = Flight.SimMissionGoalResolutionAction.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionGoalResolutionAction[idIndex].InstanceId);
                     break;
                 case "LibraryObject":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject[idIndex].InstanceId);
+                    if (Flight.SceneryObjectsLibraryObject == null) break;
+                    idIndex = Flight.SceneryObjectsLibraryObject.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SceneryObjectsLibraryObject[idIndex].InstanceId);
                     break;
                 case "ObjectActivationAction":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionObjectActivationAction[idIndex].InstanceId);
+                    if (Flight.SimMissionObjectActivationAction == null) break;
+                    idIndex = Flight.SimMissionObjectActivationAction.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionObjectActivationAction[idIndex].InstanceId);
                     break;
                 case "OneShotSoundAction":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionOneShotSoundAction.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionOneShotSoundAction[idIndex].InstanceId);
+                    if (Flight.SimMissionOneShotSoundAction == null) break;
+                    idIndex = Flight.SimMissionOneShotSoundAction.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionOneShotSoundAction[idIndex].InstanceId);
                     break;
                 case "OnScreenText":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionOnScreenText.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionOnScreenText[idIndex].InstanceId);
+                    if (Flight.SimMissionOnScreenText == null) break;
+                    idIndex = Flight.SimMissionOnScreenText.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionOnScreenText[idIndex].InstanceId);
                     break;
                 case "OpenWindowAction":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction[idIndex].InstanceId);
+                    if (Flight.SimMissionOpenWindowAction == null) break;
+                    idIndex = Flight.SimMissionOpenWindowAction.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionOpenWindowAction[idIndex].InstanceId);
                     break;
                 case "PointOfInterest":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest[idIndex].InstanceId);
+                    if (Flight.SimMissionPointOfInterest == null) break;
+                    idIndex = Flight.SimMissionPointOfInterest.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionPointOfInterest[idIndex].InstanceId);
                     break;
                 case "PointOfInterestActivationAction":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterestActivationAction[idIndex].InstanceId);
+                    if (Flight.SimMissionPointOfInterestActivationAction == null) break;
+                    idIndex = Flight.SimMissionPointOfInterestActivationAction.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionPointOfInterestActivationAction[idIndex].InstanceId);
                     break;
                 case "ProximityTrigger":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].InstanceId);
+                    if (Flight.SimMissionProximityTrigger == null) break;
+                    idIndex = Flight.SimMissionProximityTrigger.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionProximityTrigger[idIndex].InstanceId);
                     break;
                 case "RectangleArea":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionRectangleArea[idIndex].InstanceId);
+                    if (Flight.SimMissionRectangleArea == null) break;
+                    idIndex = Flight.SimMissionRectangleArea.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionRectangleArea[idIndex].InstanceId);
                     break;
                 case "ScaleformPanelWindow":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
+                    if (Flight.SimMissionScaleformPanelWindow == null) break;
+                    idIndex = Flight.SimMissionScaleformPanelWindow.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionScaleformPanelWindow[idIndex].InstanceId);
                     break;
                 case "ScriptAction":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionScriptAction[idIndex].InstanceId);
+                    if (Flight.SimMissionScriptAction == null) break;
+                    idIndex = Flight.SimMissionScriptAction.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionScriptAction[idIndex].InstanceId);
                     break;
                 case "SphereArea":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionSphereArea[idIndex].InstanceId);
+                    if (Flight.SimMissionSphereArea == null) break;
+                    idIndex = Flight.SimMissionSphereArea.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionSphereArea[idIndex].InstanceId);
                     break;
                 case "TimerTrigger":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].InstanceId);
+                    if (Flight.SimMissionTimerTrigger == null) break;
+                    idIndex = Flight.SimMissionTimerTrigger.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionTimerTrigger[idIndex].InstanceId);
                     break;
                 case "UIPanelWindow":
-                    idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow.FindIndex(o => o.Descr == search);
-                    or = new(_simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow[idIndex].InstanceId);
+                    if (Flight.SimMissionUIPanelWindow == null) break;
+                    idIndex = Flight.SimMissionUIPanelWindow.FindIndex(o => o.Descr == search);
+                    if (idIndex >= 0) or = new(Flight.SimMissionUIPanelWindow[idIndex].InstanceId);
                     break;
                 default:
                     break;
@@ -346,10 +372,10 @@ namespace P3D_Scenario_Generator.Services
                 TriggerValue = new()
             };
             SimMissionScenarioVariable sv = new([tc], GetGUID(), descr, name, value);
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable.Add(sv);
+            if (Flight.SimMissionScenarioVariable != null)
+                Flight.SimMissionScenarioVariable.Add(sv);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable = [sv];
+                Flight.SimMissionScenarioVariable = [sv];
         }
 
         public void SetScenarioVariableAction(string objName, string orSearch, int tcIndex, string tSearch)
@@ -358,24 +384,30 @@ namespace P3D_Scenario_Generator.Services
             List<ObjectReference> orList = [or];
             Actions a = new(orList);
             List<Actions> aList = [a];
-            int idIndex;
-            idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable.FindIndex(o => o.Descr == tSearch);
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable[idIndex].TriggerCondition[tcIndex].Actions.Count != 0)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable[idIndex].TriggerCondition[tcIndex].Actions[0].ObjectReference.Add(or);
+
+            if (Flight.SimMissionScenarioVariable == null) return;
+            int idIndex = Flight.SimMissionScenarioVariable.FindIndex(o => o.Descr == tSearch);
+            if (idIndex < 0) return;
+
+            if (Flight.SimMissionScenarioVariable[idIndex].TriggerCondition[tcIndex].Actions.Count != 0)
+                Flight.SimMissionScenarioVariable[idIndex].TriggerCondition[tcIndex].Actions[0].ObjectReference.Add(or);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable[idIndex].TriggerCondition[tcIndex].Actions = aList;
+                Flight.SimMissionScenarioVariable[idIndex].TriggerCondition[tcIndex].Actions = aList;
         }
 
         public void SetScenarioVariableTriggerValue(double value, int tcIndex, string tSearch)
         {
             Constant constant = new(value);
             TriggerValue tv = new(constant);
-            int idIndex;
-            idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable.FindIndex(o => o.Descr == tSearch);
-            if (value == 0) // reset trigger value to NULL
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable[idIndex].TriggerCondition = null;
+
+            if (Flight.SimMissionScenarioVariable == null) return;
+            int idIndex = Flight.SimMissionScenarioVariable.FindIndex(o => o.Descr == tSearch);
+            if (idIndex < 0) return;
+
+            if (value == 0)
+                Flight.SimMissionScenarioVariable[idIndex].TriggerCondition = null!;
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionScenarioVariable[idIndex].TriggerCondition[tcIndex].TriggerValue = tv;
+                Flight.SimMissionScenarioVariable[idIndex].TriggerCondition[tcIndex].TriggerValue = tv;
         }
 
         #endregion
@@ -393,19 +425,14 @@ namespace P3D_Scenario_Generator.Services
 
         public void WriteXML(ScenarioFormData formData)
         {
-            // 1. Setup clean namespaces to avoid xmlns:xsi and xmlns:xsd
             XmlSerializerNamespaces ns = new();
             ns.Add("", "");
 
             XmlSerializer xmlSerializer = new(_simBaseDocumentXML.GetType());
-
-            // 2. Use Path.Combine for path safety
             string filePath = Path.Combine(formData.ScenarioFolder, $"{formData.ScenarioTitle}.xml");
 
-            // 3. Serialize directly with empty namespaces
             using StreamWriter writer = new(filePath);
             xmlSerializer.Serialize(writer, _simBaseDocumentXML, ns);
-            // StreamWriter is closed automatically by 'using'
         }
 
         #endregion
@@ -425,16 +452,21 @@ namespace P3D_Scenario_Generator.Services
                 AvatarNoCollision = "UserSpecified",
                 UnlimitedFuel = "UserSpecified"
             };
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionRealismOverrides = ro;
+            Flight.SimMissionRealismOverrides = ro;
         }
 
         public void SetScenarioMetadata(ScenarioFormData formData, Overview overview)
         {
+            var destination = formData.DestinationRunway;
+            string locationDescr = destination != null
+                ? $"{destination.IcaoName} ({destination.IcaoId}) {destination.City}, {destination.Country}"
+                : "Unknown Airport";
+
             SimMissionUIScenarioMetadata md = new()
             {
                 InstanceId = GetGUID(),
                 SkillLevel = overview.Difficulty,
-                LocationDescr = $"{formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) {formData.DestinationRunway.City}, {formData.DestinationRunway.Country}",
+                LocationDescr = locationDescr,
                 DifficultyLevel = 1,
                 EstimatedTime = ScenarioHTML.GetDuration(overview),
                 UncompletedImage = "images\\imgM_i.bmp",
@@ -445,12 +477,8 @@ namespace P3D_Scenario_Generator.Services
                 FailureMessage = $"Better luck next time! You failed to complete the \"{formData.ScenarioImageFolder}\" scenario objectives.",
                 UserCrashMessage = $"Yikes! You crashed and therefore failed the \"{formData.ScenarioImageFolder}\" scenario objectives."
             };
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionUIScenarioMetadata = md;
+            Flight.SimMissionUIScenarioMetadata = md;
         }
-
-        #endregion
-
-        #region Scenario Objects - Navigation
 
         #endregion
 
@@ -461,33 +489,30 @@ namespace P3D_Scenario_Generator.Services
             search = $"{search}{index:00}";
             ObjectReference or = GetObjectReference(objName, search);
             SimMissionCloseWindowAction cwa = new($"Close{search}", or, GetGUID());
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionCloseWindowAction != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionCloseWindowAction.Add(cwa);
+            if (Flight.SimMissionCloseWindowAction != null)
+                Flight.SimMissionCloseWindowAction.Add(cwa);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionCloseWindowAction = [cwa];
+                Flight.SimMissionCloseWindowAction = [cwa];
         }
 
         public void SetOnScreenText(string descr, string text, string onScrLoc, string RGBcol, string activated, string backCol)
         {
             SimMissionOnScreenText ost = new(descr, text, onScrLoc, RGBcol, activated, backCol, GetGUID());
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionOnScreenText != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionOnScreenText.Add(ost);
+            if (Flight.SimMissionOnScreenText != null)
+                Flight.SimMissionOnScreenText.Add(ost);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionOnScreenText = [ost];
+                Flight.SimMissionOnScreenText = [ost];
         }
 
         public void SetOpenWindowAction(int index, string objName, string search, string[] windowParameters, string monitorNo)
         {
             search = $"{search}{index:00}";
 
-            // Convert string array values to integers for the constructors
-            // windowParameters expected: [0]=Width, [1]=Height, [2]=X, [3]=Y
             SetWindowSize sws = new(int.Parse(windowParameters[0]), int.Parse(windowParameters[1]));
             SetWindowLocation swl = new(int.Parse(windowParameters[2]), int.Parse(windowParameters[3]));
 
             ObjectReference or = GetObjectReference(objName, search);
 
-            // Using Object Initializer to avoid constructor argument order/count issues
             SimMissionOpenWindowAction owa = new()
             {
                 Descr = $"Open{search}",
@@ -498,24 +523,23 @@ namespace P3D_Scenario_Generator.Services
                 InstanceId = GetGUID()
             };
 
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction ??= [];
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionOpenWindowAction.Add(owa);
+            Flight.SimMissionOpenWindowAction ??= [];
+            Flight.SimMissionOpenWindowAction.Add(owa);
         }
 
         public void SetUIPanelWindow(int index, string descr, string locked, string mouseI, string panel, string docked, string keyboardI)
         {
             descr = $"{descr}{index:00}";
             SimMissionUIPanelWindow upw = new(descr, locked, mouseI, GetGUID(), panel, docked, keyboardI);
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow.Add(upw);
+            if (Flight.SimMissionUIPanelWindow != null)
+                Flight.SimMissionUIPanelWindow.Add(upw);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionUIPanelWindow = [upw];
+                Flight.SimMissionUIPanelWindow = [upw];
         }
 
-        static public string[] GetWindowParameters(int windowWidth, int windowHeight, WindowAlignment alignment, int monitorWidth, int monitorHeight, int offset)
+        public static string[] GetWindowParameters(int windowWidth, int windowHeight, WindowAlignment alignment, int monitorWidth, int monitorHeight, int offset)
         {
             int horizontalOffset, verticalOffset;
-            // Offsets
             if (alignment == WindowAlignment.TopLeft)
             {
                 horizontalOffset = offset;
@@ -536,7 +560,7 @@ namespace P3D_Scenario_Generator.Services
                 horizontalOffset = offset;
                 verticalOffset = monitorHeight - offset - windowHeight;
             }
-            else // alignment == "Centered"
+            else
             {
                 horizontalOffset = monitorWidth / 2 - windowWidth / 2;
                 verticalOffset = monitorHeight / 2 - windowHeight / 2;
@@ -553,10 +577,10 @@ namespace P3D_Scenario_Generator.Services
         {
             descr = $"{descr}{index:00}";
             SceneryObjectsLibraryObject lo = new(descr, mdlGUID, worldPos, orient, altIsAGL, scale, GetGUID(), isAct);
-            if (_simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject != null)
-                _simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject.Add(lo);
+            if (Flight.SceneryObjectsLibraryObject != null)
+                Flight.SceneryObjectsLibraryObject.Add(lo);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SceneryObjectsLibraryObject = [lo];
+                Flight.SceneryObjectsLibraryObject = [lo];
         }
 
         public void SetPointOfInterest(int index, string objName, string search, string offsetXYZ, string curSel, string activated, string targetName)
@@ -565,8 +589,6 @@ namespace P3D_Scenario_Generator.Services
             targetName = $"{targetName}{index:00}";
 
             ObjectReference or = GetObjectReference(objName, search);
-
-            // Create the attached object with the OffsetXYZ from your loop call
             AttachedWorldObject awo = new(or, offsetXYZ);
 
             SimMissionPointOfInterest poi = new()
@@ -582,8 +604,8 @@ namespace P3D_Scenario_Generator.Services
                 UnselectedModelGuid = "{00000000-0000-0000-0000-000000000000}"
             };
 
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest ??= [];
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionPointOfInterest.Add(poi);
+            Flight.SimMissionPointOfInterest ??= [];
+            Flight.SimMissionPointOfInterest.Add(poi);
         }
 
         #endregion
@@ -592,30 +614,32 @@ namespace P3D_Scenario_Generator.Services
 
         public void SetAreaLandingTrigger(string descr, string landingType, string activated)
         {
-            // Initialize the trigger using property initializers instead of a constructor
             SimMissionAreaLandingTrigger alt = new()
             {
                 Descr = descr,
                 LandingType = landingType,
                 Activated = activated,
-                Areas = new Areas([]), 
+                Areas = new Areas([]),
                 InstanceId = GetGUID()
             };
 
-            // Using C# 12 null-coalescing assignment for cleaner list management
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger ??= [];
-            _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger.Add(alt);
+            Flight.SimMissionAreaLandingTrigger ??= [];
+            Flight.SimMissionAreaLandingTrigger.Add(alt);
         }
 
         public void SetAreaLandingTriggerArea(string objName, string orSearch, string tSearch)
         {
             ObjectReference or = GetObjectReference(objName, orSearch);
-            int idIndex;
-            idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger.FindIndex(o => o.Descr == tSearch);
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Areas != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Areas.ObjectReference.Add(or);
+            if (Flight.SimMissionAreaLandingTrigger == null) return;
+
+            int idIndex = Flight.SimMissionAreaLandingTrigger.FindIndex(o => o.Descr == tSearch);
+            if (idIndex < 0) return;
+
+            var trigger = Flight.SimMissionAreaLandingTrigger[idIndex];
+            if (trigger.Areas?.ObjectReference != null)
+                trigger.Areas.ObjectReference.Add(or);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionAreaLandingTrigger[idIndex].Areas = new Areas([or]);
+                trigger.Areas = new Areas([or]);
         }
 
         public void SetProximityTrigger(int index, string descr, string activated)
@@ -625,22 +649,26 @@ namespace P3D_Scenario_Generator.Services
             List<ObjectReference> enterList = [];
             List<ObjectReference> exitList = [];
             SimMissionProximityTrigger pt = new(descr, new Areas(aList), new OnEnterActions(enterList), GetGUID(), activated, new OnExitActions(exitList));
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.Add(pt);
+            if (Flight.SimMissionProximityTrigger != null)
+                Flight.SimMissionProximityTrigger.Add(pt);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger = [pt];
+                Flight.SimMissionProximityTrigger = [pt];
         }
 
         public void SetProximityTriggerArea(int index, string objName, string orSearch, string tSearch)
         {
             tSearch = $"{tSearch}{index:00}";
             ObjectReference or = GetObjectReference(objName, orSearch);
-            int idIndex;
-            idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(o => o.Descr == tSearch);
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].Areas != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].Areas.ObjectReference.Add(or);
+            if (Flight.SimMissionProximityTrigger == null) return;
+
+            int idIndex = Flight.SimMissionProximityTrigger.FindIndex(o => o.Descr == tSearch);
+            if (idIndex < 0) return;
+
+            var trigger = Flight.SimMissionProximityTrigger[idIndex];
+            if (trigger.Areas?.ObjectReference != null)
+                trigger.Areas.ObjectReference.Add(or);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].Areas = new Areas([or]);
+                trigger.Areas = new Areas([or]);
         }
 
         public void SetProximityTriggerOnEnterAction(int oIndex, string objName, string orSearch, int tIndex, string tSearch)
@@ -648,33 +676,42 @@ namespace P3D_Scenario_Generator.Services
             orSearch = $"{orSearch}{oIndex:00}";
             tSearch = $"{tSearch}{tIndex:00}";
             ObjectReference or = GetObjectReference(objName, orSearch);
-            int idIndex;
-            idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger.FindIndex(o => o.Descr == tSearch);
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions.ObjectReference.Add(or);
+            if (Flight.SimMissionProximityTrigger == null) return;
+
+            int idIndex = Flight.SimMissionProximityTrigger.FindIndex(o => o.Descr == tSearch);
+            if (idIndex < 0) return;
+
+            var trigger = Flight.SimMissionProximityTrigger[idIndex];
+            if (trigger.OnEnterActions?.ObjectReference != null)
+                trigger.OnEnterActions.ObjectReference.Add(or);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionProximityTrigger[idIndex].OnEnterActions = new OnEnterActions([or]);
+                trigger.OnEnterActions = new OnEnterActions([or]);
         }
+
 
         public void SetTimerTrigger(string descr, double stopTime, string timer, string activated)
         {
             List<ObjectReference> orList = [];
             SimMissionTimerTrigger tt = new(descr, stopTime, timer, activated, GetGUID(), new Actions(orList));
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.Add(tt);
+            if (Flight.SimMissionTimerTrigger != null)
+                Flight.SimMissionTimerTrigger.Add(tt);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger = [tt];
+                Flight.SimMissionTimerTrigger = [tt];
         }
 
         public void SetTimerTriggerAction(string objName, string orSearch, string tSearch)
         {
             ObjectReference or = GetObjectReference(objName, orSearch);
-            int idIndex;
-            idIndex = _simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger.FindIndex(o => o.Descr == tSearch);
-            if (_simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions != null)
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions.ObjectReference.Add(or);
+            if (Flight.SimMissionTimerTrigger == null) return;
+
+            int idIndex = Flight.SimMissionTimerTrigger.FindIndex(o => o.Descr == tSearch);
+            if (idIndex < 0) return;
+
+            var trigger = Flight.SimMissionTimerTrigger[idIndex];
+            if (trigger.Actions?.ObjectReference != null)
+                trigger.Actions.ObjectReference.Add(or);
             else
-                _simBaseDocumentXML.WorldBaseFlight.SimMissionTimerTrigger[idIndex].Actions = new Actions([or]);
+                trigger.Actions = new Actions([or]);
         }
 
         #endregion

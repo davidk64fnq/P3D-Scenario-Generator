@@ -17,18 +17,10 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         /// <returns>The string value of the Description attribute, or the enum member's name.</returns>
         public static string GetDescription(this Enum enumValue)
         {
-            FieldInfo fieldInfo = enumValue.GetType().GetField(enumValue.ToString());
+            FieldInfo? fieldInfo = enumValue.GetType().GetField(enumValue.ToString());
 
-            if (fieldInfo != null)
-            {
-                DescriptionAttribute[] attributes = (DescriptionAttribute[])fieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), false);
-
-                if (attributes != null && attributes.Length > 0)
-                {
-                    return attributes[0].Description;
-                }
-            }
-            return enumValue.ToString(); // Fallback to string representation if no description
+            return fieldInfo?.GetCustomAttribute<DescriptionAttribute>()?.Description
+                   ?? enumValue.ToString();
         }
     }
 }

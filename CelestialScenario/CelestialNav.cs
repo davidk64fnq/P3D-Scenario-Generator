@@ -64,7 +64,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             else if (formData.CelestialStartRunway == null || formData.CelestialDestinationRunway == null)
             {
                 bool isStartNull = formData.CelestialStartRunway == null;
-                var fixedRunway = isStartNull ? formData.CelestialDestinationRunway : formData.CelestialStartRunway;
+                var fixedRunway = (isStartNull ? formData.CelestialDestinationRunway : formData.CelestialStartRunway)!;
                 string targetType = isStartNull ? "Departure" : "Destination";
 
                 var foundRunway = await runwayManager.Searcher.FindNearbyRunwayAsync(
@@ -81,14 +81,14 @@ namespace P3D_Scenario_Generator.CelestialScenario
                     return false;
                 }
 
-                formData.StartRunway = isStartNull ? foundRunway : formData.CelestialStartRunway;
-                formData.DestinationRunway = isStartNull ? formData.CelestialDestinationRunway : foundRunway;
+                formData.StartRunway = isStartNull ? foundRunway : formData.CelestialStartRunway!;
+                formData.DestinationRunway = isStartNull ? formData.CelestialDestinationRunway! : foundRunway;
             }
             // Case 3: Both runways explicitly defined by user
             else
             {
-                formData.StartRunway = formData.CelestialStartRunway;
-                formData.DestinationRunway = formData.CelestialDestinationRunway;
+                formData.StartRunway = formData.CelestialStartRunway!;
+                formData.DestinationRunway = formData.CelestialDestinationRunway!;
             }
 
             if (!await _almanacDataSource.GetAlmanacDataAsync(formData))
@@ -165,8 +165,8 @@ namespace P3D_Scenario_Generator.CelestialScenario
         static internal IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
         {
             return [
-                new Coordinate(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon),    
-                new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon)     
+                new Coordinate(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon),
+                new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon)
             ];
         }
 

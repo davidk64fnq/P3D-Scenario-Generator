@@ -8,18 +8,18 @@
         /// <summary>
         /// Four letter code known as ICAO airport code or location indicator
         /// </summary>
-        public string IcaoId { get; set; }
+        public string IcaoId { get; set; } = string.Empty;
 
         /// <summary>
         /// The name of the airport
         /// </summary>
-        public string IcaoName { get; set; }
+        public string IcaoName { get; set; } = string.Empty;
 
-        public string Country { get; set; }
+        public string Country { get; set; } = string.Empty;
 
-        public string State { get; set; }
+        public string State { get; set; } = string.Empty;
 
-        public string City { get; set; }
+        public string City { get; set; } = string.Empty;
 
         /// <summary>
         /// The longitude of the approximate center of the airport's useable runways
@@ -47,14 +47,14 @@
         /// of compass headings e.g. 37 = "N-S", 45 = "N". The number is extracted and stored as "Number" field.
         /// The letter which distinguishes parallel runways is extracted and stored as "Designator" field.
         /// </summary>
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         /// <summary>
         /// See <see cref="Id"/>, two digit number is 10's of degrees so 05 is 50 degrees approximate
         /// magnetic runway heading. If the number is greater than 36 it is code for a compass heading or pair 
         /// of compass headings e.g. 37 = "N-S", 45 = "N".
         /// </summary>
-        public string Number { get; set; }
+        public string Number { get; set; } = string.Empty;
 
         /// <summary>
         /// Runway length in feet
@@ -69,12 +69,12 @@
         /// <summary>
         /// Runway surface material
         /// </summary>
-        public string Def { get; set; }
+        public string Def { get; set; } = string.Empty;
 
         /// <summary>
         /// See <see cref="Id"/>, one of "None", "Left", "Right", "Center", or "Water". Used in setting the airport landing trigger for a scenario
         /// </summary>
-        public string Designator { get; set; }
+        public string Designator { get; set; } = string.Empty;
 
         /// <summary>
         /// Helper property indicating whether this runway is a water surface/lane.
