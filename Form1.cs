@@ -601,6 +601,9 @@ namespace P3D_Scenario_Generator
         {
             if (await GetValidatedScenarioFormData())
             {
+                // 1. Check if the directory already exists BEFORE any work begins
+                bool folderExistedBeforeRun = Directory.Exists(_formData.ScenarioFolder);
+
                 DisplayStartMessage();
                 await CheckRunwaysUpToDate();
                 await _imageUtils.DrawScenarioImagesAsync(_formData);
@@ -609,6 +612,23 @@ namespace P3D_Scenario_Generator
 
                 if (!success)
                 {
+                    // 2. Only roll back and delete if WE created it during this session
+                    if (!folderExistedBeforeRun && Directory.Exists(_formData.ScenarioFolder))
+                    {
+                        try
+                        {
+                            Directory.Delete(_formData.ScenarioFolder, recursive: true);
+                            await _logger.InfoAsync($"Cleaned up incomplete scenario folder at '{_formData.ScenarioFolder}'.");
+                        }
+                        catch (Exception ex)
+                        {
+                            await _logger.WarningAsync($"Could not delete incomplete scenario folder: {ex.Message}");
+                        }
+                    }
+
+                    await DeleteTempScenarioDirectory();
+                    _progressReporter?.Report("Scenario generation cancelled.");
+                    Cursor.Current = Cursors.Default;
                     return;
                 }
 

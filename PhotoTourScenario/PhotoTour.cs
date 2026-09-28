@@ -170,60 +170,88 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             bool tourSuccessfullyFormed = false;
             PhotoLocations.Clear();
 
-            while (!tourSuccessfullyFormed && currentOverallAttempt < maxOverallAttempts)
+            while (!tourSuccessfullyFormed)
             {
-                currentOverallAttempt++;
-                string message = $"SetRandomPhotoTour: Attempting to generate photo tour (Attempt {currentOverallAttempt}/{maxOverallAttempts}).";
-                progressReporter?.Report(message);
-                await _logger.InfoAsync(message);
-                PhotoLocations.Clear();
-                SetLegResult firstLegResult = await SetFirstLeg(formData, runwayManager);
-                if (firstLegResult == SetLegResult.NoAirportFound)
-                {
-                    continue;
-                }
-                else if (firstLegResult != SetLegResult.Success)
-                {
-                    await _logger.ErrorAsync("SetRandomPhotoTour: Failed while attempting to set first leg.");
-                    return false;
-                }
+                int batchAttempt = 0;
 
-                SetLegResult nextLegResult = SetLegResult.Success;
-                while (PhotoLocations.Count < formData.PhotoTourMaxNoLegs && nextLegResult != SetLegResult.NoNextPhotoFound)
+                while (!tourSuccessfullyFormed && batchAttempt < maxOverallAttempts)
                 {
-                    nextLegResult = await SetNextLeg(formData);
-                    if (nextLegResult != SetLegResult.NoNextPhotoFound && nextLegResult != SetLegResult.Success)
-                    {
-                        await _logger.ErrorAsync("SetRandomPhotoTour: Failed while attempting to set subsequent leg.");
-                        return false;
-                    }
-                }
+                    batchAttempt++;
+                    currentOverallAttempt++;
 
-                if (PhotoLocations.Count >= formData.PhotoTourMinNoLegs)
-                {
-                    SetLegResult lastLegResult = await SetLastLeg(formData, runwayManager);
-                    if (lastLegResult == SetLegResult.NoAirportFound)
+                    string message = $"SetRandomPhotoTour: Attempting to generate photo tour (Attempt {currentOverallAttempt})...";
+                    progressReporter?.Report(message);
+                    await _logger.InfoAsync(message);
+                    PhotoLocations.Clear();
+
+                    SetLegResult firstLegResult = await SetFirstLeg(formData, runwayManager);
+                    if (firstLegResult == SetLegResult.NoAirportFound)
                     {
                         continue;
                     }
-                    else if (lastLegResult != SetLegResult.Success)
+                    else if (firstLegResult != SetLegResult.Success)
                     {
-                        await _logger.ErrorAsync("SetRandomPhotoTour: Failed while attempting to set last leg.");
+                        await _logger.ErrorAsync("SetRandomPhotoTour: Failed while attempting to set first leg.");
                         return false;
                     }
-                    else
+
+                    SetLegResult nextLegResult = SetLegResult.Success;
+                    while (PhotoLocations.Count < formData.PhotoTourMaxNoLegs && nextLegResult != SetLegResult.NoNextPhotoFound)
                     {
-                        tourSuccessfullyFormed = true;
-                        await _logger.InfoAsync($"SetRandomPhotoTour: Successfully generated a photo tour after {currentOverallAttempt} attempts.");
+                        nextLegResult = await SetNextLeg(formData);
+                        if (nextLegResult != SetLegResult.NoNextPhotoFound && nextLegResult != SetLegResult.Success)
+                        {
+                            await _logger.ErrorAsync("SetRandomPhotoTour: Failed while attempting to set subsequent leg.");
+                            return false;
+                        }
                     }
+
+                    if (PhotoLocations.Count >= formData.PhotoTourMinNoLegs)
+                    {
+                        SetLegResult lastLegResult = await SetLastLeg(formData, runwayManager);
+                        if (lastLegResult == SetLegResult.NoAirportFound)
+                        {
+                            continue;
+                        }
+                        else if (lastLegResult != SetLegResult.Success)
+                        {
+                            await _logger.ErrorAsync("SetRandomPhotoTour: Failed while attempting to set last leg.");
+                            return false;
+                        }
+                        else
+                        {
+                            tourSuccessfullyFormed = true;
+                            await _logger.InfoAsync($"SetRandomPhotoTour: Successfully generated a photo tour after {currentOverallAttempt} total attempts.");
+                        }
+                    }
+                }
+
+                // If batch finished without success, ask the user if they want to keep searching
+                if (!tourSuccessfullyFormed)
+                {
+                    string prompt = $"Unable to find a qualifying Photo Tour within {maxOverallAttempts} search attempts.\n\n" +
+                                    $"Possible reasons:\n" +
+                                    $"• Your active Location Filter (Country/State) may have few Pic2Map photos.\n" +
+                                    $"• Min/Max Leg Distance constraints may be too narrow.\n\n" +
+                                    $"Would you like to try another {maxOverallAttempts} attempts with the current settings?";
+
+                    DialogResult userChoice = MessageBox.Show(
+                        prompt,
+                        "Photo Tour Search Exhausted",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question);
+
+                    if (userChoice == DialogResult.No)
+                    {
+                        await _logger.WarningAsync($"SetRandomPhotoTour: User canceled after {currentOverallAttempt} total attempts.");
+                        PhotoLocations.Clear();
+                        return false;
+                    }
+
+                    await _logger.InfoAsync($"SetRandomPhotoTour: User opted to continue searching for another {maxOverallAttempts} attempts.");
                 }
             }
 
-            if (!tourSuccessfullyFormed)
-            {
-                await _logger.ErrorAsync($"SetRandomPhotoTour: Failed to generate a complete photo tour after {maxOverallAttempts} attempts.");
-                PhotoLocations.Clear();
-            }
             return tourSuccessfullyFormed;
         }
 
