@@ -8,8 +8,6 @@ using P3D_Scenario_Generator.Services;
 using P3D_Scenario_Generator.SignWritingScenario;
 using P3D_Scenario_Generator.Utilities;
 using P3D_Scenario_Generator.WikipediaScenario;
-using System.Collections.Specialized;
-using System.Configuration;
 using System.Globalization;
 
 namespace P3D_Scenario_Generator
@@ -51,7 +49,7 @@ namespace P3D_Scenario_Generator
         private readonly WikiPageHtmlParser _wikiPageHtmlParser;
         private readonly RunwayManager _runwayManager;
         private readonly Aircraft _aircraft;
-        private RunwayUiManager? _runwayUiManager = null!;
+        private RunwayUiManager? _runwayUiManager;
         private readonly ScenarioHTML _scenarioHTML;
 
         // --- LAYER 4: Composite Services ---
@@ -84,9 +82,9 @@ namespace P3D_Scenario_Generator
 
             // --- LAYER 2: Core Services (Fundamental Building Blocks) ---
             _logger = new(false, false, false, _formData);
-            _fileOps = new(_logger);                                   
-            _settingsManager = new(_logger, _fileOps);                 
-            _cacheMetadataService = new(_fileOps);                     
+            _fileOps = new(_logger);
+            _settingsManager = new(_logger, _fileOps);
+            _cacheMetadataService = new(_fileOps, _logger);
             _cacheMetadataService.OnMetadataChanged += () =>
             {
                 // Use Invoke because downloads happen on background threads
@@ -281,7 +279,7 @@ namespace P3D_Scenario_Generator
             }
             PopulateComboBoxWithEnum<ScenarioTypes>(ComboBoxGeneralScenarioType);
             bool variantsLoaded = await _aircraft.LoadAircraftVariantsAsync(_progressReporter);
-            if (variantsLoaded && _aircraft.AircraftVariants != null && _aircraft.AircraftVariants.Count > 0)
+            if (variantsLoaded && _aircraft.AircraftVariants?.Count > 0)
             {
                 ComboBoxGeneralAircraftSelection.DataSource = _aircraft.GetAircraftVariantDisplayNames();
                 ComboBoxGeneralAircraftSelection.SelectedIndex = 0;
@@ -353,7 +351,7 @@ namespace P3D_Scenario_Generator
                 {
                     // nestedTableLayoutPanel settings
                     nestedTableLayoutPanel.Margin = Constants.NestedTableLayoutMargin;
-                    int calculatedNestedTableLayoutWidth = Constants.ParentTableLayoutWidth / 2;
+                    const int calculatedNestedTableLayoutWidth = Constants.ParentTableLayoutWidth / 2;
                     nestedTableLayoutPanel.Size = new Size(calculatedNestedTableLayoutWidth, Constants.NestedTableLayoutHeight);
                     nestedTableLayoutPanel.Anchor = Constants.NestedTableLayoutAnchor;
                     nestedTableLayoutPanel.AutoSize = false;
@@ -382,15 +380,15 @@ namespace P3D_Scenario_Generator
                         }
 
                         // leafTableLayoutPanel height
-                        int calculatedLeafTableLayoutPanelHeight = numberOfLeafRows * (Constants.SimpleMarginValueTopBottom * 2 + Constants.SimpleControlHeight);
+                        int calculatedLeafTableLayoutPanelHeight = numberOfLeafRows * ((Constants.SimpleMarginValueTopBottom * 2) + Constants.SimpleControlHeight);
                         leafTableLayoutPanel.Height = calculatedLeafTableLayoutPanelHeight;
 
                         // leafTableLayoutPanel width
-                        int calculatedLeafTableLayoutPanelWidth = Constants.LeafTableLayoutNoCols * (Constants.SimpleMarginValueLeftRight * 2 + Constants.SimpleControlWidth);
+                        const int calculatedLeafTableLayoutPanelWidth = Constants.LeafTableLayoutNoCols * ((Constants.SimpleMarginValueLeftRight * 2) + Constants.SimpleControlWidth);
                         leafTableLayoutPanel.Width = calculatedLeafTableLayoutPanelWidth;
 
                         // groupBox width and height
-                        groupBox.Width = calculatedLeafTableLayoutPanelWidth + 2 * Constants.LeafTableLayoutOffsetLeft;
+                        groupBox.Width = calculatedLeafTableLayoutPanelWidth + (2 * Constants.LeafTableLayoutOffsetLeft);
                         groupBox.Height = calculatedLeafTableLayoutPanelHeight + Constants.LeafTableLayoutOffsetTop + Constants.LeafTableLayoutOffsetBottom;
 
                         // leafTableLayoutPanel settings, note: set leafTableLayoutPanel location AFTER groupBox width and height
@@ -497,7 +495,7 @@ namespace P3D_Scenario_Generator
 
                 if (isOutOfDate)
                 {
-                    string runwaysDataOutOfDateMessage = $"The scenery.cfg file has been modified more recently than the cached runways data and/or the source runways.xml file." +
+                    const string runwaysDataOutOfDateMessage = "The scenery.cfg file has been modified more recently than the cached runways data and/or the source runways.xml file." +
                                                          " Consider recreating the runways data to include recently added airports.";
                     await _logger.WarningAsync(runwaysDataOutOfDateMessage);
                     _progressReporter?.Report($"WARNING: {runwaysDataOutOfDateMessage.Replace(Environment.NewLine, " ")}");
@@ -615,8 +613,10 @@ namespace P3D_Scenario_Generator
                     // 2. Only roll back and delete if WE created it during this session
                     if (!folderExistedBeforeRun && FileOps.DirectoryExists(_formData.ScenarioFolder))
                     {
-                        // TryDeleteDirectoryAsync handles retries for transient locks and logs success/failure
-                        await _fileOps.TryDeleteDirectoryAsync(_formData.ScenarioFolder, recursive: true, _progressReporter);
+                        if (!await _fileOps.TryDeleteDirectoryAsync(_formData.ScenarioFolder, recursive: true, _progressReporter))
+                        {
+                            _progressReporter?.Report("WARNING: Could not cleanly remove temporary scenario directory. Some residual files may remain.");
+                        }
                     }
 
                     await DeleteTempScenarioDirectory();
@@ -1782,7 +1782,7 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                string message = "Please select a valid runway on the General tab before setting the celestial start runway.";
+                const string message = "Please select a valid runway on the General tab before setting the celestial start runway.";
                 errorProvider1.SetError(ButtonCelestialSetStart, message);
                 _progressReporter?.Report(message);
             }
@@ -1810,7 +1810,7 @@ namespace P3D_Scenario_Generator
             }
             else
             {
-                string message = "Please select a valid runway on the General tab before setting the celestial destination runway.";
+                const string message = "Please select a valid runway on the General tab before setting the celestial destination runway.";
                 errorProvider1.SetError(ButtonCelestialSetDestination, message);
                 _progressReporter?.Report(message);
             }
@@ -2294,13 +2294,15 @@ namespace P3D_Scenario_Generator
             {
                 string zoneIdentifierPath = $"{filePath}:Zone.Identifier";
 
-                // TryDeleteFileAsync checks existence internally, retries on transient locks,
-                // and logs if deletion fails without throwing unhandled exceptions.
-                await _fileOps.TryDeleteFileAsync(zoneIdentifierPath);
+                // Check the return value rather than silently ignoring it
+                if (!await _fileOps.TryDeleteFileAsync(zoneIdentifierPath))
+                {
+                    await _logger.WarningAsync($"UnblockFileAsync: Could not remove Zone.Identifier from '{filePath}'.");
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // Fail quietly if file permissions prevent deleting the stream
+                await _logger.WarningAsync($"UnblockFileAsync: Error attempting to unblock '{filePath}'. Details: {ex.Message}");
             }
         }
 
@@ -2558,7 +2560,7 @@ namespace P3D_Scenario_Generator
 
             // Get the size of the text when rendered with the TextBox's font.
             // Use TextFormatFlags.WordBreak to accurately measure multiline text if AcceptsReturn is true.
-            TextFormatFlags flags = TextFormatFlags.NoPadding | TextFormatFlags.WordBreak; // Added WordBreak for multiline
+            const TextFormatFlags flags = TextFormatFlags.NoPadding | TextFormatFlags.WordBreak; // Added WordBreak for multiline
 
             // Measure the actual size required for the text given the TextBox's width.
             // The measurement should consider the TextBox's current width to determine height for wrapping.
@@ -2823,7 +2825,7 @@ namespace P3D_Scenario_Generator
 
             if (string.IsNullOrEmpty(folderPath))
             {
-                string message = "P3D Program Install path cannot be empty.";
+                const string message = "P3D Program Install path cannot be empty.";
                 errorProvider1.SetError(TextBoxSettingsP3DprogramInstall, message);
                 _progressReporter?.Report(message);
                 isValid = false;
@@ -2857,7 +2859,7 @@ namespace P3D_Scenario_Generator
 
             if (string.IsNullOrEmpty(folderPath))
             {
-                string message = "P3D Program Data path cannot be empty.";
+                const string message = "P3D Program Data path cannot be empty.";
                 errorProvider1.SetError(TextBoxSettingsP3DprogramData, message);
                 _progressReporter?.Report(message);
                 isValid = false;
@@ -2891,7 +2893,7 @@ namespace P3D_Scenario_Generator
 
             if (string.IsNullOrEmpty(folderPath))
             {
-                string message = "Scenario Folder Base path cannot be empty.";
+                const string message = "Scenario Folder Base path cannot be empty.";
                 errorProvider1.SetError(TextBoxSettingsScenarioFolderBase, message);
                 _progressReporter?.Report(message);
                 isValid = false;
@@ -3086,7 +3088,7 @@ namespace P3D_Scenario_Generator
 
             if (selectedRunway is null)
             {
-                string message = "No valid runway found matching current filters or selection.";
+                const string message = "No valid runway found matching current filters or selection.";
                 await _logger.ErrorAsync(message);
                 _progressReporter?.Report($"ERROR: {message}");
                 return false;
@@ -3101,7 +3103,7 @@ namespace P3D_Scenario_Generator
             {
                 await _logger.ErrorAsync("Invalid scenario type selected unexpectedly.");
                 isValid = false;
-                string message = "Invalid scenario type selected. An unexpected error occurred; please notify the developer.";
+                const string message = "Invalid scenario type selected. An unexpected error occurred; please notify the developer.";
                 _progressReporter?.Report(message);
             }
 
@@ -3138,7 +3140,7 @@ namespace P3D_Scenario_Generator
             }
             else if (!ValidateScenarioFolderBase())
             {
-                string message = "Cannot fully validate scenario path: Scenario folder base path is not set or invalid. Please check settings tab.";
+                const string message = "Cannot fully validate scenario path: Scenario folder base path is not set or invalid. Please check settings tab.";
                 errorProvider1.SetError(TextBoxGeneralScenarioTitle, message);
                 _progressReporter?.Report(message);
                 isValid = false;
@@ -3201,7 +3203,7 @@ namespace P3D_Scenario_Generator
 
             if (selectedAircraftVariant == null)
             {
-                string message = "No aircraft variant has been selected. Please select an aircraft.";
+                const string message = "No aircraft variant has been selected. Please select an aircraft.";
                 errorProvider1.SetError(TextBoxGeneralAircraftValues, "No aircraft selected.");
                 _progressReporter?.Report(message);
                 _formData.SelectedAircraft = null; // Clear out any previous selection
@@ -3352,7 +3354,7 @@ namespace P3D_Scenario_Generator
 
             if (_formData.PhotoTourMinLegDist >= _formData.PhotoTourMaxLegDist)
             {
-                string message = "Minimum photo tour leg distance must be less than maximum photo tour leg distance.";
+                const string message = "Minimum photo tour leg distance must be less than maximum photo tour leg distance.";
                 errorProvider1.SetError(TextBoxPhotoTourConstraintsMinLegDist, message);
                 _progressReporter?.Report(message);
                 allValid = false;
@@ -3378,7 +3380,7 @@ namespace P3D_Scenario_Generator
 
             if (_formData.PhotoTourMinNoLegs > _formData.PhotoTourMaxNoLegs)
             {
-                string message = "Minimum photo tour number of legs must be less than or equal to maximum photo tour number of legs.";
+                const string message = "Minimum photo tour number of legs must be less than or equal to maximum photo tour number of legs.";
                 errorProvider1.SetError(TextBoxPhotoTourConstraintsMinNoLegs, message);
                 _progressReporter?.Report(message);
                 allValid = false;
@@ -3833,7 +3835,7 @@ namespace P3D_Scenario_Generator
                 + Constants.SignWindowViewportBufferPixels;     // Browser rendering tolerances and prevent the appearance of scrollbars
 
             // Set windowHeight, messageHeight and consoleHeight 
-            int canvasHeight = Constants.SignCharPaddingPixels + Constants.SignCharHeightPixels + Constants.SignCharPaddingPixels;
+            const int canvasHeight = Constants.SignCharPaddingPixels + Constants.SignCharHeightPixels + Constants.SignCharPaddingPixels;
             _formData.SignCanvasHeight = canvasHeight;
             _formData.SignConsoleHeight = canvasHeight;
             _formData.SignWindowHeight =
@@ -3862,7 +3864,7 @@ namespace P3D_Scenario_Generator
                                   _formData.CelestialDestinationRunway.IcaoId,
                                   StringComparison.OrdinalIgnoreCase))
                 {
-                    string message = "Start and destination airports cannot be the same.";
+                    const string message = "Start and destination airports cannot be the same.";
                     errorProvider1.SetError(TextBoxCelestialMinDist, message);
                     _progressReporter?.Report(message);
                     allValid = false;
@@ -3891,7 +3893,7 @@ namespace P3D_Scenario_Generator
 
             if (_formData.CelestialMinDistance >= _formData.CelestialMaxDistance)
             {
-                string message = "Minimum celestial distance must be less than maximum celestial distance.";
+                const string message = "Minimum celestial distance must be less than maximum celestial distance.";
                 errorProvider1.SetError(TextBoxCelestialMinDist, message);
                 _progressReporter?.Report(message);
                 allValid = false;

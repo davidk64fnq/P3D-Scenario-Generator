@@ -10,7 +10,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
     /// geographical and altitude data for each of the eight circuit gates based on
     /// user-defined parameters and aircraft performance characteristics.
     /// </summary>
-    internal class CircuitGates
+    internal static class CircuitGates
     {
         /// <summary>
         /// Temporary data structure used for storing intermediate calculation parameters relating to each gate of the circuit,

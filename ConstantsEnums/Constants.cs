@@ -95,7 +95,7 @@ namespace P3D_Scenario_Generator.ConstantsEnums
     /// <summary>
     /// Program constants
     /// </summary>
-    public class Constants
+    public static class Constants
     {
         /// <summary>
         /// The application title for display purposes, retrieved dynamically from the assembly.

@@ -6,7 +6,7 @@
     /// This class also includes a method to initialize these mappings and to check if a specific
     /// segment is set for a character.
     /// </summary>
-    internal class SignCharacterMap
+    internal static class SignCharacterMap
     {
         /// <summary>
         /// Used to store decimal equivalent of the 22 digit binary representation of a character. Each letter

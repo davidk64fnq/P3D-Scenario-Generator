@@ -30,7 +30,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
     /// This includes defining segment specifications, creating gates for individual letters,
     /// and applying transformations such as translation and tilting to the generated gates.
     /// </summary>
-    internal class SignGateGenerator
+    internal static class SignGateGenerator
     {
         /// <summary>
         /// A static readonly list containing all 44 predefined <see cref="SegmentSpecification"/> instances.

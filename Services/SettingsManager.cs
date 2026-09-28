@@ -134,39 +134,74 @@ namespace P3D_Scenario_Generator.Services
                     string json = FileOps.ReadAllText(_settingsFilePath);
                     if (string.IsNullOrWhiteSpace(json))
                     {
-                        TryRestoreFromBackup();
+                        _ = _logger.WarningAsync($"SettingsManager: Settings file at '{_settingsFilePath}' was empty. Attempting backup restore.");
+                        HandleBackupRestoreResult();
                         return;
                     }
+
                     _settingsCache = JsonConvert.DeserializeObject<Dictionary<string, object?>>(json) ?? [];
+                    _ = _logger.InfoAsync("SettingsManager: UI settings successfully loaded.");
                 }
                 else
                 {
-                    TryRestoreFromBackup();
+                    HandleBackupRestoreResult();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                TryRestoreFromBackup();
+                _ = _logger.ErrorAsync($"SettingsManager: Failed to parse settings file '{_settingsFilePath}'. Attempting backup restore.", ex);
+                HandleBackupRestoreResult();
             }
         }
 
-        private void TryRestoreFromBackup()
+        private void HandleBackupRestoreResult()
         {
-            if (FileOps.FileExists(_backupFilePath))
+            if (TryRestoreFromBackup())
             {
-                try
-                {
-                    string json = FileOps.ReadAllText(_backupFilePath);
-                    _settingsCache = JsonConvert.DeserializeObject<Dictionary<string, object?>>(json) ?? [];
-                }
-                catch
-                {
-                    _settingsCache = [];
-                }
+                _ = _logger.InfoAsync("SettingsManager: Successfully restored UI settings from backup.");
             }
             else
             {
+                _ = _logger.WarningAsync("SettingsManager: No valid backup settings found. Reverting to empty/designer defaults.");
+            }
+        }
+
+        /// <summary>
+        /// Attempts to restore settings from the backup file.
+        /// </summary>
+        /// <returns>True if settings were restored from backup; false otherwise.</returns>
+        private bool TryRestoreFromBackup()
+        {
+            if (!FileOps.FileExists(_backupFilePath))
+            {
                 _settingsCache = [];
+                return false;
+            }
+
+            try
+            {
+                string json = FileOps.ReadAllText(_backupFilePath);
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    _settingsCache = [];
+                    return false;
+                }
+
+                var restored = JsonConvert.DeserializeObject<Dictionary<string, object?>>(json);
+                if (restored == null)
+                {
+                    _settingsCache = [];
+                    return false;
+                }
+
+                _settingsCache = restored;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _ = _logger.ErrorAsync($"SettingsManager: Failed to restore settings from backup '{_backupFilePath}'.", ex);
+                _settingsCache = [];
+                return false;
             }
         }
 
@@ -205,8 +240,11 @@ namespace P3D_Scenario_Generator.Services
                 // 2. Rotate existing settings file to backup if present
                 if (FileOps.FileExists(_settingsFilePath))
                 {
-                    // Clean up old backup with retry
-                    await _fileOps.TryDeleteFileAsync(_backupFilePath);
+                    // Clean up old backup with retry - check return
+                    if (!await _fileOps.TryDeleteFileAsync(_backupFilePath))
+                    {
+                        await _logger.WarningAsync($"SettingsManager: Could not remove old backup '{_backupFilePath}'. Move may fail.");
+                    }
 
                     // Move current file to backup with retry
                     if (!await _fileOps.TryMoveFileAsync(_settingsFilePath, _backupFilePath))
@@ -234,7 +272,10 @@ namespace P3D_Scenario_Generator.Services
                 // Ensure temp file is cleaned up if it still remains
                 if (FileOps.FileExists(tempPath))
                 {
-                    await _fileOps.TryDeleteFileAsync(tempPath);
+                    if (!await _fileOps.TryDeleteFileAsync(tempPath))
+                    {
+                        await _logger.WarningAsync($"SettingsManager: Failed to delete lingering temporary file '{tempPath}'.");
+                    }
                 }
             }
         }

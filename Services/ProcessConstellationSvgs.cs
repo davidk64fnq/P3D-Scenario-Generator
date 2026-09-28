@@ -6,7 +6,7 @@ namespace P3D_Scenario_Generator.Services
     /// A helper function for converting the IAU svg files sourced from the web into 
     /// png/bmp files for easier handling in the Celestial Navigation scenario.
     /// </summary>
-    public class ProcessConstellationSvgs
+    public static class ProcessConstellationSvgs
     {
         public static void CreatePNGs(string svgSourceFolder, string pngOutputFolder)
         {

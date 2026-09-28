@@ -22,9 +22,11 @@ namespace P3D_Scenario_Generator.Services
         // CA1869: Reuse JsonSerializerOptions to improve performance
         private static readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
+        private readonly Logger _logger;
         private readonly FileOps _fileOps;
         private readonly string _filePath;
         private readonly CacheStats _stats;
+        private readonly bool _storageAvailable;
 
         /// <summary>
         /// Occurs whenever the cache metadata is successfully saved to disk.
@@ -32,12 +34,23 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         public event Action? OnMetadataChanged;
 
-        public CacheMetadataService(FileOps fileOps)
+        public CacheMetadataService(FileOps fileOps, Logger logger)
         {
             _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.AppDataFolderName);
-            FileOps.EnsureDirectoryExists(directory);
+
+            // Pattern: Check return value and log failure
+            if (!FileOps.EnsureDirectoryExists(directory))
+            {
+                _ = _logger.ErrorAsync($"CacheMetadataService: Unable to access or create AppData directory '{directory}'. Persistence will be disabled for this session.");
+                _storageAvailable = false;
+            }
+            else
+            {
+                _storageAvailable = true;
+            }
 
             _filePath = Path.Combine(directory, "cache_stats.json");
             _stats = Load();
@@ -70,24 +83,32 @@ namespace P3D_Scenario_Generator.Services
 
         private CacheStats Load()
         {
-            if (!FileOps.FileExists(_filePath)) return new CacheStats();
+            if (!_storageAvailable || !FileOps.FileExists(_filePath))
+            {
+                return new CacheStats();
+            }
 
             try
             {
                 string json = FileOps.ReadAllText(_filePath);
                 return JsonSerializer.Deserialize<CacheStats>(json, _jsonOptions) ?? new CacheStats();
             }
-            catch
+            catch (Exception ex)
             {
+                _ = _logger.ErrorAsync($"CacheMetadataService.Load: Failed to deserialize cache stats from '{_filePath}'.", ex);
                 return new CacheStats();
             }
         }
 
         private void Save()
         {
+            if (!_storageAvailable)
+            {
+                return;
+            }
+
             try
             {
-                // Fire-and-forget the async save via FileOps' new JSON serializer
                 _ = Task.Run(async () =>
                 {
                     bool saved = await _fileOps.TrySerializeJsonToFileAsync(_filePath, _stats, _jsonOptions);
@@ -95,11 +116,15 @@ namespace P3D_Scenario_Generator.Services
                     {
                         OnMetadataChanged?.Invoke();
                     }
+                    else
+                    {
+                        await _logger.WarningAsync($"CacheMetadataService.Save: Failed to persist cache metadata to '{_filePath}'.");
+                    }
                 });
             }
-            catch
+            catch (Exception ex)
             {
-                // Suppress background persistence exceptions
+                _ = _logger.ErrorAsync("CacheMetadataService.Save: Unexpected error triggering background save.", ex);
             }
         }
     }

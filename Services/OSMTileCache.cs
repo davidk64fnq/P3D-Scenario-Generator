@@ -22,13 +22,12 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         public async Task<bool> GetOrCopyOSMtile(string key, string url, string saveFile)
         {
-            string cachePath = "";
-            bool cached = await DoesKeyExistAsync(key, result => cachePath = result);
+            var (cached, cachePath) = GetCachedTileInfo(key);
 
             if (cached)
             {
                 // Tile exists in cache, attempt to copy it to the saveFile location.
-                if (!await _fileOps.TryCopyFileAsync(cachePath, saveFile, _progressReporter, true))
+                if (!await _fileOps.TryCopyFileAsync(cachePath, saveFile, _progressReporter, overwrite: true))
                 {
                     return false;
                 }
@@ -36,52 +35,51 @@ namespace P3D_Scenario_Generator.Services
             else
             {
                 // Tile does not exist in cache, attempt to download it.
-                if (await _httpRoutines.DownloadBinaryFileAsync(url, saveFile))
+                if (!await _httpRoutines.DownloadBinaryFileAsync(url, saveFile))
                 {
-                    // Update metadata via service
-                    var stats = _metadataService.GetStats();
-                    _metadataService.UpdateDailyTotal(stats.DailyDownloadTotal + 1);
+                    return false;
+                }
 
-                    // Ensure target zoom directory exists in cache before saving
-                    string? zoomDir = Path.GetDirectoryName(cachePath);
-                    if (!string.IsNullOrEmpty(zoomDir))
-                    {
-                        await _fileOps.TryCreateDirectoryAsync(zoomDir, _progressReporter);
-                    }
+                // Update metadata via service
+                var stats = _metadataService.GetStats();
+                _metadataService.UpdateDailyTotal(stats.DailyDownloadTotal + 1);
 
-                    // Copy the newly downloaded file into the cache
-                    if (!await _fileOps.TryCopyFileAsync(saveFile, cachePath, _progressReporter, true))
+                // Ensure target zoom directory exists in cache before saving
+                string? zoomDir = Path.GetDirectoryName(cachePath);
+                if (!string.IsNullOrEmpty(zoomDir))
+                {
+                    // Check return value rather than ignoring
+                    if (!await _fileOps.TryCreateDirectoryAsync(zoomDir, _progressReporter))
                     {
+                        _progressReporter?.Report($"ERROR: Could not create OSM cache directory '{zoomDir}'.");
                         return false;
                     }
                 }
-                else
+
+                // Copy the newly downloaded file into the cache
+                if (!await _fileOps.TryCopyFileAsync(saveFile, cachePath, _progressReporter, overwrite: true))
                 {
                     return false;
                 }
             }
+
             return true;
         }
 
         /// <summary>
-        /// Determines if a specific cached OSM tile exists and ensures the directory structure is ready.
+        /// Resolves the cache path for an OSM key and checks whether it already exists on disk.
+        /// Does not perform disk writes or directory creation.
         /// </summary>
-        private async Task<bool> DoesKeyExistAsync(string key, Action<string> pathSetter)
+        private static (bool exists, string path) GetCachedTileInfo(string key)
         {
             string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.AppDataFolderName);
 
             // Subdirectory based on Zoom level (first part of the key)
             string zoomDir = Path.Combine(directory, key.Split('-')[0]);
-
-            if (!FileOps.DirectoryExists(zoomDir))
-            {
-                await _fileOps.TryCreateDirectoryAsync(zoomDir, _progressReporter);
-            }
-
             string cachePath = Path.Combine(zoomDir, key);
-            pathSetter(cachePath);
 
-            return FileOps.FileExists(cachePath);
+            bool exists = FileOps.DirectoryExists(zoomDir) && FileOps.FileExists(cachePath);
+            return (exists, cachePath);
         }
 
         /// <summary>

@@ -7,7 +7,7 @@ namespace P3D_Scenario_Generator.Utilities
     /// for a simulated aircraft within a specified distance range from a target runway.
     /// It ensures the generated coordinates are valid.
     /// </summary>
-    internal class ScenarioLocationGenerator
+    internal static class ScenarioLocationGenerator
     {
         /// <summary>
         /// Provides a thread-safe random number generator.

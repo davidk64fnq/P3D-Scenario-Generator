@@ -727,11 +727,22 @@ namespace P3D_Scenario_Generator.Services
         /// Ensures that a directory exists, creating it synchronously if it does not.
         /// </summary>
         /// <param name="directoryPath">The directory path to ensure exists.</param>
-        public static void EnsureDirectoryExists(string directoryPath)
+        /// <returns><see langword="true"/> if the directory exists or was created successfully; otherwise, <see langword="false"/>.</returns>
+        public static bool EnsureDirectoryExists(string directoryPath)
         {
-            if (!DirectoryExists(directoryPath))
+            if (string.IsNullOrWhiteSpace(directoryPath)) return false;
+
+            try
             {
-                Directory.CreateDirectory(directoryPath);
+                if (!DirectoryExists(directoryPath))
+                {
+                    Directory.CreateDirectory(directoryPath);
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 

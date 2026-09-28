@@ -12,32 +12,38 @@ namespace P3D_Scenario_Generator.Services
     /// <param name="log">The logging service to use for reporting errors.</param>
     public class HtmlParser(Logger log)
     {
-        private readonly Logger _log = log;
+        private readonly Logger _log = log ?? throw new ArgumentNullException(nameof(log));
 
         /// <inheritdoc/>
         public async Task<(bool success, string innerText)> SelectSingleNodeInnerTextAsync(HtmlDocument htmlDoc, string nodeSelection)
         {
-            HtmlNode selectedNode = htmlDoc.DocumentNode.SelectSingleNode(nodeSelection);
+            ArgumentNullException.ThrowIfNull(htmlDoc);
+
+            // CS8600 Fix: Use HtmlNode? since SelectSingleNode can return null
+            HtmlNode? selectedNode = htmlDoc.DocumentNode.SelectSingleNode(nodeSelection);
             if (selectedNode == null)
             {
                 await _log.ErrorAsync($"Could not find HTML node for selection: {nodeSelection}. The HTML structure might have changed or the index is out of bounds.");
                 return (false, string.Empty);
             }
 
-            return (true, selectedNode.InnerText);
+            return (true, selectedNode.InnerText ?? string.Empty);
         }
 
         /// <inheritdoc/>
         public async Task<(bool success, string attributeValue)> SelectSingleNodeGetAttributeValueAsync(HtmlDocument htmlDoc, string nodeSelection, string attributeSelection)
         {
-            HtmlNode selectedNode = htmlDoc.DocumentNode.SelectSingleNode(nodeSelection);
+            ArgumentNullException.ThrowIfNull(htmlDoc);
+
+            // CS8600 Fix: Use HtmlNode? since SelectSingleNode can return null
+            HtmlNode? selectedNode = htmlDoc.DocumentNode.SelectSingleNode(nodeSelection);
             if (selectedNode == null)
             {
                 await _log.ErrorAsync($"Could not find HTML node for selection: {nodeSelection}. The HTML structure might have changed or the index is out of bounds.");
                 return (false, string.Empty);
             }
 
-            string attributeValue = selectedNode.GetAttributeValue(attributeSelection, "");
+            string attributeValue = selectedNode.GetAttributeValue(attributeSelection, string.Empty);
 
             return (true, attributeValue);
         }
