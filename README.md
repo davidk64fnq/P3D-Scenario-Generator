@@ -25,13 +25,8 @@ Instead of authoring complex mission logic trees manually inside SimDirector, **
    * **P3D Data:** Prepar3D ProgramData folder (e.g., `C:\ProgramData\Lockheed Martin\Prepar3D v5`).
    * **Scenario Folder:** Your target scenario directory (e.g., `C:\Users\<Username>\Documents\Prepar3D v5 Files`).
 4. **Map Tile API Key (Required for all scenarios):**
-   * All scenarios download OpenStreetMap tiles to render briefing overview charts and in-game moving map displays.
-   * A free API key from **RapidAPI** is required:
-     1. Sign up for a free account at [RapidAPI](https://rapidapi.com/).
-     2. In the top search bar, search for **MapTiles**.
-     3. Select any endpoint (e.g., `getStandardMapTile`) and copy your alphanumeric key from the code snippet box (`'x-rapidapi-key: ...'`).
-     4. Paste the key into the **Server / API key** field on the **Settings** tab.
-   * *(Full step-by-step instructions are available inside the app by clicking the **Help** button on the Settings tab).*
+   * Briefing overview charts and in-game moving map displays require a free RapidAPI key to retrieve OpenStreetMap tiles.
+   * **Setup:** Step-by-step registration and key-retrieval instructions are provided inside the app. Open **P3D Scenario Generator**, go to the **Settings** tab, and click the **Help** button in the top right corner.
 5. **Airports Database:**
    * Includes a stock P3D v5 runway database by default.
    * Add-on scenery runways can be imported using Pete & John Dowson's `MakeRunways` utility (see General Tab Help for details).
