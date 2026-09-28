@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using ImageMagick;
+﻿using ImageMagick;
 
 namespace P3D_Scenario_Generator.Services
 {
-
     /// <summary>
     /// A helper function for converting the IAU svg files sourced from the web into 
-    /// png files for easier handling in the Celestial Naviagtion scenario, to use
-    /// call from one of the UI buttons.
+    /// png/bmp files for easier handling in the Celestial Navigation scenario.
     /// </summary>
-    public class ProcessConstellationSvgs()
+    public class ProcessConstellationSvgs
     {
         public static void CreatePNGs(string svgSourceFolder, string pngOutputFolder)
         {
-            Directory.CreateDirectory(pngOutputFolder);
+            if (!FileOps.DirectoryExists(pngOutputFolder))
+            {
+                Directory.CreateDirectory(pngOutputFolder);
+            }
 
             // Dictionary mapping: App Constellation Name -> Source SVG Filename
             // Only constellations in this dictionary will be converted (culling the rest)
@@ -61,7 +59,6 @@ namespace P3D_Scenario_Generator.Services
                 { "Virgo", "Virgo_IAU.svg" }
             };
 
-            // Set high density so SVG vectors render sharply before scaling
             var readSettings = new MagickReadSettings
             {
                 Density = new Density(300, 300),
@@ -74,13 +71,12 @@ namespace P3D_Scenario_Generator.Services
                 string sourceSvgFile = entry.Value;
                 string sourcePath = Path.Combine(svgSourceFolder, sourceSvgFile);
 
-                if (!File.Exists(sourcePath))
+                if (!FileOps.FileExists(sourcePath))
                 {
                     Console.WriteLine($"[WARN] Source file missing: {sourceSvgFile}");
                     continue;
                 }
 
-                // Clean output name matching app convention (e.g., "Canis_Major.bmp", "Bootes.bmp")
                 string cleanOutputFilename = appName.Replace(" ", "_") + ".bmp";
                 string outputPath = Path.Combine(pngOutputFolder, cleanOutputFilename);
 

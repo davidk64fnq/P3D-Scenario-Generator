@@ -14,7 +14,7 @@ namespace P3D_Scenario_Generator.MapTiles
         Logger logger,
         FormProgressReporter progressReporter,
         FileOps fileOps,
-        MapTileDownloader mapTileDownloader) 
+        MapTileDownloader mapTileDownloader)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
@@ -40,8 +40,6 @@ namespace P3D_Scenario_Generator.MapTiles
                 using var images = new MagickImageCollection();
 
                 // Setup for the montage operation.
-                // Geometry defines the size of each individual image within the montage.
-                // TileGeometry defines the layout of the montage (1 column by yCount rows).
                 var settings = new MontageSettings
                 {
                     Geometry = new MagickGeometry($"{Constants.TileSizePixels}x{Constants.TileSizePixels}"),
@@ -55,50 +53,47 @@ namespace P3D_Scenario_Generator.MapTiles
                     if (!FileOps.FileExists(tilePath))
                     {
                         await _logger.ErrorAsync($"Required tile image not found: {tilePath}");
-                        return false; // Fail if a source tile is missing
+                        return false;
                     }
                     images.Add(new MagickImage(tilePath));
                 }
 
-                // Perform the montage operation. The result is a single MagickImage.
+                // Perform the montage operation.
                 using var result = images.Montage(settings);
 
                 // Write the resulting montaged image to the specified output file.
                 string outputPath = $"{fullPathNoExt}_{columnID}.png";
 
-                // Ensure destination directory exists before writing
+                // Ensure destination directory exists using FileOps
                 var directory = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                if (!string.IsNullOrEmpty(directory))
                 {
-                    Directory.CreateDirectory(directory);
+                    if (!await _fileOps.TryCreateDirectoryAsync(directory, _progressReporter))
+                    {
+                        return false;
+                    }
                 }
 
                 result.Write(outputPath);
-
-                // If execution reaches here, the operation was successful.
                 return true;
             }
             catch (MagickErrorException mex)
             {
-                // Catch specific Magick.NET exceptions
                 await _logger.ErrorAsync($"Magick.NET error during column montage for '{fullPathNoExt}_{columnID}': {mex.Message}", mex);
                 return false;
             }
             catch (FileNotFoundException fex)
             {
-                // Catch if a specific tile file was not found during loading
                 await _logger.ErrorAsync($"File not found error during column montage: {fex.FileName}. Details: {fex.Message}", fex);
                 return false;
             }
             catch (IOException ioex)
             {
-                // Catch general I/O errors (e.g., file locked, disk full)
                 await _logger.ErrorAsync($"I/O error during column montage for '{fullPathNoExt}_{columnID}': {ioex.Message}", ioex);
                 return false;
             }
             catch (Exception ex)
             {
-                // Catch any other unexpected exceptions
                 await _logger.ErrorAsync($"An unexpected error occurred during column montage for '{fullPathNoExt}_{columnID}': {ex.Message}", ex);
                 return false;
             }
@@ -117,69 +112,59 @@ namespace P3D_Scenario_Generator.MapTiles
         {
             try
             {
-                // MagickImageCollection will hold the individual tile images to be montaged.
                 using var images = new MagickImageCollection();
 
-                // Setup for the montage operation.
-                // Geometry defines the size of each individual image within the montage.
-                // TileGeometry defines the layout of the montage (xCount columns by 1 row).
                 var settings = new MontageSettings
                 {
                     Geometry = new MagickGeometry($"{Constants.TileSizePixels}x{Constants.TileSizePixels}"),
                     TileGeometry = new MagickGeometry($"{xCount}x1"),
                 };
 
-                // Load each individual tile image into the collection.
                 for (int xIndex = 0; xIndex < xCount; xIndex++)
                 {
                     string tilePath = $"{fullPathNoExt}_{xIndex}_{rowId}.png";
                     if (!FileOps.FileExists(tilePath))
                     {
                         await _logger.ErrorAsync($"Required tile image not found: {tilePath}");
-                        return false; // Fail if a source tile is missing
+                        return false;
                     }
                     images.Add(new MagickImage(tilePath));
                 }
 
-                // Perform the montage operation. The result is a single MagickImage.
                 using var result = images.Montage(settings);
 
-                // Write the resulting montaged image to the specified output file.
                 string outputPath = $"{fullPathNoExt}_{rowId}.png";
 
-                // Ensure destination directory exists before writing
+                // Ensure destination directory exists using FileOps
                 var directory = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                if (!string.IsNullOrEmpty(directory))
                 {
-                    Directory.CreateDirectory(directory);
+                    if (!await _fileOps.TryCreateDirectoryAsync(directory, _progressReporter))
+                    {
+                        return false;
+                    }
                 }
 
                 result.Write(outputPath);
-
-                // If execution reaches here, the operation was successful.
                 return true;
             }
             catch (MagickErrorException mex)
             {
-                // Catch specific Magick.NET exceptions
                 await _logger.ErrorAsync($"Magick.NET error during row montage for '{fullPathNoExt}_{rowId}': {mex.Message}", mex);
                 return false;
             }
             catch (FileNotFoundException fex)
             {
-                // Catch if a specific tile file was not found during loading
                 await _logger.ErrorAsync($"File not found error during row montage: {fex.FileName}. Details: {fex.Message}", fex);
                 return false;
             }
             catch (IOException ioex)
             {
-                // Catch general I/O errors (e.g., file locked, disk full)
                 await _logger.ErrorAsync($"I/O error during row montage for '{fullPathNoExt}_{rowId}': {ioex.Message}", ioex);
                 return false;
             }
             catch (Exception ex)
             {
-                // Catch any other unexpected exceptions
                 await _logger.ErrorAsync($"An unexpected error occurred during row montage for '{fullPathNoExt}_{rowId}': {ex.Message}", ex);
                 return false;
             }
@@ -198,69 +183,59 @@ namespace P3D_Scenario_Generator.MapTiles
         {
             try
             {
-                // MagickImageCollection will hold the individual column images to be montaged.
                 using var images = new MagickImageCollection();
 
-                // Setup for the montage operation.
-                // Geometry defines the size of each individual column image (Con.TileSizePixels width, yCount * Con.TileSizePixels height).
-                // TileGeometry defines the layout of the montage (xCount columns by 1 row).
                 var settings = new MontageSettings
                 {
                     Geometry = new MagickGeometry($"{Constants.TileSizePixels}x{Constants.TileSizePixels * yCount}"),
                     TileGeometry = new MagickGeometry($"{xCount}x1"),
                 };
 
-                // Load each individual column image into the collection.
                 for (int xIndex = 0; xIndex < xCount; xIndex++)
                 {
                     string columnPath = $"{fullPathNoExt}_{xIndex}.png";
                     if (!FileOps.FileExists(columnPath))
                     {
                         await _logger.ErrorAsync($"Required column image not found: {columnPath}");
-                        return false; // Fail if a source column image is missing
+                        return false;
                     }
                     images.Add(new MagickImage(columnPath));
                 }
 
-                // Perform the montage operation. The result is a single MagickImage.
                 using var result = images.Montage(settings);
 
-                // Write the resulting montaged image to the specified output file.
                 string outputPath = $"{fullPathNoExt}.png";
 
-                // Ensure destination directory exists before writing (though likely covered by previous steps)
+                // Ensure destination directory exists using FileOps
                 var directory = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                if (!string.IsNullOrEmpty(directory))
                 {
-                    Directory.CreateDirectory(directory);
+                    if (!await _fileOps.TryCreateDirectoryAsync(directory, _progressReporter))
+                    {
+                        return false;
+                    }
                 }
 
                 result.Write(outputPath);
-
-                // If execution reaches here, the operation was successful.
                 return true;
             }
             catch (MagickErrorException mex)
             {
-                // Catch specific Magick.NET exceptions
                 await _logger.ErrorAsync($"Magick.NET error during full image montage for '{fullPathNoExt}': {mex.Message}", mex);
                 return false;
             }
             catch (FileNotFoundException fex)
             {
-                // Catch if a specific column file was not found during loading
                 await _logger.ErrorAsync($"File not found error during full image montage: {fex.FileName}. Details: {fex.Message}", fex);
                 return false;
             }
             catch (IOException ioex)
             {
-                // Catch general I/O errors (e.g., file locked, disk full)
                 await _logger.ErrorAsync($"I/O error during full image montage for '{fullPathNoExt}': {ioex.Message}", ioex);
                 return false;
             }
             catch (Exception ex)
             {
-                // Catch any other unexpected exceptions
                 await _logger.ErrorAsync($"An unexpected error occurred during full image montage for '{fullPathNoExt}': {ex.Message}", ex);
                 return false;
             }
@@ -279,69 +254,59 @@ namespace P3D_Scenario_Generator.MapTiles
         {
             try
             {
-                // MagickImageCollection will hold the individual column images to be montaged.
                 using var images = new MagickImageCollection();
 
-                // Setup for the montage operation.
-                // Geometry defines the size of each individual row image (xCount * Con.TileSizePixels width, Con.TileSizePixels height).
-                // TileGeometry defines the layout of the montage (1 column by yCount rows).
                 var settings = new MontageSettings
                 {
                     Geometry = new MagickGeometry($"{Constants.TileSizePixels * xCount}x{Constants.TileSizePixels}"),
                     TileGeometry = new MagickGeometry($"1x{yCount}"),
                 };
 
-                // Load each individual row image into the collection.
                 for (int yIndex = 0; yIndex < yCount; yIndex++)
                 {
                     string rowPath = $"{fullPathNoExt}_{yIndex}.png";
                     if (!FileOps.FileExists(rowPath))
                     {
                         await _logger.ErrorAsync($"Required row image not found: {rowPath}");
-                        return false; // Fail if a source row image is missing
+                        return false;
                     }
                     images.Add(new MagickImage(rowPath));
                 }
 
-                // Perform the montage operation. The result is a single MagickImage.
                 using var result = images.Montage(settings);
 
-                // Write the resulting montaged image to the specified output file.
                 string outputPath = $"{fullPathNoExt}.png";
 
-                // Ensure destination directory exists before writing 
+                // Ensure destination directory exists using FileOps
                 var directory = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                if (!string.IsNullOrEmpty(directory))
                 {
-                    Directory.CreateDirectory(directory);
+                    if (!await _fileOps.TryCreateDirectoryAsync(directory, _progressReporter))
+                    {
+                        return false;
+                    }
                 }
 
                 result.Write(outputPath);
-
-                // If execution reaches here, the operation was successful.
                 return true;
             }
             catch (MagickErrorException mex)
             {
-                // Catch specific Magick.NET exceptions
                 await _logger.ErrorAsync($"Magick.NET error during full image montage for '{fullPathNoExt}': {mex.Message}", mex);
                 return false;
             }
             catch (FileNotFoundException fex)
             {
-                // Catch if a specific row file was not found during loading
                 await _logger.ErrorAsync($"File not found error during full image montage: {fex.FileName}. Details: {fex.Message}", fex);
                 return false;
             }
             catch (IOException ioex)
             {
-                // Catch general I/O errors (e.g., file locked, disk full)
                 await _logger.ErrorAsync($"I/O error during full image montage for '{fullPathNoExt}': {ioex.Message}", ioex);
                 return false;
             }
             catch (Exception ex)
             {
-                // Catch any other unexpected exceptions
                 await _logger.ErrorAsync($"An unexpected error occurred during full image montage for '{fullPathNoExt}': {ex.Message}", ex);
                 return false;
             }
@@ -357,69 +322,55 @@ namespace P3D_Scenario_Generator.MapTiles
         /// for which OSM tiles need to be processed.</param>
         /// <param name="zoom">The specific zoom level for all tiles in the montage.</param>
         /// <param name="fullPathNoExt">The base path and fullPathNoExt prefix used for all intermediate and final image files.</param>
+        /// <param name="formData">The scenario form data containing image paths and monitor limits.</param>
         /// <returns><see langword="true"/> if the entire montage process (downloading, montaging, and cleanup)
         /// completes successfully; otherwise, <see langword="false"/> if any step fails (errors are logged by
         /// underlying methods).</returns>
         public async Task<bool> MontageTilesAsync(BoundingBox boundingBox, int zoom, string fullPathNoExt, ScenarioFormData formData)
         {
-            // Step 1: Start tasks for downloading and montaging each column in parallel.
-            // Instead of a sequential loop, we create a list of Tasks and run them concurrently.
             var columnTasks = new List<Task<bool>>();
 
             for (int xIndex = 0; xIndex < boundingBox.XAxis.Count; xIndex++)
             {
                 var tempXIndex = xIndex;
 
-                // For each column, start a task that handles both the tile download and the vertical montage.
-                // We do not 'await' this task immediately; we add it to a list of tasks to run in parallel.
                 columnTasks.Add(Task.Run(async () =>
                 {
-                    // Download all individual tiles for the current column.
                     if (!await _mapTileDownloader.DownloadOSMtileColumnAsync(boundingBox.XAxis[tempXIndex], tempXIndex, boundingBox, zoom, fullPathNoExt, formData))
                     {
                         await _logger.ErrorAsync($"Failed to download OSM tile column for xIndex {tempXIndex}.");
-                        return false; // Indicate failure for this specific column.
+                        return false;
                     }
 
-                    // Montage the individual tiles (downloaded in the previous step) into a single vertical column image.
                     if (!await MontageTilesToColumnAsync(boundingBox.YAxis.Count, tempXIndex, fullPathNoExt))
                     {
                         await _logger.ErrorAsync($"Failed to montage tiles to column for xIndex {tempXIndex}.");
-                        return false; // Indicate failure for this specific column.
+                        return false;
                     }
 
-                    return true; // Indicate success for this specific column's operations.
+                    return true;
                 }));
             }
 
-            // Await all column tasks to complete. Task.WhenAll is crucial for parallel execution.
-            // It returns an array of results, one for each task.
             bool[] results = await Task.WhenAll(columnTasks);
 
-            // Check if any of the parallel column tasks failed.
             if (results.Any(result => !result))
             {
-                // An error was logged by one of the tasks; we can now return false.
-                // No need to log here as the individual tasks already did.
                 return false;
             }
 
-            // Step 2: Montage the generated column strips horizontally to form the final complete image.
-            // This part remains sequential because it depends on all columns being fully montaged first.
             if (!await MontageColumnsAsync(boundingBox.XAxis.Count, boundingBox.YAxis.Count, fullPathNoExt))
             {
                 await _logger.ErrorAsync($"Failed to montage columns into final image.");
                 return false;
             }
 
-            // Step 3: Delete all temporary individual tile and column strip files.
             if (!await _fileOps.TryDeleteTempOSMfilesAsync(fullPathNoExt, null))
             {
                 await _logger.ErrorAsync($"Failed to delete temporary OSM files.");
                 return false;
             }
 
-            // If all steps completed without returning false, the entire process was successful.
             return true;
         }
     }

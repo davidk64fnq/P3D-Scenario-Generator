@@ -111,9 +111,11 @@ namespace P3D_Scenario_Generator.CelestialScenario
         {
             string targetFolder = Path.Combine(scenarioImageFolder, "Constellations");
 
-            if (!Directory.Exists(targetFolder))
+            // Ensure the target directory exists using FileOps
+            if (!await _fileOps.TryCreateDirectoryAsync(targetFolder, _progressReporter))
             {
-                Directory.CreateDirectory(targetFolder);
+                await _logger.ErrorAsync($"Failed to create target folder '{targetFolder}'.");
+                return false;
             }
 
             // Materialize directly to List to bypass deferred LINQ execution in the debugger

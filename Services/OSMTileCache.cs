@@ -11,10 +11,10 @@ namespace P3D_Scenario_Generator.Services
         FormProgressReporter progressReporter,
         CacheMetadataService metadataService)
     {
-        private readonly FileOps _fileOps = fileOps;
-        private readonly HttpRoutines _httpRoutines = httpRoutines;
-        private readonly FormProgressReporter _progressReporter = progressReporter;
-        private readonly CacheMetadataService _metadataService = metadataService;
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly CacheMetadataService _metadataService = metadataService ?? throw new ArgumentNullException(nameof(metadataService));
 
         /// <summary>
         /// Retrieves an OpenStreetMap (OSM) tile, either from a local cache or by downloading it,
@@ -23,7 +23,9 @@ namespace P3D_Scenario_Generator.Services
         public async Task<bool> GetOrCopyOSMtile(string key, string url, string saveFile)
         {
             string cachePath = "";
-            if (DoesKeyExist(key, ref cachePath))
+            bool cached = await DoesKeyExistAsync(key, result => cachePath = result);
+
+            if (cached)
             {
                 // Tile exists in cache, attempt to copy it to the saveFile location.
                 if (!await _fileOps.TryCopyFileAsync(cachePath, saveFile, _progressReporter, true))
@@ -40,6 +42,13 @@ namespace P3D_Scenario_Generator.Services
                     var stats = _metadataService.GetStats();
                     _metadataService.UpdateDailyTotal(stats.DailyDownloadTotal + 1);
 
+                    // Ensure target zoom directory exists in cache before saving
+                    string? zoomDir = Path.GetDirectoryName(cachePath);
+                    if (!string.IsNullOrEmpty(zoomDir))
+                    {
+                        await _fileOps.TryCreateDirectoryAsync(zoomDir, _progressReporter);
+                    }
+
                     // Copy the newly downloaded file into the cache
                     if (!await _fileOps.TryCopyFileAsync(saveFile, cachePath, _progressReporter, true))
                     {
@@ -55,22 +64,24 @@ namespace P3D_Scenario_Generator.Services
         }
 
         /// <summary>
-        /// Determines if a specific cached OSM tile exists and ensures directory structure is ready.
+        /// Determines if a specific cached OSM tile exists and ensures the directory structure is ready.
         /// </summary>
-        public static bool DoesKeyExist(string key, ref string cachePath)
+        private async Task<bool> DoesKeyExistAsync(string key, Action<string> pathSetter)
         {
             string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.AppDataFolderName);
 
             // Subdirectory based on Zoom level (first part of the key)
             string zoomDir = Path.Combine(directory, key.Split('-')[0]);
 
-            if (!Directory.Exists(zoomDir))
+            if (!FileOps.DirectoryExists(zoomDir))
             {
-                Directory.CreateDirectory(zoomDir);
+                await _fileOps.TryCreateDirectoryAsync(zoomDir, _progressReporter);
             }
 
-            cachePath = Path.Combine(zoomDir, key);
-            return File.Exists(cachePath);
+            string cachePath = Path.Combine(zoomDir, key);
+            pathSetter(cachePath);
+
+            return FileOps.FileExists(cachePath);
         }
 
         /// <summary>
@@ -83,7 +94,7 @@ namespace P3D_Scenario_Generator.Services
 
             string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.AppDataFolderName);
 
-            if (Directory.Exists(directory))
+            if (FileOps.DirectoryExists(directory))
             {
                 long cacheUsage = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
                                            .Sum(file => new FileInfo(file).Length);

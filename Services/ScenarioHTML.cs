@@ -182,7 +182,7 @@ namespace P3D_Scenario_Generator.Services
 
             // Copy selected aircraft thumbnail image, or default if not provided
             string aircraftImageSource = formData.AircraftImagePath;
-            string aircraftImageDest = $"{formData.ScenarioImageFolder}\\Overview_01.jpg";
+            string aircraftImageDest = Path.Combine(formData.ScenarioImageFolder, "Overview_01.jpg");
 
             if (FileOps.FileExists(aircraftImageSource))
             {
@@ -198,45 +198,31 @@ namespace P3D_Scenario_Generator.Services
             }
             else
             {
-                (bool success, Stream? resourceStream) = await _fileOps.TryGetResourceStreamAsync("Images.thumbnail.jpg", _progressReporter);
-                if (success && resourceStream != null)
+                // Use CopyResourceFileAsync directly to avoid manual FileStream creation
+                if (!await _fileOps.CopyResourceFileAsync("Images.thumbnail.jpg", aircraftImageDest, _progressReporter))
                 {
-                    using (resourceStream)
-                    using (FileStream outputFileStream = new(aircraftImageDest, FileMode.Create))
-                    {
-                        if (!await _fileOps.TryCopyStreamToStreamAsync(resourceStream, outputFileStream, _progressReporter))
-                        {
-                            message = $"Failed to copy default aircraft image from resource stream to {aircraftImageDest}.";
-                            await _logger.ErrorAsync(message);
-                            _progressReporter.Report($"ERROR: {message}");
-                            return false;
-                        }
-                        await _logger.InfoAsync($"Successfully copied default aircraft image from resource stream to {aircraftImageDest}.");
-                        _progressReporter.Report("INFO: Default aircraft image copied.");
-                    }
-                }
-                else
-                {
-                    message = "Failed to get default aircraft image from resources.";
+                    message = "Failed to copy default aircraft image from resources.";
                     await _logger.ErrorAsync(message);
                     _progressReporter.Report($"ERROR: {message}");
                     return false;
                 }
+                await _logger.InfoAsync($"Successfully copied default aircraft image from resource to {aircraftImageDest}.");
+                _progressReporter.Report("INFO: Default aircraft image copied.");
             }
 
-            // Create sound directory if it doesn't exist
-            string soundDirectoryPath = $"{formData.ScenarioFolder}\\sound";
-            if (!Directory.Exists(soundDirectoryPath))
+            // Create sound directory if it doesn't exist via FileOps
+            string soundDirectoryPath = Path.Combine(formData.ScenarioFolder, "sound");
+            if (!await _fileOps.TryCreateDirectoryAsync(soundDirectoryPath, _progressReporter))
             {
-                Directory.CreateDirectory(soundDirectoryPath);
+                return false;
             }
 
             // Copy style files and other images
-            if (!await _fileOps.CopyResourceFileAsync("CSS.style_kneeboard.css", $"{formData.ScenarioFolder}\\style_kneeboard.css", _progressReporter) ||
-                !await _fileOps.CopyResourceFileAsync("CSS.style_load_flight.css", $"{formData.ScenarioFolder}\\style_load_flight.css", _progressReporter) ||
-                !await _fileOps.CopyResourceFileAsync("Sounds.ThruHoop.wav", $"{soundDirectoryPath}\\ThruHoop.wav", _progressReporter) ||
-                !await _fileOps.CopyResourceFileAsync("Images.aircraft.png", $"{formData.ScenarioImageFolder}\\aircraft.png", _progressReporter) ||
-                !await _fileOps.CopyResourceFileAsync("Images.header.png", $"{formData.ScenarioImageFolder}\\header.png", _progressReporter))
+            if (!await _fileOps.CopyResourceFileAsync("CSS.style_kneeboard.css", Path.Combine(formData.ScenarioFolder, "style_kneeboard.css"), _progressReporter) ||
+                !await _fileOps.CopyResourceFileAsync("CSS.style_load_flight.css", Path.Combine(formData.ScenarioFolder, "style_load_flight.css"), _progressReporter) ||
+                !await _fileOps.CopyResourceFileAsync("Sounds.ThruHoop.wav", Path.Combine(soundDirectoryPath, "ThruHoop.wav"), _progressReporter) ||
+                !await _fileOps.CopyResourceFileAsync("Images.aircraft.png", Path.Combine(formData.ScenarioImageFolder, "aircraft.png"), _progressReporter) ||
+                !await _fileOps.CopyResourceFileAsync("Images.header.png", Path.Combine(formData.ScenarioImageFolder, "header.png"), _progressReporter))
             {
                 return false;
             }

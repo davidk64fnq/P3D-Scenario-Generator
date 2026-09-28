@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text.Json;
+﻿using System.Text.Json;
 using P3D_Scenario_Generator.ConstantsEnums;
 
 namespace P3D_Scenario_Generator.Services
@@ -24,6 +22,7 @@ namespace P3D_Scenario_Generator.Services
         // CA1869: Reuse JsonSerializerOptions to improve performance
         private static readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
+        private readonly FileOps _fileOps;
         private readonly string _filePath;
         private readonly CacheStats _stats;
 
@@ -33,14 +32,12 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         public event Action? OnMetadataChanged;
 
-        public CacheMetadataService()
+        public CacheMetadataService(FileOps fileOps)
         {
-            string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.AppDataFolderName);
+            _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
 
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
+            string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.AppDataFolderName);
+            FileOps.EnsureDirectoryExists(directory);
 
             _filePath = Path.Combine(directory, "cache_stats.json");
             _stats = Load();
@@ -73,27 +70,37 @@ namespace P3D_Scenario_Generator.Services
 
         private CacheStats Load()
         {
-            if (!File.Exists(_filePath)) return new CacheStats();
+            if (!FileOps.FileExists(_filePath)) return new CacheStats();
+
             try
             {
-                string json = File.ReadAllText(_filePath);
+                string json = FileOps.ReadAllText(_filePath);
                 return JsonSerializer.Deserialize<CacheStats>(json, _jsonOptions) ?? new CacheStats();
             }
-            catch { return new CacheStats(); }
+            catch
+            {
+                return new CacheStats();
+            }
         }
 
         private void Save()
         {
             try
             {
-                string json = JsonSerializer.Serialize(_stats, _jsonOptions);
-                File.WriteAllText(_filePath, json);
-
-                // The null-conditional operator ?. is still valid for events 
-                // regardless of the project's Nullable setting.
-                OnMetadataChanged?.Invoke();
+                // Fire-and-forget the async save via FileOps' new JSON serializer
+                _ = Task.Run(async () =>
+                {
+                    bool saved = await _fileOps.TrySerializeJsonToFileAsync(_filePath, _stats, _jsonOptions);
+                    if (saved)
+                    {
+                        OnMetadataChanged?.Invoke();
+                    }
+                });
             }
-            catch { }
+            catch
+            {
+                // Suppress background persistence exceptions
+            }
         }
     }
 }

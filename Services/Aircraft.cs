@@ -111,14 +111,20 @@ namespace P3D_Scenario_Generator.Services
 
         /// <summary>
         /// Verifies if an image file matches standard Prepar3D thumbnail dimensions (2:1 aspect ratio).
-        /// Uses FileStream to avoid locking the image file on disk.
+        /// Reads bytes via FileOps into a MemoryStream to avoid locking the image file on disk.
         /// </summary>
         private static bool IsValidThumbnailDimensions(string filePath)
         {
+            if (!FileOps.FileExists(filePath))
+            {
+                return false;
+            }
+
             try
             {
-                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                using var img = System.Drawing.Image.FromStream(stream, false, false);
+                byte[] imageBytes = FileOps.ReadAllBytes(filePath);
+                using var ms = new MemoryStream(imageBytes);
+                using var img = System.Drawing.Image.FromStream(ms, useEmbeddedColorManagement: false, validateImageData: false);
 
                 // Standard P3D thumbnail ratio is 2:1 (e.g., 256x128 or 512x256)
                 double aspectRatio = (double)img.Width / img.Height;

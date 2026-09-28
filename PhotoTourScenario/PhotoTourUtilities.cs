@@ -13,7 +13,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     {
         private readonly Logger _logger = logger;
         private readonly HttpRoutines _httpRoutines = httpRoutines;
-        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps)); 
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly ImageUtils _imageUtils = imageUtils;
 
         /// <summary>
@@ -29,8 +29,6 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// </returns>
         public static IEnumerable<Coordinate> SetOverviewCoords(List<PhotoLocParams> photoLocations)
         {
-            // The Select method iterates over each photo/airport in the PhotoLocations
-            // and projects it into a new 'Coordinate' object using the location's lat and lon.
             return photoLocations.Select(photo => new Coordinate(photo.latitude, photo.longitude));
         }
 
@@ -107,11 +105,13 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         /// </summary>
         /// <param name="photoLocations">A list of <see cref="PhotoLocParams"/> objects,
         /// each containing the URL of a photo to be downloaded and processed.</param>
+        /// <param name="formData">The form data containing image paths and monitor limits.</param>
+        /// <param name="progressReporter">Optional progress reporter for notifying the UI.</param>
         /// <returns>
         /// <see langword="true"/> if all photos are successfully downloaded and resized as needed;
         /// <see langword="false"/> if any photo download or resize operation fails.
         /// </returns>
-        public async Task<bool> GetPhotos(List<PhotoLocParams> photoLocations, ScenarioFormData formData)
+        public async Task<bool> GetPhotos(List<PhotoLocParams> photoLocations, ScenarioFormData formData, IProgress<string>? progressReporter = null)
         {
             for (int index = 1; index < photoLocations.Count - 1; index++)
             {
@@ -125,30 +125,29 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                     return false;
                 }
 
-                // 2. Load the photo for dimension checking into a MemoryStream to avoid file locking.
+                // 2. Load the photo bytes using FileOps to avoid raw file operations and handle errors uniformly
+                var (readSuccess, imageBytes) = await _fileOps.TryReadAllBytesAsync(filePath, progressReporter);
+                if (!readSuccess || imageBytes is null)
+                {
+                    await _logger.ErrorAsync($"Could not read image bytes from '{filePath}'.");
+                    return false;
+                }
+
                 int originalWidth;
                 int originalHeight;
                 try
                 {
-                    // Read all bytes from the file into a byte array
-                    byte[] imageBytes = File.ReadAllBytes(filePath);
-
-                    // Create a MemoryStream from the byte array
+                    // Create a MemoryStream from the byte array to check dimensions safely without locks
                     using MemoryStream ms = new(imageBytes);
-                    // Create the Bitmap from the MemoryStream
                     using Bitmap drawing = new(ms);
                     originalWidth = drawing.Width;
                     originalHeight = drawing.Height;
-                    // MemoryStream is disposed here, but the file was already released by File.ReadAllBytes
-                    // Bitmap is disposed, MemoryStream is still open
                 }
                 catch (Exception ex)
                 {
                     await _logger.ErrorAsync($"Could not load image '{filePath}' into memory for dimension check. Error: {ex.Message}");
                     return false;
                 }
-                // At this point, the file `filePath` is no longer locked by your `Bitmap` object.
-                // It's free for Magick.NET to open.
 
                 // Determine if resizing is needed and calculate new dimensions while maintaining aspect ratio
                 int newWidth = originalWidth;
@@ -170,8 +169,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 }
 
                 // Check if either dimension exceeds safe monitor dimensions
-                if (originalWidth > targetWidth ||
-                    originalHeight > targetHeight)
+                if (originalWidth > targetWidth || originalHeight > targetHeight)
                 {
                     needsResize = true;
 
@@ -195,7 +193,6 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 // If photo needs resizing, call ImageUtils.Resize with calculated dimensions
                 if (needsResize)
                 {
-                    // ImageUtils.Resize should now be able to open and modify the file
                     if (!await _imageUtils.ResizeAsync(filePath, newWidth, newHeight))
                     {
                         await _logger.ErrorAsync($"Failed to resize image '{filename}'.");
@@ -209,7 +206,6 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
         public static Overview SetOverviewStruct(ScenarioFormData formData, List<PhotoLocParams> photoLocations)
         {
-            // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
             double duration = PhotoTourUtilities.GetPhotoTourDistance(photoLocations) / formData.AircraftCruiseSpeed * 60;
 
             string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftDisplayTitle}";
@@ -235,52 +231,31 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             return overview;
         }
 
-        /// <summary>
-        /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
-        /// for the map window based on the specified alignment and monitor properties.
-        /// </summary>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
-        /// map window's desired alignment, offsets, monitor dimensions, and calculated window size.</param>
-        /// <returns>
-        /// A <see cref="T:System.String[]"/> array containing four elements in the order:
-        /// <list type="bullet">
-        /// <item><description>Window Width (string)</description></item>
-        /// <item><description>Window Height (string)</description></item>
-        /// <item><description>Horizontal Offset (string)</description></item>
-        /// <item><description>Vertical Offset (string)</description></item>
-        /// </list>
-        /// These parameters are suitable for configuring the map window's display.
-        /// </returns>
         static internal string[] GetMapWindowParameters(ScenarioFormData formData)
         {
-            // Dimensions
             int mapWindowWidth = (int)formData.MapWindowSize;
             int mapWindowHeight = (int)formData.MapWindowSize;
 
             return ScenarioXML.GetWindowParameters(mapWindowWidth, mapWindowHeight, formData.MapAlignment,
-            formData.MapMonitorWidth, formData.MapMonitorHeight, formData.MapOffset);
+                formData.MapMonitorWidth, formData.MapMonitorHeight, formData.MapOffset);
         }
 
-        /// <summary>
-        /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
-        /// for the photo window based on the specified alignment and monitor properties.
-        /// </summary>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
-        /// Photo window's desired alignment, offsets, monitor dimensions, and calculated window size.</param>
-        /// <returns>
-        /// A <see cref="T:System.String[]"/> array containing four elements in the order:
-        /// <list type="bullet">
-        /// <item><description>Window Width (string)</description></item>
-        /// <item><description>Window Height (string)</description></item>
-        /// <item><description>Horizontal Offset (string)</description></item>
-        /// <item><description>Vertical Offset (string)</description></item>
-        /// </list>
-        /// These parameters are suitable for configuring the photo window's display.
-        /// </returns>
         static internal string[] GetPhotoWindowParameters(int photoNo, ScenarioFormData formData)
         {
             string bitmapFilename = $"{formData.ScenarioImageFolder}\\photo_{photoNo:00}.jpg";
-            using Bitmap drawing = new(bitmapFilename);
+
+            // If the file is missing, return safe defaults
+            if (!FileOps.FileExists(bitmapFilename))
+            {
+                return ScenarioXML.GetWindowParameters(0, 0, formData.PhotoTourPhotoAlignment,
+                    formData.PhotoTourPhotoMonitorWidth, formData.PhotoTourPhotoMonitorHeight, formData.PhotoTourPhotoOffset);
+            }
+
+            // Using MemoryStream prevents GDI+ from placing an exclusive lock on the file
+            byte[] bytes = FileOps.ReadAllBytes(bitmapFilename);
+            using MemoryStream ms = new(bytes);
+            using Bitmap drawing = new(ms);
+
             return ScenarioXML.GetWindowParameters(drawing.Width, drawing.Height, formData.PhotoTourPhotoAlignment,
                 formData.PhotoTourPhotoMonitorWidth, formData.PhotoTourPhotoMonitorHeight, formData.PhotoTourPhotoOffset);
         }

@@ -52,30 +52,21 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>A task that returns <see langword="true"/> if location favourites were successfully loaded, <see langword="false"/> otherwise.</returns>
         internal async Task<bool> LoadLocationFavouritesAsync(IProgress<string>? progressReporter = null)
         {
-            // Initialize LocationFavourites to an empty list to prevent NullReferenceException on failure.
             LocationFavourites = [];
             bool needsFallback = false;
 
             try
             {
-                // First, try to load from the local file using the asynchronous method.
                 await _logger.InfoAsync($"Attempting to load location favourites from local file: {_favouritesFilePath}");
                 var (success, data) = await _cacheManager.TryDeserializeFromFileAsync<List<LocationFavourite>>(_favouritesFilePath);
 
-                if (success && data != null)
+                if (success && data != null && data.Count > 0)
                 {
                     LocationFavourites = data;
                 }
                 else
                 {
-                    // If the local file was not found or deserialization failed, trigger a fallback.
-                    needsFallback = true;
-                }
-
-                // If the local file was loaded successfully but is empty, trigger a fallback.
-                if (LocationFavourites == null || LocationFavourites.Count == 0)
-                {
-                    string warningMessage = "Local favourites file was empty or contained no valid data. Falling back to embedded resource.";
+                    string warningMessage = "Local favourites file was missing, empty, or invalid. Falling back to embedded resource.";
                     await _logger.WarningAsync(warningMessage);
                     progressReporter?.Report(warningMessage);
                     needsFallback = true;
@@ -83,7 +74,6 @@ namespace P3D_Scenario_Generator.Runways
             }
             catch (Exception ex)
             {
-                // Catch any other exceptions from the primary deserialize attempt.
                 string errorMessage = $"An error occurred while processing local favourites file: {ex.Message}";
                 await _logger.ErrorAsync(errorMessage, ex);
                 progressReporter?.Report($"ERROR: {errorMessage}");
@@ -92,42 +82,20 @@ namespace P3D_Scenario_Generator.Runways
 
             if (needsFallback)
             {
-                try
+                var (resSuccess, resData) = await _fileOps.TryDeserializeJsonFromResourceAsync<List<LocationFavourite>>("Text.LocationFavouritesJSON.txt", null, progressReporter);
+
+                if (resSuccess && resData != null && resData.Count > 0)
                 {
-                    (bool success, Stream? resourceStream) = await _fileOps.TryGetResourceStreamAsync("Text.LocationFavouritesJSON.txt", progressReporter);
-                    if (success && resourceStream != null)
-                    {
-                        using (resourceStream)
-                        {
-                            var deserialized = System.Text.Json.JsonSerializer.Deserialize<List<LocationFavourite>>(resourceStream);
-                            if (deserialized != null)
-                            {
-                                LocationFavourites = deserialized;
-                                await _logger.InfoAsync("Successfully loaded location favourites from embedded resource.");
-                            }
-                            else
-                            {
-                                LocationFavourites = [new LocationFavourite() { Name = DefaultFavouriteName }];
-                                CurrentLocationFavouriteIndex = 0;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // If loading fails completely, fall back to the protected default
-                        LocationFavourites = [new LocationFavourite() { Name = DefaultFavouriteName }];
-                        CurrentLocationFavouriteIndex = 0;
-                    }
+                    LocationFavourites = resData;
+                    await _logger.InfoAsync("Successfully loaded location favourites from embedded resource.");
                 }
-                catch (Exception ex)
+                else
                 {
-                    string errorMessage = $"An unexpected error occurred during fallback to embedded resource: {ex.Message}";
-                    await _logger.ErrorAsync(errorMessage, ex);
-                    progressReporter?.Report($"ERROR: {errorMessage}");
-                    LocationFavourites = [];
-                    return false;
+                    LocationFavourites = [new LocationFavourite() { Name = DefaultFavouriteName }];
+                    CurrentLocationFavouriteIndex = 0;
                 }
             }
+
             if (LocationFavourites != null && LocationFavourites.Count > 0)
             {
                 if (!LocationFavourites.Any(f => string.Equals(f?.Name, DefaultFavouriteName, StringComparison.OrdinalIgnoreCase)))
@@ -141,7 +109,7 @@ namespace P3D_Scenario_Generator.Runways
             }
             else
             {
-                string warningMessage = "All attempts to load a valid list of location favourites failed. The list will be empty.";
+                string warningMessage = "All attempts to load a valid list of location favourites failed. Default item inserted.";
                 await _logger.WarningAsync(warningMessage);
                 progressReporter?.Report(warningMessage);
                 LocationFavourites = [new LocationFavourite() { Name = DefaultFavouriteName }];

@@ -8,8 +8,9 @@ namespace P3D_Scenario_Generator.Services
     /// <summary>
     /// Provides an asynchronous logging service that writes log entries to separate files based on severity.
     /// This implementation uses asynchronous file I/O to avoid blocking the calling thread.
+    /// NOTE: Direct File I/O is retained here to prevent circular dependencies with FileOps.
     /// </summary>
-    public class Logger 
+    public class Logger
     {
         private readonly string _logDirectory;
         private readonly string _errorLogFilePath;
@@ -138,11 +139,8 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         private static string GetLogPrefix(string callerName, string callerFilePath)
         {
-            // Extract the class name from the file path.
             string className = Path.GetFileNameWithoutExtension(callerFilePath);
 
-            // For async methods, the compiler-generated name is in the format "<MethodName>d__<number>".
-            // We need to strip this off to get the original method name.
             if (callerName.Contains('<') && callerName.Contains('>'))
             {
                 int startIndex = callerName.IndexOf('<') + 1;
@@ -156,11 +154,6 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Gets the log entry string based on the current settings.
         /// </summary>
-        /// <param name="level">The log level.</param>
-        /// <param name="prefix">The log prefix with class and method name.</param>
-        /// <param name="timestamp">The timestamp string.</param>
-        /// <param name="message">The log message.</param>
-        /// <returns>The formatted log entry string.</returns>
         private string GetLogEntry(string level, string prefix, string timestamp, string message)
         {
             var sb = new StringBuilder();
@@ -187,13 +180,9 @@ namespace P3D_Scenario_Generator.Services
 
         /// <summary>
         /// Processes a string to replace any known path prefixes with their field names.
-        /// This version works even when the path is not at the beginning of the string.
         /// </summary>
-        /// <param name="path">The log message string to process.</param>
-        /// <returns>The modified string with prefixes replaced, or the original string if no match is found.</returns>
         private string ProcessPath(string message)
         {
-            // Check if _formData itself is null to prevent errors.
             if (_formData == null ||
                 _formData.P3DProgramInstall == null ||
                 _formData.P3DProgramData == null ||
@@ -205,10 +194,6 @@ namespace P3D_Scenario_Generator.Services
                 return message;
             }
 
-            // We use a list of tuples to store the paths and their corresponding field names.
-            // The list is ordered by the length of the path in descending order
-            // to prevent partial matches (e.g., matching a shorter path that is a substring
-            // of a longer one first).
             var pathMap = new List<(string Path, string Name)>
             {
                 (_formData.P3DProgramInstall, "P3DProgramInstall"),
@@ -220,32 +205,24 @@ namespace P3D_Scenario_Generator.Services
                 (FileOps.GetApplicationDataDirectory(), "P3DSGProgramData")
             };
 
-            // Sort the list by path length in descending order.
             pathMap.Sort((a, b) => b.Path.Length.CompareTo(a.Path.Length));
 
-            // Iterate through the mapped paths and check if the message contains any of them.
             foreach (var entry in pathMap)
             {
-                // Find the index of the path within the message, using a case-insensitive search.
                 int index = message.IndexOf(entry.Path, StringComparison.OrdinalIgnoreCase);
 
-                // If the path is found...
                 if (index >= 0)
                 {
-                    // ...replace it with the field name.
-                    // We use substring to reconstruct the string around the matched path.
                     return string.Concat(message.AsSpan(0, index), entry.Name, message.AsSpan(index + entry.Path.Length));
                 }
             }
 
-            // If no match is found, return the original message.
             return message;
         }
 
         /// <summary>
         /// Gets the formatted timestamp based on the current settings.
         /// </summary>
-        /// <returns>The formatted timestamp string.</returns>
         private string GetTimestamp()
         {
             var parts = new List<string>();
@@ -262,13 +239,13 @@ namespace P3D_Scenario_Generator.Services
 
         /// <summary>
         /// Clears the contents of a specified log file.
+        /// Retains raw File I/O to avoid circular dependency with FileOps.
         /// </summary>
-        /// <param name="filePath">The full path to the log file to clear.</param>
         private static void ClearLogFile(string filePath)
         {
             try
             {
-                if (File.Exists(filePath))
+                if (FileOps.FileExists(filePath))
                 {
                     File.WriteAllText(filePath, string.Empty);
                 }
@@ -281,9 +258,8 @@ namespace P3D_Scenario_Generator.Services
 
         /// <summary>
         /// Asynchronously writes a formatted log entry to the specified file and to the debug output.
+        /// Retains raw File I/O to avoid circular dependency with FileOps.
         /// </summary>
-        /// <param name="filePath">The full path to the log file.</param>
-        /// <param name="logEntry">The log message to write.</param>
         private static async Task WriteLogEntryAsync(string filePath, string logEntry)
         {
             try

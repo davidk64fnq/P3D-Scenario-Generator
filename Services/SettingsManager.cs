@@ -20,17 +20,16 @@ namespace P3D_Scenario_Generator.Services
         private Dictionary<string, object?> _settingsCache;
         private readonly Dictionary<string, object?> _designerDefaults;
         private readonly Logger _logger;
+        private readonly FileOps _fileOps;
 
-        public SettingsManager(Logger logger)
+        public SettingsManager(Logger logger, FileOps fileOps)
         {
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
             _designerDefaults = [];
 
-            // Matches the path logic in your Logger class
-            string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
-            string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
-
-            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+            // Use FileOps to retrieve and ensure the AppData folder exists
+            string folder = FileOps.GetApplicationDataDirectory();
 
             _settingsFilePath = Path.Combine(folder, "ui_settings.json");
             _backupFilePath = Path.Combine(folder, "ui_settings.json.bak");
@@ -130,9 +129,9 @@ namespace P3D_Scenario_Generator.Services
         {
             try
             {
-                if (File.Exists(_settingsFilePath))
+                if (FileOps.FileExists(_settingsFilePath))
                 {
-                    string json = File.ReadAllText(_settingsFilePath);
+                    string json = FileOps.ReadAllText(_settingsFilePath);
                     if (string.IsNullOrWhiteSpace(json))
                     {
                         TryRestoreFromBackup();
@@ -153,11 +152,11 @@ namespace P3D_Scenario_Generator.Services
 
         private void TryRestoreFromBackup()
         {
-            if (File.Exists(_backupFilePath))
+            if (FileOps.FileExists(_backupFilePath))
             {
                 try
                 {
-                    string json = File.ReadAllText(_backupFilePath);
+                    string json = FileOps.ReadAllText(_backupFilePath);
                     _settingsCache = JsonConvert.DeserializeObject<Dictionary<string, object?>>(json) ?? [];
                 }
                 catch
@@ -196,22 +195,47 @@ namespace P3D_Scenario_Generator.Services
             {
                 string json = JsonConvert.SerializeObject(_settingsCache, Formatting.Indented);
 
-                await File.WriteAllTextAsync(tempPath, json);
-
-                if (File.Exists(_settingsFilePath))
+                // 1. Write the new settings to the temporary file
+                if (!await _fileOps.TryWriteAllTextAsync(tempPath, json))
                 {
-                    if (File.Exists(_backupFilePath)) File.Delete(_backupFilePath);
-                    File.Move(_settingsFilePath, _backupFilePath);
+                    await _logger.ErrorAsync("Failed to write temporary settings file.");
+                    return;
                 }
 
-                File.Move(tempPath, _settingsFilePath);
+                // 2. Rotate existing settings file to backup if present
+                if (FileOps.FileExists(_settingsFilePath))
+                {
+                    // Clean up old backup with retry
+                    await _fileOps.TryDeleteFileAsync(_backupFilePath);
 
-                await _logger.InfoAsync("UI Settings saved safely to JSON (with backup rotation).");
+                    // Move current file to backup with retry
+                    if (!await _fileOps.TryMoveFileAsync(_settingsFilePath, _backupFilePath))
+                    {
+                        await _logger.WarningAsync("Could not create backup of settings file, proceeding with save.");
+                    }
+                }
+
+                // 3. Move the temporary file into place
+                if (await _fileOps.TryMoveFileAsync(tempPath, _settingsFilePath))
+                {
+                    await _logger.InfoAsync("UI Settings saved safely to JSON (with backup rotation).");
+                }
+                else
+                {
+                    await _logger.ErrorAsync($"Failed to move temp settings file '{tempPath}' to '{_settingsFilePath}'.");
+                }
             }
             catch (Exception ex)
             {
                 await _logger.ErrorAsync($"Failed to save JSON settings: {ex.Message}", ex);
-                if (File.Exists(tempPath)) File.Delete(tempPath);
+            }
+            finally
+            {
+                // Ensure temp file is cleaned up if it still remains
+                if (FileOps.FileExists(tempPath))
+                {
+                    await _fileOps.TryDeleteFileAsync(tempPath);
+                }
             }
         }
 

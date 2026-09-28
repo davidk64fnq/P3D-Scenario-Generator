@@ -84,9 +84,9 @@ namespace P3D_Scenario_Generator
 
             // --- LAYER 2: Core Services (Fundamental Building Blocks) ---
             _logger = new(false, false, false, _formData);
-            _settingsManager = new(_logger);
-            _fileOps = new(_logger);
-            _cacheMetadataService = new();
+            _fileOps = new(_logger);                                   
+            _settingsManager = new(_logger, _fileOps);                 
+            _cacheMetadataService = new(_fileOps);                     
             _cacheMetadataService.OnMetadataChanged += () =>
             {
                 // Use Invoke because downloads happen on background threads
@@ -100,7 +100,7 @@ namespace P3D_Scenario_Generator
                     }));
                 }
             };
-            _cacheManager = new(_logger);
+            _cacheManager = new(_logger, _fileOps);
             _httpRoutines = new(_fileOps, _logger, _httpClient);
             _scenarioFXML = new(_fileOps, _progressReporter);
             _runwayLoader = new(_fileOps, _cacheManager, _logger);
@@ -602,7 +602,7 @@ namespace P3D_Scenario_Generator
             if (await GetValidatedScenarioFormData())
             {
                 // 1. Check if the directory already exists BEFORE any work begins
-                bool folderExistedBeforeRun = Directory.Exists(_formData.ScenarioFolder);
+                bool folderExistedBeforeRun = FileOps.DirectoryExists(_formData.ScenarioFolder);
 
                 DisplayStartMessage();
                 await CheckRunwaysUpToDate();
@@ -613,17 +613,10 @@ namespace P3D_Scenario_Generator
                 if (!success)
                 {
                     // 2. Only roll back and delete if WE created it during this session
-                    if (!folderExistedBeforeRun && Directory.Exists(_formData.ScenarioFolder))
+                    if (!folderExistedBeforeRun && FileOps.DirectoryExists(_formData.ScenarioFolder))
                     {
-                        try
-                        {
-                            Directory.Delete(_formData.ScenarioFolder, recursive: true);
-                            await _logger.InfoAsync($"Cleaned up incomplete scenario folder at '{_formData.ScenarioFolder}'.");
-                        }
-                        catch (Exception ex)
-                        {
-                            await _logger.WarningAsync($"Could not delete incomplete scenario folder: {ex.Message}");
-                        }
+                        // TryDeleteDirectoryAsync handles retries for transient locks and logs success/failure
+                        await _fileOps.TryDeleteDirectoryAsync(_formData.ScenarioFolder, recursive: true, _progressReporter);
                     }
 
                     await DeleteTempScenarioDirectory();
@@ -2272,16 +2265,16 @@ namespace P3D_Scenario_Generator
             return default; // Fallback to first enum token if no match is found
         }
 
-        private void ButtonHelp_Click(object sender, EventArgs e)
+        private async void ButtonHelp_Click(object sender, EventArgs e)
         {
             // Define the path to the CHM file relative to the application's executable directory.
             string chmFilePath = Path.Combine(Application.StartupPath, "Resources", "Help", "Help.chm");
 
             // Check if the file exists before attempting to open it.
-            if (File.Exists(chmFilePath))
+            if (FileOps.FileExists(chmFilePath))
             {
                 // Programmatically unblock the file if it inherited Mark of the Web from the downloaded ZIP
-                UnblockFile(chmFilePath);
+                await UnblockFileAsync(chmFilePath);
 
                 // Open the CHM file.
                 Help.ShowHelp(this, chmFilePath);
@@ -2295,15 +2288,15 @@ namespace P3D_Scenario_Generator
         /// <summary>
         /// Removes the Windows 'Mark of the Web' (Zone.Identifier) alternate data stream from the file.
         /// </summary>
-        private static void UnblockFile(string filePath)
+        private async Task UnblockFileAsync(string filePath)
         {
             try
             {
                 string zoneIdentifierPath = $"{filePath}:Zone.Identifier";
-                if (File.Exists(zoneIdentifierPath))
-                {
-                    File.Delete(zoneIdentifierPath);
-                }
+
+                // TryDeleteFileAsync checks existence internally, retries on transient locks,
+                // and logs if deletion fails without throwing unhandled exceptions.
+                await _fileOps.TryDeleteFileAsync(zoneIdentifierPath);
             }
             catch
             {
@@ -2612,35 +2605,16 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Deletes the temporary directory and its contents stored in ScenarioFormData.
-        /// Reports progress and logs errors.
+        /// Reports progress and logs errors via FileOps.
         /// </summary>
         private async Task DeleteTempScenarioDirectory()
         {
-            if (!string.IsNullOrEmpty(_formData.TempScenarioDirectory) && Directory.Exists(_formData.TempScenarioDirectory))
+            if (FileOps.DirectoryExists(_formData.TempScenarioDirectory))
             {
-                try
+                bool deleted = await _fileOps.TryDeleteDirectoryAsync(_formData.TempScenarioDirectory, recursive: true, _progressReporter);
+                if (deleted)
                 {
-                    Directory.Delete(_formData.TempScenarioDirectory, true); // 'true' for recursive delete
-                    await _logger.InfoAsync($"Temporary directory deleted: {_formData.TempScenarioDirectory}");
                     _formData.TempScenarioDirectory = string.Empty; // Clear the path after deletion
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    string errorMessage = $"Access denied when deleting temporary directory. Please check permissions for '{_formData.TempScenarioDirectory}'. Error: {ex.Message}";
-                    _progressReporter?.Report(errorMessage);
-                    await _logger.ErrorAsync(errorMessage, ex);
-                }
-                catch (IOException ex)
-                {
-                    string errorMessage = $"I/O error when deleting temporary directory. It might be in use. Error: {ex.Message}";
-                    _progressReporter?.Report(errorMessage);
-                    await _logger.ErrorAsync(errorMessage, ex);
-                }
-                catch (Exception ex)
-                {
-                    string errorMessage = $"An unexpected error occurred while deleting temporary directory. Error: {ex.Message}";
-                    _progressReporter?.Report(errorMessage);
-                    await _logger.ErrorAsync(errorMessage, ex);
                 }
             }
             else if (!string.IsNullOrEmpty(_formData.TempScenarioDirectory))
@@ -2742,43 +2716,24 @@ namespace P3D_Scenario_Generator
 
         /// <summary>
         /// Creates a unique temporary directory for scenario generation files and stores its path
-        /// in the ScenarioFormData. Reports progress and logs errors.
+        /// in the ScenarioFormData. Reports progress and logs errors via FileOps.
         /// </summary>
         /// <returns>True if the temporary directory was successfully created; otherwise, false.</returns>
         private async Task<bool> PopulateAndValidateTempScenarioDirectory()
         {
-            try
-            {
-                string tempBasePath = Path.GetTempPath();
-                // Use a GUID to ensure a unique directory name for each scenario generation session
-                _formData.TempScenarioDirectory = Path.Combine(tempBasePath, "P3DScenarioGeneratorTemp", Guid.NewGuid().ToString());
+            string tempBasePath = Path.GetTempPath();
+            // Use a GUID to ensure a unique directory name for each scenario generation session
+            _formData.TempScenarioDirectory = Path.Combine(tempBasePath, "P3DScenarioGeneratorTemp", Guid.NewGuid().ToString());
 
-                Directory.CreateDirectory(_formData.TempScenarioDirectory);
-                _progressReporter?.Report($"Temporary directory created at: {_formData.TempScenarioDirectory}");
-                await _logger.InfoAsync($"Temporary directory created at: {_formData.TempScenarioDirectory}");
-                return true;
-            }
-            catch (UnauthorizedAccessException ex)
+            bool created = await _fileOps.TryCreateDirectoryAsync(_formData.TempScenarioDirectory, _progressReporter);
+            if (!created)
             {
-                string errorMessage = $"Access denied when creating temporary directory. Please check permissions for '{Path.GetTempPath()}'. Error: {ex.Message}";
-                _progressReporter?.Report(errorMessage);
-                await _logger.ErrorAsync(errorMessage, ex);
+                _formData.TempScenarioDirectory = string.Empty;
                 return false;
             }
-            catch (IOException ex)
-            {
-                string errorMessage = $"I/O error when creating temporary directory. Error: {ex.Message}";
-                _progressReporter?.Report(errorMessage);
-                await _logger.ErrorAsync(errorMessage, ex);
-                return false;
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = $"An unexpected error occurred while creating temporary directory. Error: {ex.Message}";
-                _progressReporter?.Report(errorMessage);
-                await _logger.ErrorAsync(errorMessage, ex);
-                return false;
-            }
+
+            _progressReporter?.Report($"Temporary directory created at: {_formData.TempScenarioDirectory}");
+            return true;
         }
 
         /// <summary>

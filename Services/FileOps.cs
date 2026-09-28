@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator.Services
@@ -135,6 +136,100 @@ namespace P3D_Scenario_Generator.Services
             }
         }
 
+        /// <summary>
+        /// Reads all bytes from a file synchronously.
+        /// </summary>
+        /// <param name="filePath">The full path to the file.</param>
+        /// <returns>A byte array containing the contents of the file.</returns>
+        public static byte[] ReadAllBytes(string filePath)
+        {
+            return File.ReadAllBytes(filePath);
+        }
+
+        /// <summary>
+        /// Attempts to read and deserialize an object from a JSON file asynchronously.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize.</typeparam>
+        /// <param name="filePath">The full path of the file to read from.</param>
+        /// <param name="options">Optional JSON serializer options.</param>
+        /// <param name="progressReporter">Optional progress reporter.</param>
+        /// <returns>A tuple containing a boolean indicating success and the deserialized object if successful; otherwise, default.</returns>
+        public async Task<(bool success, T? result)> TryDeserializeJsonFromFileAsync<T>(
+            string filePath,
+            JsonSerializerOptions? options = null,
+            IProgress<string>? progressReporter = null)
+        {
+            if (!FileExists(filePath))
+            {
+                string warnMsg = $"FileOps.TryDeserializeJsonFromFileAsync: File not found '{filePath}'.";
+                await _logger.WarningAsync(warnMsg);
+                return (false, default);
+            }
+
+            var (readSuccess, json) = await TryReadAllTextAsync(filePath, progressReporter);
+            if (!readSuccess || string.IsNullOrWhiteSpace(json))
+            {
+                return (false, default);
+            }
+
+            try
+            {
+                T? result = JsonSerializer.Deserialize<T>(json, options);
+                if (result is null)
+                {
+                    await _logger.WarningAsync($"FileOps.TryDeserializeJsonFromFileAsync: Deserialized object was null for '{filePath}'.");
+                    return (false, default);
+                }
+
+                await _logger.InfoAsync($"FileOps.TryDeserializeJsonFromFileAsync: Successfully deserialized '{filePath}'.");
+                return (true, result);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"FileOps.TryDeserializeJsonFromFileAsync: Error deserializing JSON from '{filePath}'. Details: {ex.Message}";
+                await _logger.ErrorAsync(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
+                return (false, default);
+            }
+        }
+
+        /// <summary>
+        /// Attempts to read and deserialize an object of a specified type from an embedded JSON resource.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to deserialize from the JSON.</typeparam>
+        /// <param name="resourcePath">The partial path to the embedded resource, relative to the project's 'Resources' folder e.g. "Text.LocationFavouritesJSON.txt".</param>
+        /// <param name="options">Optional JSON serializer options.</param>
+        /// <param name="progressReporter">Optional. Can be <see langword="null"/> if progress or error reporting to the UI is not required.</param>
+        /// <returns>A tuple containing a boolean indicating success and the deserialized object if successful; otherwise, default.</returns>
+        public async Task<(bool success, T? result)> TryDeserializeJsonFromResourceAsync<T>(
+            string resourcePath,
+            JsonSerializerOptions? options = null,
+            IProgress<string>? progressReporter = null)
+        {
+            var (streamSuccess, stream) = await TryGetResourceStreamAsync(resourcePath, progressReporter);
+            if (!streamSuccess || stream is null)
+            {
+                return (false, default);
+            }
+
+            try
+            {
+                using (stream)
+                {
+                    T? result = await System.Text.Json.JsonSerializer.DeserializeAsync<T>(stream, options);
+                    await _logger.InfoAsync($"FileOps.TryDeserializeJsonFromResourceAsync: Successfully deserialized '{resourcePath}'.");
+                    return (true, result);
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"FileOps.TryDeserializeJsonFromResourceAsync: An unexpected error occurred deserializing '{resourcePath}'. Details: {ex.Message}";
+                await _logger.ErrorAsync(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
+                return (false, default);
+            }
+        }
+
         #endregion
 
         #region Write Operations
@@ -176,9 +271,9 @@ namespace P3D_Scenario_Generator.Services
             try
             {
                 var directory = Path.GetDirectoryName(destinationFullPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                if (!string.IsNullOrEmpty(directory) && !await TryCreateDirectoryAsync(directory, progressReporter))
                 {
-                    Directory.CreateDirectory(directory);
+                    return false;
                 }
 
                 using FileStream fileStream = new(destinationFullPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
@@ -275,6 +370,42 @@ namespace P3D_Scenario_Generator.Services
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Attempts to serialize an object to a JSON file asynchronously.
+        /// Ensures the directory exists and logs/reports any errors.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to serialize.</typeparam>
+        /// <param name="filePath">The full path of the file to write to.</param>
+        /// <param name="data">The object to serialize.</param>
+        /// <param name="options">Optional JSON serializer options.</param>
+        /// <param name="progressReporter">Optional progress reporter.</param>
+        /// <returns><see langword="true"/> if serialized and written successfully; otherwise, <see langword="false"/>.</returns>
+        public async Task<bool> TrySerializeJsonToFileAsync<T>(
+            string filePath,
+            T data,
+            JsonSerializerOptions? options = null,
+            IProgress<string>? progressReporter = null)
+        {
+            try
+            {
+                string? directory = Path.GetDirectoryName(filePath);
+                if (!string.IsNullOrEmpty(directory) && !await TryCreateDirectoryAsync(directory, progressReporter))
+                {
+                    return false;
+                }
+
+                string json = JsonSerializer.Serialize(data, options);
+                return await TryWriteAllTextAsync(filePath, json, progressReporter);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"FileOps.TrySerializeJsonToFileAsync: Error serializing data to file '{filePath}'. Details: {ex.Message}";
+                await _logger.ErrorAsync(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
+                return false;
+            }
         }
 
         #endregion
@@ -422,6 +553,77 @@ namespace P3D_Scenario_Generator.Services
             return false;
         }
 
+        /// <summary>
+        /// Checks if a directory exists at the specified path.
+        /// </summary>
+        public static bool DirectoryExists(string? path)
+        {
+            return !string.IsNullOrEmpty(path) && Directory.Exists(path);
+        }
+
+        /// <summary>
+        /// Attempts to create a directory at the specified path if it does not already exist.
+        /// </summary>
+        public async Task<bool> TryCreateDirectoryAsync(string directoryPath, IProgress<string>? progressReporter = null)
+        {
+            if (string.IsNullOrWhiteSpace(directoryPath)) return false;
+
+            try
+            {
+                if (!Directory.Exists(directoryPath))
+                {
+                    await Task.Run(() => Directory.CreateDirectory(directoryPath));
+                    await _logger.InfoAsync($"Successfully created directory '{directoryPath}'.");
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"Failed to create directory '{directoryPath}'. Details: {ex.Message}";
+                await _logger.ErrorAsync(errorMessage, ex);
+                progressReporter?.Report(errorMessage);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to delete a directory asynchronously with retries for transient file locks.
+        /// </summary>
+        public async Task<bool> TryDeleteDirectoryAsync(string directoryPath, bool recursive = true, IProgress<string>? progressReporter = null, int retries = 5, int delayMs = 100)
+        {
+            if (!Directory.Exists(directoryPath)) return true;
+
+            for (int attempts = 0; attempts <= retries; attempts++)
+            {
+                try
+                {
+                    await Task.Run(() => Directory.Delete(directoryPath, recursive));
+                    await _logger.InfoAsync($"Successfully deleted directory '{directoryPath}'.");
+                    return true;
+                }
+                catch (IOException ex)
+                {
+                    if (attempts < retries)
+                    {
+                        await _logger.WarningAsync($"Failed to delete directory '{directoryPath}' (attempt {attempts + 1}). Retrying... Details: {ex.Message}");
+                        await Task.Delay(delayMs);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string errorMessage = $"Unexpected error deleting directory '{directoryPath}'. Details: {ex.Message}";
+                    await _logger.ErrorAsync(errorMessage, ex);
+                    progressReporter?.Report(errorMessage);
+                    return false;
+                }
+            }
+
+            string finalError = $"Failed to delete directory '{directoryPath}' after {retries + 1} attempts.";
+            await _logger.ErrorAsync(finalError);
+            progressReporter?.Report(finalError);
+            return false;
+        }
+
         #endregion
 
         #region Helper Methods
@@ -446,7 +648,7 @@ namespace P3D_Scenario_Generator.Services
             string appName = Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().GetName().Name) ?? "P3D_Scenario_Generator";
             string dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
 
-            if (!Directory.Exists(dataDirectory))
+            if (!DirectoryExists(dataDirectory))
             {
                 Directory.CreateDirectory(dataDirectory);
             }
@@ -473,14 +675,13 @@ namespace P3D_Scenario_Generator.Services
         /// <returns>A tuple containing a boolean indicating success and the embedded resource stream if found; otherwise, null.</returns>
         public async Task<(bool success, Stream? stream)> TryGetResourceStreamAsync(string resourcePath, IProgress<string>? progressReporter = null)
         {
-            Stream? stream = null;
             string fullResourceName = string.Empty;
             try
             {
                 string assemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? "P3D_Scenario_Generator";
                 fullResourceName = $"{assemblyName.Replace(" ", "_")}.Resources.{resourcePath}";
 
-                stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullResourceName);
+                Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullResourceName);
 
                 if (stream == null)
                 {
@@ -520,6 +721,18 @@ namespace P3D_Scenario_Generator.Services
         public static bool FileExists(string filePath)
         {
             return File.Exists(filePath);
+        }
+
+        /// <summary>
+        /// Ensures that a directory exists, creating it synchronously if it does not.
+        /// </summary>
+        /// <param name="directoryPath">The directory path to ensure exists.</param>
+        public static void EnsureDirectoryExists(string directoryPath)
+        {
+            if (!DirectoryExists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
         }
 
         #endregion
