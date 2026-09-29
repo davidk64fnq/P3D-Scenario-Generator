@@ -1,145 +1,98 @@
- # App Coding Standards
+# App Coding Standards (P3D Scenario Generator)
 
- ---
+---
 
- ## Logging
+## 1. Architecture & Dependency Injection
 
- All log messages are automatically prefixed by the `Log` class with the `ClassName.MethodName:` of the calling method.
+* **Architecture:** Layered service model with Dependency Injection.
+* **Core Services:** All file operations, JSON serialization, and logging must route through centralized `FileOps` and `Logger` instances rather than direct `System.IO` static calls or ad-hoc `MessageBox` popups.
+* **Fail-Fast & Return Values:** Never silently discard the return value of fallible operations (e.g., `FileOps` methods or boolean `Try...` methods). If an operation fails:
+  * Check the `bool` or tuple return value.
+  * Log the failure using `_logger`.
+  * Either abort the scenario workflow cleanly or report the failure gracefully to the user via `_progressReporter`.
 
- **Example:**
+---
 
- A log message from a method named `GenerateScenario` within a class named `ScenarioGenerator` would be formatted as:
+## 2. Asynchronous Programming (Desktop UI Model)
 
- `ScenarioGenerator.GenerateScenario: Scenario generation started.`
+* **UI Responsiveness:** The WinForms UI thread must never freeze. Long-running or blocking work must be awaited.
+* **Native Async I/O:** Use true async APIs where available (`FileStream.ReadAsync`, `HttpClient`, `JsonSerializer.DeserializeAsync`).
+* **Sync I/O Offloading:** For file system operations that lack native asynchronous .NET APIs (such as `File.Copy`, `File.Delete`, and `Directory.CreateDirectory`), wrapping them in `Task.Run()` inside `FileOps` is standard practice to prevent desktop UI thread stutter.
+* **Async All the Way:** Methods calling asynchronous APIs must return `Task` or `Task<T>` and append the `Async` suffix to the method name. Never use `.Result` or `.Wait()`.
 
- ---
+---
 
- ## UI Progress Messages
+## 3: Parameter Validation & Null Safety
 
- All messages reported through `IProgress<string>` should be concise and prefixed with a severity string (`INFO:`, `WARNING:`, `ERROR:`). The purpose is to provide immediate, user-facing feedback, not to serve as a detailed log record.
+* **Nullable Context:** The project runs with `#nullable enable`. Explicitly mark nullable variables and returns with `?` (e.g., `HtmlNode?`, `T?`). Avoid the null-forgiving operator (`!`) unless safety is guaranteed by preceding logic.
+* **The Boundary Rule for Guards:**
+  * **Primary Constructors / Dependency Injection:** Always validate injected services using null-coalescing throw expressions:
+    ```csharp
+    public class ScenarioService(Logger logger, FileOps fileOps)
+    {
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+    }
+    ```
+  * **Public Entry Points:** Validate incoming arguments (such as `ScenarioFormData`) once at the top-level orchestration method crossing the boundary from the UI:
+    ```csharp
+    public async Task<bool> GenerateScenarioAsync(ScenarioFormData formData)
+    {
+        ArgumentNullException.ThrowIfNull(formData);
+        // ...
+    }
+    ```
+  * **Internal & Private Helper Methods:** **Do not guard.** Internal calculations, coordinate algorithms, and private helpers assume parameters were already validated at the public entry point. Omit redundant guard boilerplate in internal routines.
 
- ### Usage Guidelines for Severity Prefixes:
+---
 
- * **ERROR:** Use for critical failures that prevent a task from completing. These messages indicate a problem that requires user intervention or a bug.
- * **WARNING:** Use for non-critical issues or potential problems that the user should be aware of but do not halt the application's process.
- * **NOTICE:** Use for important, but not critical, notifications that draw the user's attention to a specific condition, such as an outdated cache file.
- * **INFO:** Use for routine status updates, progress reports, or general information about a task's progress.
+## 4. Logging & UI Progress Reporting
 
-### Message Consistency
-When a log message and a UI progress message convey the same information, use a single string variable to define the message. This ensures the content is identical and simplifies future updates.
+### Internal Logging (`Logger`)
+* Used for developer diagnostic and troubleshooting logs written to disk.
+* Log failures, warnings, and milestone completions.
+* Keep messages descriptive. Avoid hardcoding outdated class name prefixes into log text (e.g., use `FileOps.` rather than legacy names like `FileOpsAsync.`).
 
- **Example:**
+### User Progress (`IProgress<string>` / `FormProgressReporter`)
+* Used for high-level, human-friendly status updates in the UI.
+* Messages must be concise and prefixed with a severity tag when communicating status:
+  * **ERROR:** Halts execution; requires user intervention or indicates a bug.
+  * **WARNING:** Non-critical issue (e.g., failed cleanup, cache miss) where the workflow can still proceed.
+  * **INFO:** Routine progress updates.
 
- ```csharp
- string message = "Loading runways from binary cache...";
-_log.InfoAsync(message);
-progressReporter.Report($"INFO: {message}");
- ```
+---
 
- ---
+## 5: Documentation & XML Standards
 
- ## XML Comments
+### Scope of XML Documentation
+* **Public & Service APIs (Mandatory):** All public classes, primary constructors, public/internal service methods, and generator orchestration routines must include XML `<summary>` and `<returns>` tags.
+* **Return Values:** When documenting boolean or status returns, explain what `true` and `false` represent:
+  ```csharp
+  /// <returns><see langword="true"/> if the asset was generated successfully; otherwise, <see langword="false"/>.</returns>
+  ```
+* **Synchronization:** Ensure all `<param>` tags match current method signatures. If a parameter is added or removed during refactoring, update or remove the corresponding `<param>` tag immediately (`CS1572`, `CS1573`).
 
- All **public and internal** methods, properties, and classes must include XML documentation comments. For **private** members, XML comments are encouraged for complex logic, but simple, self-explanatory private methods may use inline comments if clarity is maintained.
+### What NOT to Document with XML
+* **WinForms Event Handlers:** Do not add XML comments to standard UI event handlers (e.g., `Button_Click`, `Form_Load`, `ComboBox_SelectedIndexChanged`). Method names are self-documenting, and XML here adds unnecessary boilerplate.
+* **DTO & JSON Schema Properties:** Internal data transfer models and enum values (e.g., `Bsc5pJsonStar`, `Season`) do not require XML comments on every individual field. Document the enclosing class or enum if needed, but avoid trivial field-level comments.
+* **Simple Private Methods:** Prefer clean, self-describing code over redundant XML on internal/private helpers.
 
- * `<summary>`: A brief summary of the member's purpose.
- * `<param>`: (For methods) A description for each parameter.
- * `<returns>`: (For methods) A description of the value the method returns. When referencing language keywords like `true` or `false`, use the `<see langword=""/>` tag.
-
- **Example:**
-
- ```csharp
- /// <summary>
- /// Generates a new scenario based on user-defined parameters.
- /// </summary>
- /// <param name="scenarioType">The type of scenario to generate.</param>
- /// <returns><see langword="true"/> if the scenario was generated successfully; otherwise, <see langword="false"/>.</returns>
- private bool GenerateScenario(ScenarioType scenarioType)
- {
-     // ...
- }
- ```
-
- ---
-
- ## Documentation Style: XML vs. Inline Comments
-
- * **XML comments** (specifically the `<summary>` and `<remarks>`) should be the primary source of documentation. Use them to explain the **high-level logic** and the **overall purpose** of a method.
- * **Inline comments** (`//`) should be used sparingly. Reserve them for explaining **complex algorithms**, **non-obvious implementation details**, or **workarounds** that are not clear from the code itself.
- * Avoid redundant inline comments that simply restate what the code or the XML summary already explains. This keeps the code clean and prevents documentation from becoming inconsistent.
-
- ---
-
- ## Naming Conventions
-
- * **Private Fields**: Private fields must be prefixed with a single underscore (`_`).
- * **Parameters**: Parameters and local variables must use `camelCase`.
- * **Asynchronous Methods**: All asynchronous methods (those returning `Task` or `Task<T>`) must have the `Async` suffix.
-
- **Example:**
-
- ```csharp
- // The field is prefixed with _, the parameter is not.
- private readonly ToolStripStatusLabel _statusLabel = statusLabel;
-
- // Asynchronous method name
- public async Task LoadDataAsync() { /* ... */ }
- ```
-
- ---
-
- ## Parameter Validation
-
- All public methods and constructors must use guard clauses to validate non-nullable parameters. This is not required for private members, as it is assumed that validation has been performed at the public-facing boundary. For C# 12 primary constructors, use the null-coalescing assignment operator.
-
- **Example (Primary Constructor):**
-
- ```csharp
- public class MyClass(string requiredParameter)
- {
-     // Guard clause to validate a parameter in a primary constructor
-     private readonly string _requiredParameter = requiredParameter ?? throw new ArgumentNullException(nameof(requiredParameter));
- }
- ```
-
- **Example (Traditional Constructor/Method):**
-
- ```csharp
- public class MyOtherClass
- {
-     public MyOtherClass(string requiredParameter)
-     {
-         if (requiredParameter is null)
-         {
-             throw new ArgumentNullException(nameof(requiredParameter));
-         }
-         // ...
-     }
-
-     public void ProcessData(List<string> data)
-     {
-         if (data is null)
-         {
-             throw new ArgumentNullException(nameof(data));
-         }
-         // ...
-     }
- }
- ```
-
- ---
-
- ## Asynchronous Programming
-
- * **I/O-Bound Operations**: When performing I/O-bound operations (e.g., file access, network requests), use the `async` and `await` keywords with truly asynchronous APIs (e.g., `FileStream.ReadAsync`, `HttpClient.GetStringAsync`). Avoid wrapping synchronous I/O operations in `Task.Run()` as this can lead to unnecessary thread pool contention.
- * **CPU-Bound Operations**: For CPU-bound operations that might block the UI thread, use `Task.Run()` to offload the work to a thread pool thread.
- * **Async All the Way**: Once a method becomes `async`, its callers should also be `async` to avoid blocking the calling thread. Avoid `Task.Result` or `Task.Wait()` in UI threads.
-
- ___
-
-## Dependency Injection and Asynchronous Operations
-Dependency Injection (DI) is being implemented with the runway-related classes to improve modularity, testability, and maintainability. This approach decouples classes by providing their dependencies from an external source, rather than having the classes create their own dependencies.
-
-To support this, async versions of the Log and FileOps classes have been created specifically for use with the new runway classes. This ensures that I/O-bound operations related to runways do not block the UI thread and adhere to the "Async All the Way" standard.
-
-The long-term plan is to gradually migrate other areas of the application to this dependency injection and asynchronous model, applying these principles to other large classes as they are refactored.
+### Inline Comments & AI Chat Residue
+* **No Conversational Residue:** Never leave patch markers, changelog notes, or chat residue in the code (e.g., ban `// --- FIX 1: ... ---`, `// AI Note: ...`, `// Added by LLM`).
+* **Document the "Why", Not the "What":** Use inline comments (`//`) sparingly, reserving them exclusively for non-obvious domain workarounds or simulator quirks (e.g., P3D coordinate bugs, OneDrive race conditions, or complex trigonometric math).
+* **Format for Workarounds:**
+  ```csharp
+  // Workaround: OneDrive cloud sync can throw a transient IOException even when File.Move succeeded.
+  ```
+  
+### Type Accessibility: Default to `internal`
+* **Application Scope:** Because this project is a standalone desktop application (`.exe`) rather than a shared NuGet class library, types are not consumed by external assemblies.
+* **Default to `internal`:** All new classes, services, records, DTOs, and enums must be declared `internal` by default rather than `public`:
+  ```csharp
+  internal class ScenarioFormData { ... }
+  internal enum ScenarioTypes { ... }
+  ```
+* **When `public` is required:** Reserve `public` strictly for types mandated by the runtime or external serialization frameworks:
+  * WinForms top-level forms (`public partial class Form1 : Form`).
+  * Types serialized via legacy `System.Xml.Serialization.XmlSerializer` (which requires public classes and parameterless constructors).
+```

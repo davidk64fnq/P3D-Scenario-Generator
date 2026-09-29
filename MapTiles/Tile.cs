@@ -5,22 +5,21 @@
     /// for a given zoom level. The origin (0,0) is the North-West corner of the world map.
     /// The bottom-right corner is ((2^zoom) - 1, (2^zoom) - 1).
     /// </summary>
-    public class Tile
+    internal class Tile
     {
-        // Properties are now 'get; set;' meaning they are mutable.
-        public int XIndex { get; set; }
-        public int YIndex { get; set; }
-        public int XOffset { get; set; }
-        public int YOffset { get; set; }
+        internal int XIndex { get; set; }
+        internal int YIndex { get; set; }
+        internal int XOffset { get; set; }
+        internal int YOffset { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Tile"/> class.
+        /// Initializes a new instance of the <see cref="Tile"/> class with specified coordinates and offsets.
         /// </summary>
         /// <param name="xIndex">The horizontal index (X-coordinate) of the OSM tile.</param>
         /// <param name="yIndex">The vertical index (Y-coordinate) of the OSM tile.</param>
         /// <param name="xOffset">The X-offset of the coordinate within the tile (in pixels).</param>
         /// <param name="yOffset">The Y-offset of the coordinate within the tile (in pixels).</param>
-        public Tile(int xIndex, int yIndex, int xOffset, int yOffset)
+        internal Tile(int xIndex, int yIndex, int xOffset, int yOffset)
         {
             XIndex = xIndex;
             YIndex = yIndex;
@@ -28,7 +27,9 @@
             YOffset = yOffset;
         }
 
-        // Add parameterless constructor as well, needed if you want to initialize with `new Tile()` then set properties
-        public Tile() { }
+        /// <summary>
+        /// Initializes a new parameterless instance of the <see cref="Tile"/> class.
+        /// </summary>
+        internal Tile() { }
     }
 }

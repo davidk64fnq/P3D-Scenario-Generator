@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace P3D_Scenario_Generator.CelestialScenario
 {
     // This represents the raw data coming from bsc5p_extra.json
-    public class Bsc5pJsonStar
+    internal class Bsc5pJsonStar
     {
         [JsonPropertyName("lineNumber")]
         public string LineNumber { get; set; } = string.Empty; // This is the HR ID

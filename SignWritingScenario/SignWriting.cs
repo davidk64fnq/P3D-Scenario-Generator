@@ -8,12 +8,10 @@ using System.Text.Json.Serialization;
 
 namespace P3D_Scenario_Generator.SignWritingScenario
 {
-    // Child records to match CoordPair and PixelPosition JSDoc
-    public record CoordPairJS(double Latitude, double Longitude);
-    public record PixelPositionJS(double Left, double Top);
+    internal record CoordPairJS(double Latitude, double Longitude);
+    internal record PixelPositionJS(double Left, double Top);
 
-    // Main record for serialization
-    public record GateJS(
+    internal record GateJS(
         double Altitude,
         double Bearing,
         CoordPairJS Coordinates,
@@ -21,42 +19,52 @@ namespace P3D_Scenario_Generator.SignWritingScenario
     );
 
     /// <summary>
-    /// Manages the overall setup and generation of a signwriting scenario within the simulator.
-    /// This includes initializing character segment mappings, generating flight gates for the sign message,
-    /// and preparing map images for scenario overview and location display.
+    /// Manages the setup and generation of a signwriting scenario within the simulator.
+    /// Initializes character segment mappings, generates flight gates for the sign message,
+    /// and prepares map images and XML definitions for the scenario.
     /// </summary>
-    public class SignWriting(
+    /// <param name="logger">The logging service.</param>
+    /// <param name="progressReporter">The UI progress reporting service.</param>
+    /// <param name="mapTileImageMaker">The map tile composition service.</param>
+    /// <param name="scenarioXML">The scenario XML generator.</param>
+    /// <param name="assetFileGenerator">The asset file generator service.</param>
+    /// <param name="scenarioHTML">The scenario HTML file generator.</param>
+    internal class SignWriting(
         Logger logger,
-        FileOps fileOps,
         FormProgressReporter progressReporter,
         MapTileImageMaker mapTileImageMaker,
         ScenarioXML scenarioXML,
         AssetFileGenerator assetFileGenerator,
-        ScenarioHTML scenarioHTML) 
+        ScenarioHTML scenarioHTML)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly ScenarioXML _xml = scenarioXML; 
-        private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator;
-        private readonly ScenarioHTML _scenarioHTML = scenarioHTML;
+        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker ?? throw new ArgumentNullException(nameof(mapTileImageMaker));
+        private readonly ScenarioXML _xml = scenarioXML ?? throw new ArgumentNullException(nameof(scenarioXML));
+        private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator ?? throw new ArgumentNullException(nameof(assetFileGenerator));
+        private readonly ScenarioHTML _scenarioHTML = scenarioHTML ?? throw new ArgumentNullException(nameof(scenarioHTML));
 
-        // Assigned from constructor
-        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
-
-        /// <summary>
-        /// The gates comprising the message for the signwriting scenario. Methods for setting gates are in <see cref="SignGateGenerator"/>
-        /// </summary>
         private readonly List<Gate> _gates = [];
 
-        public int GatesCount => _gates.Count;
+        private static readonly JsonSerializerOptions _jsonOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        internal int GatesCount => _gates.Count;
 
         /// <summary>
-        /// Called from Form1.cs to do the scenario specific work in creating a signwriting scenario
+        /// Orchestrates the end-to-end creation of the signwriting scenario.
         /// </summary>
-        public async Task<bool> SetSignWritingAsync(ScenarioFormData formData, RunwayManager runwayManager)
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <param name="runwayManager">The runway manager providing runway search services.</param>
+        /// <returns><see langword="true"/> if the scenario was successfully generated; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> SetSignWritingAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            // Scenario starts and finishes at user-selected airport
+            ArgumentNullException.ThrowIfNull(formData);
+            ArgumentNullException.ThrowIfNull(runwayManager);
+
             var runway = await runwayManager.Searcher.GetRunwayByIndexAsync(formData.RunwayIndex);
             if (runway is null)
             {
@@ -73,10 +81,7 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
 
-            // Set the letter segment paths for the sign writing letters
             SignCharacterMap.InitLetterPaths();
-
-            // Create the gates for the sign writing scenario
             SignGateGenerator.SetSignGatesMessage(_gates, formData);
 
             formData.OSMmapData = [];
@@ -101,100 +106,83 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             Overview overview = SetOverviewStruct(formData);
             if (!await _scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
             {
-                message = "Failed to generate HTML files during circuit setup.";
+                message = "Failed to generate HTML files during sign writing setup.";
                 await _logger.ErrorAsync(message);
                 _progressReporter.Report($"ERROR: {message}");
                 return false;
             }
 
             _xml.SetSimbaseDocumentXML(formData, overview);
-            await SetSignWritingWorldBaseFlightXML(formData, overview);
+            await SetSignWritingWorldBaseFlightXMLAsync(formData, overview);
             _xml.WriteXML(formData);
 
             return true;
         }
 
-
         /// <summary>
-        /// Creates and returns an enumerable collection of <see cref="Coordinate"/> objects
-        /// representing the sign writing gates and start/destination runway.
+        /// Creates an enumerable collection of <see cref="Coordinate"/> objects representing
+        /// the sign writing gates and the departure/destination runway.
         /// </summary>
-        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
-        /// the the sign writing gate's latitude/longitude and start/destination runway's latitude/longitude.</returns>
-        public IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of coordinates for the gates and airport.</returns>
+        internal IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
         {
             IEnumerable<Coordinate> coordinates = _gates.Select(gate => new Coordinate(gate.lat, gate.lon));
-
-            // Add the start runway to the beginning
             coordinates = coordinates.Prepend(new Coordinate(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon));
-
-            // Add the destination runway to the end
             coordinates = coordinates.Append(new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon));
-
             return coordinates;
         }
 
         /// <summary>
-        /// Creates and returns an enumerable collection containing a single <see cref="Coordinate"/> object
-        /// that represents the geographical location (latitude and longitude) of the start/destination runway.
+        /// Creates an enumerable collection containing a single <see cref="Coordinate"/> object
+        /// representing the geographical location of the departure runway.
         /// </summary>
-        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
-        /// only the start/destination runway's latitude and longitude.</returns>
-        static internal IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing the start runway coordinate.</returns>
+        internal static IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
         {
-            IEnumerable<Coordinate> coordinates =
+            return
             [
                 new Coordinate(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon)
             ];
-            return coordinates;
         }
 
         /// <summary>
-        /// Calculates the approximate distance flown in nautical miles for the sign writing message.
-        /// The calculation is based on the total number of segments (half the number of gates) multiplied
-        /// by the length of a single segment, with an additional 50% added to account for the flight path
-        /// between segments.
+        /// Calculates the approximate distance flown in nautical miles for the signwriting message.
         /// </summary>
+        /// <param name="formData">The scenario form configuration data.</param>
         /// <returns>The estimated flight distance in nautical miles.</returns>
         internal double GetSignWritingDistance(ScenarioFormData formData)
         {
             return ((double)_gates.Count / 2.0)
-           * formData.SignSegmentLengthFeet
-           / Constants.FeetInNauticalMile
-           * 1.5;
+                * formData.SignSegmentLengthFeet
+                / Constants.FeetInNauticalMile
+                * 1.5;
         }
 
         /// <summary>
-        /// Calculates the position (horizontal and vertical offsets) and dimensions (width and height)
-        /// for the sign writing window based on the specified alignment and monitor properties.
+        /// Calculates the window dimensions and placement parameters for the sign writing UI display.
         /// </summary>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> object containing the
-        /// sign window's desired alignment, offsets, monitor dimensions, and calculated window size.</param>
-        /// <returns>
-        /// A <see cref="T:System.String[]"/> array containing four elements in the order:
-        /// <list type="bullet">
-        /// <item><description>Window Width (string)</description></item>
-        /// <item><description>Window Height (string)</description></item>
-        /// <item><description>Horizontal Offset (string)</description></item>
-        /// <item><description>Vertical Offset (string)</description></item>
-        /// </list>
-        /// These parameters are suitable for configuring the sign writing window's display.
-        /// </returns>
-        static internal string[] GetSignWritingWindowParameters(ScenarioFormData formData)
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <returns>An array containing window parameter strings.</returns>
+        internal static string[] GetSignWritingWindowParameters(ScenarioFormData formData)
         {
-            return ScenarioXML.GetWindowParameters(formData.SignWindowWidth, formData.SignWindowHeight, formData.SignAlignment,
-            formData.SignMonitorWidth, formData.SignMonitorHeight, formData.SignOffsetPixels);
+            return ScenarioXML.GetWindowParameters(
+                formData.SignWindowWidth,
+                formData.SignWindowHeight,
+                formData.SignAlignment,
+                formData.SignMonitorWidth,
+                formData.SignMonitorHeight,
+                formData.SignOffsetPixels);
         }
 
         /// <summary>
-        /// Gets the gates as a consolidated list of GateJS records, 
-        /// optimized for a single JSON serialization to the client-side JavaScript.
+        /// Projects internal gates into a list of JavaScript-friendly <see cref="GateJS"/> records.
         /// </summary>
-        /// <returns>A read-only list of GateJS records.</returns>
-        public IReadOnlyList<GateJS> GetGates()
+        /// <returns>A read-only list of <see cref="GateJS"/> records.</returns>
+        internal IReadOnlyList<GateJS> GetGates()
         {
-            // Projection from internal gate storage to the JavaScript-friendly Gate DTO
-            return _gates.Select(g => new GateJS(
+            return _gates.ConvertAll(g => new GateJS(
                 Altitude: g.amsl * Constants.MetresInFoot,
                 Bearing: g.orientation,
                 Coordinates: new CoordPairJS(
@@ -205,31 +193,28 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                     Left: g.leftPixels,
                     Top: g.topPixels
                 )
-            )).ToList().AsReadOnly();
+            )).AsReadOnly();
         }
 
-        private static readonly JsonSerializerOptions _jsonOptions = new()
+        /// <summary>
+        /// Serializes the gates collection to a camel-case JSON string.
+        /// </summary>
+        /// <returns>A JSON string representing the gates collection.</returns>
+        internal string GetGatesJson()
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            // Optional: useful if your JS doesn't handle nulls well
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-
-        public string GetGatesJson()
-        {
-            var gates = GetGates(); // Your existing method returning IReadOnlyList<GateJS>
+            var gates = GetGates();
             return JsonSerializer.Serialize(gates, _jsonOptions);
         }
 
         /// <summary>
-        /// Prepares and writes the main sign writing JavaScript file,
-        /// and copies necessary third-party Geodesy library files.
+        /// Prepares and writes the sign writing JavaScript file and copies dependency libraries.
         /// </summary>
-        public async Task<bool> SetSignWritingJS(ScenarioFormData formData)
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <returns><see langword="true"/> if the scripts and assets were written successfully; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> SetSignWritingJS(ScenarioFormData formData)
         {
             string saveLocation = formData.ScenarioImageFolder;
 
-            // --- 1. Build Replacement Dictionary ---
             var replacements = new Dictionary<string, string>
             {
                 { "charPaddingLeft", Constants.SignCharPaddingPixels.ToString() },
@@ -243,23 +228,24 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 { "gates", GetGatesJson() }
             };
 
-            // --- 2. Write processed script file ---
             bool mainJsSuccess = await _assetFileGenerator.WriteAssetFileAsync(
                 "Javascript.scriptsSignWriting.js",
                 "scriptsSignWriting.js",
                 formData.ScenarioImageFolder,
-                replacements
-            );
+                replacements);
 
-            if (!mainJsSuccess) return false;
+            if (!mainJsSuccess)
+            {
+                return false;
+            }
 
-            // Static JS File
-            if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.types.js", "types.js", saveLocation)) return false;
-
-            // --- 3. Copy Geodesy library files ---
+            if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.types.js", "types.js", saveLocation))
+            {
+                return false;
+            }
 
             string[] geodesyFiles = ["dms.js", "vector3d.js", "latlon-ellipsoidal.js"];
-            string resourceNamePrefix = "Javascript.third_party.geodesy.";
+            const string resourceNamePrefix = "Javascript.third_party.geodesy.";
 
             foreach (string fileName in geodesyFiles)
             {
@@ -269,7 +255,6 @@ namespace P3D_Scenario_Generator.SignWritingScenario
                 if (!await _assetFileGenerator.CopyAssetImageAsync(resourcePath, destinationPath))
                 {
                     await _logger.ErrorAsync($"Failed to copy geodesy dependency: {fileName}");
-                    // Non-critical: continue to next file
                 }
                 else
                 {
@@ -280,7 +265,12 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             return true;
         }
 
-        public Overview SetOverviewStruct(ScenarioFormData formData)
+        /// <summary>
+        /// Constructs an <see cref="Overview"/> record containing the signwriting scenario briefings, objectives, and metadata.
+        /// </summary>
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <returns>A populated <see cref="Overview"/> record.</returns>
+        internal Overview SetOverviewStruct(ScenarioFormData formData)
         {
             string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftDisplayTitle}";
             briefing += " as you take on the role of sign writer in the sky! ";
@@ -289,7 +279,6 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             briefing += $"{formData.StartRunway.Number} at {formData.StartRunway.IcaoName} ({formData.StartRunway.IcaoId}) in ";
             briefing += $"{formData.StartRunway.City}, {formData.StartRunway.Country}.";
 
-            // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
             double duration = GetSignWritingDistance(formData) / formData.AircraftCruiseSpeed * 60;
 
             Overview overview = new()
@@ -309,16 +298,19 @@ namespace P3D_Scenario_Generator.SignWritingScenario
         }
 
         /// <summary>
-        /// Provides access to the gate at a specific index in the sign writing scenario.
+        /// Retrieves the gate instance at a specific index.
         /// </summary>
-        /// <param name="index">The zero-based index of the gate instance to be retrieved.</param>
-        /// <returns>The gate instance at the specified index.</returns>
-        public Gate GetGate(int index)
+        /// <param name="index">The zero-based index of the gate.</param>
+        /// <returns>The <see cref="Gate"/> instance at the specified index.</returns>
+        internal Gate GetGate(int index)
         {
             return _gates[index];
         }
 
-        public void SetSignWritingScriptActions()
+        /// <summary>
+        /// Configures Lua script actions in the scenario XML for toggling smoke and advancing the gate index.
+        /// </summary>
+        internal void SetSignWritingScriptActions()
         {
             string[] scripts =
             [
@@ -333,7 +325,13 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             _xml.SetScriptActions(scripts);
         }
 
-        public async Task SetSignWritingWorldBaseFlightXML(ScenarioFormData formData, Overview overview)
+        /// <summary>
+        /// Generates all XML objects, triggers, areas, actions, and goal definitions for the sign writing flight.
+        /// </summary>
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <param name="overview">The overview metadata structure.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        internal async Task SetSignWritingWorldBaseFlightXMLAsync(ScenarioFormData formData, Overview overview)
         {
             _xml.SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             _xml.SetRealismOverrides();
@@ -343,132 +341,107 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             _xml.SetGoal("Goal01", overview.Objective);
             _xml.SetGoalResolutionAction("Goal01");
 
-            // Create scenario variables
             _xml.SetScenarioVariable("ScenarioVariable01", "smokeOn", "0");
             _xml.SetScenarioVariableTriggerValue(0.0, 0, "ScenarioVariable01");
             _xml.SetScenarioVariable("ScenarioVariable02", "currentGateNo", "0");
             _xml.SetScenarioVariableTriggerValue(0.0, 0, "ScenarioVariable02");
 
-            // Create script actions which reference scenario variables
             SetSignWritingScriptActions();
 
-            // First pass
             for (int gateNo = 1; gateNo <= GatesCount; gateNo++)
             {
-                // Create gate objects (hoop active, hoop inactive and number)
                 string hwp = ScenarioXML.GetGateWorldPosition(GetGate(gateNo - 1), Constants.HoopActVertOffsetFeet);
                 string go = ScenarioXML.GetGateOrientation(GetGate(gateNo - 1));
                 _xml.SetLibraryObject(gateNo, "GEN_game_hoop_ACTIVE", Constants.HoopActGuid, hwp, go, "False", "1", "False");
                 _xml.SetLibraryObject(gateNo, "GEN_game_hoop_INACTIVE", Constants.HoopInactGuid, hwp, go, "False", "1", "False");
 
-                // Create sound action to play when each new gate entered
                 _xml.SetOneShotSoundAction(gateNo, "ThruHoop", "ThruHoop.wav");
 
-                // Create POI object corresponding to the hoop object
                 _xml.SetPointOfInterest(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "0, 80, 0, 0", "False", "False", "Gate ");
 
-                // Create activate/deactivate POI object actions
                 _xml.SetPOIactivationAction(gateNo, "PointOfInterest", "POI", "ActPOI", "True");
                 _xml.SetPOIactivationAction(gateNo, "PointOfInterest", "POI", "DeactPOI", "False");
 
-                // Create activate/deactivate gate object actions (hoop active and hoop inactive)
                 _xml.SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "ActHoopAct", "True");
                 _xml.SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "DeactHoopAct", "False");
                 _xml.SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_INACTIVE", "ActHoopInact", "True");
                 _xml.SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_INACTIVE", "DeactHoopInact", "False");
 
-                // Create rectangle area object to put over gate
                 _xml.SetRectangleArea($"RectangleArea{gateNo:00}", go, "100.0", "25.0", "100.0");
                 AttachedWorldPosition awp = ScenarioXML.GetAttachedWorldPosition(hwp, "False");
                 _xml.SetAttachedWorldPosition("RectangleArea", $"RectangleArea{gateNo:00}", awp);
 
-                // Create proximity trigger and actions 
                 _xml.SetProximityTrigger(gateNo, "ProximityTrigger", "False");
                 _xml.SetProximityTriggerArea(gateNo, "RectangleArea", $"RectangleArea{gateNo:00}", "ProximityTrigger");
-                // Increment gate number
                 _xml.SetProximityTriggerOnEnterAction(2, "ScriptAction", "ScriptAction", gateNo, "ProximityTrigger");
-                if (gateNo % 2 == 1) // First of gate pair marking a segment
+
+                if (gateNo % 2 == 1)
                 {
-                    // Toggle smoke on
                     _xml.SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", gateNo, "ProximityTrigger");
-                    // Make segment start gate inactive
                     _xml.SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "ActHoopInact", gateNo, "ProximityTrigger");
                     _xml.SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "DeactHoopAct", gateNo, "ProximityTrigger");
                     _xml.SetProximityTriggerOnEnterAction(gateNo, "PointOfInterestActivationAction", "DeactPOI", gateNo, "ProximityTrigger");
                 }
-                else // Second of gate pair marking a segment
+                else
                 {
-                    // Toggle smoke off
                     _xml.SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", gateNo, "ProximityTrigger");
-                    // Hide current inactive segment start gate
                     _xml.SetProximityTriggerOnEnterAction(gateNo - 1, "ObjectActivationAction", "DeactHoopInact", gateNo, "ProximityTrigger");
-                    // Hide current active segment end gate
                     _xml.SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "DeactHoopAct", gateNo, "ProximityTrigger");
                     _xml.SetProximityTriggerOnEnterAction(gateNo, "PointOfInterestActivationAction", "DeactPOI", gateNo, "ProximityTrigger");
                 }
                 _xml.SetProximityTriggerOnEnterAction(gateNo, "OneShotSoundAction", "ThruHoop", gateNo, "ProximityTrigger");
 
-                // Create proximity trigger actions to activate and deactivate as required
                 _xml.SetObjectActivationAction(gateNo, "ProximityTrigger", "ProximityTrigger", "ActProximityTrigger", "True");
                 _xml.SetObjectActivationAction(gateNo, "ProximityTrigger", "ProximityTrigger", "DeactProximityTrigger", "False");
 
-                // Add deactivate proximity trigger action as event to proximity trigger
                 _xml.SetProximityTriggerOnEnterAction(gateNo, "ObjectActivationAction", "DeactProximityTrigger", gateNo, "ProximityTrigger");
             }
 
-            // Second pass
             for (int gateNo = 1; gateNo <= GatesCount; gateNo++)
             {
-                if (gateNo % 2 == 1) // First of gate pair marking a segment
+                if (gateNo % 2 == 1)
                 {
-                    // Make segment end gate active
                     _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActHoopAct", gateNo, "ProximityTrigger");
                     _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "DeactHoopInact", gateNo, "ProximityTrigger");
                     _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "PointOfInterestActivationAction", "ActPOI", gateNo, "ProximityTrigger");
                 }
-                else // Second of gate pair marking a segment
+                else
                 {
                     if (gateNo + 1 < GatesCount)
                     {
-                        // Make next segment start gate active
                         _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActHoopAct", gateNo, "ProximityTrigger");
                         _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "PointOfInterestActivationAction", "ActPOI", gateNo, "ProximityTrigger");
-                        // Show next segment end gate as inactive
                         _xml.SetProximityTriggerOnEnterAction(gateNo + 2, "ObjectActivationAction", "ActHoopInact", gateNo, "ProximityTrigger");
                     }
                 }
 
-                // Add activate next gate proximity trigger action as event to proximity trigger
                 if (gateNo + 1 <= GatesCount)
+                {
                     _xml.SetProximityTriggerOnEnterAction(gateNo + 1, "ObjectActivationAction", "ActProximityTrigger", gateNo, "ProximityTrigger");
+                }
             }
 
-            // Create  window object 
             _xml.SetUIPanelWindow(1, "UIpanelWindow", "False", "True", "images\\htmlSignWriting.html", "False", "False");
 
-            // Create HTML, JavaScript and CSS files for window object
             await _assetFileGenerator.WriteAssetFileAsync("HTML.SignWriting.html", "htmlSignWriting.html", formData.ScenarioImageFolder);
             await SetSignWritingJS(formData);
             await _assetFileGenerator.WriteAssetFileAsync("CSS.styleSignWriting.css", "styleSignWriting.css", formData.ScenarioImageFolder);
 
-            // Create  window open/close actions
-            _xml.SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", SignWriting.GetSignWritingWindowParameters(formData), formData.SignMonitorNumber.ToString());
+            _xml.SetOpenWindowAction(1, "UIPanelWindow", "UIpanelWindow", GetSignWritingWindowParameters(formData), formData.SignMonitorNumber.ToString());
             _xml.SetCloseWindowAction(1, "UIPanelWindow", "UIpanelWindow");
 
-            // Create timer trigger to play audio introductions, activate first gate and POI, activate first proximity trigger when scenario starts
             _xml.SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
             _xml.SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
             _xml.SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
             _xml.SetTimerTriggerAction("ObjectActivationAction", "ActHoopAct01", "TimerTrigger01");
             _xml.SetTimerTriggerAction("ObjectActivationAction", "DeactHoopInact01", "TimerTrigger01");
-            _xml.SetTimerTriggerAction("PointOfInterestActivationAction", $"ActPOI01", "TimerTrigger01");
+            _xml.SetTimerTriggerAction("PointOfInterestActivationAction", "ActPOI01", "TimerTrigger01");
             _xml.SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
             _xml.SetTimerTriggerAction("ObjectActivationAction", "ActHoopInact02", "TimerTrigger01");
             _xml.SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
 
-            // Create airport landing trigger and activation action 
             _xml.SetAreaLandingTrigger("AreaLandingTrigger01", "Any", "False");
-            _xml.SetSphereArea($"SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
+            _xml.SetSphereArea("SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
             string dwp = ScenarioXML.GetCoordinateWorldPosition(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon, formData.DestinationRunway.Altitude);
             AttachedWorldPosition adwp = ScenarioXML.GetAttachedWorldPosition(dwp, "False");
             _xml.SetAttachedWorldPosition("SphereArea", "SphereArea01", adwp);
@@ -477,7 +450,6 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             _xml.SetAreaLandingTriggerAction("GoalResolutionAction", "Goal01", "AreaLandingTrigger01");
             _xml.SetObjectActivationAction(1, "AreaLandingTrigger", "AreaLandingTrigger", "ActAreaLandingTrigger", "True");
 
-            // Add activate airport landing trigger action as event to last proximity trigger
             _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAreaLandingTrigger", GatesCount, "ProximityTrigger");
         }
     }

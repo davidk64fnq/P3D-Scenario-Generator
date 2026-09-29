@@ -1,10 +1,13 @@
 ﻿namespace P3D_Scenario_Generator.Runways
 {
-    public class RunwayUILists
+    /// <summary>
+    /// Holds collections of distinct Countries, States, Cities, and Runway identifiers used to populate UI selection dropdowns.
+    /// </summary>
+    internal class RunwayUILists
     {
-        public List<string> Countries { get; set; } = [];
-        public List<string> States { get; set; } = [];
-        public List<string> Cities { get; set; } = [];
-        public List<string> IcaoRunwayNumbers { get; set; } = [];
+        internal List<string> Countries { get; set; } = [];
+        internal List<string> States { get; set; } = [];
+        internal List<string> Cities { get; set; } = [];
+        internal List<string> IcaoRunwayNumbers { get; set; } = [];
     }
 }

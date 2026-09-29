@@ -14,9 +14,13 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// and geographic parameters, and also defines the visible boundaries of the
     /// celestial map.
     /// </summary>
-    public class SextantViewGenerator(Logger logger, FileOps fileOps, IProgress<string> progressReporter, AlmanacData almanacData, AssetFileGenerator assetFileGenerator)
+    internal class SextantViewGenerator(
+        Logger logger,
+        FileOps fileOps,
+        IProgress<string> progressReporter,
+        AlmanacData almanacData,
+        AssetFileGenerator assetFileGenerator)
     {
-        // Guard clauses to validate the constructor parameters.
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
@@ -24,7 +28,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
         private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator ?? throw new ArgumentNullException(nameof(assetFileGenerator));
 
         private const double DegreesToRadiansFactor = Math.PI / 180.0;
-        private const double RadiansToDegreesFactor = 180.0 / Math.PI;
 
         /// <summary>
         /// Generates and writes the Celestial Sextant HTML file to the specified output folder.
@@ -32,29 +35,44 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// <param name="formData">The scenario data containing the output folder path.</param>
         /// <param name="starDataManager">The manager containing star name data.</param>
         /// <returns><see langword="true"/> if the HTML file was successfully created; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> SetCelestialSextantHtmlAsync(ScenarioFormData formData, StarDataManager starDataManager)
+        internal async Task<bool> SetCelestialSextantHtmlAsync(ScenarioFormData formData, StarDataManager starDataManager)
         {
             _progressReporter.Report("INFO: Preparing to generate Celestial Sextant HTML file...");
 
             // Create the HTML dropdown options
             string starOptions = "<option>Select Star</option>" +
-                                 string.Join("", starDataManager.NavStarNames.Select(name => $"<option>{name}</option>"));
+                                 string.Concat(starDataManager.NavStarNames.Select(name => $"<option>{name}</option>"));
 
             // Define the custom replacement logic for the HTML placeholder
             string ApplyStarOptions(string content) => content.Replace("starOptionsX", starOptions);
 
-            // Use the AssetFileGenerator helper
             return await _assetFileGenerator.WriteAssetFileAsync(
                 resourceName: "HTML.CelestialSextant.html",
                 fileName: "htmlCelestialSextant.html",
                 saveLocation: formData.ScenarioImageFolder,
-                replacements: [], // No JS variable assignments to replace
+                replacements: [],
                 customLogic: ApplyStarOptions
             );
         }
 
-        public async Task<bool> SetCelestialSextantAssetsAsync(ScenarioFormData formData, StarDataManager starDataManager,
-    double north, double east, double south, double west)
+        /// <summary>
+        /// Generates and deploys all dynamic and static JavaScript, CSS, audio, and constellation image assets
+        /// required for the in-game celestial sextant panel.
+        /// </summary>
+        /// <param name="formData">The scenario configuration data.</param>
+        /// <param name="starDataManager">The manager containing star database and constellation lines.</param>
+        /// <param name="north">The northern latitude boundary in degrees for the plotting map.</param>
+        /// <param name="east">The eastern longitude boundary in degrees for the plotting map.</param>
+        /// <param name="south">The southern latitude boundary in degrees for the plotting map.</param>
+        /// <param name="west">The western longitude boundary in degrees for the plotting map.</param>
+        /// <returns><see langword="true"/> if all web assets were generated and deployed successfully; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> SetCelestialSextantAssetsAsync(
+            ScenarioFormData formData,
+            StarDataManager starDataManager,
+            double north,
+            double east,
+            double south,
+            double west)
         {
             string saveLocation = formData.ScenarioImageFolder;
             await _logger.InfoAsync("Starting generation of Celestial Sextant web assets.");
@@ -73,7 +91,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
             };
 
             // 2. Generate Files
-
             double absTrueHdg = formData.StartRunway.Hdg + formData.StartRunway.MagVar;
 
             // Main JS: Chain SetCelestialMapEdges and ReplaceJsObjectProperty in the customLogic lambda
@@ -88,7 +105,10 @@ namespace P3D_Scenario_Generator.CelestialScenario
                     content = AssetFileGenerator.ReplaceJsObjectProperty(content, "azTrueDeg", absTrueHdg.ToString(CultureInfo.InvariantCulture));
                     string startPosJson = $"{{ latitude: {formData.StartRunway.AirportLat.ToRadians()}, longitude: {formData.StartRunway.AirportLon.ToRadians()} }}";
                     return AssetFileGenerator.ReplaceJsObjectBlock(content, "position", startPosJson);
-                })) return false;
+                }))
+            {
+                return false;
+            }
 
             // Static JS Files
             if (!await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsCelestialAstroCalcs.js", "scriptsCelestialAstroCalcs.js", saveLocation)) return false;
@@ -186,7 +206,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// </summary>
         /// <param name="degrees">The angle in degrees.</param>
         /// <returns>The angle in radians.</returns>
-        public static double ToRadians(double degrees)
+        internal static double ToRadians(double degrees)
         {
             return degrees * DegreesToRadiansFactor;
         }

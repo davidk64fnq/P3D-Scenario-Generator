@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator.Services
 {
-    public class ScenarioXML()
+    internal class ScenarioXML()
     {
         private readonly SimBaseDocumentXML _simBaseDocumentXML = new()
         {
@@ -562,8 +562,8 @@ namespace P3D_Scenario_Generator.Services
             }
             else
             {
-                horizontalOffset = monitorWidth / 2 - windowWidth / 2;
-                verticalOffset = monitorHeight / 2 - windowHeight / 2;
+                horizontalOffset = (monitorWidth / 2) - (windowWidth / 2);
+                verticalOffset = (monitorHeight / 2) - (windowHeight / 2);
             }
 
             return [windowWidth.ToString(), windowHeight.ToString(), horizontalOffset.ToString(), verticalOffset.ToString()];

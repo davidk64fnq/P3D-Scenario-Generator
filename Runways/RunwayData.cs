@@ -3,46 +3,46 @@
     /// <summary>
     /// A data structure to hold all runway-related data, including the list of runways
     /// and the pre-built KD-tree for efficient searching. This class is designed to be
-    /// serialized to a binary cache file.
+    /// serialized to a cache file.
     /// </summary>
     [Serializable]
-    public class RunwayData
+    internal class RunwayData
     {
         /// <summary>
         /// The complete list of runways loaded from the data source.
         /// </summary>
-        public List<RunwayParams> Runways { get; set; } = [];
+        internal List<RunwayParams> Runways { get; set; } = [];
 
         /// <summary>
         /// The root node of the KD-tree, built from the Runways list for fast spatial queries.
         /// </summary>
-        public KDNode? RunwayTreeRoot { get; set; }
+        internal KDNode? RunwayTreeRoot { get; set; }
     }
 
     /// <summary>
     /// Represents a node in the KD-tree, containing a runway and references to its children.
     /// </summary>
     [Serializable]
-    public class KDNode
+    internal class KDNode
     {
         /// <summary>
         /// The runway data associated with this node.
         /// </summary>
-        public RunwayParams Runway { get; set; } = default!;
+        internal RunwayParams Runway { get; set; } = default!;
 
         /// <summary>
         /// The left child node of the KD-tree.
         /// </summary>
-        public KDNode? Left { get; set; }
+        internal KDNode? Left { get; set; }
 
         /// <summary>
         /// The right child node of the KD-tree.
         /// </summary>
-        public KDNode? Right { get; set; }
+        internal KDNode? Right { get; set; }
 
         /// <summary>
         /// The axis used for splitting at this node (0 for latitude, 1 for longitude).
         /// </summary>
-        public int Axis { get; set; }
+        internal int Axis { get; set; }
     }
 }

@@ -10,34 +10,40 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// Defines the possible outcomes or results when setting or processing a leg (segment)
     /// within the photo tour generation process.
     /// </summary>
-    public enum SetLegResult
+    internal enum SetLegResult
     {
         /// <summary>
         /// Indicates that the operation or process completed successfully without any issues.
         /// </summary>
         Success,
+
         /// <summary>
         /// Indicates an error occurred during a file system operation, such as reading from or writing to a file.
         /// </summary>
         FileOperationError,
+
         /// <summary>
         /// Indicates that a web download attempt failed, possibly due to network issues,
         /// unreachable server, or invalid URL.
         /// </summary>
         WebDownloadFailed,
+
         /// <summary>
         /// Indicates that an error occurred while parsing an HTML document.
         /// This could be due to malformed HTML or an inability to locate expected elements.
         /// </summary>
         HtmlParsingFailed,
+
         /// <summary>
         /// Indicates that an expected airport could not be found based on the provided criteria.
         /// </summary>
         NoAirportFound,
+
         /// <summary>
         /// Indicates that a candidate for the next photo in the sequence could not be located or identified.
         /// </summary>
         NoNextPhotoFound,
+
         /// <summary>
         /// Indicates an unexpected logical error or an inconsistency in the program's flow.
         /// </summary>
@@ -50,16 +56,18 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// managing their data, creating visual map representations of the tour legs,
     /// and handling the downloading and resizing of tour photos.
     /// </summary>
-    /// <remarks>
-    /// Initializes a new instance of the PhotoTour class with injected dependencies.
-    /// </remarks>
-    /// <remarks>
-    /// Initializes a new instance of the PhotoTour class with its dependencies.
-    /// </remarks>
     /// <param name="logger">The logging service.</param>
     /// <param name="fileOps">The file operations service.</param>
     /// <param name="httpRoutines">The HTTP routines service.</param>
-    public class PhotoTour(
+    /// <param name="progressReporter">The UI progress reporting service.</param>
+    /// <param name="scenarioXML">The scenario XML generator.</param>
+    /// <param name="photoTourUtilities">The photo tour helper utilities.</param>
+    /// <param name="pic2MapHtmlParser">The Pic2Map HTML parser service.</param>
+    /// <param name="mapTileImageMaker">The map tile image composition service.</param>
+    /// <param name="imageUtils">The image utility service.</param>
+    /// <param name="assetFileGenerator">The asset file generator service.</param>
+    /// <param name="scenarioHTML">The scenario HTML file generator.</param>
+    internal class PhotoTour(
         Logger logger,
         FileOps fileOps,
         HttpRoutines httpRoutines,
@@ -72,27 +80,33 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         AssetFileGenerator assetFileGenerator,
         ScenarioHTML scenarioHTML)
     {
-        private readonly FileOps _fileOps = fileOps;
-        private readonly PhotoTourUtilities _photoTourUtilities = photoTourUtilities;
-        private readonly FormProgressReporter _progressReporter = progressReporter;
-        private readonly Logger _logger = logger;
-        private readonly HttpRoutines _httpRoutines = httpRoutines;
-        private readonly Pic2MapHtmlParser _pic2MapHtmlParser = pic2MapHtmlParser;
-        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker;
-        private readonly ImageUtils _imageUtils = imageUtils;
-        private readonly ScenarioXML _xml = scenarioXML;
-        private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator;
-        private readonly ScenarioHTML _scenarioHTML = scenarioHTML;
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly HttpRoutines _httpRoutines = httpRoutines ?? throw new ArgumentNullException(nameof(httpRoutines));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+        private readonly ScenarioXML _xml = scenarioXML ?? throw new ArgumentNullException(nameof(scenarioXML));
+        private readonly PhotoTourUtilities _photoTourUtilities = photoTourUtilities ?? throw new ArgumentNullException(nameof(photoTourUtilities));
+        private readonly Pic2MapHtmlParser _pic2MapHtmlParser = pic2MapHtmlParser ?? throw new ArgumentNullException(nameof(pic2MapHtmlParser));
+        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker ?? throw new ArgumentNullException(nameof(mapTileImageMaker));
+        private readonly ImageUtils _imageUtils = imageUtils ?? throw new ArgumentNullException(nameof(imageUtils));
+        private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator ?? throw new ArgumentNullException(nameof(assetFileGenerator));
+        private readonly ScenarioHTML _scenarioHTML = scenarioHTML ?? throw new ArgumentNullException(nameof(scenarioHTML));
 
-        internal List<PhotoLocParams> PhotoLocations { get; private set; } = [];
+        internal List<PhotoLocParams> PhotoLocations { get; } = [];
 
         internal int PhotoCount { get; private set; }
 
         /// <summary>
-        /// Populate PhotoLocations plus set airport(s) and create OSM images
+        /// Populates photo locations, selects appropriate departure and destination runways, and generates OSM tour images and XML scenario files.
         /// </summary>
-        public async Task<bool> SetPhotoTourAsync(ScenarioFormData formData, RunwayManager runwayManager)
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <param name="runwayManager">The runway manager providing runway search services.</param>
+        /// <returns><see langword="true"/> if the photo tour was generated successfully; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> SetPhotoTourAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
+            ArgumentNullException.ThrowIfNull(formData);
+            ArgumentNullException.ThrowIfNull(runwayManager);
+
             string message = "Setting photo tour.";
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
@@ -130,14 +144,14 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 int legNo = index + 1;
                 if (!await _mapTileImageMaker.SetLegRouteImagesAsync(PhotoTourUtilities.SetRouteCoords(PhotoLocations, index), legNo, formData))
                 {
-                    await _logger.ErrorAsync("Failed to create location image for leg {index} during photo tour setup.");
+                    await _logger.ErrorAsync($"Failed to create location image for leg {legNo} during photo tour setup.");
                     return false;
                 }
             }
 
             if (!await _imageUtils.DrawRouteBulkAsync(formData))
             {
-                await _logger.ErrorAsync($"Failed to draw image routes during PhotoTour setup.");
+                await _logger.ErrorAsync("Failed to draw image routes during PhotoTour setup.");
                 return false;
             }
 
@@ -158,11 +172,13 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         }
 
         /// <summary>
-        /// Creates the photo tour by finding a random pic2map photo page with nearby airport, then
-        /// looking for a series of photo pages within bearing and distance constraints, then that
-        /// a finish airport is the required distance range from the last photo location.
+        /// Creates the photo tour by finding a random pic2map photo page with a nearby airport, searching for a series
+        /// of photo pages within bearing and distance constraints, and ensuring a destination airport meets range requirements.
         /// </summary>
-        /// <returns>True if a complete photo tour was successfully created; otherwise, false.</returns>
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <param name="runwayManager">The runway manager providing runway search services.</param>
+        /// <param name="progressReporter">Optional progress reporter for status notifications.</param>
+        /// <returns><see langword="true"/> if a complete photo tour was successfully created; otherwise, <see langword="false"/>.</returns>
         internal async Task<bool> SetRandomPhotoTour(ScenarioFormData formData, RunwayManager runwayManager, IProgress<string>? progressReporter = null)
         {
             int maxOverallAttempts = formData.PhotoTourMaxSearchAttempts;
@@ -226,13 +242,12 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                     }
                 }
 
-                // If batch finished without success, ask the user if they want to keep searching
                 if (!tourSuccessfullyFormed)
                 {
                     string prompt = $"Unable to find a qualifying Photo Tour within {maxOverallAttempts} search attempts.\n\n" +
-                                    $"Possible reasons:\n" +
-                                    $"• Your active Location Filter (Country/State) may have few Pic2Map photos.\n" +
-                                    $"• Min/Max Leg Distance constraints may be too narrow.\n\n" +
+                                    "Possible reasons:\n" +
+                                    "• Your active Location Filter (Country/State) may have few Pic2Map photos.\n" +
+                                    "• Min/Max Leg Distance constraints may be too narrow.\n\n" +
                                     $"Would you like to try another {maxOverallAttempts} attempts with the current settings?";
 
                     DialogResult userChoice = MessageBox.Show(
@@ -255,12 +270,12 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             return tourSuccessfullyFormed;
         }
 
-
         /// <summary>
-        /// Downloads a random photo page from pic2map site and tries to find nearby airport within
-        /// the required distance range. If found adds the starting airport and first photo to the photo tour.
+        /// Downloads a random photo page from the pic2map service and finds a qualifying starting airport within the required distance range.
         /// </summary>
-        /// <returns>True if first leg created</returns>
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <param name="runwayManager">The runway manager providing runway search services.</param>
+        /// <returns>A <see cref="SetLegResult"/> indicating the outcome of setting the first leg.</returns>
         internal async Task<SetLegResult> SetFirstLeg(ScenarioFormData formData, RunwayManager runwayManager)
         {
             PhotoLocParams? airportLocation;
@@ -313,20 +328,22 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         }
 
         /// <summary>
-        /// Calls FindNearbyRunwayAsync method in RunwaySearcher class to look for an airport within required distance
-        /// from a photo location. Populates an instance of PhotoLocParams with the airport information
+        /// Searches for an airport within the required distance range from a designated photo coordinate.
         /// </summary>
-        /// <param name="queryLat">The photo location latitude</param>
-        /// <param name="queryLon">The photo location longitude</param>
-        /// <param name="formData">The scenario form data</param>
-        /// <param name="runwayManager">The runway manager instance</param>
-        /// <returns></returns>
+        /// <param name="queryLat">The photo location latitude.</param>
+        /// <param name="queryLon">The photo location longitude.</param>
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <param name="runwayManager">The runway manager providing runway search services.</param>
+        /// <returns>A populated <see cref="PhotoLocParams"/> representing the airport, or <see langword="null"/> if not found.</returns>
         internal static async Task<PhotoLocParams?> GetNearbyAirport(double queryLat, double queryLon, ScenarioFormData formData, RunwayManager runwayManager)
         {
             PhotoLocParams photoLocationParams = new();
             RunwayParams? nearbyAirport = await runwayManager.Searcher.FindNearbyRunwayAsync(queryLat, queryLon, formData.PhotoTourMinLegDist, formData.PhotoTourMaxLegDist, formData);
             if (nearbyAirport == null)
+            {
                 return null;
+            }
+
             photoLocationParams.legId = nearbyAirport.IcaoId;
             photoLocationParams.airportICAO = nearbyAirport.IcaoId;
             photoLocationParams.airportIndex = nearbyAirport.RunwaysIndex;
@@ -340,21 +357,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
         /// <summary>
         /// Attempts to find and add the next suitable photo location to the photo tour.
-        /// It first determines a candidate photo from the current photo's web page that meets
-        /// distance and bearing constraints and has not been previously included in the tour.
-        /// If a suitable photo is found, its details are downloaded, parsed, and added to the tour.
         /// </summary>
-        /// <returns>
-        /// <see cref="SetLegResult.Success"/> if a suitable next photo is found and successfully added.
-        /// <see cref="SetLegResult.LogicError"/> if the <see cref="PhotoLocations"/> list is empty,
-        /// indicating an invalid state for determining the next leg.
-        /// <see cref="SetLegResult.NoNextPhotoFound"/> if no qualifying photo is identified within
-        /// the constraints or the search loop finishes without a suitable candidate.
-        /// <see cref="SetLegResult.HtmlParsingFailed"/> if there are issues extracting or parsing data
-        /// from the HTML document for either the current or the next photo.
-        /// <see cref="SetLegResult.FileOperationError"/> if there's a problem deleting temporary files.
-        /// <see cref="SetLegResult.WebDownloadFailed"/> if the next photo's web page cannot be downloaded.
-        /// </returns>
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <returns>A <see cref="SetLegResult"/> indicating the result of setting the next tour leg.</returns>
         internal async Task<SetLegResult> SetNextLeg(ScenarioFormData formData)
         {
             string pic2mapHtmlSaveLocation = $"{formData.TempScenarioDirectory}\\random_pic2map.html";
@@ -365,7 +370,6 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 return SetLegResult.LogicError;
             }
 
-            // Call the refactored GetNextPhoto, which returns a tuple.
             (SetLegResult result, double distance, double bearing, string photoURL) = await GetNextPhoto(pic2mapHtmlSaveLocation, formData);
 
             if (result == SetLegResult.NoNextPhotoFound)
@@ -410,38 +414,28 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             return SetLegResult.Success;
         }
 
-        /// <summary>
-        /// Attempts to locate a suitable next photo from the current photo's web page.
-        /// It iterates through nearby photo candidates, leveraging a helper method to parse their
-        /// URLs, distances, and coordinates from the HTML document.
-        /// </summary>
         private async Task<(SetLegResult result, double distance, double bearing, string photoURL)> GetNextPhoto(string curPhotoFileLocation, ScenarioFormData formData)
         {
-            // Use the injected IFileOps to read the file content
             var (fileReadSuccess, htmlContent) = await _fileOps.TryReadAllTextAsync(curPhotoFileLocation, null);
             if (!fileReadSuccess)
             {
                 await _logger.ErrorAsync($"GetNextPhoto: Failed to read HTML content from file: {curPhotoFileLocation}");
-                return (SetLegResult.FileOperationError, 0, 0, "");
+                return (SetLegResult.FileOperationError, 0, 0, string.Empty);
             }
 
             HtmlAgilityPack.HtmlDocument htmlDoc = new();
             htmlDoc.LoadHtml(htmlContent);
 
-            int index = 1;
-
-            while (index <= Constants.PhotoMaxNearby)
+            for (int index = 1; index <= Constants.PhotoMaxNearby; index++)
             {
                 var (coordsResult, distance, nextLat, nextLon, nextPhotoURL) = await _pic2MapHtmlParser.ExtractNextPhotoCoordsFromNearbyListAsync(htmlDoc, index, curPhotoFileLocation);
 
                 if (coordsResult != SetLegResult.Success)
                 {
                     await _logger.ErrorAsync($"GetNextPhoto: Failed to extract next photo coordinates or URL for index {index} from HTML document at {curPhotoFileLocation}");
-                    // Return an error for the specific issue instead of continuing to loop
-                    return (coordsResult, 0, 0, "");
+                    return (coordsResult, 0, 0, string.Empty);
                 }
 
-                // Calculate bearing after successfully getting the next photo's coordinates
                 double bearing = MathRoutines.CalcBearing(PhotoLocations[^1].latitude, PhotoLocations[^1].longitude, nextLat, nextLon);
                 int headingChange = MathRoutines.CalcHeadingChange(PhotoLocations[^2].forwardBearing, bearing);
 
@@ -451,16 +445,16 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 {
                     return (SetLegResult.Success, distance, bearing, nextPhotoURL);
                 }
-                index++;
             }
-            return (SetLegResult.NoNextPhotoFound, 0, 0, "");
+            return (SetLegResult.NoNextPhotoFound, 0, 0, string.Empty);
         }
 
         /// <summary>
-        /// Tries to find a nearby airport to the last photo location within the required distance range.
-        /// If found adds the airport to the photo tour.
+        /// Attempts to locate a destination airport near the final photo location within required distance constraints.
         /// </summary>
-        /// <returns>SetLegResult indicating success or type of failure.</returns>
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <param name="runwayManager">The runway manager providing runway search services.</param>
+        /// <returns>A <see cref="SetLegResult"/> indicating success or the specific failure cause.</returns>
         internal async Task<SetLegResult> SetLastLeg(ScenarioFormData formData, RunwayManager runwayManager)
         {
             PhotoLocParams? airportLocation;
@@ -506,7 +500,12 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
         }
 
-        public Overview SetOverviewStruct(ScenarioFormData formData)
+        /// <summary>
+        /// Generates the scenario briefing, objective, duration, and overview metadata structure.
+        /// </summary>
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <returns>A populated <see cref="Overview"/> record containing scenario briefing and metadata.</returns>
+        internal Overview SetOverviewStruct(ScenarioFormData formData)
         {
             string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftDisplayTitle}";
             briefing += " as you navigate from one PhotoTour location to the next using IFR (I follow roads) ";
@@ -518,7 +517,6 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             string objective = "Take off and visit a series of PhotoTour locations before landing at ";
             objective += $"at {formData.DestinationRunway.IcaoName} (any runway)";
 
-            // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
             double duration = PhotoTourUtilities.GetPhotoTourDistance(PhotoLocations) / formData.AircraftCruiseSpeed * 60;
 
             Overview overview = new()
@@ -537,7 +535,13 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             return overview;
         }
 
-        public async Task SetPhotoTourWorldBaseFlightXMLAsync(ScenarioFormData formData, Overview overview)
+        /// <summary>
+        /// Configures the XML actions, UI windows, triggers, and goals for the photo tour flight scenario.
+        /// </summary>
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <param name="overview">The overview metadata structure.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        internal async Task SetPhotoTourWorldBaseFlightXMLAsync(ScenarioFormData formData, Overview overview)
         {
             _xml.SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             _xml.SetRealismOverrides();
@@ -547,91 +551,71 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             _xml.SetGoal("Goal01", overview.Objective);
             _xml.SetGoalResolutionAction("Goal01");
 
-            // Create scenario variable
             _xml.SetScenarioVariable("ScenarioVariable01", "currentLegNo", "1");
             _xml.SetScenarioVariableTriggerValue(0.0, 0, "ScenarioVariable01");
 
-            // Create script actions which reference scenario variable
             PhotoTourUtilities.SetPhotoTourScriptActions(_xml);
 
-            // Create map window objects
-            _xml.SetUIPanelWindow(PhotoCount - 1, "UIpanelWindow", "False", "True", $"images\\MovingMap.html", "False", "False");
+            _xml.SetUIPanelWindow(PhotoCount - 1, "UIpanelWindow", "False", "True", "images\\MovingMap.html", "False", "False");
 
-            // Create HTML, JavaScript and CSS files for windows
             await _assetFileGenerator.WriteAssetFileAsync("HTML.MovingMap.html", "MovingMap.html", formData.ScenarioImageFolder);
             await _assetFileGenerator.WriteAssetFileAsync("HTML.PhotoTour.html", "PhotoTour.html", formData.ScenarioImageFolder);
             await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsPhotoTour.js", "scriptsPhotoTour.js", formData.ScenarioImageFolder);
             await _assetFileGenerator.WriteAssetFileAsync("CSS.styleMovingMap.css", "styleMovingMap.css", formData.ScenarioImageFolder);
             await _assetFileGenerator.GenerateMovingMapScriptAsync(PhotoCount, formData);
 
-            // Create map window open/close actions
             _xml.SetOpenWindowAction(PhotoCount - 1, "UIPanelWindow", "UIpanelWindow", PhotoTourUtilities.GetMapWindowParameters(formData), formData.MapMonitorNumber.ToString());
             _xml.SetCloseWindowAction(PhotoCount - 1, "UIPanelWindow", "UIpanelWindow");
 
-            // Pass 1 - setup proximity triggers, there is a trigger for each photo location
-            // ProximityTrigger01 is the first photo trigger, Photo_PhotoTour.PhotoCount - 2 is the last photo trigger
             for (int photoNo = 1; photoNo <= PhotoCount - 2; photoNo++)
             {
-                // Create sound action to play when each new photo location entered
                 _xml.SetOneShotSoundAction(photoNo, "ThruHoop", "ThruHoop.wav");
 
-                // Create photo window open/close actions
-                _xml.SetUIPanelWindow(photoNo, "UIpanelWindow", "False", "True", $"images\\PhotoTour.html", "False", "False");
+                _xml.SetUIPanelWindow(photoNo, "UIpanelWindow", "False", "True", "images\\PhotoTour.html", "False", "False");
                 _xml.SetOpenWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow", PhotoTourUtilities.GetPhotoWindowParameters(photoNo, formData), formData.PhotoTourPhotoMonitorNumber.ToString());
                 _xml.SetCloseWindowAction(photoNo, "UIPanelWindow", "UIpanelWindow");
 
-                // Create cylinder area objects to put over each photo location
                 _xml.SetCylinderArea(photoNo, "CylinderArea", "0.0,0.0,0.0", formData.PhotoTourHotspotRadius.ToString(), "18520.0", "None");
                 string pwp = PhotoTourUtilities.GetPhotoWorldPosition(this, photoNo);
                 AttachedWorldPosition awp = ScenarioXML.GetAttachedWorldPosition(pwp, "True");
                 _xml.SetAttachedWorldPosition("CylinderArea", $"CylinderArea{photoNo:00}", awp);
 
-                // Create proximity trigger 
                 _xml.SetProximityTrigger(photoNo, "ProximityTrigger", "False");
                 _xml.SetProximityTriggerArea(photoNo, "CylinderArea", $"CylinderArea{photoNo:00}", "ProximityTrigger");
 
-                // Create proximity trigger actions to activate and deactivate as required
                 _xml.SetObjectActivationAction(photoNo, "ProximityTrigger", "ProximityTrigger", "ActProximityTrigger", "True");
                 _xml.SetObjectActivationAction(photoNo, "ProximityTrigger", "ProximityTrigger", "DeactProximityTrigger", "False");
 
-                // Add deactivate proximity trigger action as on enter event to proximity trigger
                 _xml.SetProximityTriggerOnEnterAction(photoNo, "ObjectActivationAction", "DeactProximityTrigger", photoNo, "ProximityTrigger");
             }
 
-            // Pass 2 - setup proximity triggers on enter actions
-            // Each trigger increments leg number scenario variable which leads to updates in html window contents 
-            // ProximityTrigger01 is the first photo trigger, Photo_PhotoTour.PhotoCount - 2 is the last photo trigger
             for (int photoNo = 1; photoNo <= PhotoCount - 2; photoNo++)
             {
-                // Play sound
                 _xml.SetProximityTriggerOnEnterAction(photoNo, "OneShotSoundAction", "ThruHoop", photoNo, "ProximityTrigger");
 
-                // Add activate next gate proximity trigger action as event to proximity trigger
-                // itemNo + 1 is next photo location, PhotoTour.PhotoCount - 1 is destination airport
                 if (photoNo + 1 < PhotoCount - 1)
+                {
                     _xml.SetProximityTriggerOnEnterAction(photoNo + 1, "ObjectActivationAction", "ActProximityTrigger", photoNo, "ProximityTrigger");
+                }
 
-                // Open new photo window 
                 _xml.SetProximityTriggerOnEnterAction(photoNo, "OpenWindowAction", "OpenUIpanelWindow", photoNo, "ProximityTrigger");
 
-                // Close old photo window 
                 if (photoNo > 1)
+                {
                     _xml.SetProximityTriggerOnEnterAction(photoNo - 1, "CloseWindowAction", "CloseUIpanelWindow", photoNo, "ProximityTrigger");
+                }
 
-                // Increment photo number
                 _xml.SetProximityTriggerOnEnterAction(1, "ScriptAction", "ScriptAction", photoNo, "ProximityTrigger");
             }
 
-            // Create timer trigger to play audio introductions and open map window when scenario starts
             _xml.SetTimerTrigger("TimerTrigger01", 1.0, "False", "True");
             _xml.SetTimerTriggerAction("OpenWindowAction", $"OpenUIpanelWindow{PhotoCount - 1:00}", "TimerTrigger01");
             _xml.SetTimerTriggerAction("DialogAction", "Intro01", "TimerTrigger01");
             _xml.SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger01");
             _xml.SetTimerTriggerAction("ObjectActivationAction", "ActProximityTrigger01", "TimerTrigger01");
 
-            // Create airport landing trigger which does goal resolution and closes windows
             _xml.SetAreaLandingTrigger("AreaLandingTrigger01", "Any", "False");
-            _xml.SetSphereArea($"SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
+            _xml.SetSphereArea("SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
             string dwp = ScenarioXML.GetCoordinateWorldPosition(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon, formData.DestinationRunway.Altitude);
             AttachedWorldPosition adwp = ScenarioXML.GetAttachedWorldPosition(dwp, "False");
             _xml.SetAttachedWorldPosition("SphereArea", "SphereArea01", adwp);
@@ -641,7 +625,6 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             _xml.SetAreaLandingTriggerAction("GoalResolutionAction", "Goal01", "AreaLandingTrigger01");
             _xml.SetObjectActivationAction(1, "AreaLandingTrigger", "AreaLandingTrigger", "ActAreaLandingTrigger", "True");
 
-            // Add activate airport landing trigger action as event to last proximity trigger 
             _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAreaLandingTrigger", PhotoCount - 2, "ProximityTrigger");
         }
     }

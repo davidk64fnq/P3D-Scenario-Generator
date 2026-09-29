@@ -6,11 +6,11 @@ using P3D_Scenario_Generator.Services;
 namespace P3D_Scenario_Generator.MapTiles
 {
     /// <summary>
-    /// Provides static methods for assembling OpenStreetMap (OSM) tiles into larger images.
+    /// Provides methods for assembling OpenStreetMap (OSM) tiles into larger images.
     /// This class handles the process of combining individual tile images into vertical columns,
     /// horizontal rows, and ultimately a complete grid image, while also managing temporary files.
     /// </summary>
-    public class MapTileMontager(
+    internal class MapTileMontager(
         Logger logger,
         FormProgressReporter progressReporter,
         FileOps fileOps,
@@ -19,9 +19,7 @@ namespace P3D_Scenario_Generator.MapTiles
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
-
-        // Assigned from constructor
-        private readonly MapTileDownloader _mapTileDownloader = mapTileDownloader;
+        private readonly MapTileDownloader _mapTileDownloader = mapTileDownloader ?? throw new ArgumentNullException(nameof(mapTileDownloader));
 
         /// <summary>
         /// Montages a column of individual tile images into a single vertical image.
@@ -32,7 +30,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="columnID">The X-index of the column, used for naming the input and output files.</param>
         /// <param name="fullPathNoExt">The base path and fullPathNoExt prefix for the input individual tiles and the output montaged column image.</param>
         /// <returns><see langword="true"/> if the tiles were successfully montaged into a column image; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> MontageTilesToColumnAsync(int yCount, int columnID, string fullPathNoExt)
+        internal async Task<bool> MontageTilesToColumnAsync(int yCount, int columnID, string fullPathNoExt)
         {
             try
             {
@@ -108,7 +106,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="rowId">The Y-index of the row, used for naming the input and output files.</param>
         /// <param name="fullPathNoExt">The base path and fullPathNoExt prefix for the input individual tiles and the output montaged row image.</param>
         /// <returns><see langword="true"/> if the tiles were successfully montaged into a row image; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> MontageTilesToRowAsync(int xCount, int rowId, string fullPathNoExt)
+        internal async Task<bool> MontageTilesToRowAsync(int xCount, int rowId, string fullPathNoExt)
         {
             try
             {
@@ -179,7 +177,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="yCount">The height of each individual column image in tiles, used for geometry calculation.</param>
         /// <param name="fullPathNoExt">The base path and fullPathNoExt prefix for the input individual column images and the output final montaged image.</param>
         /// <returns><see langword="true"/> if the columns were successfully montaged into a single image; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> MontageColumnsAsync(int xCount, int yCount, string fullPathNoExt)
+        internal async Task<bool> MontageColumnsAsync(int xCount, int yCount, string fullPathNoExt)
         {
             try
             {
@@ -250,7 +248,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="yCount">The number of rows to montage (height of the montage in rows).</param>
         /// <param name="fullPathNoExt">The base path and fullPathNoExt prefix for the input individual row images and the output final montaged image.</param>
         /// <returns><see langword="true"/> if the rows were successfully montaged into a single image; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> MontageRowsAsync(int xCount, int yCount, string fullPathNoExt)
+        internal async Task<bool> MontageRowsAsync(int xCount, int yCount, string fullPathNoExt)
         {
             try
             {
@@ -326,7 +324,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <returns><see langword="true"/> if the entire montage process (downloading, montaging, and cleanup)
         /// completes successfully; otherwise, <see langword="false"/> if any step fails (errors are logged by
         /// underlying methods).</returns>
-        public async Task<bool> MontageTilesAsync(BoundingBox boundingBox, int zoom, string fullPathNoExt, ScenarioFormData formData)
+        internal async Task<bool> MontageTilesAsync(BoundingBox boundingBox, int zoom, string fullPathNoExt, ScenarioFormData formData)
         {
             var columnTasks = new List<Task<bool>>();
 
@@ -361,13 +359,13 @@ namespace P3D_Scenario_Generator.MapTiles
 
             if (!await MontageColumnsAsync(boundingBox.XAxis.Count, boundingBox.YAxis.Count, fullPathNoExt))
             {
-                await _logger.ErrorAsync($"Failed to montage columns into final image.");
+                await _logger.ErrorAsync("Failed to montage columns into final image.");
                 return false;
             }
 
             if (!await _fileOps.TryDeleteTempOSMfilesAsync(fullPathNoExt, null))
             {
-                await _logger.ErrorAsync($"Failed to delete temporary OSM files.");
+                await _logger.ErrorAsync("Failed to delete temporary OSM files.");
                 return false;
             }
 

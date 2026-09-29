@@ -1,13 +1,16 @@
 ﻿namespace P3D_Scenario_Generator.Utilities
 {
-    public static class UIHelpers
+    /// <summary>
+    /// Provides helper routines for desktop UI dialogs and text rendering measurements.
+    /// </summary>
+    internal static class UIHelpers
     {
         /// <summary>
         /// Displays a confirmation dialog to the user with a "Yes" or "No" option.
         /// </summary>
         /// <param name="message">The message to display in the dialog.</param>
-        /// <returns>True if the user clicks "Yes"; otherwise, false.</returns>
-        public static bool ConfirmAction(string message)
+        /// <returns><see langword="true"/> if the user clicks "Yes"; otherwise, <see langword="false"/>.</returns>
+        internal static bool ConfirmAction(string message)
         {
             DialogResult result = MessageBox.Show(
                 message,
@@ -27,33 +30,27 @@
         /// <param name="font">The font to use for measuring the text's width.</param>
         /// <param name="maxWidth">The maximum allowed width in pixels for the text.</param>
         /// <returns>The original text if it fits, or a truncated version with "..." appended.</returns>
-        public static string TruncateTextForDisplay(string text, Font font, int maxWidth)
+        internal static string TruncateTextForDisplay(string text, Font font, int maxWidth)
         {
             if (string.IsNullOrEmpty(text))
             {
                 return string.Empty;
             }
 
-            // Measure the full text with the given font
             Size textSize = TextRenderer.MeasureText(text, font);
 
-            // If the text already fits within the maximum width, return it as is.
             if (textSize.Width <= maxWidth)
             {
                 return text;
             }
 
-            // Calculate the width of the ellipsis "..."
             Size ellipsisSize = TextRenderer.MeasureText("...", font);
 
-            // If even the ellipsis itself doesn't fit within the max width,
-            // just return the ellipsis to indicate content is present but too long.
             if (ellipsisSize.Width >= maxWidth)
             {
                 return "...";
             }
 
-            // Iterate backward, shortening the text until it fits with the ellipsis
             string truncatedText = text;
             int lastIndex = text.Length;
             while (TextRenderer.MeasureText(truncatedText + "...", font).Width > maxWidth && lastIndex > 0)
@@ -62,7 +59,6 @@
                 truncatedText = text[..lastIndex];
             }
 
-            // Append the ellipsis and return the truncated string
             return truncatedText + "...";
         }
     }

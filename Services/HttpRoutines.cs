@@ -1,6 +1,6 @@
-﻿using HtmlAgilityPack;
+﻿using System.Net;
+using HtmlAgilityPack;
 using P3D_Scenario_Generator.ConstantsEnums;
-using System.Net;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace P3D_Scenario_Generator.Services
@@ -11,18 +11,18 @@ namespace P3D_Scenario_Generator.Services
     /// <param name="fileOps">The file operations service.</param>
     /// <param name="logger">The logging service.</param>
     /// <param name="httpClient">The injected HttpClient instance.</param>
-    public class HttpRoutines(FileOps fileOps, Logger logger, HttpClient httpClient)
+    internal class HttpRoutines(FileOps fileOps, Logger logger, HttpClient httpClient)
     {
-        private readonly FileOps _fileOps = fileOps;
-        private readonly Logger _logger = logger;
-        private readonly HttpClient _httpClient = httpClient;
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly HttpClient _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
         /// <summary>
         /// Asynchronously retrieves and parses an HTML document from the specified URL using HtmlAgilityPack.
         /// </summary>
         /// <param name="url">The URL of the HTML document to retrieve.</param>
-        /// <returns>An HtmlAgilityPack.HtmlDocument object if successful; otherwise, null.</returns>
-        public async Task<HtmlDocument?> GetWebDocAsync(string url)
+        /// <returns>An <see cref="HtmlDocument"/> instance if successful; otherwise, <see langword="null"/>.</returns>
+        internal async Task<HtmlDocument?> GetWebDocAsync(string url)
         {
             HtmlDocument? htmlDoc = null;
             try
@@ -42,8 +42,8 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="url">The URL of the HTML document to retrieve.</param>
         /// <param name="saveFile">The full path where the HTML document will be saved.</param>
-        /// <returns>True if the web document was successfully retrieved and saved; otherwise, false.</returns>
-        public async Task<bool> GetWebDocAsync(string url, string saveFile)
+        /// <returns><see langword="true"/> if the web document was successfully retrieved and saved; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> GetWebDocAsync(string url, string saveFile)
         {
             HtmlDocument? htmlDoc;
             try
@@ -56,7 +56,7 @@ namespace P3D_Scenario_Generator.Services
                 return false;
             }
 
-            if (htmlDoc == null)
+            if (htmlDoc is null)
             {
                 await _logger.ErrorAsync($"Failed to retrieve web document from \"{url}\", as returned document was null. Cannot save to \"{saveFile}\".");
                 return false;
@@ -64,14 +64,13 @@ namespace P3D_Scenario_Generator.Services
 
             try
             {
-                using MemoryStream ms = new();
+                await using MemoryStream ms = new();
                 htmlDoc.Save(ms, htmlDoc.Encoding);
                 ms.Position = 0;
 
-                // Use the injected _fileOps instance and its async method
                 if (!await _fileOps.TryCopyStreamToFileAsync(ms, saveFile, null))
                 {
-                    await _logger.ErrorAsync($"Failed to save web document stream to '{saveFile}' using IFileOps.TryCopyStreamToFileAsync.");
+                    await _logger.ErrorAsync($"Failed to save web document stream to '{saveFile}' using TryCopyStreamToFileAsync.");
                     return false;
                 }
             }
@@ -87,10 +86,9 @@ namespace P3D_Scenario_Generator.Services
         /// Asynchronously loads and parses an HTML document from a local file path using HtmlAgilityPack.
         /// </summary>
         /// <param name="filePath">The full path to the local HTML file.</param>
-        /// <returns>An HtmlAgilityPack.HtmlDocument object if successful; otherwise, null.</returns>
-        public async Task<HtmlDocument?> GetHtmlDocumentFromFileAsync(string filePath)
+        /// <returns>An <see cref="HtmlDocument"/> instance if successful; otherwise, <see langword="null"/>.</returns>
+        internal async Task<HtmlDocument?> GetHtmlDocumentFromFileAsync(string filePath)
         {
-            // Use the injected _fileOps to check for file existence
             if (!FileOps.FileExists(filePath))
             {
                 await _logger.ErrorAsync($"GetHtmlDocumentFromFileAsync: The specified file does not exist: \"{filePath}\"");
@@ -101,7 +99,7 @@ namespace P3D_Scenario_Generator.Services
             try
             {
                 var (success, content) = await _fileOps.TryReadAllTextAsync(filePath, null);
-                if (success && content != null)
+                if (success && content is not null)
                 {
                     htmlDoc.LoadHtml(content);
                 }
@@ -124,7 +122,7 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="apiKey">The API key string to be validated.</param>
         /// <returns><see langword="true"/> if the API key is valid and a successful response (2xx status code) is received; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> ValidateMapTileServerKeyAsync(string apiKey)
+        internal async Task<bool> ValidateMapTileServerKeyAsync(string apiKey)
         {
             apiKey = apiKey.Replace("\"", "").Replace("'", "").Trim();
             string url = $"{Constants.OSMtileServerURLprefix}/0/0/0.png?rapidapi-key={apiKey}";
@@ -185,19 +183,18 @@ namespace P3D_Scenario_Generator.Services
         /// <param name="url">The URL of the file to download.</param>
         /// <param name="saveFile">The full path where the downloaded file will be saved.</param>
         /// <returns><see langword="true"/> if the file was downloaded and saved successfully; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> DownloadBinaryFileAsync(string url, string saveFile)
+        internal async Task<bool> DownloadBinaryFileAsync(string url, string saveFile)
         {
             try
             {
                 using HttpResponseMessage response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                 response.EnsureSuccessStatusCode();
 
-                using Stream contentStream = await response.Content.ReadAsStreamAsync();
+                await using Stream contentStream = await response.Content.ReadAsStreamAsync();
 
-                // Use the injected _fileOps and its async method
                 if (!await _fileOps.TryCopyStreamToFileAsync(contentStream, saveFile, null))
                 {
-                    await _logger.ErrorAsync($"Download of binary file failed to save using IFileOps.TryCopyStreamToFileAsync from URL \"{url}\" to path \"{saveFile}\"");
+                    await _logger.ErrorAsync($"Download of binary file failed to save using TryCopyStreamToFileAsync from URL \"{url}\" to path \"{saveFile}\"");
                     return false;
                 }
                 return true;
@@ -220,27 +217,20 @@ namespace P3D_Scenario_Generator.Services
         }
 
         /// <summary>
-        /// Safely gets the InnerText of a node found by an XPath expression.
-        /// This method prevents NullReferenceExceptions by returning null if the node is not found.
+        /// Safely retrieves the inner text of a node found by an XPath expression.
         /// </summary>
         /// <param name="node">The parent HTML node to start the search from.</param>
         /// <param name="xpath">The XPath expression to select the target node.</param>
-        /// <returns>The InnerText of the selected node, or null if the node is not found.</returns>
-        public static string? SelectSingleNodeInnerText(HtmlNode? node, string xpath)
+        /// <returns>The inner text of the selected node, or <see langword="null"/> if the node is not found.</returns>
+        internal static string? SelectSingleNodeInnerText(HtmlNode? node, string xpath)
         {
-            if (node == null)
+            if (node is null)
             {
                 return null;
             }
 
             HtmlNode? selectedNode = node.SelectSingleNode(xpath);
-
-            if (selectedNode != null)
-            {
-                return selectedNode.InnerText;
-            }
-
-            return null;
+            return selectedNode?.InnerText;
         }
     }
 }

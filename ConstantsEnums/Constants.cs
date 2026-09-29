@@ -6,7 +6,7 @@ namespace P3D_Scenario_Generator.ConstantsEnums
     /// <summary>
     /// The four seasons (Spring, Summer, Autumn, Winter)
     /// </summary>
-    public enum Season
+    internal enum Season
     {
         Spring = 1,
         Summer = 2,
@@ -14,10 +14,7 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         Winter = 4
     };
 
-    /// <summary>
-    /// List of scenario types in same order as <see cref="Constants.scenarioNames"/>
-    /// </summary>
-    public enum ScenarioTypes
+    internal enum ScenarioTypes
     {
         [Description("Circuit")]
         Circuit,
@@ -34,7 +31,7 @@ namespace P3D_Scenario_Generator.ConstantsEnums
     /// <summary>
     /// Defines the possible alignment options for a window within a monitor.
     /// </summary>
-    public enum WindowAlignment
+    internal enum WindowAlignment
     {
         [Description("Centered")]
         Centered,
@@ -52,18 +49,18 @@ namespace P3D_Scenario_Generator.ConstantsEnums
     /// Defines the supported map window size options.
     /// The integer values correspond to the pixel dimensions (e.g., 512x512, 1024x1024).
     /// </summary>
-    public enum MapWindowSizeOption
+    internal enum MapWindowSizeOption
     {
-        [Description("512")] 
+        [Description("512")]
         Size512 = 512,
-        [Description("1024")] 
+        [Description("1024")]
         Size1024 = 1024
     }
 
     /// <summary>
     /// Where to source item page coordinates in Wikipedia List.
     /// </summary>
-    public enum CoordinateSource
+    internal enum CoordinateSource
     {
         [Description("Item Page")]
         ItemPage,
@@ -104,7 +101,7 @@ namespace P3D_Scenario_Generator.ConstantsEnums
 
         // Use THIS for Folder Paths/Registry Keys. 
         // It stays the same even if you rename the 'Assembly Title' later.
-        public static readonly string AppDataFolderName = "P3D_Scenario_Generator_Cache";
+        internal static readonly string AppDataFolderName = "P3D_Scenario_Generator_Cache";
 
         private static string GetApplicationTitle()
         {
@@ -157,13 +154,13 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         [
             // Cruise Speed 0-100 knots, Climb Rate 450 fpm, Circuit Height 800 feet
             new AircraftPerformanceProfile { MinCruiseSpeedKnots = 0, ClimbRateFpm = 450, CircuitHeightFeet = 800 },
-    
+
             // Cruise Speed 100-180 knots, Climb Rate 800 fpm, Circuit Height 1000 feet
             new AircraftPerformanceProfile { MinCruiseSpeedKnots = 100, ClimbRateFpm = 800, CircuitHeightFeet = 1000 },
-    
+
             // Cruise Speed 180-320 knots, Climb Rate 1850 fpm, Circuit Height 1000 feet
             new AircraftPerformanceProfile { MinCruiseSpeedKnots = 180, ClimbRateFpm = 1850, CircuitHeightFeet = 1250 },
-    
+
             // Cruise Speed 320+ knots, Climb Rate (high), Circuit Height 3000 feet
             new AircraftPerformanceProfile { MinCruiseSpeedKnots = 320, ClimbRateFpm = 3000, CircuitHeightFeet = 1500 }
         ];
@@ -244,40 +241,40 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         /// </summary>
         public const int AlmanacExtractDaysCount = 3;
 
-        public const int SextantWindowWidth = 986;
+        internal const int SextantWindowWidth = 986;
 
-        public const int SextantWindowHeight = 755;
+        internal const int SextantWindowHeight = 755;
 
-        public const string RandomText = "Random";
+        internal const string RandomText = "Random";
 
         #endregion
 
         #region Form layout constants
 
         // --- Layout Constants (compile-time) ---
-        public const int SimpleControlWidth = 120;
-        public const int SimpleControlHeight = 23;
-        public const int SimpleMarginValueTopBottom = 5;
-        public const int SimpleMarginValueLeftRight = 15;
-        public const int LeafTableLayoutOffsetLeft = 20;
-        public const int LeafTableLayoutOffsetBottom = 10;
-        public const int LeafTableLayoutOffsetTop = 25;
-        public const int LeafTableLayoutNoCols = 2;
-        public const int NestedTableLayoutHeight = 400;
-        public const int ParentTableLayoutWidth = 812;
-        public const int ParentTableLayoutHeight = 438;
+        internal const int SimpleControlWidth = 120;
+        internal const int SimpleControlHeight = 23;
+        internal const int SimpleMarginValueTopBottom = 5;
+        internal const int SimpleMarginValueLeftRight = 15;
+        internal const int LeafTableLayoutOffsetLeft = 20;
+        internal const int LeafTableLayoutOffsetBottom = 10;
+        internal const int LeafTableLayoutOffsetTop = 25;
+        internal const int LeafTableLayoutNoCols = 2;
+        internal const int NestedTableLayoutHeight = 400;
+        internal const int ParentTableLayoutWidth = 812;
+        internal const int ParentTableLayoutHeight = 438;
 
         // --- Layout Constants (runtime, initialized in static constructor) ---
-        public static readonly Padding SimpleMargin;
-        public static readonly AnchorStyles SimpleAnchor;
-        public static readonly AnchorStyles LeafTableLayoutAnchor;
-        public static readonly Padding GroupboxMargin;
-        public static readonly Padding GroupboxPadding;
-        public static readonly AnchorStyles GroupboxAnchor;
-        public static readonly Padding NestedTableLayoutMargin;
-        public static readonly AnchorStyles NestedTableLayoutAnchor;
-        public static readonly Padding ParentTableLayoutMargin;
-        public static readonly AnchorStyles ParentTableLayoutAnchor;
+        internal static readonly Padding SimpleMargin;
+        internal static readonly AnchorStyles SimpleAnchor;
+        internal static readonly AnchorStyles LeafTableLayoutAnchor;
+        internal static readonly Padding GroupboxMargin;
+        internal static readonly Padding GroupboxPadding;
+        internal static readonly AnchorStyles GroupboxAnchor;
+        internal static readonly Padding NestedTableLayoutMargin;
+        internal static readonly AnchorStyles NestedTableLayoutAnchor;
+        internal static readonly Padding ParentTableLayoutMargin;
+        internal static readonly AnchorStyles ParentTableLayoutAnchor;
 
         /// <summary>
         /// Static constructor for the Constants class.
@@ -478,7 +475,7 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         public const int MaxMonitorWidthPixels = 7680;
 
         /// <summary>
-        /// Offset is where to position HTML panel windows within a monitor, how close the edge of a window 
+        /// Offset is where to position HTML panel windows within a monitor, how close the edge of a window
         /// is to a monitor corner. Measured in pixels. Used for sanity checking input value.
         /// </summary>
         /// <remarks>Calculated value: MaxMonitorHeightPixels - largest supported moving map size</remarks>
@@ -534,7 +531,7 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         public const int PhotoMinNumberLegs = 2;
 
         /// <summary>
-        /// How much gap to leave as a minimum around a photo to ensure there is room for the photo window borders and still have the photo 
+        /// How much gap to leave as a minimum around a photo to ensure there is room for the photo window borders and still have the photo
         /// window fit on the monitor
         /// </summary>
         public const int PhotoSizeEdgeMarginPixels = 50;
@@ -551,14 +548,14 @@ namespace P3D_Scenario_Generator.ConstantsEnums
 
         /// <summary>
         /// The width of padding before first character, and after last character in canvas area of sign writing html window in pixels, padding is between
-        /// edge of canvas and middle of segment running parallel to that canvas edge. The height of padding above top of character line 
+        /// edge of canvas and middle of segment running parallel to that canvas edge. The height of padding above top of character line
         /// and below bottom of character line. Actual gap betwen canvas edge and outside segment edge is 5 pixels less than this value.
         /// </summary>
         public const int SignCharPaddingPixels = 15;
 
         /// <summary>
         /// The width of padding between the middle of righthand segment of a character and the middle of lefthand segment of next character,
-        /// this needs to be 5 pixels larger than <see cref="SignCharPaddingPixels"/> to attain equal spacing between characters as between characters 
+        /// this needs to be 5 pixels larger than <see cref="SignCharPaddingPixels"/> to attain equal spacing between characters as between characters
         /// and canvas edges.
         /// </summary>
         public const int SignCharPaddingInternalPixels = 20;
@@ -644,7 +641,7 @@ namespace P3D_Scenario_Generator.ConstantsEnums
         #region Wikipedia scenario constants
 
         /// <summary>
-        /// How much gap to leave as a minimum around a Wiki page to ensure there is room for the window borders and still have the Wiki page 
+        /// How much gap to leave as a minimum around a Wiki page to ensure there is room for the window borders and still have the Wiki page
         /// window fit on the monitor
         /// </summary>
         public const int WikiPageSizeEdgeMarginPixels = 50;

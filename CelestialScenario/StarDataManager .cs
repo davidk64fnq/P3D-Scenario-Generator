@@ -1,19 +1,18 @@
-﻿using OfficeOpenXml;
-using P3D_Scenario_Generator.ConstantsEnums;
-using P3D_Scenario_Generator.Services;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using P3D_Scenario_Generator.ConstantsEnums;
+using P3D_Scenario_Generator.Services;
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
     #region External DTO Records
 
     /// <summary>
-    /// Represents star record data used to map internal <see cref="Star"/> objects to the JSON structure 
+    /// Represents star record data used to map internal <see cref="Star"/> objects to the JSON structure
     /// expected by client-side JavaScript (<c>starCatalog</c> array of objects).
     /// </summary>
-    public record StarData(
+    internal record StarData(
         string ConstellationName,
         string CatalogID,
         string ShaIndex,
@@ -35,11 +34,13 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// It populates a list of all catalog stars, identifies and organizes navigational stars,
     /// and provides methods to access individual star properties and constellation line vectors.
     /// </summary>
-    public sealed class StarDataManager(Logger logger, FileOps fileOps, FormProgressReporter progressReporter)
+    /// <param name="logger">The application logger instance.</param>
+    /// <param name="fileOps">The centralized file operations service.</param>
+    /// <param name="progressReporter">The UI progress reporter.</param>
+    internal sealed class StarDataManager(Logger logger, FileOps fileOps, FormProgressReporter progressReporter)
     {
         #region Private Fields & Dependencies
 
-        // Guard clauses to validate the constructor parameters.
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
@@ -178,7 +179,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         public int NoStars => _noStars;
 
         /// <summary>
-        /// Gets a flattened list of star ID pairs ([Id1, ConnectedId1, Id2, ConnectedId2, ...]) 
+        /// Gets a flattened list of star ID pairs ([Id1, ConnectedId1, Id2, ConnectedId2, ...])
         /// used to draw lines between stars in constellations.
         /// </summary>
         public IReadOnlyList<string> StarLineConnections => _starLineConnections.AsReadOnly();
@@ -187,6 +188,10 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
         #region Public Methods
 
+        /// <summary>
+        /// Initializes the star catalog and constellation line connections from embedded JSON resources asynchronously.
+        /// </summary>
+        /// <returns><see langword="true"/> if the star data was initialized successfully; otherwise, <see langword="false"/>.</returns>
         public async Task<bool> InitStarsAsync()
         {
             await _logger.InfoAsync("Starting initialization of star data from JSON catalog.");
@@ -196,7 +201,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             _navStarNames.Clear();
             _noStars = 0;
 
-            string resourceName = "JSON.bsc5p_extra.json";
+            const string resourceName = "JSON.bsc5p_extra.json";
 
             var (success, stream) = await _fileOps.TryGetResourceStreamAsync(resourceName, _progressReporter);
             if (!success || stream is null) return false;
@@ -305,10 +310,13 @@ namespace P3D_Scenario_Generator.CelestialScenario
             }
         }
 
-
+        /// <summary>
+        /// Converts and returns the loaded stars into a read-only list of star data records formatted for UI consumption.
+        /// </summary>
+        /// <returns>A read-only list of <see cref="StarData"/> records.</returns>
         public IReadOnlyList<StarData> GetStarCatalog()
         {
-            return _stars.Select(s => new StarData(
+            return _stars.ConvertAll(s => new StarData(
                 ConstellationName: s.Constellation,
                 CatalogID: s.Id,
                 ShaIndex: s.StarNumber,
@@ -321,7 +329,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
                 DecM: s.DecM,
                 DecS: s.DecS,
                 VisualMagnitude: s.VisMag
-            )).ToList().AsReadOnly();
+            )).AsReadOnly();
         }
 
         #endregion
@@ -392,17 +400,17 @@ namespace P3D_Scenario_Generator.CelestialScenario
 
         #region Internal DTO Records
 
-        public record StellariumData(
+        internal record StellariumData(
             [property: JsonPropertyName("constellations")] List<StellariumConstellation> Constellations
         );
 
-        public record StellariumConstellation(
+        internal record StellariumConstellation(
             [property: JsonPropertyName("id")] string Id,
             [property: JsonPropertyName("lines")] List<List<int>> Lines,
             [property: JsonPropertyName("common_name")] CommonName CommonName
         );
 
-        public record CommonName(
+        internal record CommonName(
             [property: JsonPropertyName("english")] string English,
             [property: JsonPropertyName("native")] string Native
         );

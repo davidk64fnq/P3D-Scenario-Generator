@@ -8,11 +8,11 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// Handles the generation and management of simulator-specific files, primarily the "stars.dat" file, to ensure consistency between
     /// the celestial sextant display and the in-simulator view of stars.
     /// </summary>
-    public sealed class StarsDatFileGenerator(Logger logger, FileOps fileOps, FormProgressReporter progressReporter)
+    internal sealed class StarsDatFileGenerator(Logger logger, FileOps fileOps, FormProgressReporter progressReporter)
     {
-        private readonly Logger _logger = logger;
-        private readonly FileOps _fileOps = fileOps;
-        private readonly FormProgressReporter _progressReporter = progressReporter;
+        private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
+        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
         /// <summary>
         /// Creates a P3D Scenario Generator specific version of "stars.dat" if requested by user.
@@ -20,7 +20,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         /// <param name="formData">The scenario data containing the file paths.</param>
         /// <param name="starDataManager">The star data manager instance.</param>
         /// <returns><see langword="true"/> if all needed file operations complete successfully; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> CreateStarsDatAsync(ScenarioFormData formData, StarDataManager starDataManager)
+        internal async Task<bool> CreateStarsDatAsync(ScenarioFormData formData, StarDataManager starDataManager)
         {
             _progressReporter.Report("INFO: Preparing to create stars.dat.P3DscenarioGenerator file.");
 
@@ -34,7 +34,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             sb.AppendLine("Intensity=230");
             sb.AppendLine($"NumStars={starDataManager.NoStars}");
             sb.AppendLine("[Star Locations]");
-            sb.Append(string.Join("\n", starLines));
+            sb.AppendJoin("\n", starLines);
 
             string outputPath = Path.Combine(formData.P3DProgramData, "stars.dat.P3DscenarioGenerator");
 

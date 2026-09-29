@@ -8,7 +8,9 @@ namespace P3D_Scenario_Generator.MapTiles
     /// This class encapsulates the logic for determining the tile set that covers a given area,
     /// including handling edge conditions and meridian wrapping.
     /// </summary>
-    public class BoundingBoxCalculator(Logger logger, FormProgressReporter progressReporter)
+    /// <param name="logger">The application logger instance.</param>
+    /// <param name="progressReporter">The UI progress reporter.</param>
+    internal class BoundingBoxCalculator(Logger logger, FormProgressReporter progressReporter)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
@@ -21,14 +23,15 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="tiles">A list of OSM tile references and their associated coordinate.</param>
         /// <param name="zoom">The zoom level required for the bounding box.</param>
         /// <returns>A tuple containing a boolean indicating success and the resulting <see cref="BoundingBox"/>.</returns>
-        public async Task<(bool success, BoundingBox? boundingBox)> GetBoundingBoxAsync(List<Tile> tiles, int zoom)
+        internal async Task<(bool success, BoundingBox? boundingBox)> GetBoundingBoxAsync(List<Tile> tiles, int zoom)
         {
+            ArgumentNullException.ThrowIfNull(tiles);
+
             try
             {
-                // Validate input tiles.
-                if (tiles is null || tiles.Count == 0)
+                if (tiles.Count == 0)
                 {
-                    string message = "Input 'tiles' list is null or empty. Cannot compute bounding box.";
+                    const string message = "Input 'tiles' list is empty. Cannot compute bounding box.";
                     await _logger.ErrorAsync(message);
                     _progressReporter.Report($"ERROR: {message}");
                     return (false, null);
@@ -40,20 +43,17 @@ namespace P3D_Scenario_Generator.MapTiles
                     YAxis = [tiles[0].YIndex]
                 };
 
-                // Adjust boundingBox as needed to include remaining tiles.
                 for (int tileNo = 1; tileNo < tiles.Count; tileNo++)
                 {
                     await ExtendBoundingBoxAsync(tiles[tileNo], boundingBox, zoom);
                 }
 
-                // Add extra tiles if any tile coordinates are too close to a bounding box edge.
                 await CheckBoundingBoxEdgesAsync(tiles, boundingBox, zoom);
 
                 return (true, boundingBox);
             }
             catch (Exception ex)
             {
-                // Log any unexpected exceptions during the bounding box calculation process.
                 string errorMessage = $"An unexpected error occurred while calculating bounding box at zoom {zoom}.";
                 await _logger.ErrorAsync(errorMessage, ex);
                 _progressReporter.Report($"ERROR: {errorMessage}");
@@ -69,12 +69,8 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="newTile">The tile to be added to bounding box.</param>
         /// <param name="boundingBox">The bounding box to extend.</param>
         /// <param name="zoom">The zoom level of the bounding box.</param>
-        public async Task ExtendBoundingBoxAsync(Tile newTile, BoundingBox boundingBox, int zoom)
+        internal async Task ExtendBoundingBoxAsync(Tile newTile, BoundingBox boundingBox, int zoom)
         {
-            ArgumentNullException.ThrowIfNull(newTile);
-
-            ArgumentNullException.ThrowIfNull(boundingBox);
-
             // New tile is above BB, i.e., tileNo < boundingBox.YAxis[0].
             if (newTile.YIndex < boundingBox.YAxis[0])
             {
@@ -163,7 +159,6 @@ namespace P3D_Scenario_Generator.MapTiles
                 }
                 else
                 {
-                    // Handle meridian wrapping.
                     for (int tileNo = boundingBox.XAxis[0] - 1; tileNo >= 0; tileNo--)
                     {
                         boundingBox.XAxis.Insert(0, tileNo);
@@ -203,7 +198,6 @@ namespace P3D_Scenario_Generator.MapTiles
                 }
                 else
                 {
-                    // Handle meridian wrapping.
                     for (int tileNo = boundingBox.XAxis[^1] + 1; tileNo < 1 << zoom; tileNo++)
                     {
                         boundingBox.XAxis.Add(tileNo);
@@ -233,38 +227,27 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="tiles">A list of OSM tile references and their associated coordinate.</param>
         /// <param name="boundingBox">The bounding box to be checked and potentially populated.</param>
         /// <param name="zoom">The zoom level required for the bounding box.</param>
-        public async Task CheckBoundingBoxEdgesAsync(List<Tile> tiles, BoundingBox boundingBox, int zoom)
+        internal async Task CheckBoundingBoxEdgesAsync(List<Tile> tiles, BoundingBox boundingBox, int zoom)
         {
-            ArgumentNullException.ThrowIfNull(tiles);
-
-            ArgumentNullException.ThrowIfNull(boundingBox);
-
             try
             {
-                // This method iterates over all tiles and checks their position relative to the
-                // bounding box edges. It then calls the relevant async method to extend the bounding box
-                // if a tile is too close to an edge.
                 foreach (var tile in tiles)
                 {
-                    // Check North edge of bounding box
                     if (tile.YIndex == boundingBox.YAxis[0])
                     {
                         await CheckBBedgesNorthAsync(tile, boundingBox);
                     }
 
-                    // Check East edge of bounding box
                     if (tile.XIndex == boundingBox.XAxis[^1])
                     {
                         await CheckBBedgesEastAsync(tile, boundingBox, zoom);
                     }
 
-                    // Check South edge of bounding box
                     if (tile.YIndex == boundingBox.YAxis[^1])
                     {
                         await CheckBBedgesSouthAsync(tile, boundingBox, zoom);
                     }
 
-                    // Check West edge of bounding box
                     if (tile.XIndex == boundingBox.XAxis[0])
                     {
                         await CheckBBedgesWestAsync(tile, boundingBox, zoom);
@@ -273,7 +256,7 @@ namespace P3D_Scenario_Generator.MapTiles
             }
             catch (Exception ex)
             {
-                string errorMessage = "An unexpected error occurred while checking bounding box edges.";
+                const string errorMessage = "An unexpected error occurred while checking bounding box edges.";
                 await _logger.ErrorAsync(errorMessage, ex);
                 _progressReporter.Report($"ERROR: {errorMessage}");
             }
@@ -319,7 +302,7 @@ namespace P3D_Scenario_Generator.MapTiles
                 if (tileToCheck.XOffset > Constants.TileSizePixels - Constants.BoundingBoxTrimMarginPixels)
                 {
                     int newTileNo = MapTileCalculator.IncXtileNo(tileToCheck.XIndex, zoom);
-                    if (newTileNo != boundingBox.XAxis[0]) // Avoid adding the same tile number if it's already at the west edge
+                    if (newTileNo != boundingBox.XAxis[0])
                     {
                         string message = $"Extending bounding box east to {newTileNo} due to tile at ({tileToCheck.XIndex},{tileToCheck.YIndex}).";
                         _progressReporter.Report($"INFO: {message}");

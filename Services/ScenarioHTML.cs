@@ -8,7 +8,7 @@ namespace P3D_Scenario_Generator.Services
     /// <param name="logger">The logger for writing log messages.</param>
     /// <param name="fileOps">The file operations service for reading and writing files.</param>
     /// <param name="progressReporter">The progress reporter for UI updates.</param>
-    public class ScenarioHTML(Logger logger, FileOps fileOps, FormProgressReporter progressReporter)
+    internal class ScenarioHTML(Logger logger, FileOps fileOps, FormProgressReporter progressReporter)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
@@ -36,12 +36,11 @@ namespace P3D_Scenario_Generator.Services
         /// <param name="formData">The scenario form data, which includes paths and titles.</param>
         /// <param name="overview">The scenario overview data used to populate the HTML templates.</param>
         /// <returns><see langword="true"/> if all files were generated and copied successfully; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> GenerateHTMLfilesAsync(ScenarioFormData formData, Overview overview)
+        internal async Task<bool> GenerateHTMLfilesAsync(ScenarioFormData formData, Overview overview)
         {
             ArgumentNullException.ThrowIfNull(formData);
             ArgumentNullException.ThrowIfNull(overview);
 
-            // Generate Overview HTML
             string overviewHtml = await GenerateOverviewHtmlAsync(overview);
             if (!await _fileOps.TryWriteAllTextAsync($"{formData.ScenarioFolder}\\Overview.htm", overviewHtml, _progressReporter))
             {
@@ -53,7 +52,6 @@ namespace P3D_Scenario_Generator.Services
             await _logger.InfoAsync($"Overview HTML file created successfully at {formData.ScenarioFolder}\\Overview.htm");
             _progressReporter.Report("INFO: Overview HTML file created.");
 
-            // Generate Mission Brief HTML
             string missionBriefHtml = await GenerateMissionBriefHtmlAsync(overview);
             if (!await _fileOps.TryWriteAllTextAsync($"{formData.ScenarioFolder}\\{formData.ScenarioTitle}.htm", missionBriefHtml, _progressReporter))
             {
@@ -65,13 +63,7 @@ namespace P3D_Scenario_Generator.Services
             await _logger.InfoAsync($"Mission Brief HTML file created successfully at {formData.ScenarioFolder}\\{formData.ScenarioTitle}.htm");
             _progressReporter.Report("INFO: Mission Brief HTML file created.");
 
-            // Copy supporting files
-            if (!await CopyFilesAsync(formData))
-            {
-                return false;
-            }
-
-            return true;
+            return await CopyFilesAsync(formData);
         }
 
         /// <summary>
@@ -81,7 +73,7 @@ namespace P3D_Scenario_Generator.Services
         /// <returns>A task that returns the populated HTML string, or an empty string on failure.</returns>
         private async Task<string> GenerateOverviewHtmlAsync(Overview overview)
         {
-            string resourceName = "HTML.OverviewSource.htm";
+            const string resourceName = "HTML.OverviewSource.htm";
             string message = "Loading and populating overview HTML template.";
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
@@ -95,15 +87,15 @@ namespace P3D_Scenario_Generator.Services
                 return string.Empty;
             }
 
-            overviewHtml = overviewHtml.Replace("overviewParams.title", overview.Title ?? "");
-            overviewHtml = overviewHtml.Replace("overviewParams.h1", overview.Heading1 ?? "");
-            overviewHtml = overviewHtml.Replace("overviewParams.h2Location", overview.Location ?? "");
-            overviewHtml = overviewHtml.Replace("overviewParams.pDifficulty", overview.Difficulty ?? "");
-            overviewHtml = overviewHtml.Replace("overviewParams.pDuration", overview.Duration ?? "");
-            overviewHtml = overviewHtml.Replace("overviewParams.h2Aircraft", overview.Aircraft ?? "");
-            overviewHtml = overviewHtml.Replace("overviewParams.pBriefing", overview.Briefing ?? "");
-            overviewHtml = overviewHtml.Replace("overviewParams.liObjective", overview.Objective ?? "");
-            overviewHtml = overviewHtml.Replace("overviewParams.liTips", overview.Tips ?? "");
+            overviewHtml = overviewHtml.Replace("overviewParams.title", overview.Title ?? string.Empty);
+            overviewHtml = overviewHtml.Replace("overviewParams.h1", overview.Heading1 ?? string.Empty);
+            overviewHtml = overviewHtml.Replace("overviewParams.h2Location", overview.Location ?? string.Empty);
+            overviewHtml = overviewHtml.Replace("overviewParams.pDifficulty", overview.Difficulty ?? string.Empty);
+            overviewHtml = overviewHtml.Replace("overviewParams.pDuration", overview.Duration ?? string.Empty);
+            overviewHtml = overviewHtml.Replace("overviewParams.h2Aircraft", overview.Aircraft ?? string.Empty);
+            overviewHtml = overviewHtml.Replace("overviewParams.pBriefing", overview.Briefing ?? string.Empty);
+            overviewHtml = overviewHtml.Replace("overviewParams.liObjective", overview.Objective ?? string.Empty);
+            overviewHtml = overviewHtml.Replace("overviewParams.liTips", overview.Tips ?? string.Empty);
 
             await _logger.InfoAsync("Successfully populated overview HTML template.");
             _progressReporter.Report("INFO: Overview HTML populated.");
@@ -117,7 +109,7 @@ namespace P3D_Scenario_Generator.Services
         /// <returns>A task that returns the populated HTML string, or an empty string on failure.</returns>
         private async Task<string> GenerateMissionBriefHtmlAsync(Overview overview)
         {
-            string resourceName = "HTML.MissionBriefSource.htm";
+            const string resourceName = "HTML.MissionBriefSource.htm";
             string message = "Loading and populating mission brief HTML template.";
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
@@ -155,17 +147,17 @@ namespace P3D_Scenario_Generator.Services
         /// <returns>A new <see cref="MissionBrief"/> struct.</returns>
         private static MissionBrief SetMissionBriefStruct(Overview overview)
         {
-            return new MissionBrief()
+            return new MissionBrief
             {
-                title = overview.Title ?? "",
-                h1 = overview.Title ?? "",
-                h2Location = overview.Location ?? "",
-                h2Difficulty = overview.Difficulty ?? "",
-                h2Duration = overview.Duration ?? "",
-                h2Aircraft = overview.Aircraft ?? "",
-                pBriefing = overview.Briefing ?? "",
-                liObjective = overview.Objective ?? "",
-                h2Tips = overview.Tips ?? ""
+                title = overview.Title ?? string.Empty,
+                h1 = overview.Title ?? string.Empty,
+                h2Location = overview.Location ?? string.Empty,
+                h2Difficulty = overview.Difficulty ?? string.Empty,
+                h2Duration = overview.Duration ?? string.Empty,
+                h2Aircraft = overview.Aircraft ?? string.Empty,
+                pBriefing = overview.Briefing ?? string.Empty,
+                liObjective = overview.Objective ?? string.Empty,
+                h2Tips = overview.Tips ?? string.Empty
             };
         }
 
@@ -180,7 +172,6 @@ namespace P3D_Scenario_Generator.Services
             await _logger.InfoAsync(message);
             _progressReporter.Report($"INFO: {message}");
 
-            // Copy selected aircraft thumbnail image, or default if not provided
             string aircraftImageSource = formData.AircraftImagePath;
             string aircraftImageDest = Path.Combine(formData.ScenarioImageFolder, "Overview_01.jpg");
 
@@ -198,7 +189,6 @@ namespace P3D_Scenario_Generator.Services
             }
             else
             {
-                // Use CopyResourceFileAsync directly to avoid manual FileStream creation
                 if (!await _fileOps.CopyResourceFileAsync("Images.thumbnail.jpg", aircraftImageDest, _progressReporter))
                 {
                     message = "Failed to copy default aircraft image from resources.";
@@ -210,14 +200,12 @@ namespace P3D_Scenario_Generator.Services
                 _progressReporter.Report("INFO: Default aircraft image copied.");
             }
 
-            // Create sound directory if it doesn't exist via FileOps
             string soundDirectoryPath = Path.Combine(formData.ScenarioFolder, "sound");
             if (!await _fileOps.TryCreateDirectoryAsync(soundDirectoryPath, _progressReporter))
             {
                 return false;
             }
 
-            // Copy style files and other images
             if (!await _fileOps.CopyResourceFileAsync("CSS.style_kneeboard.css", Path.Combine(formData.ScenarioFolder, "style_kneeboard.css"), _progressReporter) ||
                 !await _fileOps.CopyResourceFileAsync("CSS.style_load_flight.css", Path.Combine(formData.ScenarioFolder, "style_load_flight.css"), _progressReporter) ||
                 !await _fileOps.CopyResourceFileAsync("Sounds.ThruHoop.wav", Path.Combine(soundDirectoryPath, "ThruHoop.wav"), _progressReporter) ||

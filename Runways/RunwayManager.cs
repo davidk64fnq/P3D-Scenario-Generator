@@ -2,33 +2,42 @@
 
 namespace P3D_Scenario_Generator.Runways
 {
-    public class RunwayManager(RunwayLoader loader)
+    /// <summary>
+    /// Coordinates the loading, searching, and UI presentation of runway data.
+    /// </summary>
+    /// <param name="loader">The runway loader service.</param>
+    internal class RunwayManager(RunwayLoader loader)
     {
-        private readonly RunwayLoader _loader = loader;
+        private readonly RunwayLoader _loader = loader ?? throw new ArgumentNullException(nameof(loader));
         private RunwaySearcher _searcher = default!;
         private RunwayUiManager _uiManager = default!;
 
         /// <summary>
-        /// Gets the searcher instance.
+        /// Gets the runway searcher instance.
         /// </summary>
-        public RunwaySearcher Searcher => _searcher;
+        internal RunwaySearcher Searcher => _searcher;
 
         /// <summary>
-        /// Gets the UI manager instance.
+        /// Gets the runway UI manager instance.
         /// </summary>
-        public RunwayUiManager UiManager => _uiManager;
+        internal RunwayUiManager UiManager => _uiManager;
 
         /// <summary>
         /// Initializes the RunwayManager by loading runway data, creating the searcher,
         /// and populating the UI manager's lists.
         /// </summary>
-        /// <param name="progressReporter">An object to report initialization progress.</param>
-        /// <param name="log">The ILog implementation for logging.</param>
-        /// <param name="cacheManager">The ICacheManager implementation for handling caching.</param>
-        /// <returns>True if initialization was successful, otherwise false.</returns>
-        public async Task<bool> InitializeAsync(FormProgressReporter progressReporter, Logger log, CacheManager cacheManager, FileOps fileOps)
+        /// <param name="progressReporter">The progress reporter for status updates.</param>
+        /// <param name="log">The application logger instance.</param>
+        /// <param name="cacheManager">The cache manager instance for runway caching.</param>
+        /// <param name="fileOps">The centralized file operations service.</param>
+        /// <returns><see langword="true"/> if initialization was successful; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> InitializeAsync(FormProgressReporter progressReporter, Logger log, CacheManager cacheManager, FileOps fileOps)
         {
-            // Pass the cancellationToken to the LoadRunwaysAsync method.
+            ArgumentNullException.ThrowIfNull(progressReporter);
+            ArgumentNullException.ThrowIfNull(log);
+            ArgumentNullException.ThrowIfNull(cacheManager);
+            ArgumentNullException.ThrowIfNull(fileOps);
+
             RunwayData? data = await _loader.LoadRunwaysAsync(progressReporter);
 
             if (data == null)
@@ -36,10 +45,8 @@ namespace P3D_Scenario_Generator.Runways
                 return false;
             }
 
-            // Pass the loaded data and the logger to the searcher.
             _searcher = new RunwaySearcher(data, log);
 
-            // Pass the searcher to the UI manager.
             progressReporter.IsThrottlingEnabled = false;
             _uiManager = new RunwayUiManager(_searcher, log, cacheManager, fileOps);
             _uiManager.PopulateUiLists();

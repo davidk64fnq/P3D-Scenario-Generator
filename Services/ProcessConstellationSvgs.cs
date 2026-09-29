@@ -3,16 +3,30 @@
 namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
-    /// A helper function for converting the IAU svg files sourced from the web into 
-    /// png/bmp files for easier handling in the Celestial Navigation scenario.
+    /// Provides a static utility to convert IAU SVG constellation files into PNG/BMP images
+    /// suitable for use in the Celestial Navigation scenario.
     /// </summary>
-    public static class ProcessConstellationSvgs
+    internal static class ProcessConstellationSvgs
     {
-        public static void CreatePNGs(string svgSourceFolder, string pngOutputFolder)
+        /// <summary>
+        /// Converts a predefined set of IAU SVG constellation files from a source folder
+        /// into 32-bit BMP images in a specified output folder.
+        /// Images are scaled, ensured to have even dimensions, and set to 96 DPI.
+        /// </summary>
+        /// <param name="fileOps">The file operations service to use for directory and file management.</param>
+        /// <param name="logger">The logging service for reporting warnings and errors.</param>
+        /// <param name="svgSourceFolder">The path to the folder containing the source SVG files.</param>
+        /// <param name="pngOutputFolder">The path to the folder where the converted BMP files will be saved.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        internal static async Task CreatePNGs(FileOps fileOps, Logger logger, string svgSourceFolder, string pngOutputFolder)
         {
             if (!FileOps.DirectoryExists(pngOutputFolder))
             {
-                Directory.CreateDirectory(pngOutputFolder);
+                if (!await fileOps.TryCreateDirectoryAsync(pngOutputFolder, null))
+                {
+                    await logger.ErrorAsync($"Failed to create output directory for constellation images: '{pngOutputFolder}'");
+                    return;
+                }
             }
 
             // Dictionary mapping: App Constellation Name -> Source SVG Filename
@@ -73,41 +87,43 @@ namespace P3D_Scenario_Generator.Services
 
                 if (!FileOps.FileExists(sourcePath))
                 {
-                    Console.WriteLine($"[WARN] Source file missing: {sourceSvgFile}");
+                    await logger.WarningAsync($"Source SVG file missing for '{appName}': '{sourceSvgFile}' at '{sourcePath}'");
                     continue;
                 }
 
                 string cleanOutputFilename = appName.Replace(" ", "_") + ".bmp";
                 string outputPath = Path.Combine(pngOutputFolder, cleanOutputFilename);
 
-                using (var image = new MagickImage(sourcePath, readSettings))
+                try
                 {
-                    // 1. Scale to fit 1720x800 maintaining aspect ratio
-                    image.Resize(new MagickGeometry(1720, 800)
+                    using (var image = new MagickImage(sourcePath, readSettings))
                     {
-                        IgnoreAspectRatio = false
-                    });
+                        image.Resize(new MagickGeometry(1720, 800)
+                        {
+                            IgnoreAspectRatio = false
+                        });
 
-                    // 2. Ensure width and height are even numbers (prevents stride alignment failures)
-                    uint evenWidth = (image.Width % 2 != 0) ? image.Width + 1 : image.Width;
-                    uint evenHeight = (image.Height % 2 != 0) ? image.Height + 1 : image.Height;
+                        // Ensure width and height are even numbers (prevents stride alignment failures)
+                        uint evenWidth = (image.Width % 2 != 0) ? image.Width + 1 : image.Width;
+                        uint evenHeight = (image.Height % 2 != 0) ? image.Height + 1 : image.Height;
 
-                    if (evenWidth != image.Width || evenHeight != image.Height)
-                    {
-                        image.Extent(evenWidth, evenHeight, Gravity.Center, MagickColors.White);
+                        if (evenWidth != image.Width || evenHeight != image.Height)
+                        {
+                            image.Extent(evenWidth, evenHeight, Gravity.Center, MagickColors.White);
+                        }
+
+                        image.Density = new Density(96, 96);
+                        image.Alpha(AlphaOption.Set);
+                        image.Depth = 8;
+                        image.Format = MagickFormat.Bmp;
+                        image.Write(outputPath);
                     }
-
-                    // 3. Set standard 96 DPI screen density
-                    image.Density = new Density(96, 96);
-
-                    // 4. Force 32-bit BMP (8 bits/channel x 4 RGBA channels = 32-bit depth)
-                    image.Alpha(AlphaOption.Set);
-                    image.Depth = 8;
-                    image.Format = MagickFormat.Bmp;
-                    image.Write(outputPath);
+                    await logger.InfoAsync($"Converted: {sourceSvgFile} -> {cleanOutputFilename}");
                 }
-
-                Console.WriteLine($"[OK] Converted: {sourceSvgFile} -> {cleanOutputFilename}");
+                catch (Exception ex)
+                {
+                    await logger.ErrorAsync($"Failed to convert SVG '{sourceSvgFile}' to BMP. Output: '{cleanOutputFilename}'.", ex);
+                }
             }
         }
     }

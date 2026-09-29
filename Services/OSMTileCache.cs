@@ -5,7 +5,11 @@ namespace P3D_Scenario_Generator.Services
     /// <summary>
     /// Manages the local file cache for OpenStreetMap (OSM) tiles using modern DI and JSON persistence.
     /// </summary>
-    public class OSMTileCache(
+    /// <param name="fileOps">The file operations service.</param>
+    /// <param name="httpRoutines">The HTTP routines service.</param>
+    /// <param name="progressReporter">The progress reporting service.</param>
+    /// <param name="metadataService">The cache metadata tracking service.</param>
+    internal class OSMTileCache(
         FileOps fileOps,
         HttpRoutines httpRoutines,
         FormProgressReporter progressReporter,
@@ -17,16 +21,19 @@ namespace P3D_Scenario_Generator.Services
         private readonly CacheMetadataService _metadataService = metadataService ?? throw new ArgumentNullException(nameof(metadataService));
 
         /// <summary>
-        /// Retrieves an OpenStreetMap (OSM) tile, either from a local cache or by downloading it,
-        /// and saves it to a specified file path. It also manages a daily download count via MetadataService.
+        /// Retrieves an OpenStreetMap (OSM) tile, either from the local cache or by downloading it,
+        /// and saves it to the specified file path while tracking daily download totals.
         /// </summary>
-        public async Task<bool> GetOrCopyOSMtile(string key, string url, string saveFile)
+        /// <param name="key">The cache key identifying the tile.</param>
+        /// <param name="url">The remote URL to download the tile from if not cached.</param>
+        /// <param name="saveFile">The destination file path to save or copy the tile to.</param>
+        /// <returns><see langword="true"/> if the tile was successfully retrieved and saved; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> GetOrCopyOSMtile(string key, string url, string saveFile)
         {
             var (cached, cachePath) = GetCachedTileInfo(key);
 
             if (cached)
             {
-                // Tile exists in cache, attempt to copy it to the saveFile location.
                 if (!await _fileOps.TryCopyFileAsync(cachePath, saveFile, _progressReporter, overwrite: true))
                 {
                     return false;
@@ -34,29 +41,24 @@ namespace P3D_Scenario_Generator.Services
             }
             else
             {
-                // Tile does not exist in cache, attempt to download it.
                 if (!await _httpRoutines.DownloadBinaryFileAsync(url, saveFile))
                 {
                     return false;
                 }
 
-                // Update metadata via service
                 var stats = _metadataService.GetStats();
                 _metadataService.UpdateDailyTotal(stats.DailyDownloadTotal + 1);
 
-                // Ensure target zoom directory exists in cache before saving
                 string? zoomDir = Path.GetDirectoryName(cachePath);
                 if (!string.IsNullOrEmpty(zoomDir))
                 {
-                    // Check return value rather than ignoring
                     if (!await _fileOps.TryCreateDirectoryAsync(zoomDir, _progressReporter))
                     {
-                        _progressReporter?.Report($"ERROR: Could not create OSM cache directory '{zoomDir}'.");
+                        _progressReporter.Report($"ERROR: Could not create OSM cache directory '{zoomDir}'.");
                         return false;
                     }
                 }
 
-                // Copy the newly downloaded file into the cache
                 if (!await _fileOps.TryCopyFileAsync(saveFile, cachePath, _progressReporter, overwrite: true))
                 {
                     return false;
@@ -74,7 +76,6 @@ namespace P3D_Scenario_Generator.Services
         {
             string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.AppDataFolderName);
 
-            // Subdirectory based on Zoom level (first part of the key)
             string zoomDir = Path.Combine(directory, key.Split('-')[0]);
             string cachePath = Path.Combine(zoomDir, key);
 
@@ -85,9 +86,8 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Resets daily totals if needed and calculates total cache size for UI display.
         /// </summary>
-        public void CheckCache()
+        internal void CheckCache()
         {
-            // Reset daily count if the date has changed
             _metadataService.ResetIfNewDay();
 
             string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.AppDataFolderName);
@@ -102,9 +102,11 @@ namespace P3D_Scenario_Generator.Services
         }
 
         /// <summary>
-        /// Formats bytes into human-readable string (B, KB, MB, GB, TB).
+        /// Formats bytes into a human-readable string (B, KB, MB, GB, TB).
         /// </summary>
-        public static string FormatBytes(long bytes)
+        /// <param name="bytes">The byte count to format.</param>
+        /// <returns>A human-readable string representation of the byte size.</returns>
+        internal static string FormatBytes(long bytes)
         {
             string[] Suffix = ["B", "KB", "MB", "GB", "TB"];
             int i = 0;

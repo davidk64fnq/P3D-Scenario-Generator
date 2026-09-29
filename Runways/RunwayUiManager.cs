@@ -7,20 +7,18 @@ namespace P3D_Scenario_Generator.Runways
     /// This class is responsible for converting raw data objects into formatted strings
     /// and for parsing user-selected strings back into data components.
     /// </summary>
-    /// <remarks>
-    /// Initializes a new instance of the RunwayUiManager.
-    /// </remarks>
-    /// <param name="searcher">An instance of RunwaySearcher to get raw runway data from.</param>
-    /// <param name="logger">An instance of an asynchronous logging service.</param>
-    /// <param name="cacheManager">An instance of a cache manager for serialization/deserialization.</param>
-    public class RunwayUiManager(RunwaySearcher searcher, Logger logger, CacheManager cacheManager, FileOps fileOps)
+    /// <param name="searcher">An instance of <see cref="RunwaySearcher"/> to get raw runway data from.</param>
+    /// <param name="logger">The application logger instance.</param>
+    /// <param name="cacheManager">The cache management service for serialization and deserialization.</param>
+    /// <param name="fileOps">The centralized file operations service.</param>
+    internal class RunwayUiManager(RunwaySearcher searcher, Logger logger, CacheManager cacheManager, FileOps fileOps)
     {
         private readonly RunwaySearcher _searcher = searcher ?? throw new ArgumentNullException(nameof(searcher));
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly CacheManager _cacheManager = cacheManager ?? throw new ArgumentNullException(nameof(cacheManager));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
 
-        public RunwayUILists UILists { get; } = new RunwayUILists();
+        internal RunwayUILists UILists { get; } = new RunwayUILists();
 
         // Path where user favourites will be stored.
         private readonly string _favouritesFilePath = Path.Combine(
@@ -29,7 +27,7 @@ namespace P3D_Scenario_Generator.Runways
             "LocationFavouritesJSON.txt"
         );
 
-        public const string DefaultFavouriteName = "[All Locations]";
+        internal const string DefaultFavouriteName = "[All Locations]";
 
         /// <summary>
         /// User created location favourites built from combinations of Country/State/City strings in "runways.xml" file
@@ -60,13 +58,13 @@ namespace P3D_Scenario_Generator.Runways
                 await _logger.InfoAsync($"Attempting to load location favourites from local file: {_favouritesFilePath}");
                 var (success, data) = await _cacheManager.TryDeserializeFromFileAsync<List<LocationFavourite>>(_favouritesFilePath);
 
-                if (success && data != null && data.Count > 0)
+                if (success && data?.Count > 0)
                 {
                     LocationFavourites = data;
                 }
                 else
                 {
-                    string warningMessage = "Local favourites file was missing, empty, or invalid. Falling back to embedded resource.";
+                    const string warningMessage = "Local favourites file was missing, empty, or invalid. Falling back to embedded resource.";
                     await _logger.WarningAsync(warningMessage);
                     progressReporter?.Report(warningMessage);
                     needsFallback = true;
@@ -84,7 +82,7 @@ namespace P3D_Scenario_Generator.Runways
             {
                 var (resSuccess, resData) = await _fileOps.TryDeserializeJsonFromResourceAsync<List<LocationFavourite>>("Text.LocationFavouritesJSON.txt", null, progressReporter);
 
-                if (resSuccess && resData != null && resData.Count > 0)
+                if (resSuccess && resData?.Count > 0)
                 {
                     LocationFavourites = resData;
                     await _logger.InfoAsync("Successfully loaded location favourites from embedded resource.");
@@ -96,7 +94,7 @@ namespace P3D_Scenario_Generator.Runways
                 }
             }
 
-            if (LocationFavourites != null && LocationFavourites.Count > 0)
+            if (LocationFavourites?.Count > 0)
             {
                 if (!LocationFavourites.Any(f => string.Equals(f?.Name, DefaultFavouriteName, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -109,7 +107,7 @@ namespace P3D_Scenario_Generator.Runways
             }
             else
             {
-                string warningMessage = "All attempts to load a valid list of location favourites failed. Default item inserted.";
+                const string warningMessage = "All attempts to load a valid list of location favourites failed. Default item inserted.";
                 await _logger.WarningAsync(warningMessage);
                 progressReporter?.Report(warningMessage);
                 LocationFavourites = [new LocationFavourite() { Name = DefaultFavouriteName }];
@@ -127,7 +125,7 @@ namespace P3D_Scenario_Generator.Runways
         {
             if (LocationFavourites == null || LocationFavourites.Count == 0)
             {
-                string warningMessage = "Location favourites list is empty. Save operation aborted to prevent data loss.";
+                const string warningMessage = "Location favourites list is empty. Save operation aborted to prevent data loss.";
                 await _logger.WarningAsync(warningMessage);
                 progressReporter?.Report(warningMessage);
                 return;
@@ -157,7 +155,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <summary>
         /// Adds a new location favourite to the list.
         /// </summary>
-        /// <param name="name">The name for the new <see cref="LocationFavourite"/> to be added</param>
+        /// <param name="name">The name for the new <see cref="LocationFavourite"/> to be added.</param>
         internal void AddLocationFavourite(string name)
         {
             LocationFavourite deepCopyFav = new(LocationFavourites[CurrentLocationFavouriteIndex])
@@ -166,18 +164,16 @@ namespace P3D_Scenario_Generator.Runways
             };
             LocationFavourites.Add(deepCopyFav);
 
-            // Switch active index to the newly created favourite
             CurrentLocationFavouriteIndex = LocationFavourites.Count - 1;
         }
 
         /// <summary>
         /// Deletes a location favourite from the list and adjusts the current index.
         /// </summary>
-        /// <param name="deleteLocationFavouriteName">The name of the <see cref="LocationFavourite"/> to be deleted</param>
-        /// <returns>The name of the zero index <see cref="LocationFavourites"/> location favourite</returns>
+        /// <param name="deleteLocationFavouriteName">The name of the <see cref="LocationFavourite"/> to be deleted.</param>
+        /// <returns>The name of the zero index <see cref="LocationFavourites"/> location favourite.</returns>
         internal string DeleteLocationFavourite(string deleteLocationFavouriteName)
         {
-            // Block deletion of the permanent default
             if (deleteLocationFavouriteName.Equals(DefaultFavouriteName, StringComparison.OrdinalIgnoreCase))
             {
                 return LocationFavourites[CurrentLocationFavouriteIndex].Name;
@@ -204,7 +200,6 @@ namespace P3D_Scenario_Generator.Runways
         {
             string oldLocationFavouriteName = LocationFavourites[CurrentLocationFavouriteIndex].Name;
 
-            // Block renaming of the permanent default
             if (oldLocationFavouriteName.Equals(DefaultFavouriteName, StringComparison.OrdinalIgnoreCase))
             {
                 return oldLocationFavouriteName;
@@ -224,13 +219,10 @@ namespace P3D_Scenario_Generator.Runways
         {
             if (LocationFavourites.Count == 0) return [];
 
-            // Capture the active item before sorting
             LocationFavourite currentSelected = GetCurrentLocationFavourite();
 
-            // Sort the list
             LocationFavourites = [.. LocationFavourites.OrderBy(f => f.Name)];
 
-            // Sync index back safely (default to 0 if IndexOf returns -1)
             int newIndex = LocationFavourites.IndexOf(currentSelected);
             CurrentLocationFavouriteIndex = Math.Max(0, newIndex);
 
@@ -238,15 +230,13 @@ namespace P3D_Scenario_Generator.Runways
         }
 
         /// <summary>
-        /// Reset <see cref="CurrentLocationFavouriteIndex"/> to the instance of <see cref="LocationFavourite"/> with newFavouriteName
+        /// Reset <see cref="CurrentLocationFavouriteIndex"/> to the instance of <see cref="LocationFavourite"/> with name.
         /// </summary>
-        /// <param name="newFavouriteName">The name of the new instance to be set as <see cref="CurrentLocationFavouriteIndex"/></param>
+        /// <param name="name">The name of the instance to set as active.</param>
         internal void ChangeCurrentLocationFavouriteIndex(string name)
         {
             int index = LocationFavourites.FindIndex(f => f.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
-            // Only update if the item actually exists.
-            // While typing a new name, retain the current valid index.
             if (index != -1)
             {
                 CurrentLocationFavouriteIndex = index;
@@ -256,10 +246,9 @@ namespace P3D_Scenario_Generator.Runways
         /// <summary>
         /// Get the <see cref="CurrentLocationFavouriteIndex"/> instance in <see cref="LocationFavourites"/>
         /// </summary>
-        /// <returns>The <see cref="CurrentLocationFavouriteIndex"/> instance in <see cref="LocationFavourites"/></returns>
+        /// <returns>The <see cref="CurrentLocationFavouriteIndex"/> instance in <see cref="LocationFavourites"/>.</returns>
         internal LocationFavourite GetCurrentLocationFavourite()
         {
-            // Safety fallback to prevent out-of-bounds crashes
             if (CurrentLocationFavouriteIndex < 0 || CurrentLocationFavouriteIndex >= LocationFavourites.Count)
             {
                 CurrentLocationFavouriteIndex = 0;
@@ -275,7 +264,6 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="locationValue">The filter string to be added.</param>
         internal void AddFilterValueToLocationFavourite(string locationType, string locationValue)
         {
-            // Do not allow adding country/state/city filters directly to the permanent global template
             if (LocationFavourites[CurrentLocationFavouriteIndex].Name.Equals(DefaultFavouriteName, StringComparison.OrdinalIgnoreCase) && locationValue != "None")
             {
                 return;
@@ -305,10 +293,8 @@ namespace P3D_Scenario_Generator.Runways
             {
                 return;
             }
-            else
-            {
-                DeleteFromLocationFavouriteList(locationType, locationValue);
-            }
+
+            DeleteFromLocationFavouriteList(locationType, locationValue);
         }
 
         /// <summary>
@@ -350,15 +336,15 @@ namespace P3D_Scenario_Generator.Runways
             {
                 case "Country":
                     LocationFavourites[CurrentLocationFavouriteIndex].Countries.Add(locationValue);
-                    LocationFavourites[CurrentLocationFavouriteIndex].Countries = [.. LocationFavourites[CurrentLocationFavouriteIndex].Countries.Distinct().OrderBy(c => c)];
+                    LocationFavourites[CurrentLocationFavouriteIndex].Countries = [.. LocationFavourites[CurrentLocationFavouriteIndex].Countries.Distinct().Order()];
                     break;
                 case "State":
                     LocationFavourites[CurrentLocationFavouriteIndex].States.Add(locationValue);
-                    LocationFavourites[CurrentLocationFavouriteIndex].States = [.. LocationFavourites[CurrentLocationFavouriteIndex].States.Distinct().OrderBy(s => s)];
+                    LocationFavourites[CurrentLocationFavouriteIndex].States = [.. LocationFavourites[CurrentLocationFavouriteIndex].States.Distinct().Order()];
                     break;
                 default:
                     LocationFavourites[CurrentLocationFavouriteIndex].Cities.Add(locationValue);
-                    LocationFavourites[CurrentLocationFavouriteIndex].Cities = [.. LocationFavourites[CurrentLocationFavouriteIndex].Cities.Distinct().OrderBy(c => c)];
+                    LocationFavourites[CurrentLocationFavouriteIndex].Cities = [.. LocationFavourites[CurrentLocationFavouriteIndex].Cities.Distinct().Order()];
                     break;
             }
         }
@@ -418,7 +404,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <summary>
         /// Populates the UILists with data from the RunwaySearcher.
         /// </summary>
-        public void PopulateUiLists()
+        internal void PopulateUiLists()
         {
             UILists.States = _searcher.GetRunwayStates();
             UILists.Cities = _searcher.GetRunwayCities();
@@ -431,9 +417,8 @@ namespace P3D_Scenario_Generator.Runways
         /// as "ICAOId (Number)" or just "ICAOId" if the runway Number is empty.
         /// </summary>
         /// <returns>A list of formatted ICAO and runway Numbers.</returns>
-        public List<string> GetIcaoRunwayNumbers()
+        internal List<string> GetIcaoRunwayNumbers()
         {
-            // The logic for getting the runways is now in RunwaySearcher.
             return [.. _searcher.GetAllRunways().Select(RunwayUtils.FormatRunwayIcaoString)];
         }
     }

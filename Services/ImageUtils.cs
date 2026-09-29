@@ -9,30 +9,32 @@ using System.Text.RegularExpressions;
 namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
-    /// Provides utility methods for various image manipulations, including drawing, resizing,
+    /// Provides utility methods for image manipulations, including drawing, resizing,
     /// and format conversion, using the ImageMagick.NET library.
     /// </summary>
-    public sealed partial class ImageUtils(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
+    /// <param name="logger">The logging service.</param>
+    /// <param name="fileOps">The file operations service.</param>
+    /// <param name="progressReporter">The UI progress reporting service.</param>
+    internal sealed partial class ImageUtils(Logger logger, FileOps fileOps, IProgress<string> progressReporter)
     {
-        // Guard clauses to validate the constructor parameters.
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly IProgress<string> _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
-        // Constants for hardcoded image names and resource paths
         private const string SuccessIconName = "success-icon";
         private const string FailureIconName = "failure-icon";
         private const string SuccessOutputName = "imgM_c";
         private const string FailureOutputName = "imgM_i";
         private const string BaseImageResourcePath = "Images.imgM.png";
 
-        private static readonly Regex LegRouteRegexPattern = new(@"LegRoute_(\d+)", RegexOptions.Compiled);
+        private static readonly Regex LegRouteRegexPattern = MyRegex();
 
         /// <summary>
         /// Draws routes onto existing map images matching the "LegRoute_XX_*.jpg" pattern found in the scenario folder.
         /// </summary>
+        /// <param name="formData">The scenario form configuration data containing image directories and map data.</param>
         /// <returns><see langword="true"/> if the routes were successfully processed; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> DrawRouteBulkAsync(ScenarioFormData formData)
+        internal async Task<bool> DrawRouteBulkAsync(ScenarioFormData formData)
         {
             try
             {
@@ -44,7 +46,6 @@ namespace P3D_Scenario_Generator.Services
                     return false;
                 }
 
-                // Find all files matching the pattern LegRoute_*.jpg
                 var files = Directory.EnumerateFiles(folderPath, "LegRoute_*.jpg", SearchOption.TopDirectoryOnly);
 
                 foreach (string filePath in files)
@@ -55,21 +56,17 @@ namespace P3D_Scenario_Generator.Services
 
                     if (!match.Success || !int.TryParse(match.Groups[1].Value, out int currentLegNo))
                     {
-                        continue; // Skip files that don't match the expected number format
+                        continue;
                     }
 
-                    // Validate leg number against MapData bounds
                     if (currentLegNo < 1 || currentLegNo > formData.OSMmapData.Count)
                     {
                         await _logger.WarningAsync($"Leg number {currentLegNo} from file '{fileName}' is out of bounds for OSMmapData.");
                         continue;
                     }
 
-                    // Get the MapData for this leg (1-indexed filename, 0-indexed list)
                     MapData mapData = formData.OSMmapData[currentLegNo - 1];
-
-                    // Use the shared core drawing logic
-                    bool success = await DrawRouteCoreAsync(filePath, mapData, currentLegNo);
+                    await DrawRouteCoreAsync(filePath, mapData, currentLegNo);
                 }
                 return true;
             }
@@ -81,11 +78,12 @@ namespace P3D_Scenario_Generator.Services
         }
 
         /// <summary>
-        /// Draws the entire route onto a single, specific chart file called "Charts_01.png".
-        /// Assumes the required MapData is the first (and only) item in formData.OSMmapData.
+        /// Draws the entire route onto a single chart file called "Charts_01.png".
+        /// Assumes the required MapData is the first item in formData.OSMmapData.
         /// </summary>
+        /// <param name="formData">The scenario form configuration data containing image directories and map data.</param>
         /// <returns><see langword="true"/> if the chart was successfully processed or did not exist; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> DrawRouteSingleChartAsync(ScenarioFormData formData)
+        internal async Task<bool> DrawRouteSingleChartAsync(ScenarioFormData formData)
         {
             string folderPath = formData.ScenarioImageFolder;
             string filePath = Path.Combine(folderPath, "Charts_01.png");
@@ -96,34 +94,27 @@ namespace P3D_Scenario_Generator.Services
                 return true;
             }
 
-            // Assumption check: Use the first MapData instance for the single chart.
             if (formData.OSMmapData == null || formData.OSMmapData.Count == 0)
             {
                 await _logger.ErrorAsync("Cannot draw single chart. formData.OSMmapData is empty and required for coordinate boundaries.");
                 return false;
             }
 
-            // Get the MapData instance for the single chart.
-            // If the list contains multiple legs, this will be the MapData for the first leg.
             MapData chartMapData = formData.OSMmapData[0];
-
-            // Use legNo 0 (or 1) to denote the single chart processing.
-            // Since the file is already a PNG, DrawRouteCoreAsync will load the PNG and overwrite it.
             return await DrawRouteCoreAsync(filePath, chartMapData, 1);
         }
 
         /// <summary>
-        /// Private core method to draw a sequenced route (list of coordinates) onto a single image file.
+        /// Core method to draw a sequenced route onto an image file.
         /// </summary>
         /// <param name="filePath">The path to the image file to draw on.</param>
-        /// <param name="mapData">The MapData object containing the geographical boundaries and route coordinates.</param>
-        /// <param name="legNo">The associated leg number (or 1 for a non-leg specific chart).</param>
-        /// <returns><see langword="true"/> if the route was successfully drawn and the file saved; otherwise, <see langword="false"/>.</returns>
+        /// <param name="mapData">The MapData object containing geographical boundaries and route coordinates.</param>
+        /// <param name="legNo">The associated leg number.</param>
+        /// <returns><see langword="true"/> if the route was successfully drawn and saved; otherwise, <see langword="false"/>.</returns>
         private async Task<bool> DrawRouteCoreAsync(string filePath, MapData mapData, int legNo)
         {
             string fileName = Path.GetFileNameWithoutExtension(filePath);
 
-            // Define drawing attributes for the route line
             var strokeColor = new DrawableStrokeColor(new MagickColor("blue"));
             var strokeWidth = new DrawableStrokeWidth(1);
             var fillColor = new DrawableFillColor(MagickColors.Transparent);
@@ -139,43 +130,35 @@ namespace P3D_Scenario_Generator.Services
                 drawables.Add(strokeWidth);
                 drawables.Add(fillColor);
 
-                // Check if there are enough points to draw a route (at least two)
                 if (mapData.Items == null || mapData.Items.Count < 2)
                 {
-                    await logger.WarningAsync($"Image '{fileName}' (Leg {legNo}) has insufficient coordinate items ({mapData.Items?.Count ?? 0}) to draw a route.");
+                    await _logger.WarningAsync($"Image '{fileName}' (Leg {legNo}) has insufficient coordinate items ({mapData.Items?.Count ?? 0}) to draw a route.");
                     return false;
                 }
 
                 bool drawingSuccess = false;
 
-                // Iterate from the first item up to the second-to-last item
                 for (int i = 0; i < mapData.Items.Count - 1; i++)
                 {
                     Coordinate startCoord = mapData.Items[i];
                     Coordinate finishCoord = mapData.Items[i + 1];
 
-                    // Calculate Start Point pixels
                     var (successStart, startX, startY) = CalculatePixelCoords(width, height, mapData, startCoord);
-
-                    // Calculate Finish Point pixels
                     var (successFinish, finishX, finishY) = CalculatePixelCoords(width, height, mapData, finishCoord);
 
                     if (successStart && successFinish)
                     {
-                        // Add a line segment between the current point (i) and the next point (i+1)
                         drawables.Add(new DrawableLine(startX, startY, finishX, finishY));
                         drawingSuccess = true;
                     }
                     else
                     {
-                        await logger.WarningAsync($"Could not calculate valid pixel coordinates for route segment {i + 1} on image '{fileName}' (Leg {legNo}). Skipping line.");
+                        await _logger.WarningAsync($"Could not calculate valid pixel coordinates for route segment {i + 1} on image '{fileName}' (Leg {legNo}). Skipping line.");
                     }
                 }
 
-                // Apply all drawing instructions if at least one valid line was added
                 if (drawingSuccess)
                 {
-                    // Append OSM attribution overlay in the bottom-right corner
                     AddOsmAttribution(drawables, width, height);
 
                     image.Draw(drawables);
@@ -184,18 +167,18 @@ namespace P3D_Scenario_Generator.Services
                 }
                 else
                 {
-                    await logger.WarningAsync($"No valid route lines could be drawn for image '{fileName}' (Leg {legNo}).");
+                    await _logger.WarningAsync($"No valid route lines could be drawn for image '{fileName}' (Leg {legNo}).");
                     return false;
                 }
             }
             catch (MagickErrorException mex)
             {
-                await logger.ErrorAsync($"Magick.NET error while processing image '{fileName}': {mex.Message}", mex);
+                await _logger.ErrorAsync($"Magick.NET error while processing image '{fileName}': {mex.Message}", mex);
                 return false;
             }
             catch (Exception ex)
             {
-                await logger.ErrorAsync($"An unexpected error occurred while drawing route on image '{fileName}': {ex.Message}", ex);
+                await _logger.ErrorAsync($"An unexpected error occurred while drawing route on image '{fileName}': {ex.Message}", ex);
                 return false;
             }
         }
@@ -212,49 +195,34 @@ namespace P3D_Scenario_Generator.Services
 
             try
             {
-                // 1. Get Geographical Bounds
                 double northLat = mapData.North.ToDouble();
                 double southLat = mapData.South.ToDouble();
                 double westLon = mapData.West.ToDouble();
                 double eastLon = mapData.East.ToDouble();
 
-                // The point we want to plot 
                 double itemLat = coordinate.Latitude.ToDouble();
                 double itemLon = coordinate.Longitude.ToDouble();
 
-                // 2. Calculate Geographical Ranges
                 double latRange = northLat - southLat;
-                // Handle longitude wrap-around (crossing the antimeridian, 180/-180)
                 double lonRange = westLon < eastLon
                     ? eastLon - westLon
                     : (180.0 - westLon) + (eastLon + 180.0);
 
-                // Check for zero range to prevent division by zero
                 if (latRange == 0 || lonRange == 0)
                 {
-                    // _logger.ErrorAsync is unavailable in this synchronous/helper context without async plumbing, 
-                    // but you could store errors in a collection or just return false.
                     return (false, 0, 0);
                 }
 
-                // 3. Calculate Relative Position (0.0 to 1.0)
-
-                // X-position (Longitude): Relative position from west boundary
                 double lonDelta = westLon < eastLon
                     ? itemLon - westLon
                     : (itemLon >= westLon ? itemLon - westLon : (180.0 - westLon) + (itemLon + 180.0));
 
                 double xRelative = lonDelta / lonRange;
-
-                // Y-position (Latitude): Relative position from north boundary (Y increases downwards, Latitude decreases downwards)
                 double yRelative = (northLat - itemLat) / latRange;
 
-                // 4. Convert Relative Position to Pixel Coordinates
                 int centreX = (int)Math.Round(xRelative * imageWidth);
                 int centreY = (int)Math.Round(yRelative * imageHeight);
 
-                // 5. Ensure coordinates are within image bounds (optional safety check, though drawing outside bounds is usually fine for Magick.NET)
-                // We clamp strictly to image dimensions to ensure the line endpoint is "on canvas"
                 centreX = Math.Clamp(centreX, 0, imageWidth - 1);
                 centreY = Math.Clamp(centreY, 0, imageHeight - 1);
 
@@ -268,11 +236,10 @@ namespace P3D_Scenario_Generator.Services
 
         /// <summary>
         /// Orchestrates the drawing of complete and incomplete scenario images displayed in the load scenario dialog.
-        /// This includes calling <see cref="DrawScenarioLoadImageAsync"/> for both success and failure icons.
         /// </summary>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> containing necessary data like paths and scenario type.</param>
+        /// <param name="formData">The <see cref="ScenarioFormData"/> containing paths and scenario configuration.</param>
         /// <returns><see langword="true"/> if all scenario images were drawn successfully; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> DrawScenarioImagesAsync(ScenarioFormData formData)
+        internal async Task<bool> DrawScenarioImagesAsync(ScenarioFormData formData)
         {
             try
             {
@@ -301,92 +268,81 @@ namespace P3D_Scenario_Generator.Services
 
         /// <summary>
         /// Draws a scenario load image for display in the load scenario dialog.
-        /// This involves loading a base image, overlaying a specified icon and scenario type text,
-        /// and finally converting the image format to BMP for compatibility.
         /// </summary>
-        /// <param name="iconName">The name of the icon resource file to be overlaid (e.g., "success-icon", "failure-icon").</param>
-        /// <param name="outputFileNameNoExt">The name for the base output image file (without extension, e.g., "imgM_c", "imgM_i").</param>
-        /// <param name="formData">The <see cref="ScenarioFormData"/> containing user-specific settings, including the scenario image folder and scenario type text.</param>
+        /// <param name="iconName">The name of the icon resource file to be overlaid.</param>
+        /// <param name="outputFileNameNoExt">The base output image filename without extension.</param>
+        /// <param name="formData">The scenario form configuration data containing user settings.</param>
         /// <returns><see langword="true"/> if the scenario load image was drawn and converted successfully; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> DrawScenarioLoadImageAsync(string iconName, string outputFileNameNoExt, ScenarioFormData formData)
+        internal async Task<bool> DrawScenarioLoadImageAsync(string iconName, string outputFileNameNoExt, ScenarioFormData formData)
         {
             string outputPngPath = Path.Combine(formData.ScenarioImageFolder, $"{outputFileNameNoExt}.png");
-            string iconPngResourcePath = $"Images.{iconName}.png"; // Full resource name for the icon
+            string iconPngResourcePath = $"Images.{iconName}.png";
 
             await _logger.InfoAsync($"Starting image generation for scenario load image: '{outputFileNameNoExt}'.");
-            _progressReporter?.Report($"INFO: Generating scenario image: {outputFileNameNoExt}...");
+            _progressReporter.Report($"INFO: Generating scenario image: {outputFileNameNoExt}...");
             bool success;
             try
             {
-                // 1. Get the base image stream from embedded resources
                 (success, Stream? baseImageStream) = await _fileOps.TryGetResourceStreamAsync(BaseImageResourcePath, _progressReporter);
                 if (!success || baseImageStream == null)
                 {
                     await _logger.ErrorAsync($"Failed to get resource stream for base image '{BaseImageResourcePath}'.");
-                    _progressReporter?.Report($"ERROR: Missing base image resource.");
+                    _progressReporter.Report("ERROR: Missing base image resource.");
                     return false;
                 }
 
-                using (baseImageStream) // Ensure baseImageStream is disposed
-                using (var image = new MagickImage(baseImageStream)) // Load MagickImage directly from stream
+                using (baseImageStream)
+                using (var image = new MagickImage(baseImageStream))
                 {
                     await _logger.InfoAsync($"Successfully loaded base image '{BaseImageResourcePath}'.");
 
-                    // Define geometry for text annotation
                     uint boundingBoxHeight = Convert.ToUInt32(image.Height / 2);
                     uint boundingBoxWidth = image.Width;
                     int boundingBoxYoffset = Convert.ToInt32(image.Height * 0.4);
                     MagickGeometry geometry = new(0, boundingBoxYoffset, boundingBoxWidth, boundingBoxHeight);
 
-                    // Set font properties and annotate text
                     image.Settings.Font = "SegoeUI";
                     image.Settings.FontPointsize = 36;
                     image.Annotate(formData.ScenarioType.ToString(), geometry, Gravity.Center);
                     await _logger.InfoAsync($"Annotated scenario type '{formData.ScenarioType}' on image.");
 
-                    // 2. Get the icon stream from embedded resources
                     (success, Stream? iconStream) = await _fileOps.TryGetResourceStreamAsync(iconPngResourcePath, _progressReporter);
                     if (!success || iconStream == null)
                     {
                         await _logger.WarningAsync($"Could not get resource stream for icon '{iconPngResourcePath}'. Proceeding without icon.");
-                        // Do not return false here, as the base image with text might still be useful.
                     }
                     else
                     {
-                        using (iconStream) // Ensure iconStream is disposed
-                        using (var imageIcon = new MagickImage(iconStream)) // Load icon directly from stream
+                        using (iconStream)
+                        using (var imageIcon = new MagickImage(iconStream))
                         {
-                            // Calculate icon position for overlay
-                            int iconXoffset = Convert.ToInt32(image.Width - imageIcon.Width * 2);
-                            int iconYoffset = Convert.ToInt32(image.Height / 2 - imageIcon.Height / 2);
+                            int iconXoffset = Convert.ToInt32(image.Width - (imageIcon.Width * 2));
+                            int iconYoffset = Convert.ToInt32((image.Height / 2) - (imageIcon.Height / 2));
                             image.Composite(imageIcon, iconXoffset, iconYoffset, CompositeOperator.Over);
                             await _logger.InfoAsync($"Composited icon '{iconName}' onto base image.");
                         }
                     }
 
-                    // 3. Write the modified image to the output PNG path using FileOps.TryCopyStreamToFile
-                    using (MemoryStream outputImageMemoryStream = new())
-                    {
-                        image.Write(outputImageMemoryStream, MagickFormat.Png); // Write image to memory stream as PNG
-                        outputImageMemoryStream.Position = 0; // Reset stream position for reading
+                    await using MemoryStream outputImageMemoryStream = new();
+                    image.Write(outputImageMemoryStream, MagickFormat.Png);
+                    outputImageMemoryStream.Position = 0;
 
-                        success = await _fileOps.TryCopyStreamToFileAsync(outputImageMemoryStream, outputPngPath, _progressReporter);
-                        if (!success)
-                        {
-                            await _logger.ErrorAsync($"Failed to write final PNG image to '{outputPngPath}'.");
-                            _progressReporter?.Report($"ERROR: Failed to save image '{outputFileNameNoExt}.png'.");
-                            return false;
-                        }
+                    success = await _fileOps.TryCopyStreamToFileAsync(outputImageMemoryStream, outputPngPath, _progressReporter);
+                    if (!success)
+                    {
+                        await _logger.ErrorAsync($"Failed to write final PNG image to '{outputPngPath}'.");
+                        _progressReporter.Report($"ERROR: Failed to save image '{outputFileNameNoExt}.png'.");
+                        return false;
                     }
+
                     await _logger.InfoAsync($"Successfully wrote composite PNG image to '{outputPngPath}'.");
                 }
 
-                // 4. Convert the final PNG image to BMP format
                 success = await ConvertImageformatAsync(Path.Combine(formData.ScenarioImageFolder, outputFileNameNoExt), "png", "bmp");
                 if (!success)
                 {
                     await _logger.ErrorAsync($"Failed to convert image '{outputFileNameNoExt}.png' to BMP.");
-                    _progressReporter?.Report($"ERROR: Failed to convert image to BMP.");
+                    _progressReporter.Report("ERROR: Failed to convert image to BMP.");
                     return false;
                 }
                 await _logger.InfoAsync($"Successfully converted image '{outputFileNameNoExt}.png' to BMP.");
@@ -396,14 +352,13 @@ namespace P3D_Scenario_Generator.Services
             catch (MagickErrorException mex)
             {
                 await _logger.ErrorAsync($"Magick.NET error for '{outputFileNameNoExt}': {mex.Message}", mex);
-                _progressReporter?.Report($"ERROR: Image processing failed. See log.");
+                _progressReporter.Report("ERROR: Image processing failed. See log.");
                 return false;
             }
             catch (Exception ex)
             {
-                // Catch any other unexpected errors not handled by FileOps or Magick.NET specific catches
                 await _logger.ErrorAsync($"An unexpected error occurred for '{outputFileNameNoExt}': {ex.Message}", ex);
-                _progressReporter?.Report($"ERROR: Unexpected image generation error. See log.");
+                _progressReporter.Report("ERROR: Unexpected image generation error. See log.");
                 return false;
             }
         }
@@ -416,7 +371,7 @@ namespace P3D_Scenario_Generator.Services
         /// <param name="oldExt">The original file extension (e.g., "png", "bmp").</param>
         /// <param name="newExt">The new file extension (e.g., "jpg", "webp").</param>
         /// <returns><see langword="true"/> if the image was converted successfully; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> ConvertImageformatAsync(string fullPathNoExt, string oldExt, string newExt)
+        internal async Task<bool> ConvertImageformatAsync(string fullPathNoExt, string oldExt, string newExt)
         {
             string oldFullPath = $"{fullPathNoExt}.{oldExt}";
             string newFullPath = $"{fullPathNoExt}.{newExt}";
@@ -431,18 +386,16 @@ namespace P3D_Scenario_Generator.Services
             {
                 using var image = new MagickImage(oldFullPath);
 
-                // Apply quality settings if converting to JPEG
                 switch (newExt.ToLowerInvariant())
                 {
                     case "jpg":
                     case "jpeg":
-                        image.Quality = 100; // Set JPEG quality to maximum
+                        image.Quality = 100;
                         break;
                 }
 
                 image.Write(newFullPath);
 
-                // Attempt to delete the original file after successful conversion
                 bool success = await _fileOps.TryDeleteFileAsync(oldFullPath, _progressReporter);
                 if (!success)
                 {
@@ -476,13 +429,12 @@ namespace P3D_Scenario_Generator.Services
 
         /// <summary>
         /// Resizes an image to the specified width and height using Magick.NET.
-        /// If either width or height is zero, the image will be resized proportionally based on the non-zero dimension.
         /// </summary>
-        /// <param name="fullPath">The full path and filename including extension of the image to resize.</param>
+        /// <param name="fullPath">The full path and filename of the image to resize.</param>
         /// <param name="width">The desired new width in pixels. If 0, width is determined proportionally.</param>
         /// <param name="height">The desired new height in pixels. If 0, height is determined proportionally.</param>
         /// <returns><see langword="true"/> if the image was resized successfully; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> ResizeAsync(string fullPath, int width, int height)
+        internal async Task<bool> ResizeAsync(string fullPath, int width, int height)
         {
             if (!File.Exists(fullPath))
             {
@@ -502,8 +454,8 @@ namespace P3D_Scenario_Generator.Services
             try
             {
                 using MagickImage image = new(fullPath);
-                image.Resize(widthUint, heightUint); // Perform the resize operation
-                image.Write(fullPath); // Overwrite the original file with the resized image
+                image.Resize(widthUint, heightUint);
+                image.Write(fullPath);
                 return true;
             }
             catch (MagickErrorException mex)
@@ -528,30 +480,25 @@ namespace P3D_Scenario_Generator.Services
             }
         }
 
-        /// <summary>
-        /// Appends OpenStreetMap copyright attribution drawables to render a subtle badge in the bottom-right corner.
-        /// </summary>
         private static void AddOsmAttribution(List<IDrawable> drawables, int imageWidth, int imageHeight)
         {
             const string attributionText = "© OpenStreetMap contributors";
 
-            int boxWidth = 175;
-            int boxHeight = 18;
-            int margin = 6;
+            const int boxWidth = 175;
+            const int boxHeight = 18;
+            const int margin = 6;
 
             int x1 = imageWidth - boxWidth - margin;
             int y1 = imageHeight - boxHeight - margin;
             int x2 = imageWidth - margin;
             int y2 = imageHeight - margin;
 
-            // Semi-transparent white background box (#FFFFFF with ~80% alpha)
             drawables.Add(new DrawableFillColor(new MagickColor("#FFFFFFCC")));
             drawables.Add(new DrawableStrokeColor(MagickColors.Transparent));
             drawables.Add(new DrawableRectangle(x1, y1, x2, y2));
 
-            // Attribution text
             drawables.Add(new DrawableFont("Segoe UI"));
-            drawables.Add(new DrawableFontPointSize(11)); // Fixed: Capital 'S' in PointSize
+            drawables.Add(new DrawableFontPointSize(11));
             drawables.Add(new DrawableFillColor(MagickColors.DarkSlateGray));
             drawables.Add(new DrawableText(x1 + 6, y2 - 4, attributionText));
         }
@@ -561,7 +508,7 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="filePath">The full path of the image file to annotate.</param>
         /// <returns><see langword="true"/> if attribution was applied successfully; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> DrawAttributionAsync(string filePath)
+        internal async Task<bool> DrawAttributionAsync(string filePath)
         {
             if (!File.Exists(filePath))
             {
@@ -595,7 +542,12 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Draws a high-visibility location marker dot onto a map thumbnail.
         /// </summary>
-        public async Task<bool> DrawLocationMarkerAsync(string filePath, Coordinate coord, BoundingBox box, int zoom)
+        /// <param name="filePath">The target map image file path.</param>
+        /// <param name="coord">The geographical coordinate of the location.</param>
+        /// <param name="box">The bounding box covering the map image tiles.</param>
+        /// <param name="zoom">The map zoom level.</param>
+        /// <returns><see langword="true"/> if the marker was drawn successfully; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> DrawLocationMarkerAsync(string filePath, Coordinate coord, BoundingBox box, int zoom)
         {
             if (!File.Exists(filePath))
             {
@@ -607,7 +559,6 @@ namespace P3D_Scenario_Generator.Services
             {
                 using MagickImage image = new(filePath);
 
-                // Calculate unscaled pixel position within the original bounding box tile assembly
                 (double rawX, double rawY) = MapTileCalculator.GetPixelCoordinates(coord, box, zoom);
                 if (rawX < 0 || rawY < 0)
                 {
@@ -615,7 +566,6 @@ namespace P3D_Scenario_Generator.Services
                     return false;
                 }
 
-                // Account for any post-montage image resizing (e.g. MakeSquare or 256x256 downsizing)
                 double unscaledWidth = box.XAxis.Count * Constants.TileSizePixels;
                 double unscaledHeight = box.YAxis.Count * Constants.TileSizePixels;
 
@@ -626,17 +576,13 @@ namespace P3D_Scenario_Generator.Services
                 double pixelY = rawY * scaleY;
 
                 var drawables = new List<IDrawable>
-        {
-            // Outer white ring for contrast against land/water tiles
-            new DrawableFillColor(MagickColors.White),
-            new DrawableCircle(pixelX, pixelY, pixelX + 7, pixelY + 7),
+                {
+                    new DrawableFillColor(MagickColors.White),
+                    new DrawableCircle(pixelX, pixelY, pixelX + 7, pixelY + 7),
+                    new DrawableFillColor(MagickColors.Red),
+                    new DrawableCircle(pixelX, pixelY, pixelX + 4, pixelY + 4)
+                };
 
-            // Inner red location dot
-            new DrawableFillColor(MagickColors.Red),
-            new DrawableCircle(pixelX, pixelY, pixelX + 4, pixelY + 4)
-        };
-
-                // Append OpenStreetMap copyright attribution badge
                 AddOsmAttribution(drawables, (int)image.Width, (int)image.Height);
 
                 image.Draw(drawables);
@@ -651,20 +597,27 @@ namespace P3D_Scenario_Generator.Services
         }
 
         /// <summary>
-        /// Crops an image at a specific pixel offset and resizes it to target dimensions, ignoring aspect ratio to force exact fit.
+        /// Crops an image at a specific pixel offset and resizes it to target dimensions, ignoring aspect ratio to force an exact fit.
         /// </summary>
-        public async Task<bool> CropAndResizePlotImageAsync(string sourcePath, string destPath, int cropX, int cropY, int cropW, int cropH, int targetW, int targetH)
+        /// <param name="sourcePath">The source image file path.</param>
+        /// <param name="destPath">The destination image file path.</param>
+        /// <param name="cropX">The horizontal crop start offset.</param>
+        /// <param name="cropY">The vertical crop start offset.</param>
+        /// <param name="cropW">The width of the cropped region.</param>
+        /// <param name="cropH">The height of the cropped region.</param>
+        /// <param name="targetW">The target resized width.</param>
+        /// <param name="targetH">The target resized height.</param>
+        /// <returns><see langword="true"/> if the crop and resize completed successfully; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> CropAndResizePlotImageAsync(string sourcePath, string destPath, int cropX, int cropY, int cropW, int cropH, int targetW, int targetH)
         {
             try
             {
                 using MagickImage image = new(sourcePath);
 
-                // Crop
                 IMagickGeometry cropGeo = new MagickGeometry(cropX, cropY, (uint)cropW, (uint)cropH);
                 image.Crop(cropGeo);
                 image.ResetPage();
 
-                // Resize exactly to target (960x540)
                 IMagickGeometry resizeGeo = new MagickGeometry((uint)targetW, (uint)targetH) { IgnoreAspectRatio = true };
                 image.Resize(resizeGeo);
 
@@ -681,7 +634,11 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Draws a visible target crosshair at the specified pixel coordinates.
         /// </summary>
-        public async Task<bool> DrawPlottingDestinationMarkerAsync(string filePath, int pixelX, int pixelY)
+        /// <param name="filePath">The target image file path.</param>
+        /// <param name="pixelX">The target X pixel coordinate.</param>
+        /// <param name="pixelY">The target Y pixel coordinate.</param>
+        /// <returns><see langword="true"/> if the crosshair marker was drawn successfully; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> DrawPlottingDestinationMarkerAsync(string filePath, int pixelX, int pixelY)
         {
             try
             {
@@ -705,5 +662,8 @@ namespace P3D_Scenario_Generator.Services
                 return false;
             }
         }
+
+        [GeneratedRegex(@"LegRoute_(\d+)", RegexOptions.Compiled)]
+        private static partial Regex MyRegex();
     }
 }

@@ -1,4 +1,6 @@
 ﻿#nullable enable
+#pragma warning disable CS1591 // XML serialization models require public visibility for XmlSerializer but do not require individual XML comments.
+
 using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator.Models.Xml;

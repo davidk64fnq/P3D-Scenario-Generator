@@ -1,16 +1,18 @@
 ﻿namespace P3D_Scenario_Generator.Models
 {
-    /// <summary>Used to store information that populates HTML scenario files.</summary>
-    public class Overview
+    /// <summary>
+    /// Stores the descriptive metadata used to populate HTML scenario briefing files.
+    /// </summary>
+    internal class Overview
     {
-        public string Title { get; set; } = string.Empty;
-        public string Heading1 { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-        public string Difficulty { get; set; } = string.Empty;
-        public string Duration { get; set; } = string.Empty;
-        public string Aircraft { get; set; } = string.Empty;
-        public string Briefing { get; set; } = string.Empty;
-        public string Objective { get; set; } = string.Empty;
-        public string Tips { get; set; } = string.Empty;
+        internal string Title { get; set; } = string.Empty;
+        internal string Heading1 { get; set; } = string.Empty;
+        internal string Location { get; set; } = string.Empty;
+        internal string Difficulty { get; set; } = string.Empty;
+        internal string Duration { get; set; } = string.Empty;
+        internal string Aircraft { get; set; } = string.Empty;
+        internal string Briefing { get; set; } = string.Empty;
+        internal string Objective { get; set; } = string.Empty;
+        internal string Tips { get; set; } = string.Empty;
     }
 }

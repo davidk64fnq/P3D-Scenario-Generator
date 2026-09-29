@@ -45,17 +45,18 @@ namespace P3D_Scenario_Generator.CircuitScenario
         }
 
         /// <summary>
-        /// User specifies height of gates 1, 3 to 6, and 8. This method calculates the height difference between 
+        /// User specifies height of gates 1, 3 to 6, and 8. This method calculates the height difference between
         /// gates 1 and 2 based on assumption plane maintains a constant climb rate from gates 1 to 3.
         /// </summary>
-        /// <param name="turnRadius">The turn radius of plane based on it's cruise speed and turn rate</param>
-        /// <returns>The absolute height difference between gates 1 and 2 in feet</returns>
+        /// <param name="turnRadius">The turn radius of plane based on its cruise speed and turn rate.</param>
+        /// <param name="formData">The user-configured scenario form data containing circuit heights and leg dimensions.</param>
+        /// <returns>The absolute height difference between gates 1 and 2 in feet.</returns>
         internal static double CalcGate1to2HeightDif(double turnRadius, ScenarioFormData formData)
         {
             // Firstly work out climb rate angle from gate 1 to 3. Approx given by solving
             // tan(angle) = opposite(height change) / adjacent (over ground distance)
             double heightChange = formData.CircuitHeightDown - formData.CircuitHeightUpwind;
-            double overGroundDistance = turnRadius + formData.CircuitBaseLeg * Constants.FeetInNauticalMile;
+            double overGroundDistance = turnRadius + (formData.CircuitBaseLeg * Constants.FeetInNauticalMile);
             double gate1to3AngleRad = Math.Atan(heightChange / overGroundDistance);
 
             // Using climb rate angle calculated above and given adjacent (over ground distance) is turn radius we can calculate
@@ -66,17 +67,18 @@ namespace P3D_Scenario_Generator.CircuitScenario
         }
 
         /// <summary>
-        /// User specifies height of gates 1, 3 to 6, and 8. This method calculates the height difference between 
+        /// User specifies height of gates 1, 3 to 6, and 8. This method calculates the height difference between
         /// gates 7 and 8 based on assumption plane maintains a constant descent rate from gates 6 to 8.
         /// </summary>
-        /// <param name="turnRadius">The turn radius of plane based on it's cruise speed and turn rate</param>
-        /// <returns>The absolute height difference between gates 7 and 8 in feet</returns>
+        /// <param name="turnRadius">The turn radius of plane based on its cruise speed and turn rate.</param>
+        /// <param name="formData">The user-configured scenario form data containing circuit heights and leg dimensions.</param>
+        /// <returns>The absolute height difference between gates 7 and 8 in feet.</returns>
         internal static double CalcGate7to8HeightDif(double turnRadius, ScenarioFormData formData)
         {
             // Firstly work out descent rate angle from gate 6 to 8. Approx given by solving
             // tan(angle) = opposite(height change) / adjacent (over ground distance)
             double heightChange = formData.CircuitHeightDown - formData.CircuitHeightBase;
-            double overGroundDistance = turnRadius + formData.CircuitBaseLeg * Constants.FeetInNauticalMile;
+            double overGroundDistance = turnRadius + (formData.CircuitBaseLeg * Constants.FeetInNauticalMile);
             double gate6to8AngleRad = Math.Atan(heightChange / overGroundDistance);
 
             // Using descent rate angle calculated above and given adjacent (over ground distance) is turn radius we can calculate
@@ -87,21 +89,23 @@ namespace P3D_Scenario_Generator.CircuitScenario
         }
 
         /// <summary>
-        /// Store intermediate calculation parameters relating to each gate of the circuit, eight entries for 
+        /// Store intermediate calculation parameters relating to each gate of the circuit, eight entries for
         /// the eight gates in the circuit. These give point to point path for the gates starting at takeoff threshold.
         /// </summary>
-        /// <param name="turnRadius">The turn radius of plane based on it's cruise speed and turn rate</param>
-        /// <param name="gate1to2heightDif">The absolute height difference between gates 1 and 2 in feet</param>
-        /// <param name="gate7to8heightDif">The absolute height difference between gates 7 and 8 in feet</param>
-        /// <returns>List of eight gate leg parameters</returns>
+        /// <param name="turnRadius">The turn radius of plane based on its cruise speed and turn rate.</param>
+        /// <param name="gate1to2heightDif">The absolute height difference between gates 1 and 2 in feet.</param>
+        /// <param name="gate7to8heightDif">The absolute height difference between gates 7 and 8 in feet.</param>
+        /// <param name="formData">The user-configured scenario form data containing runway and circuit configurations.</param>
+        /// <returns>List of eight gate leg parameters.</returns>
         internal static List<LegParams> SetLegParams(double turnRadius, double gate1to2heightDif, double gate7to8heightDif, ScenarioFormData formData)
         {
             List<LegParams> legParams = [];
             double baseHeading = formData.StartRunway.Hdg + formData.StartRunway.MagVar + 360;
             double turnDistance = turnRadius * Math.Sqrt(2.0);
-            // Start theshold to gate 1
+
+            // Start threshold to gate 1
             legParams.Add(new LegParams(baseHeading % 360,
-                formData.StartRunway.Len + formData.CircuitUpwindLeg * Constants.FeetInNauticalMile, formData.StartRunway.Altitude + formData.CircuitHeightUpwind));
+                formData.StartRunway.Len + (formData.CircuitUpwindLeg * Constants.FeetInNauticalMile), formData.StartRunway.Altitude + formData.CircuitHeightUpwind));
             // Gate 1 to gate 2
             legParams.Add(new LegParams((baseHeading - 45) % 360,
                 turnDistance, formData.StartRunway.Altitude + formData.CircuitHeightUpwind + gate1to2heightDif));
@@ -113,7 +117,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
                 turnDistance, formData.StartRunway.Altitude + formData.CircuitHeightDown));
             // Gate 4 to gate 5
             legParams.Add(new LegParams((baseHeading - 180) % 360,
-                formData.CircuitFinalLeg * Constants.FeetInNauticalMile + formData.StartRunway.Len + formData.CircuitUpwindLeg * Constants.FeetInNauticalMile,
+                (formData.CircuitFinalLeg * Constants.FeetInNauticalMile) + formData.StartRunway.Len + (formData.CircuitUpwindLeg * Constants.FeetInNauticalMile),
                 formData.StartRunway.Altitude + formData.CircuitHeightDown));
             // Gate 5 to gate 6
             legParams.Add(new LegParams((baseHeading - 225) % 360,
@@ -124,13 +128,14 @@ namespace P3D_Scenario_Generator.CircuitScenario
             // Gate 7 to gate 8
             legParams.Add(new LegParams((baseHeading - 315) % 360,
                 turnDistance, formData.StartRunway.Altitude + formData.CircuitHeightBase));
+
             return legParams;
         }
 
         /// <summary>
         /// There are 8 gates, 2 for each right angle turn. Gates 1, 3 to 6, and 8 are at heights specified by three user parameters.
         /// The length of the upwind, base and final legs is user supplied. The program calculates the downwind based on runway
-        /// length and user parameters. Program calculates height of gates 2 and 7 by interpolation between gates 1 and 3, and 
+        /// length and user parameters. Program calculates height of gates 2 and 7 by interpolation between gates 1 and 3, and
         /// 6 and 8 respectively taking into account user supplied turn rate and cruise speed of selected aircraft.
         /// </summary>
         /// <returns>List of eight gates with data needed to place gate objects into simulation</returns>

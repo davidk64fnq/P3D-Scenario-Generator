@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 
 namespace P3D_Scenario_Generator.Services
 {
-    public class ScenarioFXML(FileOps fileOps, FormProgressReporter progressReporter)
+    internal class ScenarioFXML(FileOps fileOps, FormProgressReporter progressReporter)
     {
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
@@ -25,8 +25,8 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Attempts to read and deserialize a <see cref="SimBaseDocument"/> from its embedded resource XML file.
         /// </summary>
-        /// <param name="progressReporter">IProgress<string> for reporting progress or errors to the UI.</param>
-        /// <returns><see langword="true"/> and simBaseDocument if the document was successfully deserialized; otherwise, <see langword="false"/>.</returns>
+        /// <param name="progressReporter">The <see cref="IProgress{T}"/> reporter for notifying progress or errors to the UI.</param>
+        /// <returns><see langword="true"/> and the deserialized <see cref="SimBaseDocument"/> if successful; otherwise, <see langword="false"/>.</returns>
         public async Task<(bool success, SimBaseDocument? simBaseDocument)> TryReadSourceFXMLAsync(IProgress<string> progressReporter)
         {
             string resourceName = $"XML.{fxmlFilename}";
@@ -153,7 +153,7 @@ namespace P3D_Scenario_Generator.Services
     #region Simbase.Document class definitions
 
     [XmlRoot(ElementName = "Property")]
-    public class Property
+    internal class Property
     {
         [XmlAttribute(AttributeName = "Name")]
         public string Name { get; set; } = string.Empty;
@@ -163,7 +163,7 @@ namespace P3D_Scenario_Generator.Services
     }
 
     [XmlRoot(ElementName = "Section")]
-    public class Section
+    internal class Section
     {
         [XmlElement(ElementName = "Property")]
         public List<Property> Property { get; set; } = [];
@@ -173,14 +173,14 @@ namespace P3D_Scenario_Generator.Services
     }
 
     [XmlRoot(ElementName = "Flight.Sections")]
-    public class FlightSections
+    internal class FlightSections
     {
         [XmlElement(ElementName = "Section")]
         public List<Section> Section { get; set; } = [];
     }
 
     [XmlRoot(ElementName = "SimBase.Document")]
-    public class SimBaseDocument
+    internal class SimBaseDocument
     {
         [XmlElement(ElementName = "Descr")]
         public string Descr { get; set; } = string.Empty;

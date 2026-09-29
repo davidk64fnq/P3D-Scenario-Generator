@@ -13,12 +13,12 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// Initializes a new instance of the Pic2MapHtmlParser class.
     /// </remarks>
     /// <param name="logger">The logging service used to report errors.</param>
-    /// <param name="htmlParser">The HTML parsing service used to select nodes and extract data.</param>
     /// <param name="httpRoutines">The HTTP routines service used to get HTML documents from a file.</param>
-    public class Pic2MapHtmlParser(Logger logger, HttpRoutines httpRoutines, HtmlParser htmlParser)
+    /// <param name="htmlParser">The HTML parsing service used to select nodes and extract data.</param>
+    internal class Pic2MapHtmlParser(Logger logger, HttpRoutines httpRoutines, HtmlParser htmlParser)
     {
         private readonly Logger _log = logger;
-        private readonly HttpRoutines _httpRoutines = httpRoutines; 
+        private readonly HttpRoutines _httpRoutines = httpRoutines;
         private readonly HtmlParser _htmlParser = htmlParser;
 
         /// <inheritdoc/>
@@ -40,7 +40,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
 
             // Extract photo URL from the HTML document
-            string photoURLSelection = $"//meta[@property='og:image']";
+            const string photoURLSelection = "//meta[@property='og:image']";
             var (urlSuccess, photoURL) = await _htmlParser.SelectSingleNodeGetAttributeValueAsync(htmlDoc, photoURLSelection, "content");
             if (!urlSuccess || string.IsNullOrEmpty(photoURL))
             {
@@ -51,7 +51,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             photoLocation.legId = Path.GetFileNameWithoutExtension(photoLocation.photoURL);
 
             // Extract location from the HTML document
-            string locationSelection = $"//meta[@name='Description']";
+            const string locationSelection = "//meta[@name='Description']";
             var (locationSuccess, location) = await _htmlParser.SelectSingleNodeGetAttributeValueAsync(htmlDoc, locationSelection, "content");
             if (!locationSuccess || location == null)
             {
@@ -61,7 +61,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             photoLocation.location = location;
 
             // Extract latitude from the HTML document
-            string latitudeSelection = "//div[@id='gpsinformation']/following-sibling::ul[@class='details'][1]/li/div[@class='dbox']/span[@class='dtab' " +
+            const string latitudeSelection = "//div[@id='gpsinformation']/following-sibling::ul[@class='details'][1]/li/div[@class='dbox']/span[@class='dtab' " +
                                        "and text()='Latitude:']/following-sibling::span[@class='dvalue']";
             var (latitudeSuccess, latitudeString) = await _htmlParser.SelectSingleNodeInnerTextAsync(htmlDoc, latitudeSelection);
             if (!latitudeSuccess || string.IsNullOrEmpty(latitudeString))
@@ -76,7 +76,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
 
             // Extract longitude from the HTML document
-            string longitudeSelection = "//div[@id='gpsinformation']/following-sibling::ul[@class='details'][1]/li/div[@class='dbox']/span[@class='dtab' " +
+            const string longitudeSelection = "//div[@id='gpsinformation']/following-sibling::ul[@class='details'][1]/li/div[@class='dbox']/span[@class='dtab' " +
                                         "and text()='Longitude:']/following-sibling::span[@class='dvalue']";
             var (longitudeSuccess, longitudeString) = await _htmlParser.SelectSingleNodeInnerTextAsync(htmlDoc, longitudeSelection);
             if (!longitudeSuccess || string.IsNullOrEmpty(longitudeString))
@@ -105,7 +105,7 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             double latitude = 0;
             double longitude = 0;
 
-            string scriptSelection = $"//body[1]/script[1]";
+            const string scriptSelection = "//body[1]/script[1]";
             var (scriptSuccess, scriptString) = await _htmlParser.SelectSingleNodeInnerTextAsync(htmlDoc, scriptSelection);
             if (!scriptSuccess)
             {

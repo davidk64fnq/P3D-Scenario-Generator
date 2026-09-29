@@ -2,7 +2,7 @@
 
 namespace P3D_Scenario_Generator.CelestialScenario
 {
-    public record NavStarData(
+    internal record NavStarData(
         double SHADegrees,
         double SHAMinutes,
         double DECdegrees,
@@ -51,7 +51,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
         public double[] starsDECm = new double[NoStarsInAlmanacData];
 
         /// <summary>
-        /// Converts a multi-dimensional array ([,]) into a jagged array ([][]) 
+        /// Converts a multi-dimensional array ([,]) into a jagged array ([][])
         /// suitable for System.Text.Json serialization.
         /// </summary>
         private static T[][] Convert2DArrayToJagged<T>(T[,] array)

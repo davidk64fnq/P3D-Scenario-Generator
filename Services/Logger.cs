@@ -7,10 +7,10 @@ namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
     /// Provides an asynchronous logging service that writes log entries to separate files based on severity.
-    /// This implementation uses asynchronous file I/O to avoid blocking the calling thread.
-    /// NOTE: Direct File I/O is retained here to prevent circular dependencies with FileOps.
+    /// Uses asynchronous file I/O to avoid blocking the calling thread.
+    /// Direct file I/O is retained here to prevent circular dependencies with <see cref="FileOps"/>.
     /// </summary>
-    public class Logger
+    internal class Logger
     {
         private readonly string _logDirectory;
         private readonly string _errorLogFilePath;
@@ -21,41 +21,40 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Gets or sets a value indicating whether to include the date in the log entry.
         /// </summary>
-        public bool IncludeDate { get; set; } = true;
+        internal bool IncludeDate { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether to include the time in the log entry.
         /// </summary>
-        public bool IncludeTime { get; set; } = true;
+        internal bool IncludeTime { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether to include the log level (e.g., "INFO - ") in the log entry.
         /// </summary>
-        public bool IncludeLevel { get; set; } = true;
+        internal bool IncludeLevel { get; set; } = true;
 
         /// <summary>
-        /// Initializes a new instance of the Logger class with default settings.
-        /// It ensures the necessary log directory exists and clears previous log files on startup.
+        /// Initializes a new instance of the <see cref="Logger"/> class with default settings.
+        /// Ensures the log directory exists and clears previous session log files on startup.
         /// </summary>
-        public Logger() : this(false, false, false, null)
+        internal Logger() : this(false, false, false, null)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the Logger class with custom settings.
+        /// Initializes a new instance of the <see cref="Logger"/> class with custom settings.
         /// </summary>
         /// <param name="includeDate">A boolean to control whether to include the date.</param>
         /// <param name="includeTime">A boolean to control whether to include the time.</param>
         /// <param name="includeLevel">A boolean to control whether to include the log level.</param>
-        /// <param name="formData">The ScenarioFormData instance containing the base paths.</param>
-        public Logger(bool includeDate, bool includeTime, bool includeLevel, ScenarioFormData? formData = null)
+        /// <param name="formData">The optional <see cref="ScenarioFormData"/> instance containing base paths for path sanitization.</param>
+        internal Logger(bool includeDate, bool includeTime, bool includeLevel, ScenarioFormData? formData = null)
         {
             IncludeDate = includeDate;
             IncludeTime = includeTime;
             IncludeLevel = includeLevel;
             _formData = formData;
 
-            // Primary log directory path: C:\Users\<user>\AppData\Roaming\<AppName>
             string appName = Path.GetFileNameWithoutExtension(AppDomain.CurrentDomain.FriendlyName);
             _logDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
 
@@ -68,10 +67,8 @@ namespace P3D_Scenario_Generator.Services
             }
             catch (Exception ex)
             {
-                // Critical failure: cannot set up primary logging directory. Fallback to a local app data path.
                 Debug.WriteLine($"CRITICAL ERROR: Failed to create log directory at '{_logDirectory}'. Logging will use a fallback directory. Exception: {ex.Message}");
 
-                // Fallback path: C:\Users\<user>\AppData\Local\<AppName>\Logs_Fallback
                 _logDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), appName, "Logs_Fallback");
 
                 try
@@ -91,14 +88,20 @@ namespace P3D_Scenario_Generator.Services
             _infoLogFilePath = Path.Combine(_logDirectory, "InfoLog.txt");
             _warningLogFilePath = Path.Combine(_logDirectory, "WarningLog.txt");
 
-            // Clear log files on application startup to ensure a fresh log for each session.
             ClearLogFile(_errorLogFilePath);
             ClearLogFile(_infoLogFilePath);
             ClearLogFile(_warningLogFilePath);
         }
 
-        /// <inheritdoc/>
-        public async Task ErrorAsync(string message, Exception? ex = null, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
+        /// <summary>
+        /// Asynchronously writes an error log entry to the error log file.
+        /// </summary>
+        /// <param name="message">The diagnostic error message to log.</param>
+        /// <param name="ex">Optional exception details to include.</param>
+        /// <param name="callerName">The caller method name automatically populated by the compiler.</param>
+        /// <param name="callerFilePath">The caller source file path automatically populated by the compiler.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        internal async Task ErrorAsync(string message, Exception? ex = null, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
             string prefix = GetLogPrefix(callerName, callerFilePath);
             string timestamp = GetTimestamp();
@@ -115,8 +118,14 @@ namespace P3D_Scenario_Generator.Services
             await WriteLogEntryAsync(_errorLogFilePath, logEntry);
         }
 
-        /// <inheritdoc/>
-        public async Task WarningAsync(string message, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
+        /// <summary>
+        /// Asynchronously writes a warning log entry to the warning log file.
+        /// </summary>
+        /// <param name="message">The diagnostic warning message to log.</param>
+        /// <param name="callerName">The caller method name automatically populated by the compiler.</param>
+        /// <param name="callerFilePath">The caller source file path automatically populated by the compiler.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        internal async Task WarningAsync(string message, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
             string prefix = GetLogPrefix(callerName, callerFilePath);
             string timestamp = GetTimestamp();
@@ -124,8 +133,14 @@ namespace P3D_Scenario_Generator.Services
             await WriteLogEntryAsync(_warningLogFilePath, logEntry);
         }
 
-        /// <inheritdoc/>
-        public async Task InfoAsync(string message, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
+        /// <summary>
+        /// Asynchronously writes an informational log entry to the info log file.
+        /// </summary>
+        /// <param name="message">The diagnostic informational message to log.</param>
+        /// <param name="callerName">The caller method name automatically populated by the compiler.</param>
+        /// <param name="callerFilePath">The caller source file path automatically populated by the compiler.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        internal async Task InfoAsync(string message, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
             string prefix = GetLogPrefix(callerName, callerFilePath);
             string timestamp = GetTimestamp();
@@ -133,10 +148,6 @@ namespace P3D_Scenario_Generator.Services
             await WriteLogEntryAsync(_infoLogFilePath, logEntry);
         }
 
-        /// <summary>
-        /// A helper method to get the prefix for logging, including the calling method's name.
-        /// This method gets the class name from the file path and the method name from the caller.
-        /// </summary>
         private static string GetLogPrefix(string callerName, string callerFilePath)
         {
             string className = Path.GetFileNameWithoutExtension(callerFilePath);
@@ -151,9 +162,6 @@ namespace P3D_Scenario_Generator.Services
             return $"{className}.{callerName}: ";
         }
 
-        /// <summary>
-        /// Gets the log entry string based on the current settings.
-        /// </summary>
         private string GetLogEntry(string level, string prefix, string timestamp, string message)
         {
             var sb = new StringBuilder();
@@ -178,9 +186,6 @@ namespace P3D_Scenario_Generator.Services
             return sb.ToString().TrimStart(' ', '-');
         }
 
-        /// <summary>
-        /// Processes a string to replace any known path prefixes with their field names.
-        /// </summary>
         private string ProcessPath(string message)
         {
             if (_formData == null ||
@@ -220,9 +225,6 @@ namespace P3D_Scenario_Generator.Services
             return message;
         }
 
-        /// <summary>
-        /// Gets the formatted timestamp based on the current settings.
-        /// </summary>
         private string GetTimestamp()
         {
             var parts = new List<string>();
@@ -237,10 +239,6 @@ namespace P3D_Scenario_Generator.Services
             return string.Join(" ", parts);
         }
 
-        /// <summary>
-        /// Clears the contents of a specified log file.
-        /// Retains raw File I/O to avoid circular dependency with FileOps.
-        /// </summary>
         private static void ClearLogFile(string filePath)
         {
             try
@@ -256,10 +254,6 @@ namespace P3D_Scenario_Generator.Services
             }
         }
 
-        /// <summary>
-        /// Asynchronously writes a formatted log entry to the specified file and to the debug output.
-        /// Retains raw File I/O to avoid circular dependency with FileOps.
-        /// </summary>
         private static async Task WriteLogEntryAsync(string filePath, string logEntry)
         {
             try

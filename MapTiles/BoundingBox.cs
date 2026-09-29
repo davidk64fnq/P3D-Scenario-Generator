@@ -1,23 +1,20 @@
 ﻿namespace P3D_Scenario_Generator.MapTiles
 {
     /// <summary>
-    /// The bounding box is two lists of tile numbers, one for x axis the other y axis.
-    /// The tile numbers will usually be consecutive within the bounds 0 .. (2 to exp zoom - 1). However it's
-    /// possible for tiles grouped across the meridian to have a sequence of x axis tile numbers that goes up
-    /// to (2 to exp zoom - 1) and then continues from 0
+    /// Represents two lists of tile numbers for the X and Y axes defining a bounding box.
+    /// Tile numbers are generally consecutive within bounds 0..(2^zoom - 1), but can wrap
+    /// around the antimeridian.
     /// </summary>
-    public class BoundingBox
+    internal class BoundingBox
     {
-        public List<int> XAxis { get; set; } // List of OSM xTile references
-        public List<int> YAxis { get; set; } // List of OSM yTile references
+        internal List<int> XAxis { get; set; } = [];
+        internal List<int> YAxis { get; set; } = [];
 
-        public BoundingBox()
+        internal BoundingBox()
         {
-            XAxis = [];
-            YAxis = [];
         }
 
-        public BoundingBox DeepCopy()
+        internal BoundingBox DeepCopy()
         {
             return new BoundingBox
             {

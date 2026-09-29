@@ -4,9 +4,9 @@ using P3D_Scenario_Generator.ConstantsEnums;
 namespace P3D_Scenario_Generator.Services
 {
     /// <summary>
-    /// Simple data model for OSM Cache statistics.
+    /// Data model representing OpenStreetMap cache statistics.
     /// </summary>
-    public class CacheStats
+    internal class CacheStats
     {
         public string LastCacheDate { get; set; } = DateTime.Now.Date.ToString();
         public int DailyDownloadTotal { get; set; } = 0;
@@ -14,12 +14,11 @@ namespace P3D_Scenario_Generator.Services
     }
 
     /// <summary>
-    /// Persists OSM Cache statistics to a JSON file in AppData, replacing legacy Settings.settings.
+    /// Persists OpenStreetMap cache statistics to a JSON file in AppData, replacing legacy Settings.settings.
     /// Includes an event to notify the UI when data changes.
     /// </summary>
-    public class CacheMetadataService
+    internal class CacheMetadataService
     {
-        // CA1869: Reuse JsonSerializerOptions to improve performance
         private static readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
         private readonly Logger _logger;
@@ -30,18 +29,22 @@ namespace P3D_Scenario_Generator.Services
 
         /// <summary>
         /// Occurs whenever the cache metadata is successfully saved to disk.
-        /// Use this in Form1.cs to trigger UI updates safely across threads.
+        /// Use this to trigger UI updates safely across threads.
         /// </summary>
-        public event Action? OnMetadataChanged;
+        internal event Action? OnMetadataChanged;
 
-        public CacheMetadataService(FileOps fileOps, Logger logger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CacheMetadataService"/> class.
+        /// </summary>
+        /// <param name="fileOps">The centralized file operations service.</param>
+        /// <param name="logger">The application logger instance.</param>
+        internal CacheMetadataService(FileOps fileOps, Logger logger)
         {
             _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.AppDataFolderName);
 
-            // Pattern: Check return value and log failure
             if (!FileOps.EnsureDirectoryExists(directory))
             {
                 _ = _logger.ErrorAsync($"CacheMetadataService: Unable to access or create AppData directory '{directory}'. Persistence will be disabled for this session.");
@@ -56,21 +59,38 @@ namespace P3D_Scenario_Generator.Services
             _stats = Load();
         }
 
-        public CacheStats GetStats() => _stats;
+        /// <summary>
+        /// Gets the current cache statistics model.
+        /// </summary>
+        /// <returns>The <see cref="CacheStats"/> instance.</returns>
+        internal CacheStats GetStats() => _stats;
 
-        public void UpdateDailyTotal(int count)
+        /// <summary>
+        /// Updates the daily download count total and persists the change.
+        /// </summary>
+        /// <param name="count">The new total daily download count.</param>
+        internal void UpdateDailyTotal(int count)
         {
             _stats.DailyDownloadTotal = count;
             Save();
         }
 
-        public void UpdateUsage(string formattedUsage)
+        /// <summary>
+        /// Updates the formatted cache disk usage string and persists the change.
+        /// </summary>
+        /// <param name="formattedUsage">The human-readable cache size string (e.g., "12.5 MB").</param>
+        internal void UpdateUsage(string formattedUsage)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(formattedUsage);
+
             _stats.FormattedCacheUsage = formattedUsage;
             Save();
         }
 
-        public void ResetIfNewDay()
+        /// <summary>
+        /// Resets the daily download counter if the date has changed since the last recorded cache update.
+        /// </summary>
+        internal void ResetIfNewDay()
         {
             string today = DateTime.Now.Date.ToString();
             if (_stats.LastCacheDate != today)

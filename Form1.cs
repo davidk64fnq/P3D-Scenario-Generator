@@ -12,6 +12,10 @@ using System.Globalization;
 
 namespace P3D_Scenario_Generator
 {
+    /// <summary>
+    /// Main application form for the Prepar3D Scenario Generator.
+    /// Manages UI controls, configuration states, and orchestrates scenario generation engines.
+    /// </summary>
     public partial class Form : System.Windows.Forms.Form
     {
         // --- UI State ---
@@ -69,6 +73,9 @@ namespace P3D_Scenario_Generator
         private readonly Wikipedia _wikipedia;
         private readonly MakeCircuit _makeCircuit;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Form"/> class and configures all dependent services.
+        /// </summary>
         public Form()
         {
             InitializeComponent();
@@ -98,23 +105,23 @@ namespace P3D_Scenario_Generator
                     }));
                 }
             };
-            _cacheManager = new(_logger, _fileOps);
+            _cacheManager = new(_fileOps);
             _httpRoutines = new(_fileOps, _logger, _httpClient);
             _scenarioFXML = new(_fileOps, _progressReporter);
             _runwayLoader = new(_fileOps, _cacheManager, _logger);
 
             // --- LAYER 3: Specialized Utilities (Single-purpose workers) ---
             _osmTileCache = new(_fileOps, _httpRoutines, _progressReporter, _cacheMetadataService);
-            _mapTileDownloader = new(_fileOps, _httpRoutines, _progressReporter, _osmTileCache);
+            _mapTileDownloader = new(_osmTileCache);
             _assetFileGenerator = new(_logger, _fileOps, _progressReporter);
             _imageUtils = new(_logger, _fileOps, _progressReporter);
             _htmlParser = new(_logger);
             _boundingBoxCalculator = new(_logger, _progressReporter);
-            _mapTileCalculator = new(_logger, _progressReporter, _boundingBoxCalculator);
-            _parsingHelpers = new(_logger, _progressReporter);
+            _mapTileCalculator = new(_logger, _boundingBoxCalculator);
+            _parsingHelpers = new(_logger);
             _starDataManager = new(_logger, _fileOps, _progressReporter);
             _simulatorFileGenerator = new(_logger, _fileOps, _progressReporter);
-            _wikiPageHtmlParser = new(_logger, _fileOps, _httpRoutines, _progressReporter);
+            _wikiPageHtmlParser = new(_logger, _httpRoutines);
             _runwayManager = new(_runwayLoader);
             _aircraft = new(_logger, _cacheManager);
             _scenarioHTML = new(_logger, _fileOps, _progressReporter);
@@ -135,12 +142,11 @@ namespace P3D_Scenario_Generator
                 _photoTourUtilities, _pic2MapHtmlParser, _mapTileImageMaker, _imageUtils,
                 _assetFileGenerator, _scenarioHTML);
             _celestialNav = new(
-                _logger, _fileOps, _progressReporter,
+                _logger, _progressReporter,
                 _almanacDataSource, _starDataManager, _sextantViewGenerator,
                 _simulatorFileGenerator, _mapTileImageMaker, _scenarioXML, _scenarioHTML);
             _signWriting = new(
                 _logger,
-                _fileOps,
                 _progressReporter,
                 _mapTileImageMaker,
                 _scenarioXML,
@@ -148,7 +154,6 @@ namespace P3D_Scenario_Generator
                 _scenarioHTML);
             _wikipedia = new(
                 _logger,
-                _fileOps,
                 _progressReporter,
                 _mapTileImageMaker,
                 _imageUtils,
@@ -637,7 +642,7 @@ namespace P3D_Scenario_Generator
         /// </summary>
         /// <remarks>This method parses the selected text in <see cref="ComboBoxGeneralScenarioType"/>
         /// into a <see cref="ScenarioTypes"/> enum value. If the parsing succeeds, it updates the selected scenario
-        /// type and modifies the enabled state of related controls (<see cref="ComboBoxGeneralRunwaySelected"/>, <see
+        /// type and modifies the enabled state of related controls (<see cref="ComboBoxGeneralRunwayResults"/>, <see
         /// cref="TextBoxGeneralSearchRunway"/>, and <see cref="ButtonRandRunway"/>) based on the selected scenario
         /// type.</remarks>
         /// <param name="sender">The source of the event, typically the <see cref="ComboBoxGeneralScenarioType"/> control.</param>

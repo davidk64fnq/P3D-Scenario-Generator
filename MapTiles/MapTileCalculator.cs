@@ -8,16 +8,14 @@ namespace P3D_Scenario_Generator.MapTiles
     /// Provides methods for calculating OpenStreetMap (OSM) tile information
     /// and optimal zoom levels based on geographic coordinates.
     /// </summary>
-    public class MapTileCalculator(
+    /// <param name="logger">The application logger instance.</param>
+    /// <param name="boundingBoxCalculator">The bounding box calculator service.</param>
+    internal class MapTileCalculator(
         Logger logger,
-        FormProgressReporter progressReporter,
-        BoundingBoxCalculator boundingBoxCalculator) 
+        BoundingBoxCalculator boundingBoxCalculator)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-
-        // Assigned from constructor
-        private readonly BoundingBoxCalculator _boundingBoxCalculator = boundingBoxCalculator;
+        private readonly BoundingBoxCalculator _boundingBoxCalculator = boundingBoxCalculator ?? throw new ArgumentNullException(nameof(boundingBoxCalculator));
 
         /// <summary>
         /// Works out the most zoomed-in level that includes all specified coordinates,
@@ -31,29 +29,28 @@ namespace P3D_Scenario_Generator.MapTiles
         /// A value tuple indicating success and the optimal zoom level if found.
         /// Returns <see langword="true"/> and the optimal zoom level if found; otherwise, returns <see langword="false"/> and 0.
         /// </returns>
-        public async Task<(bool success, int optimalZoomLevel)> GetOptimalZoomLevelAsync(
+        internal async Task<(bool success, int optimalZoomLevel)> GetOptimalZoomLevelAsync(
             IEnumerable<Coordinate> coordinates,
             int tilesWidth,
             int tilesHeight,
             int maxAllowedZoom)
         {
+            ArgumentNullException.ThrowIfNull(coordinates);
+
             int optimalZoomLevel = 0;
 
-            if (coordinates == null || !coordinates.Any())
+            if (!coordinates.Any())
             {
-                await _logger.ErrorAsync("Input coordinates list is null or empty.");
+                await _logger.ErrorAsync("Input coordinates list is empty.");
                 return (false, optimalZoomLevel);
             }
 
-            // Store the last successfully calculated zoom level
             int lastValidZoom = 0;
 
             for (int zoom = 2; zoom <= Constants.MaxZoomLevel; zoom++)
             {
-                // If we hit the absolute cap, stop looking for the "optimal" fit.
                 if (zoom > maxAllowedZoom)
                 {
-                    // We can stop iterating here, the last valid zoom is the optimal one, but capped.
                     break;
                 }
 
@@ -76,12 +73,10 @@ namespace P3D_Scenario_Generator.MapTiles
 
                 if (boundingBox.XAxis.Count > tilesWidth || boundingBox.YAxis.Count > tilesHeight)
                 {
-                    // If current zoom level exceeds limits, the previous one was optimal.
-                    // If lastValidZoom is 0 here, it means no valid zoom was ever found.
                     optimalZoomLevel = lastValidZoom;
                     if (lastValidZoom > 0)
                     {
-                        return (true, optimalZoomLevel); // Return true only if a *valid* previous zoom was found.
+                        return (true, optimalZoomLevel);
                     }
                     else
                     {
@@ -89,21 +84,17 @@ namespace P3D_Scenario_Generator.MapTiles
                     }
                 }
 
-                // If we reached here, the current zoom level is valid within constraints.
                 lastValidZoom = zoom;
             }
 
-            // If the loop completes (either due to hitting Constants.MaxZoomLevel OR maxAllowedZoom),
-            // we take the last valid zoom found, then apply the cap.
-            optimalZoomLevel = lastValidZoom > 0 ? lastValidZoom : Constants.MaxZoomLevel; // Fallback to last valid or MaxZoom
+            optimalZoomLevel = lastValidZoom > 0 ? lastValidZoom : Constants.MaxZoomLevel;
 
-            // If the calculated optimal zoom is > maxAllowedZoom, we use maxAllowedZoom.
             if (optimalZoomLevel > maxAllowedZoom)
             {
                 optimalZoomLevel = maxAllowedZoom;
             }
 
-            return (true, optimalZoomLevel); // Successfully found an optimal zoom up to MaxZoomLevel.
+            return (true, optimalZoomLevel);
         }
 
         /// <summary>
@@ -113,10 +104,10 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="zoom">The OSM tile zoom level for which the tiles are determined.</param>
         /// <param name="coordinates">A collection of geographic coordinates for which the covering tiles are determined.</param>
         /// <returns>Returns <see langword="true"/> if all coordinates were successfully converted to tiles; otherwise, returns <see langword="false"/>.</returns>
-        public async Task<bool> SetOSMTilesForCoordinatesAsync(List<Tile> tiles, int zoom, IEnumerable<Coordinate> coordinates)
+        internal async Task<bool> SetOSMTilesForCoordinatesAsync(List<Tile> tiles, int zoom, IEnumerable<Coordinate> coordinates)
         {
             HashSet<Tile> uniqueTiles = [];
-            bool allCoordinatesTiledSuccessfully = true; 
+            bool allCoordinatesTiledSuccessfully = true;
 
             foreach (var coord in coordinates)
             {
@@ -128,18 +119,13 @@ namespace P3D_Scenario_Generator.MapTiles
                 else
                 {
                     await _logger.ErrorAsync($"Could not get tile info for coordinate Lon: {coord.Longitude.DecimalDegree}, Lat: {coord.Latitude.DecimalDegree} at zoom {zoom}. This coordinate will be skipped, and the overall operation will be marked as failed.");
-                    allCoordinatesTiledSuccessfully = false; // Mark failure if even one coordinate fails
+                    allCoordinatesTiledSuccessfully = false;
                 }
             }
 
             tiles.Clear();
             tiles.AddRange(uniqueTiles);
 
-            // Double-check: if allCoordinatesTiledSuccessfully is true but uniqueTiles is empty,
-            // it means `GetTileInfo` never returned `null`, but no unique tiles were added.
-            // This suggests an issue with Tile.Equals/GetHashCode or all input coords being identical
-            // and somehow not being added, which is unexpected if GetTileInfo is correctly returning distinct Tile objects.
-            // This is a defensive check for pathological cases.
             if (allCoordinatesTiledSuccessfully && coordinates.Any() && uniqueTiles.Count == 0)
             {
                 await _logger.ErrorAsync("All coordinates reported successful tiling, but no unique tiles were added to the collection. This indicates a logical error in tile generation or uniqueness handling.");
@@ -160,20 +146,16 @@ namespace P3D_Scenario_Generator.MapTiles
         /// A value tuple indicating success and a Tile object containing the XIndex, YIndex, XOffset, and YOffset.
         /// Returns <see langword="true"/> and the tile; otherwise, returns <see langword="false"/> and null.
         /// </returns>
-        public async Task<(bool success, Tile tile)> GetTileInfoAsync(double dLon, double dLat, int zoom)
+        internal async Task<(bool success, Tile tile)> GetTileInfoAsync(double dLon, double dLat, int zoom)
         {
             Tile tile = new();
 
-            // 1. Validate Zoom Level
-            if (zoom < 0 || zoom > Constants.MaxZoomLevel) // Assuming 0 is minimum valid zoom, adjust if needed
+            if (zoom < 0 || zoom > Constants.MaxZoomLevel)
             {
                 await _logger.ErrorAsync($"Invalid zoom level ({zoom}) provided. Zoom must be between 0 and {Constants.MaxZoomLevel}.");
                 return (false, tile);
             }
 
-            // 2. Validate Latitude and Longitude against Web Mercator Projection limits
-            // OSM Web Mercator uses approx. -85.05112878 to +85.05112878 for latitude
-            // and -180.0 to +180.0 for longitude.
             const double minLatitude = -85.05112878;
             const double maxLatitude = 85.05112878;
             const double minLongitude = -180.0;
@@ -188,9 +170,7 @@ namespace P3D_Scenario_Generator.MapTiles
             LonToTileX(dLon, zoom, tile);
             LatToTileY(dLat, zoom, tile);
 
-            // 3. Validate Calculated Tile Indices
-            // Tile indices for a given zoom level range from 0 to (2^zoom - 1).
-            int maxTileIndex = (1 << zoom) - 1; // 2^zoom - 1
+            int maxTileIndex = (1 << zoom) - 1;
 
             if (tile.XIndex < 0 || tile.XIndex > maxTileIndex || tile.YIndex < 0 || tile.YIndex > maxTileIndex)
             {
@@ -227,7 +207,7 @@ namespace P3D_Scenario_Generator.MapTiles
         internal static void LatToTileY(double dLat, int z, Tile tile)
         {
             var latRad = dLat / 180 * Math.PI;
-            double doubleTileY = (1 - Math.Log(Math.Tan(latRad) + 1 / Math.Cos(latRad)) / Math.PI) / 2 * (1 << z);
+            double doubleTileY = (1 - (Math.Log(Math.Tan(latRad) + (1 / Math.Cos(latRad))) / Math.PI)) / 2 * (1 << z);
             tile.YIndex = Convert.ToInt32(Math.Floor(doubleTileY));
             tile.YOffset = Convert.ToInt32(Constants.TileSizePixels * (doubleTileY - tile.YIndex));
         }
@@ -240,7 +220,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="tileNo">The current X-tile number.</param>
         /// <param name="zoom">The current zoom level.</param>
         /// <returns>The decremented X-tile number, wrapped if necessary.</returns>
-        public static int DecXtileNo(int tileNo, int zoom)
+        internal static int DecXtileNo(int tileNo, int zoom)
         {
             int newTileNo = tileNo - 1;
             if (newTileNo == -1)
@@ -257,9 +237,9 @@ namespace P3D_Scenario_Generator.MapTiles
         /// </summary>
         /// <param name="tileNo">The current Y-tile number.</param>
         /// <returns>The decremented Y-tile number, or -1 if the northern boundary is reached.</returns>
-        public static int DecYtileNo(int tileNo)
+        internal static int DecYtileNo(int tileNo)
         {
-            if (tileNo - 1 >= 0)
+            if (tileNo >= 1)
             {
                 return tileNo - 1;
             }
@@ -274,7 +254,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="tileNo">The current X-tile number.</param>
         /// <param name="zoom">The current zoom level.</param>
         /// <returns>The incremented X-tile number, wrapped if necessary.</returns>
-        public static int IncXtileNo(int tileNo, int zoom)
+        internal static int IncXtileNo(int tileNo, int zoom)
         {
             int newTileNo = tileNo + 1;
             if (newTileNo == 1 << zoom)
@@ -292,7 +272,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="tileNo">The current Y-tile number.</param>
         /// <param name="zoom">The current zoom level.</param>
         /// <returns>The incremented Y-tile number, or -1 if the southern boundary is reached.</returns>
-        public static int IncYtileNo(int tileNo, int zoom)
+        internal static int IncYtileNo(int tileNo, int zoom)
         {
             if (tileNo + 1 < 1 << zoom)
             {
@@ -308,11 +288,11 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="yTile">The OSM yTile number.</param>
         /// <param name="zoom">The OSM zoom level.</param>
         /// <returns>Latitude and longitude for top left corner of tile reference as +/- decimal degrees.</returns>
-        public static Coordinate TileNoToLatLon(int xTile, int yTile, int zoom)
+        internal static Coordinate TileNoToLatLon(int xTile, int yTile, int zoom)
         {
             double n = Math.Pow(2, zoom);
-            double latitudeRadians = Math.Atan(Math.Sinh(Math.PI * (1 - 2 * yTile / n)));
-            Coordinate c = new(latitudeRadians * 180.0 / Math.PI, xTile / n * 360.0 - 180.0);
+            double latitudeRadians = Math.Atan(Math.Sinh(Math.PI * (1 - (2 * yTile / n))));
+            Coordinate c = new(latitudeRadians * 180.0 / Math.PI, (xTile / n * 360.0) - 180.0);
             return c;
         }
 
@@ -324,7 +304,7 @@ namespace P3D_Scenario_Generator.MapTiles
         /// <param name="box">The bounding box defining the tile assembly layout.</param>
         /// <param name="zoom">The OSM zoom level.</param>
         /// <returns>A tuple containing pixelX and pixelY offsets within the montage, or (-1, -1) if outside bounds.</returns>
-        public static (double pixelX, double pixelY) GetPixelCoordinates(Coordinate coord, BoundingBox box, int zoom)
+        internal static (double pixelX, double pixelY) GetPixelCoordinates(Coordinate coord, BoundingBox box, int zoom)
         {
             Tile tile = new();
             LonToTileX(coord.Longitude.DecimalDegree, zoom, tile);

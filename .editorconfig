@@ -9,6 +9,8 @@ dotnet_diagnostic.RCS1202.severity = warning
 # Standard CA1806: Do not ignore method results
 dotnet_diagnostic.CA1806.severity = warning
 
+dotnet_diagnostic.CS1591.severity = warning
+
 #### Core EditorConfig Options ####
 
 # Indentation and spacing

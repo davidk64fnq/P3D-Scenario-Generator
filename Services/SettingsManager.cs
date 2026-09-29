@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -13,7 +8,7 @@ namespace P3D_Scenario_Generator.Services
     /// Manages the persistence of UI control states to a JSON file in the AppData Roaming folder.
     /// Provides safe-save functionality with backups and the ability to revert to designer defaults.
     /// </summary>
-    public class SettingsManager
+    internal class SettingsManager
     {
         private readonly string _settingsFilePath;
         private readonly string _backupFilePath;
@@ -22,13 +17,17 @@ namespace P3D_Scenario_Generator.Services
         private readonly Logger _logger;
         private readonly FileOps _fileOps;
 
-        public SettingsManager(Logger logger, FileOps fileOps)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SettingsManager"/> class.
+        /// </summary>
+        /// <param name="logger">The logging service.</param>
+        /// <param name="fileOps">The file operations service.</param>
+        internal SettingsManager(Logger logger, FileOps fileOps)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
             _designerDefaults = [];
 
-            // Use FileOps to retrieve and ensure the AppData folder exists
             string folder = FileOps.GetApplicationDataDirectory();
 
             _settingsFilePath = Path.Combine(folder, "ui_settings.json");
@@ -43,9 +42,10 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Captures the hardcoded defaults set in the Visual Studio Designer for a single control and its children.
         /// </summary>
-        public void CaptureDefaults(Control control)
+        /// <param name="control">The control whose default values are to be captured.</param>
+        internal void CaptureDefaults(Control control)
         {
-            if (control == null) return;
+            if (control is null) return;
 
             if (control.Controls.Count > 0) CaptureDefaults(control.Controls);
 
@@ -63,28 +63,34 @@ namespace P3D_Scenario_Generator.Services
             }
         }
 
-        public void CaptureDefaults(Control.ControlCollection controls)
+        /// <summary>
+        /// Captures the hardcoded defaults set in the Visual Studio Designer for a collection of controls.
+        /// </summary>
+        /// <param name="controls">The collection of controls whose default values are to be captured.</param>
+        internal void CaptureDefaults(Control.ControlCollection controls)
         {
             foreach (Control control in controls) CaptureDefaults(control);
         }
 
         /// <summary>
-        /// Logic for the "Reset to Defaults" button. 
-        /// Identifies the active tab and resets relevant controls based on your specific requirements.
+        /// Logic for the "Reset to Defaults" button. Identifies the active tab and resets relevant controls.
         /// </summary>
-        public void RestoreActiveTab(TabControl tabControl, Control layoutWiki, Control layoutMap)
+        /// <param name="tabControl">The main TabControl containing scenario tabs.</param>
+        /// <param name="layoutWiki">The layout container for Wikipedia list controls.</param>
+        /// <param name="layoutMap">The layout container for Map tile controls.</param>
+        internal void RestoreActiveTab(TabControl tabControl, Control layoutWiki, Control layoutMap)
         {
-            if (tabControl?.SelectedTab == null) return;
+            if (tabControl?.SelectedTab is null) return;
 
             string tabName = tabControl.SelectedTab.Name;
 
             if (tabName == "TabPageSettings")
             {
-                if (layoutMap != null) RestoreDefaults(layoutMap.Controls);
+                if (layoutMap is not null) RestoreDefaults(layoutMap.Controls);
             }
             else if (tabName == "TabPageWikiList ")
             {
-                if (layoutWiki != null) RestoreDefaults(layoutWiki.Controls);
+                if (layoutWiki is not null) RestoreDefaults(layoutWiki.Controls);
             }
             else if (tabName == "TabPagePhotoTour" ||
                      tabName == "TabPageCelestial")
@@ -96,15 +102,16 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Reverts a specific control (and its children) to Designer defaults.
         /// </summary>
-        public void RestoreDefaults(Control control)
+        /// <param name="control">The control to revert.</param>
+        internal void RestoreDefaults(Control control)
         {
-            if (control == null) return;
+            if (control is null) return;
 
             if (control.Controls.Count > 0) RestoreDefaults(control.Controls);
 
             if (control is TextBox textBox && _designerDefaults.TryGetValue(control.Name, out var text))
             {
-                textBox.Text = text?.ToString() ?? "";
+                textBox.Text = text?.ToString() ?? string.Empty;
             }
             else if (control is CheckBox checkBox && _designerDefaults.TryGetValue(control.Name, out var check))
             {
@@ -116,7 +123,11 @@ namespace P3D_Scenario_Generator.Services
             }
         }
 
-        public void RestoreDefaults(Control.ControlCollection controls)
+        /// <summary>
+        /// Reverts a collection of controls to Designer defaults.
+        /// </summary>
+        /// <param name="controls">The control collection to revert.</param>
+        internal void RestoreDefaults(Control.ControlCollection controls)
         {
             foreach (Control control in controls) RestoreDefaults(control);
         }
@@ -169,7 +180,7 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Attempts to restore settings from the backup file.
         /// </summary>
-        /// <returns>True if settings were restored from backup; false otherwise.</returns>
+        /// <returns><see langword="true"/> if settings were restored from backup; otherwise, <see langword="false"/>.</returns>
         private bool TryRestoreFromBackup()
         {
             if (!FileOps.FileExists(_backupFilePath))
@@ -188,7 +199,7 @@ namespace P3D_Scenario_Generator.Services
                 }
 
                 var restored = JsonConvert.DeserializeObject<Dictionary<string, object?>>(json);
-                if (restored == null)
+                if (restored is null)
                 {
                     _settingsCache = [];
                     return false;
@@ -208,7 +219,9 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Saves the state of a single UI control (and its children) to the JSON file.
         /// </summary>
-        public async Task SaveSettingsAsync(Control control)
+        /// <param name="control">The control whose state is to be saved.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        internal async Task SaveSettingsAsync(Control control)
         {
             UpdateCacheFromControls(control);
             await CommitCacheToFileAsync();
@@ -217,7 +230,9 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Saves the current state of UI controls to the JSON file using a safe temp-write-and-replace pattern.
         /// </summary>
-        public async Task SaveSettingsAsync(Control.ControlCollection controls)
+        /// <param name="controls">The control collection whose state is to be saved.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        internal async Task SaveSettingsAsync(Control.ControlCollection controls)
         {
             UpdateCacheFromControls(controls);
             await CommitCacheToFileAsync();
@@ -230,30 +245,25 @@ namespace P3D_Scenario_Generator.Services
             {
                 string json = JsonConvert.SerializeObject(_settingsCache, Formatting.Indented);
 
-                // 1. Write the new settings to the temporary file
                 if (!await _fileOps.TryWriteAllTextAsync(tempPath, json))
                 {
                     await _logger.ErrorAsync("Failed to write temporary settings file.");
                     return;
                 }
 
-                // 2. Rotate existing settings file to backup if present
                 if (FileOps.FileExists(_settingsFilePath))
                 {
-                    // Clean up old backup with retry - check return
                     if (!await _fileOps.TryDeleteFileAsync(_backupFilePath))
                     {
                         await _logger.WarningAsync($"SettingsManager: Could not remove old backup '{_backupFilePath}'. Move may fail.");
                     }
 
-                    // Move current file to backup with retry
                     if (!await _fileOps.TryMoveFileAsync(_settingsFilePath, _backupFilePath))
                     {
                         await _logger.WarningAsync("Could not create backup of settings file, proceeding with save.");
                     }
                 }
 
-                // 3. Move the temporary file into place
                 if (await _fileOps.TryMoveFileAsync(tempPath, _settingsFilePath))
                 {
                     await _logger.InfoAsync("UI Settings saved safely to JSON (with backup rotation).");
@@ -269,7 +279,6 @@ namespace P3D_Scenario_Generator.Services
             }
             finally
             {
-                // Ensure temp file is cleaned up if it still remains
                 if (FileOps.FileExists(tempPath))
                 {
                     if (!await _fileOps.TryDeleteFileAsync(tempPath))
@@ -287,9 +296,10 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Populates a single UI control (and its children) with values stored in the JSON cache.
         /// </summary>
-        public void RestoreSettings(Control control)
+        /// <param name="control">The control to restore.</param>
+        internal void RestoreSettings(Control control)
         {
-            if (control == null) return;
+            if (control is null) return;
 
             if (control.Controls.Count > 0) RestoreSettings(control.Controls);
 
@@ -299,7 +309,7 @@ namespace P3D_Scenario_Generator.Services
             {
                 if (control is TextBox textBox)
                 {
-                    textBox.Text = value?.ToString() ?? "";
+                    textBox.Text = value?.ToString() ?? string.Empty;
                 }
                 else if (control is CheckBox checkBox && value is bool boolVal)
                 {
@@ -314,7 +324,7 @@ namespace P3D_Scenario_Generator.Services
                     }
 
                     string indexKey = control.Name + "SelectedIndex";
-                    if (_settingsCache.TryGetValue(indexKey, out object? indexValue) && indexValue != null)
+                    if (_settingsCache.TryGetValue(indexKey, out object? indexValue) && indexValue is not null)
                     {
                         int idx = Convert.ToInt32(indexValue);
                         if (idx >= -1 && idx < comboBox.Items.Count)
@@ -330,7 +340,11 @@ namespace P3D_Scenario_Generator.Services
             }
         }
 
-        public void RestoreSettings(Control.ControlCollection controls)
+        /// <summary>
+        /// Populates a collection of UI controls with values stored in the JSON cache.
+        /// </summary>
+        /// <param name="controls">The collection of controls to restore.</param>
+        internal void RestoreSettings(Control.ControlCollection controls)
         {
             foreach (Control control in controls) RestoreSettings(control);
         }
@@ -341,7 +355,7 @@ namespace P3D_Scenario_Generator.Services
 
         private void UpdateCacheFromControls(Control control)
         {
-            if (control == null) return;
+            if (control is null) return;
 
             if (control.Controls.Count > 0) UpdateCacheFromControls(control.Controls);
 
@@ -377,9 +391,12 @@ namespace P3D_Scenario_Generator.Services
         /// <summary>
         /// Saves controls on the Circuit tab under a key scoped to the unique Aircraft Title.
         /// </summary>
-        public async Task SaveCircuitSettingsAsync(Control.ControlCollection controls, string aircraftTitle)
+        /// <param name="controls">The control collection to persist.</param>
+        /// <param name="aircraftTitle">The title of the aircraft used as the cache scoping key.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        internal async Task SaveCircuitSettingsAsync(Control.ControlCollection controls, string aircraftTitle)
         {
-            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls == null) return;
+            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls is null) return;
 
             string prefix = $"Circuit_{aircraftTitle.Trim()}_";
             UpdateCacheWithPrefix(controls, prefix);
@@ -388,11 +405,13 @@ namespace P3D_Scenario_Generator.Services
 
         /// <summary>
         /// Restores Circuit tab controls for a specific aircraft title.
-        /// Returns true if saved custom parameters were found; false otherwise.
         /// </summary>
-        public bool RestoreCircuitSettings(Control.ControlCollection controls, string aircraftTitle)
+        /// <param name="controls">The control collection to restore.</param>
+        /// <param name="aircraftTitle">The title of the aircraft used as the cache scoping key.</param>
+        /// <returns><see langword="true"/> if saved custom parameters were found; otherwise, <see langword="false"/>.</returns>
+        internal bool RestoreCircuitSettings(Control.ControlCollection controls, string aircraftTitle)
         {
-            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls == null) return false;
+            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls is null) return false;
 
             string prefix = $"Circuit_{aircraftTitle.Trim()}_";
             bool foundAnyKey = false;
@@ -408,7 +427,7 @@ namespace P3D_Scenario_Generator.Services
                 string key = prefix + control.Name;
                 if (_settingsCache.TryGetValue(key, out object? value) && control is TextBox textBox)
                 {
-                    textBox.Text = value?.ToString() ?? "";
+                    textBox.Text = value?.ToString() ?? string.Empty;
                     foundAnyKey = true;
                 }
             }
@@ -416,18 +435,30 @@ namespace P3D_Scenario_Generator.Services
             return foundAnyKey;
         }
 
-        public async Task SaveSignSettingsAsync(Control.ControlCollection controls, string aircraftTitle)
+        /// <summary>
+        /// Saves taxi sign controls under a key scoped to the unique Aircraft Title.
+        /// </summary>
+        /// <param name="controls">The control collection to persist.</param>
+        /// <param name="aircraftTitle">The title of the aircraft used as the cache scoping key.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        internal async Task SaveSignSettingsAsync(Control.ControlCollection controls, string aircraftTitle)
         {
-            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls == null) return;
+            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls is null) return;
 
             string prefix = $"Sign_{aircraftTitle.Trim()}_";
             UpdateCacheWithPrefix(controls, prefix);
             await CommitCacheToFileAsync();
         }
 
-        public bool RestoreSignSettings(Control.ControlCollection controls, string aircraftTitle)
+        /// <summary>
+        /// Restores taxi sign controls for a specific aircraft title.
+        /// </summary>
+        /// <param name="controls">The control collection to restore.</param>
+        /// <param name="aircraftTitle">The title of the aircraft used as the cache scoping key.</param>
+        /// <returns><see langword="true"/> if saved custom parameters were found; otherwise, <see langword="false"/>.</returns>
+        internal bool RestoreSignSettings(Control.ControlCollection controls, string aircraftTitle)
         {
-            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls == null) return false;
+            if (string.IsNullOrWhiteSpace(aircraftTitle) || controls is null) return false;
 
             string prefix = $"Sign_{aircraftTitle.Trim()}_";
             bool foundAnyKey = false;
@@ -443,7 +474,7 @@ namespace P3D_Scenario_Generator.Services
                 string key = prefix + control.Name;
                 if (_settingsCache.TryGetValue(key, out object? value) && control is TextBox textBox)
                 {
-                    textBox.Text = value?.ToString() ?? "";
+                    textBox.Text = value?.ToString() ?? string.Empty;
                     foundAnyKey = true;
                 }
             }

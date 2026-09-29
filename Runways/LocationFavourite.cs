@@ -1,38 +1,42 @@
 ﻿namespace P3D_Scenario_Generator.Runways
 {
-
     /// <summary>
-    /// Stores the Country/State/City location filter values for a location favourite
+    /// Stores Country, State, and City filter criteria for a saved location favourite.
     /// </summary>
-    public class LocationFavourite() 
+    internal class LocationFavourite()
     {
         /// <summary>
-        /// The name of the favourite
+        /// The name of the favourite.
         /// </summary>
-        public string Name { get; set; } = string.Empty;
+        internal string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// The list of valid country strings for this favourite 
+        /// The list of valid country strings for this favourite.
         /// </summary>
-        public List<string> Countries { get; set; } = [];
+        internal List<string> Countries { get; set; } = [];
 
         /// <summary>
-        /// The list of valid state strings for this favourite 
+        /// The list of valid state strings for this favourite.
         /// </summary>
-        public List<string> States { get; set; } = [];
+        internal List<string> States { get; set; } = [];
 
         /// <summary>
-        /// The list of valid city strings for this favourite 
+        /// The list of valid city strings for this favourite.
         /// </summary>
-        public List<string> Cities { get; set; } = [];
+        internal List<string> Cities { get; set; } = [];
 
-        // Copy constructor 
-        public LocationFavourite(LocationFavourite original) : this() // Calls the primary constructor for initialization
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocationFavourite"/> class by copying another instance.
+        /// </summary>
+        /// <param name="original">The original instance to copy.</param>
+        internal LocationFavourite(LocationFavourite original) : this()
         {
-            this.Name = original.Name;
-            this.Countries = original.Countries?.ToList() ?? [];
-            this.States = original.States?.ToList() ?? [];
-            this.Cities = original.Cities?.ToList() ?? [];
+            ArgumentNullException.ThrowIfNull(original);
+
+            Name = original.Name;
+            Countries = original.Countries?.ToList() ?? [];
+            States = original.States?.ToList() ?? [];
+            Cities = original.Cities?.ToList() ?? [];
         }
     }
 }

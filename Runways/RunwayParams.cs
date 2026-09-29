@@ -1,116 +1,119 @@
 ﻿namespace P3D_Scenario_Generator.Runways
 {
     /// <summary>
-    /// Parameters for a runway sourced from the runways.xml file
+    /// Parameters for an airport runway sourced from runways data.
     /// </summary>
-    public class RunwayParams : ICloneable
+    internal class RunwayParams : ICloneable
     {
         /// <summary>
-        /// Four letter code known as ICAO airport code or location indicator
+        /// Four-letter ICAO airport code or location indicator.
         /// </summary>
-        public string IcaoId { get; set; } = string.Empty;
+        internal string IcaoId { get; set; } = string.Empty;
 
         /// <summary>
-        /// The name of the airport
+        /// The name of the airport.
         /// </summary>
-        public string IcaoName { get; set; } = string.Empty;
-
-        public string Country { get; set; } = string.Empty;
-
-        public string State { get; set; } = string.Empty;
-
-        public string City { get; set; } = string.Empty;
+        internal string IcaoName { get; set; } = string.Empty;
 
         /// <summary>
-        /// The longitude of the approximate center of the airport's useable runways
+        /// The country where the airport is located.
         /// </summary>
-        public double AirportLon { get; set; }
+        internal string Country { get; set; } = string.Empty;
 
         /// <summary>
-        /// The latitude of the approximate center of the airport's useable runways
+        /// The state or province where the airport is located.
         /// </summary>
-        public double AirportLat { get; set; }
+        internal string State { get; set; } = string.Empty;
 
         /// <summary>
-        /// Airport altitude (AMSL)
+        /// The city where the airport is located.
         /// </summary>
-        public double Altitude { get; set; }
+        internal string City { get; set; } = string.Empty;
 
         /// <summary>
-        /// Airport magnetic variation
+        /// The longitude of the approximate center of the airport's usable runways.
         /// </summary>
-        public double MagVar { get; set; }
+        internal double AirportLon { get; set; }
 
         /// <summary>
-        /// The runway Id e.g. "05L", the two digit number is 10's of degrees so 05 is 50 degrees approximate
-        /// magnetic runway heading. If the number is greater than 36 it is code for a compass heading or pair 
-        /// of compass headings e.g. 37 = "N-S", 45 = "N". The number is extracted and stored as "Number" field.
-        /// The letter which distinguishes parallel runways is extracted and stored as "Designator" field.
+        /// The latitude of the approximate center of the airport's usable runways.
         /// </summary>
-        public string Id { get; set; } = string.Empty;
+        internal double AirportLat { get; set; }
 
         /// <summary>
-        /// See <see cref="Id"/>, two digit number is 10's of degrees so 05 is 50 degrees approximate
-        /// magnetic runway heading. If the number is greater than 36 it is code for a compass heading or pair 
-        /// of compass headings e.g. 37 = "N-S", 45 = "N".
+        /// Airport altitude (AMSL).
         /// </summary>
-        public string Number { get; set; } = string.Empty;
+        internal double Altitude { get; set; }
 
         /// <summary>
-        /// Runway length in feet
+        /// Airport magnetic variation.
         /// </summary>
-        public int Len { get; set; }
+        internal double MagVar { get; set; }
 
         /// <summary>
-        /// Runway magnetic heading (add magVar for true)
+        /// The runway identifier (e.g. "05L"). The two-digit number represents tens of degrees magnetic heading.
         /// </summary>
-        public double Hdg { get; set; }
+        internal string Id { get; set; } = string.Empty;
 
         /// <summary>
-        /// Runway surface material
+        /// The runway heading number (e.g. "05", or "37" for special designations).
         /// </summary>
-        public string Def { get; set; } = string.Empty;
+        internal string Number { get; set; } = string.Empty;
 
         /// <summary>
-        /// See <see cref="Id"/>, one of "None", "Left", "Right", "Center", or "Water". Used in setting the airport landing trigger for a scenario
+        /// Runway length in feet.
         /// </summary>
-        public string Designator { get; set; } = string.Empty;
+        internal int Len { get; set; }
 
         /// <summary>
-        /// Helper property indicating whether this runway is a water surface/lane.
-        /// Evaluates both Designator ("Water") and Surface Definition ("WATER").
+        /// Runway magnetic heading.
         /// </summary>
-        public bool IsWaterRunway =>
+        internal double Hdg { get; set; }
+
+        /// <summary>
+        /// Runway surface material definition.
+        /// </summary>
+        internal string Def { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Runway designator ("None", "Left", "Right", "Center", or "Water").
+        /// </summary>
+        internal string Designator { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Indicates whether this runway has a water surface.
+        /// </summary>
+        internal bool IsWaterRunway =>
             string.Equals(Designator, "Water", StringComparison.OrdinalIgnoreCase) ||
             (!string.IsNullOrEmpty(Def) && Def.Contains("WATER", StringComparison.OrdinalIgnoreCase));
 
         /// <summary>
-        /// Runway threshold latitude
+        /// Runway threshold start latitude.
         /// </summary>
-        public double ThresholdStartLat { get; set; }
+        internal double ThresholdStartLat { get; set; }
 
         /// <summary>
-        /// Runway threshold longitude
+        /// Runway threshold start longitude.
         /// </summary>
-        public double ThresholdStartLon { get; set; }
+        internal double ThresholdStartLon { get; set; }
 
         /// <summary>
-        /// Index of runway in <see cref="RunwaySearcher._allRunways"></see>
+        /// Index of the runway in the global runways collection.
         /// </summary>
-        public int RunwaysIndex { get; set; }
+        internal int RunwaysIndex { get; set; }
 
         /// <summary>
         /// Indicates if the runway has any form of lighting (Edge, Center, Approach, or End).
         /// </summary>
-        public bool HasLights { get; set; }
+        internal bool HasLights { get; set; }
 
         /// <summary>
-        /// Clones the airport level runway information prior to reading in each runway for the current airport
+        /// Clones the airport-level runway information prior to reading in individual runways.
         /// </summary>
-        /// <returns>Cloned version of <see cref="RunwayParams"/></returns>
-        public object Clone()
+        /// <returns>A new <see cref="RunwayParams"/> instance copied from this instance.</returns>
+        internal RunwayParams Clone()
         {
-            var clonedRunwayParams = new RunwayParams
+            return new RunwayParams
             {
                 IcaoId = IcaoId,
                 IcaoName = IcaoName,
@@ -122,9 +125,10 @@
                 Altitude = Altitude,
                 MagVar = MagVar,
                 RunwaysIndex = RunwaysIndex,
-                HasLights = false // Default to false, will be set when parsing the specific runway
+                HasLights = false
             };
-            return clonedRunwayParams;
         }
+
+        object ICloneable.Clone() => Clone();
     }
 }

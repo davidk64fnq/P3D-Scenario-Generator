@@ -8,7 +8,7 @@ namespace P3D_Scenario_Generator.Models
     /// Data Transfer Object (DTO) to encapsulate all user input from the main form
     /// for scenario generation. This decouples the business logic from the UI controls.
     /// </summary>
-    public class ScenarioFormData
+    internal class ScenarioFormData
     {
         #region General Tab Data
 
@@ -219,7 +219,7 @@ namespace P3D_Scenario_Generator.Models
         public double SignGateHeightFeet { get; set; }
 
         /// <summary>
-        /// The linear length, in feet, of a single straight segment that forms part of a character. Characters are defined by a grid 
+        /// The linear length, in feet, of a single straight segment that forms part of a character. Characters are defined by a grid
         /// that is four units tall and two units wide. The size of the grid unit is the length of a segment plus the radius turn distance added to each end.
         /// A segment is rendered as a rectangle capped at each end with a triangle, the segment is shorter than the grid unit length to leave a gap between segments
         /// </summary>
@@ -231,7 +231,7 @@ namespace P3D_Scenario_Generator.Models
         public double SignSegmentRadiusFeet { get; set; }
 
         /// <summary>
-        /// The size of one grid unit, in the 2 x 4 grid character. Calculated as length of a segment <see cref="SignSegmentLengthFeet"/> plus 
+        /// The size of one grid unit, in the 2 x 4 grid character. Calculated as length of a segment <see cref="SignSegmentLengthFeet"/> plus
         /// the radius turn distance <see cref="SignSegmentRadiusFeet"/> added to each end
         /// </summary>
         public double SignGridUnitSizeFeet { get; set; }
@@ -422,12 +422,12 @@ namespace P3D_Scenario_Generator.Models
         public string CacheServerAPIkey { get; set; } = string.Empty;
 
         /// <summary>
-        /// P3D Program Data folder path 
+        /// P3D Program Data folder path
         /// </summary>
         public string P3DProgramInstall { get; set; } = string.Empty;
 
         /// <summary>
-        /// P3D Program Install folder path 
+        /// P3D Program Install folder path
         /// </summary>
         public string P3DProgramData { get; set; } = string.Empty;
 
@@ -437,7 +437,7 @@ namespace P3D_Scenario_Generator.Models
         public string ScenarioFolderBase { get; set; } = string.Empty;
 
         /// <summary>
-        /// Reference integer for the monitor that map window is to be displayed in initially. Values from 0 to the number of 
+        /// Reference integer for the monitor that map window is to be displayed in initially. Values from 0 to the number of
         /// monitors minus 1 expected.
         /// </summary>
         public int MapMonitorNumber { get; set; }

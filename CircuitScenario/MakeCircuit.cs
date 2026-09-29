@@ -14,21 +14,23 @@ namespace P3D_Scenario_Generator.CircuitScenario
     /// positions and properties of all circuit gates, and coordinating the generation
     /// of visual aids like overview and location maps for the circuit.
     /// </remarks>
-    /// <param name="logger">The logger for writing log messages.</param>
-    /// <param name="fileOps">The file operations service for reading and writing files.</param>
-    /// <param name="progressReporter">The progress reporter for UI updates.</param>
-    public class MakeCircuit(
+    /// <param name="logger">The logger service for recording diagnostic events.</param>
+    /// <param name="progressReporter">The progress reporter for publishing status updates to the UI.</param>
+    /// <param name="mapTileImageMaker">The map generator responsible for rendering circuit overview and location maps.</param>
+    /// <param name="scenarioXML">The XML builder used to generate Prepar3D flight and scenario definitions.</param>
+    /// <param name="scenarioHTML">The HTML generator responsible for creating scenario briefing documents.</param>
+    internal class MakeCircuit(
         Logger logger,
         FormProgressReporter progressReporter,
         MapTileImageMaker mapTileImageMaker,
         ScenarioXML scenarioXML,
-        ScenarioHTML scenarioHTML) 
+        ScenarioHTML scenarioHTML)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
-        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker; 
-        private readonly ScenarioXML _xml = scenarioXML;
-        private readonly ScenarioHTML _scenarioHTML = scenarioHTML;
+        private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker ?? throw new ArgumentNullException(nameof(mapTileImageMaker));
+        private readonly ScenarioXML _xml = scenarioXML ?? throw new ArgumentNullException(nameof(scenarioXML));
+        private readonly ScenarioHTML _scenarioHTML = scenarioHTML ?? throw new ArgumentNullException(nameof(scenarioHTML));
 
         /// <summary>
         /// Start and finish airport (the same) plus the 8 gates making up the circuit.
@@ -38,7 +40,10 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// </remarks>
         private readonly List<Gate> _gates = [];
 
-        public int GatesCount => _gates.Count;
+        /// <summary>
+        /// Gets the total number of navigation gates generated for this circuit.
+        /// </summary>
+        internal int GatesCount => _gates.Count;
 
         /// <summary>
         /// Sets start/destination airports, calculates gate positions, and creates overview and location images.
@@ -46,9 +51,8 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// <param name="formData">The scenario form data containing user selections and paths.</param>
         /// <param name="runwayManager">The runway manager used to retrieve runway data.</param>
         /// <returns><see langword="true"/> if the circuit was successfully set up; otherwise, <see langword="false"/>.</returns>
-        public async Task<bool> SetCircuitAsync(ScenarioFormData formData, RunwayManager runwayManager)
+        internal async Task<bool> SetCircuitAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
-            // Guard clauses to validate method parameters.
             ArgumentNullException.ThrowIfNull(formData);
             ArgumentNullException.ThrowIfNull(runwayManager);
 
@@ -133,11 +137,9 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// representing the circuit gates and start/destination runway.
         /// </summary>
         /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="Coordinate"/> containing
-        /// the the circuit gate's latitude/longitude and start/destination runway's latitude/longitude.</returns>
-        public IEnumerable<Coordinate> SetOverviewCoords()
+        /// the circuit gate's latitude/longitude and start/destination runway's latitude/longitude.</returns>
+        internal IEnumerable<Coordinate> SetOverviewCoords()
         {
-            // The Select method iterates over each 'gate' in the '_gates' list
-            // and projects it into a new 'Coordinate' object using the gate's lat and lon.
             return _gates.Select(gate => new Coordinate(gate.lat, gate.lon));
         }
 
@@ -149,11 +151,10 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// only the start/destination runway's latitude and longitude.</returns>
         private static IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
         {
-            IEnumerable<Coordinate> coordinates =
+            return
             [
                 new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon)
             ];
-            return coordinates;
         }
 
         /// <summary>
@@ -161,7 +162,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
         /// </summary>
         /// <param name="index">The zero-based index of the gate instance to be retrieved.</param>
         /// <returns>The gate instance at the specified index.</returns>
-        public Gate GetGate(int index)
+        internal Gate GetGate(int index)
         {
             return _gates[index];
         }
@@ -174,8 +175,8 @@ namespace P3D_Scenario_Generator.CircuitScenario
         private static Overview SetOverviewStruct(ScenarioFormData formData)
         {
             // Duration (minutes) approximately sum of leg distances (miles) / speed (knots) * 60 minutes
-            double duration = ((formData.CircuitFinalLeg + formData.StartRunway.Len / Constants.FeetInNauticalMile + formData.CircuitUpwindLeg)
-                * 2 + formData.CircuitBaseLeg * 2) / formData.CircuitSpeed * 60;
+            double duration = (((formData.CircuitFinalLeg + (formData.StartRunway.Len / Constants.FeetInNauticalMile) + formData.CircuitUpwindLeg)
+                * 2) + (formData.CircuitBaseLeg * 2)) / formData.CircuitSpeed * 60;
 
             string briefing = $"In this scenario you'll test your skills flying a {formData.AircraftDisplayTitle}";
             briefing += " by doing that most fundamental of tasks, flying a circuit! ";
@@ -200,7 +201,12 @@ namespace P3D_Scenario_Generator.CircuitScenario
             return overview;
         }
 
-        public void SetCircuitWorldBaseFlightXML(ScenarioFormData formData, Overview overview)
+        /// <summary>
+        /// Populates the Prepar3D WorldBase flight XML structures with circuit triggers, gate waypoints, and scenario briefing actions.
+        /// </summary>
+        /// <param name="formData">The user-configured scenario form data.</param>
+        /// <param name="overview">The scenario overview structure containing briefing information.</param>
+        internal void SetCircuitWorldBaseFlightXML(ScenarioFormData formData, Overview overview)
         {
             _xml.SetDisabledTrafficAirports($"{formData.StartRunway.IcaoId}");
             _xml.SetRealismOverrides();
@@ -228,7 +234,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
                 _xml.SetPointOfInterest(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "0, 80, 0, 0", "True", "True", "Gate ");
 
                 // Create deactivate POI object actions
-                _xml.SetPOIactivationAction(gateNo, "PointOfInterest", $"POI", $"DeactPOI", "False");
+                _xml.SetPOIactivationAction(gateNo, "PointOfInterest", "POI", "DeactPOI", "False");
 
                 // Create activate/deactivate gate object actions (hoop active and hoop inactive)
                 _xml.SetObjectActivationAction(gateNo, "LibraryObject", "GEN_game_hoop_ACTIVE", "ActHoopAct", "True");
@@ -282,7 +288,7 @@ namespace P3D_Scenario_Generator.CircuitScenario
 
             // Create destination area landing trigger and activation action 
             _xml.SetAreaLandingTrigger("AreaLandingTrigger01", "Any", "False");
-            _xml.SetSphereArea($"SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
+            _xml.SetSphereArea("SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
             string dwp = ScenarioXML.GetCoordinateWorldPosition(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon, formData.DestinationRunway.Altitude);
             AttachedWorldPosition adwp = ScenarioXML.GetAttachedWorldPosition(dwp, "False");
             _xml.SetAttachedWorldPosition("SphereArea", "SphereArea01", adwp);

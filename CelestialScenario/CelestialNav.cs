@@ -14,9 +14,8 @@ namespace P3D_Scenario_Generator.CelestialScenario
     /// It also handles the creation and backup of the simulator's stars.dat file,
     /// and determines the geographical parameters for scenario setup.
     /// </summary>
-    public class CelestialNav(
+    internal class CelestialNav(
         Logger logger,
-        FileOps fileOps,
         FormProgressReporter progressReporter,
         AlmanacDataSource almanacDataSource,
         StarDataManager starDataManager,
@@ -27,7 +26,6 @@ namespace P3D_Scenario_Generator.CelestialScenario
         ScenarioHTML scenarioHTML)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly AlmanacDataSource _almanacDataSource = almanacDataSource ?? throw new ArgumentNullException(nameof(almanacDataSource));
         private readonly StarDataManager _starDataManager = starDataManager ?? throw new ArgumentNullException(nameof(starDataManager));
@@ -37,6 +35,13 @@ namespace P3D_Scenario_Generator.CelestialScenario
         private readonly ScenarioXML _xml = scenarioXML ?? throw new ArgumentNullException(nameof(scenarioXML));
         private readonly ScenarioHTML _scenarioHTML = scenarioHTML ?? throw new ArgumentNullException(nameof(scenarioHTML));
 
+        /// <summary>
+        /// Orchestrates generation of the complete Celestial Navigation scenario, including runway selection,
+        /// almanac retrieval, custom star database generation, mapping imagery, sextant web assets, and scenario XML.
+        /// </summary>
+        /// <param name="formData">The user-configured scenario parameters.</param>
+        /// <param name="runwayManager">The runway data manager used for locating suitable departure and destination runways.</param>
+        /// <returns><see langword="true"/> if the scenario was created successfully; otherwise, <see langword="false"/>.</returns>
         internal async Task<bool> SetCelestialAsync(ScenarioFormData formData, RunwayManager runwayManager)
         {
             ArgumentNullException.ThrowIfNull(formData);
@@ -149,7 +154,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             Overview overview = SetOverviewStruct(formData);
             if (!await _scenarioHTML.GenerateHTMLfilesAsync(formData, overview))
             {
-                string message = "Failed to generate HTML files during Celestial Navigation scenario setup.";
+                const string message = "Failed to generate HTML files during Celestial Navigation scenario setup.";
                 await _logger.ErrorAsync(message);
                 _progressReporter.Report($"ERROR: {message}");
                 return false;
@@ -162,7 +167,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             return true;
         }
 
-        static internal IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
+        internal static IEnumerable<Coordinate> SetOverviewCoords(ScenarioFormData formData)
         {
             return [
                 new Coordinate(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon),
@@ -170,21 +175,30 @@ namespace P3D_Scenario_Generator.CelestialScenario
             ];
         }
 
-        static internal IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
+        internal static IEnumerable<Coordinate> SetLocationCoords(ScenarioFormData formData)
         {
             return [
                 new Coordinate(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon)
             ];
         }
 
-        static internal double GetCelestialDistance(ScenarioFormData formData)
+        internal static double GetCelestialDistance(ScenarioFormData formData)
         {
-            return MathRoutines.CalcDistance(formData.StartRunway.AirportLat, formData.StartRunway.AirportLon, formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon);
+            return MathRoutines.CalcDistance(
+                formData.StartRunway.AirportLat,
+                formData.StartRunway.AirportLon,
+                formData.DestinationRunway.AirportLat,
+                formData.DestinationRunway.AirportLon);
         }
 
-        public static Overview SetOverviewStruct(ScenarioFormData formData)
+        /// <summary>
+        /// Builds the scenario metadata structure displayed in the simulator scenario selection UI and briefing pages.
+        /// </summary>
+        /// <param name="formData">The configured scenario parameters.</param>
+        /// <returns>A populated <see cref="Overview"/> model describing the celestial navigation scenario.</returns>
+        internal static Overview SetOverviewStruct(ScenarioFormData formData)
         {
-            string briefing = $"In this scenario you'll dust off your sextant and look to the stars ";
+            string briefing = "In this scenario you'll dust off your sextant and look to the stars ";
             briefing += $"as you test your navigation skills flying a {formData.AircraftDisplayTitle}.";
             briefing += $" The scenario finishes at {formData.DestinationRunway.IcaoName} ({formData.DestinationRunway.IcaoId}) in ";
             briefing += $"{formData.DestinationRunway.City}, {formData.DestinationRunway.Country}.";
@@ -207,13 +221,24 @@ namespace P3D_Scenario_Generator.CelestialScenario
             return overview;
         }
 
-        static internal string[] GetSextantWindowParameters(ScenarioFormData formData)
+        internal static string[] GetSextantWindowParameters(ScenarioFormData formData)
         {
-            return ScenarioXML.GetWindowParameters(Constants.SextantWindowWidth, Constants.SextantWindowHeight, formData.SextantAlignment,
-                formData.SextantMonitorWidth, formData.SextantMonitorHeight, formData.SextantOffsetPixels);
+            return ScenarioXML.GetWindowParameters(
+                Constants.SextantWindowWidth,
+                Constants.SextantWindowHeight,
+                formData.SextantAlignment,
+                formData.SextantMonitorWidth,
+                formData.SextantMonitorHeight,
+                formData.SextantOffsetPixels);
         }
 
-        public void SetCelestialWorldBaseFlightXML(ScenarioFormData formData, Overview overview)
+        /// <summary>
+        /// Configures the XML flight logic specific to the Celestial Navigation scenario,
+        /// including UI panel triggers, in-game error popups, and arrival goal detection.
+        /// </summary>
+        /// <param name="formData">The configured scenario parameters.</param>
+        /// <param name="overview">The overview metadata generated for the scenario.</param>
+        internal void SetCelestialWorldBaseFlightXML(ScenarioFormData formData, Overview overview)
         {
             _xml.SetDisabledTrafficAirports($"{formData.DestinationRunway.IcaoId}");
             _xml.SetRealismOverrides();
@@ -246,7 +271,7 @@ namespace P3D_Scenario_Generator.CelestialScenario
             _xml.SetTimerTriggerAction("DialogAction", "Intro02", "TimerTrigger02");
 
             _xml.SetAreaLandingTrigger("AreaLandingTrigger01", "Any", "True");
-            _xml.SetSphereArea($"SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
+            _xml.SetSphereArea("SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
             string dwp = ScenarioXML.GetCoordinateWorldPosition(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon, formData.DestinationRunway.Altitude);
             AttachedWorldPosition adwp = ScenarioXML.GetAttachedWorldPosition(dwp, "False");
             _xml.SetAttachedWorldPosition("SphereArea", "SphereArea01", adwp);

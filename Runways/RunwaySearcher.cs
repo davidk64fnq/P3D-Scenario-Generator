@@ -7,28 +7,17 @@ namespace P3D_Scenario_Generator.Runways
 {
     /// <summary>
     /// Manages and searches through a collection of runway data.
-    /// This version uses a k-d tree for efficient nearest and nearby neighbor searches,
+    /// Uses a k-d tree for efficient nearest and nearby neighbor searches,
     /// applying filters dynamically during the search rather than on a pre-filtered subset.
     /// </summary>
-    /// <remarks>
-    /// Initializes a new instance of the RunwaySearcher class with a pre-built k-d tree.
-    /// The class now focuses solely on data retrieval and searching, with all UI-specific
-    /// formatting logic moved to a presentation layer.
-    /// </remarks>
     /// <param name="data">The complete runway data object containing all runways and the KD-tree root.</param>
-    public class RunwaySearcher(RunwayData data, Logger log)
+    /// <param name="log">The logging service.</param>
+    internal class RunwaySearcher(RunwayData data, Logger log)
     {
-        // Holds the complete list of all runways loaded from the data source.
-        // We ensure _allRunways is never null.
-        private readonly List<RunwayParams> _allRunways = data?.Runways ?? [];
+        private readonly Logger _log = log ?? throw new ArgumentNullException(nameof(log));
+        private readonly List<RunwayParams> _allRunways = (data ?? throw new ArgumentNullException(nameof(data))).Runways ?? [];
+        private readonly KDNode? _kdTreeRoot = data.RunwayTreeRoot;
 
-        // We ensure _kdTreeRoot is never null to prevent NullReferenceExceptions.
-        private readonly KDNode? _kdTreeRoot = data?.RunwayTreeRoot;
-
-        // The ILog interface for logging errors and other messages.
-        private readonly Logger _log = log;
-
-        // Using a thread-safe random number generator for robustness in a multi-threaded context.
         private static readonly Random _random = Random.Shared;
 
         /// <summary>
@@ -36,15 +25,14 @@ namespace P3D_Scenario_Generator.Runways
         /// </summary>
         /// <param name="searchText">The raw text entered into the search box.</param>
         /// <param name="scenarioFormData">The current form configuration payload.</param>
-        /// <returns>A list of matching RunwayParams objects.</returns>
-        public List<RunwayParams> SearchRunways(string searchText, ScenarioFormData scenarioFormData)
+        /// <returns>A list of matching <see cref="RunwayParams"/> objects.</returns>
+        internal List<RunwayParams> SearchRunways(string searchText, ScenarioFormData scenarioFormData)
         {
             if (string.IsNullOrWhiteSpace(searchText))
             {
                 return [];
             }
 
-            // Tokenize input (e.g. "ymba 10" -> ["ymba", "10"])
             string[] searchTokens = searchText.Split([' ', '(', ')', '-', ','], StringSplitOptions.RemoveEmptyEntries);
 
             if (searchTokens.Length == 0)
@@ -52,12 +40,10 @@ namespace P3D_Scenario_Generator.Runways
                 return [];
             }
 
-            // Filter by Location + Aircraft Surface Capability, then ensure all search tokens match
             return [.. _allRunways
                 .Where(runway => IsRunwayInFilteredLocation(runway, scenarioFormData))
                 .Where(runway =>
                 {
-                    // Match against ICAO ID and Runway Number/Designator
                     string displayString = $"{runway.IcaoId} ({runway.Number}{runway.Designator})";
                     return searchTokens.All(token => displayString.Contains(token, StringComparison.OrdinalIgnoreCase));
                 })];
@@ -66,7 +52,9 @@ namespace P3D_Scenario_Generator.Runways
         /// <summary>
         /// Returns all runways that meet active location filters and aircraft surface capability criteria.
         /// </summary>
-        public List<RunwayParams> GetFilteredRunways(ScenarioFormData scenarioFormData)
+        /// <param name="scenarioFormData">The current form configuration payload containing location and aircraft settings.</param>
+        /// <returns>A list of filtered <see cref="RunwayParams"/> objects.</returns>
+        internal List<RunwayParams> GetFilteredRunways(ScenarioFormData scenarioFormData)
         {
             return [.. _allRunways.Where(runway => IsRunwayInFilteredLocation(runway, scenarioFormData))];
         }
@@ -78,8 +66,8 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="targetLat">The latitude of the target point.</param>
         /// <param name="targetLon">The longitude of the target point.</param>
         /// <param name="scenarioFormData">The DTO containing location filters.</param>
-        /// <returns>The nearest runway that meets the filter criteria, or null if no match is found.</returns>
-        public async Task<RunwayParams?> FindNearestRunwayAsync(double targetLat, double targetLon, ScenarioFormData scenarioFormData)
+        /// <returns>The nearest runway that meets the filter criteria, or <see langword="null"/> if no match is found.</returns>
+        internal async Task<RunwayParams?> FindNearestRunwayAsync(double targetLat, double targetLon, ScenarioFormData scenarioFormData)
         {
             try
             {
@@ -105,8 +93,8 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="minDist">The minimum distance the runway can be from the target point in nautical miles.</param>
         /// <param name="maxDist">The maximum distance the runway can be from the target point in nautical miles.</param>
         /// <param name="scenarioFormData">The DTO containing location filters.</param>
-        /// <returns>A runway that meets the distance and filter criteria, or null if no match is found.</returns>
-        public async Task<RunwayParams?> FindNearbyRunwayAsync(double targetLat, double targetLon, double minDist, double maxDist, ScenarioFormData scenarioFormData)
+        /// <returns>A runway that meets the distance and filter criteria, or <see langword="null"/> if no match is found.</returns>
+        internal async Task<RunwayParams?> FindNearbyRunwayAsync(double targetLat, double targetLon, double minDist, double maxDist, ScenarioFormData scenarioFormData)
         {
             try
             {
@@ -134,8 +122,8 @@ namespace P3D_Scenario_Generator.Runways
         /// Gets a single, randomly selected runway object from the complete list that meets the specified filter criteria.
         /// </summary>
         /// <param name="scenarioFormData">The DTO containing location filters to apply.</param>
-        /// <returns>A randomly selected RunwayParams object that meets the filter criteria, or null if no matching runways are found.</returns>
-        public async Task<RunwayParams?> GetFilteredRandomRunwayAsync(ScenarioFormData scenarioFormData)
+        /// <returns>A randomly selected <see cref="RunwayParams"/> object that meets the filter criteria, or <see langword="null"/> if no matching runways are found.</returns>
+        internal async Task<RunwayParams?> GetFilteredRandomRunwayAsync(ScenarioFormData scenarioFormData)
         {
             try
             {
@@ -152,29 +140,28 @@ namespace P3D_Scenario_Generator.Runways
             }
             catch (Exception ex)
             {
-                await _log.ErrorAsync($"An error occurred while getting a random filtered runway.", ex);
+                await _log.ErrorAsync("An error occurred while getting a random filtered runway.", ex);
                 return null;
             }
         }
 
         /// <summary>
         /// Returns the complete list of all runway data objects.
-        /// The consumer of this data is responsible for any necessary formatting.
         /// </summary>
         /// <returns>The complete list of all runway data objects.</returns>
-        public List<RunwayParams> GetAllRunways()
+        internal List<RunwayParams> GetAllRunways()
         {
             return _allRunways;
         }
 
         /// <summary>
-        /// Finds a specific runway by its ICAO ID, runway ID and runway designator.
+        /// Finds a specific runway by its ICAO ID, runway ID, and runway designator.
         /// </summary>
         /// <param name="icaoId">The ICAO ID of the airport.</param>
         /// <param name="runwayId">The ID of the runway (e.g., "14", "26").</param>
         /// <param name="runwayDesignator">The designator of the runway (e.g., "Left", "Centre").</param>
-        /// <returns>The matching RunwayParams object, or null if not found.</returns>
-        public RunwayParams? GetRunwayByIcaoIdDesignator(string icaoId, string runwayId, string runwayDesignator)
+        /// <returns>The matching <see cref="RunwayParams"/> object, or <see langword="null"/> if not found.</returns>
+        internal RunwayParams? GetRunwayByIcaoIdDesignator(string icaoId, string runwayId, string runwayDesignator)
         {
             if (string.IsNullOrEmpty(icaoId) || string.IsNullOrEmpty(runwayId) || _allRunways == null)
             {
@@ -189,11 +176,10 @@ namespace P3D_Scenario_Generator.Runways
 
         /// <summary>
         /// Gets a single runway object by its index in the internal list.
-        /// Performs a bounds check to prevent an IndexOutOfRangeException.
         /// </summary>
         /// <param name="index">The zero-based index of the runway to retrieve.</param>
-        /// <returns>The RunwayParams object at the specified index, or null if the index is out of bounds.</returns>
-        public async Task<RunwayParams?> GetRunwayByIndexAsync(int index)
+        /// <returns>The <see cref="RunwayParams"/> object at the specified index, or <see langword="null"/> if the index is out of bounds.</returns>
+        internal async Task<RunwayParams?> GetRunwayByIndexAsync(int index)
         {
             if (index >= 0 && index < _allRunways.Count)
             {
@@ -212,72 +198,75 @@ namespace P3D_Scenario_Generator.Runways
         }
 
         /// <summary>
-        /// Gets a sorted list of the country strings from the full list of runways.
+        /// Gets a sorted list of the unique country strings from the full list of runways.
         /// </summary>
-        /// <returns>Sorted list of the country strings in "runways.xml"</returns>
-        public List<string> GetRunwayCountries()
+        /// <returns>A sorted list of unique country names with "None" as the first entry.</returns>
+        internal List<string> GetRunwayCountries()
         {
             List<string> countries = [.. _allRunways
                 .Where(r => !string.IsNullOrEmpty(r.Country))
                 .Select(r => r.Country)
                 .Distinct()
-                .OrderBy(c => c)];
+                .Order()];
 
             countries.Insert(0, "None");
             return countries;
         }
 
         /// <summary>
-        /// Gets a sorted list of the state strings from the full list of runways.
+        /// Gets a sorted list of the unique state strings from the full list of runways.
         /// </summary>
-        /// <returns>Sorted list of the state strings in "runways.xml"</returns>
-        public List<string> GetRunwayStates()
+        /// <returns>A sorted list of unique state names with "None" as the first entry.</returns>
+        internal List<string> GetRunwayStates()
         {
             List<string> states = [.. _allRunways
                 .Where(r => !string.IsNullOrEmpty(r.State))
                 .Select(r => r.State)
                 .Distinct()
-                .OrderBy(s => s)];
+                .Order()];
 
             states.Insert(0, "None");
             return states;
         }
 
         /// <summary>
-        /// Gets a sorted list of the city strings from the full list of runways.
+        /// Gets a sorted list of the unique city strings from the full list of runways.
         /// </summary>
-        /// <returns>Sorted list of the city strings in "runways.xml"</returns>
-        public List<string> GetRunwayCities()
+        /// <returns>A sorted list of unique city names with "None" as the first entry.</returns>
+        internal List<string> GetRunwayCities()
         {
             List<string> cities = [.. _allRunways
                 .Where(r => !string.IsNullOrEmpty(r.City))
                 .Select(r => r.City)
                 .Distinct()
-                .OrderBy(c => c)];
+                .Order()];
 
             cities.Insert(0, "None");
             return cities;
         }
 
         /// <summary>
-        /// Helper method to check if a runway meets location and surface capability criteria.
+        /// Checks whether a runway meets location, surface capability, and night lighting criteria.
         /// </summary>
         /// <param name="runway">The runway to check.</param>
-        /// <param name="scenarioFormData">The ScenarioFormData object with filter lists.</param>
-        /// <returns>True if the runway meets the criteria, false otherwise.</returns>
-        public static bool IsRunwayInFilteredLocation(RunwayParams runway, ScenarioFormData scenarioFormData)
+        /// <param name="scenarioFormData">The ScenarioFormData object with filter settings.</param>
+        /// <returns><see langword="true"/> if the runway meets the criteria; otherwise, <see langword="false"/>.</returns>
+        internal static bool IsRunwayInFilteredLocation(RunwayParams runway, ScenarioFormData scenarioFormData)
         {
-            // --- 1. Aircraft Surface Filtering ---
             var aircraft = scenarioFormData?.SelectedAircraft;
             if (aircraft != null)
             {
                 bool isWater = runway.IsWaterRunway;
-                if (isWater && !aircraft.HasFloats) return false;
-                if (!isWater && !aircraft.HasWheelsOrEquiv) return false;
+                if (isWater && !aircraft.HasFloats)
+                {
+                    return false;
+                }
+                if (!isWater && !aircraft.HasWheelsOrEquiv)
+                {
+                    return false;
+                }
             }
 
-            // --- 2. Night Lighting Filtering ---
-            // For Celestial Navigation (Night flights), the runway MUST have lights
             if (scenarioFormData?.ScenarioType == ScenarioTypes.Celestial)
             {
                 if (!runway.HasLights)
@@ -286,18 +275,15 @@ namespace P3D_Scenario_Generator.Runways
                 }
             }
 
-            // --- 3. Location Filtering ---
             bool hasCountryFilter = scenarioFormData?.LocationCountries?.Count > 0 && !scenarioFormData.LocationCountries.Contains("None");
             bool hasStateFilter = scenarioFormData?.LocationStates?.Count > 0 && !scenarioFormData.LocationStates.Contains("None");
             bool hasCityFilter = scenarioFormData?.LocationCities?.Count > 0 && !scenarioFormData.LocationCities.Contains("None");
 
-            // If no location filters active, accept
             if (!hasCountryFilter && !hasStateFilter && !hasCityFilter)
             {
                 return true;
             }
 
-            // Evaluate OR condition for location matches
             bool countryMatches = hasCountryFilter && scenarioFormData!.LocationCountries.Contains(runway.Country);
             bool stateMatches = hasStateFilter && scenarioFormData!.LocationStates.Contains(runway.State);
             bool cityMatches = hasCityFilter && scenarioFormData!.LocationCities.Contains(runway.City);
@@ -305,9 +291,6 @@ namespace P3D_Scenario_Generator.Runways
             return countryMatches || stateMatches || cityMatches;
         }
 
-        /// <summary>
-        /// Finds the nearest runway to a given point using a k-d tree.
-        /// </summary>
         private static void FindNearestRecursive(KDNode? node, double lat, double lon, Func<RunwayParams, bool> filter, int depth, ref RunwayParams? best, ref double bestDistSq)
         {
             if (node == null)
@@ -336,9 +319,6 @@ namespace P3D_Scenario_Generator.Runways
             }
         }
 
-        /// <summary>
-        /// Finds all runways within a specified distance range using a k-d tree.
-        /// </summary>
         private static void FindInRangeRecursive(KDNode? node, double lat, double lon, double minSq, double maxSq, Func<RunwayParams, bool> filter, int depth, List<RunwayParams> results)
         {
             if (node == null)
@@ -374,9 +354,6 @@ namespace P3D_Scenario_Generator.Runways
             }
         }
 
-        /// <summary>
-        /// Calculates the squared Euclidean distance between a runway's coordinates and a target point.
-        /// </summary>
         private static double GetDistanceSq(RunwayParams runway, double lat, double lon)
         {
             return Math.Pow(runway.AirportLat - lat, 2) + Math.Pow(runway.AirportLon - lon, 2);
@@ -389,12 +366,11 @@ namespace P3D_Scenario_Generator.Runways
         /// <param name="minDistanceNM">Minimum distance between the airports in nautical miles.</param>
         /// <param name="maxDistanceNM">Maximum distance between the airports in nautical miles.</param>
         /// <param name="scenarioFormData">The current form configuration payload for filtering.</param>
-        /// <returns>A tuple containing the Departure and Destination runways, or null if no valid pair is found.</returns>
-        public async Task<(RunwayParams Departure, RunwayParams Destination)?> GetRandomRunwayPairAsync(double minDistanceNM, double maxDistanceNM, ScenarioFormData scenarioFormData)
+        /// <returns>A tuple containing the Departure and Destination runways, or <see langword="null"/> if no valid pair is found.</returns>
+        internal async Task<(RunwayParams Departure, RunwayParams Destination)?> GetRandomRunwayPairAsync(double minDistanceNM, double maxDistanceNM, ScenarioFormData scenarioFormData)
         {
             try
             {
-                // 1. Get all runways that pass the basic location and aircraft filters
                 List<RunwayParams> validStartRunways = GetFilteredRunways(scenarioFormData);
 
                 if (validStartRunways.Count < 2)
@@ -403,7 +379,6 @@ namespace P3D_Scenario_Generator.Runways
                     return null;
                 }
 
-                // 2. Shuffle the list to ensure randomness in our departure selection (Fisher-Yates shuffle)
                 int n = validStartRunways.Count;
                 while (n > 1)
                 {
@@ -412,7 +387,6 @@ namespace P3D_Scenario_Generator.Runways
                     (validStartRunways[k], validStartRunways[n]) = (validStartRunways[n], validStartRunways[k]);
                 }
 
-                // 3. Iterate through the randomized valid runways and try to find a matching destination
                 foreach (var departureRunway in validStartRunways)
                 {
                     RunwayParams? destinationRunway = await FindNearbyRunwayAsync(
@@ -422,7 +396,7 @@ namespace P3D_Scenario_Generator.Runways
                         maxDistanceNM,
                         scenarioFormData);
 
-                    if (destinationRunway != null && !destinationRunway.IcaoId.Equals(departureRunway.IcaoId, StringComparison.OrdinalIgnoreCase))
+                    if (destinationRunway?.IcaoId.Equals(departureRunway.IcaoId, StringComparison.OrdinalIgnoreCase) == false)
                     {
                         return (departureRunway, destinationRunway);
                     }
