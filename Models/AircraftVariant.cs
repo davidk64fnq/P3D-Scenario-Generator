@@ -1,7 +1,7 @@
 ﻿namespace P3D_Scenario_Generator.Models
 {
     /// <summary>
-    /// Stores information for a user selected aircraft variant; title, display name, cruisespeed, 
+    /// Stores information for a user selected aircraft variant; title, display name, cruisespeed,
     /// thumbnail image full path, whether it has floats, and whether it has wheels equivalent
     /// </summary>
     public class AircraftVariant
@@ -32,7 +32,7 @@
         public bool HasFloats { get; set; }
 
         /// <summary>
-        /// Whether the aircraft has wheels/scrapes/skids/skis, used to exclude takeoff from land based (non water) runways if selected 
+        /// Whether the aircraft has wheels/scrapes/skids/skis, used to exclude takeoff from land based (non water) runways if selected
         /// aircraft doesn't have them. Note landing possible with straight floats.
         /// </summary>
         public bool HasWheelsOrEquiv { get; set; }

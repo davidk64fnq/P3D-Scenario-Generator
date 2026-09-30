@@ -304,12 +304,13 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>The Country/State/City field display filter value.</returns>
         internal string GetLocationFavouriteDisplayFilterValue(string locationType)
         {
-            if (locationType == "Country")
-                return LocationFavourites[CurrentLocationFavouriteIndex].Countries[0];
-            else if (locationType == "State")
-                return LocationFavourites[CurrentLocationFavouriteIndex].States[0];
-            else
-                return LocationFavourites[CurrentLocationFavouriteIndex].Cities[0];
+            var current = GetCurrentLocationFavourite();
+            return locationType switch
+            {
+                "Country" => current.Countries.FirstOrDefault() ?? "None",
+                "State" => current.States.FirstOrDefault() ?? "None",
+                _ => current.Cities.FirstOrDefault() ?? "None"
+            };
         }
 
         /// <summary>

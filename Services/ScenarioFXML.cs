@@ -9,17 +9,33 @@ namespace P3D_Scenario_Generator.Services
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
 
-        private static readonly string fxmlFilename = "source.fxml";
+        private const string fxmlFilename = "source.fxml";
 
-        public async Task GenerateFXMLfileAsync(ScenarioFormData formData)
+        /// <summary>
+        /// Generates the scenario FXML file by reading the template, applying scenario modifications, and saving it to disk.
+        /// </summary>
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <returns><see langword="true"/> if the FXML file was generated successfully; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> GenerateFXMLfileAsync(ScenarioFormData formData)
         {
             (bool success, SimBaseDocument? simBaseDocument) = await TryReadSourceFXMLAsync(_progressReporter);
             if (!success || simBaseDocument == null)
             {
-                return;
+                _progressReporter.Report("ERROR: Failed to load source FXML template.");
+                return false;
             }
-            EditSourceFXML(simBaseDocument, formData);
-            WriteSourceFXML(simBaseDocument, formData);
+
+            try
+            {
+                EditSourceFXML(simBaseDocument, formData);
+                WriteSourceFXML(simBaseDocument, formData);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _progressReporter.Report($"ERROR: Failed to write scenario FXML file: {ex.Message}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -27,7 +43,7 @@ namespace P3D_Scenario_Generator.Services
         /// </summary>
         /// <param name="progressReporter">The <see cref="IProgress{T}"/> reporter for notifying progress or errors to the UI.</param>
         /// <returns><see langword="true"/> and the deserialized <see cref="SimBaseDocument"/> if successful; otherwise, <see langword="false"/>.</returns>
-        public async Task<(bool success, SimBaseDocument? simBaseDocument)> TryReadSourceFXMLAsync(IProgress<string> progressReporter)
+        internal async Task<(bool success, SimBaseDocument? simBaseDocument)> TryReadSourceFXMLAsync(IProgress<string> progressReporter)
         {
             string resourceName = $"XML.{fxmlFilename}";
 
@@ -72,14 +88,12 @@ namespace P3D_Scenario_Generator.Services
             sectionIndex = fs.Section.FindIndex(s => s.Name == "SimVars.0");
             propertyIndex = fs.Section[sectionIndex].Property.FindIndex(p => p.Name == "Heading");
 
-            // The runway object to use for calculations. Use StartRunway if available, otherwise use DestinationRunway.
             var selectedRunway = formData.StartRunway ?? formData.DestinationRunway;
             if (selectedRunway == null)
             {
                 return;
             }
 
-            // Convert format of runway heading from magnetic North nearest degree to plus/minus 180 degrees true North
             double absTrueHdg = selectedRunway.Hdg + selectedRunway.MagVar;
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{MathRoutines.ConvertHeadingAbsoluteToRelative(absTrueHdg)}";
 
@@ -102,7 +116,7 @@ namespace P3D_Scenario_Generator.Services
             fs.Section[sectionIndex].Property[propertyIndex].Value = $"{formData.ScenarioTitle}";
         }
 
-        public static string FormatCoordXML(double dCoord, string sPosDir, string sNegDir, bool roundSeconds)
+        internal static string FormatCoordXML(double dCoord, string sPosDir, string sNegDir, bool roundSeconds)
         {
             string sDirection = dCoord >= 0 ? sPosDir : sNegDir;
             double absCoord = Math.Abs(dCoord);
@@ -127,33 +141,28 @@ namespace P3D_Scenario_Generator.Services
                 }
             }
 
-            // Format seconds cleanly without excessive decimal noise or trailing quotes
             string sSeconds = roundSeconds ? $"{seconds:0}" : $"{seconds:0.00}";
-
             return $"{sDirection}{degrees}° {minutes}' {sSeconds}";
         }
 
         private static void WriteSourceFXML(SimBaseDocument simBaseDocument, ScenarioFormData formData)
         {
-            // 1. Setup clean namespaces to prevent xsi/xsd attributes
             XmlSerializerNamespaces ns = new();
             ns.Add("", "");
 
             XmlSerializer xmlSerializer = new(simBaseDocument.GetType());
-
-            // 2. Safe path combination
             string filePath = Path.Combine(formData.ScenarioFolder, $"{formData.ScenarioTitle}.fxml");
 
-            // 3. Serialize in one pass
             using StreamWriter writer = new(filePath);
             xmlSerializer.Serialize(writer, simBaseDocument, ns);
         }
     }
 
-    #region Simbase.Document class definitions
+#pragma warning disable CS1591
+    #region Simbase.Document class definitions (Must remain public for XmlSerializer)
 
     [XmlRoot(ElementName = "Property")]
-    internal class Property
+    public class Property
     {
         [XmlAttribute(AttributeName = "Name")]
         public string Name { get; set; } = string.Empty;
@@ -163,7 +172,7 @@ namespace P3D_Scenario_Generator.Services
     }
 
     [XmlRoot(ElementName = "Section")]
-    internal class Section
+    public class Section
     {
         [XmlElement(ElementName = "Property")]
         public List<Property> Property { get; set; } = [];
@@ -173,14 +182,14 @@ namespace P3D_Scenario_Generator.Services
     }
 
     [XmlRoot(ElementName = "Flight.Sections")]
-    internal class FlightSections
+    public class FlightSections
     {
         [XmlElement(ElementName = "Section")]
         public List<Section> Section { get; set; } = [];
     }
 
     [XmlRoot(ElementName = "SimBase.Document")]
-    internal class SimBaseDocument
+    public class SimBaseDocument
     {
         [XmlElement(ElementName = "Descr")]
         public string Descr { get; set; } = string.Empty;
@@ -205,4 +214,5 @@ namespace P3D_Scenario_Generator.Services
     }
 
     #endregion
+#pragma warning restore CS1591
 }

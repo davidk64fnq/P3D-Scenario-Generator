@@ -15,8 +15,10 @@ namespace P3D_Scenario_Generator.Runways
     internal class RunwaySearcher(RunwayData data, Logger log)
     {
         private readonly Logger _log = log ?? throw new ArgumentNullException(nameof(log));
-        private readonly List<RunwayParams> _allRunways = (data ?? throw new ArgumentNullException(nameof(data))).Runways ?? [];
-        private readonly KDNode? _kdTreeRoot = data.RunwayTreeRoot;
+        private readonly RunwayData _data = data ?? throw new ArgumentNullException(nameof(data));
+
+        private List<RunwayParams> AllRunways => _data.Runways ?? [];
+        private KDNode? KdTreeRoot => _data.RunwayTreeRoot;
 
         private static readonly Random _random = Random.Shared;
 
@@ -40,7 +42,7 @@ namespace P3D_Scenario_Generator.Runways
                 return [];
             }
 
-            return [.. _allRunways
+            return [.. AllRunways
                 .Where(runway => IsRunwayInFilteredLocation(runway, scenarioFormData))
                 .Where(runway =>
                 {
@@ -56,7 +58,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>A list of filtered <see cref="RunwayParams"/> objects.</returns>
         internal List<RunwayParams> GetFilteredRunways(ScenarioFormData scenarioFormData)
         {
-            return [.. _allRunways.Where(runway => IsRunwayInFilteredLocation(runway, scenarioFormData))];
+            return [.. AllRunways.Where(runway => IsRunwayInFilteredLocation(runway, scenarioFormData))];
         }
 
         /// <summary>
@@ -73,7 +75,7 @@ namespace P3D_Scenario_Generator.Runways
             {
                 RunwayParams? best = null;
                 double bestDistSq = double.MaxValue;
-                FindNearestRecursive(_kdTreeRoot, targetLat, targetLon, runway => IsRunwayInFilteredLocation(runway, scenarioFormData), 0, ref best, ref bestDistSq);
+                FindNearestRecursive(KdTreeRoot, targetLat, targetLon, runway => IsRunwayInFilteredLocation(runway, scenarioFormData), 0, ref best, ref bestDistSq);
                 return best;
             }
             catch (Exception ex)
@@ -101,7 +103,7 @@ namespace P3D_Scenario_Generator.Runways
                 List<RunwayParams> nearbyRunways = [];
                 double minSq = minDist / Constants.NMInDegreeOfLatitude * minDist / Constants.NMInDegreeOfLatitude;
                 double maxSq = maxDist / Constants.NMInDegreeOfLatitude * maxDist / Constants.NMInDegreeOfLatitude;
-                FindInRangeRecursive(_kdTreeRoot, targetLat, targetLon, minSq, maxSq, runway => IsRunwayInFilteredLocation(runway, scenarioFormData), 0, nearbyRunways);
+                FindInRangeRecursive(KdTreeRoot, targetLat, targetLon, minSq, maxSq, runway => IsRunwayInFilteredLocation(runway, scenarioFormData), 0, nearbyRunways);
 
                 if (nearbyRunways.Count == 0)
                 {
@@ -127,7 +129,7 @@ namespace P3D_Scenario_Generator.Runways
         {
             try
             {
-                List<RunwayParams> filteredRunways = [.. _allRunways.Where(runway => IsRunwayInFilteredLocation(runway, scenarioFormData))];
+                List<RunwayParams> filteredRunways = [.. AllRunways.Where(runway => IsRunwayInFilteredLocation(runway, scenarioFormData))];
 
                 if (filteredRunways.Count == 0)
                 {
@@ -151,7 +153,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>The complete list of all runway data objects.</returns>
         internal List<RunwayParams> GetAllRunways()
         {
-            return _allRunways;
+            return AllRunways;
         }
 
         /// <summary>
@@ -163,12 +165,12 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>The matching <see cref="RunwayParams"/> object, or <see langword="null"/> if not found.</returns>
         internal RunwayParams? GetRunwayByIcaoIdDesignator(string icaoId, string runwayId, string runwayDesignator)
         {
-            if (string.IsNullOrEmpty(icaoId) || string.IsNullOrEmpty(runwayId) || _allRunways == null)
+            if (string.IsNullOrEmpty(icaoId) || string.IsNullOrEmpty(runwayId) || AllRunways == null)
             {
                 return null;
             }
 
-            return _allRunways.FirstOrDefault(r =>
+            return AllRunways.FirstOrDefault(r =>
                 r.IcaoId.Equals(icaoId, StringComparison.OrdinalIgnoreCase) &&
                 r.Number.Equals(runwayId, StringComparison.OrdinalIgnoreCase) &&
                 r.Designator.Equals(runwayDesignator, StringComparison.OrdinalIgnoreCase));
@@ -181,9 +183,9 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>The <see cref="RunwayParams"/> object at the specified index, or <see langword="null"/> if the index is out of bounds.</returns>
         internal async Task<RunwayParams?> GetRunwayByIndexAsync(int index)
         {
-            if (index >= 0 && index < _allRunways.Count)
+            if (index >= 0 && index < AllRunways.Count)
             {
-                var result = _allRunways.FirstOrDefault(r => r.RunwaysIndex == index);
+                var result = AllRunways.FirstOrDefault(r => r.RunwaysIndex == index);
 
                 if (result == null)
                 {
@@ -193,7 +195,7 @@ namespace P3D_Scenario_Generator.Runways
                 return result;
             }
 
-            await _log.WarningAsync($"Attempted to access runway at index {index}, which is out of bounds (list size: {_allRunways.Count}).");
+            await _log.WarningAsync($"Attempted to access runway at index {index}, which is out of bounds (list size: {AllRunways.Count}).");
             return null;
         }
 
@@ -203,7 +205,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>A sorted list of unique country names with "None" as the first entry.</returns>
         internal List<string> GetRunwayCountries()
         {
-            List<string> countries = [.. _allRunways
+            List<string> countries = [.. AllRunways
                 .Where(r => !string.IsNullOrEmpty(r.Country))
                 .Select(r => r.Country)
                 .Distinct()
@@ -219,7 +221,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>A sorted list of unique state names with "None" as the first entry.</returns>
         internal List<string> GetRunwayStates()
         {
-            List<string> states = [.. _allRunways
+            List<string> states = [.. AllRunways
                 .Where(r => !string.IsNullOrEmpty(r.State))
                 .Select(r => r.State)
                 .Distinct()
@@ -235,7 +237,7 @@ namespace P3D_Scenario_Generator.Runways
         /// <returns>A sorted list of unique city names with "None" as the first entry.</returns>
         internal List<string> GetRunwayCities()
         {
-            List<string> cities = [.. _allRunways
+            List<string> cities = [.. AllRunways
                 .Where(r => !string.IsNullOrEmpty(r.City))
                 .Select(r => r.City)
                 .Distinct()

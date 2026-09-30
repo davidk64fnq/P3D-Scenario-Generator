@@ -557,8 +557,19 @@ namespace P3D_Scenario_Generator
         {
             ValidateAndPopulateLocationFilters();
 
+            var aircraft = _formData?.SelectedAircraft;
+            MessageBox.Show(
+                $"Total Runways Loaded: {_runwayManager.Searcher.GetAllRunways().Count}\n" +
+                $"Selected Aircraft in _formData: {aircraft?.DisplayName ?? "NULL"}\n" +
+                $"HasWheelsOrEquiv: {aircraft?.HasWheelsOrEquiv}\n" +
+                $"HasFloats: {aircraft?.HasFloats}\n" +
+                $"Country Filter: {string.Join(",", _formData?.LocationCountries ?? [])}",
+                "Runway Diagnostic"
+            );
+
+
             // Await the asynchronous method to get the RunwayParams object.
-            RunwayParams? randomRunway = await _runwayManager.Searcher.GetFilteredRandomRunwayAsync(_formData);
+            RunwayParams? randomRunway = await _runwayManager.Searcher.GetFilteredRandomRunwayAsync(_formData!);
 
             // Clear the existing items in the ListBox before adding a new one.
             ComboBoxGeneralRunwayResults.Items.Clear();
@@ -615,7 +626,7 @@ namespace P3D_Scenario_Generator
 
                 if (!success)
                 {
-                    // 2. Only roll back and delete if WE created it during this session
+                    // Roll back and delete if WE created it during this session
                     if (!folderExistedBeforeRun && FileOps.DirectoryExists(_formData.ScenarioFolder))
                     {
                         if (!await _fileOps.TryDeleteDirectoryAsync(_formData.ScenarioFolder, recursive: true, _progressReporter))
@@ -630,7 +641,21 @@ namespace P3D_Scenario_Generator
                     return;
                 }
 
-                await _scenarioFXML.GenerateFXMLfileAsync(_formData);
+                // 2. Check FXML generation return value
+                bool fxmlSuccess = await _scenarioFXML.GenerateFXMLfileAsync(_formData);
+                if (!fxmlSuccess)
+                {
+                    if (!folderExistedBeforeRun && FileOps.DirectoryExists(_formData.ScenarioFolder))
+                    {
+                        await _fileOps.TryDeleteDirectoryAsync(_formData.ScenarioFolder, recursive: true, _progressReporter);
+                    }
+
+                    await DeleteTempScenarioDirectory();
+                    _progressReporter?.Report("ERROR: Scenario generation failed during FXML creation.");
+                    Cursor.Current = Cursors.Default;
+                    return;
+                }
+
                 await DeleteTempScenarioDirectory();
                 DisplayFinishMessage();
             }

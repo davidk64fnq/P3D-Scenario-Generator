@@ -5,11 +5,14 @@
 ## 1. Architecture & Dependency Injection
 
 * **Architecture:** Layered service model with Dependency Injection.
-* **Core Services:** All file operations, JSON serialization, and logging must route through centralized `FileOps` and `Logger` instances rather than direct `System.IO` static calls or ad-hoc `MessageBox` popups.
+* **Core Services:** All file operations, JSON serialization, and logging must route through centralized `FileOps` and `Logger` instances rather than direct `System.IO` static calls.
+* **Modal Dialogs vs. Logging:**
+  * **Background & Scenario Generation Services:** Must **never** pop modal `MessageBox` dialogs or block execution. Errors and status must route strictly through `_logger` and `_progressReporter`.
+  * **Interactive User Input Workflows:** When a user is directly interacting with a modal file-picker or action prompt (such as selecting an aircraft variant or confirming a deletion), displaying a modal `MessageBox` is permitted for actionable validation errors (e.g., invalid folder structure, missing panel folder) to ensure immediate user acknowledgement. Such errors must **also** be recorded to `_logger`.
 * **Fail-Fast & Return Values:** Never silently discard the return value of fallible operations (e.g., `FileOps` methods or boolean `Try...` methods). If an operation fails:
   * Check the `bool` or tuple return value.
   * Log the failure using `_logger`.
-  * Either abort the scenario workflow cleanly or report the failure gracefully to the user via `_progressReporter`.
+  * Either abort the scenario workflow cleanly or report the failure gracefully to the user via `_progressReporter` (or modal prompt if interactive).
 
 ---
 
