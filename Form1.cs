@@ -557,17 +557,6 @@ namespace P3D_Scenario_Generator
         {
             ValidateAndPopulateLocationFilters();
 
-            var aircraft = _formData?.SelectedAircraft;
-            MessageBox.Show(
-                $"Total Runways Loaded: {_runwayManager.Searcher.GetAllRunways().Count}\n" +
-                $"Selected Aircraft in _formData: {aircraft?.DisplayName ?? "NULL"}\n" +
-                $"HasWheelsOrEquiv: {aircraft?.HasWheelsOrEquiv}\n" +
-                $"HasFloats: {aircraft?.HasFloats}\n" +
-                $"Country Filter: {string.Join(",", _formData?.LocationCountries ?? [])}",
-                "Runway Diagnostic"
-            );
-
-
             // Await the asynchronous method to get the RunwayParams object.
             RunwayParams? randomRunway = await _runwayManager.Searcher.GetFilteredRandomRunwayAsync(_formData!);
 

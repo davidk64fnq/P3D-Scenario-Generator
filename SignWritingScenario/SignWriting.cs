@@ -440,17 +440,32 @@ namespace P3D_Scenario_Generator.SignWritingScenario
             _xml.SetTimerTriggerAction("ObjectActivationAction", "ActHoopInact02", "TimerTrigger01");
             _xml.SetTimerTriggerAction("OpenWindowAction", "OpenUIpanelWindow01", "TimerTrigger01");
 
+            int destinationPoiIndex = GatesCount + 1;
+            string airportSphereArea = $"SphereArea{destinationPoiIndex:00}";
+
             _xml.SetAreaLandingTrigger("AreaLandingTrigger01", "Any", "False");
-            _xml.SetSphereArea("SphereArea01", Constants.AirportAreaTriggerRadiusMetres.ToString());
+            _xml.SetSphereArea(airportSphereArea, Constants.AirportAreaTriggerRadiusMetres.ToString());
             string dwp = ScenarioXML.GetCoordinateWorldPosition(formData.DestinationRunway.AirportLat, formData.DestinationRunway.AirportLon, formData.DestinationRunway.Altitude);
             AttachedWorldPosition adwp = ScenarioXML.GetAttachedWorldPosition(dwp, "False");
-            _xml.SetAttachedWorldPosition("SphereArea", "SphereArea01", adwp);
-            _xml.SetAreaLandingTriggerArea("SphereArea", "SphereArea01", "AreaLandingTrigger01");
-            _xml.SetAreaLandingTriggerAction("CloseWindowAction", "CloseUIpanelWindow01", "AreaLandingTrigger01");
-            _xml.SetAreaLandingTriggerAction("GoalResolutionAction", "Goal01", "AreaLandingTrigger01");
+            _xml.SetAttachedWorldPosition("SphereArea", airportSphereArea, adwp);
+
+            // 1. Create the Landing Trigger activation action FIRST
             _xml.SetObjectActivationAction(1, "AreaLandingTrigger", "AreaLandingTrigger", "ActAreaLandingTrigger", "True");
 
+            // 2. Create the Airport POI and its activation actions
+            _xml.SetPointOfInterest(destinationPoiIndex, "SphereArea", "SphereArea", "0, 80, 0, 0", "False", "False", "Airport ");
+            _xml.SetPOIactivationAction(destinationPoiIndex, "PointOfInterest", "POI", "ActPOI", "True");
+            _xml.SetPOIactivationAction(destinationPoiIndex, "PointOfInterest", "POI", "DeactPOI", "False");
+
+            // 3. Now hook BOTH existing actions into the final gate's ProximityTrigger
             _xml.SetProximityTriggerOnEnterAction(1, "ObjectActivationAction", "ActAreaLandingTrigger", GatesCount, "ProximityTrigger");
+            _xml.SetProximityTriggerOnEnterAction(destinationPoiIndex, "PointOfInterestActivationAction", "ActPOI", GatesCount, "ProximityTrigger");
+
+            // 4. Configure Landing Trigger area and touchdown actions
+            _xml.SetAreaLandingTriggerArea("SphereArea", airportSphereArea, "AreaLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("CloseWindowAction", "CloseUIpanelWindow01", "AreaLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("GoalResolutionAction", "Goal01", "AreaLandingTrigger01");
+            _xml.SetAreaLandingTriggerAction("PointOfInterestActivationAction", $"DeactPOI{destinationPoiIndex:00}", "AreaLandingTrigger01");
         }
     }
 }
