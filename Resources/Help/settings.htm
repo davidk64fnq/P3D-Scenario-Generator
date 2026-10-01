@@ -26,26 +26,74 @@
 
 	<h4>Server / API key</h4>
 	<p>
-		Users of this program are required to register with the free OpenStreetMap (OSM) map tile provider <strong>Rapid</strong> to obtain an API key. This key is used to access map tiles from the server. The program will not work without a valid API key.
+		Users of this program are required to register with the free OpenStreetMap (OSM) map tile provider <strong>Rapid</strong> to obtain an API key. This key allows the scenario generator to download map tiles for briefing graphics and moving maps. The application will not be able to generate maps without a valid API key.
 	</p>
 	<p>
-		Follow these instructions to register with the OSM map tile server, obtain your API key, and store it on the Settings tab:
+		<em>Note: Web portal interfaces can change over time. If the Rapid website differs significantly from the steps and screenshots below, please contact the developer so this documentation can be updated.</em>
 	</p>
+
 	<ol>
-		<li>Go to <a href="https://rapidapi.com" target="_blank">Rapid</a>.</li>
-		<li>Click on the <strong>Sign Up</strong> button in the top right corner and complete the registration process (or sign in if you already have an account).</li>
-		<li>Click the blue <strong>API Hub</strong> button in the center of the landing page (or the <strong>API Hub</strong> link in the top right navigation bar) to enter the main API directory.</li>
-		<li>Locate the search bar at the top of the page labeled <em>"Search APIs"</em>, type <strong>MapTiles</strong>, and select the <strong>MapTiles</strong> result from the list.</li>
 		<li>
-			On the MapTiles endpoint page, click the blue <strong>Subscribe to run</strong> button near the top right , select the <strong>Basic (Free)</strong> plan, and complete the subscription. <em>(Note: The Basic plan is free and does not require a credit card)</em>.
+			<strong>Navigate to Rapid and Open the API Hub:</strong><br />
+			Go to <a href="https://rapidapi.com" target="_blank">rapidapi.com</a>. Sign up for a free account (or log in if you already have one). From the homepage, click the blue <strong>API Hub</strong> button (or the <strong>API Hub</strong> link in the top-right header) to enter the API catalog.
+			<p style="text-align: center;">
+				<img src="images/rapidapi-step1-hub.png" alt="RapidAPI Homepage showing API Hub button" title="Rapid Homepage - Access API Hub" />
+			</p>
 		</li>
-		<li>Navigate directly to your Developer Authorization dashboard at <a href="https://rapidapi.com/developer/dashboard" target="_blank">rapidapi.com/developer/dashboard</a>, expand <strong>My Apps</strong> &gt; <strong>default-application</strong> on the left, and select <strong>Authorization</strong>).</li>
-		<li>Under the <strong>Application Key</strong> row, click the <strong>Copy icon</strong> (two overlapping pages) next to your key string to copy it directly to your clipboard.</li>
-		<li>Click inside the <strong>Server / API key</strong> text field on the Settings tab of P3D Scenario Generator and press <strong>Ctrl + V</strong> to paste your key. Validation occurs automatically when leaving the field.</li>
+
+		<li>
+			<strong>Locate the Search Bar:</strong><br />
+			Click inside the search bar at the top of the page labeled <em>"Search APIs"</em>, type <strong>maptiles</strong>, and press <kbd>Enter</kbd>.
+			<p style="text-align: center;">
+				<img src="images/rapidapi-step2-searchbox.png" alt="RapidAPI Search APIs input bar" title="Search APIs Bar" />
+			</p>
+		</li>
+
+		<li>
+			<strong>Select the Correct MapTiles API:</strong><br />
+			Several similarly named APIs may appear in the results list. Be sure to click on the verified <strong>MapTiles</strong> entry published by <em>Support@M...</em> (categorized under <em>Mapping</em>).
+			<p style="text-align: center;">
+				<img src="images/rapidapi-step3-select-maptiles.png" alt="Select the verified MapTiles card from search results" title="Select MapTiles API" />
+			</p>
+		</li>
+
+		<li>
+			<strong>Open Subscription Options:</strong><br />
+			On the MapTiles endpoint overview page, click the blue <strong>Subscribe to run</strong> button located in the top-right toolbar.
+			<p style="text-align: center;">
+				<img src="images/rapidapi-step4-subscribe.png" alt="MapTiles endpoint page showing Subscribe to run button" title="Click Subscribe to run" />
+			</p>
+		</li>
+
+		<li>
+			<strong>Select the Free Basic Plan:</strong><br />
+			Under the <strong>Basic ($0.00 /mo)</strong> tier, click the blue <strong>Start Free Plan</strong> button. <em>(Note: The Basic tier includes 10,000 free tile requests per month and does not require credit card details)</em>.
+			<p style="text-align: center;">
+				<img src="images/rapidapi-step5-pricing.png" alt="Pricing page selecting Basic free tier" title="Select Start Free Plan" />
+			</p>
+		</li>
+
+		<li>
+			<strong>Navigate to Developer Authorization:</strong><br />
+			Navigate to your Developer Dashboard at <a href="https://rapidapi.com/developer/dashboard" target="_blank">rapidapi.com/developer/dashboard</a>. Under <strong>My Apps</strong> on the left-hand navigation menu, expand your active application (typically <code>default-application_...</code>) and select <strong>Authorization</strong>.
+			<p style="text-align: center;">
+				<img src="images/rapidapi-step6-dashboard-auth.png" alt="Developer Dashboard highlighting Authorization link" title="Developer Dashboard - Authorization" />
+			</p>
+		</li>
+
+		<li>
+			<strong>Copy Your Application Key:</strong><br />
+			Under the <strong>Application Key</strong> row, click the <strong>Copy icon</strong> (two overlapping sheets of paper) next to your masked key to copy the key string to your clipboard.
+			<p style="text-align: center;">
+				<img src="images/rapidapi-step7-copy-key.png" alt="Copy Application Key button" title="Copy Application Key" />
+			</p>
+		</li>
+
+		<li>
+			<strong>Paste the Key into Settings:</strong><br />
+			Return to P3D Scenario Generator, click inside the <strong>Server / API key</strong> text box on the Settings tab, and press <kbd>Ctrl</kbd> + <kbd>V</kbd> to paste your key. Validation occurs automatically when you leave the field.
+		</li>
 	</ol>
-	<p>
-		<em>Note: Using the Authorization dashboard avoids endpoint playground layout changes and ensures you can copy the raw key string in a single click without selecting text manually.</em>
-	</p>
 
 	<h4>Cache Daily Total display field</h4>
 	<p>

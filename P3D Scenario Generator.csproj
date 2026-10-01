@@ -35,6 +35,13 @@
     <None Remove="Resources\Help\circuit.htm" />
     <None Remove="Resources\Help\images\circuitTab.jpg" />
     <None Remove="Resources\Help\images\introduction-objects.jpg" />
+    <None Remove="Resources\Help\images\rapidapi-step1-hub.png" />
+    <None Remove="Resources\Help\images\rapidapi-step2-searchbox.png" />
+    <None Remove="Resources\Help\images\rapidapi-step3-select-maptiles.png" />
+    <None Remove="Resources\Help\images\rapidapi-step4-subscribe.png" />
+    <None Remove="Resources\Help\images\rapidapi-step5-pricing.png" />
+    <None Remove="Resources\Help\images\rapidapi-step6-dashboard-auth.png" />
+    <None Remove="Resources\Help\images\rapidapi-step7-copy-key.png" />
     <None Remove="Resources\Help\introduction.htm" />
     <None Remove="Resources\Help\photoTour.htm" />
     <None Remove="Resources\Help\signwriting.htm" />
@@ -183,6 +190,27 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\images\introduction-objects.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\rapidapi-step1-hub.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\rapidapi-step2-searchbox.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\rapidapi-step3-select-maptiles.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\rapidapi-step4-subscribe.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\rapidapi-step5-pricing.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\rapidapi-step6-dashboard-auth.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Help\images\rapidapi-step7-copy-key.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Help\introduction.htm">
