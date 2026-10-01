@@ -580,6 +580,21 @@ namespace P3D_Scenario_Generator
             }
         }
 
+        private async void ComboBoxGeneralRunwayResults_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string? selectedIcaoAndId = ComboBoxGeneralRunwayResults.SelectedItem?.ToString();
+            if (string.IsNullOrWhiteSpace(selectedIcaoAndId) || selectedIcaoAndId.StartsWith("No runway found"))
+            {
+                return;
+            }
+
+            var aircraft = _formData?.SelectedAircraft;
+            if (aircraft != null)
+            {
+                await CheckSelectedRunwayCompatibilityAsync(aircraft);
+            }
+        }
+
         #endregion
 
         #region Scenario selection
@@ -939,6 +954,8 @@ namespace P3D_Scenario_Generator
                 {
                     await SetDefaultSignwritingParamsAsync();
                 }
+
+                await CheckSelectedRunwayCompatibilityAsync(aircraftVariant);
             }
         }
 
@@ -958,6 +975,40 @@ namespace P3D_Scenario_Generator
         private void TextBoxGeneralAircraftValues_MouseEnter(object sender, EventArgs e)
         {
             TextBoxMouseEnterExpandTooltip(sender, e);
+        }
+
+        private async Task CheckSelectedRunwayCompatibilityAsync(AircraftVariant aircraftVariant)
+        {
+            string? selectedICAOandId = ComboBoxGeneralRunwayResults.SelectedItem?.ToString();
+            if (string.IsNullOrWhiteSpace(selectedICAOandId))
+            {
+                return;
+            }
+
+            RunwayUtils.ParseIcaoRunwayString(selectedICAOandId, out string icaoId, out string runwayId, out string runwayDesignator);
+            RunwayParams? selectedRunway = _runwayManager.Searcher.GetRunwayByIcaoIdDesignator(icaoId, runwayId, runwayDesignator);
+
+            if (selectedRunway is null)
+            {
+                return;
+            }
+
+            if (selectedRunway.IsWaterRunway && !aircraftVariant.HasFloats)
+            {
+                string message = $"Selected aircraft '{aircraftVariant.DisplayName}' does not have floats for water runway '{selectedICAOandId}'.";
+                await _logger.WarningAsync(message);
+                _progressReporter?.Report($"WARNING: {message}");
+            }
+            else if (!selectedRunway.IsWaterRunway && !aircraftVariant.HasWheelsOrEquiv)
+            {
+                string message = $"Selected aircraft '{aircraftVariant.DisplayName}' is float-only and cannot use land runway '{selectedICAOandId}'.";
+                await _logger.WarningAsync(message);
+                _progressReporter?.Report($"WARNING: {message}");
+            }
+            else
+            {
+                _progressReporter?.Report($"INFO: Selected aircraft '{aircraftVariant.DisplayName}' is compatible with runway '{selectedICAOandId}'.");
+            }
         }
 
         #endregion

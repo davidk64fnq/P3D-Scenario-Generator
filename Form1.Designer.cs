@@ -1867,6 +1867,7 @@ namespace P3D_Scenario_Generator
             ComboBoxGeneralRunwayResults.Size = new Size(104, 23);
             ComboBoxGeneralRunwayResults.TabIndex = 4;
             toolTip1.SetToolTip(ComboBoxGeneralRunwayResults, "Runway List:\r\nSelect your starting airfield and runway (formatted as ICAO (Runway)). Filtered by active location and aircraft type.");
+            ComboBoxGeneralRunwayResults.SelectedIndexChanged += ComboBoxGeneralRunwayResults_SelectedIndexChanged;
             // 
             // groupBox13
             // 
