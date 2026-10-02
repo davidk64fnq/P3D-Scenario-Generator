@@ -156,7 +156,10 @@
 	<h4>En Route Navigation &amp; Waypoint Arrival</h4>
 	<ul>
 		<li>
-			<strong>Visual Tracking:</strong> Fly toward the destination of the active leg following roads, terrain landmarks, and the route line drawn across the OpenStreetMap chart.
+			<strong>Visual Tracking &amp; HUD Guidance:</strong> Fly toward the active photo waypoint using ground references, the route track, or the live cockpit HUD in the top-right corner of the moving map (showing planned magnetic course, live direct-to bearing, and distance to go in nautical miles).
+		</li>
+		<li>
+			<strong>Customizable Map Overlay:</strong> Use the on-screen buttons (<kbd class="winforms-btn">Route</kbd>, <kbd class="winforms-btn">Waypoints</kbd>, <kbd class="winforms-btn">Direct-To</kbd>) to customize your display. If you prefer navigating visually by roads and rivers without a fixed line across the terrain, simply toggle <kbd class="winforms-btn">Route</kbd> off.
 		</li>
 		<li>
 			<strong>Triggering Waypoints:</strong> When your aircraft enters the waypoint's hotspot cylinder, you will hear a confirmation chime (<code>ThruHoop.wav</code>).
@@ -165,7 +168,7 @@
 			<strong>Viewing the Photo:</strong> The photo window opens automatically displaying the image taken at that coordinate. When your moving map and photo window are configured to use different screen alignments (e.g., Top Left for map, Top Right for photos) or separate monitors, both windows display cleanly side-by-side without overlapping.
 		</li>
 		<li>
-			<strong>Automatic Leg Progression:</strong> As the waypoint triggers, the moving map automatically updates its route line to guide you along the next leg toward the subsequent photo or destination airfield.
+			<strong>Automatic Leg Progression:</strong> As the waypoint triggers, the moving map automatically advances to the next leg, updating the background map, waypoint pins, and HUD telemetry toward the subsequent photo or destination airfield.
 		</li>
 	</ul>
 

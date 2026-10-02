@@ -1,29 +1,42 @@
 <!DOCTYPE HTML>
-<HTML>	
+<html>
 <head>
-	<link rel="stylesheet" href="styleMovingMap.css"></link>
-<script src="scriptsMovingMap.js"></script>
+	<link rel="stylesheet" href="styleMovingMap.css">
+	<script src="scriptsMovingMap.js"></script>
 </head>
 <body>
 	<div id="mapDiv">
-		<div id="roadMapZoom1" >
+		<div id="roadMapZoom1">
 			<img src="LegRoute_01_zoom1.jpg" id="roadMapZoom1Img" />
 		</div>
-		<div id="roadMapZoom2" >
-			<img src="LegRoute_01_zoom2.jpg" id="roadMapZoom2Img"/>
+		<div id="roadMapZoom2">
+			<img src="LegRoute_01_zoom2.jpg" id="roadMapZoom2Img" />
 		</div>
-		<div id="roadMapZoom3" >
-			<img src="LegRoute_01_zoom3.jpg" id="roadMapZoom3Img"/>
+		<div id="roadMapZoom3">
+			<img src="LegRoute_01_zoom3.jpg" id="roadMapZoom3Img" />
+		</div>
+
+		<!-- Dynamic Canvas Overlay (Route lines, Waypoints, Direct-To) -->
+		<canvas id="overlayCanvas"></canvas>
+
+		<!-- Aircraft Icon (MUST be inside mapDiv so top/left match the viewport) -->
+		<img id="plane" src="aircraft.png" />
+
+		<!-- Live Flight Information HUD Badge -->
+		<div id="navHud">
+			<div id="hudLegTitle" class="hud-title">LEG 01</div>
+			<div class="hud-row"><span>PLANNED:</span> <span id="hudPlanned">---°M / -- NM</span></div>
+			<div class="hud-row"><span>DIRECT-TO:</span> <span id="hudDirect">---°M / -- NM</span></div>
 		</div>
 	</div>
+
 	<div id="buttonDiv">
-		<img id="plane" src="aircraft.png" /> 
-		<button type="button" id="planeButton" onclick="togglePlaneButton()">
-			Toggle Plane
-		</button>
-		<button type="button" id="zoomButton" onclick="cycleZoomButton()">
-			Cycle Zoom
-		</button>
+		<button type="button" id="planeButton" onclick="togglePlaneButton()">Plane</button>
+		<button type="button" id="zoomButton" onclick="cycleZoomButton()">Zoom</button>
+		<button type="button" id="routeButton" onclick="toggleRouteLineButton()">Route</button>
+		<button type="button" id="wptButton" onclick="toggleWaypointsButton()">Waypoints</button>
+		<button type="button" id="directToButton" onclick="toggleDirectToButton()">Direct-To</button>
+		<button type="button" id="hudButton" onclick="toggleHudButton()">HUD</button>
 	</div>
 </body>
-</HTML>
+</html>

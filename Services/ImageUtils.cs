@@ -36,6 +36,9 @@ namespace P3D_Scenario_Generator.Services
         /// <returns><see langword="true"/> if the routes were successfully processed; otherwise, <see langword="false"/>.</returns>
         internal async Task<bool> DrawRouteBulkAsync(ScenarioFormData formData)
         {
+
+            return true;
+
             try
             {
                 string folderPath = formData.ScenarioImageFolder;

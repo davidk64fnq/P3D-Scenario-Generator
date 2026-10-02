@@ -188,14 +188,17 @@
 	<h4>En Route Navigation &amp; Triggering Landmarks</h4>
 	<ul>
 		<li>
-			<strong>Visual Navigation:</strong> Follow prominent roads, rivers, coastlines, and your moving map display toward the landmark coordinate.
+			<strong>Visual Navigation &amp; Telemetry:</strong> Follow prominent roads, rivers, coastlines, and your moving map display toward the landmark coordinate. Check the cockpit HUD in the top-right corner of the moving map for real-time magnetic bearing and distance remaining (in nautical miles) to the landmark.
+		</li>
+		<li>
+			<strong>Customizable Overlays:</strong> Toggle the planned route line (<kbd class="winforms-btn">Route</kbd>), waypoint markers (<kbd class="winforms-btn">Waypoints</kbd>), or live aircraft-to-target bearing line (<kbd class="winforms-btn">Direct-To</kbd>) using the control buttons along the bottom of the map.
 		</li>
 		<li>
 			<strong>Reaching the Landmark:</strong> When your aircraft enters the 300-meter cylinder trigger above the landmark:
 			<ul>
 				<li>The <strong>Wikipedia Viewer</strong> panel opens (or updates if already open), instantly loading the mobile Wikipedia article for that landmark.</li>
 				<li>The scenario variable (<code>currentLegNo</code>) increments automatically.</li>
-				<li>The in-flight <strong>Moving Map</strong> updates to show the route line connecting to the next landmark.</li>
+				<li>The in-flight <strong>Moving Map</strong> advances to the next leg, updating background charts, vector markers, and HUD target telemetry.</li>
 			</ul>
 		</li>
 		<li>

@@ -207,22 +207,53 @@
 	<!-- MOVING MAP DISPLAY & CONTROLS -->
 	<h3 id="movingMap">Moving Map Display &amp; Controls</h3>
 	<p>
-		The <strong>In-Game Moving Map</strong> provides dynamic position tracking, heading updates, and leg route overlays across selectable zoom levels during active scenarios (3 or 4 levels depending on your configured <strong>Window Size</strong>).
+		The <strong>In-Game Moving Map</strong> provides real-time spatial positioning, true heading rotation, an interactive vector canvas overlay, and an automated navigation telemetry HUD across selectable zoom levels (3 levels for 512px windows, or 4 levels for 1024px windows).
+	</p>
+	<p>
+		<strong>Dynamic Vector Overlay:</strong> Route lines, waypoint symbols, and direct-to vectors are rendered dynamically over clean OpenStreetMap (OSM) satellite and street tiles using an HTML5 transparent overlay. This keeps the underlying map tiles pristine and gives you complete runtime control over what visual guidance appears on screen.
 	</p>
 
-	<h4>Interactive Viewport Controls</h4>
+	<h4>Interactive On-Screen Controls</h4>
 	<ul>
 		<li>
-			<strong>Toggle Aircraft / Drag Mode:</strong> Click the <kbd class="winforms-btn">Toggle Plane</kbd> button on the map display to show or hide the aircraft symbol. Hiding the aircraft disables auto-tracking and unlocks manual panning, allowing you to click and drag across the map image.
+			<strong><kbd class="winforms-btn">Plane</kbd>:</strong> Toggles visibility of the aircraft icon. When the aircraft is hidden, automatic centering is disengaged, unlocking manual mouse-drag panning across the chart.
 		</li>
 		<li>
-			<strong>Cycle Zoom Levels:</strong> Click the <kbd class="winforms-btn">Cycle Zoom</kbd> button to cycle the background chart through the generated tile zoom levels for the active flight leg (Zoom 1&#8211;3 for 512px windows, or Zoom 1&#8211;4 for 1024px windows).
+			<strong><kbd class="winforms-btn">Zoom</kbd>:</strong> Cycles through the available high-resolution tile zoom levels for the active flight leg.
+		</li>
+		<li>
+			<strong><kbd class="winforms-btn">Route</kbd>:</strong> Toggles the solid blue direct route line connecting the leg departure point to the destination waypoint. Turn this off if you prefer "free VFR" pilotage along valleys, roads, and coastlines without a track line cutting across terrain.
+		</li>
+		<li>
+			<strong><kbd class="winforms-btn">Waypoints</kbd>:</strong> Toggles the green departure ring and red destination bullseye markers.
+		</li>
+		<li>
+			<strong><kbd class="winforms-btn">Direct-To</kbd>:</strong> Toggles an active dashed rubber-band line drawn directly from your aircraft's instantaneous position to the active leg destination.
+		</li>
+		<li>
+			<strong><kbd class="winforms-btn">HUD</kbd>:</strong> Toggles the visibility of the cockpit navigation telemetry badge.
+		</li>
+	</ul>
+
+	<h4>Cockpit Navigation HUD</h4>
+	<p>
+		Located in the top-right corner of the moving map, the translucent HUD badge displays key navigational data calculated in real time:
+	</p>
+	<ul>
+		<li>
+			<strong>LEG Index:</strong> The active scenario leg number (e.g., <code>LEG 01</code>).
+		</li>
+		<li>
+			<strong>PLANNED:</strong> The planned magnetic course (Desired Track) and total leg distance in nautical miles (e.g., <code>092°M / 3.1 NM</code>) from the leg's starting point to its destination.
+		</li>
+		<li>
+			<strong>DIRECT-TO:</strong> The real-time live magnetic bearing and straight-line distance remaining from your aircraft's instantaneous position to the active destination waypoint (e.g., <code>074°M / 3.6 NM</code>).
 		</li>
 	</ul>
 
 	<h4>Hardware &amp; Cockpit Switch Bindings</h4>
 	<p>
-		In addition to the HTML buttons, moving map functions can be bound to physical cockpit switches, joystick buttons, or voice commands using mapped Prepar3D simulator variables:
+		In addition to on-screen buttons, core moving map functions can be bound to physical cockpit switches, joystick buttons, or voice commands using simulator variables:
 	</p>
 	<table border="1" cellpadding="6" cellspacing="0">
 		<thead>
@@ -240,7 +271,7 @@
 				<td>
 					<code>A:ALTERNATE STATIC SOURCE OPEN</code>
 				</td>
-				<td>Toggling this switch state cycles through Zoom levels 1, 2, and 3.</td>
+				<td>Toggling this switch cycles through available zoom levels.</td>
 			</tr>
 			<tr>
 				<td>
@@ -249,7 +280,7 @@
 				<td>
 					<code>A:CABIN NO SMOKING ALERT SWITCH</code>
 				</td>
-				<td>Toggling this switch toggles aircraft visibility and toggles manual mouse-drag mode.</td>
+				<td>Toggling this switch toggles aircraft visibility and manual mouse-drag mode.</td>
 			</tr>
 		</tbody>
 	</table>
@@ -257,10 +288,10 @@
 	<h4>Automated Tracking &amp; Navigation Operations</h4>
 	<ul>
 		<li>
-			<strong>Real-Time Tracking &amp; Rotation:</strong> When the aircraft icon is toggled visible, the map viewport automatically centers on your aircraft's spatial coordinates (<code>A:PLANE LATITUDE</code> / <code>A:PLANE LONGITUDE</code>) and rotates the symbol to match true heading (<code>A:PLANE HEADING DEGREES TRUE</code>).
+			<strong>Real-Time Tracking &amp; Rotation:</strong> When the aircraft icon is active, the map viewport automatically centers on your aircraft's spatial coordinates (<code>A:PLANE LATITUDE</code> / <code>A:PLANE LONGITUDE</code>) and rotates the aircraft symbol to match true heading (<code>A:PLANE HEADING DEGREES TRUE</code>).
 		</li>
 		<li>
-			<strong>Automatic Leg Transitions:</strong> As you progress through scenario waypoints, the display monitors your active leg index (<code>S:currentLegNo</code>) and automatically updates background chart graphics (<code>LegRoute_XX_zoomY.jpg</code>) without requiring manual map reloads.
+			<strong>Automatic Leg Transitions:</strong> As you trigger each scenario waypoint, the display monitors your active leg index (<code>S:currentLegNo</code>) and automatically loads the next leg's map tiles, resets the direct-to vector, and updates the HUD planned course and distance without requiring manual intervention.
 		</li>
 	</ul>
 

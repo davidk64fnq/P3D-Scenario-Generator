@@ -1,6 +1,8 @@
-﻿using System.Text.RegularExpressions;
-using P3D_Scenario_Generator.ConstantsEnums;
+﻿using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Models;
+using System.Globalization;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace P3D_Scenario_Generator.Services
 {
@@ -143,12 +145,22 @@ namespace P3D_Scenario_Generator.Services
 
             var mapData = formData.OSMmapData.Take(count - 1).ToList();
 
+            // Extract lat/lon waypoint arrays per leg from MapData.Items
+            var legCoords = mapData
+                .ConvertAll(m => m.Items.Select(c => new
+                {
+                    lat = c.Latitude.ToDouble(),
+                    lon = c.Longitude.ToDouble()
+                }))
+;
+
             var replacements = new Dictionary<string, string>
             {
-                { "mapNorthX", $"[{string.Join(", ", mapData.Select(m => m.North.ToDouble().ToString()))}]" },
-                { "mapEastX",  $"[{string.Join(", ", mapData.Select(m => m.East.ToDouble().ToString()))}]"  },
-                { "mapSouthX", $"[{string.Join(", ", mapData.Select(m => m.South.ToDouble().ToString()))}]" },
-                { "mapWestX",  $"[{string.Join(", ", mapData.Select(m => m.West.ToDouble().ToString()))}]"  }
+                { "mapNorthX",  $"[{string.Join(", ", mapData.Select(m => m.North.ToDouble().ToString(CultureInfo.InvariantCulture)))}]" },
+                { "mapEastX",   $"[{string.Join(", ", mapData.Select(m => m.East.ToDouble().ToString(CultureInfo.InvariantCulture)))}]"  },
+                { "mapSouthX",  $"[{string.Join(", ", mapData.Select(m => m.South.ToDouble().ToString(CultureInfo.InvariantCulture)))}]" },
+                { "mapWestX",   $"[{string.Join(", ", mapData.Select(m => m.West.ToDouble().ToString(CultureInfo.InvariantCulture)))}]"  },
+                { "legCoordsX", JsonSerializer.Serialize(legCoords) }
             };
 
             if (formData.MapWindowSize == MapWindowSizeOption.Size512)
