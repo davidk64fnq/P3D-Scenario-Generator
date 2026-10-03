@@ -1,17 +1,17 @@
 <!DOCTYPE HTML>
-<html>	
+<html>
 <head>
+	<meta charset="utf-8" />
+	<link rel="stylesheet" href="stylePhotoTour.css">
 	<script src="scriptsPhotoTour.js"></script>
-	<style>
-		body {
-			background-color: rgb(240, 248, 255);
-			margin: 0;
-			padding: 0;
-			overflow: hidden;
-		}
-	</style>
 </head>
 <body>
-	<img src="photo_01.jpg" id="content">
+	<div id="photoContainer">
+		<img src="photo_01.jpg" id="content" alt="Photo Tour Waypoint" />
+		<div id="photoCaption">
+			<div id="captionTitle" class="caption-title"></div>
+			<div id="captionSub" class="caption-sub"></div>
+		</div>
+	</div>
 </body>
 </html>

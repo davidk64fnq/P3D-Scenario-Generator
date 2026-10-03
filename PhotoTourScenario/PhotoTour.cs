@@ -64,9 +64,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
     /// <param name="photoTourUtilities">The photo tour helper utilities.</param>
     /// <param name="pic2MapHtmlParser">The Pic2Map HTML parser service.</param>
     /// <param name="mapTileImageMaker">The map tile image composition service.</param>
-    /// <param name="imageUtils">The image utility service.</param>
     /// <param name="assetFileGenerator">The asset file generator service.</param>
     /// <param name="scenarioHTML">The scenario HTML file generator.</param>
+    /// <param name="wikipediaService">The Wikipedia service.</param>
     internal class PhotoTour(
         Logger logger,
         FileOps fileOps,
@@ -76,9 +76,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         PhotoTourUtilities photoTourUtilities,
         Pic2MapHtmlParser pic2MapHtmlParser,
         MapTileImageMaker mapTileImageMaker,
-        ImageUtils imageUtils,
         AssetFileGenerator assetFileGenerator,
-        ScenarioHTML scenarioHTML)
+        ScenarioHTML scenarioHTML,
+        WikipediaService wikipediaService)
     {
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FileOps _fileOps = fileOps ?? throw new ArgumentNullException(nameof(fileOps));
@@ -88,9 +88,9 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
         private readonly PhotoTourUtilities _photoTourUtilities = photoTourUtilities ?? throw new ArgumentNullException(nameof(photoTourUtilities));
         private readonly Pic2MapHtmlParser _pic2MapHtmlParser = pic2MapHtmlParser ?? throw new ArgumentNullException(nameof(pic2MapHtmlParser));
         private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker ?? throw new ArgumentNullException(nameof(mapTileImageMaker));
-        private readonly ImageUtils _imageUtils = imageUtils ?? throw new ArgumentNullException(nameof(imageUtils));
         private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator ?? throw new ArgumentNullException(nameof(assetFileGenerator));
         private readonly ScenarioHTML _scenarioHTML = scenarioHTML ?? throw new ArgumentNullException(nameof(scenarioHTML));
+        private readonly WikipediaService _wikipediaService = wikipediaService ?? throw new ArgumentNullException(nameof(wikipediaService));
 
         internal List<PhotoLocParams> PhotoLocations { get; } = [];
 
@@ -147,12 +147,6 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                     await _logger.ErrorAsync($"Failed to create location image for leg {legNo} during photo tour setup.");
                     return false;
                 }
-            }
-
-            if (!await _imageUtils.DrawRouteBulkAsync(formData))
-            {
-                await _logger.ErrorAsync("Failed to draw image routes during PhotoTour setup.");
-                return false;
             }
 
             Overview overview = SetOverviewStruct(formData);
@@ -324,6 +318,27 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             airportLocation.forwardBearing = MathRoutines.GetReciprocalHeading(airportLocation.forwardBearing);
             PhotoLocations.Add(airportLocation);
             PhotoLocations.Add(photoLocation);
+
+            // Non-blocking cosmetic enrichment: query Wikipedia for the nearest landmark
+            var (wikiTitle, wikiSubtitle) = await _wikipediaService.GetNearestPoiSubtitleAsync(
+                photoLocation.latitude,
+                photoLocation.longitude,
+                radiusMeters: 10000);
+
+            if (!string.IsNullOrEmpty(wikiSubtitle))
+            {
+                photoLocation.PlaceSubtitle = wikiSubtitle;
+                if (string.IsNullOrWhiteSpace(photoLocation.PlaceTitle))
+                {
+                    photoLocation.PlaceTitle = wikiTitle;
+                }
+            }
+            else if (string.IsNullOrWhiteSpace(photoLocation.PlaceSubtitle))
+            {
+                // Fall back to Pic2Map's country/region metadata if no Wikipedia landmark is nearby
+                photoLocation.PlaceSubtitle = photoLocation.location;
+            }
+
             return SetLegResult.Success;
         }
 
@@ -411,6 +426,27 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
             }
 
             PhotoLocations.Add(photoLocation);
+
+            // Non-blocking cosmetic enrichment: query Wikipedia for the nearest landmark
+            var (wikiTitle, wikiSubtitle) = await _wikipediaService.GetNearestPoiSubtitleAsync(
+                photoLocation.latitude,
+                photoLocation.longitude,
+                radiusMeters: 10000);
+
+            if (!string.IsNullOrEmpty(wikiSubtitle))
+            {
+                photoLocation.PlaceSubtitle = wikiSubtitle;
+                if (string.IsNullOrWhiteSpace(photoLocation.PlaceTitle))
+                {
+                    photoLocation.PlaceTitle = wikiTitle;
+                }
+            }
+            else if (string.IsNullOrWhiteSpace(photoLocation.PlaceSubtitle))
+            {
+                // Fall back to Pic2Map's country/region metadata if no Wikipedia landmark is nearby
+                photoLocation.PlaceSubtitle = photoLocation.location;
+            }
+
             return SetLegResult.Success;
         }
 
@@ -560,9 +596,10 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
 
             await _assetFileGenerator.WriteAssetFileAsync("HTML.MovingMap.html", "MovingMap.html", formData.ScenarioImageFolder);
             await _assetFileGenerator.WriteAssetFileAsync("HTML.PhotoTour.html", "PhotoTour.html", formData.ScenarioImageFolder);
-            await _assetFileGenerator.WriteAssetFileAsync("Javascript.scriptsPhotoTour.js", "scriptsPhotoTour.js", formData.ScenarioImageFolder);
+            await _assetFileGenerator.WriteAssetFileAsync("CSS.stylePhotoTour.css", "stylePhotoTour.css", formData.ScenarioImageFolder);
             await _assetFileGenerator.WriteAssetFileAsync("CSS.styleMovingMap.css", "styleMovingMap.css", formData.ScenarioImageFolder);
             await _assetFileGenerator.GenerateMovingMapScriptAsync(PhotoCount, formData);
+            await _assetFileGenerator.GeneratePhotoTourScriptAsync(PhotoLocations, formData);
 
             _xml.SetOpenWindowAction(PhotoCount - 1, "UIPanelWindow", "UIpanelWindow", PhotoTourUtilities.GetMapWindowParameters(formData), formData.MapMonitorNumber.ToString());
             _xml.SetCloseWindowAction(PhotoCount - 1, "UIPanelWindow", "UIpanelWindow");

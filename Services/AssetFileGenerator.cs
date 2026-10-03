@@ -1,5 +1,6 @@
 ﻿using P3D_Scenario_Generator.ConstantsEnums;
 using P3D_Scenario_Generator.Models;
+using P3D_Scenario_Generator.PhotoTourScenario;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -188,6 +189,84 @@ namespace P3D_Scenario_Generator.Services
                 formData.ScenarioImageFolder,
                 replacements
             );
+        }
+
+        /// <summary>
+        /// Generates the dynamic JavaScript file for the Photo Tour pop-up viewer containing serialized waypoint photo captions.
+        /// </summary>
+        /// <param name="photoLocations">The ordered list of photo tour locations and metadata.</param>
+        /// <param name="formData">The scenario form configuration data.</param>
+        /// <returns><see langword="true"/> if the script was generated and written successfully; otherwise, <see langword="false"/>.</returns>
+        internal async Task<bool> GeneratePhotoTourScriptAsync(List<PhotoLocParams> photoLocations, ScenarioFormData formData)
+        {
+            ArgumentNullException.ThrowIfNull(photoLocations);
+            ArgumentNullException.ThrowIfNull(formData);
+
+            // Build the captions list. In PhotoTour, PhotoLocations[0] is the departure runway,
+            // PhotoLocations[1..PhotoCount-2] are the photos (photo_01.jpg, photo_02.jpg...),
+            // and PhotoLocations[^1] is the destination runway.
+            var captionsList = new List<object?> { null }; // Index 0 unused to maintain 1-based parity with leg indexing
+
+            for (int i = 1; i < photoLocations.Count - 1; i++)
+            {
+                captionsList.Add(new
+                {
+                    title = photoLocations[i].PlaceTitle,
+                    sub = photoLocations[i].PlaceSubtitle
+                });
+            }
+
+            string captionsJson = System.Text.Json.JsonSerializer.Serialize(captionsList);
+
+            // Script template with safe VarGet fallback and caption injection
+            string scriptContent = $$"""
+        var oldLegNo = 0;
+        var photoCaptions = {{captionsJson}};
+
+        function safeVarGet(name, unit) {
+            if (typeof VarGet === "function") {
+                return VarGet(name, unit);
+            }
+            return 0;
+        }
+
+        function update(timestamp) {
+            refreshLegPhoto();
+            window.requestAnimationFrame(update);
+        }
+        window.requestAnimationFrame(update);
+
+        function refreshLegPhoto() {
+            var legNo = safeVarGet("S:currentLegNo", "NUMBER");
+            if (legNo !== oldLegNo) {
+                oldLegNo = legNo;
+                var photoIndex = legNo - 1;
+                if (photoIndex > 0) {
+                    var legNoStr = String(photoIndex).padStart(2, '0');
+                    var img = document.getElementById("content");
+                    if (img) {
+                        img.src = 'photo_' + legNoStr + '.jpg';
+                    }
+
+                    var caption = photoCaptions && photoCaptions[photoIndex];
+                    var titleEl = document.getElementById("captionTitle");
+                    var subEl = document.getElementById("captionSub");
+                    var captionBox = document.getElementById("photoCaption");
+
+                    if (caption && (caption.title || caption.sub)) {
+                        if (titleEl) titleEl.innerText = caption.title || '';
+                        if (subEl) subEl.innerText = caption.sub || '';
+                        if (captionBox) captionBox.style.display = 'block';
+                    } else if (captionBox) {
+                        captionBox.style.display = 'none';
+                    }
+                }
+            }
+        }
+        """;
+
+            string destinationPath = Path.Combine(formData.ScenarioImageFolder, "scriptsPhotoTour.js");
+            return await _fileOps.TryWriteAllTextAsync(destinationPath, scriptContent, null);
         }
     }
 }

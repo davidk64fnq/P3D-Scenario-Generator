@@ -1,0 +1,54 @@
+﻿body {
+    background-color: rgb(240, 248, 255);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+#photoContainer {
+    position: relative;
+    display: inline-block;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#content {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Translucent Photo Caption Overlay */
+#photoCaption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.90) 0%, rgba(15, 23, 42, 0.65) 75%, transparent 100%);
+    color: #f8fafc;
+    padding: 16px 12px 8px 12px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+.caption-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #38bdf8;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.caption-sub {
+    font-size: 11px;
+    color: #cbd5e1;
+    line-height: 1.3;
+    /* Allow wrapping up to 2 lines without blowing out the banner */
+    word-wrap: break-word;
+}

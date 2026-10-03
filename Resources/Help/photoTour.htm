@@ -12,7 +12,7 @@
 		The <strong>Photo Tour Tab</strong> configures automated, multi-leg visual discovery flights. In a Photo Tour scenario, you depart from an airfield, navigate visually through a series of geographic waypoints where real-world photos were taken and shared to <a href="https://www.pic2map.com/" title="pic2map.com" target="_blank">Pic2Map</a>, and conclude with a landing at a destination airport.
 	</p>
 	<p>
-		<strong>Design Philosophy:</strong> Photo Tours are designed around low-and-slow visual flight rules ("IFR – I Follow Roads"). As you navigate from one photo coordinate to the next using terrain features, highways, and the moving map overlay, entering each location's trigger zone sounds an audio chime, displays the photo taken at that spot, and advances the moving map to the next leg.
+		<strong>Design Philosophy:</strong> Photo Tours are designed around low-and-slow visual flight rules ("IFR – I Follow Roads"). As you navigate from one photo coordinate to the next using terrain features, highways, and the moving map overlay, entering each location's trigger zone sounds an audio chime, displays the photo taken at that spot with place and landmark captions, and advances the moving map to the next leg.
 	</p>
 
 	<hr />
@@ -36,7 +36,7 @@
 			<strong>Destination Airfield:</strong> Once the final photo waypoint is established, the generator searches for a suitable arrival airfield within leg distance range that satisfies your active <strong>Location Filter</strong>.
 		</li>
 		<li>
-			<strong>Asset Compilation:</strong> All waypoint photos are downloaded and automatically resized to fit your configured photo display window. Route charts showing the active leg line over OpenStreetMap (OSM) tiles and mission scripts are compiled into the flight package.
+			<strong>Asset Compilation &amp; Landmark Geocoding:</strong> All waypoint photos are downloaded and automatically resized to fit your configured photo display window. Location metadata is extracted and paired with a Wikipedia geographic search to identify nearby notable points of interest. Finally, route charts showing the active leg line over OpenStreetMap (OSM) tiles and mission scripts are compiled into the flight package.
 		</li>
 	</ol>
 
@@ -165,7 +165,11 @@
 			<strong>Triggering Waypoints:</strong> When your aircraft enters the waypoint's hotspot cylinder, you will hear a confirmation chime (<code>ThruHoop.wav</code>).
 		</li>
 		<li>
-			<strong>Viewing the Photo:</strong> The photo window opens automatically displaying the image taken at that coordinate. When your moving map and photo window are configured to use different screen alignments (e.g., Top Left for map, Top Right for photos) or separate monitors, both windows display cleanly side-by-side without overlapping.
+			<strong>Viewing the Photo &amp; Location Captions:</strong> The photo window opens automatically, displaying the photograph taken at that coordinate. A translucent caption overlay along the bottom of the photo identifies the location:
+			<ul>
+				<li><strong>Title (Sky Blue):</strong> The specific address, road name, or landmark title of the photograph.</li>
+				<li><strong>Subtitle (Muted Slate):</strong> Identifies the nearest notable Wikipedia landmark and its straight-line distance (e.g., <em>"Near Puʻukoholā Heiau National Historic Site (8.2 km / 4.4 NM away)"</em>), or falls back to geographic region metadata if no encyclopedia landmark is recorded nearby.</li>
+			</ul>
 		</li>
 		<li>
 			<strong>Automatic Leg Progression:</strong> As the waypoint triggers, the moving map automatically advances to the next leg, updating the background map, waypoint pins, and HUD telemetry toward the subsequent photo or destination airfield.

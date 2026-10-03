@@ -31,14 +31,12 @@ namespace P3D_Scenario_Generator.Services
 
         /// <summary>
         /// Draws routes onto existing map images matching the "LegRoute_XX_*.jpg" pattern found in the scenario folder.
+        /// REPLACED by dynamic overlay - kept in case I ever decide to do it this way again
         /// </summary>
         /// <param name="formData">The scenario form configuration data containing image directories and map data.</param>
         /// <returns><see langword="true"/> if the routes were successfully processed; otherwise, <see langword="false"/>.</returns>
         internal async Task<bool> DrawRouteBulkAsync(ScenarioFormData formData)
         {
-
-            return true;
-
             try
             {
                 string folderPath = formData.ScenarioImageFolder;

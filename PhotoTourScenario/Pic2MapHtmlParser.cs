@@ -90,6 +90,24 @@ namespace P3D_Scenario_Generator.PhotoTourScenario
                 return SetLegResult.HtmlParsingFailed;
             }
 
+            // Extract photo title/caption from og:title (Non-fatal, cosmetic metadata)
+            const string titleSelection = "//meta[@property='og:title']";
+            var (titleSuccess, title) = await _htmlParser.SelectSingleNodeGetAttributeValueAsync(htmlDoc, titleSelection, "content");
+
+            if (titleSuccess && !string.IsNullOrWhiteSpace(title))
+            {
+                photoLocation.PlaceTitle = System.Net.WebUtility.HtmlDecode(title).Trim();
+            }
+            else
+            {
+                await _log.WarningAsync($"ExtractPhotoParamsAsync: Could not find 'og:title' in '{pic2mapHtmlSaveLocation}'. Falling back to generic description.");
+
+                // Graceful fallback: use description or coordinate summary so the UI is never blank
+                photoLocation.PlaceTitle = !string.IsNullOrWhiteSpace(photoLocation.location)
+                    ? photoLocation.location
+                    : $"Waypoint Coordinates: {photoLocation.latitude:F3}°, {photoLocation.longitude:F3}°";
+            }
+
             return SetLegResult.Success;
         }
 

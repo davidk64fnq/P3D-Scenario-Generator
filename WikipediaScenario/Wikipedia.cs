@@ -13,7 +13,6 @@ namespace P3D_Scenario_Generator.WikipediaScenario
     /// <param name="logger">The logging service.</param>
     /// <param name="progressReporter">The UI progress reporting service.</param>
     /// <param name="mapTileImageMaker">The map tile composition service.</param>
-    /// <param name="imageUtils">The image utility service.</param>
     /// <param name="assetFileGenerator">The asset file generator service.</param>
     /// <param name="scenarioXML">The scenario XML generator.</param>
     /// <param name="scenarioHTML">The scenario HTML file generator.</param>
@@ -21,7 +20,6 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         Logger logger,
         FormProgressReporter progressReporter,
         MapTileImageMaker mapTileImageMaker,
-        ImageUtils imageUtils,
         AssetFileGenerator assetFileGenerator,
         ScenarioXML scenarioXML,
         ScenarioHTML scenarioHTML)
@@ -29,7 +27,6 @@ namespace P3D_Scenario_Generator.WikipediaScenario
         private readonly Logger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly FormProgressReporter _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
         private readonly MapTileImageMaker _mapTileImageMaker = mapTileImageMaker ?? throw new ArgumentNullException(nameof(mapTileImageMaker));
-        private readonly ImageUtils _imageUtils = imageUtils ?? throw new ArgumentNullException(nameof(imageUtils));
         private readonly AssetFileGenerator _assetFileGenerator = assetFileGenerator ?? throw new ArgumentNullException(nameof(assetFileGenerator));
         private readonly ScenarioXML _xml = scenarioXML ?? throw new ArgumentNullException(nameof(scenarioXML));
         private readonly ScenarioHTML _scenarioHTML = scenarioHTML ?? throw new ArgumentNullException(nameof(scenarioHTML));
@@ -231,12 +228,6 @@ namespace P3D_Scenario_Generator.WikipediaScenario
                     await _logger.ErrorAsync($"Failed to create location image for leg {legNo} during Wikipedia Tour setup.");
                     return false;
                 }
-            }
-
-            if (!await _imageUtils.DrawRouteBulkAsync(formData))
-            {
-                await _logger.ErrorAsync("Failed to draw image routes during Wikipedia Tour setup.");
-                return false;
             }
 
             Overview overview = SetOverviewStruct(formData);

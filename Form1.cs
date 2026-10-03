@@ -51,6 +51,7 @@ namespace P3D_Scenario_Generator
         private readonly StarDataManager _starDataManager;
         private readonly StarsDatFileGenerator _simulatorFileGenerator;
         private readonly WikiPageHtmlParser _wikiPageHtmlParser;
+        private readonly WikipediaService _wikipediaService;
         private readonly RunwayManager _runwayManager;
         private readonly Aircraft _aircraft;
         private RunwayUiManager? _runwayUiManager;
@@ -87,6 +88,9 @@ namespace P3D_Scenario_Generator
             _progressReporter = new(toolStripStatusLabel1, this);
             _httpClient = new();
 
+            // Wikimedia requires a descriptive User-Agent header; otherwise it returns HTTP 403 Forbidden
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("P3DScenarioGenerator/1.0 (https://github.com/P3DScenarioGenerator; contact: flight-sim-dev)");
+
             // --- LAYER 2: Core Services (Fundamental Building Blocks) ---
             _logger = new(false, false, false, _formData);
             _fileOps = new(_logger);
@@ -122,6 +126,7 @@ namespace P3D_Scenario_Generator
             _starDataManager = new(_logger, _fileOps, _progressReporter);
             _simulatorFileGenerator = new(_logger, _fileOps, _progressReporter);
             _wikiPageHtmlParser = new(_logger, _httpRoutines);
+            _wikipediaService = new(_logger, _httpRoutines);
             _runwayManager = new(_runwayLoader);
             _aircraft = new(_logger, _cacheManager);
             _scenarioHTML = new(_logger, _fileOps, _progressReporter);
@@ -139,8 +144,8 @@ namespace P3D_Scenario_Generator
             // --- LAYER 5: Scenario Engines (The Top-Level Orchestrators) ---
             _photoTour = new(
                 _logger, _fileOps, _httpRoutines, _progressReporter, _scenarioXML,
-                _photoTourUtilities, _pic2MapHtmlParser, _mapTileImageMaker, _imageUtils,
-                _assetFileGenerator, _scenarioHTML);
+                _photoTourUtilities, _pic2MapHtmlParser, _mapTileImageMaker,
+                _assetFileGenerator, _scenarioHTML, _wikipediaService);
             _celestialNav = new(
                 _logger, _progressReporter,
                 _almanacDataSource, _starDataManager, _sextantViewGenerator,
@@ -156,7 +161,6 @@ namespace P3D_Scenario_Generator
                 _logger,
                 _progressReporter,
                 _mapTileImageMaker,
-                _imageUtils,
                 _assetFileGenerator,
                 _scenarioXML,
                 _scenarioHTML);

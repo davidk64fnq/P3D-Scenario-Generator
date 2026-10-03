@@ -232,5 +232,41 @@ namespace P3D_Scenario_Generator.Services
             HtmlNode? selectedNode = node.SelectSingleNode(xpath);
             return selectedNode?.InnerText;
         }
+
+        /// <summary>
+        /// Asynchronously retrieves the raw string response from a specified URL using HttpClient.
+        /// </summary>
+        /// <param name="url">The URL of the resource to retrieve.</param>
+        /// <returns>A tuple containing a boolean indicating success and the returned string content; otherwise, an empty string on failure.</returns>
+        internal async Task<(bool success, string content)> GetStringFromWebAsync(string url)
+        {
+            try
+            {
+                using HttpResponseMessage response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                if (!response.IsSuccessStatusCode)
+                {
+                    await _logger.WarningAsync($"HttpRoutines.GetStringFromWebAsync: Request to \"{url}\" returned status {(int)response.StatusCode} {response.StatusCode}.");
+                    return (false, string.Empty);
+                }
+
+                string content = await response.Content.ReadAsStringAsync();
+                return (true, content);
+            }
+            catch (HttpRequestException httpEx)
+            {
+                await _logger.ErrorAsync($"HttpRoutines.GetStringFromWebAsync: HTTP error requesting \"{url}\".", httpEx);
+                return (false, string.Empty);
+            }
+            catch (TaskCanceledException ex)
+            {
+                await _logger.ErrorAsync($"HttpRoutines.GetStringFromWebAsync: Request to \"{url}\" timed out or was cancelled.", ex);
+                return (false, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                await _logger.ErrorAsync($"HttpRoutines.GetStringFromWebAsync: Unexpected error requesting \"{url}\".", ex);
+                return (false, string.Empty);
+            }
+        }
     }
 }

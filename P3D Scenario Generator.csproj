@@ -29,6 +29,7 @@
     <None Remove="PhotoTour_LegRoute.html" />
     <None Remove="Resources\CSS\styleCelestialSextant.css" />
     <None Remove="Resources\CSS\styleMovingMap.css" />
+    <None Remove="Resources\CSS\stylePhotoTour.css" />
     <None Remove="Resources\CSS\style_kneeboard.css" />
     <None Remove="Resources\CSS\style_load_flight.css" />
     <None Remove="Resources\Excel\Celestial Nav Stars.xlsx" />
@@ -179,6 +180,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\CSS\styleCelestialSextant.css" />
+    <EmbeddedResource Include="Resources\CSS\stylePhotoTour.css" />
     <EmbeddedResource Include="Resources\CSS\styleSignWriting.css" />
     <EmbeddedResource Include="Resources\CSS\styleMovingMap.css" />
     <EmbeddedResource Include="Resources\CSS\style_kneeboard.css" />

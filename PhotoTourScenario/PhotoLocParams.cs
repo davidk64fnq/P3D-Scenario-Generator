@@ -49,5 +49,15 @@
         /// Bearing to get from this instance location to next location in photo tour
         /// </summary>
         public double forwardBearing;
+
+        /// <summary>
+        /// Friendly description or place title extracted from the photo metadata or Wikipedia.
+        /// </summary>
+        public string PlaceTitle { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Secondary geographic context (e.g. region, country, or nearby Wikipedia landmark).
+        /// </summary>
+        public string PlaceSubtitle { get; set; } = string.Empty;
     }
 }
