@@ -72,7 +72,7 @@
 		Displays an automatically sequenced flight path that connects all items in the selected table using a nearest-neighbor distance algorithm. Each leg displays the start item number, end item number, and inter-leg distance in miles (e.g., <code>[0] Lizard Point ... [1] St Anthony Head (14 miles)</code>).
 	</p>
 
-	<h4>Start Item &amp; Finish Item Comboboxes</h4>
+	<<h4>Start Item &amp; Finish Item Comboboxes</h4>
 	<p>
 		Allows you to define a specific subset of the overall table route to fly rather than flying the entire list:
 	</p>
@@ -82,6 +82,9 @@
 		</li>
 		<li>
 			<strong>Finish Item:</strong> Select the final landmark of your tour.
+		</li>
+		<li>
+			<strong>Multi-Stage Tour Planning:</strong> For extensive Wikipedia lists containing dozens of entries (such as a list of 50+ lighthouses or castles), do not attempt to generate or fly the entire list in one flight. Instead, break the route into manageable stages (e.g., Items 1–6 for Flight 1, Items 6–12 for Flight 2, and so on). Because the generator automatically finds matching airfields near your start and finish items, each stage naturally forms a complete flight from takeoff to landing.
 		</li>
 		<li>
 			<strong>Automatic Reordering:</strong> If you select a Start Item that appears after the Finish Item in the sequence, the application automatically swaps them to maintain a logical forward flight path.
@@ -174,6 +177,19 @@
 	<p>
 		The scenario places your aircraft at the departure runway threshold with the simulation paused.
 	</p>
+
+	<h4>Single-Session Design &amp; Mid-Flight Saving</h4>
+	<p>
+		Generated scenarios are designed to be flown from takeoff to landing in a <strong>single continuous flight session</strong>:
+	</p>
+	<ul>
+		<li>
+			<strong>Why Saving Mid-Flight is Not Supported:</strong> Prepar3D's standard flight save mechanism (the <kbd>;</kbd> key) writes physical aircraft parameters and weather to an <code>.fxml</code> file, but does not reliably serialize the internal execution states of custom SimMission XML scripts or active HTML/JavaScript panels. Resuming a saved flight mid-air resets the sandboxed HTML gauge DOM (clearing the active Wikipedia article and moving map orientation), can cause departure audio briefings to re-trigger mid-flight, and risks desynchronizing one-shot proximity triggers for landmarks you have already passed.
+		</li>
+		<li>
+			<strong>Recommended Practice:</strong> Plan each flight around the time you have available. Use the <strong>Start Item</strong> and <strong>Finish Item</strong> controls to keep each flight stage to a comfortable duration (e.g., 4 to 8 landmarks, or 30 to 60 minutes of flight time). Conclude each flight by landing at your destination airfield to cleanly complete the mission objective, then generate your next stage from that location when you are ready to continue.
+		</li>
+	</ul>
 
 	<h4>Pre-Flight &amp; Departure</h4>
 	<ol type="1">
