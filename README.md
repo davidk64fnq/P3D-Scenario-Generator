@@ -9,8 +9,8 @@ Instead of authoring complex mission logic trees manually inside SimDirector, **
 ## ✈️ Scenario Types
 
 * **Circuit Training:** Automated 8-gate rectangular traffic patterns calculated from aircraft cruise speed and climb performance.
-* **Photo Tours:** Low-level visual navigation flights ("IFR – I Follow Roads") visiting real-world geolocated photo waypoints sourced from Pic2Map.
-* **Sign Writing:** Precision aerobatic skywriting missions using a 22-segment font grid, complete with real-time smoke activation and an in-cockpit HUD telemetry canvas.
+* **Photo Tours:** Low-level visual navigation flights ("IFR – I Follow Roads") visiting real-world geolocated photo waypoints sourced from Pic2Map, complete with local landmark captions.
+* **Sign Writing:** Precision aerobatic skywriting missions using a 22-segment font grid, complete with real-time smoke activation, in-cockpit HUD telemetry canvas, and return-to-base compass guidance.
 * **Celestial Navigation:** Long-range astronomical navigation exercises featuring true star catalog calculations, an interactive sextant view, sight reduction worksheets, and automated "Cocked Hat" plotting.
 * **Wikipedia List Tours:** Visual landmark discovery flights along routes curated from Wikipedia sortable tables (castles, lighthouses, historic sites), complete with an in-sim mobile encyclopedia viewer.
 
@@ -26,36 +26,49 @@ Instead of authoring complex mission logic trees manually inside SimDirector, **
    * **Scenario Folder:** Your target scenario directory (e.g., `C:\Users\<Username>\Documents\Prepar3D v5 Files`).
 4. **Map Tile API Key (Required for all scenarios):**
    * Briefing overview charts and in-game moving map displays require a free RapidAPI key to retrieve OpenStreetMap tiles.
-   * **Setup:** Step-by-step registration and key-retrieval instructions are provided inside the app. Open **P3D Scenario Generator**, go to the **Settings** tab, and click the **Help** button in the top right corner.
+   * **Setup:** Step-by-step registration instructions with screenshots are provided directly inside the app. Open **P3D Scenario Generator**, switch to the **Settings** tab, and click the **Help** button in the top-right corner.
 5. **Airports Database:**
    * Includes a stock P3D v5 runway database by default.
    * Add-on scenery runways can be imported using Pete & John Dowson's `MakeRunways` utility (see General Tab Help for details).
 
 ---
 
-## 🚀 Quick Start for Testers
+## 🚀 Quick Start for New Testers
 
 To verify your installation and make sure everything is working properly, we recommend creating a **Circuit Scenario** first:
 
-1. Go to the [Releases](https://github.com/davidk64fnq/P3D-Scenario-Generator/releases) page and download `P3D-Scenario-Generator-v1.0.0-beta.zip`.
-2. Extract the ZIP folder to any convenient location on your PC.
+1. Go to the [Releases](https://github.com/davidk64fnq/P3D-Scenario-Generator/releases) page and download `P3D-Scenario-Generator-v1.0.0-beta.2.zip`.
+2. Extract the ZIP archive to any convenient folder on your PC.
 3. Run `P3D Scenario Generator.exe`.
 4. Go to the **Settings** tab:
    * Click **P3D Install**, **P3D Data**, and **Scenario Folder** to select your respective local directories.
    * Paste your **RapidAPI key** into the **Server / API key** field.
 5. Go to the **General** tab:
    * Under **Aircraft Selection**, click **Add Aircraft** and select any thumbnail image (`thumbnail.jpg`) inside one of your installed aircraft's `texture` folders.
-   * Under **Runway Selection**, click **Random Runway** (or search for a specific ICAO code).
+   * Under **Runway Selection**, click **Random** (or search for a specific ICAO code).
    * Under **Scenario Selection**, select **Circuit** and type a unique name in the **Title** box (e.g., `Test Circuit 1`).
-6. *(Optional)* Switch to the **Circuit** tab to see the leg distances, speeds, and pattern altitudes automatically calculated for your chosen aircraft (see Circuit Tab Help for details).
+6. *(Optional)* Switch to the **Circuit** tab to inspect the leg distances, speeds, and pattern altitudes automatically calculated for your chosen aircraft (see Circuit Tab Help for details).
 7. Click **Generate Scenario** at the bottom of the window.
 8. Launch Prepar3D, select **Scenarios**, load your generated flight, and confirm that the spatial gates, briefing charts, takeoff triggers, and landing detection work as expected!
 
 ---
 
+## 🔄 Upgrading from an Earlier Beta
+
+Your saved aircraft profiles, location favourites, and RapidAPI keys are stored safely in your Windows user profile (`%APPDATA%\P3D Scenario Generator\`) and will carry over automatically.
+
+1. Ensure Prepar3D and **P3D Scenario Generator** are both closed.
+2. Delete or archive your previous application folder.
+3. Extract `P3D-Scenario-Generator-v1.0.0-beta.2.zip` to your chosen location.
+4. Launch `P3D Scenario Generator.exe`.
+
+> **Note on Runway Cache:** If you ever experience issues loading runways after an update, close the app and delete `%APPDATA%\P3D Scenario Generator\runways.cache`. The application will automatically rebuild a fresh binary cache on the next launch.
+
+---
+
 ## 📋 Help & Documentation
 
-Comprehensive in-app documentation covering each tab, parameters, window alignment options, and in-flight procedures can be accessed at any time by clicking the **Help** button located in the upper right corner of the application window.
+Comprehensive in-app documentation covering each scenario type, parameter bounds, multi-monitor window alignment options, and in-flight operational procedures can be accessed at any time by clicking the **Help** button located in the upper-right corner of the application window.
 
 ---
 
