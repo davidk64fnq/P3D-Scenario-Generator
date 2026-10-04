@@ -46,8 +46,7 @@ namespace P3D_Scenario_Generator.Services
                     return false;
                 }
 
-                var stats = _metadataService.GetStats();
-                _metadataService.UpdateDailyTotal(stats.DailyDownloadTotal + 1);
+                await _metadataService.IncrementDailyTotalAsync();
 
                 string? zoomDir = Path.GetDirectoryName(cachePath);
                 if (!string.IsNullOrEmpty(zoomDir))
@@ -84,20 +83,24 @@ namespace P3D_Scenario_Generator.Services
         }
 
         /// <summary>
-        /// Resets daily totals if needed and calculates total cache size for UI display.
+        /// Resets daily totals if needed and calculates total cache size asynchronously for UI display.
         /// </summary>
-        internal void CheckCache()
+        /// <returns>A task representing the cache verification operation.</returns>
+        internal async Task CheckCacheAsync()
         {
-            _metadataService.ResetIfNewDay();
+            await _metadataService.ResetIfNewDayAsync();
 
             string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Constants.AppDataFolderName);
 
             if (FileOps.DirectoryExists(directory))
             {
-                long cacheUsage = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
-                                           .Sum(file => new FileInfo(file).Length);
+                long cacheUsage = await Task.Run(() =>
+                {
+                    return Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+                                    .Sum(file => new FileInfo(file).Length);
+                });
 
-                _metadataService.UpdateUsage(FormatBytes(cacheUsage));
+                await _metadataService.UpdateUsageAsync(FormatBytes(cacheUsage));
             }
         }
 
@@ -108,17 +111,17 @@ namespace P3D_Scenario_Generator.Services
         /// <returns>A human-readable string representation of the byte size.</returns>
         internal static string FormatBytes(long bytes)
         {
-            string[] Suffix = ["B", "KB", "MB", "GB", "TB"];
+            string[] suffix = ["B", "KB", "MB", "GB", "TB"];
             int i = 0;
             double dblSByte = bytes;
 
-            while (dblSByte >= 1024 && i < Suffix.Length - 1)
+            while (dblSByte >= 1024 && i < suffix.Length - 1)
             {
                 i++;
                 dblSByte /= 1024;
             }
 
-            return string.Format("{0:0.##} {1}", dblSByte, Suffix[i]);
+            return string.Format("{0:0.##} {1}", dblSByte, suffix[i]);
         }
     }
 }

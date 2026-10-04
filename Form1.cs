@@ -98,11 +98,11 @@ namespace P3D_Scenario_Generator
             _cacheMetadataService = new(_fileOps, _logger);
             _cacheMetadataService.OnMetadataChanged += () =>
             {
-                // Use Invoke because downloads happen on background threads
-                if (this.IsHandleCreated)
+                if (this.IsHandleCreated && !this.IsDisposed)
                 {
-                    this.Invoke(new Action(() =>
+                    this.BeginInvoke(new Action(() =>
                     {
+                        if (this.IsDisposed) return;
                         var stats = _cacheMetadataService.GetStats();
                         TextBoxSettingsCacheDailyTotal.Text = stats.DailyDownloadTotal.ToString();
                         TextBoxSettingsCacheUsage.Text = stats.FormattedCacheUsage;
@@ -310,7 +310,7 @@ namespace P3D_Scenario_Generator
             // Settings tab
             PopulateComboBoxWithEnum<WindowAlignment>(ComboBoxSettingsMapAlignment);
             PopulateComboBoxWithEnum<MapWindowSizeOption>(ComboBoxSettingsMapWindowSize);
-            _osmTileCache.CheckCache();
+            await _osmTileCache.CheckCacheAsync();
         }
 
         /// <summary>
