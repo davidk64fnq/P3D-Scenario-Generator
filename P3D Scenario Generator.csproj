@@ -35,21 +35,7 @@
     <None Remove="Resources\CSS\style_kneeboard.css" />
     <None Remove="Resources\CSS\style_load_flight.css" />
     <None Remove="Resources\Excel\Celestial Nav Stars.xlsx" />
-    <None Remove="Resources\Help\circuit.htm" />
-    <None Remove="Resources\Help\images\circuitTab.jpg" />
-    <None Remove="Resources\Help\images\introduction-objects.jpg" />
-    <None Remove="Resources\Help\images\rapidapi-step1-hub.png" />
-    <None Remove="Resources\Help\images\rapidapi-step2-searchbox.png" />
-    <None Remove="Resources\Help\images\rapidapi-step3-select-maptiles.png" />
-    <None Remove="Resources\Help\images\rapidapi-step4-subscribe.png" />
-    <None Remove="Resources\Help\images\rapidapi-step5-pricing.png" />
-    <None Remove="Resources\Help\images\rapidapi-step6-dashboard-auth.png" />
-    <None Remove="Resources\Help\images\rapidapi-step7-copy-key.png" />
-    <None Remove="Resources\Help\introduction.htm" />
-    <None Remove="Resources\Help\photoTour.htm" />
-    <None Remove="Resources\Help\signwriting.htm" />
-    <None Remove="Resources\Help\style.css" />
-    <None Remove="Resources\Help\wikipediaList.htm" />
+    <None Remove="Resources\Help\Help.chm" />
     <None Remove="Resources\HTML\CelestialSextant.html" />
     <None Remove="Resources\HTML\MissionBriefSource.htm" />
     <None Remove="Resources\HTML\MovingMap.html" />
@@ -178,6 +164,9 @@
 	
   <ItemGroup>
     <Content Include="application.ico" />
+    <Content Include="Resources\Help\Help.chm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -187,57 +176,6 @@
     <EmbeddedResource Include="Resources\CSS\styleMovingMap.css" />
     <EmbeddedResource Include="Resources\CSS\style_kneeboard.css" />
     <EmbeddedResource Include="Resources\CSS\style_load_flight.css" />
-    <EmbeddedResource Include="Resources\Help\circuit.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\circuitTab.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\introduction-objects.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\rapidapi-step1-hub.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\rapidapi-step2-searchbox.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\rapidapi-step3-select-maptiles.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\rapidapi-step4-subscribe.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\rapidapi-step5-pricing.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\rapidapi-step6-dashboard-auth.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\images\rapidapi-step7-copy-key.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\introduction.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\generalTab.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\photoTour.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\settings.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\signwriting.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\style.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Help\wikipediaList.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Resources\HTML\CelestialSextant.html" />
     <EmbeddedResource Include="Resources\HTML\MissionBriefSource.htm" />
     <EmbeddedResource Include="Resources\HTML\OverviewSource.htm" />
@@ -451,8 +389,71 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Update="Resources\Help\Help.chm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="Resources\Help\celestial.htm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\circuit.htm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\generalTab.htm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\Help.chw">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\Help.hhp">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\images\circuitTab.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\images\introduction-objects.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\images\rapidapi-step1-hub.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\images\rapidapi-step2-searchbox.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\images\rapidapi-step3-select-maptiles.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\images\rapidapi-step4-subscribe.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\images\rapidapi-step5-pricing.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\images\rapidapi-step6-dashboard-auth.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\images\rapidapi-step7-copy-key.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\Index.hhk">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\introduction.htm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\photoTour.htm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\settings.htm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\signwriting.htm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\style.css">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\Table of Contents.hhc">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Help\wikipediaList.htm">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
